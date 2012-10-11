@@ -14,13 +14,13 @@ using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Fund POCO class.
     /// </summary>
     [Table("financialFund")]
     public partial class Fund : Model<Fund>
-        
+    {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -29,7 +29,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Name      get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the public.
@@ -39,7 +39,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string PublicName      get; set; }
+        public string PublicName { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -49,7 +49,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(250)]
-        public string Description      get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the parent fund id.
@@ -58,7 +58,7 @@ namespace Rock.Financial
         /// The parent fund id.
         /// </value>
         [DataMember]
-        public int? ParentFundId      get; set; }
+        public int? ParentFundId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [tax deductible].
@@ -67,7 +67,7 @@ namespace Rock.Financial
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsTaxDeductible      get; set; }
+        public bool IsTaxDeductible { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -76,7 +76,7 @@ namespace Rock.Financial
         /// The order.
         /// </value>
         [DataMember]
-        public int Order      get; set; }
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Fund"/> is active.
@@ -85,7 +85,7 @@ namespace Rock.Financial
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive      get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -94,7 +94,7 @@ namespace Rock.Financial
         /// The start date.
         /// </value>
         [DataMember]
-        public DateTime? StartDate      get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -103,7 +103,7 @@ namespace Rock.Financial
         /// The end date.
         /// </value>
         [DataMember]
-        public DateTime? EndDate      get; set; }
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Fund"/> is pledgable.
@@ -112,7 +112,7 @@ namespace Rock.Financial
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsPledgable      get; set; }
+        public bool IsPledgable { get; set; }
 
         /// <summary>
         /// Gets or sets the gl code.
@@ -122,7 +122,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string GlCode      get; set; }
+        public string GlCode { get; set; }
 
         /// <summary>
         /// Gets or sets the fund type id.
@@ -131,7 +131,7 @@ namespace Rock.Financial
         /// The fund type id.
         /// </value>
         [DataMember]
-        public int? FundTypeId      get; set; }
+        public int? FundTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -141,7 +141,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Entity      get; set; }
+        public string Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the entity id.
@@ -150,7 +150,7 @@ namespace Rock.Financial
         /// The entity id.
         /// </value>
         [DataMember]
-        public int? EntityId      get; set; }
+        public int? EntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent fund.
@@ -158,7 +158,7 @@ namespace Rock.Financial
         /// <value>
         /// The parent fund.
         /// </value>
-        public virtual Fund ParentFund      get; set; }
+        public virtual Fund ParentFund { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the fund.
@@ -166,7 +166,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the fund.
         /// </value>
-        public virtual DefinedValue FundType      get; set; }
+        public virtual DefinedValue FundType { get; set; }
 
         /// <summary>
         /// Gets or sets the child funds.
@@ -174,7 +174,7 @@ namespace Rock.Financial
         /// <value>
         /// The child funds.
         /// </value>
-        public virtual ICollection<Fund> ChildFunds      get; set; }
+        public virtual ICollection<Fund> ChildFunds { get; set; }
 
         /// <summary>
         /// Gets or sets the pledges.
@@ -182,7 +182,7 @@ namespace Rock.Financial
         /// <value>
         /// The pledges.
         /// </value>
-        public virtual ICollection<Pledge> Pledges      get; set; }
+        public virtual ICollection<Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -190,8 +190,8 @@ namespace Rock.Financial
         /// <value>
         /// The transaction funds.
         /// </value>
-        public virtual ICollection<TransactionFund> TransactionFunds      get; set; }
-        //public virtual ICollection<Transaction> Transactions      get; set; }
+        public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
+        //public virtual ICollection<Transaction> Transactions { get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -199,14 +199,14 @@ namespace Rock.Financial
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Fund Read( int id )
-		    
+		{
 			return Read<Fund>( id );
 		}
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName      get      return "Financial.Fund"; } }
+        public override string EntityTypeName { get { return "Financial.Fund"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -215,7 +215,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Name;
 		}
     }
@@ -224,12 +224,12 @@ namespace Rock.Financial
     /// Fund Configuration class.
     /// </summary>
     public partial class FundConfiguration : EntityTypeConfiguration<Fund>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="FundConfiguration"/> class.
         /// </summary>
         public FundConfiguration()
-            
+        {
             this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
             this.HasOptional(f => f.FundType).WithMany().HasForeignKey(f => f.FundTypeId).WillCascadeOnDelete(false);
         }

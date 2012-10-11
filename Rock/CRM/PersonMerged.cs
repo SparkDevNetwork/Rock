@@ -13,13 +13,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Person Trail POCO Entity.
     /// </summary>
     [Table( "crmPersonMerged" )]
     public partial class PersonMerged : Model<PersonMerged>
-        
+    {
 		/// <summary>
 		/// Gets or sets the Current Id.
 		/// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Crm
 		/// </value>
 		[Required]
 		[DataMember]
-		public int CurrentId      get; set; }
+		public int CurrentId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Current Guid.
@@ -38,22 +38,22 @@ namespace Rock.Crm
 		/// </value>
 		[Required]
 		[DataMember]
-		public Guid CurrentGuid      get; set; }
+		public Guid CurrentGuid { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Crm.PersonMerged"; } }
+		public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]
         public string CurrentPublicKey
-            
+        {
             get
-                
+            {
                 string identifier = this.CurrentId.ToString() + ">" + this.CurrentGuid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
@@ -65,7 +65,7 @@ namespace Rock.Crm
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static PersonMerged Read( int id )
-            
+        {
             return Read<PersonMerged>( id );
         }
 
@@ -76,8 +76,8 @@ namespace Rock.Crm
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
-			return string.Format( "    0}->    1}", this.Id, this.CurrentId );
+		{
+			return string.Format( "{0}->{1}", this.Id, this.CurrentId );
 		}
     }
 
@@ -85,12 +85,12 @@ namespace Rock.Crm
     /// Person Trail Configuration class.
     /// </summary>
     public partial class PersonMergedConfiguration : EntityTypeConfiguration<PersonMerged>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonMergedConfiguration"/> class.
         /// </summary>
         public PersonMergedConfiguration()
-            
+        {
         }
     }
 }

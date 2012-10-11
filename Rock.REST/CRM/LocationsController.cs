@@ -13,12 +13,12 @@
 using Rock.Crm;
 
 namespace Rock.Rest.Crm
-    
+{
     /// <summary>
     /// Locations REST API
     /// </summary>
     public partial class LocationsController : Rock.Rest.ApiController<Rock.Crm.Location, Rock.Crm.LocationDto>
-        
-        public LocationsController() : base( new Rock.Crm.LocationService() )      } 
+    {
+        public LocationsController() : base( new Rock.Crm.LocationService() ) { } 
     }
 }

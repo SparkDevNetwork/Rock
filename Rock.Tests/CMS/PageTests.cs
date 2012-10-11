@@ -10,36 +10,36 @@ using Xunit;
 using Rock.Cms;
 
 namespace Rock.Tests.Cms
-    
+{
     public class PageTests
-        
+    {
         public class TheExportObjectMethod
-            
+        {
             [Fact]
             public void ShouldCopyEntity()
-                
-                var page = new Page()      Name = "SomePage" };
+            {
+                var page = new Page() { Name = "SomePage" };
                 dynamic result = page.ExportObject();
                 Assert.Equal( result.Name, page.Name );
             }
 
             [Fact]
             public void ShouldCopyPages()
-                
-                var children = new List<Page>()      new Page() };
-                var parent = new Page()      Pages = children };
+            {
+                var children = new List<Page>() { new Page() };
+                var parent = new Page() { Pages = children };
                 dynamic result = parent.ExportObject();
                 Assert.NotEmpty( result.Pages );
             }
 
             [Fact]
             public void ShouldCopyPagesRecursively()
-                
+            {
                 var parent = new Page();
                 var child = new Page();
                 var grandchild = new Page();
-                parent.Pages = new List<Page>      child };
-                child.Pages = new List<Page>      grandchild };
+                parent.Pages = new List<Page> { child };
+                child.Pages = new List<Page> { grandchild };
                 dynamic result = parent.ExportObject();
                 Assert.NotEmpty( parent.Pages );
                 Assert.NotEmpty( parent.Pages.First().Pages );
@@ -47,8 +47,8 @@ namespace Rock.Tests.Cms
 
             [Fact]
             public void ShouldCopyBlocks()
-                
-                var page = new Page()      Blocks = new List<Block>() };
+            {
+                var page = new Page() { Blocks = new List<Block>() };
                 page.Blocks.Add( new Block() );
                 dynamic result = page.ExportObject();
                 Assert.NotNull( result.Blocks );
@@ -57,8 +57,8 @@ namespace Rock.Tests.Cms
 
             [Fact]
             public void ShouldCopyPageRoutes()
-                
-                var page = new Page()      PageRoutes = new List<PageRoute>() };
+            {
+                var page = new Page() { PageRoutes = new List<PageRoute>() };
                 page.PageRoutes.Add( new PageRoute());
                 dynamic result = page.ExportObject();
                 Assert.NotNull( result.PageRoutes );
@@ -67,10 +67,10 @@ namespace Rock.Tests.Cms
         }
 
         public class TheExportJsonMethod
-            
+        {
             [Fact]
             public void ShouldNotBeEmpty()
-                
+            {
                 var page = new Page();
                 var result = page.ExportJson();
                 Assert.NotEmpty(result);
@@ -78,9 +78,9 @@ namespace Rock.Tests.Cms
 
             [Fact]
             public void ShouldExportAsJson()
-                
+            {
                 var page = new Page()
-                    
+                {
                     Title = "FooPage"
                 };
                 var result = page.ExportJson();
@@ -89,11 +89,11 @@ namespace Rock.Tests.Cms
 
             [Fact]
             public void ShouldExportChildPages()
-                
+            {
                 var page = new Page()
-                    
+                {
                     Title = "FooPage",
-                    Pages = new List<Page>      new Page      Title = "BarPage" } }
+                    Pages = new List<Page> { new Page { Title = "BarPage" } }
                 };
                 var result = page.ExportJson();
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
@@ -102,12 +102,12 @@ namespace Rock.Tests.Cms
 
             [Fact]
             public void ShouldExportChildPagesRecursively()
-                
-                var parent = new Page()      Title = "Parent" };
-                var child = new Page()      Title = "Child" };
-                var grandchild = new Page()      Title = "Grandchild" };
-                parent.Pages = new List<Page>      child };
-                child.Pages = new List<Page>      grandchild };
+            {
+                var parent = new Page() { Title = "Parent" };
+                var child = new Page() { Title = "Child" };
+                var grandchild = new Page() { Title = "Grandchild" };
+                parent.Pages = new List<Page> { child };
+                child.Pages = new List<Page> { grandchild };
                 var result = parent.ExportJson();
                 Assert.Contains("\"Title\":\"Parent\"", result);
                 Assert.Contains("\"Title\":\"Child\"", result);
@@ -116,7 +116,7 @@ namespace Rock.Tests.Cms
         }
 
         public class TheImportJsonMethod
-            
+        {
 
         }
     }

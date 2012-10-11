@@ -14,13 +14,13 @@ using Rock.Attribute;
 using Rock.Security;
 
 namespace Rock.Data
-    
+{
     /// <summary>
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
-	[IgnoreProperties( new[]      "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+	[IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
 	public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
-        
+    {
 		#region ISecured implementation
 
 		/// <summary>
@@ -29,22 +29,22 @@ namespace Rock.Data
 		/// qualified name of the class.
 		/// </summary>
 		[NotMapped]
-		public abstract override string EntityTypeName      get; }
+		public abstract override string EntityTypeName { get; }
 
 		/// <summary>
 		/// A parent authority.  If a user is not specifically allowed or denied access to
 		/// this object, Rock will check access to the parent authority specified by this property.
 		/// </summary>
 		[NotMapped]
-		public virtual Security.ISecured ParentAuthority      get      return null; } }
+		public virtual Security.ISecured ParentAuthority { get { return null; } }
 
 		/// <summary>
 		/// A list of actions that this class supports.
 		/// </summary>
 		[NotMapped]
 		public virtual List<string> SupportedActions
-		    
-			get      return new List<string>()      "View", "Edit", "Configure" }; }
+		{
+			get { return new List<string>() { "View", "Edit", "Configure" }; }
 		}
 
 		/// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Data
 		///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
 		/// </returns>
 		public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
-		    
+		{
 			return Security.Authorization.Authorized( this, action, person );
 		}
 
@@ -67,7 +67,7 @@ namespace Rock.Data
 		/// <param name="action">The action.</param>
 		/// <returns></returns>
 		public virtual bool IsAllowedByDefault( string action )
-		    
+		{
 			return action == "View";
 		}
 
@@ -76,7 +76,7 @@ namespace Rock.Data
 		/// </summary>
 		/// <returns></returns>
 		public IQueryable<AuthRule> FindAuthRules()
-		    
+		{
 			return ( from action in SupportedActions
 					 from rule in Authorization.AuthRules( this.EntityTypeName, this.Id, action )
 					 select rule ).AsQueryable();
@@ -100,17 +100,17 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
-            
+        {
             get 
-                
+            {
                 if ( _attributes == null && !_attributesLoaded )
-                    
+                {
                     Attribute.Helper.LoadAttributes( this );
                     _attributesLoaded = true;
                 }
                 return _attributes; 
             }
-            set      _attributes = value; }
+            set { _attributes = value; }
         }
         private SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> _attributes;
 
@@ -122,17 +122,17 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues
-            
+        {
             get 
-                
+            {
                 if ( _attributeValues == null && !_attributesLoaded )
-                    
+                {
                     Attribute.Helper.LoadAttributes( this );
                     _attributesLoaded = true;
                 }
                 return _attributeValues; 
             }
-            set      _attributeValues = value; }
+            set { _attributeValues = value; }
         }
         private Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> _attributeValues;
 

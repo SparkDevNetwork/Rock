@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Batch Service class
     /// </summary>
     public partial class BatchService : Service<Batch, BatchDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchService"/> class
         /// </summary>
         public BatchService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchService"/> class
         /// </summary>
         public BatchService(IRepository<Batch> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Batch CreateNew()
-            
+        {
             return new Batch();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<BatchDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<BatchDto> QueryableDto( IQueryable<Batch> items )
-            
+        {
             return items.Select( m => new BatchDto()
-                    
+                {
                     Name = m.Name,
                     BatchDate = m.BatchDate,
                     IsClosed = m.IsClosed,

@@ -13,12 +13,12 @@
 using Rock.Cms;
 
 namespace Rock.Rest.Cms
-    
+{
     /// <summary>
     /// BlockTypes REST API
     /// </summary>
     public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Cms.BlockType, Rock.Cms.BlockTypeDto>
-        
-        public BlockTypesController() : base( new Rock.Cms.BlockTypeService() )      } 
+    {
+        public BlockTypesController() : base( new Rock.Cms.BlockTypeService() ) { } 
     }
 }

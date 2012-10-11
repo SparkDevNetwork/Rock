@@ -14,40 +14,40 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for Page object
     /// </summary>
     public partial class PageDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public string Name      get; set; }
-        public string Title      get; set; }
-        public bool IsSystem      get; set; }
-        public int? ParentPageId      get; set; }
-        public int? SiteId      get; set; }
-        public string Layout      get; set; }
-        public bool RequiresEncryption      get; set; }
-        public bool EnableViewState      get; set; }
-        public bool MenuDisplayDescription      get; set; }
-        public bool MenuDisplayIcon      get; set; }
-        public bool MenuDisplayChildPages      get; set; }
-        public DisplayInNavWhen DisplayInNavWhen      get; set; }
-        public int Order      get; set; }
-        public int OutputCacheDuration      get; set; }
-        public string Description      get; set; }
-        public bool IncludeAdminFooter      get; set; }
-        public string IconUrl      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public bool IsSystem { get; set; }
+        public int? ParentPageId { get; set; }
+        public int? SiteId { get; set; }
+        public string Layout { get; set; }
+        public bool RequiresEncryption { get; set; }
+        public bool EnableViewState { get; set; }
+        public bool MenuDisplayDescription { get; set; }
+        public bool MenuDisplayIcon { get; set; }
+        public bool MenuDisplayChildPages { get; set; }
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+        public int Order { get; set; }
+        public int OutputCacheDuration { get; set; }
+        public string Description { get; set; }
+        public bool IncludeAdminFooter { get; set; }
+        public string IconUrl { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PageDto ()
-            
+        {
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="page"></param>
         public PageDto ( Page page )
-            
+        {
             CopyFromModel( page );
         }
 
@@ -64,9 +64,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Page )
-                
+            {
                 var page = (Page)model;
                 this.Name = page.Name;
                 this.Title = page.Title;
@@ -95,9 +95,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Page )
-                
+            {
                 var page = (Page)model;
                 page.Name = this.Name;
                 page.Title = this.Title;

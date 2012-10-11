@@ -13,13 +13,13 @@ using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Payment Gateway POCO class.
     /// </summary>
     [Table("financialGateway")]
     public partial class Gateway : Model<Gateway>
-        
+    {
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Name      get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
@@ -38,7 +38,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(500)]
-        public string Description      get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the API URL.
@@ -48,7 +48,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(100)]
-        public string ApiUrl      get; set; }
+        public string ApiUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the API key.
@@ -58,7 +58,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(100)]
-        public string ApiKey      get; set; }
+        public string ApiKey { get; set; }
 
         /// <summary>
         /// Gets or sets the API secret.
@@ -68,7 +68,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(100)]
-        public string ApiSecret      get; set; }
+        public string ApiSecret { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -76,13 +76,13 @@ namespace Rock.Financial
         /// <value>
         /// The transactions.
         /// </value>
-        public virtual ICollection<Transaction> Transactions      get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; }
 
 		/// <summary>
 		/// Gets the auth entity.
 		/// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Financial.Gateway"; } }
+		public override string EntityTypeName { get { return "Financial.Gateway"; } }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -90,7 +90,7 @@ namespace Rock.Financial
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Gateway Read( int id )
-		    
+		{
 			return Read<Gateway>( id );
 		}
 
@@ -101,7 +101,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Name;
 		}
     }
@@ -110,12 +110,12 @@ namespace Rock.Financial
     /// Payment Gateway Configuration class.
     /// </summary>
     public partial class GatewayConfiguration : EntityTypeConfiguration<Gateway>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="GatewayConfiguration"/> class.
         /// </summary>
         public GatewayConfiguration()
-            
+        {
         }
     }
 }

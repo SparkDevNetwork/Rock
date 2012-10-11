@@ -14,27 +14,27 @@ using System;
 using Rock.Data;
 
 namespace Rock.Groups
-    
+{
     /// <summary>
     /// Data Transfer Object for GroupType object
     /// </summary>
     public partial class GroupTypeDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public string Name      get; set; }
-        public string Description      get; set; }
-        public int? DefaultGroupRoleId      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int? DefaultGroupRoleId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public GroupTypeDto ()
-            
+        {
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="groupType"></param>
         public GroupTypeDto ( GroupType groupType )
-            
+        {
             CopyFromModel( groupType );
         }
 
@@ -51,9 +51,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is GroupType )
-                
+            {
                 var groupType = (GroupType)model;
                 this.IsSystem = groupType.IsSystem;
                 this.Name = groupType.Name;
@@ -69,9 +69,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is GroupType )
-                
+            {
                 var groupType = (GroupType)model;
                 groupType.IsSystem = this.IsSystem;
                 groupType.Name = this.Name;

@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Pledge Service class
     /// </summary>
     public partial class PledgeService : Service<Pledge, PledgeDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PledgeService"/> class
         /// </summary>
         public PledgeService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PledgeService"/> class
         /// </summary>
         public PledgeService(IRepository<Pledge> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Pledge CreateNew()
-            
+        {
             return new Pledge();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<PledgeDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Financial
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<PledgeDto> QueryableDto( IQueryable<Pledge> items )
-            
+        {
             return items.Select( m => new PledgeDto()
-                    
+                {
                     PersonId = m.PersonId,
                     FundId = m.FundId,
                     Amount = m.Amount,

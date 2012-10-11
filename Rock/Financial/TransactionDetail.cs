@@ -12,13 +12,13 @@ using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// TransactionDetail POCO class.
     /// </summary>
     [Table("financialTransactionDetail")]
     public partial class TransactionDetail : Model<TransactionDetail>
-        
+    {
         /// <summary>
         /// Gets or sets the transaction id.
         /// </summary>
@@ -26,7 +26,7 @@ namespace Rock.Financial
         /// The transaction id.
         /// </value>
         [DataMember]
-        public int? TransactionId      get; set; }
+        public int? TransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -36,7 +36,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(50)]
-        public string Entity      get; set; }
+        public string Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the entity id.
@@ -45,7 +45,7 @@ namespace Rock.Financial
         /// The entity id.
         /// </value>
         [DataMember]
-        public string EntityId      get; set; }
+        public string EntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -54,7 +54,7 @@ namespace Rock.Financial
         /// The amount.
         /// </value>
         [DataMember]
-        public decimal Amount      get; set; }
+        public decimal Amount { get; set; }
 
         /// <summary>
         /// Gets or sets the summary.
@@ -64,7 +64,7 @@ namespace Rock.Financial
         /// </value>
         [DataMember]
         [MaxLength(500)]
-        public string Summary      get; set; }
+        public string Summary { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction.
@@ -72,7 +72,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction.
         /// </value>
-        public virtual Transaction Transaction      get; set; }
+        public virtual Transaction Transaction { get; set; }
 
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -80,14 +80,14 @@ namespace Rock.Financial
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static TransactionDetail Read( int id )
-		    
+		{
 			return Read<TransactionDetail>( id );
 		}
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName      get      return "Financial.TransactionDetail"; } }
+        public override string EntityTypeName { get { return "Financial.TransactionDetail"; } }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -96,7 +96,7 @@ namespace Rock.Financial
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Amount.ToString();
 		}
     }
@@ -105,12 +105,12 @@ namespace Rock.Financial
     /// TransactionDetail Configuration class
     /// </summary>
     public partial class TransactionDetailConfiguration : EntityTypeConfiguration<TransactionDetail>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionDetailConfiguration"/> class.
         /// </summary>
         public TransactionDetailConfiguration()
-            
+        {
             this.HasOptional(d => d.Transaction).WithMany(t => t.TransactionDetails).HasForeignKey(t => t.TransactionId).WillCascadeOnDelete(false);
         }
     }

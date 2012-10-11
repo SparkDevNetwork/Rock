@@ -10,13 +10,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
-    
+{
     /// <summary>
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
     [Serializable]
     public class Boolean : FieldType
-        
+    {
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -26,7 +26,7 @@ namespace Rock.Field.Types
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-            
+        {
             if ( string.IsNullOrEmpty(value) ? false : System.Boolean.Parse( value ) )
                 return condensed ? "Y" : "Yes";
             else
@@ -43,10 +43,10 @@ namespace Rock.Field.Types
         ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
         /// </returns>
         public override bool IsValid( string value, bool required, out string message )
-            
+        {
             bool boolValue = false;
             if ( !bool.TryParse( value, out boolValue ) )
-                
+            {
                 message = "Invalid boolean value";
                 return false;
             }
@@ -62,7 +62,7 @@ namespace Rock.Field.Types
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             return new CheckBox();
         }
 
@@ -73,7 +73,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             if ( control != null && control is CheckBox )
                 return ( ( CheckBox )control ).Checked.ToString();
             return null;
@@ -86,7 +86,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-            
+        {
             if ( control != null && control is CheckBox )
                 ( ( CheckBox )control ).Checked = string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value );
         }

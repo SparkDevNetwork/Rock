@@ -7,7 +7,7 @@
 using System;
 
 namespace Rock.Web.UI
-    
+{
     /// <summary>
     /// Custom attribute used to decorate Rock Blocks that require context.  If entity type is not 
     /// included in the attribute, a block property will automatically be added for user to set 
@@ -15,20 +15,20 @@ namespace Rock.Web.UI
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class ContextAwareAttribute : System.Attribute
-        
+    {
         /// <summary>
         /// Gets or sets the type of the entity.
         /// </summary>
         /// <value>
         /// The type of the entity.
         /// </value>
-        public string EntityType      get; set; }
+        public string EntityType { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
         /// </summary>
         public ContextAwareAttribute()
-            
+        {
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         public ContextAwareAttribute( string entityType )
-            
+        {
             EntityType = entityType;
         }
     }

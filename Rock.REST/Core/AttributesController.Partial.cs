@@ -10,23 +10,23 @@ using System.Web.Http;
 using Rock.Core;
 
 namespace Rock.Rest.Core
-    
+{
 	/// <summary>
 	/// Attributes REST API
 	/// </summary>
 	public partial class AttributesController : IHasCustomRoutes
-	    
+	{
 		/// <summary>
 		/// Add Custom route for flushing cached attributes
 		/// </summary>
 		/// <param name="routes"></param>
 		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		    
+		{
 			routes.MapHttpRoute(
 				name: "AttributeFlush",
-				routeTemplate: "api/attributes/flush/    id}",
+				routeTemplate: "api/attributes/flush/{id}",
 				defaults: new
-				    
+				{
 					controller = "attributes",
 					action = "flush",
 					id = System.Web.Http.RouteParameter.Optional
@@ -38,7 +38,7 @@ namespace Rock.Rest.Core
 		/// </summary>
 		[HttpPut]
 		public void Flush( int id )
-		    
+		{
 			Rock.Web.Cache.AttributeCache.Flush( id );
 		}
 
@@ -47,7 +47,7 @@ namespace Rock.Rest.Core
 		/// </summary>
 		[HttpPut]
 		public void Flush()
-		    
+		{
 			Rock.Web.Cache.GlobalAttributesCache.Flush();
 		}
 	}

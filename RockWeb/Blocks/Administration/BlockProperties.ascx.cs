@@ -9,35 +9,35 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     public partial class BlockProperties : Rock.Web.UI.RockBlock
-        
+    {
         private Rock.Web.Cache.BlockCache _block = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
-            
+        {
             Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
             if ( masterPage != null )
                 masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
             
             try
-                
+            {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 _block = Rock.Web.Cache.BlockCache.Read( blockId );
 
                 if ( _block.IsAuthorized( "Configure", CurrentPerson ) )
-                    
+                {
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _block, phAttributes, !Page.IsPostBack );
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to edit this block" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
 
@@ -45,9 +45,9 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if ( !Page.IsPostBack && _block.IsAuthorized( "Configure", CurrentPerson ) )
-                
+            {
                 tbBlockName.Text = _block.Name;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
@@ -56,11 +56,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void masterPage_OnSave( object sender, EventArgs e )
-            
+        {
             if ( Page.IsValid )
-                
+            {
                 using ( new Rock.Data.UnitOfWorkScope() )
-                    
+                {
                     var blockService = new Rock.Cms.BlockService();
                     var block = blockService.Get( _block.Id );
 
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

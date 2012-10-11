@@ -13,9 +13,9 @@ using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     public partial class Pages : Rock.Web.UI.RockBlock
-        
+    {
         #region Fields
 
         private bool canConfigure = false;
@@ -27,9 +27,9 @@ namespace RockWeb.Blocks.Administration
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             try
-                
+            {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
                 _page = Rock.Web.Cache.PageCache.Read( pageId );
 
@@ -39,20 +39,20 @@ namespace RockWeb.Blocks.Administration
                     canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( canConfigure )
-                    
-                    rGrid.DataKeyNames = new string[]      "id" };
+                {
+                    rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.IsAddEnabled = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to configure this page" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
 
@@ -60,9 +60,9 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if ( !Page.IsPostBack && canConfigure )
-                
+            {
                 BindGrid();
                 LoadLayouts();
             }
@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Administration
         #region Grid Events
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
-            
+        {
             int? parentPageId = null;
             if (_page != null)
                 parentPageId = _page.Id;
@@ -87,15 +87,15 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
-            
+        {
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
-            
+        {
             Rock.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
-                
+            {
                 Rock.Web.Cache.PageCache.Flush( page.Id );
 
                 pageService.Delete( page, CurrentPersonId );
@@ -109,12 +109,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         void rGrid_GridAdd( object sender, EventArgs e )
-            
+        {
             ShowEdit( 0 );
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
@@ -123,13 +123,13 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         protected void btnCancel_Click( object sender, EventArgs e )
-            
+        {
             rGrid.Visible = true;
             pnlDetails.Visible = false;
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-            
+        {
             Rock.Cms.Page page;
 
             int pageId = 0;
@@ -137,16 +137,16 @@ namespace RockWeb.Blocks.Administration
                 pageId = 0;
 
             if ( pageId == 0 )
-                
+            {
                 page = new Rock.Cms.Page();
 
                 if ( _page != null )
-                    
+                {
                     page.ParentPageId = _page.Id;
                     page.SiteId = _page.Site.Id;
                 }
                 else
-                    
+                {
                     page.ParentPageId = null;
                     page.SiteId = CurrentPage.Site.Id;
                 }
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Administration
             pageService.Save( page, CurrentPersonId );
 
             if ( _page != null )
-                
+            {
                 Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonId );
                 _page.FlushChildPages();
             }
@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         private void BindGrid()
-            
+        {
             int? parentPageId = null;
             if ( _page != null )
                 parentPageId = _page.Id;
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void LoadLayouts()
-            
+        {
             ddlLayout.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
@@ -210,30 +210,30 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( int pageId )
-            
+        {
             Rock.Cms.Page page = pageService.Get( pageId );
             if ( page != null )
-                
+            {
                 hfPageId.Value = page.Id.ToString();
-                try      ddlLayout.Text = page.Layout; }
-                catch      }
+                try { ddlLayout.Text = page.Layout; }
+                catch { }
                 tbPageName.Text = page.Name;
 
                 lEditAction.Text = "Edit";
                 btnSave.Text = "Save";
             }
             else
-                
+            {
                 hfPageId.Value = "0";
 
                 try
-                    
+                {
                     if ( _page != null )
                         ddlLayout.Text = _page.Layout;
                     else
                         ddlLayout.Text = CurrentPage.Layout;
                 }
-                catch      }
+                catch { }
 
                 tbPageName.Text = string.Empty;
 
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

@@ -14,26 +14,26 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for PageRoute object
     /// </summary>
     public partial class PageRouteDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int PageId      get; set; }
-        public string Route      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int PageId { get; set; }
+        public string Route { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PageRouteDto ()
-            
+        {
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="pageRoute"></param>
         public PageRouteDto ( PageRoute pageRoute )
-            
+        {
             CopyFromModel( pageRoute );
         }
 
@@ -50,9 +50,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is PageRoute )
-                
+            {
                 var pageRoute = (PageRoute)model;
                 this.IsSystem = pageRoute.IsSystem;
                 this.PageId = pageRoute.PageId;
@@ -67,9 +67,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is PageRoute )
-                
+            {
                 var pageRoute = (PageRoute)model;
                 pageRoute.IsSystem = this.IsSystem;
                 pageRoute.PageId = this.PageId;

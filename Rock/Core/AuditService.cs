@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Audit Service class
     /// </summary>
     public partial class AuditService : Service<Audit, AuditDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditService"/> class
         /// </summary>
         public AuditService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditService"/> class
         /// </summary>
         public AuditService(IRepository<Audit> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Audit CreateNew()
-            
+        {
             return new Audit();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<AuditDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Core
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<AuditDto> QueryableDto( IQueryable<Audit> items )
-            
+        {
             return items.Select( m => new AuditDto()
-                    
+                {
                     EntityType = m.EntityType,
                     EntityId = m.EntityId,
                     EntityName = m.EntityName,

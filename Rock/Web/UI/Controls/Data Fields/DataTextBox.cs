@@ -9,13 +9,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-    
+{
     /// <summary>
     /// A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
     /// </summary>
-    [ToolboxData( "<    0}:DataTextBox runat=server></    0}:DataTextBox>" )]
+    [ToolboxData( "<{0}:DataTextBox runat=server></{0}:DataTextBox>" )]
     public class DataTextBox : LabeledTextBox
-        
+    {
         private Validation.DataAnnotationValidator dataValidator;
 
         /// <summary>
@@ -31,14 +31,14 @@ namespace Rock.Web.UI.Controls
         Description( "The model to validate." )
         ]
         public string SourceTypeName
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return dataValidator.SourceTypeName;
             }
             set
-                
+            {
                 EnsureChildControls();
                 dataValidator.SourceTypeName = value;
             }
@@ -57,14 +57,14 @@ namespace Rock.Web.UI.Controls
         Description( "The model property that is annotated." )
         ]
         public string PropertyName
-            
+        {
             get
-                
+            {
                 EnsureChildControls();
                 return dataValidator.PropertyName;
             }
             set
-                
+            {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
                 if ( this.LabelText == string.Empty )
@@ -76,7 +76,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-            
+        {
             base.CreateChildControls();
 
             dataValidator = new Validation.DataAnnotationValidator();
@@ -92,7 +92,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
-            
+        {
             bool isValid = ( !Required || validator.IsValid ) && dataValidator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
@@ -109,7 +109,7 @@ namespace Rock.Web.UI.Controls
             RenderBase( writer );
 
             if ( Required )
-                
+            {
                 validator.ErrorMessage = LabelText + " is Required.";
                 validator.RenderControl( writer );
             }
@@ -117,7 +117,7 @@ namespace Rock.Web.UI.Controls
             dataValidator.RenderControl( writer );
 
             if ( Tip.Trim() != string.Empty )
-                
+            {
                 writer.AddAttribute( "class", "help-tip" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls
             }
 
             if ( Help.Trim() != string.Empty )
-                
+            {
                 writer.AddAttribute( "class", "alert alert-info" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( Help.Trim() );

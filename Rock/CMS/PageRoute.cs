@@ -12,13 +12,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "cmsPageRoute" )]
     public partial class PageRoute : Model<PageRoute>, IExportable
-        
+    {
 		/// <summary>
 		/// Gets or sets the System.
 		/// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool IsSystem      get; set; }
+		public bool IsSystem { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Page Id.
@@ -37,7 +37,7 @@ namespace Rock.Cms
 		/// </value>
 		[Required]
 		[DataMember]
-		public int PageId      get; set; }
+		public int PageId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Route.
@@ -49,7 +49,7 @@ namespace Rock.Cms
 		[Required]
 		[MaxLength( 200 )]
 		[DataMember]
-		public string Route      get; set; }
+		public string Route { get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -57,7 +57,7 @@ namespace Rock.Cms
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static PageRoute Read( int id )
-		    
+		{
 			return Read<PageRoute>( id );
 		}
 
@@ -65,7 +65,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Cms.PageRoute"; } }
+		public override string EntityTypeName { get { return "Cms.PageRoute"; } }
         
 		/// <summary>
         /// Gets or sets the Page.
@@ -73,7 +73,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        public virtual Page Page      get; set; }
+        public virtual Page Page { get; set; }
 
 		/// <summary>
 		/// Returns a <see cref="System.String" /> that represents this instance.
@@ -82,7 +82,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.Route;
 		}
 
@@ -91,7 +91,7 @@ namespace Rock.Cms
 		/// </summary>
 		/// <returns></returns>
         public object ExportObject()
-            
+        {
             return this.ToDynamic();
         }
 
@@ -100,7 +100,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         public string ExportJson()
-            
+        {
             return ExportObject().ToJSON();
         }
 
@@ -110,7 +110,7 @@ namespace Rock.Cms
         /// <param name="data">The data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
-            
+        {
             throw new NotImplementedException();
         }
 
@@ -120,12 +120,12 @@ namespace Rock.Cms
     /// Page Route Configuration class.
     /// </summary>
     public partial class PageRouteConfiguration : EntityTypeConfiguration<PageRoute>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageRouteConfiguration"/> class.
         /// </summary>
         public PageRouteConfiguration()
-            
+        {
             this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }

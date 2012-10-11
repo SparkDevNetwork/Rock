@@ -11,13 +11,13 @@ using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Groups
-    
+{
     /// <summary>
     /// GroupLocation POCO class.
     /// </summary>
     [Table("groupGroupLocation")]
     public partial class GroupLocation
-        
+    {
         /// <summary>
         /// Gets or sets the group id.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Rock.Groups
         [Key]
         [Column(Order = 0)]
         [DataMember]
-        public int GroupId      get; set; }
+        public int GroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the location id.
@@ -38,7 +38,7 @@ namespace Rock.Groups
         [Key]
         [Column(Order = 1)]
         [DataMember]
-        public int LocationId      get; set; }
+        public int LocationId { get; set; }
 
         /// <summary>
         /// Gets or sets the location type.
@@ -47,7 +47,7 @@ namespace Rock.Groups
         /// The location type.
         /// </value>
         [DataMember]
-        public int? LocationTypeId      get; set; }
+        public int? LocationTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the group.
@@ -55,7 +55,7 @@ namespace Rock.Groups
         /// <value>
         /// The group.
         /// </value>
-        public virtual Group Group      get; set; }
+        public virtual Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets the location.
@@ -63,7 +63,7 @@ namespace Rock.Groups
         /// <value>
         /// The location.
         /// </value>
-        public virtual Rock.Crm.Location Location      get; set; }
+        public virtual Rock.Crm.Location Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Location Type.
@@ -71,19 +71,19 @@ namespace Rock.Groups
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue LocationType      get; set; }
+        public virtual Core.DefinedValue LocationType { get; set; }
     }
 
     /// <summary>
     /// GroupLocation Configuration class
     /// </summary>
     public partial class GroupLocationConfiguration : EntityTypeConfiguration<GroupLocation>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupLocationConfiguration"/> class.
         /// </summary>
         public GroupLocationConfiguration()
-            
+        {
             this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );

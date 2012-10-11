@@ -5,7 +5,7 @@
 
     <script type="text/javascript">
 
-        Sys.Application.add_load(function ()     
+        Sys.Application.add_load(function () {
             $('a.logo').attr('href', rock.baseUrl);
         });
 
@@ -44,12 +44,12 @@
                     </div>
                     <script>
                         // show options when clicked
-                        $(".dropdown dt").click(function ()     
+                        $(".dropdown dt").click(function () {
                             $(".dropdown dd ul").fadeToggle( 'fast' );
                         });
 
                         // change selection when picked
-                        $(".dropdown dd ul li").click(function ()     
+                        $(".dropdown dd ul li").click(function () {
                             var text = $(this).html();
                             $(".dropdown dt").html(text);
                             $(".dropdown dd ul").hide();
@@ -103,20 +103,20 @@
     </div>
     <script>
         /* script to manage header lock */
-        $(document).ready(function ()     
+        $(document).ready(function () {
             /*var headerIsLocked = localStorage.getItem("rock-header-lock");
 
-            if (headerIsLocked == "false")     
+            if (headerIsLocked == "false") {
                 $('#content, #header-lock, header.topbar').toggleClass('unlock');
             }*/
 
-            $('#header-lock').click(function (e)     
+            $('#header-lock').click(function (e) {
                 $('#content, #header-lock, header.topbar').toggleClass('unlock');
 
-                if ($('#header-lock').hasClass('unlock'))     
+                if ($('#header-lock').hasClass('unlock')) {
                     localStorage.setItem('rock-header-lock', 'false');
                 }
-                else     
+                else {
                     localStorage.setItem('rock-header-lock', 'true');
                 }
                 alert('oh my goodness');

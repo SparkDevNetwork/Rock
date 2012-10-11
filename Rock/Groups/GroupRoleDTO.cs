@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Groups
-    
+{
     /// <summary>
     /// Data Transfer Object for GroupRole object
     /// </summary>
     public partial class GroupRoleDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int? GroupTypeId      get; set; }
-        public string Name      get; set; }
-        public string Description      get; set; }
-        public int? Order      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int? GroupTypeId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int? Order { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public GroupRoleDto ()
-            
+        {
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="groupRole"></param>
         public GroupRoleDto ( GroupRole groupRole )
-            
+        {
             CopyFromModel( groupRole );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is GroupRole )
-                
+            {
                 var groupRole = (GroupRole)model;
                 this.IsSystem = groupRole.IsSystem;
                 this.GroupTypeId = groupRole.GroupTypeId;
@@ -71,9 +71,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is GroupRole )
-                
+            {
                 var groupRole = (GroupRole)model;
                 groupRole.IsSystem = this.IsSystem;
                 groupRole.GroupTypeId = this.GroupTypeId;

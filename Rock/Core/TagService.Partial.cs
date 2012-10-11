@@ -10,12 +10,12 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// MetricValue POCO Service class
     /// </summary>
     public partial class TagService
-        
+    {
         /// <summary>
         /// Gets the by entity.
         /// </summary>
@@ -25,7 +25,7 @@ namespace Rock.Core
         /// <param name="ownerId">The owner id.</param>
         /// <returns></returns>
         public IQueryable<Tag> GetByEntity( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
-            
+        {
             return Repository.AsQueryable()
                 .Where( t => t.Entity == entity &&
                     ( t.EntityQualifierColumn == entityQualifierColumn || ( t.EntityQualifierColumn == null && entityQualifierColumn == null ) ) &&
@@ -45,7 +45,7 @@ namespace Rock.Core
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public Tag GetByEntityAndName( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId, string name )
-            
+        {
             return Repository.AsQueryable()
                 .Where( t => t.Entity == entity &&
                     ( t.EntityQualifierColumn == entityQualifierColumn || ( t.EntityQualifierColumn == null && entityQualifierColumn == null ) ) &&

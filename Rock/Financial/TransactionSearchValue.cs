@@ -5,19 +5,19 @@ using System.Web;
 using Rock.Core;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public class TransactionSearchValue
-        
+    {
         /// <summary>
         /// Gets or sets the date range.
         /// </summary>
         /// <value>
         /// The date range.
         /// </value>
-        public RangeValue<DateTime?> DateRange      get; set; }
+        public RangeValue<DateTime?> DateRange { get; set; }
         
         /// <summary>
         /// Gets or sets the amount range.
@@ -25,7 +25,7 @@ namespace Rock.Financial
         /// <value>
         /// The amount range.
         /// </value>
-        public RangeValue<decimal?> AmountRange      get; set; }
+        public RangeValue<decimal?> AmountRange { get; set; }
         
         /// <summary>
         /// Gets or sets the fund.
@@ -33,7 +33,7 @@ namespace Rock.Financial
         /// <value>
         /// The fund.
         /// </value>
-        public Fund Fund      get; set; }
+        public Fund Fund { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the currency.
@@ -41,7 +41,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the currency.
         /// </value>
-        public DefinedValue CurrencyType      get; set; }
+        public DefinedValue CurrencyType { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the credit card.
@@ -49,7 +49,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the credit card.
         /// </value>
-        public DefinedValue CreditCardType      get; set; }
+        public DefinedValue CreditCardType { get; set; }
     
         /// <summary>
         /// Gets or sets the type of the source.
@@ -57,7 +57,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the source.
         /// </value>
-        public DefinedValue SourceType      get; set; }
+        public DefinedValue SourceType { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.
@@ -65,6 +65,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction code.
         /// </value>
-        public string TransactionCode      get; set; }
+        public string TransactionCode { get; set; }
     }
 }

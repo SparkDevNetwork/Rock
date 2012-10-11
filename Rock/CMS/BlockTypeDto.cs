@@ -14,27 +14,27 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for BlockType object
     /// </summary>
     public partial class BlockTypeDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public string Path      get; set; }
-        public string Name      get; set; }
-        public string Description      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public BlockTypeDto ()
-            
+        {
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="blockType"></param>
         public BlockTypeDto ( BlockType blockType )
-            
+        {
             CopyFromModel( blockType );
         }
 
@@ -51,9 +51,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is BlockType )
-                
+            {
                 var blockType = (BlockType)model;
                 this.IsSystem = blockType.IsSystem;
                 this.Path = blockType.Path;
@@ -69,9 +69,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is BlockType )
-                
+            {
                 var blockType = (BlockType)model;
                 blockType.IsSystem = this.IsSystem;
                 blockType.Path = this.Path;

@@ -12,14 +12,14 @@ using System.IO;
 using System.Reflection;
 
 namespace Rock.Extension
-    
+{
     /// <summary>
     /// Singleton generic class that uses MEF to load and cache all of the component classes
     /// </summary>
     public abstract class Container<T, TData> : IContainer, IDisposable
         where T : Component
         where TData : IComponentData
-        
+    {
         // MEF Container
         private CompositionContainer container;
         private bool IsDisposed;
@@ -27,18 +27,18 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the componentss.
         /// </summary>
-        public Dictionary<int, Lazy<T, TData>> Components      get; private set; }
+        public Dictionary<int, Lazy<T, TData>> Components { get; private set; }
 
         /// <summary>
         /// Gets the component names and their attributes
         /// </summary>
         public Dictionary<int, KeyValuePair<string, Component>> Dictionary
-            
+        {
             get
-                
+            {
                 var dictionary = new Dictionary<int, KeyValuePair<string, Component>>();
                 foreach ( var component in Components )
-                    
+                {
                     dictionary.Add( component.Key, new KeyValuePair<string, Component>(
                         component.Value.Metadata.ComponentName, component.Value.Value ) );
                 }
@@ -53,13 +53,13 @@ namespace Rock.Extension
         /// <value>
         /// The components.
         /// </value>
-        protected abstract IEnumerable<Lazy<T, TData>> MEFComponents      get; set; }
+        protected abstract IEnumerable<Lazy<T, TData>> MEFComponents { get; set; }
 
         /// <summary>
         /// Constructor
         /// </summary>
         public Container()
-            
+        {
             IsDisposed = false;
         }
 
@@ -67,7 +67,7 @@ namespace Rock.Extension
         /// Forces a reloading of all the GeocodeService classes
         /// </summary>
         public void Refresh()
-            
+        {
             Components = new Dictionary<int, Lazy<T, TData>>();
 
             // Create the MEF Catalog
@@ -79,7 +79,7 @@ namespace Rock.Extension
             // Add all the assemblies in the 'Plugins' subdirectory
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
             if ( Directory.Exists( pluginsFolder ) )
-                
+            {
                 catalog.Catalogs.Add( new DirectoryCatalog( pluginsFolder ) );
             }
 
@@ -92,9 +92,9 @@ namespace Rock.Extension
             // Create a temporary sorted dictionary of the classes so that they can be executed in a specific order
             var components = new SortedDictionary<int, List<Lazy<T, TData>>>();
             foreach ( Lazy<T, TData> i in MEFComponents )
-                
+            {
                 if ( !components.ContainsKey( i.Value.Order ) )
-                    
+                {
                     components.Add( i.Value.Order, new List<Lazy<T, TData>>() );
                 }
 
@@ -104,9 +104,9 @@ namespace Rock.Extension
             // Add each class found through MEF into the Services property value in the correct order
             int id = 0;
             foreach ( KeyValuePair<int, List<Lazy<T, TData>>> entry in components )
-                
+            {
                 foreach ( Lazy<T, TData> component in entry.Value )
-                    
+                {
                     Components.Add( id++, component );
                 }
             }
@@ -116,7 +116,7 @@ namespace Rock.Extension
         /// Dispose object
         /// </summary>
         public void Dispose()
-            
+        {
             Dispose( true );
             GC.SuppressFinalize( this );
         }
@@ -126,11 +126,11 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose( bool disposing )
-            
+        {
             if ( !IsDisposed )
-                
+            {
                 if ( disposing )
-                    
+                {
                     if ( container != null )
                         container.Dispose();
                 }

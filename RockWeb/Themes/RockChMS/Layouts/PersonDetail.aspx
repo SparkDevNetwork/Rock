@@ -4,7 +4,7 @@
 <script runat="server">
 
     protected override void OnInit( EventArgs e )
-        
+    {
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
         AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
@@ -17,7 +17,7 @@
 
     <script type="text/javascript">
 
-        Sys.Application.add_load(function ()     
+        Sys.Application.add_load(function () {
             $('a.brand').attr('href', rock.baseUrl);
         });
 
@@ -107,20 +107,20 @@
     
     <script>
         /* script to manage header lock */
-        $(document).ready(function ()     
+        $(document).ready(function () {
             var headerIsLocked = localStorage.getItem("rock-header-lock");
 
-            if (headerIsLocked == "true")     
+            if (headerIsLocked == "true") {
                 $('#page-header').addClass('navbar-fixed-top');
             }
-            else     
+            else {
                 $('#page-header').removeClass('navbar-fixed-top');
             }
 
             setHeaderLock();
         });
 
-        $('#header-lock').click(function (e)     
+        $('#header-lock').click(function (e) {
             $('#page-header').toggleClass('navbar-fixed-top');
 
             setHeaderLock();
@@ -128,31 +128,31 @@
             e.preventDefault();
         });
 
-        function setHeaderLock()     
-            if ($('#page-header').hasClass('navbar-fixed-top'))     
+        function setHeaderLock() {
+            if ($('#page-header').hasClass('navbar-fixed-top')) {
                 localStorage.setItem('rock-header-lock', 'true');
                 // set location of page title
                 var headerHeight = $('#page-header').height();
                 $('#page-title').css('margin-top', '98px');
             }
-            else     
+            else {
                 localStorage.setItem('rock-header-lock', 'false');
                 $('#page-title').css('margin-top', 0);
             }
         }
 
-        $('ul.addresses li').live(    
+        $('ul.addresses li').live({
             mouseenter:
-                function ()     
+                function () {
                     var actionsDiv = $('div.actions', this);
-                    if (actionsDiv.length > 0)     
+                    if (actionsDiv.length > 0) {
                         $(actionsDiv).fadeToggle();
                     }
                 },
             mouseleave:
-                function ()     
+                function () {
                     var actionsDiv = $('div.actions', this);
-                    if (actionsDiv.length > 0)     
+                    if (actionsDiv.length > 0) {
                         $(actionsDiv).fadeToggle();
                     }
                 }

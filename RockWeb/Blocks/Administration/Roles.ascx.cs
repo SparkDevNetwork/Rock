@@ -15,45 +15,45 @@ using Rock.Core;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
-    
+{
     public partial class Roles : Rock.Web.UI.RockBlock
-        
+    {
         private bool _canConfigure = false;
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             try
-                
+            {
                 _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( _canConfigure )
-                    
-                    rGrid.DataKeyNames = new string[]      "id" };
+                {
+                    rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.IsAddEnabled = true;
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
                 }
                 else
-                    
+                {
                     DisplayError( "You are not authorized to configure this page" );
                 }
             }
             catch ( SystemException ex )
-                
+            {
                 DisplayError( ex.Message );
             }
         }
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
         protected override void OnLoad( EventArgs e )
-            
+        {
             if ( !Page.IsPostBack && _canConfigure )
                 BindGrid();
 
@@ -61,22 +61,22 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGrid_Edit( object sender, RowEventArgs e )
-            
+        {
             ShowEdit( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
-            
+        {
             using ( new Rock.Data.UnitOfWorkScope() )
-                
+            {
                 var authService = new Rock.Cms.AuthService();
                 var groupService = new Rock.Groups.GroupService();
 
                 Rock.Groups.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
                 if ( group != null )
-                    
+                {
                     foreach(var auth in authService.Queryable().Where( a => a.GroupId == group.Id).ToList())
-                        
+                    {
                         authService.Delete(auth, CurrentPersonId);
                         authService.Save(auth, CurrentPersonId);
                     }
@@ -93,19 +93,19 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGrid_Add( object sender, EventArgs e )
-            
+        {
             ShowEdit( 0 );
         }
 
         void rGrid_GridRebind( object sender, EventArgs e )
-            
+        {
             BindGrid();
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
-            
+        {
             using ( new Rock.Data.UnitOfWorkScope() )
-                
+            {
                 var groupService = new Rock.Groups.GroupService();
 
                 Rock.Groups.Group group;
@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Administration
                     groupId = 0;
 
                 if ( groupId == 0 )
-                    
+                {
                     group = new Rock.Groups.Group();
                     group.IsSystem = false;
                     group.IsSecurityRole = true;
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Administration
                     groupService.Add( group, CurrentPersonId );
                 }
                 else
-                    
+                {
                     Rock.Security.Role.Flush( groupId );
                     group = groupService.Get( groupId );
                 }
@@ -144,13 +144,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void btnCancel_Click( object sender, EventArgs e )
-            
+        {
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
 
         private void BindGrid()
-            
+        {
             var queryable = new Rock.Groups.GroupService().Queryable().
                 Where( r => r.IsSecurityRole == true);
 
@@ -170,11 +170,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void ShowEdit( int groupId )
-            
+        {
             var groupModel = new Rock.Groups.GroupService().Get( groupId );
 
             if ( groupModel != null )
-                
+            {
                 lAction.Text = "Edit";
                 hfId.Value = groupModel.Id.ToString();
 
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = groupModel.Description;
             }
             else
-                
+            {
                 lAction.Text = "Add";
                 hfId.Value = string.Empty;
 
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         private void DisplayError( string message )
-            
+        {
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;

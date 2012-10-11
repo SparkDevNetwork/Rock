@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Auth Service class
     /// </summary>
     public partial class AuthService : Service<Auth, AuthDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class
         /// </summary>
         public AuthService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class
         /// </summary>
         public AuthService(IRepository<Auth> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override Auth CreateNew()
-            
+        {
             return new Auth();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<AuthDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
-            
+        {
             return items.Select( m => new AuthDto()
-                    
+                {
                     EntityType = m.EntityType,
                     EntityId = m.EntityId,
                     Order = m.Order,

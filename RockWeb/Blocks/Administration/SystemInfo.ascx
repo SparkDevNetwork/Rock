@@ -2,23 +2,23 @@
 
 <script language="javascript">
 
-    $(document).ready(function ()     
+    $(document).ready(function () {
 
-        $('#show-cache-objects').click(function ()     
-            $('#cache-objects').toggle('slow', function ()     
-                if ($('#modal-scroll-container').length)     
+        $('#show-cache-objects').click(function () {
+            $('#cache-objects').toggle('slow', function () {
+                if ($('#modal-scroll-container').length) {
                     $('#modal-scroll-container').tinyscrollbar_update('relative');
                 }
             });
         });
 
-        $('a.show-pill').click(function ()     
+        $('a.show-pill').click(function () {
 
             $('ul.nav-pills > li').attr('class', '');
             $(this).parent().attr('class', 'active');
             $('div.tabContent > div').hide('slow');
-            $('#' + $(this).attr('pill')).show('slow', function ()     
-                if ($('#modal-scroll-container').length)     
+            $('#' + $(this).attr('pill')).show('slow', function () {
+                if ($('#modal-scroll-container').length) {
                     $('#modal-scroll-container').tinyscrollbar_update('relative');
                 }
             });

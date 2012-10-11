@@ -15,13 +15,13 @@ using Rock;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Auth POCO Entity.
     /// </summary>
     [Table( "cmsAuth" )]
     public partial class Auth : Model<Auth>, IOrdered
-        
+    {
         /// <summary>
         /// Gets or sets the Entity Type.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityType      get; set; }
+        public string EntityType { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Id.
@@ -40,7 +40,7 @@ namespace Rock.Cms
         /// Entity Id.
         /// </value>
         [DataMember]
-        public int? EntityId      get; set; }
+        public int? EntityId { get; set; }
         
         /// <summary>
         /// Gets or sets the Order.
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public int Order      get; set; }
+        public int Order { get; set; }
         
         /// <summary>
         /// Gets or sets the Action.
@@ -61,7 +61,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 50 )]
         [DataMember]
-        public string Action      get; set; }
+        public string Action { get; set; }
         
         /// <summary>
         /// Gets or sets the Allow Or Deny.
@@ -72,7 +72,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 1 )]
         [DataMember]
-        public string AllowOrDeny      get; set; }
+        public string AllowOrDeny { get; set; }
         
         /// <summary>
         /// Gets or sets the Special Role.
@@ -82,7 +82,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public SpecialRole SpecialRole      get; set; }
+        public SpecialRole SpecialRole { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -91,7 +91,7 @@ namespace Rock.Cms
 		/// Person Id.
 		/// </value>
 		[DataMember]
-		public int? PersonId      get; set; }
+		public int? PersonId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Group Id.
@@ -100,13 +100,13 @@ namespace Rock.Cms
 		/// Group Id.
 		/// </value>
 		[DataMember]
-		public int? GroupId      get; set; }
+		public int? GroupId { get; set; }
 		
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Cms.Auth"; } }
+		public override string EntityTypeName { get { return "Cms.Auth"; } }
         
 		/// <summary>
         /// Gets or sets the Group.
@@ -114,7 +114,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Groups.Group"/> object.
         /// </value>
-        public virtual Groups.Group Group      get; set; }
+        public virtual Groups.Group Group { get; set; }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -122,7 +122,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-        public virtual Crm.Person Person      get; set; }
+        public virtual Crm.Person Person { get; set; }
 
         /// <summary>
         /// The default authorization for a specific action.
@@ -130,7 +130,7 @@ namespace Rock.Cms
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public override bool IsAllowedByDefault( string action )
-            
+        {
             return false;
         }
 
@@ -140,7 +140,7 @@ namespace Rock.Cms
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Auth Read( int id )
-		    
+		{
 			return Read<Auth>( id );
 		}
 
@@ -151,18 +151,18 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			var sb = new StringBuilder();
-			sb.AppendFormat("    0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
+			sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
 
 			if (SpecialRole != Cms.SpecialRole.None)
-				sb.AppendFormat("    0} ", SpecialRole.ToString().SplitCase());
+				sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
 			else if(PersonId.HasValue)
-				sb.AppendFormat("    0} ", Person.ToString());
+				sb.AppendFormat("{0} ", Person.ToString());
 			else if(GroupId.HasValue)
-				sb.AppendFormat("    0} ", Group.ToString());
+				sb.AppendFormat("{0} ", Group.ToString());
 
-			sb.AppendFormat("    0} Access", Action);
+			sb.AppendFormat("{0} Access", Action);
 
 			return sb.ToString();
 		}
@@ -172,12 +172,12 @@ namespace Rock.Cms
     /// Auth Configuration class.
     /// </summary>
     public partial class AuthConfiguration : EntityTypeConfiguration<Auth>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
         /// </summary>
         public AuthConfiguration()
-            
+        {
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
             this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }
@@ -187,7 +187,7 @@ namespace Rock.Cms
     /// Authorization for a special group of users not defined by a specific role or person
     /// </summary>
     public enum SpecialRole
-        
+    {
         /// <summary>
         /// No special role
         /// </summary>

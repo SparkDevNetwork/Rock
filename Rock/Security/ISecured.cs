@@ -8,35 +8,35 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Rock.Security
-    
+{
     /// <summary>
     /// Represents a securable object.  Note each ISecured object must also expose a static Read(int id) method if the object
     /// types will be used in a grid with a SecureField column
     /// </summary>
     public interface ISecured
-        
+    {
         /// <summary>
         /// The auth entity. Classes that implement the <see cref="ISecured"/> interface should return
         /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the 
         /// qualified name of the class. 
         /// </summary>
-        string EntityTypeName      get; }
+        string EntityTypeName { get; }
 
         /// <summary>
         /// The Id
         /// </summary>
-        int Id      get; }
+        int Id { get; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to 
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        ISecured ParentAuthority      get; }
+        ISecured ParentAuthority { get; }
 
         /// <summary>
         /// A list of actions that this class supports.
         /// </summary>
-        List<string> SupportedActions      get; }
+        List<string> SupportedActions { get; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.

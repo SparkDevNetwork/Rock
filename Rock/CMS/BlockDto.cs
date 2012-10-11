@@ -14,31 +14,31 @@ using System;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// Data Transfer Object for Block object
     /// </summary>
     public partial class BlockDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int? PageId      get; set; }
-        public string Layout      get; set; }
-        public int BlockTypeId      get; set; }
-        public string Zone      get; set; }
-        public int Order      get; set; }
-        public string Name      get; set; }
-        public int OutputCacheDuration      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int? PageId { get; set; }
+        public string Layout { get; set; }
+        public int BlockTypeId { get; set; }
+        public string Zone { get; set; }
+        public int Order { get; set; }
+        public string Name { get; set; }
+        public int OutputCacheDuration { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public BlockDto ()
-            
+        {
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="block"></param>
         public BlockDto ( Block block )
-            
+        {
             CopyFromModel( block );
         }
 
@@ -55,9 +55,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Block )
-                
+            {
                 var block = (Block)model;
                 this.IsSystem = block.IsSystem;
                 this.PageId = block.PageId;
@@ -77,9 +77,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Block )
-                
+            {
                 var block = (Block)model;
                 block.IsSystem = this.IsSystem;
                 block.PageId = this.PageId;

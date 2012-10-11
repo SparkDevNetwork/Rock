@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// File Service class
     /// </summary>
     public partial class FileService : Service<File, FileDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="FileService"/> class
         /// </summary>
         public FileService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileService"/> class
         /// </summary>
         public FileService(IRepository<File> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override File CreateNew()
-            
+        {
             return new File();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<FileDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<FileDto> QueryableDto( IQueryable<File> items )
-            
+        {
             return items.Select( m => new FileDto()
-                    
+                {
                     IsTemporary = m.IsTemporary,
                     IsSystem = m.IsSystem,
                     Data = m.Data,

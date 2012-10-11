@@ -13,12 +13,12 @@ using System.Net;
 using System.Text;
 
 namespace Rock.Net
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public static class WebRequest
-        
+    {
         /// <summary>
         /// Sends the specified request URI string.
         /// </summary>
@@ -29,11 +29,11 @@ namespace Rock.Net
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
         public static WebResponse Send( string requestUriString, string method, Dictionary<string, string> queryStringData, Dictionary<string, string> formData )
-            
+        {
             string uri = requestUriString;
 
             if ( queryStringData != null )
-                
+            {
                 string parms = queryStringData.Join( "&" );
                 if ( parms.Trim() != string.Empty )
                     uri += ( uri.Contains( "?" ) ? "&" : "?" ) + parms;
@@ -44,7 +44,7 @@ namespace Rock.Net
             request.Method = method;
 
             if ( formData != null && formData.Count > 0 )
-                
+            {
                 byte[] postData = ASCIIEncoding.ASCII.GetBytes( formData.Join( "&" ) );
 
                 request.ContentType = "application/x-www-form-urlencoded";
@@ -55,12 +55,12 @@ namespace Rock.Net
             }
 
             try
-                
+            {
                 HttpWebResponse response = ( HttpWebResponse )request.GetResponse();
                 return new WebResponse( response.StatusCode, GetResponseString( response.GetResponseStream() ) );
             }
             catch ( WebException webException )
-                
+            {
                 string message = GetResponseString( webException.Response.GetResponseStream() );
                 throw new Exception( webException.Message + " - " + message );
             }
@@ -72,7 +72,7 @@ namespace Rock.Net
         /// <param name="responseStream">The response stream.</param>
         /// <returns></returns>
         static private string GetResponseString(Stream responseStream)
-            
+        {
             Stream receiveStream = responseStream;
             Encoding encode = System.Text.Encoding.GetEncoding( "utf-8" );
             StreamReader readStream = new StreamReader( receiveStream, encode );
@@ -81,7 +81,7 @@ namespace Rock.Net
             Char[] read = new Char[8192];
             int count = 0;
             do
-                
+            {
                 count = readStream.Read( read, 0, 8192 );
                 String str = new String( read, 0, count );
                 sb.Append( str );
@@ -96,14 +96,14 @@ namespace Rock.Net
     /// 
     /// </summary>
     public class WebResponse
-        
+    {
         /// <summary>
         /// Gets the HTTP status code.
         /// </summary>
         /// <value>
         /// The HTTP status code.
         /// </value>
-        public HttpStatusCode HttpStatusCode      get; internal set; }
+        public HttpStatusCode HttpStatusCode { get; internal set; }
         
         /// <summary>
         /// Gets the message.
@@ -111,7 +111,7 @@ namespace Rock.Net
         /// <value>
         /// The message.
         /// </value>
-        public string Message      get; internal set; }
+        public string Message { get; internal set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebResponse" /> class.
@@ -119,7 +119,7 @@ namespace Rock.Net
         /// <param name="httpStatusCode">The HTTP status code.</param>
         /// <param name="message">The message.</param>
         internal WebResponse( HttpStatusCode httpStatusCode, string message )
-            
+        {
             HttpStatusCode = httpStatusCode;
             Message = message;
         }

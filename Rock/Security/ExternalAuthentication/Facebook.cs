@@ -24,7 +24,7 @@ using Rock.Crm;
 using Rock.Web.UI;
 
 namespace Rock.Security.ExternalAuthentication
-    
+{
     /// <summary>
     /// Authenticates a user using Facebook
     /// </summary>
@@ -34,7 +34,7 @@ namespace Rock.Security.ExternalAuthentication
     [BlockProperty( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
     [BlockProperty( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
     public class Facebook : ExternalAuthenticationComponent
-        
+    {
         /// <summary>
         /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
@@ -42,7 +42,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="request">The request.</param>
         /// <returns></returns>
         public override Boolean IsReturningFromAuthentication( HttpRequest request )
-            
+        {
             return ( !String.IsNullOrWhiteSpace( request.QueryString["code"] ) &&
                 !String.IsNullOrWhiteSpace( request.QueryString["state"] ) );
         }
@@ -53,7 +53,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="request">The request.</param>
         /// <returns></returns>
         public override Uri GenerateLoginUrl( HttpRequest request )
-            
+        {
             var returnUrl = request.QueryString["returnurl"];
             var redirectUri = new Uri( GetRedirectUrl( request ));
 
@@ -77,14 +77,14 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="returnUrl">The return URL.</param>
         /// <returns></returns>
         public override Boolean Authenticate( HttpRequest request, out string username, out string returnUrl )
-            
+        {
             var fbClient = new FacebookClient();
             FacebookOAuthResult oAuthResult;
 
             if ( fbClient.TryParseOAuthCallbackUrl( request.Url, out oAuthResult ) && oAuthResult.IsSuccess )
-                
+            {
                 try
-                    
+                {
                     var redirectUri = new Uri( GetRedirectUrl( request ) );
 
                     dynamic parameters = new ExpandoObject();
@@ -107,9 +107,9 @@ namespace Rock.Security.ExternalAuthentication
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
-                        
+                    {
                         try
-                            
+                        {
                             // determine if we can find a match and if so add an user login record
 
                             // get properties from Facebook dynamic object
@@ -121,19 +121,19 @@ namespace Rock.Security.ExternalAuthentication
                             var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && ( u.GivenName == firstName || u.NickName == firstName ) && u.Email == email );
 
                             if ( person != null )
-                                
+                            {
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
                                 DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
 
                                 if ( person.BirthDay == null )
-                                    
+                                {
                                     person.BirthDate = birthdate;
                                     personService.Save( person, person.Id );
                                 }
 
                             }
                             else
-                                
+                            {
 
                                 var dvService = new DefinedValueService();
 
@@ -163,7 +163,7 @@ namespace Rock.Security.ExternalAuthentication
                             user = userService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
-                            
+                        {
                             string msg = ex.Message;
                             // TODO: probably should report something...
                         }
@@ -177,7 +177,7 @@ namespace Rock.Security.ExternalAuthentication
 
                 }
                 catch ( FacebookOAuthException oae )
-                    
+                {
                     string msg = oae.Message;
                     // TODO: Add error handeling
                     // Error validating verification code. (usually from wrong return url very picky with formatting)
@@ -197,12 +197,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override String ImageUrl()
-            
+        {
             return "~/Assets/Images/facebook-login.png";
         }
 
         private string GetRedirectUrl( HttpRequest request )
-            
+        {
             Uri uri = new Uri( request.Url.ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }

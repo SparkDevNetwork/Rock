@@ -10,18 +10,18 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field
-    
+{
     /// <summary>
     /// Abstract class that all custom field types should inherit from
     /// </summary>
    [Serializable]
    public abstract class FieldType : IFieldType
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="Field"/> class.
         /// </summary>
         public FieldType()
-            
+        {
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Rock.Field
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-            
+        {
             if ( condensed )
                 return System.Web.HttpUtility.HtmlEncode( value ).Ellipsis(100);
 
@@ -50,9 +50,9 @@ namespace Rock.Field
         ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsValid( string value, bool required, out string message )
-            
+        {
             if ( required && string.IsNullOrWhiteSpace( value ) )
-                
+            {
                 message = "value is required.";
                 return false;
             }
@@ -66,7 +66,7 @@ namespace Rock.Field
         /// </summary>
         /// <returns></returns>
         public virtual List<string> ConfigurationKeys()
-            
+        {
             return new List<string>();
         }
 
@@ -75,7 +75,7 @@ namespace Rock.Field
         /// </summary>
         /// <returns></returns>
         public virtual List<Control> ConfigurationControls()
-            
+        {
             return new List<Control>();
         }
 
@@ -85,7 +85,7 @@ namespace Rock.Field
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public virtual Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-            
+        {
             return new Dictionary<string, ConfigurationValue>();
         }
 
@@ -95,7 +95,7 @@ namespace Rock.Field
         /// <param name="controls">The controls.</param>
         /// <param name="configurationValues">The configuration values.</param>
         public virtual void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Rock.Field
         /// The control
         /// </returns>
         public virtual Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             return new TextBox();
         }
 
@@ -117,7 +117,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public virtual string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
-            
+        {
             if ( control != null && control is TextBox )
                 return ( ( TextBox )control ).Text;
             return null;
@@ -130,7 +130,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public virtual void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
-            
+        {
             if ( control != null && control is TextBox )
                 ( ( TextBox )control ).Text = value;
         }

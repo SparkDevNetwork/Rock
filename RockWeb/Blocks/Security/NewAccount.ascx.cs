@@ -18,42 +18,42 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
-    
+{
     [BlockProperty( 0, "Check for Duplicates", "Duplicates", "", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",false, "true", "Rock", "Rock.Field.Types.Boolean" )]
     [BlockProperty( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
     [BlockProperty( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
-    [BlockProperty( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,"    0}, you already have an existing account.  Would you like us to email you the username?" )]
+    [BlockProperty( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,"{0}, you already have an existing account.  Would you like us to email you the username?" )]
     [BlockProperty( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,"Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
     [BlockProperty( 5, "Confirm", "ConfirmCaption", "Captions", "", false,"Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
-    [BlockProperty( 6, "Success", "SuccessCaption", "Captions", "", false,"    0}, Your account has been created" )]
+    [BlockProperty( 6, "Success", "SuccessCaption", "Captions", "", false,"{0}, Your account has been created" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
-        
+    {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
 
         #region Properties
 
         protected string Password
-            
+        {
             get
-                
+            {
                 string password = ViewState["Password"] as string;
                 return password ?? "";
             }
             set
-                
+            {
                 ViewState["Password"] = value;
             }
         }
 
         protected string PasswordConfirm
-            
+        {
             get
-                
+            {
                 string password = ViewState["PasswordConfirm"] as string;
                 return password ?? "";
             }
             set
-                
+            {
                 ViewState["PasswordConfirm"] = value;
             }
         }
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Security
         #region Overridden RockPage Methods
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
             
             lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Security
         }
 
         protected override void OnLoad( System.EventArgs e )
-            
+        {
             base.OnLoad( e );
 
             pnlMessage.Controls.Clear();
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Security
             PagePanels[5] = phSuccess;
 
             if ( !Page.IsPostBack )
-                
+            {
 
                 //tbPassword.TextBox.TextMode = TextBoxMode.Password;
                 //tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Security
 
                 int year = DateTime.Now.Year;
                 for ( int i = 0; i <= 110; i++ )
-                    
+                {
                     string yearStr = ( year - i ).ToString();
                     ddlBirthYear.Items.Add( new ListItem( yearStr, yearStr ) );
                 }
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Security
         }
 
         protected override void OnPreRender( EventArgs e )
-            
+        {
             base.OnPreRender( e );
 
             if ( tbPassword.Text == string.Empty && Password != string.Empty )
@@ -120,17 +120,17 @@ namespace RockWeb.Blocks.Security
         #region User Info Panel
 
         protected void ddlBirthMonth_IndexChanged( object sender, EventArgs e )
-            
+        {
             LoadBirthDays();
         }
 
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
-            
+        {
             Password = tbPassword.Text;
             PasswordConfirm = tbPasswordConfirm.Text;
 
             if ( Page.IsValid )
-                
+            {
                 Rock.Cms.UserService userService = new Rock.Cms.UserService();
                 Rock.Cms.User user = userService.GetByUserName( tbUserName.Text );
                 if ( user == null )
@@ -145,15 +145,15 @@ namespace RockWeb.Blocks.Security
         #region Duplicates Panel
 
         protected void btnDuplicatesPrev_Click( object sender, EventArgs e )
-            
+        {
             DisplayUserInfo( Direction.Back );
         }
 
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
-            
+        {
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
-                
+            {
                 Rock.Cms.UserService userService = new Rock.Cms.UserService();
                 var users = userService.GetByPersonId(personId).ToList();
                 if (users.Count > 0)
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Security
                     DisplayConfirmation( personId );
             }                        
             else
-                
+            {
                 DisplaySuccess( CreateUser( CreatePerson(), true ) );
             }
         }
@@ -172,17 +172,17 @@ namespace RockWeb.Blocks.Security
         #region Send Login Panel
 
         protected void btnSendPrev_Click( object sender, EventArgs e )
-            
+        {
             DisplayDuplicates( Direction.Back );
         }
 
         protected void btnSendYes_Click( object sender, EventArgs e )
-            
+        {
             DisplaySentLogin( Direction.Forward );
         }
 
         protected void btnSendLogin_Click( object sender, EventArgs e )
-            
+        {
             Response.Redirect( "~/Login", true );
         }
 
@@ -193,22 +193,22 @@ namespace RockWeb.Blocks.Security
         #region Private Methods
 
         private void ShowErrorMessage( string message )
-            
+        {
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;
         }
 
         private void DisplayUserInfo( Direction direction )
-            
+        {
             ShowPanel( 0 );
         }
 
         private void DisplayDuplicates( Direction direction )
-            
+        {
             bool displayed = false;
 
             if ( Convert.ToBoolean( AttributeValue( "Duplicates" ) ) )
-                
+            {
                 PersonService personService = new PersonService();
                 var matches = personService.
                     Queryable().
@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Security
                     ToList();
 
                 if ( matches.Count > 0 )
-                    
+                {
                     gDuplicates.AllowPaging = false;
                     gDuplicates.ShowActionRow = false;
 
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Security
             }
 
             if ( !displayed )
-                
+            {
                 if ( direction == Direction.Forward )
                     DisplaySuccess( CreateUser (CreatePerson(), true));
                 else
@@ -244,12 +244,12 @@ namespace RockWeb.Blocks.Security
         }
 
         private void DisplaySendLogin( int personId, Direction direction )
-            
+        {
             hfSendPersonId.Value = personId.ToString();
 
             lExistingAccountCaption.Text = AttributeValue( "ExistingAccountCaption" );
-            if ( lExistingAccountCaption.Text.Contains( "    0}" ) )
-                
+            if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
+            {
                 PersonService personService = new PersonService();
                 Person person = personService.Get( personId );
                 if ( person != null )
@@ -260,15 +260,15 @@ namespace RockWeb.Blocks.Security
         }
 
         private void DisplaySentLogin( Direction direction )
-            
+        {
             using ( new Rock.Data.UnitOfWorkScope() )
-                
+            {
                 PersonService personService = new PersonService();
                 Rock.Cms.UserService userService = new Rock.Cms.UserService();
 
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
-                    
+                {
                     var mergeObjects = new List<object>();
 
                     var values = new Dictionary<string, string>();
@@ -302,12 +302,12 @@ namespace RockWeb.Blocks.Security
         }
 
         private void DisplayConfirmation( int personId )
-            
+        {
             PersonService personService = new PersonService();
             Person person = personService.Get(personId);
 
             if (person != null)
-                
+            {
                 Rock.Cms.User user = CreateUser( person, false );
 
                 var mergeObjects = new List<object>();
@@ -332,17 +332,17 @@ namespace RockWeb.Blocks.Security
         }
 
         private void DisplaySuccess( Rock.Cms.User user )
-            
+        {
             FormsAuthentication.SignOut();
             Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
 
             if ( user != null && user.PersonId.HasValue )
-                
+            {
                 PersonService personService = new PersonService();
                 Person person = personService.Get( user.PersonId.Value );
 
                 if ( person != null )
-                    
+                {
                     var mergeObjects = new List<object>();
                     mergeObjects.Add( person );
                     mergeObjects.Add( user );
@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Security
                     email.Send( recipients );
 
                     lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
-                    if ( lSuccessCaption.Text.Contains( "    0}" ) )
+                    if ( lSuccessCaption.Text.Contains( "{0}" ) )
                         lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
 
                     ShowPanel( 5 );
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Security
         }
 
         private void LoadBirthDays()
-            
+        {
             int currentMonth = 0;
             if ( ddlBirthMonth.SelectedIndex >= 0 )
                 currentMonth = Int32.Parse( ddlBirthMonth.SelectedValue);
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Security
             if ( ddlBirthDay.SelectedIndex >= 0 )
                 currentDay = Int32.Parse( ddlBirthDay.SelectedValue );
 
-            int[] days = new int[13]      31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+            int[] days = new int[13] { 31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
             ddlBirthDay.Items.Clear();
             ddlBirthDay.Items.Add( new ListItem( "Day", "0" ) );
@@ -393,13 +393,13 @@ namespace RockWeb.Blocks.Security
         }
 
         private void ShowPanel( int panel )
-            
+        {
             for ( int i = 0; i < PagePanels.Length; i++ )
                 PagePanels[i].Visible = i == panel;
         }
 
         private Person CreatePerson()
-            
+        {
             Rock.Crm.PersonService personService = new PersonService();
 
             Person person = new Person();
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Security
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
             switch(ddlGender.SelectedValue)
-                
+            {
                 case "M":
                     person.Gender = Gender.Male;
                     break;
@@ -435,13 +435,13 @@ namespace RockWeb.Blocks.Security
         }
 
         private Rock.Cms.User CreateUser( Person person, bool confirmed )
-            
+        {
             Rock.Cms.UserService userService = new Rock.Cms.UserService();
             return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )
-            
+        {
             email.Server = GlobalAttributesCache.Value( "SMTPServer" );
 
             int port = 0;
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Security
         #endregion
     }
 
-    enum Direction     
+    enum Direction {
         Forward,
         Back
     }

@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Attribute Value POCO Service class
     /// </summary>
     public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
-        
+    {
         /// <summary>
         /// Gets Attribute Values by Attribute Id
         /// </summary>
         /// <param name="attributeId">Attribute Id.</param>
         /// <returns>An enumerable list of AttributeValue objects.</returns>
         public IEnumerable<AttributeValue> GetByAttributeId( int attributeId )
-            
+        {
             return Repository.Find( t => t.AttributeId == attributeId );
         }
         
@@ -33,7 +33,7 @@ namespace Rock.Core
         /// <param name="entityId">Entity Id.</param>
         /// <returns>An enumerable list of AttributeValue objects.</returns>
         public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
-            
+        {
             return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
         
@@ -43,7 +43,7 @@ namespace Rock.Core
         /// <param name="entityId">Entity Id.</param>
         /// <returns>An enumerable list of AttributeValue objects.</returns>
         public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
-            
+        {
             return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 
@@ -54,7 +54,7 @@ namespace Rock.Core
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
         public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int entityId )
-            
+        {
             return Repository.AsQueryable().
                 Where( v => v.AttributeId == attributeId && v.EntityId == entityId ).
                 OrderBy( v => v.Order );

@@ -14,26 +14,26 @@ using System;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Data Transfer Object for TaggedItem object
     /// </summary>
     public partial class TaggedItemDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int TagId      get; set; }
-        public int? EntityId      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int TagId { get; set; }
+        public int? EntityId { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public TaggedItemDto ()
-            
+        {
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="taggedItem"></param>
         public TaggedItemDto ( TaggedItem taggedItem )
-            
+        {
             CopyFromModel( taggedItem );
         }
 
@@ -50,9 +50,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is TaggedItem )
-                
+            {
                 var taggedItem = (TaggedItem)model;
                 this.IsSystem = taggedItem.IsSystem;
                 this.TagId = taggedItem.TagId;
@@ -67,9 +67,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is TaggedItem )
-                
+            {
                 var taggedItem = (TaggedItem)model;
                 taggedItem.IsSystem = this.IsSystem;
                 taggedItem.TagId = this.TagId;

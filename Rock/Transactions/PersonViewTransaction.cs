@@ -7,12 +7,12 @@ using System;
 using Rock.Crm;
 
 namespace Rock.Transactions
-    
+{
     /// <summary>
     /// Tracks when a person is viewed.
     /// </summary>
     public class PersonViewTransaction : ITransaction
-        
+    {
 
         /// <summary>
         /// Gets or sets the viewer person id.
@@ -20,7 +20,7 @@ namespace Rock.Transactions
         /// <value>
         /// The viewer person id.
         /// </value>
-        public int ViewerPersonId      get; set; }
+        public int ViewerPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the target person id.
@@ -28,7 +28,7 @@ namespace Rock.Transactions
         /// <value>
         /// The target person id.
         /// </value>
-        public int TargetPersonId      get; set; }
+        public int TargetPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address that requested the page.
@@ -36,7 +36,7 @@ namespace Rock.Transactions
         /// <value>
         /// IP Address.
         /// </value>
-        public string IPAddress      get; set; }
+        public string IPAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the source of the view (site id or application name)
@@ -44,7 +44,7 @@ namespace Rock.Transactions
         /// <value>
         /// Source.
         /// </value>
-        public string Source      get; set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Gets or sets the DateTime the person was viewed.
@@ -52,18 +52,18 @@ namespace Rock.Transactions
         /// <value>
         /// Date Viewed.
         /// </value>
-        public DateTime DateViewed      get; set; }
+        public DateTime DateViewed { get; set; }
         
         /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
         public void Execute()
-            
+        {
             // store the view to the database if the viewer is NOT the target (don't track looking at your own record)
             if ( ViewerPersonId != TargetPersonId )
-                
+            {
                 using ( new Rock.Data.UnitOfWorkScope() )
-                    
+                {
 
                     PersonViewedService pvService = new PersonViewedService();
 

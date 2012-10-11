@@ -10,20 +10,20 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-    
+{
     /// <summary>
     /// <see cref="Grid"/> Column for editing the security of an item in a row in a grid
     /// </summary>
-    [ToolboxData( "<    0}:SecurityField BoundField=server></    0}:SecurityField>" )]
+    [ToolboxData( "<{0}:SecurityField BoundField=server></{0}:SecurityField>" )]
     public class SecurityField : TemplateField
-        
+    {
         /// <summary>
         /// Gets or sets the type of the entity being secured
         /// </summary>
         /// <value>
         /// The type of the entity.
         /// </value>
-        public Type EntityType      get; set; }
+        public Type EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the title.
@@ -32,9 +32,9 @@ namespace Rock.Web.UI.Controls
         /// The title.
         /// </value>
         public string Title
-            
-            get      return title; }
-            set      title = value; }
+        {
+            get { return title; }
+            set { title = value; }
         }
         private string title = "Security";
 
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
         /// Always returns false.
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
-            
+        {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.ItemStyle.CssClass = "grid-icon-cell security";
 
@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
     /// Template used by the <see cref="SecurityField"/> control
     /// </summary>
     public class SecurityFieldTemplate : ITemplate
-        
+    {
         private System.Web.UI.Page page;
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The title.
         /// </value>
-        public string Title      get; set; }
+        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the entity.
         /// </value>
-        public string EntityType      get; set; }
+        public string EntityType { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="title">The title.</param>
         public SecurityFieldTemplate(System.Web.UI.Page page, string entityType, string title )
-            
+        {
             this.page = page;
             this.EntityType = entityType;
             this.Title = title;
@@ -99,10 +99,10 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
-            
+        {
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
-                
+            {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
                 aSecure.Attributes.Add( "class", "show-modal-iframe" );
@@ -112,13 +112,13 @@ namespace Rock.Web.UI.Controls
         }
 
         void aSecure_DataBinding( object sender, EventArgs e )
-            
+        {
             HtmlGenericControl lnk = ( HtmlGenericControl )sender;
             GridViewRow container = ( GridViewRow )lnk.NamingContainer;
             object dataValue = DataBinder.Eval( container.DataItem, "id" );
             if ( dataValue != DBNull.Value )
-                
-                lnk.Attributes.Add( "href", page.ResolveUrl( string.Format( "~/Secure/    0}/    1}?t=    2}&pb=&sb=Done",
+            {
+                lnk.Attributes.Add( "href", page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
                     Security.Authorization.EncodeEntityTypeName( EntityType ), dataValue.ToString(), Title ) ) );
             }
         }

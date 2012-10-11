@@ -6,12 +6,12 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Rock.Data
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public class AlternateKeyAttribute : ValidationAttribute
-        
+    {
         /// <summary>
         /// Determines whether the specified value of the object is valid.
         /// </summary>
@@ -20,7 +20,7 @@ namespace Rock.Data
         /// true if the specified value is valid; otherwise, false.
         /// </returns>
         public override bool IsValid( object value )
-            
+        {
             // database will enforce
             return true;
         }

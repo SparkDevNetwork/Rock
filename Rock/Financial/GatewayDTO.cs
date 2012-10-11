@@ -14,28 +14,28 @@ using System;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Data Transfer Object for Gateway object
     /// </summary>
     public partial class GatewayDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public string Name      get; set; }
-        public string Description      get; set; }
-        public string ApiUrl      get; set; }
-        public string ApiKey      get; set; }
-        public string ApiSecret      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ApiUrl { get; set; }
+        public string ApiKey { get; set; }
+        public string ApiSecret { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public GatewayDto ()
-            
+        {
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="gateway"></param>
         public GatewayDto ( Gateway gateway )
-            
+        {
             CopyFromModel( gateway );
         }
 
@@ -52,9 +52,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Gateway )
-                
+            {
                 var gateway = (Gateway)model;
                 this.Name = gateway.Name;
                 this.Description = gateway.Description;
@@ -71,9 +71,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Gateway )
-                
+            {
                 var gateway = (Gateway)model;
                 gateway.Name = this.Name;
                 gateway.Description = this.Description;

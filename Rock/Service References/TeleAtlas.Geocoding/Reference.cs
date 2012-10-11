@@ -9,13 +9,13 @@
 //------------------------------------------------------------------------------
 
 namespace Rock.TeleAtlas.Geocoding
-    
+{
 
 #pragma warning disable 1591
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.wsdl", ConfigurationName="TeleAtlas.Geocoding.GeocodingPortType")]
-    public interface GeocodingPortType     
+    public interface GeocodingPortType {
         
         // CODEGEN: Generating message contract since the wrapper namespace (http://ezlocate.na.teleatlas.com/Geocoding.xsd1) of message getServicesRequest does not match the default value (http://ezlocate.na.teleatlas.com/Geocoding.wsdl)
         [System.ServiceModel.OperationContractAttribute(Action="Geocoding:GeocodingPortType#getServices", ReplyAction="*")]
@@ -44,7 +44,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1")]
-    public partial class NameValue : object, System.ComponentModel.INotifyPropertyChanged     
+    public partial class NameValue : object, System.ComponentModel.INotifyPropertyChanged {
         
         private string nameField;
         
@@ -52,11 +52,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=0)]
-        public string name     
-            get     
+        public string name {
+            get {
                 return this.nameField;
             }
-            set     
+            set {
                 this.nameField = value;
                 this.RaisePropertyChanged("name");
             }
@@ -64,11 +64,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=1)]
-        public string value     
-            get     
+        public string value {
+            get {
                 return this.valueField;
             }
-            set     
+            set {
                 this.valueField = value;
                 this.RaisePropertyChanged("value");
             }
@@ -76,9 +76,9 @@ namespace Rock.TeleAtlas.Geocoding
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName)     
+        protected void RaisePropertyChanged(string propertyName) {
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null))     
+            if ((propertyChanged != null)) {
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -90,7 +90,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1")]
-    public partial class Geocode : object, System.ComponentModel.INotifyPropertyChanged     
+    public partial class Geocode : object, System.ComponentModel.INotifyPropertyChanged {
         
         private int resultCodeField;
         
@@ -98,11 +98,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, Order=0)]
-        public int resultCode     
-            get     
+        public int resultCode {
+            get {
                 return this.resultCodeField;
             }
-            set     
+            set {
                 this.resultCodeField = value;
                 this.RaisePropertyChanged("resultCode");
             }
@@ -111,11 +111,11 @@ namespace Rock.TeleAtlas.Geocoding
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=1)]
         [System.Xml.Serialization.XmlArrayItemAttribute("nv", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
-        public NameValue[] mAttributes     
-            get     
+        public NameValue[] mAttributes {
+            get {
                 return this.mAttributesField;
             }
-            set     
+            set {
                 this.mAttributesField = value;
                 this.RaisePropertyChanged("mAttributes");
             }
@@ -123,9 +123,9 @@ namespace Rock.TeleAtlas.Geocoding
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName)     
+        protected void RaisePropertyChanged(string propertyName) {
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null))     
+            if ((propertyChanged != null)) {
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -137,7 +137,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1")]
-    public partial class MatchType : object, System.ComponentModel.INotifyPropertyChanged     
+    public partial class MatchType : object, System.ComponentModel.INotifyPropertyChanged {
         
         private string nameField;
         
@@ -147,11 +147,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=0)]
-        public string name     
-            get     
+        public string name {
+            get {
                 return this.nameField;
             }
-            set     
+            set {
                 this.nameField = value;
                 this.RaisePropertyChanged("name");
             }
@@ -159,11 +159,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=1)]
-        public string description     
-            get     
+        public string description {
+            get {
                 return this.descriptionField;
             }
-            set     
+            set {
                 this.descriptionField = value;
                 this.RaisePropertyChanged("description");
             }
@@ -171,11 +171,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, Order=2)]
-        public int id     
-            get     
+        public int id {
+            get {
                 return this.idField;
             }
-            set     
+            set {
                 this.idField = value;
                 this.RaisePropertyChanged("id");
             }
@@ -183,9 +183,9 @@ namespace Rock.TeleAtlas.Geocoding
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName)     
+        protected void RaisePropertyChanged(string propertyName) {
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null))     
+            if ((propertyChanged != null)) {
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -197,7 +197,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1")]
-    public partial class OutputField : object, System.ComponentModel.INotifyPropertyChanged     
+    public partial class OutputField : object, System.ComponentModel.INotifyPropertyChanged {
         
         private string nameField;
         
@@ -207,11 +207,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=0)]
-        public string name     
-            get     
+        public string name {
+            get {
                 return this.nameField;
             }
-            set     
+            set {
                 this.nameField = value;
                 this.RaisePropertyChanged("name");
             }
@@ -219,11 +219,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, IsNullable=true, Order=1)]
-        public string description     
-            get     
+        public string description {
+            get {
                 return this.descriptionField;
             }
-            set     
+            set {
                 this.descriptionField = value;
                 this.RaisePropertyChanged("description");
             }
@@ -231,11 +231,11 @@ namespace Rock.TeleAtlas.Geocoding
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, Order=2)]
-        public int type     
-            get     
+        public int type {
+            get {
                 return this.typeField;
             }
-            set     
+            set {
                 this.typeField = value;
                 this.RaisePropertyChanged("type");
             }
@@ -243,9 +243,9 @@ namespace Rock.TeleAtlas.Geocoding
         
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
         
-        protected void RaisePropertyChanged(string propertyName)     
+        protected void RaisePropertyChanged(string propertyName) {
             System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null))     
+            if ((propertyChanged != null)) {
                 propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
             }
         }
@@ -255,16 +255,16 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="getServices", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class getServicesRequest     
+    public partial class getServicesRequest {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public int identity;
         
-        public getServicesRequest()     
+        public getServicesRequest() {
         }
         
-        public getServicesRequest(int identity)     
+        public getServicesRequest(int identity) {
             this.identity = identity;
         }
     }
@@ -273,7 +273,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="getServicesResponse", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class getServicesResponse     
+    public partial class getServicesResponse {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -284,10 +284,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlArrayItemAttribute("nv", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public Rock.TeleAtlas.Geocoding.NameValue[] services;
         
-        public getServicesResponse()     
+        public getServicesResponse() {
         }
         
-        public getServicesResponse(int resultCode, Rock.TeleAtlas.Geocoding.NameValue[] services)     
+        public getServicesResponse(int resultCode, Rock.TeleAtlas.Geocoding.NameValue[] services) {
             this.resultCode = resultCode;
             this.services = services;
         }
@@ -297,7 +297,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="getServiceDescription", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class getServiceDescriptionRequest     
+    public partial class getServiceDescriptionRequest {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -307,10 +307,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public int identity;
         
-        public getServiceDescriptionRequest()     
+        public getServiceDescriptionRequest() {
         }
         
-        public getServiceDescriptionRequest(string service, int identity)     
+        public getServiceDescriptionRequest(string service, int identity) {
             this.service = service;
             this.identity = identity;
         }
@@ -320,7 +320,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="getServiceDescriptionResponse", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class getServiceDescriptionResponse     
+    public partial class getServiceDescriptionResponse {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -353,10 +353,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public string matchTypeName;
         
-        public getServiceDescriptionResponse()     
+        public getServiceDescriptionResponse() {
         }
         
-        public getServiceDescriptionResponse(int resultCode, string description, string countryCode, Rock.TeleAtlas.Geocoding.NameValue[] inputs, Rock.TeleAtlas.Geocoding.OutputField[] outputs, Rock.TeleAtlas.Geocoding.MatchType[] matchTypes, string matchTypeName)     
+        public getServiceDescriptionResponse(int resultCode, string description, string countryCode, Rock.TeleAtlas.Geocoding.NameValue[] inputs, Rock.TeleAtlas.Geocoding.OutputField[] outputs, Rock.TeleAtlas.Geocoding.MatchType[] matchTypes, string matchTypeName) {
             this.resultCode = resultCode;
             this.description = description;
             this.countryCode = countryCode;
@@ -371,7 +371,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="findAddress", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class findAddressRequest     
+    public partial class findAddressRequest {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -386,10 +386,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public int identity;
         
-        public findAddressRequest()     
+        public findAddressRequest() {
         }
         
-        public findAddressRequest(string service, Rock.TeleAtlas.Geocoding.NameValue[] input, int identity)     
+        public findAddressRequest(string service, Rock.TeleAtlas.Geocoding.NameValue[] input, int identity) {
             this.service = service;
             this.input = input;
             this.identity = identity;
@@ -400,7 +400,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="findAddressResponse", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class findAddressResponse     
+    public partial class findAddressResponse {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -410,10 +410,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public Rock.TeleAtlas.Geocoding.Geocode result;
         
-        public findAddressResponse()     
+        public findAddressResponse() {
         }
         
-        public findAddressResponse(int resultCode, Rock.TeleAtlas.Geocoding.Geocode result)     
+        public findAddressResponse(int resultCode, Rock.TeleAtlas.Geocoding.Geocode result) {
             this.resultCode = resultCode;
             this.result = result;
         }
@@ -423,7 +423,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="findMultiAddress", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class findMultiAddressRequest     
+    public partial class findMultiAddressRequest {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -439,10 +439,10 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public int identity;
         
-        public findMultiAddressRequest()     
+        public findMultiAddressRequest() {
         }
         
-        public findMultiAddressRequest(string service, Rock.TeleAtlas.Geocoding.NameValue[][] inputs, int identity)     
+        public findMultiAddressRequest(string service, Rock.TeleAtlas.Geocoding.NameValue[][] inputs, int identity) {
             this.service = service;
             this.inputs = inputs;
             this.identity = identity;
@@ -453,7 +453,7 @@ namespace Rock.TeleAtlas.Geocoding
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
     [System.ServiceModel.MessageContractAttribute(WrapperName="findMultiAddressResponse", WrapperNamespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", IsWrapped=true)]
-    public partial class findMultiAddressResponse     
+    public partial class findMultiAddressResponse {
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://ezlocate.na.teleatlas.com/Geocoding.xsd1", Order=0)]
         [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
@@ -464,48 +464,48 @@ namespace Rock.TeleAtlas.Geocoding
         [System.Xml.Serialization.XmlArrayItemAttribute("sequence", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public Rock.TeleAtlas.Geocoding.Geocode[] results;
         
-        public findMultiAddressResponse()     
+        public findMultiAddressResponse() {
         }
         
-        public findMultiAddressResponse(int resultCode, Rock.TeleAtlas.Geocoding.Geocode[] results)     
+        public findMultiAddressResponse(int resultCode, Rock.TeleAtlas.Geocoding.Geocode[] results) {
             this.resultCode = resultCode;
             this.results = results;
         }
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public interface GeocodingPortTypeChannel : Rock.TeleAtlas.Geocoding.GeocodingPortType, System.ServiceModel.IClientChannel     
+    public interface GeocodingPortTypeChannel : Rock.TeleAtlas.Geocoding.GeocodingPortType, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    public partial class GeocodingPortTypeClient : System.ServiceModel.ClientBase<Rock.TeleAtlas.Geocoding.GeocodingPortType>, Rock.TeleAtlas.Geocoding.GeocodingPortType     
+    public partial class GeocodingPortTypeClient : System.ServiceModel.ClientBase<Rock.TeleAtlas.Geocoding.GeocodingPortType>, Rock.TeleAtlas.Geocoding.GeocodingPortType {
         
-        public GeocodingPortTypeClient()     
+        public GeocodingPortTypeClient() {
         }
         
         public GeocodingPortTypeClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName)     
+                base(endpointConfigurationName) {
         }
         
         public GeocodingPortTypeClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress)     
+                base(endpointConfigurationName, remoteAddress) {
         }
         
         public GeocodingPortTypeClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress)     
+                base(endpointConfigurationName, remoteAddress) {
         }
         
         public GeocodingPortTypeClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(binding, remoteAddress)     
+                base(binding, remoteAddress) {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.TeleAtlas.Geocoding.getServicesResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.getServices(Rock.TeleAtlas.Geocoding.getServicesRequest request)     
+        Rock.TeleAtlas.Geocoding.getServicesResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.getServices(Rock.TeleAtlas.Geocoding.getServicesRequest request) {
             return base.Channel.getServices(request);
         }
         
-        public int getServices(int identity, out Rock.TeleAtlas.Geocoding.NameValue[] services)     
+        public int getServices(int identity, out Rock.TeleAtlas.Geocoding.NameValue[] services) {
             Rock.TeleAtlas.Geocoding.getServicesRequest inValue = new Rock.TeleAtlas.Geocoding.getServicesRequest();
             inValue.identity = identity;
             Rock.TeleAtlas.Geocoding.getServicesResponse retVal = ((Rock.TeleAtlas.Geocoding.GeocodingPortType)(this)).getServices(inValue);
@@ -514,11 +514,11 @@ namespace Rock.TeleAtlas.Geocoding
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.TeleAtlas.Geocoding.getServiceDescriptionResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.getServiceDescription(Rock.TeleAtlas.Geocoding.getServiceDescriptionRequest request)     
+        Rock.TeleAtlas.Geocoding.getServiceDescriptionResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.getServiceDescription(Rock.TeleAtlas.Geocoding.getServiceDescriptionRequest request) {
             return base.Channel.getServiceDescription(request);
         }
         
-        public int getServiceDescription(string service, int identity, out string description, out string countryCode, out Rock.TeleAtlas.Geocoding.NameValue[] inputs, out Rock.TeleAtlas.Geocoding.OutputField[] outputs, out Rock.TeleAtlas.Geocoding.MatchType[] matchTypes, out string matchTypeName)     
+        public int getServiceDescription(string service, int identity, out string description, out string countryCode, out Rock.TeleAtlas.Geocoding.NameValue[] inputs, out Rock.TeleAtlas.Geocoding.OutputField[] outputs, out Rock.TeleAtlas.Geocoding.MatchType[] matchTypes, out string matchTypeName) {
             Rock.TeleAtlas.Geocoding.getServiceDescriptionRequest inValue = new Rock.TeleAtlas.Geocoding.getServiceDescriptionRequest();
             inValue.service = service;
             inValue.identity = identity;
@@ -533,11 +533,11 @@ namespace Rock.TeleAtlas.Geocoding
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.TeleAtlas.Geocoding.findAddressResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.findAddress(Rock.TeleAtlas.Geocoding.findAddressRequest request)     
+        Rock.TeleAtlas.Geocoding.findAddressResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.findAddress(Rock.TeleAtlas.Geocoding.findAddressRequest request) {
             return base.Channel.findAddress(request);
         }
         
-        public int findAddress(string service, Rock.TeleAtlas.Geocoding.NameValue[] input, int identity, out Rock.TeleAtlas.Geocoding.Geocode result)     
+        public int findAddress(string service, Rock.TeleAtlas.Geocoding.NameValue[] input, int identity, out Rock.TeleAtlas.Geocoding.Geocode result) {
             Rock.TeleAtlas.Geocoding.findAddressRequest inValue = new Rock.TeleAtlas.Geocoding.findAddressRequest();
             inValue.service = service;
             inValue.input = input;
@@ -548,11 +548,11 @@ namespace Rock.TeleAtlas.Geocoding
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Rock.TeleAtlas.Geocoding.findMultiAddressResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.findMultiAddress(Rock.TeleAtlas.Geocoding.findMultiAddressRequest request)     
+        Rock.TeleAtlas.Geocoding.findMultiAddressResponse Rock.TeleAtlas.Geocoding.GeocodingPortType.findMultiAddress(Rock.TeleAtlas.Geocoding.findMultiAddressRequest request) {
             return base.Channel.findMultiAddress(request);
         }
         
-        public int findMultiAddress(string service, Rock.TeleAtlas.Geocoding.NameValue[][] inputs, int identity, out Rock.TeleAtlas.Geocoding.Geocode[] results)     
+        public int findMultiAddress(string service, Rock.TeleAtlas.Geocoding.NameValue[][] inputs, int identity, out Rock.TeleAtlas.Geocoding.Geocode[] results) {
             Rock.TeleAtlas.Geocoding.findMultiAddressRequest inValue = new Rock.TeleAtlas.Geocoding.findMultiAddressRequest();
             inValue.service = service;
             inValue.inputs = inputs;

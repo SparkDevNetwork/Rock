@@ -5,17 +5,17 @@
 //
 
 namespace Rock.Migrations
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public partial class UniqueGuids : RockMigration
-        
+    {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
-            
+        {
             CreateIndex( "cmsAuth", "Guid", true );
             CreateIndex( "cmsBlock", "Guid", true );
             CreateIndex( "cmsBlockType", "Guid", true );
@@ -65,50 +65,50 @@ namespace Rock.Migrations
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
-            
-            DropIndex( "cmsAuth", new string[]      "Guid" } );
-            DropIndex( "cmsBlock", new string[]      "Guid" } );
-            DropIndex( "cmsBlockType", new string[]      "Guid" } );
-            DropIndex( "cmsFile", new string[]      "Guid" } );
-            DropIndex( "cmsHtmlContent", new string[]      "Guid" } );
-            DropIndex( "cmsPage", new string[]      "Guid" } );
-            DropIndex( "cmsPageContext", new string[]      "Guid" } );
-            // DropIndex( "cmsPageRoute", new string[]      "Guid" } ); already done in prior migration
-            DropIndex( "cmsSite", new string[]      "Guid" } );
-            DropIndex( "cmsSiteDomain", new string[]      "Guid" } );
-            DropIndex( "cmsUser", new string[]      "Guid" } );
-            DropIndex( "coreAttribute", new string[]      "Guid" } );
-            DropIndex( "coreAttributeQualifier", new string[]      "Guid" } );
-            DropIndex( "coreAttributeValue", new string[]      "Guid" } );
-            //DropIndex( "coreDefinedType", new string[]      "Guid" } );
-            //DropIndex( "coreDefinedValue", new string[]      "Guid" } );
-            DropIndex( "coreEntityChange", new string[]      "Guid" } );
-            DropIndex( "coreExceptionLog", new string[]      "Guid" } );
-            DropIndex( "coreFieldType", new string[]      "Guid" } );
-            DropIndex( "coreMetric", new string[]      "Guid" } );
-            DropIndex( "coreMetricValue", new string[]      "Guid" } );
-            DropIndex( "coreServiceLog", new string[]      "Guid" } );
-            DropIndex( "coreTag", new string[]      "Guid" } );
-            DropIndex( "coreTaggedItem", new string[]      "Guid" } );
-            DropIndex( "crmCampus", new string[]      "Guid" } );
-            //DropIndex( "crmEmailTemplate", new string[]      "Guid" } );
-            DropIndex( "crmLocation", new string[]      "Guid" } );
-            DropIndex( "crmPerson", new string[]      "Guid" } );
-            DropIndex( "crmPersonMerged", new string[]      "Guid" } );
-            DropIndex( "crmPersonViewed", new string[]      "Guid" } );
-            DropIndex( "crmPhoneNumber", new string[]      "Guid" } );
-            DropIndex( "financialBatch", new string[]      "Guid" } );
-            DropIndex( "financialFund", new string[]      "Guid" } );
-            DropIndex( "financialGateway", new string[]      "Guid" } );
-            DropIndex( "financialPersonAccountLookup", new string[]      "Guid" } );
-            DropIndex( "financialPledge", new string[]      "Guid" } );
-            DropIndex( "financialTransaction", new string[]      "Guid" } );
-            DropIndex( "financialTransactionDetail", new string[]      "Guid" } );
-            //DropIndex( "groupsGroup", new string[]      "Guid" } );
-            DropIndex( "groupsGroupRole", new string[]      "Guid" } );
-            DropIndex( "groupsGroupType", new string[]      "Guid" } );
-            DropIndex( "groupsMember", new string[]      "Guid" } );
-            DropIndex( "utilJob", new string[]      "Guid" } );
+        {
+            DropIndex( "cmsAuth", new string[] { "Guid" } );
+            DropIndex( "cmsBlock", new string[] { "Guid" } );
+            DropIndex( "cmsBlockType", new string[] { "Guid" } );
+            DropIndex( "cmsFile", new string[] { "Guid" } );
+            DropIndex( "cmsHtmlContent", new string[] { "Guid" } );
+            DropIndex( "cmsPage", new string[] { "Guid" } );
+            DropIndex( "cmsPageContext", new string[] { "Guid" } );
+            // DropIndex( "cmsPageRoute", new string[] { "Guid" } ); already done in prior migration
+            DropIndex( "cmsSite", new string[] { "Guid" } );
+            DropIndex( "cmsSiteDomain", new string[] { "Guid" } );
+            DropIndex( "cmsUser", new string[] { "Guid" } );
+            DropIndex( "coreAttribute", new string[] { "Guid" } );
+            DropIndex( "coreAttributeQualifier", new string[] { "Guid" } );
+            DropIndex( "coreAttributeValue", new string[] { "Guid" } );
+            //DropIndex( "coreDefinedType", new string[] { "Guid" } );
+            //DropIndex( "coreDefinedValue", new string[] { "Guid" } );
+            DropIndex( "coreEntityChange", new string[] { "Guid" } );
+            DropIndex( "coreExceptionLog", new string[] { "Guid" } );
+            DropIndex( "coreFieldType", new string[] { "Guid" } );
+            DropIndex( "coreMetric", new string[] { "Guid" } );
+            DropIndex( "coreMetricValue", new string[] { "Guid" } );
+            DropIndex( "coreServiceLog", new string[] { "Guid" } );
+            DropIndex( "coreTag", new string[] { "Guid" } );
+            DropIndex( "coreTaggedItem", new string[] { "Guid" } );
+            DropIndex( "crmCampus", new string[] { "Guid" } );
+            //DropIndex( "crmEmailTemplate", new string[] { "Guid" } );
+            DropIndex( "crmLocation", new string[] { "Guid" } );
+            DropIndex( "crmPerson", new string[] { "Guid" } );
+            DropIndex( "crmPersonMerged", new string[] { "Guid" } );
+            DropIndex( "crmPersonViewed", new string[] { "Guid" } );
+            DropIndex( "crmPhoneNumber", new string[] { "Guid" } );
+            DropIndex( "financialBatch", new string[] { "Guid" } );
+            DropIndex( "financialFund", new string[] { "Guid" } );
+            DropIndex( "financialGateway", new string[] { "Guid" } );
+            DropIndex( "financialPersonAccountLookup", new string[] { "Guid" } );
+            DropIndex( "financialPledge", new string[] { "Guid" } );
+            DropIndex( "financialTransaction", new string[] { "Guid" } );
+            DropIndex( "financialTransactionDetail", new string[] { "Guid" } );
+            //DropIndex( "groupsGroup", new string[] { "Guid" } );
+            DropIndex( "groupsGroupRole", new string[] { "Guid" } );
+            DropIndex( "groupsGroupType", new string[] { "Guid" } );
+            DropIndex( "groupsMember", new string[] { "Guid" } );
+            DropIndex( "utilJob", new string[] { "Guid" } );
         }
     }
 }

@@ -14,17 +14,17 @@ using System.Xml.Xsl;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
-    
+{
     [BlockProperty( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
     [BlockProperty( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [BlockProperty( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
     public partial class PageXslt : Rock.Web.UI.RockBlock
-        
+    {
         private static readonly string ROOT_PAGE = "RootPage";
         private static readonly string NUM_LEVELS = "NumberofLevels";
 
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             this.AttributesUpdated += PageXslt_AttributesUpdated;
@@ -35,18 +35,18 @@ namespace RockWeb.Blocks.Cms
         }
 
         void PageXslt_AttributesUpdated( object sender, EventArgs e )
-            
+        {
             TransformXml();
         }
 
         private void TransformXml()
-            
+        {
             XslCompiledTransform xslTransformer = new XslCompiledTransform();
             xslTransformer.Load( Server.MapPath( AttributeValue("XSLTFile") ) );
 
             Rock.Web.Cache.PageCache rootPage;
             if ( AttributeValue( ROOT_PAGE ) != string.Empty )
-                
+            {
                 int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
                 if ( pageId == -1 )
                     rootPage = CurrentPage;

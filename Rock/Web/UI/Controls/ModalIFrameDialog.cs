@@ -14,13 +14,13 @@ using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
-    
+{
     /// <summary>
     /// A Modal Popup Dialog Window
     /// </summary>
-    [ToolboxData( "<    0}:ModalDialog runat=server></    0}:ModalDialog>" )]
+    [ToolboxData( "<{0}:ModalDialog runat=server></{0}:ModalDialog>" )]
     public class ModalIFrameDialog : ModalPopupExtender, INamingContainer
-        
+    {
         private Button _dfltShowButton;
         private Panel _dialogPanel;
 
@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
         }
@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
-            
+        {
             base.CreateChildControls();
             base.Controls.Clear();
 
@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnPreRender( EventArgs e )
-            
+        {
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )
                 this.TargetControlID = _dfltShowButton.ID;

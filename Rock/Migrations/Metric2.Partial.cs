@@ -4,14 +4,14 @@ using System.Linq;
 using System.Web;
 
 namespace Rock.Migrations
-    
+{
     public partial class Metric2
-        
+    {
         /// <summary>
         /// Adds the metric data.
         /// </summary>
         public void DataUp()
-            
+        {
             Sql( @"
 DECLARE @AdminID int
 SELECT @AdminID = [Id] FROM [crmPerson] WHERE [Guid] = 'AD28DA19-4AF1-408F-9090-2672F8376F27'
@@ -78,7 +78,7 @@ VALUES(0,@PageId,@BlockId,'Content',0,'Metrics',    0,'2012-09-17 15:39:10.007',
         /// Deletes the metric data.
         /// </summary>
         public void DataDown()
-            
+        {
             Sql( @"
 PRINT 'Deleting Metric Display Screens'
 DELETE [cmsBlockInstance] WHERE [Guid]='9126CFA2-9B26-4FBB-BB87-F76514221DBE'

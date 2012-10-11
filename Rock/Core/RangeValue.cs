@@ -5,20 +5,20 @@
 //
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class RangeValue<T>
-        
+    {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RangeValue    T}" /> class.
+        /// Initializes a new instance of the <see cref="RangeValue{T}" /> class.
         /// </summary>
         /// <param name="from">From.</param>
         /// <param name="to">To.</param>
         public RangeValue(T from, T to)
-            
+        {
             this.From = from;
             this.To = to;
         }
@@ -29,7 +29,7 @@ namespace Rock.Core
         /// <value>
         /// From.
         /// </value>
-        public T From      get; set; }
+        public T From { get; set; }
 
         /// <summary>
         /// Gets or sets to.
@@ -37,6 +37,6 @@ namespace Rock.Core
         /// <value>
         /// To.
         /// </value>
-        public T To      get; set; }
+        public T To { get; set; }
     }
 }

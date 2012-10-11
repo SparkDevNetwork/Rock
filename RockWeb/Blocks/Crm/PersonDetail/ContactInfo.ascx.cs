@@ -13,11 +13,11 @@ using Rock;
 using Rock.Crm;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
-    
+{
     public partial class ContactInfo : Rock.Web.UI.PersonBlock
-        
+    {
         protected override void OnInit( EventArgs e )
-            
+        {
             base.OnInit( e );
 
             var service = new PhoneNumberService();
@@ -25,13 +25,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .Where( n => n.PersonId == Person.Id )
                 .OrderBy( n => n.NumberType.Order )
                 .Select( n => new
-                    
+                {
                     Number = n.Number,
                     Unlisted = n.IsUnlisted,
                     Type = n.NumberType.Name
                 }
                 ) )
-                
+            {
                 var li = new HtmlGenericControl( "li" );
                 ulPhoneNumbers.Controls.Add( li );
 
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 icon.AddCssClass( "icon-phone" );
 
                 if ( item.Unlisted )
-                    
+                {
                     var span = new HtmlGenericControl( "span" );
                     anchor.Controls.Add( span );
                     span.AddCssClass( "phone-unlisted" );
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     span.InnerText = "Unlisted";
                 }
                 else
-                    
+                {
                     anchor.Controls.Add( new LiteralControl( PhoneNumber.FormattedNumber( item.Number ) ) );
                 }
 
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             if ( !String.IsNullOrWhiteSpace( Person.Email ) )
-                
+            {
                 hlEmail.Text = Person.Email;
                 hlEmail.NavigateUrl = "mailto:" + Person.Email;
             }

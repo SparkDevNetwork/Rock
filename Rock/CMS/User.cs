@@ -16,13 +16,13 @@ using System.Web.Hosting;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// User POCO Entity.
     /// </summary>
     [Table( "cmsUser" )]
     public partial class User : Model<User>
-        
+    {
         /// <summary>
         /// Gets or sets the type of the service.
         /// </summary>
@@ -31,7 +31,7 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [DataMember]
-        public AuthenticationServiceType ServiceType      get; set; }
+        public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the service.
@@ -42,7 +42,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 200 )]
         [DataMember]
-        public string ServiceName      get; set; }
+        public string ServiceName { get; set; }
 
         /// <summary>
         /// Gets or sets the User Name.
@@ -53,7 +53,7 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 255 )]
         [DataMember]
-        public string UserName      get; set; }
+        public string UserName { get; set; }
         
         /// <summary>
         /// Gets or sets the Password.
@@ -63,7 +63,7 @@ namespace Rock.Cms
         /// </value>
         [MaxLength( 128 )]
         [DataMember]
-        public string Password      get; set; }
+        public string Password { get; set; }
         
         /// <summary>
         /// Gets or sets the is confirmed.
@@ -72,7 +72,7 @@ namespace Rock.Cms
         /// Is confirmed.
         /// </value>
         [DataMember]
-        public bool? IsConfirmed      get; set; }
+        public bool? IsConfirmed { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Last Activity Date.
@@ -82,7 +82,7 @@ namespace Rock.Cms
 		/// </value>
 		[NotAudited]
 		[DataMember]
-		public DateTime? LastActivityDate      get; set; }
+		public DateTime? LastActivityDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Last Login Date.
@@ -91,7 +91,7 @@ namespace Rock.Cms
 		/// Last Login Date.
 		/// </value>
 		[DataMember]
-		public DateTime? LastLoginDate      get; set; }
+		public DateTime? LastLoginDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Last Password Changed Date.
@@ -100,7 +100,7 @@ namespace Rock.Cms
 		/// Last Password Changed Date.
 		/// </value>
 		[DataMember]
-		public DateTime? LastPasswordChangedDate      get; set; }
+		public DateTime? LastPasswordChangedDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Creation Date.
@@ -109,7 +109,7 @@ namespace Rock.Cms
 		/// Creation Date.
 		/// </value>
 		[DataMember]
-		public DateTime? CreationDate      get; set; }
+		public DateTime? CreationDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Is On Line.
@@ -118,7 +118,7 @@ namespace Rock.Cms
 		/// Is On Line.
 		/// </value>
 		[DataMember]
-		public bool? IsOnLine      get; set; }
+		public bool? IsOnLine { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Is Locked Out.
@@ -127,7 +127,7 @@ namespace Rock.Cms
 		/// Is Locked Out.
 		/// </value>
 		[DataMember]
-		public bool? IsLockedOut      get; set; }
+		public bool? IsLockedOut { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Last Locked Out Date.
@@ -136,7 +136,7 @@ namespace Rock.Cms
 		/// Last Locked Out Date.
 		/// </value>
 		[DataMember]
-		public DateTime? LastLockedOutDate      get; set; }
+		public DateTime? LastLockedOutDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Failed Password Attempt Count.
@@ -145,7 +145,7 @@ namespace Rock.Cms
 		/// Failed Password Attempt Count.
 		/// </value>
 		[DataMember]
-		public int? FailedPasswordAttemptCount      get; set; }
+		public int? FailedPasswordAttemptCount { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Failed Password Attempt Window Start.
@@ -154,7 +154,7 @@ namespace Rock.Cms
 		/// Failed Password Attempt Window Start.
 		/// </value>
 		[DataMember]
-		public DateTime? FailedPasswordAttemptWindowStart      get; set; }
+		public DateTime? FailedPasswordAttemptWindowStart { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Api Key.
@@ -164,7 +164,7 @@ namespace Rock.Cms
 		/// </value>
 		[MaxLength( 50 )]
 		[DataMember]
-		public string ApiKey      get; set; }
+		public string ApiKey { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Person Id.
@@ -173,16 +173,16 @@ namespace Rock.Cms
 		/// Person Id.
 		/// </value>
 		[DataMember]
-		public int? PersonId      get; set; }
+		public int? PersonId { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
         /// </summary>
         [NotMapped]
         public bool IsAuthenticated
-            
+        {
             get
-                
+            {
                 System.Web.Security.FormsIdentity identity = HttpContext.Current.User.Identity as System.Web.Security.FormsIdentity;
                 if ( identity == null )
                     return false;
@@ -199,7 +199,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Cms.User"; } }
+		public override string EntityTypeName { get { return "Cms.User"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -207,7 +207,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-        public virtual Crm.Person Person      get; set; }
+        public virtual Crm.Person Person { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -215,7 +215,7 @@ namespace Rock.Cms
         /// <param name="id">The id.</param>
         /// <returns></returns>
         public static User Read( int id )
-            
+        {
             return Read<User>( id );
         }
 
@@ -226,7 +226,7 @@ namespace Rock.Cms
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public override bool IsAllowedByDefault( string action )
-            
+        {
             return false;
         }
 
@@ -234,10 +234,10 @@ namespace Rock.Cms
         /// Gets the encrypted confirmation code.
         /// </summary>
         public string ConfirmationCode
-            
+        {
             get
-                
-                string identifier = string.Format( "ROCK|    0}|    1}|    2}", this.EncryptedKey.ToString(), this.UserName, DateTime.Now.Ticks );
+            {
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, DateTime.Now.Ticks );
                 string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
                 return encryptedCode;
             }
@@ -247,10 +247,10 @@ namespace Rock.Cms
         /// Gets a urlencoded and encrypted confirmation code.
         /// </summary>
         public string ConfirmationCodeEncoded
-            
+        {
 
             get
-                
+            {
                 return HttpUtility.UrlEncode( ConfirmationCode );
             }
         }
@@ -262,7 +262,7 @@ namespace Rock.Cms
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.UserName;
 		}
 
@@ -273,9 +273,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns></returns>
         internal static string GetCurrentUserName()
-            
+        {
             if ( HostingEnvironment.IsHosted )
-                
+            {
                 HttpContext current = HttpContext.Current;
                 if ( current != null && current.User != null )
                     return current.User.Identity.Name;
@@ -295,12 +295,12 @@ namespace Rock.Cms
     /// User Configuration class.
     /// </summary>
     public partial class UserConfiguration : EntityTypeConfiguration<User>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration"/> class.
         /// </summary>
         public UserConfiguration()
-            
+        {
             this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }
     }
@@ -309,7 +309,7 @@ namespace Rock.Cms
     /// Type of authentication service used to authenticate user
     /// </summary>
     public enum AuthenticationServiceType
-        
+    {
         /// <summary>
         /// An internal authentication service (i.e. Database, Active Directory)
         /// </summary>

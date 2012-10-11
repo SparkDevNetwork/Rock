@@ -14,13 +14,13 @@ using System.Web;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Person POCO Entity.
     /// </summary>
     [Table( "crmPerson" )]
     public partial class Person : Model<Person>
-        
+    {
         /// <summary>
         /// The Entity Type used for saving user values
         /// </summary>
@@ -34,7 +34,7 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [DataMember]
-        public bool IsSystem      get; set; }
+        public bool IsSystem { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type Id.
@@ -43,7 +43,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? RecordTypeId      get; set; }
+        public int? RecordTypeId { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Id.
@@ -52,7 +52,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? RecordStatusId      get; set; }
+        public int? RecordStatusId { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason Id.
@@ -61,7 +61,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? RecordStatusReasonId      get; set; }
+        public int? RecordStatusReasonId { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status Id.
@@ -70,7 +70,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? PersonStatusId      get; set; }
+        public int? PersonStatusId { get; set; }
         
         /// <summary>
         /// Gets or sets the Title Id.
@@ -79,7 +79,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? TitleId      get; set; }
+        public int? TitleId { get; set; }
         
         /// <summary>
         /// Gets or sets the Given Name.
@@ -89,7 +89,7 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string GivenName      get; set; }
+        public string GivenName { get; set; }
 
         /// <summary>
         /// Gets or sets the Nick Name.
@@ -100,7 +100,7 @@ namespace Rock.Crm
         [MaxLength( 50 )]
         [TrackChanges]
         [DataMember]
-        public string NickName      get; set; }
+        public string NickName { get; set; }
 
         /// <summary>
         /// Gets or sets the Last Name.
@@ -111,7 +111,7 @@ namespace Rock.Crm
         [MaxLength( 50 )]
         [TrackChanges]
         [DataMember]
-        public string LastName      get; set; }
+        public string LastName { get; set; }
         
         /// <summary>
         /// Gets or sets the Suffix Id.
@@ -120,7 +120,7 @@ namespace Rock.Crm
         /// .
         /// </value>
         [DataMember]
-        public int? SuffixId      get; set; }
+        public int? SuffixId { get; set; }
         
         /// <summary>
         /// Gets or sets the Photo Id.
@@ -129,7 +129,7 @@ namespace Rock.Crm
         /// Photo Id.
         /// </value>
         [DataMember]
-        public int? PhotoId      get; set; }
+        public int? PhotoId { get; set; }
         
         /// <summary>
         /// Gets or sets the Birth Day.
@@ -138,7 +138,7 @@ namespace Rock.Crm
         /// Birth Day.
         /// </value>
         [DataMember]
-        public int? BirthDay      get; set; }
+        public int? BirthDay { get; set; }
         
         /// <summary>
         /// Gets or sets the Birth Month.
@@ -147,7 +147,7 @@ namespace Rock.Crm
         /// Birth Month.
         /// </value>
         [DataMember]
-        public int? BirthMonth      get; set; }
+        public int? BirthMonth { get; set; }
         
         /// <summary>
         /// Gets or sets the Birth Year.
@@ -156,7 +156,7 @@ namespace Rock.Crm
         /// Birth Year.
         /// </value>
         [DataMember]
-        public int? BirthYear      get; set; }
+        public int? BirthYear { get; set; }
         
         /// <summary>
         /// Gets or sets the Gender.
@@ -166,7 +166,7 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [DataMember]
-        public Gender Gender      get; set; }
+        public Gender Gender { get; set; }
 
 		/// <summary>
 		/// Gets or sets the Marital Status Id.
@@ -175,7 +175,7 @@ namespace Rock.Crm
 		/// .
 		/// </value>
 		[DataMember]
-		public int? MaritalStatusId      get; set; }
+		public int? MaritalStatusId { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Anniversary Date.
@@ -184,7 +184,7 @@ namespace Rock.Crm
 		/// Anniversary Date.
 		/// </value>
 		[DataMember]
-		public DateTime? AnniversaryDate      get; set; }
+		public DateTime? AnniversaryDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Graduation Date.
@@ -193,7 +193,7 @@ namespace Rock.Crm
 		/// Graduation Date.
 		/// </value>
 		[DataMember]
-		public DateTime? GraduationDate      get; set; }
+		public DateTime? GraduationDate { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Email.
@@ -203,7 +203,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 75 )]
 		[DataMember]
-		public string Email      get; set; }
+		public string Email { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Email Is Active.
@@ -212,7 +212,7 @@ namespace Rock.Crm
 		/// Email Is Active.
 		/// </value>
 		[DataMember]
-		public bool? IsEmailActive      get; set; }
+		public bool? IsEmailActive { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Email Note.
@@ -222,7 +222,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 250 )]
 		[DataMember]
-		public string EmailNote      get; set; }
+		public string EmailNote { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Do Not Email.
@@ -232,7 +232,7 @@ namespace Rock.Crm
 		/// </value>
 		[Required]
 		[DataMember]
-		public bool DoNotEmail      get; set; }
+		public bool DoNotEmail { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the System Note.
@@ -242,7 +242,7 @@ namespace Rock.Crm
 		/// </value>
 		[MaxLength( 1000 )]
 		[DataMember]
-		public string SystemNote      get; set; }
+		public string SystemNote { get; set; }
 		
 		/// <summary>
 		/// Gets or sets the Viewed Count.
@@ -251,7 +251,7 @@ namespace Rock.Crm
 		/// Viewed Count.
 		/// </value>
 		[DataMember]
-		public int? ViewedCount      get; set; }
+		public int? ViewedCount { get; set; }
 		
 		/// <summary>
 		/// Static Method to return an object based on the id
@@ -259,7 +259,7 @@ namespace Rock.Crm
 		/// <param name="id">The id.</param>
 		/// <returns></returns>
 		public static Person Read( int id )
-		    
+		{
 			return Read<Person>( id );
 		}
 		
@@ -267,7 +267,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
 		[NotMapped]
-		public override string EntityTypeName      get      return "Crm.Person"; } }
+		public override string EntityTypeName { get { return "Crm.Person"; } }
         
         /// <summary>
         /// Gets or sets the Users.
@@ -275,7 +275,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Users.
         /// </value>
-        public virtual ICollection<Cms.User> Users      get; set; }
+        public virtual ICollection<Cms.User> Users { get; set; }
         
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -283,7 +283,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Email Templates.
         /// </value>
-        public virtual ICollection<EmailTemplate> EmailTemplates      get; set; }
+        public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
         
         /// <summary>
         /// Gets or sets the Phone Numbers.
@@ -291,7 +291,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Phone Numbers.
         /// </value>
-        public virtual ICollection<PhoneNumber> PhoneNumbers      get; set; }
+        public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
         
         /// <summary>
         /// Gets or sets the Members.
@@ -299,7 +299,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Members.
         /// </value>
-        public virtual ICollection<Groups.Member> Members      get; set; }
+        public virtual ICollection<Groups.Member> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Pledges.
@@ -307,7 +307,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Pledges.
         /// </value>
-        public virtual ICollection<Financial.Pledge> Pledges      get; set; }
+        public virtual ICollection<Financial.Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the PersonAccountLookups.
@@ -315,7 +315,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of PersonAccountLookups.
         /// </value>
-        public virtual ICollection<Financial.PersonAccountLookup> PersonAccountLookups      get; set; }
+        public virtual ICollection<Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the Marital Status.
@@ -323,7 +323,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue MaritalStatus      get; set; }
+        public virtual Core.DefinedValue MaritalStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status.
@@ -331,7 +331,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue PersonStatus      get; set; }
+        public virtual Core.DefinedValue PersonStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status.
@@ -339,7 +339,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordStatus      get; set; }
+        public virtual Core.DefinedValue RecordStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason.
@@ -347,7 +347,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordStatusReason      get; set; }
+        public virtual Core.DefinedValue RecordStatusReason { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type.
@@ -355,7 +355,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordType      get; set; }
+        public virtual Core.DefinedValue RecordType { get; set; }
         
         /// <summary>
         /// Gets or sets the Suffix.
@@ -363,7 +363,7 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue Suffix      get; set; }
+        public virtual Core.DefinedValue Suffix { get; set; }
         
         /// <summary>
         /// Gets or sets the Title.
@@ -371,20 +371,20 @@ namespace Rock.Crm
         /// <value>
         /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue Title      get; set; }
+        public virtual Core.DefinedValue Title { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
-        public virtual Cms.File Photo      get; set; }
+        public virtual Cms.File Photo { get; set; }
 
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
         /// </summary>
         public string FirstName
-            
+        {
             get
-                
+            {
                 return NickName ?? GivenName;
             }
         }
@@ -393,9 +393,9 @@ namespace Rock.Crm
         /// Gets the full name.
         /// </summary>
         public string FullName
-            
+        {
             get
-                
+            {
                 return FirstName + " " + LastName;
             }
         }
@@ -404,9 +404,9 @@ namespace Rock.Crm
         /// Gets the full name (Last, First)
         /// </summary>
         public string FullNameLastFirst
-            
+        {
             get
-                
+            {
                 return LastName + ", " + FirstName;
             }
         }
@@ -419,33 +419,33 @@ namespace Rock.Crm
         /// </value>
         [NotMapped]
         public DateTime? BirthDate
-            
+        {
             // notes
             // if no birthday is available then DateTime.MinValue is returned
             // if no birth year is given then the birth year will be DateTime.MinValue.Year
             get
-                
+            {
                 if ( BirthDay == null || BirthMonth == null )
-                    
+                {
                     return null;
                 }
                 else
-                    
+                {
                     string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
                     return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
                 }
             }
 
             set
-                
+            {
                 if ( value.HasValue )
-                    
+                {
                     BirthMonth = value.Value.Month;
                     BirthDay = value.Value.Day;
                     BirthYear = value.Value.Year;
                 }
                 else
-                    
+                {
                     BirthMonth = null;
                     BirthDay = null;
                     BirthYear = null;
@@ -457,9 +457,9 @@ namespace Rock.Crm
         /// Gets the impersonation parameter.
         /// </summary>
         public string ImpersonationParameter
-            
+        {
             get
-                
+            {
                 return "rckipid=" + HttpUtility.UrlEncode( this.EncryptedKey );
             }
         }
@@ -471,9 +471,9 @@ namespace Rock.Crm
         /// The impersonated user.
         /// </value>
         public Rock.Cms.User ImpersonatedUser
-            
+        {
             get
-                
+            {
                 Rock.Cms.User user = new Cms.User();
                 user.UserName = this.FullName;
                 user.PersonId = this.Id;
@@ -489,7 +489,7 @@ namespace Rock.Crm
 		/// A <see cref="System.String" /> that represents this instance.
 		/// </returns>
 		public override string ToString()
-		    
+		{
 			return this.FullName;
 		}
     }
@@ -498,12 +498,12 @@ namespace Rock.Crm
     /// Person Configuration class.
     /// </summary>
     public partial class PersonConfiguration : EntityTypeConfiguration<Person>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonConfiguration"/> class.
         /// </summary>
         public PersonConfiguration()
-            
+        {
             this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId ).WillCascadeOnDelete(false);
@@ -519,7 +519,7 @@ namespace Rock.Crm
     /// The gender of a person
     /// </summary>
     public enum Gender
-        
+    {
         /// <summary>
         /// Unknown
         /// </summary>

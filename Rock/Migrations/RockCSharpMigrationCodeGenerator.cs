@@ -12,12 +12,12 @@ using System.Reflection;
 using Rock.Data;
 
 namespace Rock.Migrations
-    
+{
     /// <summary>
     /// 
     /// </summary>
     public class RockCSharpMigrationCodeGenerator : CSharpMigrationCodeGenerator
-        
+    {
         #region internal custom methods
         /// <summary>
         /// 
@@ -33,14 +33,14 @@ namespace Rock.Migrations
         /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator" /> class.
         /// </summary>
         public RockCSharpMigrationCodeGenerator()
-            
+        {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             rockAssembly = Assembly.Load( "Rock" );
             foreach ( var e in rockAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
-                
+            {
                 var attrib = e.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );
                 if ( attrib != null )
-                    
+                {
                     tableNameLookup.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
                 }
             }
@@ -53,7 +53,7 @@ namespace Rock.Migrations
         /// <param name="args">The <see cref="ResolveEventArgs" /> instance containing the event data.</param>
         /// <returns></returns>
         protected Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
-            
+        {
             return AppDomain.CurrentDomain.Load( args.Name );
         }
 
@@ -64,29 +64,29 @@ namespace Rock.Migrations
         /// <param name="fullTableName">Full name of the table.</param>
         /// <param name="columnName">Name of the column.</param>
         private void GenerateCustomColumnCode( System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer, string fullTableName, string columnName )
-            
+        {
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
             var tableType = tableNameLookup[tableName];
             if ( tableType != null )
-                
+            {
                 MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
 
                 if ( mi != null )
-                    
+                {
                     AlternateKeyAttribute attribute = mi.GetCustomAttribute<AlternateKeyAttribute>();
                     if ( attribute != null )
-                        
+                    {
                         writer.WriteLine( "CreateIndex( \"" + fullTableName + "\", \"" + columnName + "\", true );" );
                     }
                 }
                 else
-                    
+                {
                     // probably not found if this is the Down() migration
                 }
             }
             else
-                
+            {
                 // probably not found if this is the Down() migration
             }
         }
@@ -101,11 +101,11 @@ namespace Rock.Migrations
         /// <param name="createTableOperation">The operation to generate code for.</param>
         /// <param name="writer">Text writer to add the generated code to.</param>
         protected override void Generate( System.Data.Entity.Migrations.Model.CreateTableOperation createTableOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
-            
+        {
             base.Generate( createTableOperation, writer );
 
             foreach ( var column in createTableOperation.Columns )
-                
+            {
                 GenerateCustomColumnCode( writer, createTableOperation.Name, column.Name );
             }
         }
@@ -116,7 +116,7 @@ namespace Rock.Migrations
         /// <param name="addColumnOperation">The operation to generate code for.</param>
         /// <param name="writer">Text writer to add the generated code to.</param>
         protected override void Generate( System.Data.Entity.Migrations.Model.AddColumnOperation addColumnOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
-            
+        {
             base.Generate( addColumnOperation, writer );
             GenerateCustomColumnCode( writer, addColumnOperation.Table, addColumnOperation.Column.Name );
         }
@@ -131,7 +131,7 @@ namespace Rock.Migrations
         /// The generated code.
         /// </returns>
         protected override string Generate( IEnumerable<System.Data.Entity.Migrations.Model.MigrationOperation> operations, string @namespace, string className )
-            
+        {
             string result = string.Empty;
 
             result += @"//

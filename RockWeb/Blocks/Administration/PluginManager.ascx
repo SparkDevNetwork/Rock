@@ -84,7 +84,7 @@
                      onrowdatabound="gvPackageVersions_RowDataBound" onrowcommand="gvPackageVersions_RowCommand">
                     <Columns>
                         <asp:BoundField HeaderText="Version" DataField="Version" />
-                        <asp:BoundField HeaderText="Last updated" DataField="LastUpdated" DataFormatString="    0:MM/dd/yyyy}" />
+                        <asp:BoundField HeaderText="Last updated" DataField="LastUpdated" DataFormatString="{0:MM/dd/yyyy}" />
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
                                 <i runat="server" ID="iInstalledIcon" visible="false" class="icon-ok" title="this version is installed"></i>

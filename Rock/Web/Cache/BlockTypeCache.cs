@@ -9,16 +9,16 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace Rock.Web.Cache
-    
+{
     /// <summary>
     /// Information about a block type that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class BlockTypeCache : Rock.Cms.BlockTypeDto
-        
-        private BlockTypeCache() : base()      }
-        private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType )      }
+    {
+        private BlockTypeCache() : base() { }
+        private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Web.UI.BlockPropertyAttribute"/> attributes have been 
@@ -27,7 +27,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///     <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
-        public bool IsInstancePropertiesVerified      get; internal set; }
+        public bool IsInstancePropertiesVerified { get; internal set; }
 
         private List<int> AttributeIds = new List<int>();
         /// <summary>
@@ -35,9 +35,9 @@ namespace Rock.Web.Cache
         /// To get values associated with the current block instance, use the AttributeValues
         /// </summary>
         public List<Rock.Web.Cache.AttributeCache> Attributes
-            
+        {
             get
-                
+            {
                 List<Rock.Web.Cache.AttributeCache> attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
@@ -50,19 +50,19 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
-            
+        {
             Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
             Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( this.Id );
 
             if ( blockTypeModel != null )
-                
+            {
                 Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
                 foreach ( var category in blockTypeModel.Attributes )
                     foreach ( var attribute in category.Value )
@@ -73,8 +73,8 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         private static string CacheKey( int id )
-            
-            return string.Format( "Rock:BlockType:    0}", id );
+        {
+            return string.Format( "Rock:BlockType:{0}", id );
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static BlockTypeCache Read( int id )
-            
+        {
             string cacheKey = BlockTypeCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -93,11 +93,11 @@ namespace Rock.Web.Cache
             if ( blockType != null )
                 return blockType;
             else
-                
+            {
                 Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
                 Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
-                    
+                {
                     blockType = new BlockTypeCache(blockTypeModel);
 
                     blockType.IsInstancePropertiesVerified = false;
@@ -136,7 +136,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( BlockTypeCache.CacheKey( id ) );
         }

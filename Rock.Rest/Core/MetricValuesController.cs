@@ -13,12 +13,12 @@
 using Rock.Core;
 
 namespace Rock.Rest.Core
-    
+{
     /// <summary>
     /// MetricValues REST API
     /// </summary>
     public partial class MetricValuesController : Rock.Rest.ApiController<Rock.Core.MetricValue, Rock.Core.MetricValueDto>
-        
-        public MetricValuesController() : base( new Rock.Core.MetricValueService() )      } 
+    {
+        public MetricValuesController() : base( new Rock.Core.MetricValueService() ) { } 
     }
 }

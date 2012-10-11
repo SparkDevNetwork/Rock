@@ -1,21 +1,21 @@
 namespace Rock.Migrations
-    
+{
     using System.Data.Entity.Migrations;
 
     /// <summary>
     /// 
     /// </summary>
     public partial class CreateDatabase : DbMigration
-        
+    {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
-            
+        {
             CreateTable(
                 "cmsAuth",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         EntityType = c.String(nullable: false, maxLength: 200),
                         EntityId = c.Int(),
@@ -44,7 +44,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmPerson",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         RecordTypeId = c.Int(),
@@ -99,7 +99,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsUser",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         UserName = c.String(nullable: false, maxLength: 255),
                         AuthenticationType = c.Int(nullable: false),
@@ -133,7 +133,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmEmailTemplate",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         PersonId = c.Int(),
@@ -162,7 +162,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmPhoneNumber",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         PersonId = c.Int(nullable: false),
@@ -185,7 +185,7 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsMember",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         GroupId = c.Int(nullable: false),
@@ -212,7 +212,7 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsGroup",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         ParentGroupId = c.Int(),
@@ -239,7 +239,7 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsGroupType",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         Name = c.String(nullable: false, maxLength: 100),
@@ -262,7 +262,7 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsGroupRole",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         Name = c.String(maxLength: 100),
@@ -283,7 +283,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialPledge",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         PersonId = c.Int(),
                         FundId = c.Int(),
@@ -313,7 +313,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialFund",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Name = c.String(maxLength: 50),
                         PublicName = c.String(maxLength: 50),
@@ -348,7 +348,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreDefinedValue",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         DefinedTypeId = c.Int(nullable: false),
@@ -372,7 +372,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreDefinedType",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         FieldTypeId = c.Int(),
@@ -397,7 +397,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreFieldType",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         Name = c.String(nullable: false, maxLength: 100),
@@ -419,7 +419,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreAttribute",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         FieldTypeId = c.Int(nullable: false),
@@ -452,7 +452,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreAttributeQualifier",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         AttributeId = c.Int(nullable: false),
@@ -476,7 +476,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreAttributeValue",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         AttributeId = c.Int(nullable: false),
@@ -500,12 +500,12 @@ namespace Rock.Migrations
             CreateTable(
                 "financialTransactionFund",
                 c => new
-                        
+                    {
                         TransactionId = c.Int(nullable: false),
                         FundId = c.Int(nullable: false),
                         Amount = c.Decimal(precision: 18, scale: 2),
                     })
-                .PrimaryKey(t => new      t.TransactionId, t.FundId })
+                .PrimaryKey(t => new { t.TransactionId, t.FundId })
                 .ForeignKey("financialTransaction", t => t.TransactionId, cascadeDelete: true)
                 .ForeignKey("financialFund", t => t.FundId, cascadeDelete: true)
                 .Index(t => t.TransactionId)
@@ -514,7 +514,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialTransaction",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Description = c.String(maxLength: 250),
                         TransactionDate = c.DateTime(),
@@ -555,7 +555,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialBatch",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Name = c.String(maxLength: 50),
                         BatchDate = c.DateTime(),
@@ -579,7 +579,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialGateway",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Name = c.String(maxLength: 50),
                         Description = c.String(maxLength: 500),
@@ -601,7 +601,7 @@ namespace Rock.Migrations
             CreateTable(
                 "financialTransactionDetail",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         TransactionId = c.Int(),
                         Entity = c.String(maxLength: 50),
@@ -625,7 +625,7 @@ namespace Rock.Migrations
             CreateTable(
                 "fiancialPersonAccountLookup",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         PersonId = c.Int(),
                         Account = c.String(maxLength: 50),
@@ -638,7 +638,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsBlock",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         Path = c.String(nullable: false, maxLength: 200),
@@ -659,7 +659,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsBlockInstance",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         PageId = c.Int(),
@@ -688,7 +688,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsHtmlContent",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         BlockId = c.Int(nullable: false),
                         EntityValue = c.String(maxLength: 200),
@@ -718,7 +718,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsPage",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Name = c.String(nullable: false, maxLength: 100),
                         Title = c.String(maxLength: 100),
@@ -756,7 +756,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsPageRoute",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         PageId = c.Int(nullable: false),
@@ -778,7 +778,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsSite",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         Name = c.String(nullable: false, maxLength: 100),
@@ -809,7 +809,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsSiteDomain",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(nullable: false),
                         SiteId = c.Int(nullable: false),
@@ -831,7 +831,7 @@ namespace Rock.Migrations
             CreateTable(
                 "cmsFile",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Temporary = c.Boolean(nullable: false),
                         System = c.Boolean(nullable: false),
@@ -855,7 +855,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreEntityChange",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         ChangeSet = c.Guid(nullable: false),
                         ChangeType = c.String(nullable: false, maxLength: 10),
@@ -875,7 +875,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreExceptionLog",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         ParentId = c.Int(),
                         SiteId = c.Int(),
@@ -902,7 +902,7 @@ namespace Rock.Migrations
             CreateTable(
                 "coreServiceLog",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Time = c.DateTime(),
                         Input = c.String(),
@@ -917,7 +917,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmAddress",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         Raw = c.String(maxLength: 400),
                         Street1 = c.String(maxLength: 100),
@@ -951,7 +951,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmPersonTrail",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         CurrentId = c.Int(nullable: false),
                         CurrentGuid = c.Guid(nullable: false),
@@ -964,7 +964,7 @@ namespace Rock.Migrations
             CreateTable(
                 "crmPersonViewed",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         ViewerPersonId = c.Int(),
                         TargetPersonId = c.Int(),
@@ -982,7 +982,7 @@ namespace Rock.Migrations
             CreateTable(
                 "utilJob",
                 c => new
-                        
+                    {
                         Id = c.Int(nullable: false, identity: true),
                         System = c.Boolean(),
                         Active = c.Boolean(),
@@ -1014,11 +1014,11 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsGroupTypeAssociation",
                 c => new
-                        
+                    {
                         ChildGroupTypeId = c.Int(nullable: false),
                         ParentGroupTypeId = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => new      t.ChildGroupTypeId, t.ParentGroupTypeId })
+                .PrimaryKey(t => new { t.ChildGroupTypeId, t.ParentGroupTypeId })
                 .ForeignKey("groupsGroupType", t => t.ChildGroupTypeId)
                 .ForeignKey("groupsGroupType", t => t.ParentGroupTypeId)
                 .Index(t => t.ChildGroupTypeId)
@@ -1027,11 +1027,11 @@ namespace Rock.Migrations
             CreateTable(
                 "groupsGroupTypeRole",
                 c => new
-                        
+                    {
                         GroupTypeId = c.Int(nullable: false),
                         GroupRoleId = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => new      t.GroupTypeId, t.GroupRoleId })
+                .PrimaryKey(t => new { t.GroupTypeId, t.GroupRoleId })
                 .ForeignKey("groupsGroupRole", t => t.GroupTypeId, cascadeDelete: true)
                 .ForeignKey("groupsGroupType", t => t.GroupRoleId, cascadeDelete: true)
                 .Index(t => t.GroupTypeId)
@@ -1046,126 +1046,126 @@ namespace Rock.Migrations
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
-            
+        {
             DeleteData();
             DropIndexes();
 
-            DropIndex("groupsGroupTypeRole", new[]      "GroupRoleId" });
-            DropIndex("groupsGroupTypeRole", new[]      "GroupTypeId" });
-            DropIndex("groupsGroupTypeAssociation", new[]      "ParentGroupTypeId" });
-            DropIndex("groupsGroupTypeAssociation", new[]      "ChildGroupTypeId" });
-            DropIndex("utilJob", new[]      "ModifiedByPersonId" });
-            DropIndex("utilJob", new[]      "CreatedByPersonId" });
-            DropIndex("crmPersonViewed", new[]      "TargetPersonId" });
-            DropIndex("crmPersonViewed", new[]      "ViewerPersonId" });
-            DropIndex("crmAddress", new[]      "ModifiedByPersonId" });
-            DropIndex("crmAddress", new[]      "CreatedByPersonId" });
-            DropIndex("coreExceptionLog", new[]      "PersonId" });
-            DropIndex("coreEntityChange", new[]      "CreatedByPersonId" });
-            DropIndex("cmsFile", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsFile", new[]      "CreatedByPersonId" });
-            DropIndex("cmsSiteDomain", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsSiteDomain", new[]      "CreatedByPersonId" });
-            DropIndex("cmsSiteDomain", new[]      "SiteId" });
-            DropIndex("cmsSite", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsSite", new[]      "CreatedByPersonId" });
-            DropIndex("cmsSite", new[]      "DefaultPageId" });
-            DropIndex("cmsPageRoute", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsPageRoute", new[]      "CreatedByPersonId" });
-            DropIndex("cmsPageRoute", new[]      "PageId" });
-            DropIndex("cmsPage", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsPage", new[]      "CreatedByPersonId" });
-            DropIndex("cmsPage", new[]      "SiteId" });
-            DropIndex("cmsPage", new[]      "ParentPageId" });
-            DropIndex("cmsHtmlContent", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsHtmlContent", new[]      "CreatedByPersonId" });
-            DropIndex("cmsHtmlContent", new[]      "ApprovedByPersonId" });
-            DropIndex("cmsHtmlContent", new[]      "BlockId" });
-            DropIndex("cmsBlockInstance", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsBlockInstance", new[]      "CreatedByPersonId" });
-            DropIndex("cmsBlockInstance", new[]      "PageId" });
-            DropIndex("cmsBlockInstance", new[]      "BlockId" });
-            DropIndex("cmsBlock", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsBlock", new[]      "CreatedByPersonId" });
-            DropIndex("fiancialPersonAccountLookup", new[]      "PersonId" });
-            DropIndex("financialTransactionDetail", new[]      "ModifiedByPersonId" });
-            DropIndex("financialTransactionDetail", new[]      "CreatedByPersonId" });
-            DropIndex("financialTransactionDetail", new[]      "TransactionId" });
-            DropIndex("financialGateway", new[]      "ModifiedByPersonId" });
-            DropIndex("financialGateway", new[]      "CreatedByPersonId" });
-            DropIndex("financialBatch", new[]      "ModifiedByPersonId" });
-            DropIndex("financialBatch", new[]      "CreatedByPersonId" });
-            DropIndex("financialTransaction", new[]      "ModifiedByPersonId" });
-            DropIndex("financialTransaction", new[]      "CreatedByPersonId" });
-            DropIndex("financialTransaction", new[]      "SourceTypeId" });
-            DropIndex("financialTransaction", new[]      "GatewayId" });
-            DropIndex("financialTransaction", new[]      "CreditCardTypeId" });
-            DropIndex("financialTransaction", new[]      "CurrencyTypeId" });
-            DropIndex("financialTransaction", new[]      "BatchId" });
-            DropIndex("financialTransactionFund", new[]      "FundId" });
-            DropIndex("financialTransactionFund", new[]      "TransactionId" });
-            DropIndex("coreAttributeValue", new[]      "ModifiedByPersonId" });
-            DropIndex("coreAttributeValue", new[]      "CreatedByPersonId" });
-            DropIndex("coreAttributeValue", new[]      "AttributeId" });
-            DropIndex("coreAttributeQualifier", new[]      "ModifiedByPersonId" });
-            DropIndex("coreAttributeQualifier", new[]      "CreatedByPersonId" });
-            DropIndex("coreAttributeQualifier", new[]      "AttributeId" });
-            DropIndex("coreAttribute", new[]      "ModifiedByPersonId" });
-            DropIndex("coreAttribute", new[]      "CreatedByPersonId" });
-            DropIndex("coreAttribute", new[]      "FieldTypeId" });
-            DropIndex("coreFieldType", new[]      "ModifiedByPersonId" });
-            DropIndex("coreFieldType", new[]      "CreatedByPersonId" });
-            DropIndex("coreDefinedType", new[]      "ModifiedByPersonId" });
-            DropIndex("coreDefinedType", new[]      "CreatedByPersonId" });
-            DropIndex("coreDefinedType", new[]      "FieldTypeId" });
-            DropIndex("coreDefinedValue", new[]      "ModifiedByPersonId" });
-            DropIndex("coreDefinedValue", new[]      "CreatedByPersonId" });
-            DropIndex("coreDefinedValue", new[]      "DefinedTypeId" });
-            DropIndex("financialFund", new[]      "ModifiedByPersonId" });
-            DropIndex("financialFund", new[]      "CreatedByPersonId" });
-            DropIndex("financialFund", new[]      "FundTypeId" });
-            DropIndex("financialFund", new[]      "ParentFundId" });
-            DropIndex("financialPledge", new[]      "ModifiedByPersonId" });
-            DropIndex("financialPledge", new[]      "CreatedByPersonId" });
-            DropIndex("financialPledge", new[]      "FrequencyTypeId" });
-            DropIndex("financialPledge", new[]      "FundId" });
-            DropIndex("financialPledge", new[]      "PersonId" });
-            DropIndex("groupsGroupRole", new[]      "ModifiedByPersonId" });
-            DropIndex("groupsGroupRole", new[]      "CreatedByPersonId" });
-            DropIndex("groupsGroupType", new[]      "DefaultGroupRoleId" });
-            DropIndex("groupsGroupType", new[]      "ModifiedByPersonId" });
-            DropIndex("groupsGroupType", new[]      "CreatedByPersonId" });
-            DropIndex("groupsGroup", new[]      "GroupTypeId" });
-            DropIndex("groupsGroup", new[]      "ParentGroupId" });
-            DropIndex("groupsGroup", new[]      "ModifiedByPersonId" });
-            DropIndex("groupsGroup", new[]      "CreatedByPersonId" });
-            DropIndex("groupsMember", new[]      "GroupRoleId" });
-            DropIndex("groupsMember", new[]      "GroupId" });
-            DropIndex("groupsMember", new[]      "ModifiedByPersonId" });
-            DropIndex("groupsMember", new[]      "CreatedByPersonId" });
-            DropIndex("groupsMember", new[]      "PersonId" });
-            DropIndex("crmPhoneNumber", new[]      "ModifiedByPersonId" });
-            DropIndex("crmPhoneNumber", new[]      "CreatedByPersonId" });
-            DropIndex("crmPhoneNumber", new[]      "PersonId" });
-            DropIndex("crmEmailTemplate", new[]      "ModifiedByPersonId" });
-            DropIndex("crmEmailTemplate", new[]      "PersonId" });
-            DropIndex("crmEmailTemplate", new[]      "CreatedByPersonId" });
-            DropIndex("cmsUser", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsUser", new[]      "CreatedByPersonId" });
-            DropIndex("cmsUser", new[]      "PersonId" });
-            DropIndex("crmPerson", new[]      "ModifiedByPersonId" });
-            DropIndex("crmPerson", new[]      "CreatedByPersonId" });
-            DropIndex("crmPerson", new[]      "TitleId" });
-            DropIndex("crmPerson", new[]      "SuffixId" });
-            DropIndex("crmPerson", new[]      "RecordTypeId" });
-            DropIndex("crmPerson", new[]      "RecordStatusReasonId" });
-            DropIndex("crmPerson", new[]      "RecordStatusId" });
-            DropIndex("crmPerson", new[]      "PersonStatusId" });
-            DropIndex("crmPerson", new[]      "MaritalStatusId" });
-            DropIndex("cmsAuth", new[]      "PersonId" });
-            DropIndex("cmsAuth", new[]      "GroupId" });
-            DropIndex("cmsAuth", new[]      "ModifiedByPersonId" });
-            DropIndex("cmsAuth", new[]      "CreatedByPersonId" });
+            DropIndex("groupsGroupTypeRole", new[] { "GroupRoleId" });
+            DropIndex("groupsGroupTypeRole", new[] { "GroupTypeId" });
+            DropIndex("groupsGroupTypeAssociation", new[] { "ParentGroupTypeId" });
+            DropIndex("groupsGroupTypeAssociation", new[] { "ChildGroupTypeId" });
+            DropIndex("utilJob", new[] { "ModifiedByPersonId" });
+            DropIndex("utilJob", new[] { "CreatedByPersonId" });
+            DropIndex("crmPersonViewed", new[] { "TargetPersonId" });
+            DropIndex("crmPersonViewed", new[] { "ViewerPersonId" });
+            DropIndex("crmAddress", new[] { "ModifiedByPersonId" });
+            DropIndex("crmAddress", new[] { "CreatedByPersonId" });
+            DropIndex("coreExceptionLog", new[] { "PersonId" });
+            DropIndex("coreEntityChange", new[] { "CreatedByPersonId" });
+            DropIndex("cmsFile", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsFile", new[] { "CreatedByPersonId" });
+            DropIndex("cmsSiteDomain", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsSiteDomain", new[] { "CreatedByPersonId" });
+            DropIndex("cmsSiteDomain", new[] { "SiteId" });
+            DropIndex("cmsSite", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsSite", new[] { "CreatedByPersonId" });
+            DropIndex("cmsSite", new[] { "DefaultPageId" });
+            DropIndex("cmsPageRoute", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsPageRoute", new[] { "CreatedByPersonId" });
+            DropIndex("cmsPageRoute", new[] { "PageId" });
+            DropIndex("cmsPage", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsPage", new[] { "CreatedByPersonId" });
+            DropIndex("cmsPage", new[] { "SiteId" });
+            DropIndex("cmsPage", new[] { "ParentPageId" });
+            DropIndex("cmsHtmlContent", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsHtmlContent", new[] { "CreatedByPersonId" });
+            DropIndex("cmsHtmlContent", new[] { "ApprovedByPersonId" });
+            DropIndex("cmsHtmlContent", new[] { "BlockId" });
+            DropIndex("cmsBlockInstance", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsBlockInstance", new[] { "CreatedByPersonId" });
+            DropIndex("cmsBlockInstance", new[] { "PageId" });
+            DropIndex("cmsBlockInstance", new[] { "BlockId" });
+            DropIndex("cmsBlock", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsBlock", new[] { "CreatedByPersonId" });
+            DropIndex("fiancialPersonAccountLookup", new[] { "PersonId" });
+            DropIndex("financialTransactionDetail", new[] { "ModifiedByPersonId" });
+            DropIndex("financialTransactionDetail", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransactionDetail", new[] { "TransactionId" });
+            DropIndex("financialGateway", new[] { "ModifiedByPersonId" });
+            DropIndex("financialGateway", new[] { "CreatedByPersonId" });
+            DropIndex("financialBatch", new[] { "ModifiedByPersonId" });
+            DropIndex("financialBatch", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransaction", new[] { "ModifiedByPersonId" });
+            DropIndex("financialTransaction", new[] { "CreatedByPersonId" });
+            DropIndex("financialTransaction", new[] { "SourceTypeId" });
+            DropIndex("financialTransaction", new[] { "GatewayId" });
+            DropIndex("financialTransaction", new[] { "CreditCardTypeId" });
+            DropIndex("financialTransaction", new[] { "CurrencyTypeId" });
+            DropIndex("financialTransaction", new[] { "BatchId" });
+            DropIndex("financialTransactionFund", new[] { "FundId" });
+            DropIndex("financialTransactionFund", new[] { "TransactionId" });
+            DropIndex("coreAttributeValue", new[] { "ModifiedByPersonId" });
+            DropIndex("coreAttributeValue", new[] { "CreatedByPersonId" });
+            DropIndex("coreAttributeValue", new[] { "AttributeId" });
+            DropIndex("coreAttributeQualifier", new[] { "ModifiedByPersonId" });
+            DropIndex("coreAttributeQualifier", new[] { "CreatedByPersonId" });
+            DropIndex("coreAttributeQualifier", new[] { "AttributeId" });
+            DropIndex("coreAttribute", new[] { "ModifiedByPersonId" });
+            DropIndex("coreAttribute", new[] { "CreatedByPersonId" });
+            DropIndex("coreAttribute", new[] { "FieldTypeId" });
+            DropIndex("coreFieldType", new[] { "ModifiedByPersonId" });
+            DropIndex("coreFieldType", new[] { "CreatedByPersonId" });
+            DropIndex("coreDefinedType", new[] { "ModifiedByPersonId" });
+            DropIndex("coreDefinedType", new[] { "CreatedByPersonId" });
+            DropIndex("coreDefinedType", new[] { "FieldTypeId" });
+            DropIndex("coreDefinedValue", new[] { "ModifiedByPersonId" });
+            DropIndex("coreDefinedValue", new[] { "CreatedByPersonId" });
+            DropIndex("coreDefinedValue", new[] { "DefinedTypeId" });
+            DropIndex("financialFund", new[] { "ModifiedByPersonId" });
+            DropIndex("financialFund", new[] { "CreatedByPersonId" });
+            DropIndex("financialFund", new[] { "FundTypeId" });
+            DropIndex("financialFund", new[] { "ParentFundId" });
+            DropIndex("financialPledge", new[] { "ModifiedByPersonId" });
+            DropIndex("financialPledge", new[] { "CreatedByPersonId" });
+            DropIndex("financialPledge", new[] { "FrequencyTypeId" });
+            DropIndex("financialPledge", new[] { "FundId" });
+            DropIndex("financialPledge", new[] { "PersonId" });
+            DropIndex("groupsGroupRole", new[] { "ModifiedByPersonId" });
+            DropIndex("groupsGroupRole", new[] { "CreatedByPersonId" });
+            DropIndex("groupsGroupType", new[] { "DefaultGroupRoleId" });
+            DropIndex("groupsGroupType", new[] { "ModifiedByPersonId" });
+            DropIndex("groupsGroupType", new[] { "CreatedByPersonId" });
+            DropIndex("groupsGroup", new[] { "GroupTypeId" });
+            DropIndex("groupsGroup", new[] { "ParentGroupId" });
+            DropIndex("groupsGroup", new[] { "ModifiedByPersonId" });
+            DropIndex("groupsGroup", new[] { "CreatedByPersonId" });
+            DropIndex("groupsMember", new[] { "GroupRoleId" });
+            DropIndex("groupsMember", new[] { "GroupId" });
+            DropIndex("groupsMember", new[] { "ModifiedByPersonId" });
+            DropIndex("groupsMember", new[] { "CreatedByPersonId" });
+            DropIndex("groupsMember", new[] { "PersonId" });
+            DropIndex("crmPhoneNumber", new[] { "ModifiedByPersonId" });
+            DropIndex("crmPhoneNumber", new[] { "CreatedByPersonId" });
+            DropIndex("crmPhoneNumber", new[] { "PersonId" });
+            DropIndex("crmEmailTemplate", new[] { "ModifiedByPersonId" });
+            DropIndex("crmEmailTemplate", new[] { "PersonId" });
+            DropIndex("crmEmailTemplate", new[] { "CreatedByPersonId" });
+            DropIndex("cmsUser", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsUser", new[] { "CreatedByPersonId" });
+            DropIndex("cmsUser", new[] { "PersonId" });
+            DropIndex("crmPerson", new[] { "ModifiedByPersonId" });
+            DropIndex("crmPerson", new[] { "CreatedByPersonId" });
+            DropIndex("crmPerson", new[] { "TitleId" });
+            DropIndex("crmPerson", new[] { "SuffixId" });
+            DropIndex("crmPerson", new[] { "RecordTypeId" });
+            DropIndex("crmPerson", new[] { "RecordStatusReasonId" });
+            DropIndex("crmPerson", new[] { "RecordStatusId" });
+            DropIndex("crmPerson", new[] { "PersonStatusId" });
+            DropIndex("crmPerson", new[] { "MaritalStatusId" });
+            DropIndex("cmsAuth", new[] { "PersonId" });
+            DropIndex("cmsAuth", new[] { "GroupId" });
+            DropIndex("cmsAuth", new[] { "ModifiedByPersonId" });
+            DropIndex("cmsAuth", new[] { "CreatedByPersonId" });
             DropForeignKey("groupsGroupTypeRole", "GroupRoleId", "groupsGroupType");
             DropForeignKey("groupsGroupTypeRole", "GroupTypeId", "groupsGroupRole");
             DropForeignKey("groupsGroupTypeAssociation", "ParentGroupTypeId", "groupsGroupType");

@@ -1,11 +1,11 @@
 namespace Rock.Migrations
-    
+{
     using System.Data.Entity.Migrations;
 #pragma warning disable 1591
     public partial class UpdateBooleanPropertyNames : DbMigration
-        
+    {
         public override void Up()
-            
+        {
             RenameColumn( "cmsBlock", "System", "IsSystem" );
             RenameColumn( "cmsBlockInstance", "System", "IsSystem" );
             RenameColumn( "cmsFile", "System", "IsSystem" );
@@ -42,7 +42,7 @@ namespace Rock.Migrations
         }
 
         public override void Down()
-            
+        {
             RenameColumn( "cmsBlock", "IsSystem", "System" );
             RenameColumn( "cmsBlockInstance", "IsSystem", "System" );
             RenameColumn( "cmsFile", "IsSystem", "System" );

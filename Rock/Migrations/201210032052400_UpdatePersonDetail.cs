@@ -1,13 +1,13 @@
 namespace Rock.Migrations
-    
+{
 #pragma warning disable 1591
     using System;
     using System.Data.Entity.Migrations;
     
     public partial class UpdatePersonDetail : RockMigration_1
-        
+    {
         public override void Up()
-            
+        {
 			// Addd the AttributeCategoryView block type
 			DeleteBlockType( "DAE0F74C-DD0D-4CD4-B30F-EB487F3DD7FF" ); // Delete the blocktype if it might have been created already by Rock engine.
 			AddBlockType( "Attribute Category View", "Displays attributes and values for the selected entity and category", "~/Blocks/Core/AttributeCategoryView.ascx", "DAE0F74C-DD0D-4CD4-B30F-EB487F3DD7FF" );
@@ -129,7 +129,7 @@ namespace Rock.Migrations
 		}
         
         public override void Down()
-            
+        {
 			Sql( @"
 	-- Delete Known Relationships
 	DECLARE @KnownRelationshipGroupTypeId int

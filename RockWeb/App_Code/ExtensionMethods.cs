@@ -9,22 +9,22 @@ using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
 namespace RockWeb
-    
+{
     /// <summary>
     /// Summary description for ExtensionMethods
     /// </summary>
     public static class ExtensionMethods
-        
+    {
         /// <summary>
         /// Binds to enum.
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="enumType">Type of the enum.</param>
         public static void BindToEnum( this ListControl listControl, Type enumType )
-            
+        {
             var dictionary = new Dictionary<int, string>();
             foreach ( int value in Enum.GetValues( enumType ) )
-                
+            {
                 dictionary.Add( value, Enum.GetName( enumType, value ) );
             }
 

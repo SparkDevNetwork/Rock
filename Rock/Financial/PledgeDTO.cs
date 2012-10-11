@@ -14,30 +14,30 @@ using System;
 using Rock.Data;
 
 namespace Rock.Financial
-    
+{
     /// <summary>
     /// Data Transfer Object for Pledge object
     /// </summary>
     public partial class PledgeDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public int? PersonId      get; set; }
-        public int? FundId      get; set; }
-        public decimal Amount      get; set; }
-        public DateTime StartDate      get; set; }
-        public DateTime EndDate      get; set; }
-        public int? FrequencyTypeId      get; set; }
-        public decimal? FrequencyAmount      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public int? PersonId { get; set; }
+        public int? FundId { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int? FrequencyTypeId { get; set; }
+        public decimal? FrequencyAmount { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PledgeDto ()
-            
+        {
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="pledge"></param>
         public PledgeDto ( Pledge pledge )
-            
+        {
             CopyFromModel( pledge );
         }
 
@@ -54,9 +54,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Pledge )
-                
+            {
                 var pledge = (Pledge)model;
                 this.PersonId = pledge.PersonId;
                 this.FundId = pledge.FundId;
@@ -75,9 +75,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Pledge )
-                
+            {
                 var pledge = (Pledge)model;
                 pledge.PersonId = this.PersonId;
                 pledge.FundId = this.FundId;

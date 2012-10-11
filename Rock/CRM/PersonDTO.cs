@@ -14,47 +14,47 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Data Transfer Object for Person object
     /// </summary>
     public partial class PersonDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public bool IsSystem      get; set; }
-        public int? RecordTypeId      get; set; }
-        public int? RecordStatusId      get; set; }
-        public int? RecordStatusReasonId      get; set; }
-        public int? PersonStatusId      get; set; }
-        public int? TitleId      get; set; }
-        public string GivenName      get; set; }
-        public string NickName      get; set; }
-        public string LastName      get; set; }
-        public int? SuffixId      get; set; }
-        public int? PhotoId      get; set; }
-        public int? BirthDay      get; set; }
-        public int? BirthMonth      get; set; }
-        public int? BirthYear      get; set; }
-        public Gender Gender      get; set; }
-        public int? MaritalStatusId      get; set; }
-        public DateTime? AnniversaryDate      get; set; }
-        public DateTime? GraduationDate      get; set; }
-        public string Email      get; set; }
-        public bool? IsEmailActive      get; set; }
-        public string EmailNote      get; set; }
-        public bool DoNotEmail      get; set; }
-        public string SystemNote      get; set; }
-        public int? ViewedCount      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public bool IsSystem { get; set; }
+        public int? RecordTypeId { get; set; }
+        public int? RecordStatusId { get; set; }
+        public int? RecordStatusReasonId { get; set; }
+        public int? PersonStatusId { get; set; }
+        public int? TitleId { get; set; }
+        public string GivenName { get; set; }
+        public string NickName { get; set; }
+        public string LastName { get; set; }
+        public int? SuffixId { get; set; }
+        public int? PhotoId { get; set; }
+        public int? BirthDay { get; set; }
+        public int? BirthMonth { get; set; }
+        public int? BirthYear { get; set; }
+        public Gender Gender { get; set; }
+        public int? MaritalStatusId { get; set; }
+        public DateTime? AnniversaryDate { get; set; }
+        public DateTime? GraduationDate { get; set; }
+        public string Email { get; set; }
+        public bool? IsEmailActive { get; set; }
+        public string EmailNote { get; set; }
+        public bool DoNotEmail { get; set; }
+        public string SystemNote { get; set; }
+        public int? ViewedCount { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public PersonDto ()
-            
+        {
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="person"></param>
         public PersonDto ( Person person )
-            
+        {
             CopyFromModel( person );
         }
 
@@ -71,9 +71,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Person )
-                
+            {
                 var person = (Person)model;
                 this.IsSystem = person.IsSystem;
                 this.RecordTypeId = person.RecordTypeId;
@@ -109,9 +109,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Person )
-                
+            {
                 var person = (Person)model;
                 person.IsSystem = this.IsSystem;
                 person.RecordTypeId = this.RecordTypeId;

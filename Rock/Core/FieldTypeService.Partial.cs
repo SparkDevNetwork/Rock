@@ -10,19 +10,19 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Core
-    
+{
     /// <summary>
     /// Field Type POCO Service class
     /// </summary>
     public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
-        
+    {
         /// <summary>
         /// Gets Field Types by Name
         /// </summary>
         /// <param name="name">Name.</param>
         /// <returns>An enumerable list of FieldType objects.</returns>
         public IEnumerable<FieldType> GetByName( string name )
-            
+        {
             return Repository.Find( t => t.Name == name );
         }
         
@@ -32,7 +32,7 @@ namespace Rock.Core
         /// <param name="guid">Guid.</param>
         /// <returns>FieldType object.</returns>
         public Rock.Core.FieldType GetByGuid( Guid guid )
-            
+        {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
     }

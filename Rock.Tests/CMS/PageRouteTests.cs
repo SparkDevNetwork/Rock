@@ -9,26 +9,26 @@ using Rock.Cms;
 using Xunit;
 
 namespace Rock.Tests.Cms
-    
+{
     public class PageRouteTests
-        
+    {
         public class TheExportObjectMethod
-            
+        {
             [Fact]
             public void ShouldCopyEntity()
-                
-                var pageRoute = new PageRoute      Guid = Guid.NewGuid() };
+            {
+                var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
                 dynamic result = pageRoute.ExportObject();
                 Assert.Equal( result.Guid, pageRoute.Guid );
             }
         }
 
         public class TheExportJsonMethod
-            
+        {
             [Fact]
             public void ShouldNotBeEmpty()
-                
-                var pageRoute = new PageRoute      Guid = Guid.NewGuid() };
+            {
+                var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
                 dynamic result = pageRoute.ExportJson();
                 Assert.NotEmpty( result );
             }

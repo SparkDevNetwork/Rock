@@ -1,5 +1,5 @@
 namespace Rock.Migrations
-    
+{
     using System;
     using System.Data.Entity.Migrations;
 
@@ -9,12 +9,12 @@ namespace Rock.Migrations
     /// Deletes all previous authorizations and rebuilds them
     /// </summary>
     public partial class AddUserType : RockMigration
-        
+    {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
-            
+        {
             AddColumn("dbo.cmsUser", "ServiceType", c => c.Int(nullable: false));
             AddColumn("dbo.cmsUser", "ServiceName", c => c.String(nullable: false, maxLength: 200));
 
@@ -109,7 +109,7 @@ namespace Rock.Migrations
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
-            
+        {
             Sql( @"
                 DELETE [coreAttribute] WHERE [Guid] = '0B1A8FA0-BD26-45CD-9A2B-D2879FB15C45'
                 DELETE [coreAttribute] WHERE [Guid] = '733A5D67-A809-46FB-B932-A95904FCECB7'

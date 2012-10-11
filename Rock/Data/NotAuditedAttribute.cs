@@ -7,7 +7,7 @@
 using System;
 
 namespace Rock.Data
-    
+{
     /// <summary>
     /// Custom attribute used to decorate model classes or specific model properties that should 
 	/// not be audited.  If attributed to class, no class changes will be audited, if attributed
@@ -17,6 +17,6 @@ namespace Rock.Data
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property )]
     public class NotAuditedAttribute : System.Attribute
-        
+    {
     }
 }

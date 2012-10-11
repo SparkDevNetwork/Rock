@@ -13,30 +13,30 @@ using Rock.Cms;
 using Rock.Security;
 
 namespace Rock.Web.Cache
-    
+{
     /// <summary>
     /// Information about a site that is required by the rendering engine.
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
     public class SiteCache : SiteDto, Security.ISecured
-        
-        private SiteCache() : base()      }
-        private SiteCache( Rock.Cms.Site model ) : base( model )      }
+    {
+        private SiteCache() : base() { }
+        private SiteCache( Rock.Cms.Site model ) : base( model ) { }
 
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues      get; private set; }
+        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets a list of attributes associated with the site.  This object will not include values.
         /// To get values associated with the current site instance, use the AttributeValues
         /// </summary>
         public List<Rock.Web.Cache.AttributeCache> Attributes
-            
+        {
             get
-                
+            {
                 List<Rock.Web.Cache.AttributeCache> attributes = new List<Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
@@ -51,9 +51,9 @@ namespace Rock.Web.Cache
         /// Gets the default page.
         /// </summary>
         public PageCache DefaultPage
-            
+        {
             get
-                
+            {
                 if ( DefaultPageId != null && DefaultPageId.Value != 0 )
                     return PageCache.Read( DefaultPageId.Value );
                 else
@@ -66,11 +66,11 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
-            
+        {
             Rock.Cms.SiteService siteService = new Cms.SiteService();
             Rock.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
-                
+            {
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
@@ -83,8 +83,8 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         private static string CacheKey( int id )
-            
-            return string.Format( "Rock:Site:    0}", id );
+        {
+            return string.Format( "Rock:Site:{0}", id );
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Rock.Web.Cache
         /// <param name="id"></param>
         /// <returns></returns>
         public static SiteCache Read( int id )
-            
+        {
             string cacheKey = SiteCache.CacheKey( id );
 
             ObjectCache cache = MemoryCache.Default;
@@ -103,11 +103,11 @@ namespace Rock.Web.Cache
             if ( site != null )
                 return site;
             else
-                
+            {
                 Rock.Cms.SiteService siteService = new Cms.SiteService();
                 Rock.Cms.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
-                    
+                {
                     site = new SiteCache( siteModel );
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
@@ -136,7 +136,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
-            
+        {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( SiteCache.CacheKey( id ) );
         }
@@ -151,21 +151,21 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string EntityTypeName      get; set; }
+        public string EntityTypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
         public Security.ISecured ParentAuthority
-            
-            get      return null; }
+        {
+            get { return null; }
         }
 
         /// <summary>
         /// A list of actions that this class supports.
         /// </summary>
-        public List<string> SupportedActions      get; set; }
+        public List<string> SupportedActions { get; set; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -176,7 +176,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
-            
+        {
             return Security.Authorization.Authorized( this, action, person );
         }
 
@@ -187,7 +187,7 @@ namespace Rock.Web.Cache
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
-            
+        {
             return action == "View";
         }
 
@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         public IQueryable<AuthRule> FindAuthRules()
-            
+        {
             return Authorization.FindAuthRules( this );
         }
 

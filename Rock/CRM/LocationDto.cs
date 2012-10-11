@@ -14,41 +14,41 @@ using System;
 using Rock.Data;
 
 namespace Rock.Crm
-    
+{
     /// <summary>
     /// Data Transfer Object for Location object
     /// </summary>
     public partial class LocationDto : IDto
-        
+    {
 
 #pragma warning disable 1591
-        public string Raw      get; set; }
-        public string Street1      get; set; }
-        public string Street2      get; set; }
-        public string City      get; set; }
-        public string State      get; set; }
-        public string Country      get; set; }
-        public string Zip      get; set; }
-        public double? Latitude      get; set; }
-        public double? Longitude      get; set; }
-        public string ParcelId      get; set; }
-        public DateTime? StandardizeAttempt      get; set; }
-        public string StandardizeService      get; set; }
-        public string StandardizeResult      get; set; }
-        public DateTime? StandardizeDate      get; set; }
-        public DateTime? GeocodeAttempt      get; set; }
-        public string GeocodeService      get; set; }
-        public string GeocodeResult      get; set; }
-        public DateTime? GeocodeDate      get; set; }
-        public int Id      get; set; }
-        public Guid Guid      get; set; }
+        public string Raw { get; set; }
+        public string Street1 { get; set; }
+        public string Street2 { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Country { get; set; }
+        public string Zip { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public string ParcelId { get; set; }
+        public DateTime? StandardizeAttempt { get; set; }
+        public string StandardizeService { get; set; }
+        public string StandardizeResult { get; set; }
+        public DateTime? StandardizeDate { get; set; }
+        public DateTime? GeocodeAttempt { get; set; }
+        public string GeocodeService { get; set; }
+        public string GeocodeResult { get; set; }
+        public DateTime? GeocodeDate { get; set; }
+        public int Id { get; set; }
+        public Guid Guid { get; set; }
 #pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
         public LocationDto ()
-            
+        {
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="location"></param>
         public LocationDto ( Location location )
-            
+        {
             CopyFromModel( location );
         }
 
@@ -65,9 +65,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
-            
+        {
             if ( model is Location )
-                
+            {
                 var location = (Location)model;
                 this.Raw = location.Raw;
                 this.Street1 = location.Street1;
@@ -97,9 +97,9 @@ namespace Rock.Crm
         /// </summary>
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
-            
+        {
             if ( model is Location )
-                
+            {
                 var location = (Location)model;
                 location.Raw = this.Raw;
                 location.Street1 = this.Street1;

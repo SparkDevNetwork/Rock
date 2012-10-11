@@ -16,32 +16,32 @@ using System.Linq;
 using Rock.Data;
 
 namespace Rock.Cms
-    
+{
     /// <summary>
     /// User Service class
     /// </summary>
     public partial class UserService : Service<User, UserDto>
-        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class
         /// </summary>
         public UserService()
             : base()
-            
+        {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserService"/> class
         /// </summary>
         public UserService(IRepository<User> repository) : base(repository)
-            
+        {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
         public override User CreateNew()
-            
+        {
             return new User();
         }
 
@@ -50,7 +50,7 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public override IQueryable<UserDto> QueryableDto( )
-            
+        {
             return QueryableDto( this.Queryable() );
         }
 
@@ -59,9 +59,9 @@ namespace Rock.Cms
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
         public IQueryable<UserDto> QueryableDto( IQueryable<User> items )
-            
+        {
             return items.Select( m => new UserDto()
-                    
+                {
                     UserName = m.UserName,
                     Password = m.Password,
                     IsConfirmed = m.IsConfirmed,
