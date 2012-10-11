@@ -222,6 +222,7 @@
     <Compile Include="Crm\PhoneNumberService.cs" />
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
+    <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
@@ -490,7 +491,12 @@
     <Compile Include="Migrations\201210101358430_AddUserType.Designer.cs">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.cs" />
+    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.Designer.cs">
+      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -868,6 +874,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210101358430_AddUserType.resx">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210102353484_AddMissingAuditGuidIndex.resx">
+      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
