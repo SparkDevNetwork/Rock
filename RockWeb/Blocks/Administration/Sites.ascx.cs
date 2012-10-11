@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Administration
             ddlDefaultPage.DataBind();
 
             ddlTheme.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.ThemePath ) );
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
             {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
