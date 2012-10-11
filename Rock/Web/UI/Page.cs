@@ -1210,7 +1210,7 @@ namespace Rock.Web.UI
                 routeParms.Add( match.Groups[1].Value, match.Value );
 
                 // check that a value for that parm is available
-                if ( !parms.ContainsKey( match.Groups[1].Value ) )
+                if ( parms == null || !parms.ContainsKey( match.Groups[1].Value ) )
                     allRouteParmsProvided = false;
             }
 

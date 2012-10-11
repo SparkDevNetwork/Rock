@@ -11,7 +11,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Cms;
 using Rock.Communication;
 using Rock.Crm;
 using Rock.Web.Cache;
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Security
                     mergeObjects.Add( person );
 
                     foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        if (user.AuthenticationType != Rock.Cms.AuthenticationType.Facebook)
+                        if (user.ServiceType == AuthenticationServiceType.Internal)
                             userObjects.Add( user );
 
                     personObjects.Add( person, userObjects );
@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Security
         private Rock.Cms.User CreateUser( Person person, bool confirmed )
         {
             Rock.Cms.UserService userService = new Rock.Cms.UserService();
-            return userService.Create( person, Rock.Cms.AuthenticationType.Database, tbUserName.Text, Password, confirmed, CurrentPersonId );
+            return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         private void SetSMTPParameters( Email email )

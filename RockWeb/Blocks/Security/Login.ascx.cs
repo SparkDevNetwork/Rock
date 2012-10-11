@@ -30,52 +30,53 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void Page_Load(object sender, EventArgs e)
+        protected void Page_Load( object sender, EventArgs e )
         {
             pnlMessage.Visible = false;
 
-			// Check if returning from third-party authentication
-			foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
-			{
-				var component = serviceEntry.Value.Value;
-				if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
-				{
-					string loginTypeName = component.GetType().Name;
+            // Look for active external authentication providers
+            foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+                {
+                    string loginTypeName = component.GetType().Name;
 
-					if ( component.IsReturningFromAuthentication( Request ) )
-					{
-						string userName = string.Empty;
-						string returnUrl = string.Empty;
-						if ( component.Authenticate( Request, out userName, out returnUrl ) )
-						{
-							LoginUser( userName, returnUrl, false );
-							break;
-						}
-					}
+                    // Check if returning from third-party authentication
+                    if ( !IsPostBack && component.IsReturningFromAuthentication( Request ) )
+                    {
+                        string userName = string.Empty;
+                        string returnUrl = string.Empty;
+                        if ( component.Authenticate( Request, out userName, out returnUrl ) )
+                        {
+                            LoginUser( userName, returnUrl, false );
+                            break;
+                        }
+                    }
 
-					var div = new HtmlGenericControl( "div" );
-					phExternalLogins.Controls.Add( div );
-					div.AddCssClass( loginTypeName + "-login" );
+                    var div = new HtmlGenericControl( "div" );
+                    phExternalLogins.Controls.Add( div );
+                    div.AddCssClass( loginTypeName + "-login" );
 
-					LinkButton lbLogin = new LinkButton();
-					div.Controls.Add( lbLogin );
-					lbLogin.ID = "lb" + loginTypeName + "Login";
-					lbLogin.Click += lbLogin_Click;
-					lbLogin.CausesValidation = false;
+                    LinkButton lbLogin = new LinkButton();
+                    div.Controls.Add( lbLogin );
+                    lbLogin.ID = "lb" + loginTypeName + "Login";
+                    lbLogin.Click += lbLogin_Click;
+                    lbLogin.CausesValidation = false;
 
-					if ( !String.IsNullOrWhiteSpace( component.ImageUrl() ) )
-					{
-						HtmlImage img = new HtmlImage();
-						lbLogin.Controls.Add( img );
-						img.Attributes.Add( "style", "border:none" );
-						img.Src = Page.ResolveUrl( component.ImageUrl() );
-					}
-					else
-					{
-						lbLogin.Text = loginTypeName;
-					}
-				}
-			}
+                    if ( !String.IsNullOrWhiteSpace( component.ImageUrl() ) )
+                    {
+                        HtmlImage img = new HtmlImage();
+                        lbLogin.Controls.Add( img );
+                        img.Attributes.Add( "style", "border:none" );
+                        img.Src = Page.ResolveUrl( component.ImageUrl() );
+                    }
+                    else
+                    {
+                        lbLogin.Text = loginTypeName;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -85,78 +86,71 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnLogin_Click( object sender, EventArgs e )
         {
-			bool valid = false;
-			
-			if ( Page.IsValid )
-            {
-				var userService = new UserService();
-				var user = userService.GetByUserName(tbUserName.Text);
-				if (user != null)
-				{
-					foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
-					{
-						var component = serviceEntry.Value.Value;
-						string componentName = component.GetType().FullName;
+            bool valid = false;
 
-                        if ( componentName == "Rock.Security.Authentication.Database" ||
-                            ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) ) )
+            if ( Page.IsValid )
+            {
+                var userService = new UserService();
+                var user = userService.GetByUserName( tbUserName.Text );
+                if ( user != null && user.ServiceType == AuthenticationServiceType.Internal )
+                {
+                    foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                    {
+                        var component = serviceEntry.Value.Value;
+                        string componentName = component.GetType().FullName;
+
+                        if (
+                            user.ServiceName == componentName &&
+                            component.AttributeValues.ContainsKey( "Active" ) &&
+                            bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                        )
                         {
-                            // TODO: Authentication type needs to be implemented a bit different 
-                            if (
-                                ( user.AuthenticationType == AuthenticationType.Database && componentName == "Rock.Security.Authentication.Database" ) ||
-                                ( user.AuthenticationType == AuthenticationType.ActiveDirectory && componentName == "Rock.Security.Authentication.ActiveDirectory" )
-                            )
+                            if ( component.Authenticate( user, tbPassword.Text ) )
                             {
-                                if ( component.Authenticate( user, tbPassword.Text ) )
-                                {
-                                    valid = true;
-                                    string returnUrl = Request.QueryString["returnurl"];
-                                    LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
-                                }
+                                valid = true;
+                                string returnUrl = Request.QueryString["returnurl"];
+                                LoginUser( tbUserName.Text, returnUrl, cbRememberMe.Checked );
                             }
                         }
-					}
-				}
+                    }
+                }
             }
 
-			if ( !valid )
-			{
-				DisplayError( "Invalid Login Information" );
-			}
+            if ( !valid )
+            {
+                DisplayError( "Invalid Login Information" );
+            }
         }
 
-		/// <summary>
-		/// Handles the Click event of the lbLogin control.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-		/// <exception cref="System.NotImplementedException"></exception>
-		void lbLogin_Click( object sender, EventArgs e )
-		{
-			if (sender is LinkButton)
-			{
-				LinkButton lb = (LinkButton)sender;
+        /// <summary>
+        /// Handles the Click event of the lbLogin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void lbLogin_Click( object sender, EventArgs e )
+        {
+            if ( sender is LinkButton )
+            {
+                LinkButton lb = (LinkButton)sender;
 
-				foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
-				{
-					var component = serviceEntry.Value.Value;
-					if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
-					{
-						string loginTypeName = component.GetType().Name;
-						if (lb.ID == "lb" + loginTypeName + "Login")
-						{
-							string uri = component.ExternalUrl( Request );
-							if ( !String.IsNullOrWhiteSpace( uri ) )
-							{
-								Response.Redirect( uri, true );
-							}
-						}
-					}
-				}
-			}
-		}
+                foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+                    {
+                        string loginTypeName = component.GetType().Name;
+                        if ( lb.ID == "lb" + loginTypeName + "Login" )
+                        {
+                            Uri uri = component.GenerateLoginUrl( Request );
+                            Response.Redirect( uri.AbsoluteUri, true );
+                        }
+                    }
+                }
+            }
+        }
 
-		/// <summary>
+        /// <summary>
         /// Handles the Click event of the btnLogin control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -171,9 +165,9 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void btnHelp_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~", true );
+            Response.Redirect( "~/ForgotUserName", true );
         }
 
         /// <summary>
@@ -187,23 +181,23 @@ namespace RockWeb.Blocks.Security
             pnlMessage.Visible = true;
         }
 
-		private void LoginUser(string userName, string returnUrl, bool rememberMe)
-		{
-			Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
+        private void LoginUser( string userName, string returnUrl, bool rememberMe )
+        {
+            Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
-			if ( returnUrl != null )
-			{
-				returnUrl = returnUrl.ToLower();
+            if ( returnUrl != null )
+            {
+                returnUrl = returnUrl.ToLower();
 
-				if ( returnUrl.Contains( "changepassword" ) ||
-					returnUrl.Contains( "confirmaccount" ) ||
-					returnUrl.Contains( "forgotusername" ) ||
-					returnUrl.Contains( "newaccount" ) )
-					returnUrl = FormsAuthentication.DefaultUrl;
-			}
+                if ( returnUrl.Contains( "changepassword" ) ||
+                    returnUrl.Contains( "confirmaccount" ) ||
+                    returnUrl.Contains( "forgotusername" ) ||
+                    returnUrl.Contains( "newaccount" ) )
+                    returnUrl = FormsAuthentication.DefaultUrl;
+            }
 
-			Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
-		}
+            Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
+        }
     }
 
     // helpful links
