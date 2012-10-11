@@ -12,6 +12,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -29,7 +31,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Uses reflection to find any <see cref="PropertyAttribute"/> attributes for the specified type and will create and/or update
+        /// Uses reflection to find any <see cref="BlockPropertyAttribute"/> attributes for the specified type and will create and/or update
         /// a <see cref="Rock.Core.Attribute"/> record for each attribute defined.
         /// </summary>
         /// <param name="type">The type (should be a <see cref="IHasAttributes"/> object.</param>
@@ -46,26 +48,26 @@ namespace Rock.Attribute
             {
                 List<string> existingKeys = new List<string>();
 
-                var blockProperties = new List<PropertyAttribute>();
+                var blockProperties = new List<BlockPropertyAttribute>();
 
                 // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
                 int properties = 0;
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( Rock.Web.UI.ContextAwareAttribute ), true ) )
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                 {
-                    var contextAttribute = (Rock.Web.UI.ContextAwareAttribute)customAttribute;
+                    var contextAttribute = (ContextAwareAttribute)customAttribute;
                     if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
                     {
                         string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                         properties++;
 
-                        blockProperties.Add( new Rock.Attribute.PropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
+                        blockProperties.Add( new BlockPropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
                     }
                 }
                         
                 // Add any property attributes that were defined for the block
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( BlockPropertyAttribute ), true ) )
                 {
-                    blockProperties.Add( (Rock.Attribute.PropertyAttribute)customAttribute );
+                    blockProperties.Add( (BlockPropertyAttribute)customAttribute );
                 }
 
                 // Create any attributes that need to be created
@@ -97,7 +99,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( Rock.Attribute.PropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( BlockPropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
 

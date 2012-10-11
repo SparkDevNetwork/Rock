@@ -5,24 +5,19 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Web.Security;
-
-using Facebook;
 
 using Rock;
 using Rock.Cms;
-using Rock.Crm;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>

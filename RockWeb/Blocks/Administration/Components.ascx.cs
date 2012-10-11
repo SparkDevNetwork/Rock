@@ -12,6 +12,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock.Extension;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -20,8 +21,8 @@ namespace RockWeb.Blocks.Administration
     /// Used to manage the <see cref="Rock.MEF.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
-    [Rock.Attribute.Property( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
-    public partial class Components : Rock.Web.UI.RockBlock
+    [BlockProperty( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
+    public partial class Components : RockBlock
     {
         #region Private Variables
 

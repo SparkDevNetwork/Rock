@@ -5,20 +5,21 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Xsl;
+
 using Rock;
 using Rock.Groups;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-	[Rock.Attribute.Property( 0, "Group Type", "GroupType", "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed", false, "0", "Rock", "Rock.Field.Types.Integer" )]
-	[Rock.Attribute.Property( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
-	[Rock.Attribute.Property( 2, "Include Self", "IncludeSelf", "Behavior", "Should the current person be included in list of group members?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-	[Rock.Attribute.Property( 3, "Include Locations", "IncludeLocations", "Behavior", "Should locations be included?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-	[Rock.Attribute.Property( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
+	[BlockProperty( 0, "Group Type", "GroupType", "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed", false, "0", "Rock", "Rock.Field.Types.Integer" )]
+	[BlockProperty( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
+	[BlockProperty( 2, "Include Self", "IncludeSelf", "Behavior", "Should the current person be included in list of group members?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
+	[BlockProperty( 3, "Include Locations", "IncludeLocations", "Behavior", "Should locations be included?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
+	[BlockProperty( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
 	public partial class GroupMembers : Rock.Web.UI.PersonBlock
 	{
 		private XDocument xDocument = null;

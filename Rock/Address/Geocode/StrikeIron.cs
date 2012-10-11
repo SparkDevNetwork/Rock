@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.StrikeIron.USAddressVerification;
+using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
 {
@@ -17,8 +18,8 @@ namespace Rock.Address.Geocode
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "StrikeIron" )]
-    [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
-    [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
+    [BlockProperty( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
+    [BlockProperty( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
     public class StrikeIron : GeocodeComponent
     {
         /// <summary>

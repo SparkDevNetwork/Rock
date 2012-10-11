@@ -592,7 +592,7 @@
     <Compile Include="Web\UI\RockBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Attribute\PropertyAttribute.cs" />
+    <Compile Include="Web\UI\BlockPropertyAttribute.cs" />
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />

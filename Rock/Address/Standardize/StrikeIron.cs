@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.StrikeIron.USAddressVerification;
+using Rock.Web.UI;
 
 namespace Rock.Address.Standardize
 {
@@ -18,8 +19,8 @@ namespace Rock.Address.Standardize
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( StandardizeComponent ) )]
     [ExportMetadata( "ComponentName", "StrikeIron" )]
-    [Rock.Attribute.Property( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
-    [Rock.Attribute.Property( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
+    [BlockProperty( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
+    [BlockProperty( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
     public class StrikeIron : StandardizeComponent
     {
         /// <summary>

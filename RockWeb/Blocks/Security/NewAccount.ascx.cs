@@ -7,31 +7,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Cms;
 using Rock.Communication;
 using Rock.Crm;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Check for Duplicates", "Duplicates", "", 
-        "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
-        false, "true", "Rock", "Rock.Field.Types.Boolean" )]
-    [Rock.Attribute.Property( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
-    [Rock.Attribute.Property( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,
-        "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
-    [Rock.Attribute.Property( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,
-        "{0}, you already have an existing account.  Would you like us to email you the username?" )]
-    [Rock.Attribute.Property( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,
-        "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
-    [Rock.Attribute.Property( 5, "Confirm", "ConfirmCaption", "Captions", "", false,
-        "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
-    [Rock.Attribute.Property( 6, "Success", "SuccessCaption", "Captions", "", false,
-        "{0}, Your account has been created" )]
+    [BlockProperty( 0, "Check for Duplicates", "Duplicates", "", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",false, "true", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
+    [BlockProperty( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
+    [BlockProperty( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,"{0}, you already have an existing account.  Would you like us to email you the username?" )]
+    [BlockProperty( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,"Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
+    [BlockProperty( 5, "Confirm", "ConfirmCaption", "Captions", "", false,"Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
+    [BlockProperty( 6, "Success", "SuccessCaption", "Captions", "", false,"{0}, Your account has been created" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];
