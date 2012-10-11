@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockType != null )
             {
-                lAction.Text = "Edit";
+                lActionTitle.Text = "Edit Block Type";
                 hfBlockTypeId.Value = blockType.Id.ToString();
                 tbName.Text = blockType.Name;
                 tbPath.Text = blockType.Path;
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lAction.Text = "Add";
+                lActionTitle.Text = "Add Block Type";
                 hfBlockTypeId.Value = string.Empty;
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;

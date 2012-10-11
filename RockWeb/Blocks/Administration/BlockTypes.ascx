@@ -23,7 +23,9 @@
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
 
             <fieldset>
-                <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block Type</legend>
+                <legend>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </legend>
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Name" />
                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                 <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Path" />

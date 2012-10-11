@@ -213,17 +213,17 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = true;
             
             CampusService campusService = new CampusService();
-            Rock.Crm.Campus campus = campusService.Get( campusId );
+            Campus campus = campusService.Get( campusId );
 
             if ( campus != null )
             {
-                lAction.Text = "Edit";
+                lActionTitle.Text = "Edit Campus";
                 hfCampusId.Value = campus.Id.ToString();
                 tbCampusName.Text = campus.Name;
             }
             else
             {
-                lAction.Text = "Add";
+                lActionTitle.Text = "Add Campus";
                 hfCampusId.Value = string.Empty;
                 tbCampusName.Text = string.Empty;
             }

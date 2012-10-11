@@ -22,7 +22,9 @@
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
 
             <fieldset>
-                <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Page Route</legend>
+                <legend>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </legend>
                 <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title" />
                 <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
             </fieldset>
