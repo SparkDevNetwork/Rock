@@ -582,10 +582,10 @@
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\Page.cs">
+    <Compile Include="Web\UI\RockPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\Block.cs">
+    <Compile Include="Web\UI\RockBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Attribute\PropertyAttribute.cs" />

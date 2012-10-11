@@ -162,6 +162,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the full url path to the current theme folder
+        /// </summary>
+        public string CurrentTheme
+        {
+            get
+            {
+                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Site.Theme ) );
+            }
+        }
+
+        /// <summary>
         /// Gets the root url path
         /// </summary>
         public string AppPath
@@ -169,17 +180,6 @@ namespace Rock.Web.UI
             get
             {
                 return ResolveUrl( "~" );
-            }
-        }
-
-        /// <summary>
-        /// Gets the full url path to the current theme folder
-        /// </summary>
-        public string ThemePath
-        {
-            get
-            {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Site.Theme ) );
             }
         }
 

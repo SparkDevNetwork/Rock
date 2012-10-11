@@ -80,9 +80,9 @@ namespace Rock.Web.UI
         /// Server Side: <c>myImg.ImageUrl = ThemePath + "/Images/avatar.gif";</c>
         /// </example>
         /// </summary>
-        public string ThemePath
+        public string CurrentTheme
         {
-            get { return ( (RockPage)this.Page ).ThemePath; }
+            get { return ( (RockPage)this.Page ).CurrentTheme; }
         }
 
         /// <summary>
