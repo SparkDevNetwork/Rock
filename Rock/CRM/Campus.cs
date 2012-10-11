@@ -37,7 +37,9 @@ namespace Rock.Crm
         /// <value>
         /// Given Name.
         /// </value>
+        [Required]
         [MaxLength( 100 )]
+        [AlternateKey]
         [DataMember]
         public string Name { get; set; }
 
