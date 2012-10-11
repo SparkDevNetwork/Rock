@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Security
 
                 UserService userService = new UserService();
                 foreach ( User user in userService.GetByPersonId( person.Id ) )
-                    if ( user.AuthenticationType != AuthenticationType.Facebook )
+                    if ( user.ServiceType == AuthenticationServiceType.Internal )
                         userObjects.Add( user );
 
                 if ( userObjects.Count > 0 )

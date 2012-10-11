@@ -25,13 +25,12 @@ namespace Rock.Security
 		/// <returns></returns>
 		public abstract Boolean IsReturningFromAuthentication( HttpRequest request);
 
-
-		/// <summary>
-		/// Gets the external url to redirect user to
-		/// </summary>
-		/// <param name="request">The request.</param>
-		/// <returns></returns>
-		public abstract string ExternalUrl( HttpRequest request );
+        /// <summary>
+        /// Generates the login URL.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public abstract Uri GenerateLoginUrl( HttpRequest request );
 
 		/// <summary>
 		/// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.

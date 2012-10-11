@@ -10,7 +10,7 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the component name and attributes.
         /// </summary>
-        Dictionary<int, KeyValuePair<string, Rock.Attribute.IHasAttributes>> Dictionary { get; }
+        Dictionary<int, KeyValuePair<string, Component>> Dictionary { get; }
 
         /// <summary>
         /// Refreshes the components.

@@ -60,8 +60,9 @@
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="Facebook">
-      <HintPath>..\packages\Facebook.5.0.25.0\lib\net40-client\Facebook.dll</HintPath>
+    <Reference Include="Facebook, Version=6.0.10.0, Culture=neutral, PublicKeyToken=58cb4f2111d1e6de, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Facebook.6.0.24\lib\net45\Facebook.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
@@ -230,7 +231,6 @@
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
-    <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
@@ -486,12 +486,11 @@
     <Compile Include="Migrations\201210092242509_AddAuditFunctionality.Designer.cs">
       <DependentUpon>201210092242509_AddAuditFunctionality.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.cs" />
-    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.Designer.cs">
-      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    <Compile Include="Migrations\201210101358430_AddUserType.cs" />
+    <Compile Include="Migrations\201210101358430_AddUserType.Designer.cs">
+      <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -511,11 +510,13 @@
     <Compile Include="Search\SearchContainer.cs" />
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
-    <Compile Include="Security\ExternalAuthentication\Facebook.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
     <Compile Include="Security\ExternalAuthenticationComponent.cs" />
     <Compile Include="Security\ExternalAuthenticationContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
+    <Compile Include="Security\ExternalAuthentication\Facebook.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Security\GenericEntity.cs" />
     <Compile Include="Security\AuthenticationComponent.cs" />
     <Compile Include="Security\AuthenticationContainer.cs" />
@@ -865,8 +866,8 @@
     <EmbeddedResource Include="Migrations\201210092242509_AddAuditFunctionality.resx">
       <DependentUpon>201210092242509_AddAuditFunctionality.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210102353484_AddMissingAuditGuidIndex.resx">
-      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210101358430_AddUserType.resx">
+      <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

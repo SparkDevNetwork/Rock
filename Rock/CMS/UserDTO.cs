@@ -23,7 +23,7 @@ namespace Rock.Cms
 
 #pragma warning disable 1591
         public string UserName { get; set; }
-        public AuthenticationType AuthenticationType { get; set; }
+        public string Provider { get; set; }
         public string Password { get; set; }
         public bool? IsConfirmed { get; set; }
         public DateTime? LastActivityDate { get; set; }
@@ -67,7 +67,6 @@ namespace Rock.Cms
             {
                 var user = (User)model;
                 this.UserName = user.UserName;
-                this.AuthenticationType = user.AuthenticationType;
                 this.Password = user.Password;
                 this.IsConfirmed = user.IsConfirmed;
                 this.LastActivityDate = user.LastActivityDate;
@@ -96,7 +95,6 @@ namespace Rock.Cms
             {
                 var user = (User)model;
                 user.UserName = this.UserName;
-                user.AuthenticationType = this.AuthenticationType;
                 user.Password = this.Password;
                 user.IsConfirmed = this.IsConfirmed;
                 user.LastActivityDate = this.LastActivityDate;
