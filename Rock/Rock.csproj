@@ -491,9 +491,9 @@
     <Compile Include="Migrations\201210101358430_AddUserType.Designer.cs">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.cs" />
-    <Compile Include="Migrations\201210102353484_AddMissingAuditGuidIndex.Designer.cs">
-      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    <Compile Include="Migrations\201210110030124_AddMissingAuditGuidIndex.cs" />
+    <Compile Include="Migrations\201210110030124_AddMissingAuditGuidIndex.Designer.cs">
+      <DependentUpon>201210110030124_AddMissingAuditGuidIndex.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -875,8 +875,8 @@
     <EmbeddedResource Include="Migrations\201210101358430_AddUserType.resx">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210102353484_AddMissingAuditGuidIndex.resx">
-      <DependentUpon>201210102353484_AddMissingAuditGuidIndex.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210110030124_AddMissingAuditGuidIndex.resx">
+      <DependentUpon>201210110030124_AddMissingAuditGuidIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
