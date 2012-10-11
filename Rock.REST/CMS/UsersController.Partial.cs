@@ -11,32 +11,32 @@ using Rock.Cms;
 
 namespace Rock.Rest.Cms
 {
-	/// <summary>
-	/// Users REST API
-	/// </summary>
-	public partial class UsersController : IHasCustomRoutes
-	{
-		public void AddRoutes( System.Web.Routing.RouteCollection routes )
-		{
-			routes.MapHttpRoute(
-				name: "UsernameAvailable",
-				routeTemplate: "api/users/available/{username}",
-				defaults: new
-				{
-					controller = "users",
-					action = "available"
-				} );
-		}
+    /// <summary>
+    /// Users REST API
+    /// </summary>
+    public partial class UsersController : IHasCustomRoutes
+    {
+        public void AddRoutes( System.Web.Routing.RouteCollection routes )
+        {
+            routes.MapHttpRoute(
+                name: "UsernameAvailable",
+                routeTemplate: "api/users/available/{username}",
+                defaults: new
+                {
+                    controller = "users",
+                    action = "available"
+                } );
+        }
 
-		/// <summary>
-		/// Tests if a username is available
-		/// </summary>
-		/// <param name="username"></param>
-		/// <returns></returns>
-		[HttpGet]
-		public bool Available( string username )
-		{
-			return new UserService().GetByUserName( username ) == null;
-		}
-	}
+        /// <summary>
+        /// Tests if a username is available
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public bool Available( string username )
+        {
+            return new UserService().GetByUserName( username ) == null;
+        }
+    }
 }

@@ -20,97 +20,97 @@ namespace Rock.Cms
     [Table( "cmsHtmlContent" )]
     public partial class HtmlContent : Model<HtmlContent>, IExportable
     {
-		/// <summary>
-		/// Gets or sets the Block Id.
-		/// </summary>
-		/// <value>
-		/// Block Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int BlockId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Value.
-		/// </summary>
-		/// <value>
-		/// Entity Value.
-		/// </value>
-		[MaxLength( 200 )]
-		[DataMember]
-		public string EntityValue { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Version.
-		/// </summary>
-		/// <value>
-		/// Version.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Version { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Content.
-		/// </summary>
-		/// <value>
-		/// Content.
-		/// </value>
-		[Required]
-		[DataMember]
-		public string Content { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Approved.
-		/// </summary>
-		/// <value>
-		/// Approved.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsApproved { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Approved By Person Id.
-		/// </summary>
-		/// <value>
-		/// Approved By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ApprovedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Approved Date Time.
-		/// </summary>
-		/// <value>
-		/// Approved Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ApprovedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Start Date Time.
-		/// </summary>
-		/// <value>
-		/// Start Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? StartDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Expire Date Time.
-		/// </summary>
-		/// <value>
-		/// Expire Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ExpireDateTime { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Block Id.
+        /// </summary>
+        /// <value>
+        /// Block Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int BlockId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Value.
+        /// </summary>
+        /// <value>
+        /// Entity Value.
+        /// </value>
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityValue { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Version.
+        /// </summary>
+        /// <value>
+        /// Version.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Version { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Content.
+        /// </summary>
+        /// <value>
+        /// Content.
+        /// </value>
+        [Required]
+        [DataMember]
+        public string Content { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Approved.
+        /// </summary>
+        /// <value>
+        /// Approved.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsApproved { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Approved By Person Id.
+        /// </summary>
+        /// <value>
+        /// Approved By Person Id.
+        /// </value>
+        [DataMember]
+        public int? ApprovedByPersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Approved Date Time.
+        /// </summary>
+        /// <value>
+        /// Approved Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ApprovedDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Start Date Time.
+        /// </summary>
+        /// <value>
+        /// Start Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? StartDateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Expire Date Time.
+        /// </summary>
+        /// <value>
+        /// Expire Date Time.
+        /// </value>
+        [DataMember]
+        public DateTime? ExpireDateTime { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
         
         /// <summary>
         /// Gets or sets the Block.
@@ -126,19 +126,19 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Crm.Person"/> object.
         /// </value>
-		public virtual Crm.Person ApprovedByPerson { get; set; }
+        public virtual Crm.Person ApprovedByPerson { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static HtmlContent Read( int id )
-		{
-			return Read<HtmlContent>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static HtmlContent Read( int id )
+        {
+            return Read<HtmlContent>( id );
+        }
 
-		/// <summary>
+        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>

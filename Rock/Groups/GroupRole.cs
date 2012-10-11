@@ -39,69 +39,69 @@ namespace Rock.Groups
         [DataMember]
         public int? GroupTypeId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[Required]
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[DataMember]
-		public int? Order { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static GroupRole Read( int id )
-		{
-			return Read<GroupRole>( id );
-		}
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [Required]
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [DataMember]
+        public int? Order { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static GroupRole Read( int id )
+        {
+            return Read<GroupRole>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Groups.GroupRole"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Groups.GroupRole"; } }
 
-		/// <summary>
-		/// Gets or sets the Group Type.
-		/// </summary>
-		/// <value>
-		/// A <see cref="GroupType"/> object.
-		/// </value>
-		public virtual GroupType GroupType { get; set; }
+        /// <summary>
+        /// Gets or sets the Group Type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="GroupType"/> object.
+        /// </value>
+        public virtual GroupType GroupType { get; set; }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>

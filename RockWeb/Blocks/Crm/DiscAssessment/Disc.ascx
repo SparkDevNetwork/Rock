@@ -10,25 +10,25 @@
             <h3>Welcome!</h3>
             <p>
                 In this assessment you are given a series of questions, each containing four phrases.
-			Select one phrase from each question that MOST describes you and one phrase that
-			LEAST describes you.
+            Select one phrase from each question that MOST describes you and one phrase that
+            LEAST describes you.
             </p>
             <p>
                 This assessment is environmentally sensitive, which means that you may score differently
-			in different situations. In other words, you may act differently at home than you
-			do on the job. So, as you complete the assessment you should focus on one environment
-			for which you are seeking to understand yourself. For instance, if you are trying
-			to understand yourself in marriage, you should only think of your responses to situations
-			in the context of your marriage. On the other hand, if you want to know your behavioral
-			needs on the job, then only think of how you would respond in the job context.
+            in different situations. In other words, you may act differently at home than you
+            do on the job. So, as you complete the assessment you should focus on one environment
+            for which you are seeking to understand yourself. For instance, if you are trying
+            to understand yourself in marriage, you should only think of your responses to situations
+            in the context of your marriage. On the other hand, if you want to know your behavioral
+            needs on the job, then only think of how you would respond in the job context.
             </p>
             <p>
                 One final thought as you give your responses. On these kinds of assessments, it
-			is often best and easiest if you respond quickly and do not deliberate too long
-			on each question. Your response on one question will not unduly influence your scores,
-			so simply answer as quickly as possible and enjoy the process. Don't get too hung
-			up, if none of the phrases describe you or if there are some phrases that seem too
-			similar, just go with your instinct.
+            is often best and easiest if you respond quickly and do not deliberate too long
+            on each question. Your response on one question will not unduly influence your scores,
+            so simply answer as quickly as possible and enjoy the process. Don't get too hung
+            up, if none of the phrases describe you or if there are some phrases that seem too
+            similar, just go with your instinct.
             </p>
             <p>
                 When you are ready, click the 'Questions' tab above to proceed.
@@ -109,7 +109,7 @@
             </h2>
             <div class="">
                 Saved on:
-				<asp:Label ID="lblLastAssessmentDate" Text="" runat="server" />
+                <asp:Label ID="lblLastAssessmentDate" Text="" runat="server" />
             </div>
             <table border="0" cellpadding="1" cellspacing="1" class="table-bordered table-condensed">
                 <thead>

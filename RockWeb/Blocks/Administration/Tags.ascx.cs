@@ -59,30 +59,30 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-				_entity = AttributeValue( "Entity" );
-				if ( string.IsNullOrWhiteSpace( _entity ) )
-					_entity = PageParameter( "Entity" );
+                _entity = AttributeValue( "Entity" );
+                if ( string.IsNullOrWhiteSpace( _entity ) )
+                    _entity = PageParameter( "Entity" );
 
-				_entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
-				if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
-					_entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
+                _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+                if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
+                    _entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
 
-				_entityQualifierValue = AttributeValue( "EntityQualifierValue" );
-				if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
-					_entityQualifierValue = PageParameter( "EntityQualifierValue" );
+                _entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+                if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
+                    _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-				_canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
-				if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
-				{
-					Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
-					if ( model != null )
-						_ownerId = model.Id;
-					else
-						_ownerId = CurrentPersonId;
-				}
-					
-				if ( _canConfigure )
+                if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
+                {
+                    Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
+                    if ( model != null )
+                        _ownerId = model.Id;
+                    else
+                        _ownerId = CurrentPersonId;
+                }
+                    
+                if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.IsAddEnabled = true;
