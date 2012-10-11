@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201210102353484_AddMissingAuditGuidIndex"; }
+            get { return "201210110030124_AddMissingAuditGuidIndex"; }
         }
         
         string IMigrationMetadata.Source

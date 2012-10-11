@@ -68,12 +68,26 @@ namespace Rock.Migrations
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
             var tableType = tableNameLookup[tableName];
-            MemberInfo mi = tableType.GetMember( columnName ).First();
-
-            AlternateKeyAttribute attribute = mi.GetCustomAttribute<AlternateKeyAttribute>();
-            if ( attribute != null )
+            if ( tableType != null )
             {
-                writer.WriteLine( "CreateIndex( \"" + fullTableName + "\", \"" + columnName + "\", true );" );
+                MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
+
+                if ( mi != null )
+                {
+                    AlternateKeyAttribute attribute = mi.GetCustomAttribute<AlternateKeyAttribute>();
+                    if ( attribute != null )
+                    {
+                        writer.WriteLine( "CreateIndex( \"" + fullTableName + "\", \"" + columnName + "\", true );" );
+                    }
+                }
+                else
+                {
+                    // probably not found if this is the Down() migration
+                }
+            }
+            else
+            {
+                // probably not found if this is the Down() migration
             }
         }
 
