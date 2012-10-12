@@ -116,6 +116,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide delete button for is system].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [hide delete button for is system]; otherwise, <c>false</c>.
+        /// </value>
         [
         Category( "Appearance" ),
         DefaultValue( true ),
