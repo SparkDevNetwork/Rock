@@ -183,7 +183,8 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSendLogin_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/Login", true );
+            Response.Redirect( "~/Login", false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         #endregion
