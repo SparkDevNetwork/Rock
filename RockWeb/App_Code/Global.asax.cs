@@ -298,9 +298,15 @@ namespace RockWeb
 
                         // redirect to error page
                         if ( errorPage != null && errorPage != string.Empty )
-                            Response.Redirect( errorPage + errorQueryParm );
+                        {
+                            Response.Redirect( errorPage + errorQueryParm, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
                         else
-                            Response.Redirect( "~/error.aspx" + errorQueryParm );  // default error page
+                        {
+                            Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
                     }
                 }
             }

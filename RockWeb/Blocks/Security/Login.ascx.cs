@@ -138,7 +138,9 @@ namespace RockWeb.Blocks.Security
                         if ( lb.ID == "lb" + loginTypeName + "Login" )
                         {
                             Uri uri = component.GenerateLoginUrl( Request );
-                            Response.Redirect( uri.AbsoluteUri, true );
+                            Response.Redirect( uri.AbsoluteUri, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
                         }
                     }
                 }
@@ -152,7 +154,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnNewAccount_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/NewAccount", true );
+            Response.Redirect( "~/NewAccount", false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -162,7 +165,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnHelp_Click( object sender, EventArgs e )
         {
-            Response.Redirect( "~/ForgotUserName", true );
+            Response.Redirect( "~/ForgotUserName", false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -191,7 +195,8 @@ namespace RockWeb.Blocks.Security
                     returnUrl = FormsAuthentication.DefaultUrl;
             }
 
-            Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl );
+            Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 

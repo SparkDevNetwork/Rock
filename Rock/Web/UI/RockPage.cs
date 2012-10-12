@@ -283,7 +283,9 @@ namespace Rock.Web.UI
                 FormsAuthentication.SignOut();
                 CurrentPerson = null;
                 CurrentUser = null;
-                Response.Redirect( BuildUrl( new PageReference( CurrentPage.Id, CurrentPage.RouteId ), null ), true );
+                Response.Redirect( BuildUrl( new PageReference( CurrentPage.Id, CurrentPage.RouteId ), null ), false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
             }
 
             // If the impersonated query key was included then set the current person
@@ -338,7 +340,9 @@ namespace Rock.Web.UI
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
-                    Response.Redirect( redirectUrl );
+                    Response.Redirect( redirectUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
                 }
 
                 // Verify that the current user is allowed to view the page.  If not, and 
@@ -346,7 +350,9 @@ namespace Rock.Web.UI
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
+                    {
                         FormsAuthentication.RedirectToLoginPage();
+                    }
                 }
                 else
                 {
