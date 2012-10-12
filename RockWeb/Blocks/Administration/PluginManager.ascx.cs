@@ -14,6 +14,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Services.NuGet;
+using Rock.Web.Cache;
 using NuGet;
 
 namespace RockWeb.Blocks.Administration
@@ -36,7 +37,8 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( nuGetService == null )
                 {
-                    string packageSource = Rock.Web.Cache.GlobalAttributesCache.Value( "PackageSourceUrl" );
+                    var globalAttributesCache = GlobalAttributesCache.Read();
+                    string packageSource = globalAttributesCache.GetValue( "PackageSourceUrl" );
                     string siteRoot = Request.MapPath( "~/" );
 
                     nuGetService = new WebProjectManager( packageSource, siteRoot );

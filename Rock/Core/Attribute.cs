@@ -19,7 +19,7 @@ namespace Rock.Core
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "coreAttribute" )]
-    public partial class Attribute : Entity<Attribute>, IOrdered
+    public partial class Attribute : Model<Attribute>, IOrdered
     {
         /// <summary>
         /// Gets or sets the System.
@@ -184,14 +184,6 @@ namespace Rock.Core
         /// Collection of Attribute Qualifiers.
         /// </value>
         public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the Attribute Values.
-        /// </summary>
-        /// <value>
-        /// Collection of Attribute Values.
-        /// </value>
-        public virtual ICollection<AttributeValue> AttributeValues { get; set; }
         
         /// <summary>
         /// Gets or sets the Field Type.
