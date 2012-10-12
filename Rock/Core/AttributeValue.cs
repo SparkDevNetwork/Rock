@@ -18,7 +18,7 @@ namespace Rock.Core
     /// Attribute Value POCO Entity.
     /// </summary>
     [Table( "coreAttributeValue" )]
-    public partial class AttributeValue : Entity<AttributeValue>
+    public partial class AttributeValue : Model<AttributeValue>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -113,7 +113,7 @@ namespace Rock.Core
         /// </summary>
         public AttributeValueConfiguration()
         {
-            this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeValues ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Attribute ).WithMany().HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete( true );
         }
     }
 }
