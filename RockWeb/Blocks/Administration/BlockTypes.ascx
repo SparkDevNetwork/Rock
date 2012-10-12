@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BlockTypes.ascx.cs" Inherits="RockWeb.Blocks.Administration.BlockTypes" %>
 
+<%-- trick intellisense into loading css --%>
+<% if ( false )
+   {  %>
+<link href="~/CSS/bootstrap.min.css" rel="stylesheet" />
+<% } %>
+
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
@@ -20,7 +27,7 @@
 
             <asp:HiddenField ID="hfBlockTypeId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error alert" />
 
             <fieldset>
                 <legend>
@@ -28,7 +35,7 @@
                 </legend>
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Name" />
                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Path" />
+                <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
             </fieldset>
 
             <div class="actions">
