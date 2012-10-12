@@ -24,6 +24,7 @@ using Rock.Core;
 using Rock.Jobs;
 using Rock.Transactions;
 using Rock.Util;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -227,8 +228,10 @@ namespace RockWeb
                 {
                     string status = "500";
 
+                    var globalAttributesCache = GlobalAttributesCache.Read();
+
                     // determine if 404's should be tracked as exceptions
-                    bool track404 = Convert.ToBoolean( Rock.Web.Cache.GlobalAttributesCache.Value( "Log404AsException" ) );
+                    bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
 
                     // set status to 404
                     if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
@@ -275,7 +278,7 @@ namespace RockWeb
                             mergeObjects.Add( values );
 
                             // get email addresses to send to
-                            string emailAddressesList = Rock.Web.Cache.GlobalAttributesCache.Value( "EmailExceptionsList" );
+                            string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
                             if ( emailAddressesList != null )
                             {
                                 string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
@@ -341,20 +344,22 @@ namespace RockWeb
         /// <param name="email">The email.</param>
         private void SetSMTPParameters( Email email )
         {
-            email.Server = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPServer" );
+            var globalAttributesCache = GlobalAttributesCache.Read();
+
+            email.Server = globalAttributesCache.GetValue( "SMTPServer" );
 
             int port = 0;
-            if ( !Int32.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPort" ), out port ) )
+            if ( !Int32.TryParse( globalAttributesCache.GetValue( "SMTPPort" ), out port ) )
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( globalAttributesCache.GetValue( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPUserName" );
-            email.Password = Rock.Web.Cache.GlobalAttributesCache.Value( "SMTPPassword" );
+            email.UserName = globalAttributesCache.GetValue( "SMTPUserName" );
+            email.Password = globalAttributesCache.GetValue( "SMTPPassword" );
         }
 
         /// <summary>
