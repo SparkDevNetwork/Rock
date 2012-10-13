@@ -1,12 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BlockTypes.ascx.cs" Inherits="RockWeb.Blocks.Administration.BlockTypes" %>
 
-<%-- trick intellisense into loading css --%>
-<% if ( false )
-   {  %>
-<link href="~/CSS/bootstrap.min.css" rel="stylesheet" />
-<% } %>
-
-
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
