@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -32,7 +33,8 @@ namespace Rock.Web.UI.Controls
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
-            string rowItemText = ( control as Grid ).RowItemText;
+            ParentGrid = control as Grid;
+            string rowItemText = ParentGrid.RowItemText;
 
             // Add Javascript Confirm to grids that use the DeleteField
             string script = string.Format( @"
@@ -58,10 +60,18 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        void deleteFieldTemplate_LinkButtonClick( object sender, RowEventArgs e )
+        protected void deleteFieldTemplate_LinkButtonClick( object sender, RowEventArgs e )
         {
             OnClick( e );
         }
+
+        /// <summary>
+        /// Gets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        public Grid ParentGrid { get; internal set; }
 
         /// <summary>
         /// Occurs when [click].
@@ -95,11 +105,48 @@ namespace Rock.Web.UI.Controls
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
             {
+                DeleteField deleteField = cell.ContainingField as DeleteField;
+                ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.ToolTip = "Delete";
                 lbDelete.Click += lbDelete_Click;
+                lbDelete.DataBinding += lbDelete_DataBinding;
 
                 cell.Controls.Add( lbDelete );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        private Grid ParentGrid { get; set; }
+
+        /// <summary>
+        /// Handles the DataBinding event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbDelete_DataBinding( object sender, EventArgs e )
+        {
+            if ( ParentGrid.HideDeleteButtonForIsSystem )
+            {
+                LinkButton lbDelete = sender as LinkButton;
+                GridViewRow dgi = lbDelete.NamingContainer as GridViewRow;
+                if ( dgi.DataItem != null )
+                {
+                    PropertyInfo pi = dgi.DataItem.GetType().GetProperty( "IsSystem" );
+                    if ( pi != null )
+                    {
+                        bool isSystem = (bool)pi.GetValue( dgi.DataItem );
+                        if ( isSystem )
+                        {
+                            lbDelete.Visible = false;
+                        }
+                    }
+                }
             }
         }
 
@@ -108,7 +155,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        void lbDelete_Click( object sender, EventArgs e )
+        protected void lbDelete_Click( object sender, EventArgs e )
         {
             if ( LinkButtonClick != null )
             {

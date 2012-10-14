@@ -23,12 +23,14 @@
                     <asp:TemplateField>
                         <HeaderTemplate>Default Value</HeaderTemplate>
                         <ItemTemplate>
-                            <asp:Literal ID="lDefaultValue" runat="server"></asp:Literal></ItemTemplate>
+                            <asp:Literal ID="lDefaultValue" runat="server"></asp:Literal>
+                        </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField>
                         <HeaderTemplate>Value</HeaderTemplate>
                         <ItemTemplate>
-                            <asp:Literal ID="lValue" runat="server"></asp:Literal></ItemTemplate>
+                            <asp:Literal ID="lValue" runat="server"></asp:Literal>
+                        </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="rGrid_Edit" />
                     <Rock:EditValueField OnClick="rGrid_EditValue" />
@@ -50,8 +52,8 @@
 
                     <fieldset>
                         <legend>
-                            <asp:Literal ID="lAction" runat="server"></asp:Literal>
-                            Attribute</legend>
+                            <asp:Literal ID="lActionTitle" runat="server"></asp:Literal>
+                        </legend>
                         <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
