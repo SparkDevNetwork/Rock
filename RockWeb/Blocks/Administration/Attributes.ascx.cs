@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Administration
         protected string _entity = string.Empty;
         protected string _entityQualifierColumn = string.Empty;
         protected string _entityQualifierValue = string.Empty;
-        protected bool _setValues = false;
+        protected bool _displayValueEdit = false;
         protected int? _entityId = null;
 
         private bool _canConfigure = false;
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Administration
             if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                 _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-            _setValues = Convert.ToBoolean( AttributeValue( "SetValues" ) );
+            _displayValueEdit = Convert.ToBoolean( AttributeValue( "SetValues" ) );
 
             string entityIdString = AttributeValue( "EntityId" );
             if ( string.IsNullOrWhiteSpace( entityIdString ) )
@@ -86,9 +86,9 @@ namespace RockWeb.Blocks.Administration
                 rGrid.GridRebind += rGrid_GridRebind;
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
-                rGrid.Columns[7].Visible = !_setValues;
-                rGrid.Columns[8].Visible = _setValues;
-                rGrid.Columns[10].Visible = _setValues;
+                rGrid.Columns[7].Visible = !_displayValueEdit;
+                rGrid.Columns[8].Visible = _displayValueEdit;
+                rGrid.Columns[10].Visible = _displayValueEdit;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void modalDetails_SaveClick( object sender, EventArgs e )
         {
-            if ( _setValues )
+            if ( _displayValueEdit )
             {
                 int attributeId = 0;
                 if ( hfIdValues.Value != string.Empty && !Int32.TryParse( hfIdValues.Value, out attributeId ) )
@@ -154,6 +154,8 @@ namespace RockWeb.Blocks.Administration
                         Rock.Web.Cache.GlobalAttributesCache.Flush();
 
                 }
+
+                hfIdValues.Value = string.Empty;
 
                 modalDetails.Hide();
             }
@@ -207,7 +209,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_EditValue( object sender, RowEventArgs e )
         {
-            if ( _setValues )
+            if ( _displayValueEdit )
                 ShowEditValue( (int)rGrid.DataKeys[e.RowIndex]["id"], true );
         }
 
@@ -266,7 +268,7 @@ namespace RockWeb.Blocks.Administration
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldTypeId );
 
-                if ( _setValues )
+                if ( _displayValueEdit )
                 {
                     Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
                     if ( lValue != null )
@@ -548,7 +550,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEditValue( int attributeId, bool setValues )
         {
-            if ( _setValues )
+            if ( _displayValueEdit )
             {
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
