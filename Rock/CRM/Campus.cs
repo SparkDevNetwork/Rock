@@ -25,7 +25,7 @@ namespace Rock.Crm
         /// Gets or sets the System.
         /// </summary>
         /// <value>
-        /// System.
+        /// System indicates whether or not the campus is part of the core framework/system.
         /// </value>
         [Required]
         [DataMember]
