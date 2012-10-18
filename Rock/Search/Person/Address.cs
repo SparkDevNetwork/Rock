@@ -12,6 +12,7 @@ using System.Web;
 
 using Rock;
 using Rock.Crm;
+using Rock.Web.UI;
 
 namespace Rock.Search.Person
 {
@@ -21,8 +22,8 @@ namespace Rock.Search.Person
     [Description( "Person Address Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Address")]
-    [Rock.Attribute.Property( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Address" )]
-    [Rock.Attribute.Property( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
+    [BlockProperty( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Address" )]
+    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
     public class Address : SearchComponent
     {
         /// <summary>

@@ -23,6 +23,7 @@ using System.Linq;
 using Quartz;
 
 using Rock.Core;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -55,29 +56,8 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void  Execute(IJobExecutionContext context)
         {
-
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                AttributeService attribService = new AttributeService();
-                AttributeValueService attributeValueService = new AttributeValueService();
-
-                Rock.Core.Attribute jobPulseAttrib = attribService.GetGlobalAttribute( "JobPulse" );
-                Rock.Core.AttributeValue jobPulseAttribValue = jobPulseAttrib.AttributeValues.FirstOrDefault();
-
-                // create attribute value if one does not exist
-                if ( jobPulseAttribValue == null )
-                {
-                    jobPulseAttribValue = new AttributeValue();
-                    jobPulseAttribValue.AttributeId = jobPulseAttrib.Id;
-                    attributeValueService.Add( jobPulseAttribValue, null );
-                }
-
-                // store todays date and time
-                jobPulseAttribValue.Value = DateTime.Now.ToString();
-
-                // save attribute
-                attributeValueService.Save( jobPulseAttribValue, null );
-            }
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            globalAttributesCache.SetValue( "JobPulse", DateTime.Now.ToString(), null, true );
         }
 
     }

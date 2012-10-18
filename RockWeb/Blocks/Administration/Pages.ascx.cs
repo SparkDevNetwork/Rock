@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
+            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
         }

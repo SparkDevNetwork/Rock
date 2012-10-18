@@ -72,7 +72,7 @@
             <div class="span6">
 
                 <fieldset>
-	                <legend>Your Information</legend> 
+                    <legend>Your Information</legend> 
                     <Rock:LabeledTextBox ID="tbFirstName" runat="server" LabelText="First Name" Required="true" ></Rock:LabeledTextBox>
                     <Rock:LabeledTextBox ID="tbLastName" runat="server" LabelText="Last Name" Required="true" ></Rock:LabeledTextBox>
                     <Rock:LabeledTextBox ID="tbEmail" runat="server" LabelText="Email" Required="true" ></Rock:LabeledTextBox>

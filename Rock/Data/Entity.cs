@@ -16,13 +16,13 @@ using Rock.Security;
 
 namespace Rock.Data
 {
-	/// <summary>
-	/// Base class that all models need to inherit from
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	[DataServiceKey( "Id" )]
-	[DataContract]
-	public abstract class Entity<T> : IEntity
+    /// <summary>
+    /// Base class that all models need to inherit from
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    [DataServiceKey( "Id" )]
+    [DataContract]
+    public abstract class Entity<T> : IEntity
     {
         // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
         // the service to interface with EF and fetch data.
@@ -40,6 +40,7 @@ namespace Rock.Data
         /// <value>
         /// The GUID.
         /// </value>
+        [AlternateKey]
         [DataMember]
         public Guid Guid { 
             get { return _guid; }
@@ -47,14 +48,14 @@ namespace Rock.Data
         }
         private Guid _guid = Guid.NewGuid();
 
-		/// <summary>
-		/// Gets the unique type name of the entity.  Typically this is the qualified name of the class
-		/// </summary>
-		/// <value>
-		/// The type of the entity.
-		/// </value>
-		[NotMapped]
-		public abstract string EntityTypeName { get; }
+        /// <summary>
+        /// Gets the unique type name of the entity.  Typically this is the qualified name of the class
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [NotMapped]
+        public abstract string EntityTypeName { get; }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.
@@ -126,248 +127,248 @@ namespace Rock.Data
             return new Service<TT>().Get( id );
         }
 
-		#region Events
+        #region Events
 
-		/// <summary>
-		/// Occurs when model is being added.
-		/// </summary>
-		public static event EventHandler<ModelUpdatingEventArgs> Adding;
+        /// <summary>
+        /// Occurs when model is being added.
+        /// </summary>
+        public static event EventHandler<ModelUpdatingEventArgs> Adding;
 
-		/// <summary>
-		/// Raises the <see cref="E:Adding"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnAdding( ModelUpdatingEventArgs e )
-		{
-			if ( Adding != null )
-				Adding( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Adding"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnAdding( ModelUpdatingEventArgs e )
+        {
+            if ( Adding != null )
+                Adding( this, e );
+        }
 
-		/// <summary>
-		/// Raises the adding event.
-		/// </summary>
-		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseAddingEvent( out bool cancel, int? personId )
-		{
-			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-			OnAdding( e );
-			cancel = e.Cancel;
-		}
+        /// <summary>
+        /// Raises the adding event.
+        /// </summary>
+        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseAddingEvent( out bool cancel, int? personId )
+        {
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
+            OnAdding( e );
+            cancel = e.Cancel;
+        }
 
-		/// <summary>
-		/// Occurs when model was added.
-		/// </summary>
-		public static event EventHandler<ModelUpdatedEventArgs> Added;
+        /// <summary>
+        /// Occurs when model was added.
+        /// </summary>
+        public static event EventHandler<ModelUpdatedEventArgs> Added;
 
-		/// <summary>
-		/// Raises the <see cref="E:Added"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnAdded( ModelUpdatedEventArgs e )
-		{
-			if ( Added != null )
-				Added( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Added"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnAdded( ModelUpdatedEventArgs e )
+        {
+            if ( Added != null )
+                Added( this, e );
+        }
 
-		/// <summary>
-		/// Raises the added event.
-		/// </summary>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseAddedEvent( int? personId )
-		{
-			OnAdded( new ModelUpdatedEventArgs( this, personId ) );
-		}
+        /// <summary>
+        /// Raises the added event.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseAddedEvent( int? personId )
+        {
+            OnAdded( new ModelUpdatedEventArgs( this, personId ) );
+        }
 
-		/// <summary>
-		/// Occurs when model is being deleted.
-		/// </summary>
-		public static event EventHandler<ModelUpdatingEventArgs> Deleting;
+        /// <summary>
+        /// Occurs when model is being deleted.
+        /// </summary>
+        public static event EventHandler<ModelUpdatingEventArgs> Deleting;
 
-		/// <summary>
-		/// Raises the <see cref="E:Deleting"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnDeleting( ModelUpdatingEventArgs e )
-		{
-			if ( Deleting != null )
-				Deleting( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Deleting"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnDeleting( ModelUpdatingEventArgs e )
+        {
+            if ( Deleting != null )
+                Deleting( this, e );
+        }
 
-		/// <summary>
-		/// Raises the deleting event.
-		/// </summary>
-		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseDeletingEvent( out bool cancel, int? personId )
-		{
-			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-			OnDeleting( e );
-			cancel = e.Cancel;
-		}
+        /// <summary>
+        /// Raises the deleting event.
+        /// </summary>
+        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseDeletingEvent( out bool cancel, int? personId )
+        {
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
+            OnDeleting( e );
+            cancel = e.Cancel;
+        }
 
-		/// <summary>
-		/// Occurs when model was deleted.
-		/// </summary>
-		public static event EventHandler<ModelUpdatedEventArgs> Deleted;
+        /// <summary>
+        /// Occurs when model was deleted.
+        /// </summary>
+        public static event EventHandler<ModelUpdatedEventArgs> Deleted;
 
-		/// <summary>
-		/// Raises the <see cref="E:Deleted"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnDeleted( ModelUpdatedEventArgs e )
-		{
-			if ( Deleted != null )
-				Deleted( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Deleted"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnDeleted( ModelUpdatedEventArgs e )
+        {
+            if ( Deleted != null )
+                Deleted( this, e );
+        }
 
-		/// <summary>
-		/// Raises the deleted event.
-		/// </summary>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseDeletedEvent( int? personId )
-		{
-			OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
-		}
+        /// <summary>
+        /// Raises the deleted event.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseDeletedEvent( int? personId )
+        {
+            OnDeleted( new ModelUpdatedEventArgs( this, personId ) );
+        }
 
-		/// <summary>
-		/// Occurs when model is being updated.
-		/// </summary>
-		public static event EventHandler<ModelUpdatingEventArgs> Updating;
+        /// <summary>
+        /// Occurs when model is being updated.
+        /// </summary>
+        public static event EventHandler<ModelUpdatingEventArgs> Updating;
 
-		/// <summary>
-		/// Raises the <see cref="E:Updating"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnUpdating( ModelUpdatingEventArgs e )
-		{
-			if ( Updating != null )
-				Updating( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Updating"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnUpdating( ModelUpdatingEventArgs e )
+        {
+            if ( Updating != null )
+                Updating( this, e );
+        }
 
-		/// <summary>
-		/// Raises the updating event.
-		/// </summary>
-		/// <param name="cancel">if set to <c>true</c> [cancel].</param>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseUpdatingEvent( out bool cancel, int? personId )
-		{
-			ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
-			OnUpdating( e );
-			cancel = e.Cancel;
-		}
+        /// <summary>
+        /// Raises the updating event.
+        /// </summary>
+        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseUpdatingEvent( out bool cancel, int? personId )
+        {
+            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personId );
+            OnUpdating( e );
+            cancel = e.Cancel;
+        }
 
-		/// <summary>
-		/// Occurs when model was updated
-		/// </summary>
-		public static event EventHandler<ModelUpdatedEventArgs> Updated;
+        /// <summary>
+        /// Occurs when model was updated
+        /// </summary>
+        public static event EventHandler<ModelUpdatedEventArgs> Updated;
 
-		/// <summary>
-		/// Raises the <see cref="E:Updated"/> event.
-		/// </summary>
-		/// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-		protected virtual void OnUpdated( ModelUpdatedEventArgs e )
-		{
-			if ( Updated != null )
-				Updated( this, e );
-		}
+        /// <summary>
+        /// Raises the <see cref="E:Updated"/> event.
+        /// </summary>
+        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnUpdated( ModelUpdatedEventArgs e )
+        {
+            if ( Updated != null )
+                Updated( this, e );
+        }
 
-		/// <summary>
-		/// Raises the updated event.
-		/// </summary>
-		/// <param name="personId">The person id.</param>
-		public virtual void RaiseUpdatedEvent( int? personId )
-		{
-			OnUpdated( new ModelUpdatedEventArgs( this, personId ) );
-		}
+        /// <summary>
+        /// Raises the updated event.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public virtual void RaiseUpdatedEvent( int? personId )
+        {
+            OnUpdated( new ModelUpdatedEventArgs( this, personId ) );
+        }
 
-		#endregion
+        #endregion
 
     }
 
-	#region Event Arguments
+    #region Event Arguments
 
-	/// <summary>
-	/// Event argument used when model was added, updated, or deleted
-	/// </summary>
-	public class ModelUpdatedEventArgs : EventArgs
-	{
-		/// <summary>
-		/// The affected model
-		/// </summary>
-		public readonly IEntity Model;
+    /// <summary>
+    /// Event argument used when model was added, updated, or deleted
+    /// </summary>
+    public class ModelUpdatedEventArgs : EventArgs
+    {
+        /// <summary>
+        /// The affected model
+        /// </summary>
+        public readonly IEntity Model;
 
-		/// <summary>
-		/// The id of the person making the update
-		/// </summary>
-		public readonly int? PersonId;
+        /// <summary>
+        /// The id of the person making the update
+        /// </summary>
+        public readonly int? PersonId;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ModelUpdatedEventArgs"/> class.
-		/// </summary>
-		/// <param name="model">The model.</param>
-		/// <param name="personId">The person id.</param>
-		public ModelUpdatedEventArgs( IEntity model, int? personId )
-		{
-			Model = model;
-			PersonId = personId;
-		}
-	}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelUpdatedEventArgs"/> class.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="personId">The person id.</param>
+        public ModelUpdatedEventArgs( IEntity model, int? personId )
+        {
+            Model = model;
+            PersonId = personId;
+        }
+    }
 
-	/// <summary>
-	/// Event argument used when model is being added, updated, or deleted
-	/// </summary>
-	public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
-	{
-		private bool cancel = false;
-		/// <summary>
-		/// Gets or sets a value indicating whether event should be cancelled.
-		/// </summary>
-		/// <value>
-		///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
-		/// </value>
-		public bool Cancel
-		{
-			get { return cancel; }
-			set
-			{
-				if ( value == true )
-					cancel = true;
-			}
+    /// <summary>
+    /// Event argument used when model is being added, updated, or deleted
+    /// </summary>
+    public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
+    {
+        private bool cancel = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether event should be cancelled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Cancel
+        {
+            get { return cancel; }
+            set
+            {
+                if ( value == true )
+                    cancel = true;
+            }
 
-		}
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
-		/// </summary>
-		/// <param name="model">The model.</param>
-		/// <param name="personId">The person id.</param>
-		public ModelUpdatingEventArgs( IEntity model, int? personId )
-			: base( model, personId )
-		{
-		}
-	}
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs"/> class.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="personId">The person id.</param>
+        public ModelUpdatingEventArgs( IEntity model, int? personId )
+            : base( model, personId )
+        {
+        }
+    }
 
-	#endregion
+    #endregion
 
-	/// <summary>
-	/// Object used for current model (context) implementation 
-	/// </summary>
-	internal class KeyEntity
-	{
-		public string Key { get; set; }
-		public int Id { get; set; }
-		public IEntity Entity { get; set; }
+    /// <summary>
+    /// Object used for current model (context) implementation 
+    /// </summary>
+    internal class KeyEntity
+    {
+        public string Key { get; set; }
+        public int Id { get; set; }
+        public IEntity Entity { get; set; }
 
-		public KeyEntity( int id )
-		{
-			Id = id;
-		}
+        public KeyEntity( int id )
+        {
+            Id = id;
+        }
 
-		public KeyEntity( string key )
-		{
-			Key = key;
-		}
-	}
+        public KeyEntity( string key )
+        {
+            Key = key;
+        }
+    }
 
 
 }

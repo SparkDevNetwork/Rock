@@ -12,6 +12,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -29,7 +31,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Uses reflection to find any <see cref="PropertyAttribute"/> attributes for the specified type and will create and/or update
+        /// Uses reflection to find any <see cref="BlockPropertyAttribute"/> attributes for the specified type and will create and/or update
         /// a <see cref="Rock.Core.Attribute"/> record for each attribute defined.
         /// </summary>
         /// <param name="type">The type (should be a <see cref="IHasAttributes"/> object.</param>
@@ -46,14 +48,36 @@ namespace Rock.Attribute
             {
                 List<string> existingKeys = new List<string>();
 
-                foreach ( object customAttribute in type.GetCustomAttributes( typeof( Rock.Attribute.PropertyAttribute ), true ) )
-                {
-                    var blockProperty = ( Rock.Attribute.PropertyAttribute )customAttribute;
-                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                var blockProperties = new List<BlockPropertyAttribute>();
 
+                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+                int properties = 0;
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+                {
+                    var contextAttribute = (ContextAwareAttribute)customAttribute;
+                    if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
+                    {
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
+
+                        blockProperties.Add( new BlockPropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
+                    }
+                }
+                        
+                // Add any property attributes that were defined for the block
+                foreach ( var customAttribute in type.GetCustomAttributes( typeof( BlockPropertyAttribute ), true ) )
+                {
+                    blockProperties.Add( (BlockPropertyAttribute)customAttribute );
+                }
+
+                // Create any attributes that need to be created
+                foreach( var blockProperty in blockProperties)
+                {
+                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
 
+                // Remove any old attributes
                 Core.AttributeService attributeService = new Core.AttributeService();
                 foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
                     if ( !existingKeys.Contains( a.Key ) )
@@ -75,7 +99,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( Rock.Attribute.PropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( BlockPropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
 
@@ -150,7 +174,7 @@ namespace Rock.Attribute
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-			var attributes = new Dictionary<int, Rock.Web.Cache.AttributeCache>();
+            var attributes = new Dictionary<int, Rock.Web.Cache.AttributeCache>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
             Type entityType = entity.GetType();
@@ -163,69 +187,69 @@ namespace Rock.Attribute
             Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
             Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
-			// Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-			foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
+            // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
+            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
                     properties[attribute.EntityQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityQualifierValue ) ) )
                 {
-					attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
-				}
-			}
+                    attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
+                }
+            }
 
-			var categorizedAttributes = new SortedDictionary<string, List<Web.Cache.AttributeCache>>();
-			var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>>();
+            var categorizedAttributes = new SortedDictionary<string, List<Web.Cache.AttributeCache>>();
+            var attributeValues = new Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>>();
 
-			foreach ( var attribute in attributes )
-			{
-				// Categorize the attributes
+            foreach ( var attribute in attributes )
+            {
+                // Categorize the attributes
                 if ( !categorizedAttributes.ContainsKey( attribute.Value.Category ) )
                     categorizedAttributes.Add( attribute.Value.Category, new List<Web.Cache.AttributeCache>() );
                 categorizedAttributes[attribute.Value.Category].Add( attribute.Value );
 
-				// Add a placeholder for this item's value for each attribute
-				attributeValues.Add( attribute.Value.Key, new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>( attribute.Value.Name, new List<Rock.Core.AttributeValueDto>() ) );
-			}
+                // Add a placeholder for this item's value for each attribute
+                attributeValues.Add( attribute.Value.Key, new KeyValuePair<string, List<Rock.Core.AttributeValueDto>>( attribute.Value.Name, new List<Rock.Core.AttributeValueDto>() ) );
+            }
 
-			// Read this item's value(s) for each attribute 
-			foreach ( dynamic item in attributeValueService.Queryable()
-				.Where( v => v.EntityId == entity.Id && attributes.Keys.Contains( v.AttributeId ) )
-				.Select( v => new
-				{
-					Value = v,
-					Key = v.Attribute.Key
-				} ) )
-			{
-				attributeValues[item.Key].Value.Add( new Rock.Core.AttributeValueDto( item.Value ) );
-			}
+            // Read this item's value(s) for each attribute 
+            foreach ( dynamic item in attributeValueService.Queryable()
+                .Where( v => v.EntityId == entity.Id && attributes.Keys.Contains( v.AttributeId ) )
+                .Select( v => new
+                {
+                    Value = v,
+                    Key = v.Attribute.Key
+                } ) )
+            {
+                attributeValues[item.Key].Value.Add( new Rock.Core.AttributeValueDto( item.Value ) );
+            }
 
-			// Look for any attributes that don't have a value and create a default value entry
-			foreach ( var attributeEntry in attributes )
-			{
-				if ( attributeValues[attributeEntry.Value.Key].Value.Count == 0 )
-				{
-					var attributeValue = new Rock.Core.AttributeValueDto();
-					attributeValue.AttributeId = attributeEntry.Value.Id;
-					attributeValue.Value = attributeEntry.Value.DefaultValue;
-					attributeValues[attributeEntry.Value.Key].Value.Add( attributeValue );
-				}
-				else
-				{
-					if ( !String.IsNullOrWhiteSpace( attributeEntry.Value.DefaultValue ) )
-					{
-						foreach ( var value in attributeValues[attributeEntry.Value.Key].Value )
-						{
-							if ( String.IsNullOrWhiteSpace( value.Value ) )
-							{
-								value.Value = attributeEntry.Value.DefaultValue;
-							}
+            // Look for any attributes that don't have a value and create a default value entry
+            foreach ( var attributeEntry in attributes )
+            {
+                if ( attributeValues[attributeEntry.Value.Key].Value.Count == 0 )
+                {
+                    var attributeValue = new Rock.Core.AttributeValueDto();
+                    attributeValue.AttributeId = attributeEntry.Value.Id;
+                    attributeValue.Value = attributeEntry.Value.DefaultValue;
+                    attributeValues[attributeEntry.Value.Key].Value.Add( attributeValue );
+                }
+                else
+                {
+                    if ( !String.IsNullOrWhiteSpace( attributeEntry.Value.DefaultValue ) )
+                    {
+                        foreach ( var value in attributeValues[attributeEntry.Value.Key].Value )
+                        {
+                            if ( String.IsNullOrWhiteSpace( value.Value ) )
+                            {
+                                value.Value = attributeEntry.Value.DefaultValue;
+                            }
 
-						}
-					}
-				}
-			}
+                        }
+                    }
+                }
+            }
 
             entity.Attributes = categorizedAttributes;
             entity.AttributeValues = attributeValues;

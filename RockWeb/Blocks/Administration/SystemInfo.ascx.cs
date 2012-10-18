@@ -37,23 +37,23 @@ namespace RockWeb.Blocks.Administration
             {
                 //int size = 0;
 
-				//try
-				//{
-				//	using ( var memStream = new MemoryStream() )
-				//	{
-				//		binaryFormatter.Serialize( memStream, cachItem.Value );
-				//		size = memStream.ToArray().Length;
-				//		memStream.Close();
-				//	}
+                //try
+                //{
+                //    using ( var memStream = new MemoryStream() )
+                //    {
+                //        binaryFormatter.Serialize( memStream, cachItem.Value );
+                //        size = memStream.ToArray().Length;
+                //        memStream.Close();
+                //    }
 
-				//	sbItems.AppendFormat( "<p>{0} ({1:N0} bytes)</p>", cachItem.Key, size );
-				//	totalSize += size;
+                //    sbItems.AppendFormat( "<p>{0} ({1:N0} bytes)</p>", cachItem.Key, size );
+                //    totalSize += size;
 
-				//}
-				//catch (SystemException ex)
-				//{
-				//	sbItems.AppendFormat( "<p>{0} (Could Not Determine Size: {1})</p>", cachItem.Key, ex.Message );
-				//}
+                //}
+                //catch (SystemException ex)
+                //{
+                //    sbItems.AppendFormat( "<p>{0} (Could Not Determine Size: {1})</p>", cachItem.Key, ex.Message );
+                //}
             }
 
             StringBuilder sb = new StringBuilder();

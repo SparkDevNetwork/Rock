@@ -20,61 +20,61 @@ namespace Rock.Groups
     [Table( "groupsMember" )]
     public partial class Member : Model<Member>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Group Id.
-		/// </summary>
-		/// <value>
-		/// Group Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int GroupId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int PersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Group Role Id.
-		/// </summary>
-		/// <value>
-		/// Group Role Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int GroupRoleId { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Member Read( int id )
-		{
-			return Read<Member>( id );
-		}
-		
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Group Id.
+        /// </summary>
+        /// <value>
+        /// Group Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int GroupId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int PersonId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Group Role Id.
+        /// </summary>
+        /// <value>
+        /// Group Role Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int GroupRoleId { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Member Read( int id )
+        {
+            return Read<Member>( id );
+        }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Groups.Member"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Groups.Member"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -100,18 +100,18 @@ namespace Rock.Groups
         /// </value>
         public virtual GroupRole GroupRole { get; set; }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			if ( Person != null )
-				return Person.FullName;
-			return string.Empty;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( Person != null )
+                return Person.FullName;
+            return string.Empty;
+        }
     }
 
     /// <summary>

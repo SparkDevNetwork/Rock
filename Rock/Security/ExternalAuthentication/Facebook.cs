@@ -21,6 +21,7 @@ using Facebook;
 using Rock.Core;
 using Rock.Cms;
 using Rock.Crm;
+using Rock.Web.UI;
 
 namespace Rock.Security.ExternalAuthentication
 {
@@ -30,8 +31,8 @@ namespace Rock.Security.ExternalAuthentication
     [Description( "Facebook Authentication Provider" )]
     [Export( typeof( ExternalAuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
-    [Rock.Attribute.Property( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
-    [Rock.Attribute.Property( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
+    [BlockProperty( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
+    [BlockProperty( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
     public class Facebook : ExternalAuthenticationComponent
     {
         /// <summary>

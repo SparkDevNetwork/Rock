@@ -141,31 +141,31 @@ namespace Rock.Core
         [DataMember]
         public string SourceSQL { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Metric Read( int id )
-		{
-			return Read<Metric>( id );
-		}
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Metric Read( int id )
+        {
+            return Read<Metric>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.Metric"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.Metric"; } }
         
         /// <summary>
         /// Gets or sets the Metric Values.
@@ -191,16 +191,16 @@ namespace Rock.Core
             get { return new Security.GenericEntity( "Global" ); }
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Title;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Title;
+        }
     }
     /// <summary>
     /// Metric Configuration class.

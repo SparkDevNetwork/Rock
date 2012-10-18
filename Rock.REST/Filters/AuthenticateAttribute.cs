@@ -18,16 +18,16 @@ namespace Rock.Rest.Filters
         {
             // See if user is logged in
             var principal = System.Threading.Thread.CurrentPrincipal;
-			if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
-			{
-				var userService = new UserService();
-				var user = userService.GetByUserName(principal.Identity.Name);
-				if ( user != null )
-				{
-					actionContext.Request.SetUserPrincipal( principal );
-					return;
-				}
-			}
+            if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
+            {
+                var userService = new UserService();
+                var user = userService.GetByUserName(principal.Identity.Name);
+                if ( user != null )
+                {
+                    actionContext.Request.SetUserPrincipal( principal );
+                    return;
+                }
+            }
 
             // If not, see if there's a valid token
             string authToken = null;
@@ -43,13 +43,13 @@ namespace Rock.Rest.Filters
             {
                 var userService = new UserService();
                 var user = userService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
-				if ( user != null )
-				{
-					var identity = new GenericIdentity( user.UserName );
-					principal = new GenericPrincipal(identity, null);
-					actionContext.Request.SetUserPrincipal( principal );
-					return;
-				}
+                if ( user != null )
+                {
+                    var identity = new GenericIdentity( user.UserName );
+                    principal = new GenericPrincipal(identity, null);
+                    actionContext.Request.SetUserPrincipal( principal );
+                    return;
+                }
             }
             actionContext.Response = actionContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "The Rock API requires that requests include either an Authorization-Token, and ApiKey querystring parameter, or are made by a logged-in user" ); 
         }
