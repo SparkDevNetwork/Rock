@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.ServiceObjects.GeoCoder;
+using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
 {
@@ -17,7 +18,7 @@ namespace Rock.Address.Geocode
     [Description("Service Objects Geocoding service")]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
-    [Rock.Attribute.Property( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
+    [BlockProperty( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
     public class ServiceObjects : GeocodeComponent
     {
         /// <summary>

@@ -58,51 +58,51 @@ namespace Rock.Groups
         [DataMember]
         public int? CampusId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Is Security Role.
-		/// </summary>
-		/// <value>
-		/// Is Security Role.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSecurityRole { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Group Read( int id )
-		{
-			return Read<Group>( id );
-		}
-		
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Is Security Role.
+        /// </summary>
+        /// <value>
+        /// Is Security Role.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSecurityRole { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Group Read( int id )
+        {
+            return Read<Group>( id );
+        }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Groups.Group"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Groups.Group"; } }
         
         /// <summary>
         /// Gets or sets the Groups.
@@ -152,18 +152,18 @@ namespace Rock.Groups
         /// </value>
         public virtual Rock.Crm.Campus Campus { get; set; }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
 
-	}
+    }
 
     /// <summary>
     /// Group Configuration class.

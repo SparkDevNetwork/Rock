@@ -15,7 +15,6 @@
     <Node Id="Newtonsoft.Json 4.5.8" Label="Newtonsoft.Json 4.5.8" Category="Package" />
     <Node Id="System.Spatial 5.0.2" Label="System.Spatial 5.0.2" Category="Package" />
     <Node Id="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Label="C:\...\RockWeb\" Category="Project" />
-    <Node Id="CodeContracts.Unofficial 1.0.0.2" Label="CodeContracts.Unofficial 1.0.0.2" Category="Package" />
     <Node Id="dotless 1.1.0" Label="dotless 1.1.0" Category="Package" />
     <Node Id="ImageResizer 3.0.13" Label="ImageResizer 3.0.13" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 4.0.20710.0" Label="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Package" />
@@ -52,7 +51,6 @@
     <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Newtonsoft.Json 4.5.6" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Target="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.WebHost 4.0.20710.0" Target="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package Dependency" />
-    <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="CodeContracts.Unofficial 1.0.0.2" Category="Installed Package" />
     <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="dotless 1.1.0" Category="Installed Package" />
     <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="ImageResizer 3.0.13" Category="Installed Package" />
     <Link Source="C:\Users\dturner\Dropbox\Projects\SparkDevNetwork\Rock-ChMS\RockWeb\" Target="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Installed Package" />

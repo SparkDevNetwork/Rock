@@ -85,20 +85,20 @@ namespace Rock.Crm
         [DataMember]
         public bool IsUnlisted { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.PhoneNumber"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Crm.PhoneNumber"; } }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -137,16 +137,16 @@ namespace Rock.Crm
             return number;
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return FormattedNumber( this.Number );
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return FormattedNumber( this.Number );
+        }
     }
 
     /// <summary>

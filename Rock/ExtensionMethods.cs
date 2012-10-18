@@ -73,10 +73,10 @@ namespace Rock
         /// <returns></returns>
         public static string SplitCase( this string str )
         {
-			if ( str == null )
-				return null;
+            if ( str == null )
+                return null;
 
-			return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
+            return Regex.Replace( Regex.Replace( str, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1 $2" ), @"(\p{Ll})(\P{Ll})", "$1 $2" );
         }
 
         /// <summary>
@@ -87,12 +87,12 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
-			if (str == null)
-				return new string[0];
+            if (str == null)
+                return new string[0];
 
-			string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
+            string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
 
-			char[] delimiter = new char[] { ',' };
+            char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
 
@@ -105,10 +105,10 @@ namespace Rock
         /// <returns></returns>
         public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
         {
-			if ( str == null )
-				return null;
+            if ( str == null )
+                return null;
 
-			int count, position0, position1;
+            int count, position0, position1;
             count = position0 = position1 = 0;
             string upperString = str.ToUpper();
             string upperPattern = oldValue.ToUpper();
@@ -130,29 +130,29 @@ namespace Rock
             return new string( chars, 0, count );
         }
 
-		/// <summary>
-		/// Adds escape character for quotes in a string
-		/// </summary>
-		/// <param name="str"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Adds escape character for quotes in a string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public static string EscapeQuotes( this string str )
         {
-			if ( str == null )
-				return null;
+            if ( str == null )
+                return null;
 
-			return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
+            return str.Replace( "'", "\\'" ).Replace( "\"", "\\" );
         }
 
-		/// <summary>
-		/// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
-		/// </summary>
-		/// <param name="str"></param>
-		/// <param name="maxLength"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Truncates a string after a max length and adds ellipsis.  Truncation will occur at first space prior to maxLength
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public static string Ellipsis( this string str, int maxLength )
         {
-			if ( str == null )
-				return null;
+            if ( str == null )
+                return null;
 
             if (str.Length <= maxLength)
                 return str;
@@ -168,71 +168,71 @@ namespace Rock
 
         #endregion
 
-		#region Int Extensions
+        #region Int Extensions
 
         /// <summary>
         /// Gets the Defined Value name associated with this id
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-		public static string DefinedValue( this int? id )
-		{
-			if ( !id.HasValue )
-				return string.Empty;
-			
-			var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
-			if ( definedValue != null )
-				return definedValue.Name;
-			else
-				return string.Empty;
-		}
+        public static string DefinedValue( this int? id )
+        {
+            if ( !id.HasValue )
+                return string.Empty;
+            
+            var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
+            if ( definedValue != null )
+                return definedValue.Name;
+            else
+                return string.Empty;
+        }
 
-		#endregion
+        #endregion
 
-		#region Boolean Extensions
+        #region Boolean Extensions
 
-		/// <summary>
-		/// A numeric 1 or 0
-		/// </summary>
-		/// <param name="field"></param>
-		/// <returns></returns>
-		public static int Bit( this Boolean field )
-		{
-			return field ? 1 : 0;
-		}
+        /// <summary>
+        /// A numeric 1 or 0
+        /// </summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static int Bit( this Boolean field )
+        {
+            return field ? 1 : 0;
+        }
 
-		#endregion
+        #endregion
 
-		#region DateTimeOffset Extensions
+        #region DateTimeOffset Extensions
 
-		/// <summary>
-		/// Returns the age at the current date
-		/// </summary>
-		/// <param name="start"></param>
-		/// <returns></returns>
-		public static int Age( this DateTimeOffset? start )
-		{
-			if ( start.HasValue )
-				return start.Value.Age();
-			else
-				return 0;
-		}
+        /// <summary>
+        /// Returns the age at the current date
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static int Age( this DateTimeOffset? start )
+        {
+            if ( start.HasValue )
+                return start.Value.Age();
+            else
+                return 0;
+        }
 
-		/// <summary>
-		/// Returns the age at the current date
-		/// </summary>
-		/// <param name="start"></param>
-		/// <returns></returns>
-		public static int Age( this DateTimeOffset start )
-		{
-			var now = DateTime.Today;
-			int age = now.Year - start.Year;
-			if ( start > now.AddYears( -age ) ) age--;
+        /// <summary>
+        /// Returns the age at the current date
+        /// </summary>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static int Age( this DateTimeOffset start )
+        {
+            var now = DateTime.Today;
+            int age = now.Year - start.Year;
+            if ( start > now.AddYears( -age ) ) age--;
 
-			return age;
-		}
+            return age;
+        }
 
-		/// <summary>
+        /// <summary>
         /// The total months.
         /// </summary>
         /// <param name="start">The start.</param>
@@ -249,7 +249,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-		public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
+        public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
         {
             return (end.Year) - (start.Year);
         }
@@ -261,77 +261,77 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-		public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
-		{
+        public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
+        {
             if ( dateTime.HasValue )
             {
-				return ToElapsedString( dateTime.Value, condensed, includeTime );
-			}
-			else
-				return string.Empty;
-		}
+                return ToElapsedString( dateTime.Value, condensed, includeTime );
+            }
+            else
+                return string.Empty;
+        }
 
-		/// <summary>
-		/// Returns a friendly elapsed time string.
-		/// </summary>
-		/// <param name="dateTime">The date time.</param>
+        /// <summary>
+        /// Returns a friendly elapsed time string.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
-		/// <returns></returns>
-		public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
-		{
-			DateTimeOffset start = dateTime;
-			DateTimeOffset end = DateTimeOffset.Now;
+        /// <returns></returns>
+        public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
+        {
+            DateTimeOffset start = dateTime;
+            DateTimeOffset end = DateTimeOffset.Now;
 
-			string direction = " Ago";
-			TimeSpan timeSpan = end.Subtract( start );
-			if ( timeSpan.TotalMilliseconds < 0 )
-			{
-				direction = " From Now";
-				start = end;
-				end = dateTime;
-				timeSpan = timeSpan.Negate();
-			}
+            string direction = " Ago";
+            TimeSpan timeSpan = end.Subtract( start );
+            if ( timeSpan.TotalMilliseconds < 0 )
+            {
+                direction = " From Now";
+                start = end;
+                end = dateTime;
+                timeSpan = timeSpan.Negate();
+            }
 
-			string duration = "";
+            string duration = "";
 
-			if ( timeSpan.TotalHours < 24 && includeTime )
-			{
-				// Less than one second
-				if ( timeSpan.TotalSeconds <= 1 )
-					duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
+            if ( timeSpan.TotalHours < 24 && includeTime )
+            {
+                // Less than one second
+                if ( timeSpan.TotalSeconds <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
 
-				else if ( timeSpan.TotalSeconds < 60 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
-				else if ( timeSpan.TotalMinutes <= 1 )
-					duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
-				else if ( timeSpan.TotalMinutes < 60 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
-				else if ( timeSpan.TotalHours <= 1 )
-					duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
-				else if ( timeSpan.TotalHours < 24 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
-			}
+                else if ( timeSpan.TotalSeconds < 60 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
+                else if ( timeSpan.TotalMinutes <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "min" : " Minute" );
+                else if ( timeSpan.TotalMinutes < 60 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalMinutes ), condensed ? "min" : " Minutes" );
+                else if ( timeSpan.TotalHours <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "hr" : " Hour" );
+                else if ( timeSpan.TotalHours < 24 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalHours ), condensed ? "hr" : " Hours" );
+            }
 
-			if ( duration == "" )
-			{
-				if ( timeSpan.TotalDays <= 1 )
-					duration = string.Format( "1{0}", condensed ? "day" : " Day" );
-				else if ( timeSpan.TotalDays < 31 )
-					duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
-				else if ( end.TotalMonths( start ) <= 1 )
-					duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
-				else if ( end.TotalMonths( start ) <= 18 )
-					duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
-				else if ( end.TotalYears( start ) <= 1 )
-					duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
-				else
-					duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
-			}
+            if ( duration == "" )
+            {
+                if ( timeSpan.TotalDays <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "day" : " Day" );
+                else if ( timeSpan.TotalDays < 31 )
+                    duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
+                else if ( end.TotalMonths( start ) <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
+                else if ( end.TotalMonths( start ) <= 18 )
+                    duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
+                else if ( end.TotalYears( start ) <= 1 )
+                    duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
+                else
+                    duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
+            }
 
-			return "(" + duration + (condensed ? "" : direction) + ")";
+            return "(" + duration + (condensed ? "" : direction) + ")";
 
-		}
+        }
 
         #endregion
 

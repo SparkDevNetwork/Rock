@@ -193,31 +193,31 @@ namespace Rock.Financial
         public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Transaction> Transactions { get; set; }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Fund Read( int id )
-		{
-			return Read<Fund>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Fund Read( int id )
+        {
+            return Read<Fund>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
         public override string EntityTypeName { get { return "Financial.Fund"; } }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>

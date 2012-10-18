@@ -9,6 +9,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
+using Rock.Core;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -22,18 +24,6 @@ namespace Rock.Web.Cache
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
         private GlobalAttributesCache() { }
-
-        /// <summary>
-        /// Global Attribute Value for the specified key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public string AttributeValue (string key)
-        {
-            if (AttributeValues.Keys.Contains(key))
-                return AttributeValues[key].Value;
-            return null;
-        }
 
         /// <summary>
         /// Gets or sets the attribute values.
@@ -102,10 +92,62 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static string Value(string key)
+        public string GetValue(string key)
         {
-            GlobalAttributesCache globalAttributes = Read();
-            return globalAttributes.AttributeValue( key );
+            if (AttributeValues != null && AttributeValues.Keys.Contains( key ) )
+                return AttributeValues[key].Value;
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="currentPersonId">The current person id.</param>
+        /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        public void SetValue( string key, string value, int? currentPersonId, bool saveValue )
+        {
+            if ( saveValue )
+            {
+                // Save new value
+                var attributeValueService = new AttributeValueService();
+                var attributeValue = attributeValueService.Queryable()
+                    .Where( v =>
+                        v.Attribute.Entity == "" &&
+                        ( v.Attribute.EntityQualifierColumn ?? string.Empty ) == "" &&
+                        ( v.Attribute.EntityQualifierValue ?? string.Empty ) == "" &&
+                        v.Attribute.Key == key &&
+                        v.EntityId == null )
+                    .FirstOrDefault();
+
+                if ( attributeValue == null )
+                {
+                    var attributeService = new AttributeService();
+                    var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+                        string.Empty, string.Empty, string.Empty, key );
+                    if ( attribute != null )
+                    {
+                        attributeValue = new AttributeValue();
+                        attributeValue.IsSystem = false;
+                        attributeValue.AttributeId = attribute.Id;
+                        attributeValue.Value = value;
+                        attributeValueService.Save( attributeValue, currentPersonId );
+                    }
+                }
+                else
+                {
+                    attributeValue.Value = value;
+                    attributeValueService.Save( attributeValue, currentPersonId );
+                }
+            }
+
+            // Update cached value
+            if ( AttributeValues != null && AttributeValues.Keys.Contains( key ) )
+            {
+                string attributeName = AttributeValues[key].Key;
+                AttributeValues[key] = new KeyValuePair<string, string>( attributeName, value );
+            }
         }
 
         #endregion

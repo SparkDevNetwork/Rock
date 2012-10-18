@@ -192,19 +192,17 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             PageRouteService pageRouteService = new PageRouteService();
-            List<PageRoute> pageRoutes;
-
             SortProperty sortProperty = gPageRoutes.SortProperty;
+
             if ( sortProperty != null )
             {
-                pageRoutes = pageRouteService.Queryable().Sort( sortProperty ).ToList();
+                gPageRoutes.DataSource = pageRouteService.Queryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                pageRoutes = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
+                gPageRoutes.DataSource = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
             }
 
-            gPageRoutes.DataSource = pageRoutes;
             gPageRoutes.DataBind();
         }
 
@@ -228,17 +226,19 @@ namespace RockWeb.Blocks.Administration
             pnlList.Visible = false;
             pnlDetails.Visible = true;
 
-            Rock.Cms.PageRouteService pageRouteService = new Rock.Cms.PageRouteService();
-            Rock.Cms.PageRoute pageRoute = pageRouteService.Get( pageRouteId );
+            PageRouteService pageRouteService = new PageRouteService();
+            PageRoute pageRoute = pageRouteService.Get( pageRouteId );
 
             if ( pageRoute != null )
             {
+                lActionTitle.Text = "Edit Page Route";
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbRoute.Text = pageRoute.Route;
             }
             else
             {
+                lActionTitle.Text = "Add Page Route";
                 hfPageRouteId.Value = string.Empty;
                 tbRoute.Text = string.Empty;
             }

@@ -21,7 +21,7 @@ namespace Rock.Web.Cache
         private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="Rock.Attribute.PropertyAttribute"/> attributes have been 
+        /// Gets a value indicating whether the <see cref="Rock.Web.UI.BlockPropertyAttribute"/> attributes have been 
         /// verified for the block type.  If not, Rock will create and/or update the attributes associated with the block.
         /// </summary>
         /// <value>

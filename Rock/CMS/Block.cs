@@ -20,95 +20,95 @@ namespace Rock.Cms
     [Table( "cmsBlock" )]
     public partial class Block : Model<Block>, IOrdered, IExportable
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Page Id.
-		/// </summary>
-		/// <value>
-		/// Page Id.
-		/// </value>
-		[DataMember]
-		public int? PageId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Layout.
-		/// </summary>
-		/// <value>
-		/// Layout.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Layout { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Block Type Id.
-		/// </summary>
-		/// <value>
-		/// Block Type Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int BlockTypeId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Zone.
-		/// </summary>
-		/// <value>
-		/// Zone.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Zone { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[MaxLength( 100 )]
-		[TrackChanges]
-		[Required( ErrorMessage = "Name is required" )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Output Cache Duration.
-		/// </summary>
-		/// <value>
-		/// Output Cache Duration.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int OutputCacheDuration { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Page Id.
+        /// </summary>
+        /// <value>
+        /// Page Id.
+        /// </value>
+        [DataMember]
+        public int? PageId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Layout.
+        /// </summary>
+        /// <value>
+        /// Layout.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Layout { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Block Type Id.
+        /// </summary>
+        /// <value>
+        /// Block Type Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int BlockTypeId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Zone.
+        /// </summary>
+        /// <value>
+        /// Zone.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Zone { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [MaxLength( 100 )]
+        [TrackChanges]
+        [Required( ErrorMessage = "Name is required" )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Output Cache Duration.
+        /// </summary>
+        /// <value>
+        /// Output Cache Duration.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int OutputCacheDuration { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Block"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.Block"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
         /// <value>
@@ -130,7 +130,7 @@ namespace Rock.Cms
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-		public virtual Page Page { get; set; }
+        public virtual Page Page { get; set; }
         
         /// <summary>
         /// Gets the supported actions.
@@ -140,17 +140,17 @@ namespace Rock.Cms
             get { return new List<string>() { "View", "Edit", "Configure" }; }
         }
 
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Block Read( int id )
-		{
-			return Read<Block>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Block Read( int id )
+        {
+            return Read<Block>( id );
+        }
 
-		/// <summary>
+        /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>
