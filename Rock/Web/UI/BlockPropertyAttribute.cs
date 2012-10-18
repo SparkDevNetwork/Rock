@@ -7,17 +7,17 @@
 using System;
 using System.Linq;
 
-namespace Rock.Attribute
+namespace Rock.Web.UI
 {
     /// <summary>
-    /// A class Attribute that can be used by any oject that inherits from <see cref="IHasAttributes"/> to specify what attributes it needs.  The 
+    /// A class Attribute that can be used by any oject that inherits from <see cref="Rock.Attribute.IHasAttributes"/> to specify what attributes it needs.  The 
     /// Framework provides methods in the <see cref="Rock.Attribute.Helper"/> class to create, read, and update the attributes
     /// </summary>
     /// <remarks>
     /// If using a custom <see cref="Rock.Field.IFieldType"/> make sure that the fieldtype has been added to Rock.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class PropertyAttribute : System.Attribute
+    public class BlockPropertyAttribute : System.Attribute
     {
         // TODO: Add a way to group attributes...
 
@@ -25,7 +25,7 @@ namespace Rock.Attribute
         /// Gets or sets the attribute key.
         /// </summary>
         /// <remarks>
-        /// The key should be unique for each <see cref="PropertyAttribute"/> defined in a <see cref="Rock.Attribute.IHasAttributes"/> object
+        /// The key should be unique for each <see cref="BlockPropertyAttribute"/> defined in a <see cref="Rock.Attribute.IHasAttributes"/> object
         /// </remarks>
         /// <value>
         /// The key.
@@ -89,7 +89,7 @@ namespace Rock.Attribute
         public string FieldTypeClass { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="PropertyAttribute"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="BlockPropertyAttribute"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -97,7 +97,7 @@ namespace Rock.Attribute
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.
+        /// Initializes a new instance of the <see cref="BlockPropertyAttribute"/> class as a text field with no default value or description.
         /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
         /// </summary>
         /// <param name="order">The order.</param>
@@ -111,13 +111,13 @@ namespace Rock.Attribute
         ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.Field.Types.Text</c>
         /// </remarks>
-        public PropertyAttribute( int order, string name, string description, bool required )
+        public BlockPropertyAttribute( int order, string name, string description, bool required )
             : this( order, name, name.Replace( " ", "" ), string.Empty, description, required, string.Empty, "Rock", "Rock.Field.Types.Text" )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field with no default value or description.
+        /// Initializes a new instance of the <see cref="BlockPropertyAttribute"/> class as a text field with no default value or description.
         /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
         /// </summary>
         /// <param name="order">The order.</param>
@@ -131,13 +131,13 @@ namespace Rock.Attribute
         ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.Field.Types.Text</c>
         /// </remarks>
-        public PropertyAttribute( int order, string name, string category, string description, bool required, string defaultValue )
+        public BlockPropertyAttribute( int order, string name, string category, string description, bool required, string defaultValue )
             : this(order, name, name.Replace(" ", ""), category, description, required, defaultValue, "Rock", "Rock.Field.Types.Text" )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class as a text field.
+        /// Initializes a new instance of the <see cref="BlockPropertyAttribute"/> class as a text field.
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
@@ -150,14 +150,14 @@ namespace Rock.Attribute
         ///   <see cref="FieldTypeAssembly"/> is initialized to <c>Rock</c>
         ///   <see cref="FieldTypeClass"/> is initialized to <c>Rock.Field.Types.Text</c>
         /// </remarks>
-        public PropertyAttribute(int order, string name, string key, string category, string description
+        public BlockPropertyAttribute(int order, string name, string key, string category, string description
             , bool required, string defaultValue )
             : this(order, name, key, category, description, required, defaultValue, "Rock", "Rock.Field.Types.Text" )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class.
+        /// Initializes a new instance of the <see cref="BlockPropertyAttribute"/> class.
         /// The <see cref="Key"/> will be the same as the <see cref="Name"/> with spaces removed.
         /// </summary>
         /// <param name="order">The order.</param>
@@ -171,14 +171,14 @@ namespace Rock.Attribute
         /// <remarks>
         ///   <see cref="Key"/> is initialized to the Name value with spaces removed
         /// </remarks>
-        public PropertyAttribute( int order, string name, string category, string description,
+        public BlockPropertyAttribute( int order, string name, string category, string description,
             bool required, string defaultValue, string fieldTypeAssembly, string fieldTypeClass )
             : this( order, name, name.Replace( " ", "" ), category, description, required, defaultValue, fieldTypeAssembly, fieldTypeClass )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyAttribute"/> class.
+        /// Initializes a new instance of the <see cref="BlockPropertyAttribute"/> class.
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
@@ -189,7 +189,7 @@ namespace Rock.Attribute
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        public PropertyAttribute(int order, string name, string key, string category, string description, 
+        public BlockPropertyAttribute(int order, string name, string key, string category, string description, 
             bool required, string defaultValue, string fieldTypeAssembly, string fieldTypeClass)
         {
             Key = key;

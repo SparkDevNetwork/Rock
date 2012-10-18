@@ -14,6 +14,7 @@ using System.Web.Configuration;
 
 using Rock.Cms;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace Rock.Org.SparkDevNet.Authentication
 {
@@ -23,7 +24,7 @@ namespace Rock.Org.SparkDevNet.Authentication
     [Description( "Arena Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Arena" )]
-    [Rock.Attribute.Property( 0, "Convert To Database Login", "Behavior", "Should the Arena user be converted to use the Rock Database service after first succesful authentication?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 0, "Convert To Database Login", "Behavior", "Should the Arena user be converted to use the Rock Database service after first succesful authentication?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public class Arena : AuthenticationComponent
     {
         private static byte[] encryptionKey;

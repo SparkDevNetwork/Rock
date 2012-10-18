@@ -5,17 +5,19 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-
 using Rock.Core;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
-    [Rock.Attribute.Property( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [Rock.Attribute.Property( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    public partial class Tags : Rock.Web.UI.ContextBlock
+    [ContextAware]
+    [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    public partial class Tags : RockBlock
     {
         protected void Page_Load( object sender, EventArgs e )
         {
@@ -29,11 +31,22 @@ namespace RockWeb.Blocks.Core
 
             var sb = new StringBuilder();
 
-            if ( base.Entity != null )
+            // Get the context entity
+            string contextTypeName = string.Empty;
+            Rock.Data.IEntity contextEntity = null;
+            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
+            {
+                contextTypeName = entry.Key;
+                contextEntity = entry.Value;
+                // Should only be one.
+                break;
+            }
+
+            if ( !String.IsNullOrWhiteSpace( contextTypeName ) && contextEntity != null )
             {
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.GetByEntity(
-                    base.EntityType, entityQualifierColumn, entityQualifierValue, CurrentPersonId, base.Entity.Id )
+                    contextTypeName, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
                     .Select( i => new {
                         OwnerId = i.Tag.OwnerId,
                         Name = i.Tag.Name
@@ -125,7 +138,7 @@ namespace RockWeb.Blocks.Core
     }}
 
 ",
-    base.EntityType, CurrentPersonId, base.Entity.Id,
+    contextTypeName, CurrentPersonId, contextEntity.Id,
     string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
     string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.CurrentBlock.Id.ToString(), script, true );

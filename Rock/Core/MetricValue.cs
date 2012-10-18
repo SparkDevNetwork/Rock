@@ -90,21 +90,21 @@ namespace Rock.Core
         [DataMember]
         public string Label { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int Order { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.MetricValue"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.MetricValue"; } }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -124,16 +124,16 @@ namespace Rock.Core
             get { return new Security.GenericEntity( "Global" ); }
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Value;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Value;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValue"/> class.

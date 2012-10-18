@@ -118,97 +118,97 @@ namespace Rock.Crm
         [DataMember]
         public string ParcelId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Standardize Attempt.
-		/// </summary>
-		/// <value>
-		/// Standardize Attempt.
-		/// </value>
-		[DataMember]
-		public DateTime? StandardizeAttempt { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Standardize Service.
-		/// </summary>
-		/// <value>
-		/// Standardize Service.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string StandardizeService { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Standardize Result.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string StandardizeResult { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Standardize Date.
-		/// </summary>
-		/// <value>
-		/// Standardize Date.
-		/// </value>
-		[DataMember]
-		public DateTime? StandardizeDate { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Geocode Attempt.
-		/// </summary>
-		/// <value>
-		/// Geocode Attempt.
-		/// </value>
-		[DataMember]
-		public DateTime? GeocodeAttempt { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Geocode Service.
-		/// </summary>
-		/// <value>
-		/// Geocode Service.
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string GeocodeService { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Geocode Result.
-		/// </summary>
-		/// <value>
-		/// .
-		/// </value>
-		[MaxLength( 50 )]
-		[DataMember]
-		public string GeocodeResult { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Geocode Date.
-		/// </summary>
-		/// <value>
-		/// Geocode Date.
-		/// </value>
-		[DataMember]
-		public DateTime? GeocodeDate { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Location Read( int id )
-		{
-			return Read<Location>( id );
-		}
+        /// <summary>
+        /// Gets or sets the Standardize Attempt.
+        /// </summary>
+        /// <value>
+        /// Standardize Attempt.
+        /// </value>
+        [DataMember]
+        public DateTime? StandardizeAttempt { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Standardize Service.
+        /// </summary>
+        /// <value>
+        /// Standardize Service.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string StandardizeService { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Standardize Result.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string StandardizeResult { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Standardize Date.
+        /// </summary>
+        /// <value>
+        /// Standardize Date.
+        /// </value>
+        [DataMember]
+        public DateTime? StandardizeDate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Geocode Attempt.
+        /// </summary>
+        /// <value>
+        /// Geocode Attempt.
+        /// </value>
+        [DataMember]
+        public DateTime? GeocodeAttempt { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Geocode Service.
+        /// </summary>
+        /// <value>
+        /// Geocode Service.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string GeocodeService { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Geocode Result.
+        /// </summary>
+        /// <value>
+        /// .
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string GeocodeResult { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Geocode Date.
+        /// </summary>
+        /// <value>
+        /// Geocode Date.
+        /// </value>
+        [DataMember]
+        public DateTime? GeocodeDate { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Location Read( int id )
+        {
+            return Read<Location>( id );
+        }
 
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Crm.Location"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Crm.Location"; } }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

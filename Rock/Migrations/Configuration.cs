@@ -6,18 +6,26 @@
 
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
+    /// <summary>
+    /// 
+    /// </summary>
     internal sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Configuration" /> class.
+        /// </summary>
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            CodeGenerator = new RockCSharpMigrationCodeGenerator();
         }
 
+        /// <summary>
+        /// Seeds the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
         protected override void Seed(Rock.Data.RockContext context)
         {
             //  This method will be called after migrating to the latest version.

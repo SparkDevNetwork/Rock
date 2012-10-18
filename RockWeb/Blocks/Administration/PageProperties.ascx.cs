@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Administration
                         {
                             blockControl.CurrentPage = _page;
                             blockControl.CurrentBlock = block;
-                            foreach ( var context in blockControl.RequiredContext )
+                            foreach ( var context in blockControl.ContextTypesRequired )
                                 if ( !blockContexts.Contains( context ) )
                                     blockContexts.Add( context );
                         }
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Administration
                 AddPage( page, 1 );
 
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
+            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
 

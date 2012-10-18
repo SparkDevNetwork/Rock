@@ -10,10 +10,10 @@
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
-	<meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width" />
 
-	<!-- Included CSS Files -->
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">

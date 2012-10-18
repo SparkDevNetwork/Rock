@@ -5,8 +5,9 @@
 //
 
 using System;
-
 using System.Collections.Generic;
+
+using Rock.Web.UI;
 
 namespace Rock.Extension
 {
@@ -33,8 +34,8 @@ namespace Rock.Extension
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [Rock.Attribute.Property( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
-    [Rock.Attribute.Property( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
+    [BlockProperty( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public abstract class Component : Rock.Attribute.IHasAttributes
     {
         /// <summary>

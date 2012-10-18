@@ -30,169 +30,169 @@ namespace Rock.Migrations
                     GETDATE(),GETDATE(),1,1,
                     '{3}')
 ",
-					path,
-					name,
-					description,
-					guid
-					) );
-		}
+                    path,
+                    name,
+                    description,
+                    guid
+                    ) );
+        }
 
-		public void AddBlock( BlockTypeDto block )
-		{
-			Sql( string.Format( @"
-				INSERT INTO [cmsBlock] (
-					[IsSystem],[Path],[Name],[Description],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					{0},'{1}','{2}','{3}'
-					GETDATE(),GETDATE(),1,1,
-					'{4}')
+        public void AddBlock( BlockTypeDto block )
+        {
+            Sql( string.Format( @"
+                INSERT INTO [cmsBlock] (
+                    [IsSystem],[Path],[Name],[Description],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    {0},'{1}','{2}','{3}'
+                    GETDATE(),GETDATE(),1,1,
+                    '{4}')
 ",
-					block.IsSystem.Bit(),
-					block.Path,
-					block.Name,
-					block.Description,
-					block.Guid ) );
-		}
+                    block.IsSystem.Bit(),
+                    block.Path,
+                    block.Name,
+                    block.Description,
+                    block.Guid ) );
+        }
 
-		public void DeleteBlock( string guid )
-		{
-			Sql( string.Format( @"
-				DELETE [cmsBlock] WHERE [Guid] = '{0}'
+        public void DeleteBlock( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [cmsBlock] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		public BlockTypeDto DefaultSystemBlock( string name, string description, Guid guid )
-		{
-			var block = new BlockTypeDto();
+        public BlockTypeDto DefaultSystemBlock( string name, string description, Guid guid )
+        {
+            var block = new BlockTypeDto();
 
-			block.IsSystem = true;
-			block.Name = name;
-			block.Description = description;
-			block.Guid = guid;
+            block.IsSystem = true;
+            block.Name = name;
+            block.Description = description;
+            block.Guid = guid;
 
-			return block;
-		}
+            return block;
+        }
 
-		#endregion		
-		
-		#region Page Methods
+        #endregion        
+        
+        #region Page Methods
 
-		public void AddPage( string parentPageGuid, string name, string description, string guid )
-		{
-			Sql( string.Format( @"
-				
-				DECLARE @ParentPageId int
-				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+        public void AddPage( string parentPageGuid, string name, string description, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @ParentPageId int
+                SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
 
-				DECLARE @Order int
-				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
 
-				INSERT INTO [cmsPage] (
-					[Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-					[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
-					[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[IconUrl],[Guid])
-				VALUES(
-					'{1}','{1}',1,@ParentPageId,1,'Default',
-					0,1,1,0,1,0,
-					@Order,0,'{2}',1,
-					GETDATE(),GETDATE(),1,1,
-					'','{3}')
+                INSERT INTO [cmsPage] (
+                    [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
+                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [IconUrl],[Guid])
+                VALUES(
+                    '{1}','{1}',1,@ParentPageId,1,'Default',
+                    0,1,1,0,1,0,
+                    @Order,0,'{2}',1,
+                    GETDATE(),GETDATE(),1,1,
+                    '','{3}')
 ",
-					parentPageGuid,
-					name,
-					description,
-					guid
-					) );
-		}
+                    parentPageGuid,
+                    name,
+                    description,
+                    guid
+                    ) );
+        }
 
-		public void AddPage( string parentPageGuid, PageDto page )
-		{
+        public void AddPage( string parentPageGuid, PageDto page )
+        {
 
-			Sql( string.Format( @"
+            Sql( string.Format( @"
 
-				DECLARE @ParentPageId int
-				SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+                DECLARE @ParentPageId int
+                SET @ParentPageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
 
-				DECLARE @Order int
-				SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = @ParentPageId;
 
-				INSERT INTO [cmsPage] (
-					[Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-					[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
-					[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[IconUrl],[Guid])
-				VALUES(
-					'{1}','{2}',{3},@ParentPageId,{4},'{5}',
-					{6},{7},{8},{9},{10},{11},
-					@Order,{12},'{13}',{14},
-					GETDATE(),GETDATE(),1,1,
-					'{15}','{16}')
+                INSERT INTO [cmsPage] (
+                    [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
+                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [IconUrl],[Guid])
+                VALUES(
+                    '{1}','{2}',{3},@ParentPageId,{4},'{5}',
+                    {6},{7},{8},{9},{10},{11},
+                    @Order,{12},'{13}',{14},
+                    GETDATE(),GETDATE(),1,1,
+                    '{15}','{16}')
 ",
-					parentPageGuid,
-					page.Name,
-					page.Title,
-					page.IsSystem.Bit(),
-					page.SiteId,
-					page.Layout,
-					page.RequiresEncryption.Bit(),
-					page.EnableViewState.Bit(),
-					page.MenuDisplayDescription.Bit(),
-					page.MenuDisplayIcon.Bit(),
-					page.MenuDisplayChildPages.Bit(),
-					(int)page.DisplayInNavWhen,
-					page.OutputCacheDuration,
-					page.Description,
-					page.IncludeAdminFooter.Bit(),
-					page.IconUrl,
-					page.Guid ) );
-		}
+                    parentPageGuid,
+                    page.Name,
+                    page.Title,
+                    page.IsSystem.Bit(),
+                    page.SiteId,
+                    page.Layout,
+                    page.RequiresEncryption.Bit(),
+                    page.EnableViewState.Bit(),
+                    page.MenuDisplayDescription.Bit(),
+                    page.MenuDisplayIcon.Bit(),
+                    page.MenuDisplayChildPages.Bit(),
+                    (int)page.DisplayInNavWhen,
+                    page.OutputCacheDuration,
+                    page.Description,
+                    page.IncludeAdminFooter.Bit(),
+                    page.IconUrl,
+                    page.Guid ) );
+        }
 
-		public void DeletePage( string guid )
-		{
-			Sql( string.Format( @"
-				DELETE [cmsPage] WHERE [Guid] = '{0}'
+        public void DeletePage( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [cmsPage] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		public PageDto DefaultSystemPage( string name, string description, Guid guid )
-		{
-			var page = new PageDto();
+        public PageDto DefaultSystemPage( string name, string description, Guid guid )
+        {
+            var page = new PageDto();
 
-			page.Name = name;
-			page.Title = name;
-			page.IsSystem = true;
-			page.SiteId = 1;
-			page.Layout = "Default";
-			page.EnableViewState = true; ;
-			page.MenuDisplayDescription = true;
-			page.MenuDisplayChildPages = true;
-			page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
-			page.Description = description;
-			page.IncludeAdminFooter = true;
-			page.Guid = guid;
+            page.Name = name;
+            page.Title = name;
+            page.IsSystem = true;
+            page.SiteId = 1;
+            page.Layout = "Default";
+            page.EnableViewState = true; ;
+            page.MenuDisplayDescription = true;
+            page.MenuDisplayChildPages = true;
+            page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
+            page.Description = description;
+            page.IncludeAdminFooter = true;
+            page.Guid = guid;
 
-			return page;
-		}
+            return page;
+        }
 
-		#endregion
+        #endregion
 
-		#region BlockInstance Methods
+        #region BlockInstance Methods
 
-		public void AddBlockInstance( string pageGuid, string blockGuid, string name, string zone, string guid, int order = 0 )
-		{
-			var sb = new StringBuilder();
+        public void AddBlockInstance( string pageGuid, string blockGuid, string name, string zone, string guid, int order = 0 )
+        {
+            var sb = new StringBuilder();
 
-			sb.Append(@"
-				DECLARE @PageId int
+            sb.Append(@"
+                DECLARE @PageId int
 ");
             if (string.IsNullOrWhiteSpace(pageGuid))
                 sb.Append( @"
@@ -249,45 +249,45 @@ namespace Rock.Migrations
                 sb.Append( @"
                 SET @PageId = NULL
 ");
-			else
-				sb.AppendFormat( @"
-				SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
-", 					pageGuid);
+            else
+                sb.AppendFormat( @"
+                SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
+",                     pageGuid);
 
-			sb.AppendFormat( @"
+            sb.AppendFormat( @"
 
-				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
-				DECLARE @BlockInstanceId int
-				INSERT INTO [cmsBlockInstance] (
-					[IsSystem],[PageId],[Layout],[BlockId],[Zone],
-					[Order],[Name],[OutputCacheDuration],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					{1},@PageId,{2},@BlockId,'{3}',
-					{4},'{5}',{6},
-					GETDATE(),GETDATE(),1,1,
-					'{7}')
-				SET @BlockInstanceId = SCOPE_IDENTITY()
+                DECLARE @BlockInstanceId int
+                INSERT INTO [cmsBlockInstance] (
+                    [IsSystem],[PageId],[Layout],[BlockId],[Zone],
+                    [Order],[Name],[OutputCacheDuration],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    {1},@PageId,{2},@BlockId,'{3}',
+                    {4},'{5}',{6},
+                    GETDATE(),GETDATE(),1,1,
+                    '{7}')
+                SET @BlockInstanceId = SCOPE_IDENTITY()
 ",
-					blockGuid,
- 					blockInstance.IsSystem.Bit(),
-					blockInstance.Layout == null ? "NULL" : "'" + blockInstance.Layout + "'",
-					blockInstance.Zone,
-					blockInstance.Order,
-					blockInstance.Name,
-					blockInstance.OutputCacheDuration,
-					blockInstance.Guid );
+                    blockGuid,
+                     blockInstance.IsSystem.Bit(),
+                    blockInstance.Layout == null ? "NULL" : "'" + blockInstance.Layout + "'",
+                    blockInstance.Zone,
+                    blockInstance.Order,
+                    blockInstance.Name,
+                    blockInstance.OutputCacheDuration,
+                    blockInstance.Guid );
 
-			// If adding a layout block, give edit/configuration authorization to admin role
-			if ( string.IsNullOrWhiteSpace( pageGuid ) )
-				sb.Append( @"
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
-				INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
-					VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+            // If adding a layout block, give edit/configuration authorization to admin role
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
+                sb.Append( @"
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+                    VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Edit','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])
+                    VALUES('Cms.BlockInstance',@BlockInstanceId,0,'Configure','A',0,NULL,2,GETDATE(),GETDATE(),1,1,NEWID())
 " );
             Sql( sb.ToString() );
         }
@@ -300,148 +300,148 @@ namespace Rock.Migrations
                 DELETE [cmsAuth] WHERE [EntityType] = 'Cms.BlockInstance' AND [EntityId] = @BlockInstanceId
                 DELETE [cmsBlockInstance] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		public BlockDto DefaultSystemBlockInstance( string name, Guid guid )
-		{
-			var blockInstance = new BlockDto();
+        public BlockDto DefaultSystemBlockInstance( string name, Guid guid )
+        {
+            var blockInstance = new BlockDto();
 
-			blockInstance.IsSystem = true;
-			blockInstance.Zone = "Content";
-			blockInstance.Name = name;
-			blockInstance.Guid = guid;
+            blockInstance.IsSystem = true;
+            blockInstance.Zone = "Content";
+            blockInstance.Name = name;
+            blockInstance.Guid = guid;
 
-			return blockInstance;
-		}
+            return blockInstance;
+        }
 
-		#endregion
+        #endregion
 
-		#region Attribute Methods
+        #region Attribute Methods
 
-		public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid)
-		{
-			Sql( string.Format( @"
-				
-				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid)
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
-				DECLARE @FieldTypeId int
-				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
 
-				INSERT INTO [coreAttribute] (
-					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
-					[Key],[Name],[Category],[Description],
-					[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
-					'{2}','{3}','{4}','{5}',
-					{6},0,'{7}',0,0,
-					GETDATE(),GETDATE(),1,1,
-					'{8}')
+                INSERT INTO [coreAttribute] (
+                    [IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
+                    [Key],[Name],[Category],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
+                    '{2}','{3}','{4}','{5}',
+                    {6},0,'{7}',0,0,
+                    GETDATE(),GETDATE(),1,1,
+                    '{8}')
 ",
-					blockGuid,
-					fieldTypeGuid,
-					name.Replace( " ", string.Empty ),
-					name,
-					category,
-					description,
-					order,
-					defaultValue,
-					guid)
-			);
-		}
+                    blockGuid,
+                    fieldTypeGuid,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    category,
+                    description,
+                    order,
+                    defaultValue,
+                    guid)
+            );
+        }
 
-		public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Core.AttributeDto attribute )
-		{
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Core.AttributeDto attribute )
+        {
 
-			Sql( string.Format( @"
+            Sql( string.Format( @"
 
-				DECLARE @BlockId int
-				SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
 
-				DECLARE @FieldTypeId int
-				SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
 
-				INSERT INTO [coreAttribute] (
-					[IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
-					[Key],[Name],[Category],[Description],
-					[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
-					'{2}','{3}','{4}','{5}',
-					{6},{7},'{8}',{9},{10},
-					GETDATE(),GETDATE(),1,1,
-					'{11}')
+                INSERT INTO [coreAttribute] (
+                    [IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
+                    [Key],[Name],[Category],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId,'Rock.Cms.BlockInstance','BlockId',CAST(@BlockId as varchar),
+                    '{2}','{3}','{4}','{5}',
+                    {6},{7},'{8}',{9},{10},
+                    GETDATE(),GETDATE(),1,1,
+                    '{11}')
 ",
-					blockGuid,
-					fieldTypeGuid,
-					attribute.Key,
-					attribute.Name,
-					attribute.Category,
-					attribute.Description,
-					attribute.Order,
-					attribute.IsGridColumn.Bit(),
-					attribute.DefaultValue,
-					attribute.IsMultiValue.Bit(),
-					attribute.IsRequired.Bit(),
-					attribute.Guid )
-			);
-		}
+                    blockGuid,
+                    fieldTypeGuid,
+                    attribute.Key,
+                    attribute.Name,
+                    attribute.Category,
+                    attribute.Description,
+                    attribute.Order,
+                    attribute.IsGridColumn.Bit(),
+                    attribute.DefaultValue,
+                    attribute.IsMultiValue.Bit(),
+                    attribute.IsRequired.Bit(),
+                    attribute.Guid )
+            );
+        }
 
-		public void DeleteBlockAttribute( string guid )
-		{
-			Sql( string.Format( @"
-				DELETE [coreAttribute] WHERE [Guid] = '{0}'
+        public void DeleteBlockAttribute( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [coreAttribute] WHERE [Guid] = '{0}'
 ",
-					guid
-					) );
-		}
+                    guid
+                    ) );
+        }
 
-		public Rock.Core.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
-		{
-			var attribute = new Rock.Core.AttributeDto();
+        public Rock.Core.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
+        {
+            var attribute = new Rock.Core.AttributeDto();
 
-			attribute.IsSystem = true;
-			attribute.Key = name.Replace( " ", string.Empty );
-			attribute.Name = name;
-			attribute.Category = category;
-			attribute.Description = description;
-			attribute.Order = order;
-			attribute.Guid = guid;
+            attribute.IsSystem = true;
+            attribute.Key = name.Replace( " ", string.Empty );
+            attribute.Name = name;
+            attribute.Category = category;
+            attribute.Description = description;
+            attribute.Order = order;
+            attribute.Guid = guid;
 
-			return attribute;
-		}
+            return attribute;
+        }
 
-		#endregion
+        #endregion
 
-		#region Block Attribute Value Methods
+        #region Block Attribute Value Methods
 
-		public void AddBlockAttributeValue( string blockInstanceGuid, string attributeGuid, string value )
-		{
-			Sql( string.Format( @"
-				
-				DECLARE @BlockInstanceId int
-				SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
+        public void AddBlockAttributeValue( string blockInstanceGuid, string attributeGuid, string value )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @BlockInstanceId int
+                SET @BlockInstanceId = (SELECT [Id] FROM [cmsBlockInstance] WHERE [Guid] = '{0}')
 
-				DECLARE @AttributeId int
-				SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [coreAttribute] WHERE [Guid] = '{1}')
 
-				INSERT INTO [coreAttributeValue] (
-					[IsSystem],[AttributeId],[EntityId],
-					[Order],[Value],
-					[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
-					[Guid])
-				VALUES(
-					1,@AttributeId,@BlockInstanceId,
-					0,'{2}',
-					GETDATE(),GETDATE(),1,1,
-					NEWID())
+                INSERT INTO [coreAttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@BlockInstanceId,
+                    0,'{2}',
+                    GETDATE(),GETDATE(),1,1,
+                    NEWID())
 ",
                     blockInstanceGuid,
                     attributeGuid,

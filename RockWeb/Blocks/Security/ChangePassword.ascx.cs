@@ -5,22 +5,16 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock.Cms;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Invalid UserName", "InvalidUserNameCaption", "Captions", "", false,
-        "The User Name/Password combination is not valid." )]
-    [Rock.Attribute.Property( 1, "Invalid Password", "InvalidPasswordCaption", "Captions", "", false,
-        "The User Name/Password combination is not valid." )]
-    [Rock.Attribute.Property( 2, "Success", "SuccessCaption", "Captions", "", false,
-        "Your password has been changed" )]
+    [BlockProperty( 0, "Invalid UserName", "InvalidUserNameCaption", "Captions", "", false,"The User Name/Password combination is not valid." )]
+    [BlockProperty( 1, "Invalid Password", "InvalidPasswordCaption", "Captions", "", false,"The User Name/Password combination is not valid." )]
+    [BlockProperty( 2, "Success", "SuccessCaption", "Captions", "", false,"Your password has been changed" )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 

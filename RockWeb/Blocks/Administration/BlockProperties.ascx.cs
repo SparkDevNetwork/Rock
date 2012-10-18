@@ -79,8 +79,8 @@ namespace RockWeb.Blocks.Administration
                 string script = "window.parent.closeModal()";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
-			else
-				Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
+            else
+                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
 
         }
 

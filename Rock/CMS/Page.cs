@@ -193,34 +193,34 @@ namespace Rock.Cms
             set { _includeAdminFooter = value; }
         }
         private bool _includeAdminFooter = true;
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Page Read( int id )
-		{
-			return Read<Page>( id );
-		}
-		
-		/// <summary>
-		/// Gets or sets the Icon Url.
-		/// </summary>
-		/// <value>
-		/// Icon Url.
-		/// </value>
-		[MaxLength( 150 )]
-		[DataMember]
-		public string IconUrl { get; set; }
-		
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Page Read( int id )
+        {
+            return Read<Page>( id );
+        }
+        
+        /// <summary>
+        /// Gets or sets the Icon Url.
+        /// </summary>
+        /// <value>
+        /// Icon Url.
+        /// </value>
+        [MaxLength( 150 )]
+        [DataMember]
+        public string IconUrl { get; set; }
+        
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Cms.Page"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Cms.Page"; } }
         
-		/// <summary>
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>

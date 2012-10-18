@@ -111,8 +111,11 @@ namespace Rock.Security
             List<Role> roles = new List<Role>();
 
             Rock.Groups.GroupService groupService = new Rock.Groups.GroupService();
-            foreach ( int id in groupService.
-                Queryable().Where( g => g.IsSecurityRole == true ).Select( g => g.Id ).ToList() )
+            foreach ( int id in groupService.Queryable()
+                .Where( g => g.IsSecurityRole == true )
+                .OrderBy( g => g.Name )
+                .Select( g => g.Id )
+                .ToList() )
             {
                 roles.Add( Role.Read( id ) );
             }
