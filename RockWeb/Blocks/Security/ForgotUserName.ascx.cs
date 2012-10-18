@@ -6,24 +6,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock.Communication;
 using Rock.Cms;
+using Rock.Communication;
 using Rock.Crm;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Heading", "HeadingCaption", "Captions", "", false,
-        "Enter your email address below and we'll send you your account user name" )]
-    [Rock.Attribute.Property( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,
-        "There are not any accounts for the email address you entered" )]
-    [Rock.Attribute.Property( 2, "Success", "SuccessCaption", "Captions", "", false,
-        "Your user name has been sent to the email address you entered" )]
+    [BlockProperty( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
+    [BlockProperty( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
+    [BlockProperty( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Overridden RockPage Methods
@@ -93,20 +88,22 @@ namespace RockWeb.Blocks.Security
 
         private void SetSMTPParameters( Email email )
         {
-            email.Server = GlobalAttributesCache.Value( "SMTPServer" );
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            email.Server = globalAttributes.GetValue( "SMTPServer" );
 
             int port = 0;
-            if ( !Int32.TryParse( GlobalAttributesCache.Value( "SMTPPort" ), out port ) )
+            if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( GlobalAttributesCache.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = GlobalAttributesCache.Value( "SMTPUserName" );
-            email.Password = GlobalAttributesCache.Value( "SMTPPassword" );
+            email.UserName = globalAttributes.GetValue( "SMTPUserName" );
+            email.Password = globalAttributes.GetValue( "SMTPPassword" );
         }
 
 

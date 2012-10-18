@@ -12,18 +12,18 @@ using Rock.Extension;
 
 namespace Rock.Security
 {
-	/// <summary>
-	/// Base class for components that perform authentication based on a username and password entered by the user
-	/// </summary>
+    /// <summary>
+    /// Base class for components that perform authentication based on a username and password entered by the user
+    /// </summary>
     public abstract class AuthenticationComponent : Component
     {
-		/// <summary>
-		/// Authenticates the specified user name and password
-		/// </summary>
-		/// <param name="user">The user.</param>
-		/// <param name="password">The password.</param>
-		/// <returns></returns>
-		public abstract Boolean Authenticate( User user, string password );
+        /// <summary>
+        /// Authenticates the specified user name and password
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        public abstract Boolean Authenticate( User user, string password );
 
         /// <summary>
         /// Encodes the password.
@@ -31,7 +31,7 @@ namespace Rock.Security
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-		public abstract String EncodePassword( User user, string password );
+        public abstract String EncodePassword( User user, string password );
 
-	}
+    }
 }

@@ -20,73 +20,73 @@ namespace Rock.Core
     [Table( "coreFieldType" )]
     public partial class FieldType : Model<FieldType>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Name.
-		/// </summary>
-		/// <value>
-		/// Name.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Name { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Assembly.
-		/// </summary>
-		/// <value>
-		/// Assembly.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Assembly { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Class.
-		/// </summary>
-		/// <value>
-		/// Class.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Class { get; set; }
-		
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static FieldType Read( int id )
-		{
-			return Read<FieldType>( id );
-		}
-				
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Name.
+        /// </summary>
+        /// <value>
+        /// Name.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Assembly.
+        /// </summary>
+        /// <value>
+        /// Assembly.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Assembly { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Class.
+        /// </summary>
+        /// <value>
+        /// Class.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Class { get; set; }
+        
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static FieldType Read( int id )
+        {
+            return Read<FieldType>( id );
+        }
+                
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.FieldType"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.FieldType"; } }
         
         /// <summary>
         /// Gets or sets the Defined Types.

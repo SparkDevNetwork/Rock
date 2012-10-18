@@ -107,7 +107,10 @@ namespace RockWeb.Blocks.Crm
             }
 
             if ( people.Count == 1 )
-                Response.Redirect( string.Format( "~/Person/{0}", people[0].Id ), true );
+            {
+                Response.Redirect( string.Format( "~/Person/{0}", people[0].Id ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
             else
             {
                 gPeople.DataSource = people;

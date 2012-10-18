@@ -81,8 +81,8 @@ namespace Rock.Core
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.ServiceLog"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.ServiceLog"; } }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -94,16 +94,16 @@ namespace Rock.Core
             return Read<ServiceLog>( id );
         }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.Name;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
 
     }
 

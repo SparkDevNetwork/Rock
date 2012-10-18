@@ -222,6 +222,7 @@
     <Compile Include="Crm\PhoneNumberService.cs" />
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
+    <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
@@ -490,7 +491,20 @@
     <Compile Include="Migrations\201210101358430_AddUserType.Designer.cs">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210110030124_AddMissingAuditGuidIndex.cs" />
+    <Compile Include="Migrations\201210110030124_AddMissingAuditGuidIndex.Designer.cs">
+      <DependentUpon>201210110030124_AddMissingAuditGuidIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210111634520_ContextAwareAttribute.cs" />
+    <Compile Include="Migrations\201210111634520_ContextAwareAttribute.Designer.cs">
+      <DependentUpon>201210111634520_ContextAwareAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210112024287_UniqueCampusName.cs" />
+    <Compile Include="Migrations\201210112024287_UniqueCampusName.Designer.cs">
+      <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -557,6 +571,9 @@
     <Compile Include="Web\Cache\FieldTypeCache.cs" />
     <Compile Include="Web\Cache\SiteCache.cs" />
     <Compile Include="Web\Cache\PageCache.cs" />
+    <Compile Include="Web\UI\ContextAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
@@ -570,19 +587,16 @@
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
-    <Compile Include="Web\UI\ContextBlock.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Web\UI\DialogMasterPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\Page.cs">
+    <Compile Include="Web\UI\RockPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\Block.cs">
+    <Compile Include="Web\UI\RockBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Attribute\PropertyAttribute.cs" />
+    <Compile Include="Web\UI\BlockPropertyAttribute.cs" />
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
@@ -868,6 +882,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210101358430_AddUserType.resx">
       <DependentUpon>201210101358430_AddUserType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210110030124_AddMissingAuditGuidIndex.resx">
+      <DependentUpon>201210110030124_AddMissingAuditGuidIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210111634520_ContextAwareAttribute.resx">
+      <DependentUpon>201210111634520_ContextAwareAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210112024287_UniqueCampusName.resx">
+      <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

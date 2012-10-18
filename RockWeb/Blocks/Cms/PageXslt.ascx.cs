@@ -11,11 +11,13 @@ using System.Web.UI;
 using System.Xml.Linq;
 using System.Xml.Xsl;
 
+using Rock.Web.UI;
+
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Attribute.Property( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
-    [Rock.Attribute.Property( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
-    [Rock.Attribute.Property( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
+    [BlockProperty( 0, "XSLT File", "Menu XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
+    [BlockProperty( 1, "Root Page", "XML", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
+    [BlockProperty( 2, "Number of Levels", "XML", "Number of parent-child page levels to display. Default 3.", true, "3" )]
     public partial class PageXslt : Rock.Web.UI.RockBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";

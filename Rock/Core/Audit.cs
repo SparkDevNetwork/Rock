@@ -17,113 +17,113 @@ namespace Rock.Core
     /// <summary>
     /// Entity Change POCO Entity.
     /// </summary>
-	[NotAudited]
+    [NotAudited]
     [Table( "coreAudit" )]
     public partial class Audit : Entity<Audit>
     {
-		/// <summary>
-		/// Gets or sets the Entity Type.
-		/// </summary>
-		/// <value>
-		/// Entity Type.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string EntityType { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Entity Id.
-		/// </summary>
-		/// <value>
-		/// Entity Id.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int EntityId { get; set; }
+        /// <summary>
+        /// Gets or sets the Entity Type.
+        /// </summary>
+        /// <value>
+        /// Entity Type.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        [DataMember]
+        public string EntityType { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Entity Id.
+        /// </summary>
+        /// <value>
+        /// Entity Id.
+        /// </value>
+        [Required]
+        [DataMember]
+        public int EntityId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Entity Name.
-		/// </summary>
-		/// <value>
-		/// Entity Name.
-		/// </value>
-		[Required]
-		[MaxLength( 200 )]
-		[DataMember]
-		public string EntityName { get; set; }
-		
-		/// <summary>
-		/// Type of change: 0:Add, 1:Modify, 2:Delete
-		/// </summary>
-		/// <value>
-		/// Original Value.
-		/// </value>
-		[Required]
-		[DataMember]
-		public AuditType AuditType { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the properties modified.
-		/// </summary>
-		/// <value>
-		/// Properties.
-		/// </value>
-		[DataMember]
-		public string Properties { get; set; }
+        /// <summary>
+        /// Gets or sets the Entity Name.
+        /// </summary>
+        /// <value>
+        /// Entity Name.
+        /// </value>
+        [Required]
+        [MaxLength( 200 )]
+        [DataMember]
+        public string EntityName { get; set; }
+        
+        /// <summary>
+        /// Type of change: 0:Add, 1:Modify, 2:Delete
+        /// </summary>
+        /// <value>
+        /// Original Value.
+        /// </value>
+        [Required]
+        [DataMember]
+        public AuditType AuditType { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the properties modified.
+        /// </summary>
+        /// <value>
+        /// Properties.
+        /// </value>
+        [DataMember]
+        public string Properties { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Date Time.
-		/// </summary>
-		/// <value>
-		/// Date Time.
-		/// </value>
-		[DataMember]
-		public DateTimeOffset? DateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Person Id.
-		/// </summary>
-		/// <value>
-		/// Person Id.
-		/// </value>
-		[DataMember]
-		public int? PersonId { get; set; }
+        /// <summary>
+        /// Gets or sets the Date Time.
+        /// </summary>
+        /// <value>
+        /// Date Time.
+        /// </value>
+        [DataMember]
+        public DateTimeOffset? DateTime { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Person Id.
+        /// </summary>
+        /// <value>
+        /// Person Id.
+        /// </value>
+        [DataMember]
+        public int? PersonId { get; set; }
 
-		/// <summary>
-		/// Gets or sets the Person.
-		/// </summary>
-		/// <value>
-		/// A <see cref="Person"/> object.
-		/// </value>
-		public virtual Rock.Crm.Person Person { get; set; }
+        /// <summary>
+        /// Gets or sets the Person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Person"/> object.
+        /// </value>
+        public virtual Rock.Crm.Person Person { get; set; }
 
-		/// <summary>
+        /// <summary>
         /// Gets the auth entity.
         /// </summary>
-		[NotMapped]
-		public override string EntityTypeName { get { return "Core.Audit"; } }
+        [NotMapped]
+        public override string EntityTypeName { get { return "Core.Audit"; } }
         
-		/// <summary>
-		/// Static Method to return an object based on the id
-		/// </summary>
-		/// <param name="id">The id.</param>
-		/// <returns></returns>
-		public static Audit Read( int id )
-		{
-			return Read<Audit>( id );
-		}
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Audit Read( int id )
+        {
+            return Read<Audit>( id );
+        }
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString()
-		{
-			return this.EntityName;
-		}
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.EntityName;
+        }
 
     }
     
@@ -135,32 +135,32 @@ namespace Rock.Core
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityChangeConfiguration"/> class.
         /// </summary>
-		public AuditConfiguration()
+        public AuditConfiguration()
         {
-			this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
-		}
+            this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+        }
     }
 
-	/// <summary>
-	/// Type of audit done to an entity
-	/// </summary>
-	public enum AuditType
-	{
-		/// <summary>
-		/// Add
-		/// </summary>
-		Add = 0,
+    /// <summary>
+    /// Type of audit done to an entity
+    /// </summary>
+    public enum AuditType
+    {
+        /// <summary>
+        /// Add
+        /// </summary>
+        Add = 0,
 
-		/// <summary>
-		/// Modify
-		/// </summary>
-		Modify = 1,
+        /// <summary>
+        /// Modify
+        /// </summary>
+        Modify = 1,
 
-		/// <summary>
-		/// Delete
-		/// </summary>
-		Delete = 2
-	}
+        /// <summary>
+        /// Delete
+        /// </summary>
+        Delete = 2
+    }
 
 
 }
