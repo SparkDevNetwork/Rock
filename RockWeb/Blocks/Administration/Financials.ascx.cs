@@ -118,7 +118,7 @@ public partial class Blocks_Administration_Financials : Rock.Web.UI.RockBlock
         {
             toTransactionDate = DateTime.Parse(txtToDate.Text);
         }
-        searchValue.DateRange = new RangeValue<DateTimeOffset?>( fromTransactionDate, toTransactionDate );
+        searchValue.DateRange = new RangeValue<DateTime?>(fromTransactionDate, toTransactionDate);
         if (ddlFundType.SelectedValue != "-1")
         {
             searchValue.Fund = fundService.Get(int.Parse(ddlFundType.SelectedValue));

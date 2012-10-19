@@ -78,7 +78,7 @@ namespace Rock.Cms
             if ( user != null )
                 throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
-            DateTimeOffset createDate = DateTimeOffset.Now;
+            DateTime createDate = DateTime.Now;
 
             user = new User();
             user.ServiceType = serviceType;
@@ -125,7 +125,7 @@ namespace Rock.Cms
                 return false;
 
             user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDate = DateTimeOffset.Now;
+            user.LastPasswordChangedDate = DateTime.Now;
 
             return true;
         }
@@ -145,7 +145,7 @@ namespace Rock.Cms
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
-            user.LastPasswordChangedDate = DateTimeOffset.Now;
+            user.LastPasswordChangedDate = DateTime.Now;
         }
 
         /// <summary>
@@ -169,17 +169,17 @@ namespace Rock.Cms
             if ( !Int32.TryParse( globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
                 maxInvalidPasswordAttempts = int.MaxValue;
 
-            DateTimeOffset firstAttempt = user.FailedPasswordAttemptWindowStart ?? DateTimeOffset.MinValue;
+            DateTime firstAttempt = user.FailedPasswordAttemptWindowStart ?? DateTime.MinValue;
             int attempts = user.FailedPasswordAttemptCount ?? 0;
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
-            if ( DateTimeOffset.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
+            if ( DateTime.Now.CompareTo( firstAttempt.Add( window ) ) < 0 )
             {
                 attempts++;
                 if ( attempts >= maxInvalidPasswordAttempts )
                 {
                     user.IsLockedOut = true;
-                    user.LastLockedOutDate = DateTimeOffset.Now;
+                    user.LastLockedOutDate = DateTime.Now;
                 }
 
                 user.FailedPasswordAttemptCount = attempts;
@@ -187,7 +187,7 @@ namespace Rock.Cms
             else
             {
                 user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStart = DateTimeOffset.Now;
+                user.FailedPasswordAttemptWindowStart = DateTime.Now;
             }
         }
 
@@ -304,7 +304,7 @@ namespace Rock.Cms
                         // Save last activity date
                         var transaction = new Rock.Transactions.UserLastActivityTransaction();
                         transaction.UserId = user.Id;
-                        transaction.LastActivityDate = DateTimeOffset.Now;
+                        transaction.LastActivityDate = DateTime.Now;
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                     }
 

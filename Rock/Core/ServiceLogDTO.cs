@@ -22,7 +22,7 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-        public DateTimeOffset? Time { get; set; }
+        public DateTime? Time { get; set; }
         public string Input { get; set; }
         public string Type { get; set; }
         public string Name { get; set; }

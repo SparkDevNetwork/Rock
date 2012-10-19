@@ -45,7 +45,7 @@ namespace Rock.Crm
         /// View Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? ViewDateTime { get; set; }
+        public DateTime? ViewDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Ip Address.

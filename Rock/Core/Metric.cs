@@ -120,7 +120,7 @@ namespace Rock.Core
         /// LastCollected Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? LastCollected { get; set; }
+        public DateTime? LastCollected { get; set; }
 
         /// <summary>
         /// Gets or sets the Source.

@@ -26,7 +26,7 @@ namespace Rock.Cms
         public int PageId { get; set; }
         public string Entity { get; set; }
         public string IdParameter { get; set; }
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591

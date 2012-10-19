@@ -23,7 +23,7 @@ namespace Rock.Financial
 
 #pragma warning disable 1591
         public string Description { get; set; }
-        public DateTimeOffset? TransactionDate { get; set; }
+        public DateTime? TransactionDate { get; set; }
         public string Entity { get; set; }
         public int? EntityId { get; set; }
         public int? BatchId { get; set; }

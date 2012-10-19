@@ -52,7 +52,7 @@ namespace Rock.Transactions
         /// <value>
         /// Date Viewed.
         /// </value>
-        public DateTimeOffset DateViewed { get; set; }
+        public DateTime DateViewed { get; set; }
         
         /// <summary>
         /// Execute method to write transaction to the database.

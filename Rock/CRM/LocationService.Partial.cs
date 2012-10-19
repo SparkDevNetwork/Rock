@@ -74,7 +74,7 @@ namespace Rock.Crm
 
                     // Log the results of the service
                     Core.ServiceLog log = new Core.ServiceLog();
-                    log.Time = DateTimeOffset.Now;
+                    log.Time = DateTime.Now;
                     log.Type = "Location Standardize";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;
@@ -88,12 +88,12 @@ namespace Rock.Crm
                     {
                         location.StandardizeService = service.Value.Metadata.ComponentName;
                         location.StandardizeResult = result;
-                        location.StandardizeDate = DateTimeOffset.Now;
+                        location.StandardizeDate = DateTime.Now;
                         break;
                     }
                 }
 
-            location.StandardizeAttempt = DateTimeOffset.Now;
+            location.StandardizeAttempt = DateTime.Now;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Rock.Crm
 
                     // Log the results of the service
                     Core.ServiceLog log = new Core.ServiceLog();
-                    log.Time = DateTimeOffset.Now;
+                    log.Time = DateTime.Now;
                     log.Type = "Location Geocode";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;
@@ -145,12 +145,12 @@ namespace Rock.Crm
                     {
                         location.GeocodeService = service.Value.Metadata.ComponentName;
                         location.GeocodeResult = result;
-                        location.GeocodeDate = DateTimeOffset.Now;
+                        location.GeocodeDate = DateTime.Now;
                         break;
                     }
                 }
 
-            location.GeocodeAttempt = DateTimeOffset.Now;
+            location.GeocodeAttempt = DateTime.Now;
         }
 
         /// <summary>

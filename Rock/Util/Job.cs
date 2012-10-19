@@ -98,7 +98,7 @@ namespace Rock.Util
         /// Date and time the job last completed successfully..
         /// </value>
         [DataMember]
-        public DateTimeOffset? LastSuccessfulRun { get; set; }
+        public DateTime? LastSuccessfulRun { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Date.
@@ -107,7 +107,7 @@ namespace Rock.Util
         /// Last date and time the job attempted to run..
         /// </value>
         [DataMember]
-        public DateTimeOffset? LastRunDate { get; set; }
+        public DateTime? LastRunDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Duration.

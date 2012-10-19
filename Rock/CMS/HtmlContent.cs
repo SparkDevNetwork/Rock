@@ -86,7 +86,7 @@ namespace Rock.Cms
         /// Approved Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? ApprovedDateTime { get; set; }
+        public DateTime? ApprovedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Start Date Time.
@@ -95,7 +95,7 @@ namespace Rock.Cms
         /// Start Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? StartDateTime { get; set; }
+        public DateTime? StartDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Expire Date Time.
@@ -104,7 +104,7 @@ namespace Rock.Cms
         /// Expire Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? ExpireDateTime { get; set; }
+        public DateTime? ExpireDateTime { get; set; }
         
         /// <summary>
         /// Gets the auth entity.

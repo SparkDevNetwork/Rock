@@ -29,8 +29,8 @@ namespace Rock.Financial
         public bool IsTaxDeductible { get; set; }
         public int Order { get; set; }
         public bool IsActive { get; set; }
-        public DateTimeOffset? StartDate { get; set; }
-        public DateTimeOffset? EndDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public bool IsPledgable { get; set; }
         public string GlCode { get; set; }
         public int? FundTypeId { get; set; }

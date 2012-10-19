@@ -123,7 +123,7 @@ namespace Rock.Security.ExternalAuthentication
                             if ( person != null )
                             {
                                 // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                DateTimeOffset birthdate = Convert.ToDateTime( me.birthday.ToString() );
+                                DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
 
                                 if ( person.BirthDay == null )
                                 {

@@ -56,7 +56,7 @@ namespace Rock.Core
         /// </value>
         [Required]
         [DataMember]
-        public DateTimeOffset ExceptionDate { get; set; }
+        public DateTime ExceptionDate { get; set; }
 
         /// <summary>
         /// Gets or sets the Created By Person Id.

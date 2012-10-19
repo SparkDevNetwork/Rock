@@ -60,8 +60,8 @@ namespace Rock.Cms
             // or past the expire date
             var content = Queryable().
                 Where( c => c.IsApproved &&
-                    ( c.StartDateTime ?? System.Data.SqlTypes.SqlDateTime.MinValue.Value ) <= DateTimeOffset.Now &&
-                    ( c.ExpireDateTime ?? System.Data.SqlTypes.SqlDateTime.MaxValue.Value ) >= DateTimeOffset.Now );
+                    ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= DateTime.Now &&
+                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= DateTime.Now );
 
             // If an entity value is specified, then return content specific to that context, 
             // otherewise return content for the current block instance

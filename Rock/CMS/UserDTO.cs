@@ -26,15 +26,15 @@ namespace Rock.Cms
         public string Provider { get; set; }
         public string Password { get; set; }
         public bool? IsConfirmed { get; set; }
-        public DateTimeOffset? LastActivityDate { get; set; }
-        public DateTimeOffset? LastLoginDate { get; set; }
-        public DateTimeOffset? LastPasswordChangedDate { get; set; }
-        public DateTimeOffset? CreationDate { get; set; }
+        public DateTime? LastActivityDate { get; set; }
+        public DateTime? LastLoginDate { get; set; }
+        public DateTime? LastPasswordChangedDate { get; set; }
+        public DateTime? CreationDate { get; set; }
         public bool? IsOnLine { get; set; }
         public bool? IsLockedOut { get; set; }
-        public DateTimeOffset? LastLockedOutDate { get; set; }
+        public DateTime? LastLockedOutDate { get; set; }
         public int? FailedPasswordAttemptCount { get; set; }
-        public DateTimeOffset? FailedPasswordAttemptWindowStart { get; set; }
+        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
         public string ApiKey { get; set; }
         public int? PersonId { get; set; }
         public int Id { get; set; }
