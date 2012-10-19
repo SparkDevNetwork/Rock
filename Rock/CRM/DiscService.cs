@@ -245,47 +245,49 @@ namespace Rock.Crm
             bool attributeValueLookupSuccessful = false;
             DateTime lastAssessmentDate = DateTime.MinValue;
 
-            var discAttributes = person.Attributes["DISC"];
+            var discAttributes = person.AttributeCategories["DISC"];
 
-            foreach (Rock.Web.Cache.AttributeCache attrib in discAttributes)
+            foreach ( var category in person.AttributeCategories["DISC"] )
             {
+                var attrib = person.Attributes[category];
+            
                 attributeValueLookupResult = 0;
                 switch (attrib.Key)
                 {
                     case "DISCAdaptiveD":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.AdaptiveBehaviorD = attributeValueLookupResult;
                         break;
                     case "DISCAdaptiveI":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.AdaptiveBehaviorI = attributeValueLookupResult;
                         break;
                     case "DISCAdaptiveS":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.AdaptiveBehaviorS = attributeValueLookupResult;
                         break;
                     case "DISCAdaptiveC":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.AdaptiveBehaviorC = attributeValueLookupResult;
                         break;
                     case "DISCNaturalD":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.NaturalBehaviorD = attributeValueLookupResult;
                         break;
                     case "DISCNaturalI":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.NaturalBehaviorI = attributeValueLookupResult;
                         break;
                     case "DISCNaturalS":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.NaturalBehaviorS = attributeValueLookupResult;
                         break;
                     case "DISCNaturalC":
-                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out attributeValueLookupResult);
+                        attributeValueLookupSuccessful = int.TryParse(person.AttributeValues[attrib.Key][0].Value, out attributeValueLookupResult);
                         savedScores.NaturalBehaviorC = attributeValueLookupResult;
                         break;
                     case "DISCLastSaveDate":
-                        attributeValueLookupSuccessful = DateTime.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate);
+                        attributeValueLookupSuccessful = DateTime.TryParse(person.AttributeValues[attrib.Key][0].Value, out lastAssessmentDate);
                         savedScores.LastSaveDate = lastAssessmentDate;
                         break;
                 }
@@ -317,10 +319,11 @@ namespace Rock.Crm
             String NBs,
             String NBc)
         {
-            var discAttributes = person.Attributes["DISC"];
 
-            foreach (Rock.Web.Cache.AttributeCache attrib in discAttributes)
+            foreach ( var category in person.AttributeCategories["DISC"] )
             {
+                var attrib = person.Attributes[category];
+
                 switch (attrib.Key)
                 {
                     case "DISCAdaptiveD":

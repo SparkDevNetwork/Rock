@@ -27,29 +27,48 @@ namespace Rock.Web.Cache
         /// </summary>
         public BlockLocation BlockLocation { get; private set; }
 
-        /// <summary>
-        /// Dictionary of all attributes and their values.
-        /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
-
         private List<int> AttributeIds = new List<int>();
+
+        /// <summary>
+        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
+        /// </summary>
+        /// <value>
+        /// The attribute categories.
+        /// </value>
+        public SortedDictionary<string, List<string>> AttributeCategories
+        {
+            get
+            {
+                var attributeCategories = new SortedDictionary<string, List<string>>();
+
+                foreach ( int id in AttributeIds )
+                {
+                    var attribute = AttributeCache.Read( id );
+                    if ( !attributeCategories.ContainsKey( attribute.Key ) )
+                        attributeCategories.Add( attribute.Category, new List<string>() );
+                    attributeCategories[attribute.Category].Add( attribute.Key );
+                }
+
+                return attributeCategories;
+            }
+
+            set { }
+        }
+
         /// <summary>
         /// List of attributes associated with the Block.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
         {
             get
             {
-                SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
+                var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
                 {
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
-                    if ( !attributes.ContainsKey( attribute.Category ) )
-                        attributes.Add( attribute.Category, new List<AttributeCache>() );
-
-                    attributes[attribute.Category].Add( attribute );
+                    attributes.Add( attribute.Key, attribute );
                 }
 
                 return attributes;
@@ -58,11 +77,15 @@ namespace Rock.Web.Cache
             set
             {
                 this.AttributeIds = new List<int>();
-                foreach ( var category in value )
-                    foreach ( var attribute in category.Value )
-                        this.AttributeIds.Add( attribute.Id );
+                foreach ( var attribute in value )
+                    this.AttributeIds.Add( attribute.Value.Id );
             }
         }
+
+        /// <summary>
+        /// Dictionary of all attributes and their values.
+        /// </summary>
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the page.
@@ -101,9 +124,8 @@ namespace Rock.Web.Cache
             if ( blockModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( blockModel );
-                foreach ( var category in blockModel.Attributes )
-                    foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                foreach ( var attribute in blockModel.Attributes )
+                    Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
         }
 
@@ -125,9 +147,8 @@ namespace Rock.Web.Cache
 
                     this.AttributeIds = new List<int>();
                     if ( blockModel.Attributes != null )
-                        foreach ( var category in blockModel.Attributes )
-                            foreach ( var attribute in category.Value )
-                                this.AttributeIds.Add( attribute.Id );
+                        foreach ( var attribute in blockModel.Attributes )
+                            this.AttributeIds.Add( attribute.Value.Id );
                 }
             }
         }
@@ -216,9 +237,8 @@ namespace Rock.Web.Cache
             
             block.AttributeIds = new List<int>();
             if (blockModel.Attributes != null)
-                foreach ( var category in blockModel.Attributes )
-                    foreach ( var attribute in category.Value )
-                        block.AttributeIds.Add( attribute.Id );
+                foreach ( var attribute in blockModel.Attributes )
+                    block.AttributeIds.Add( attribute.Value.Id );
 
             block.EntityTypeName = blockModel.EntityTypeName;
             block.BlockActions = blockModel.SupportedActions;

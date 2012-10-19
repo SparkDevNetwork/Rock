@@ -27,7 +27,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets a list of attributes associated with the site.  This object will not include values.
@@ -74,9 +74,8 @@ namespace Rock.Web.Cache
                 Rock.Attribute.Helper.LoadAttributes( siteModel );
 
                 if ( siteModel.Attributes != null )
-                    foreach ( var category in siteModel.Attributes )
-                        foreach ( var attribute in category.Value )
-                            Rock.Attribute.Helper.SaveAttributeValues( siteModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                    foreach ( var attribute in siteModel.Attributes )
+                        Rock.Attribute.Helper.SaveAttributeValues( siteModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
         }
 
@@ -112,9 +111,8 @@ namespace Rock.Web.Cache
 
                     Rock.Attribute.Helper.LoadAttributes( siteModel );
 
-                    foreach ( var category in siteModel.Attributes )
-                        foreach ( var attribute in category.Value )
-                            site.AttributeIds.Add( attribute.Id );
+                    foreach ( var attribute in siteModel.Attributes )
+                        site.AttributeIds.Add( attribute.Value.Id );
 
                     site.AttributeValues = siteModel.AttributeValues;
 
