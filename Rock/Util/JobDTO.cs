@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -55,6 +57,60 @@ namespace Rock.Util
         public JobDto ( Job job )
         {
             CopyFromModel( job );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "IsActive", this.IsActive );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Assemby", this.Assemby );
+            dictionary.Add( "Class", this.Class );
+            dictionary.Add( "CronExpression", this.CronExpression );
+            dictionary.Add( "LastSuccessfulRun", this.LastSuccessfulRun );
+            dictionary.Add( "LastRunDate", this.LastRunDate );
+            dictionary.Add( "LastRunDuration", this.LastRunDuration );
+            dictionary.Add( "LastStatus", this.LastStatus );
+            dictionary.Add( "LastStatusMessage", this.LastStatusMessage );
+            dictionary.Add( "LastRunSchedulerName", this.LastRunSchedulerName );
+            dictionary.Add( "NotificationEmails", this.NotificationEmails );
+            dictionary.Add( "NotificationStatus", this.NotificationStatus );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.IsActive = this.IsActive;
+            expando.Name = this.Name;
+            expando.Description = this.Description;
+            expando.Assemby = this.Assemby;
+            expando.Class = this.Class;
+            expando.CronExpression = this.CronExpression;
+            expando.LastSuccessfulRun = this.LastSuccessfulRun;
+            expando.LastRunDate = this.LastRunDate;
+            expando.LastRunDuration = this.LastRunDuration;
+            expando.LastStatus = this.LastStatus;
+            expando.LastStatusMessage = this.LastStatusMessage;
+            expando.LastRunSchedulerName = this.LastRunSchedulerName;
+            expando.NotificationEmails = this.NotificationEmails;
+            expando.NotificationStatus = this.NotificationStatus;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

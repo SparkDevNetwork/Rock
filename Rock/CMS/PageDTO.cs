@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -57,6 +59,64 @@ namespace Rock.Cms
         public PageDto ( Page page )
         {
             CopyFromModel( page );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Title", this.Title );
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "ParentPageId", this.ParentPageId );
+            dictionary.Add( "SiteId", this.SiteId );
+            dictionary.Add( "Layout", this.Layout );
+            dictionary.Add( "RequiresEncryption", this.RequiresEncryption );
+            dictionary.Add( "EnableViewState", this.EnableViewState );
+            dictionary.Add( "MenuDisplayDescription", this.MenuDisplayDescription );
+            dictionary.Add( "MenuDisplayIcon", this.MenuDisplayIcon );
+            dictionary.Add( "MenuDisplayChildPages", this.MenuDisplayChildPages );
+            dictionary.Add( "DisplayInNavWhen", this.DisplayInNavWhen );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "OutputCacheDuration", this.OutputCacheDuration );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "IncludeAdminFooter", this.IncludeAdminFooter );
+            dictionary.Add( "IconUrl", this.IconUrl );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.Name = this.Name;
+            expando.Title = this.Title;
+            expando.IsSystem = this.IsSystem;
+            expando.ParentPageId = this.ParentPageId;
+            expando.SiteId = this.SiteId;
+            expando.Layout = this.Layout;
+            expando.RequiresEncryption = this.RequiresEncryption;
+            expando.EnableViewState = this.EnableViewState;
+            expando.MenuDisplayDescription = this.MenuDisplayDescription;
+            expando.MenuDisplayIcon = this.MenuDisplayIcon;
+            expando.MenuDisplayChildPages = this.MenuDisplayChildPages;
+            expando.DisplayInNavWhen = this.DisplayInNavWhen;
+            expando.Order = this.Order;
+            expando.OutputCacheDuration = this.OutputCacheDuration;
+            expando.Description = this.Description;
+            expando.IncludeAdminFooter = this.IncludeAdminFooter;
+            expando.IconUrl = this.IconUrl;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

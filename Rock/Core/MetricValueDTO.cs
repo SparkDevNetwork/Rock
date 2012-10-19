@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -48,6 +50,46 @@ namespace Rock.Core
         public MetricValueDto ( MetricValue metricValue )
         {
             CopyFromModel( metricValue );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "MetricId", this.MetricId );
+            dictionary.Add( "Value", this.Value );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "xValue", this.xValue );
+            dictionary.Add( "isDateBased", this.isDateBased );
+            dictionary.Add( "Label", this.Label );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.MetricId = this.MetricId;
+            expando.Value = this.Value;
+            expando.Description = this.Description;
+            expando.xValue = this.xValue;
+            expando.isDateBased = this.isDateBased;
+            expando.Label = this.Label;
+            expando.Order = this.Order;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

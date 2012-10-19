@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -54,6 +56,58 @@ namespace Rock.Financial
         public FundDto ( Fund fund )
         {
             CopyFromModel( fund );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "PublicName", this.PublicName );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "ParentFundId", this.ParentFundId );
+            dictionary.Add( "IsTaxDeductible", this.IsTaxDeductible );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "IsActive", this.IsActive );
+            dictionary.Add( "StartDate", this.StartDate );
+            dictionary.Add( "EndDate", this.EndDate );
+            dictionary.Add( "IsPledgable", this.IsPledgable );
+            dictionary.Add( "GlCode", this.GlCode );
+            dictionary.Add( "FundTypeId", this.FundTypeId );
+            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityId", this.EntityId );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.Name = this.Name;
+            expando.PublicName = this.PublicName;
+            expando.Description = this.Description;
+            expando.ParentFundId = this.ParentFundId;
+            expando.IsTaxDeductible = this.IsTaxDeductible;
+            expando.Order = this.Order;
+            expando.IsActive = this.IsActive;
+            expando.StartDate = this.StartDate;
+            expando.EndDate = this.EndDate;
+            expando.IsPledgable = this.IsPledgable;
+            expando.GlCode = this.GlCode;
+            expando.FundTypeId = this.FundTypeId;
+            expando.Entity = this.Entity;
+            expando.EntityId = this.EntityId;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

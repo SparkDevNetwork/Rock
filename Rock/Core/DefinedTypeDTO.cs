@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -46,6 +48,42 @@ namespace Rock.Core
         public DefinedTypeDto ( DefinedType definedType )
         {
             CopyFromModel( definedType );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "FieldTypeId", this.FieldTypeId );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "Category", this.Category );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.FieldTypeId = this.FieldTypeId;
+            expando.Order = this.Order;
+            expando.Category = this.Category;
+            expando.Name = this.Name;
+            expando.Description = this.Description;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>
