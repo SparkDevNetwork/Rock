@@ -31,7 +31,7 @@ namespace Rock.Core
         public int? MinValue { get; set; }
         public int? MaxValue { get; set; }
         public int? CollectionFrequencyId { get; set; }
-        public DateTime? LastCollected { get; set; }
+        public DateTimeOffset? LastCollected { get; set; }
         public string Source { get; set; }
         public string SourceSQL { get; set; }
         public int Order { get; set; }

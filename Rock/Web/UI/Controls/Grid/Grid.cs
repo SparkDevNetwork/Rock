@@ -366,7 +366,7 @@ namespace Rock.Web.UI.Controls
                             worksheet.Cells[rowCounter, columnCounter].Style.Fill.BackgroundColor.SetColor( Color.FromArgb( 240, 240, 240 ) );
                         }
 
-                        if ( propValue is DateTime )
+                        if ( propValue is DateTimeOffset || propValue is DateTime )
                         {
                             worksheet.Cells[rowCounter, columnCounter].Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
                         }

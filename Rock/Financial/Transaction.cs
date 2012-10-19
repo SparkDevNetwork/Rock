@@ -38,7 +38,7 @@ namespace Rock.Financial
         /// The transaction date.
         /// </value>
         [DataMember]
-        public DateTime? TransactionDate { get; set; }
+        public DateTimeOffset? TransactionDate { get; set; }
 
         /// <summary>
         /// Gets or sets the entity.

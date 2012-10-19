@@ -632,7 +632,7 @@ namespace Rock.Web.UI
             if ( Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
-                transaction.DateViewed = DateTime.Now;
+                transaction.DateViewed = DateTimeOffset.Now;
                 transaction.PageId = CurrentPage.Id;
                 transaction.SiteId = CurrentPage.Site.Id;
                 if ( CurrentPersonId != null )

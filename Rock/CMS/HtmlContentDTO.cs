@@ -28,9 +28,9 @@ namespace Rock.Cms
         public string Content { get; set; }
         public bool IsApproved { get; set; }
         public int? ApprovedByPersonId { get; set; }
-        public DateTime? ApprovedDateTime { get; set; }
-        public DateTime? StartDateTime { get; set; }
-        public DateTime? ExpireDateTime { get; set; }
+        public DateTimeOffset? ApprovedDateTime { get; set; }
+        public DateTimeOffset? StartDateTime { get; set; }
+        public DateTimeOffset? ExpireDateTime { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591

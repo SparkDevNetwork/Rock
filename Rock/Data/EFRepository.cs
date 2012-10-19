@@ -514,7 +514,7 @@ namespace Rock.Data
                             change.OriginalValue = originalValueStr;
                             change.CurrentValue = currentValueStr;
                             change.CreatedByPersonId = personId;
-                            change.CreatedDateTime = DateTime.Now;
+                            change.CreatedDateTime = DateTimeOffset.Now;
 
                             entityChanges.Add( change );
                         }

@@ -29,8 +29,8 @@ namespace Rock.Util
         public string Assemby { get; set; }
         public string Class { get; set; }
         public string CronExpression { get; set; }
-        public DateTime? LastSuccessfulRun { get; set; }
-        public DateTime? LastRunDate { get; set; }
+        public DateTimeOffset? LastSuccessfulRun { get; set; }
+        public DateTimeOffset? LastRunDate { get; set; }
         public int? LastRunDuration { get; set; }
         public string LastStatus { get; set; }
         public string LastStatusMessage { get; set; }

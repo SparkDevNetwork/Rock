@@ -69,7 +69,7 @@ namespace Rock.Jobs
 
             // delete accounts that have not been confirmed in X hours
             int userExpireHours = Int32.Parse( dataMap.GetString( "HoursKeepUnconfirmedAccounts" ) );
-            DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1,0,0 ) );
+            DateTimeOffset userAccountExpireDate = DateTimeOffset.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
 
             UserService userService = new UserService();
 
@@ -82,7 +82,7 @@ namespace Rock.Jobs
 
             // purge exception log
             int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );
-            DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
+            DateTimeOffset exceptionExpireDate = DateTimeOffset.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
 
             ExceptionLogService exceptionLogService = new ExceptionLogService();
 

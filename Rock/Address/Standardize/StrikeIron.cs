@@ -82,7 +82,7 @@ namespace Rock.Address.Standardize
                             {
                                 location.GeocodeService = "StrikeIron";
                                 location.GeocodeResult = "200";
-                                location.GeocodeDate = DateTime.Now;
+                                location.GeocodeDate = DateTimeOffset.Now;
 
                                 location.Latitude = usAddress.GeoCode.Latitude;
                                 location.Longitude = usAddress.GeoCode.Longitude;

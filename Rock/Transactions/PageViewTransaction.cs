@@ -42,7 +42,7 @@ namespace Rock.Transactions
         /// <value>
         /// Date Viewed.
         /// </value>
-        public DateTime DateViewed { get; set; }
+        public DateTimeOffset DateViewed { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address that requested the page.

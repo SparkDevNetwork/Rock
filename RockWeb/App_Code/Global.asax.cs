@@ -381,7 +381,7 @@ namespace RockWeb
                 ExceptionLog exceptionLog = new ExceptionLog(); ;
 
                 exceptionLog.ParentId = parentException;
-                exceptionLog.ExceptionDate = DateTime.Now;
+                exceptionLog.ExceptionDate = DateTimeOffset.Now;
 
                 if ( ex.InnerException != null )
                     exceptionLog.HasInnerException = true;
