@@ -503,6 +503,10 @@
     <Compile Include="Migrations\201210112024287_UniqueCampusName.Designer.cs">
       <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210191225078_RemoveDateTimeOffset.cs" />
+    <Compile Include="Migrations\201210191225078_RemoveDateTimeOffset.Designer.cs">
+      <DependentUpon>201210191225078_RemoveDateTimeOffset.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -891,6 +895,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210112024287_UniqueCampusName.resx">
       <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210191225078_RemoveDateTimeOffset.resx">
+      <DependentUpon>201210191225078_RemoveDateTimeOffset.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

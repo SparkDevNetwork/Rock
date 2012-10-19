@@ -162,7 +162,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public virtual DateTimeOffset? DateCreated( T entity )
+        public virtual DateTime? DateCreated( T entity )
         {
             return _repository.DateCreated( entity );
         }
@@ -173,7 +173,7 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+        public virtual DateTime? DateCreated( string entityTypeName, int entityId )
         {
             return _repository.DateCreated( entityTypeName, entityId );
         }
@@ -183,7 +183,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public virtual DateTimeOffset? DateLastModified( T entity )
+        public virtual DateTime? DateLastModified( T entity )
         {
             return _repository.DateLastModified( entity );
         }
@@ -194,7 +194,7 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+        public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
         {
             return _repository.DateLastModified( entityTypeName, entityId );
         }

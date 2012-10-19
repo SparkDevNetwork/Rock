@@ -28,7 +28,7 @@ namespace Rock.Cms
         public string Url { get; set; }
         public string FileName { get; set; }
         public string MimeType { get; set; }
-        public DateTimeOffset? LastModifiedTime { get; set; }
+        public DateTime? LastModifiedTime { get; set; }
         public string Description { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }

@@ -32,10 +32,10 @@ namespace Rock.Field.Types
         {
             string formattedValue = string.Empty;
 
-            DateTimeOffset dateValue = DateTimeOffset.MinValue;
-            if ( DateTimeOffset.TryParse( value, out dateValue ) )
+            DateTime dateValue = DateTime.MinValue;
+            if ( DateTime.TryParse( value, out dateValue ) )
             {
-                formattedValue = dateValue.DateTime.ToShortDateString();
+                formattedValue = dateValue.ToShortDateString();
 
                 if ( configurationValues != null &&
                     configurationValues.ContainsKey( "format" ) &&
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
                     }
                     catch
                     {
-                        formattedValue = dateValue.DateTime.ToShortDateString();
+                        formattedValue = dateValue.ToShortDateString();
                     }
                 }
 

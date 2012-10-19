@@ -203,14 +203,14 @@ namespace Rock
 
         #endregion
 
-        #region DateTimeOffset Extensions
+        #region DateTime Extensions
 
         /// <summary>
         /// Returns the age at the current date
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTimeOffset? start )
+        public static int Age( this DateTime? start )
         {
             if ( start.HasValue )
                 return start.Value.Age();
@@ -223,7 +223,7 @@ namespace Rock
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTimeOffset start )
+        public static int Age( this DateTime start )
         {
             var now = DateTime.Today;
             int age = now.Year - start.Year;
@@ -238,7 +238,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalMonths( this DateTimeOffset end, DateTimeOffset start )
+        public static int TotalMonths( this DateTime end, DateTime start )
         {
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
@@ -249,7 +249,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
+        public static int TotalYears( this DateTime end, DateTime start )
         {
             return (end.Year) - (start.Year);
         }
@@ -261,7 +261,7 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
+        public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
         {
             if ( dateTime.HasValue )
             {
@@ -278,10 +278,10 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
+        public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
         {
-            DateTimeOffset start = dateTime;
-            DateTimeOffset end = DateTimeOffset.Now;
+            DateTime start = dateTime;
+            DateTime end = DateTime.Now;
 
             string direction = " Ago";
             TimeSpan timeSpan = end.Subtract( start );
