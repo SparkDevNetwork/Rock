@@ -695,7 +695,7 @@ namespace Rock.Web.UI
             if ( !CurrentPage.AttributeValues.ContainsKey( key ) )
                 return string.Empty;
 
-            return string.Join( "|", CurrentPage.AttributeValues[key].Value );
+            return string.Join( "|", CurrentPage.AttributeValues[key] );
         }
 
         #endregion

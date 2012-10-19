@@ -372,7 +372,7 @@ namespace Rock.Web.UI
             if ( CurrentBlock != null &&
                 CurrentBlock.AttributeValues != null &&
                 CurrentBlock.AttributeValues.ContainsKey( key ) )
-                return CurrentBlock.AttributeValues[key].Value[0].Value;
+                return CurrentBlock.AttributeValues[key][0].Value;
 
             return null;
         }

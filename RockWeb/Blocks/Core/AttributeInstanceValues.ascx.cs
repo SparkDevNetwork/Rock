@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Core
         {
             lvAttributeValues.DataKeyNames = new string[] { "Id" };
             if ( _model != null )
-                lvAttributeValues.DataSource = _model.AttributeValues[_attribute.Key].Value;
+                lvAttributeValues.DataSource = _model.AttributeValues[_attribute.Key];
             else
                 lvAttributeValues.DataSource = new List<Rock.Core.AttributeValueDto>();
             lvAttributeValues.DataBind();

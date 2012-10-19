@@ -239,7 +239,7 @@ namespace Rock.Cms
                 if (
                     componentName == serviceName &&
                     component.AttributeValues.ContainsKey( "Active" ) &&
-                    bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                    bool.Parse( component.AttributeValues["Active"][0].Value )
                 )
                 {
                     return component;
@@ -257,7 +257,7 @@ namespace Rock.Cms
                 if (
                     componentName == serviceName &&
                     component.AttributeValues.ContainsKey( "Active" ) &&
-                    bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                    bool.Parse( component.AttributeValues["Active"][0].Value )
                 )
                 {
                     return component;
