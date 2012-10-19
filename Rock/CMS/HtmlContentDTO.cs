@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -49,6 +51,48 @@ namespace Rock.Cms
         public HtmlContentDto ( HtmlContent htmlContent )
         {
             CopyFromModel( htmlContent );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "BlockId", this.BlockId );
+            dictionary.Add( "EntityValue", this.EntityValue );
+            dictionary.Add( "Version", this.Version );
+            dictionary.Add( "Content", this.Content );
+            dictionary.Add( "IsApproved", this.IsApproved );
+            dictionary.Add( "ApprovedByPersonId", this.ApprovedByPersonId );
+            dictionary.Add( "ApprovedDateTime", this.ApprovedDateTime );
+            dictionary.Add( "StartDateTime", this.StartDateTime );
+            dictionary.Add( "ExpireDateTime", this.ExpireDateTime );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.BlockId = this.BlockId;
+            expando.EntityValue = this.EntityValue;
+            expando.Version = this.Version;
+            expando.Content = this.Content;
+            expando.IsApproved = this.IsApproved;
+            expando.ApprovedByPersonId = this.ApprovedByPersonId;
+            expando.ApprovedDateTime = this.ApprovedDateTime;
+            expando.StartDateTime = this.StartDateTime;
+            expando.ExpireDateTime = this.ExpireDateTime;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

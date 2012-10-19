@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -47,6 +49,44 @@ namespace Rock.Core
         public AuditDto ( Audit audit )
         {
             CopyFromModel( audit );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "EntityType", this.EntityType );
+            dictionary.Add( "EntityId", this.EntityId );
+            dictionary.Add( "EntityName", this.EntityName );
+            dictionary.Add( "AuditType", this.AuditType );
+            dictionary.Add( "Properties", this.Properties );
+            dictionary.Add( "DateTime", this.DateTime );
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.EntityType = this.EntityType;
+            expando.EntityId = this.EntityId;
+            expando.EntityName = this.EntityName;
+            expando.AuditType = this.AuditType;
+            expando.Properties = this.Properties;
+            expando.DateTime = this.DateTime;
+            expando.PersonId = this.PersonId;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

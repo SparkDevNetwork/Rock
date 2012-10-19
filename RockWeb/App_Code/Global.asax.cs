@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -15,6 +16,7 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Routing;
+using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
@@ -269,21 +271,16 @@ namespace RockWeb
                         if ( status == "500" )
                         {
                             // setup merge codes for email
-                            var mergeObjects = new List<object>();
-
-                            var values = new Dictionary<string, string>();
-
-                            string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
-                            values.Add( "ExceptionDetails", exceptionDetails );
-                            mergeObjects.Add( values );
-
+                            var mergeObjects = new Dictionary<string, object>();
+                            mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                            
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
                             if ( emailAddressesList != null )
                             {
                                 string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                var recipients = new Dictionary<string, List<object>>();
+                                var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
                                 {

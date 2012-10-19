@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -45,6 +47,40 @@ namespace Rock.Financial
         public GatewayDto ( Gateway gateway )
         {
             CopyFromModel( gateway );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "ApiUrl", this.ApiUrl );
+            dictionary.Add( "ApiKey", this.ApiKey );
+            dictionary.Add( "ApiSecret", this.ApiSecret );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.Name = this.Name;
+            expando.Description = this.Description;
+            expando.ApiUrl = this.ApiUrl;
+            expando.ApiKey = this.ApiKey;
+            expando.ApiSecret = this.ApiSecret;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

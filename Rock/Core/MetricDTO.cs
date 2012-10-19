@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -53,6 +55,56 @@ namespace Rock.Core
         public MetricDto ( Metric metric )
         {
             CopyFromModel( metric );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "Type", this.Type );
+            dictionary.Add( "Category", this.Category );
+            dictionary.Add( "Title", this.Title );
+            dictionary.Add( "Subtitle", this.Subtitle );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "MinValue", this.MinValue );
+            dictionary.Add( "MaxValue", this.MaxValue );
+            dictionary.Add( "CollectionFrequencyId", this.CollectionFrequencyId );
+            dictionary.Add( "LastCollected", this.LastCollected );
+            dictionary.Add( "Source", this.Source );
+            dictionary.Add( "SourceSQL", this.SourceSQL );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.Type = this.Type;
+            expando.Category = this.Category;
+            expando.Title = this.Title;
+            expando.Subtitle = this.Subtitle;
+            expando.Description = this.Description;
+            expando.MinValue = this.MinValue;
+            expando.MaxValue = this.MaxValue;
+            expando.CollectionFrequencyId = this.CollectionFrequencyId;
+            expando.LastCollected = this.LastCollected;
+            expando.Source = this.Source;
+            expando.SourceSQL = this.SourceSQL;
+            expando.Order = this.Order;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>
