@@ -27,7 +27,7 @@ namespace Rock.Core
         public string EntityName { get; set; }
         public AuditType AuditType { get; set; }
         public string Properties { get; set; }
-        public DateTimeOffset? DateTime { get; set; }
+        public DateTime? DateTime { get; set; }
         public int? PersonId { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
