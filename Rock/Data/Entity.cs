@@ -127,6 +127,17 @@ namespace Rock.Data
             return new Service<TT>().Get( id );
         }
 
+        /// <summary>
+        /// Static method to return an object based on the guid
+        /// </summary>
+        /// <typeparam name="TT">The type of the T.</typeparam>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static TT Read<TT>( Guid guid ) where TT : Entity<TT>
+        {
+            return new Service<TT>().Get( guid );
+        }
+
         #region Events
 
         /// <summary>
