@@ -75,6 +75,16 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model with the Guid value
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public T Get( Guid guid )
+        {
+            return _repository.FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>

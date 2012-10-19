@@ -43,22 +43,32 @@ namespace Rock.Extension
         /// </summary>
         public int Id { get { return 0; } }
 
+         /// <summary>
+        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
+        /// </summary>
+        /// <value>
+        /// The attribute categories.
+        /// </value>
+        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+
         /// <summary>
-        /// List of attributes associated with the object grouped by category.  This property will not include
-        /// the attribute values. The <see cref="AttributeValues"/> property should be used to get attribute values
+        /// List of attributes associated with the object.  This property will not include the attribute values.
+        /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
+        /// is the attribute key, and value is the cached attribute
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
-        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes { get; set; }
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their values.
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
+        /// associated with the attribute and object instance
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes
@@ -69,7 +79,7 @@ namespace Rock.Extension
         {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
-                return this.AttributeValues[key].Value[0].Value;
+                return this.AttributeValues[key][0].Value;
 
             return null;
         }
@@ -86,19 +96,16 @@ namespace Rock.Extension
             get
             {
                 int order = 0;
-                if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
+                if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"][0].Value, out order ) ) )
                 {
-                    foreach(var attributeCategory in Attributes)
+                    foreach(var attribute in Attributes)
                     {
-                        foreach(var attribute in attributeCategory.Value)
+                        if ( attribute.Key == "Order" )
                         {
-                            if ( attribute.Key == "Order" )
-                            {
-                                if ( Int32.TryParse( attribute.DefaultValue, out order ) )
-                                    return order;
-                                else
-                                    return 0;
-                            }
+                            if ( Int32.TryParse( attribute.Value.DefaultValue, out order ) )
+                                return order;
+                            else
+                                return 0;
                         }
                     }
                 }
@@ -117,19 +124,16 @@ namespace Rock.Extension
             get
             {
                 bool isActive = false;
-                if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"].Value[0].Value, out isActive ) ) )
+                if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"][0].Value, out isActive ) ) )
                 {
-                    foreach ( var attributeCategory in Attributes )
+                    foreach ( var attribute in Attributes )
                     {
-                        foreach ( var attribute in attributeCategory.Value )
+                        if ( attribute.Key == "Active" )
                         {
-                            if ( attribute.Key == "Active" )
-                            {
-                                if ( Boolean.TryParse( attribute.DefaultValue, out isActive ) )
-                                    return isActive;
-                                else
-                                    return false;
-                            }
+                            if ( Boolean.TryParse( attribute.Value.DefaultValue, out isActive ) )
+                                return isActive;
+                            else
+                                return false;
                         }
                     }
                 }

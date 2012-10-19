@@ -77,27 +77,45 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Dictionary of all attributes and their value.
+        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; set; }
+        /// <value>
+        /// The attribute categories.
+        /// </value>
+        public SortedDictionary<string, List<string>> AttributeCategories
+        {
+            get
+            {
+                var attributeCategories = new SortedDictionary<string, List<string>>();
+
+                foreach ( int id in AttributeIds )
+                {
+                    var attribute = AttributeCache.Read( id );
+                    if ( !attributeCategories.ContainsKey( attribute.Key ) )
+                        attributeCategories.Add( attribute.Category, new List<string>() );
+                    attributeCategories[attribute.Category].Add( attribute.Key );
+                }
+
+                return attributeCategories;
+            }
+
+            set { }
+        }
 
         /// <summary>
         /// List of attributes associated with the page.  This object will not include values.
         /// To get values associated with the current page instance, use the AttributeValues
         /// </summary>
-        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
         {
             get
             {
-                SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> attributes = new SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>>();
+                var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
 
                 foreach ( int id in AttributeIds )
                 {
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
-                    if ( !attributes.ContainsKey( attribute.Category ) )
-                        attributes.Add( attribute.Category, new List<AttributeCache>() );
-
-                    attributes[attribute.Category].Add( attribute );
+                    attributes.Add( attribute.Key, attribute );
                 }
 
                 return attributes;
@@ -106,12 +124,17 @@ namespace Rock.Web.Cache
             set
             {
                 this.AttributeIds = new List<int>();
-                foreach ( var category in value )
-                    foreach ( var attribute in category.Value )
-                        this.AttributeIds.Add( attribute.Id );
+                foreach ( var attribute in value )
+                    this.AttributeIds.Add( attribute.Value.Id );
             }
         }
+
         private List<int> AttributeIds = new List<int>();
+
+        /// <summary>
+        /// Dictionary of all attributes and their value.
+        /// </summary>
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets or sets the layout path for the page
@@ -261,9 +284,8 @@ namespace Rock.Web.Cache
             if ( pageModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( pageModel );
-                foreach ( var category in pageModel.Attributes )
-                    foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                foreach ( var attribute in pageModel.Attributes )
+                    Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
         }
 
@@ -565,9 +587,8 @@ namespace Rock.Web.Cache
             var page = new Rock.Web.Cache.PageCache(pageModel);
 
             if (pageModel.Attributes != null)
-                foreach ( var category in pageModel.Attributes )
-                    foreach ( var attribute in category.Value )
-                        page.AttributeIds.Add( attribute.Id );
+                foreach ( var attribute in pageModel.Attributes )
+                    page.AttributeIds.Add( attribute.Value.Id );
 
             page.PageContexts = new Dictionary<string,string>();
             if ( pageModel.PageContexts != null )
