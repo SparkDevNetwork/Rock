@@ -27,7 +27,7 @@ namespace Rock.Core
         /// Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? Time { get; set; }
+        public DateTime? Time { get; set; }
         
         /// <summary>
         /// Gets or sets the Input.

@@ -38,8 +38,8 @@ namespace Rock.Crm
         public int? BirthYear { get; set; }
         public Gender Gender { get; set; }
         public int? MaritalStatusId { get; set; }
-        public DateTimeOffset? AnniversaryDate { get; set; }
-        public DateTimeOffset? GraduationDate { get; set; }
+        public DateTime? AnniversaryDate { get; set; }
+        public DateTime? GraduationDate { get; set; }
         public string Email { get; set; }
         public bool? IsEmailActive { get; set; }
         public string EmailNote { get; set; }

@@ -24,7 +24,7 @@ namespace Rock.Communication
         /// <value>
         /// The created.
         /// </value>
-        public DateTimeOffset Created { get; set; }
+        public DateTime Created { get; set; }
         
         /// <summary>
         /// Gets or sets the reason.

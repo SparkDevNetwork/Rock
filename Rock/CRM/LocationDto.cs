@@ -32,14 +32,14 @@ namespace Rock.Crm
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public string ParcelId { get; set; }
-        public DateTimeOffset? StandardizeAttempt { get; set; }
+        public DateTime? StandardizeAttempt { get; set; }
         public string StandardizeService { get; set; }
         public string StandardizeResult { get; set; }
-        public DateTimeOffset? StandardizeDate { get; set; }
-        public DateTimeOffset? GeocodeAttempt { get; set; }
+        public DateTime? StandardizeDate { get; set; }
+        public DateTime? GeocodeAttempt { get; set; }
         public string GeocodeService { get; set; }
         public string GeocodeResult { get; set; }
-        public DateTimeOffset? GeocodeDate { get; set; }
+        public DateTime? GeocodeDate { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591

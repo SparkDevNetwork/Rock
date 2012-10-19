@@ -25,7 +25,7 @@ namespace Rock.Core
         public int? ParentId { get; set; }
         public int? SiteId { get; set; }
         public int? PageId { get; set; }
-        public DateTimeOffset ExceptionDate { get; set; }
+        public DateTime ExceptionDate { get; set; }
         public int? CreatedByPersonId { get; set; }
         public bool? HasInnerException { get; set; }
         public string StatusCode { get; set; }

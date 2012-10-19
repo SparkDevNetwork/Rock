@@ -29,7 +29,7 @@ namespace Rock.Core
         public string Property { get; set; }
         public string OriginalValue { get; set; }
         public string CurrentValue { get; set; }
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         public int? CreatedByPersonId { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }

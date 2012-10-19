@@ -99,7 +99,7 @@ namespace Rock.Core
         /// Created Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Created By Person Id.

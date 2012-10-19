@@ -106,7 +106,7 @@ namespace Rock.Crm
             /// <summary>
             /// 
             /// </summary>
-            public DateTimeOffset LastSaveDate;
+            public DateTime LastSaveDate;
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace Rock.Crm
             AssessmentResults savedScores = new AssessmentResults();
             int attributeValueLookupResult;
             bool attributeValueLookupSuccessful = false;
-            DateTimeOffset lastAssessmentDate = DateTimeOffset.MinValue;
+            DateTime lastAssessmentDate = DateTime.MinValue;
 
             var discAttributes = person.Attributes["DISC"];
 
@@ -285,7 +285,7 @@ namespace Rock.Crm
                         savedScores.NaturalBehaviorC = attributeValueLookupResult;
                         break;
                     case "DISCLastSaveDate":
-                        attributeValueLookupSuccessful = DateTimeOffset.TryParse( person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate );
+                        attributeValueLookupSuccessful = DateTime.TryParse(person.AttributeValues[attrib.Key].Value[0].Value, out lastAssessmentDate);
                         savedScores.LastSaveDate = lastAssessmentDate;
                         break;
                 }
@@ -348,7 +348,7 @@ namespace Rock.Crm
                         Rock.Attribute.Helper.SaveAttributeValue(person, attrib, NBc, person.Id);
                         break;
                     case "DISCLastSaveDate":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, attrib, DateTimeOffset.Now.ToString("o"), person.Id );
+                        Rock.Attribute.Helper.SaveAttributeValue(person, attrib, DateTime.Now.ToString(), person.Id);
                         break;
                 }
             }

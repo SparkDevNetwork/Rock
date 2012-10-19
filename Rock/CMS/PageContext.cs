@@ -69,7 +69,7 @@ namespace Rock.Cms
         /// Created Date Time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTime { get; set; }
         
         /// <summary>
         /// Gets the auth entity.
