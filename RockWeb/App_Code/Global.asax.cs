@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -20,6 +19,7 @@ using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Rock;
 using Rock.Cms;
 using Rock.Communication;
 using Rock.Core;
@@ -522,11 +522,7 @@ namespace RockWeb
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
                 // Create the custom route and save the page id in the DataTokens collection
-                Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
-                route.DataTokens = new RouteValueDictionary();
-                route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
-                route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
-                routes.Add( route );
+                routes.AddPageRoute( pageRoute );
             }
 
 

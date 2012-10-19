@@ -6,12 +6,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web.Routing;
 using Newtonsoft.Json;
+using Rock.Cms;
 
 namespace Rock
 {
@@ -54,7 +57,7 @@ namespace Rock
             var dict = expando as IDictionary<string, object>;
             var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
 
-            foreach (var prop in properties)
+            foreach ( var prop in properties )
             {
                 dict[prop.Name] = prop.GetValue( obj, null );
             }
@@ -87,7 +90,7 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
-            if (str == null)
+            if ( str == null )
                 return new string[0];
 
             string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
@@ -154,11 +157,11 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            if (str.Length <= maxLength)
+            if ( str.Length <= maxLength )
                 return str;
 
             maxLength -= 3;
-            var truncatedString = str.Substring(0, maxLength);
+            var truncatedString = str.Substring( 0, maxLength );
             var lastSpace = truncatedString.LastIndexOf( ' ' );
             if ( lastSpace > 0 )
                 truncatedString = truncatedString.Substring( 0, lastSpace );
@@ -179,7 +182,7 @@ namespace Rock
         {
             if ( !id.HasValue )
                 return string.Empty;
-            
+
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
                 return definedValue.Name;
@@ -199,6 +202,26 @@ namespace Rock
         public static int Bit( this Boolean field )
         {
             return field ? 1 : 0;
+        }
+
+        /// <summary>
+        /// To the yes no.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToYesNo( this bool value )
+        {
+            return value ? "Yes" : "No";
+        }
+
+        /// <summary>
+        /// To the true false.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToTrueFalse( this bool value )
+        {
+            return value ? "True" : "False";
         }
 
         #endregion
@@ -251,7 +274,7 @@ namespace Rock
         /// <returns></returns>
         public static int TotalYears( this DateTime end, DateTime start )
         {
-            return (end.Year) - (start.Year);
+            return ( end.Year ) - ( start.Year );
         }
 
         /// <summary>
@@ -329,7 +352,7 @@ namespace Rock
                     duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
             }
 
-            return "(" + duration + (condensed ? "" : direction) + ")";
+            return "(" + duration + ( condensed ? "" : direction ) + ")";
 
         }
 
@@ -376,8 +399,8 @@ namespace Rock
             string match = @"\b" + className + "\b";
             string css = webControl.CssClass;
 
-            if (!Regex.IsMatch(css, match, RegexOptions.IgnoreCase))
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase);
+            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
         }
 
         /// <summary>
@@ -435,7 +458,7 @@ namespace Rock
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
+        public static void SetValue( this System.Web.UI.WebControls.DropDownList ddl, string value )
         {
             try
             {
@@ -446,7 +469,7 @@ namespace Rock
                 if ( ddl.Items.Count > 0 )
                     ddl.SelectedIndex = 0;
             }
-                
+
         }
 
         #endregion
@@ -471,7 +494,7 @@ namespace Rock
         /// <returns></returns>
         public static T ConvertToEnum<T>( this String enumValue )
         {
-            return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
+            return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
         }
 
         #endregion
@@ -485,7 +508,7 @@ namespace Rock
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
-        public static string AsDelimited<T>( this List<T> items, string delimiter)
+        public static string AsDelimited<T>( this List<T> items, string delimiter )
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
@@ -582,7 +605,7 @@ namespace Rock
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
                     .Invoke( null, new object[] { source, lambda } );
-            return ( IOrderedQueryable<T> )result;
+            return (IOrderedQueryable<T>)result;
         }
 
         /// <summary>
@@ -600,6 +623,54 @@ namespace Rock
                 return source.OrderByDescending( sortProperty.Property );
         }
 
+
+        #endregion
+
+        #region Route Extensions
+
+        /// <summary>
+        /// Pages the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int PageId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["PageId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Routes the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int RouteId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["RouteId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Adds the page route.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
+        /// <param name="pageRoute">The page route.</param>
+        public static void AddPageRoute( this Collection<RouteBase> routes, PageRoute pageRoute )
+        {
+            Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
+            route.DataTokens = new RouteValueDictionary();
+            route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
+            route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
+            routes.Add( route );
+        }
 
         #endregion
     }

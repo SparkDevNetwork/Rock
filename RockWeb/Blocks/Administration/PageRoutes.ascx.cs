@@ -104,6 +104,8 @@ namespace RockWeb.Blocks.Administration
                 pageRouteService.Save( pageRoute, CurrentPersonId );
             }
 
+            RemovePageRoute( pageRoute );
+
             BindGrid();
         }
 
@@ -141,7 +143,7 @@ namespace RockWeb.Blocks.Administration
         {
             PageRoute pageRoute;
             PageRouteService pageRouteService = new PageRouteService();
-
+            
             int pageRouteId = 0;
             if ( !int.TryParse( hfPageRouteId.Value, out pageRouteId ) )
             {
@@ -177,9 +179,28 @@ namespace RockWeb.Blocks.Administration
             }
 
             pageRouteService.Save( pageRoute, CurrentPersonId );
+
+            RemovePageRoute( pageRoute );
+
+            // new or updated route
+            RouteTable.Routes.AddPageRoute( pageRoute );
+
             BindGrid();
             pnlDetails.Visible = false;
             pnlList.Visible = true;
+        }
+
+        /// <summary>
+        /// Removes the page route.
+        /// </summary>
+        /// <param name="pageRoute">The page route.</param>
+        private static void RemovePageRoute( PageRoute pageRoute )
+        {
+            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+            if ( existingRoute != null )
+            {
+                RouteTable.Routes.Remove( existingRoute );
+            }
         }
 
         #endregion
@@ -232,13 +253,32 @@ namespace RockWeb.Blocks.Administration
             if ( pageRoute != null )
             {
                 lActionTitle.Text = "Edit Page Route";
+                ltIsSystem.Text = pageRoute.IsSystem.ToYesNo();
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
+                tbPageNameReadOnly.Text = pageRoute.Page.Name;
                 tbRoute.Text = pageRoute.Route;
+
+                ddlPageName.Visible = !pageRoute.IsSystem;
+                tbPageNameReadOnly.Visible = pageRoute.IsSystem;
+                tbRoute.ReadOnly = pageRoute.IsSystem;
+                btnSave.Visible = !pageRoute.IsSystem;
+                
+                if ( pageRoute.IsSystem )
+                {
+                    btnCancel.Text = "Close";
+                }
+                else
+                {
+                    btnCancel.Text = "Cancel";
+                }
+
+                //pageRoute.Page.PageRoutes
             }
             else
             {
                 lActionTitle.Text = "Add Page Route";
+                ltIsSystem.Text = false.ToYesNo();
                 hfPageRouteId.Value = string.Empty;
                 tbRoute.Text = string.Empty;
             }
