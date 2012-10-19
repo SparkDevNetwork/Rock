@@ -53,6 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\AjaxControlToolkit.dll</HintPath>
     </Reference>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
@@ -142,6 +145,7 @@
     <Compile Include="Cms\UserService.cs" />
     <Compile Include="Cms\UserService.Partial.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
+    <Compile Include="Communication\Recipient.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Core\AttributeDto.cs" />
@@ -502,6 +506,10 @@
     <Compile Include="Migrations\201210112024287_UniqueCampusName.cs" />
     <Compile Include="Migrations\201210112024287_UniqueCampusName.Designer.cs">
       <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210182319537_DotLiquid.cs" />
+    <Compile Include="Migrations\201210182319537_DotLiquid.Designer.cs">
+      <DependentUpon>201210182319537_DotLiquid.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -891,6 +899,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210112024287_UniqueCampusName.resx">
       <DependentUpon>201210112024287_UniqueCampusName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210182319537_DotLiquid.resx">
+      <DependentUpon>201210182319537_DotLiquid.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

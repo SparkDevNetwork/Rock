@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -42,6 +44,34 @@ namespace Rock.Financial
         public PersonAccountLookupDto ( PersonAccountLookup personAccountLookup )
         {
             CopyFromModel( personAccountLookup );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "Account", this.Account );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.PersonId = this.PersonId;
+            expando.Account = this.Account;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

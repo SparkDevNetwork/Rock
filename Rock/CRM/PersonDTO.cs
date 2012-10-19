@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -64,6 +66,78 @@ namespace Rock.Crm
         public PersonDto ( Person person )
         {
             CopyFromModel( person );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "RecordTypeId", this.RecordTypeId );
+            dictionary.Add( "RecordStatusId", this.RecordStatusId );
+            dictionary.Add( "RecordStatusReasonId", this.RecordStatusReasonId );
+            dictionary.Add( "PersonStatusId", this.PersonStatusId );
+            dictionary.Add( "TitleId", this.TitleId );
+            dictionary.Add( "GivenName", this.GivenName );
+            dictionary.Add( "NickName", this.NickName );
+            dictionary.Add( "LastName", this.LastName );
+            dictionary.Add( "SuffixId", this.SuffixId );
+            dictionary.Add( "PhotoId", this.PhotoId );
+            dictionary.Add( "BirthDay", this.BirthDay );
+            dictionary.Add( "BirthMonth", this.BirthMonth );
+            dictionary.Add( "BirthYear", this.BirthYear );
+            dictionary.Add( "Gender", this.Gender );
+            dictionary.Add( "MaritalStatusId", this.MaritalStatusId );
+            dictionary.Add( "AnniversaryDate", this.AnniversaryDate );
+            dictionary.Add( "GraduationDate", this.GraduationDate );
+            dictionary.Add( "Email", this.Email );
+            dictionary.Add( "IsEmailActive", this.IsEmailActive );
+            dictionary.Add( "EmailNote", this.EmailNote );
+            dictionary.Add( "DoNotEmail", this.DoNotEmail );
+            dictionary.Add( "SystemNote", this.SystemNote );
+            dictionary.Add( "ViewedCount", this.ViewedCount );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.RecordTypeId = this.RecordTypeId;
+            expando.RecordStatusId = this.RecordStatusId;
+            expando.RecordStatusReasonId = this.RecordStatusReasonId;
+            expando.PersonStatusId = this.PersonStatusId;
+            expando.TitleId = this.TitleId;
+            expando.GivenName = this.GivenName;
+            expando.NickName = this.NickName;
+            expando.LastName = this.LastName;
+            expando.SuffixId = this.SuffixId;
+            expando.PhotoId = this.PhotoId;
+            expando.BirthDay = this.BirthDay;
+            expando.BirthMonth = this.BirthMonth;
+            expando.BirthYear = this.BirthYear;
+            expando.Gender = this.Gender;
+            expando.MaritalStatusId = this.MaritalStatusId;
+            expando.AnniversaryDate = this.AnniversaryDate;
+            expando.GraduationDate = this.GraduationDate;
+            expando.Email = this.Email;
+            expando.IsEmailActive = this.IsEmailActive;
+            expando.EmailNote = this.EmailNote;
+            expando.DoNotEmail = this.DoNotEmail;
+            expando.SystemNote = this.SystemNote;
+            expando.ViewedCount = this.ViewedCount;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

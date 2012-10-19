@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -54,6 +56,58 @@ namespace Rock.Core
         public AttributeDto ( Attribute attribute )
         {
             CopyFromModel( attribute );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "FieldTypeId", this.FieldTypeId );
+            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityQualifierColumn", this.EntityQualifierColumn );
+            dictionary.Add( "EntityQualifierValue", this.EntityQualifierValue );
+            dictionary.Add( "Key", this.Key );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Category", this.Category );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "IsGridColumn", this.IsGridColumn );
+            dictionary.Add( "DefaultValue", this.DefaultValue );
+            dictionary.Add( "IsMultiValue", this.IsMultiValue );
+            dictionary.Add( "IsRequired", this.IsRequired );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.FieldTypeId = this.FieldTypeId;
+            expando.Entity = this.Entity;
+            expando.EntityQualifierColumn = this.EntityQualifierColumn;
+            expando.EntityQualifierValue = this.EntityQualifierValue;
+            expando.Key = this.Key;
+            expando.Name = this.Name;
+            expando.Category = this.Category;
+            expando.Description = this.Description;
+            expando.Order = this.Order;
+            expando.IsGridColumn = this.IsGridColumn;
+            expando.DefaultValue = this.DefaultValue;
+            expando.IsMultiValue = this.IsMultiValue;
+            expando.IsRequired = this.IsRequired;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

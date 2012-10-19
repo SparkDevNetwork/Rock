@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -48,6 +50,46 @@ namespace Rock.Cms
         public AuthDto ( Auth auth )
         {
             CopyFromModel( auth );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "EntityType", this.EntityType );
+            dictionary.Add( "EntityId", this.EntityId );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "Action", this.Action );
+            dictionary.Add( "AllowOrDeny", this.AllowOrDeny );
+            dictionary.Add( "SpecialRole", this.SpecialRole );
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "GroupId", this.GroupId );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.EntityType = this.EntityType;
+            expando.EntityId = this.EntityId;
+            expando.Order = this.Order;
+            expando.Action = this.Action;
+            expando.AllowOrDeny = this.AllowOrDeny;
+            expando.SpecialRole = this.SpecialRole;
+            expando.PersonId = this.PersonId;
+            expando.GroupId = this.GroupId;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -22,8 +24,9 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
+        public AuthenticationServiceType ServiceType { get; set; }
+        public string ServiceName { get; set; }
         public string UserName { get; set; }
-        public string Provider { get; set; }
         public string Password { get; set; }
         public bool? IsConfirmed { get; set; }
         public DateTime? LastActivityDate { get; set; }
@@ -58,6 +61,62 @@ namespace Rock.Cms
         }
 
         /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "ServiceType", this.ServiceType );
+            dictionary.Add( "ServiceName", this.ServiceName );
+            dictionary.Add( "UserName", this.UserName );
+            dictionary.Add( "Password", this.Password );
+            dictionary.Add( "IsConfirmed", this.IsConfirmed );
+            dictionary.Add( "LastActivityDate", this.LastActivityDate );
+            dictionary.Add( "LastLoginDate", this.LastLoginDate );
+            dictionary.Add( "LastPasswordChangedDate", this.LastPasswordChangedDate );
+            dictionary.Add( "CreationDate", this.CreationDate );
+            dictionary.Add( "IsOnLine", this.IsOnLine );
+            dictionary.Add( "IsLockedOut", this.IsLockedOut );
+            dictionary.Add( "LastLockedOutDate", this.LastLockedOutDate );
+            dictionary.Add( "FailedPasswordAttemptCount", this.FailedPasswordAttemptCount );
+            dictionary.Add( "FailedPasswordAttemptWindowStart", this.FailedPasswordAttemptWindowStart );
+            dictionary.Add( "ApiKey", this.ApiKey );
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.ServiceType = this.ServiceType;
+            expando.ServiceName = this.ServiceName;
+            expando.UserName = this.UserName;
+            expando.Password = this.Password;
+            expando.IsConfirmed = this.IsConfirmed;
+            expando.LastActivityDate = this.LastActivityDate;
+            expando.LastLoginDate = this.LastLoginDate;
+            expando.LastPasswordChangedDate = this.LastPasswordChangedDate;
+            expando.CreationDate = this.CreationDate;
+            expando.IsOnLine = this.IsOnLine;
+            expando.IsLockedOut = this.IsLockedOut;
+            expando.LastLockedOutDate = this.LastLockedOutDate;
+            expando.FailedPasswordAttemptCount = this.FailedPasswordAttemptCount;
+            expando.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
+            expando.ApiKey = this.ApiKey;
+            expando.PersonId = this.PersonId;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
+        }
+
+        /// <summary>
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
@@ -66,6 +125,8 @@ namespace Rock.Cms
             if ( model is User )
             {
                 var user = (User)model;
+                this.ServiceType = user.ServiceType;
+                this.ServiceName = user.ServiceName;
                 this.UserName = user.UserName;
                 this.Password = user.Password;
                 this.IsConfirmed = user.IsConfirmed;
@@ -94,6 +155,8 @@ namespace Rock.Cms
             if ( model is User )
             {
                 var user = (User)model;
+                user.ServiceType = this.ServiceType;
+                user.ServiceName = this.ServiceName;
                 user.UserName = this.UserName;
                 user.Password = this.Password;
                 user.IsConfirmed = this.IsConfirmed;

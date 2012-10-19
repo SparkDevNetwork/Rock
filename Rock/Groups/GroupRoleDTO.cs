@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -45,6 +47,40 @@ namespace Rock.Groups
         public GroupRoleDto ( GroupRole groupRole )
         {
             CopyFromModel( groupRole );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "GroupTypeId", this.GroupTypeId );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.GroupTypeId = this.GroupTypeId;
+            expando.Name = this.Name;
+            expando.Description = this.Description;
+            expando.Order = this.Order;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>
