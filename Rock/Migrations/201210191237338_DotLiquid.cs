@@ -65,7 +65,7 @@ An exception has occurred in the Rock ChMS.  Details of this error can be found 
 
 " );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
