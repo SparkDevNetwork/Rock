@@ -145,7 +145,6 @@
     <Compile Include="Cms\UserService.cs" />
     <Compile Include="Cms\UserService.Partial.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
-    <Compile Include="Communication\Recipient.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Core\AttributeDto.cs" />
@@ -510,6 +509,10 @@
     <Compile Include="Migrations\201210191225078_RemoveDateTimeOffset.cs" />
     <Compile Include="Migrations\201210191225078_RemoveDateTimeOffset.Designer.cs">
       <DependentUpon>201210191225078_RemoveDateTimeOffset.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210191237338_DotLiquid.cs" />
+    <Compile Include="Migrations\201210191237338_DotLiquid.Designer.cs">
+      <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -902,6 +905,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210191225078_RemoveDateTimeOffset.resx">
       <DependentUpon>201210191225078_RemoveDateTimeOffset.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210191237338_DotLiquid.resx">
+      <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
