@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -56,6 +58,62 @@ namespace Rock.Core
         public ExceptionLogDto ( ExceptionLog exceptionLog )
         {
             CopyFromModel( exceptionLog );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "ParentId", this.ParentId );
+            dictionary.Add( "SiteId", this.SiteId );
+            dictionary.Add( "PageId", this.PageId );
+            dictionary.Add( "ExceptionDate", this.ExceptionDate );
+            dictionary.Add( "CreatedByPersonId", this.CreatedByPersonId );
+            dictionary.Add( "HasInnerException", this.HasInnerException );
+            dictionary.Add( "StatusCode", this.StatusCode );
+            dictionary.Add( "ExceptionType", this.ExceptionType );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Source", this.Source );
+            dictionary.Add( "StackTrace", this.StackTrace );
+            dictionary.Add( "PageUrl", this.PageUrl );
+            dictionary.Add( "ServerVariables", this.ServerVariables );
+            dictionary.Add( "QueryString", this.QueryString );
+            dictionary.Add( "Form", this.Form );
+            dictionary.Add( "Cookies", this.Cookies );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.ParentId = this.ParentId;
+            expando.SiteId = this.SiteId;
+            expando.PageId = this.PageId;
+            expando.ExceptionDate = this.ExceptionDate;
+            expando.CreatedByPersonId = this.CreatedByPersonId;
+            expando.HasInnerException = this.HasInnerException;
+            expando.StatusCode = this.StatusCode;
+            expando.ExceptionType = this.ExceptionType;
+            expando.Description = this.Description;
+            expando.Source = this.Source;
+            expando.StackTrace = this.StackTrace;
+            expando.PageUrl = this.PageUrl;
+            expando.ServerVariables = this.ServerVariables;
+            expando.QueryString = this.QueryString;
+            expando.Form = this.Form;
+            expando.Cookies = this.Cookies;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

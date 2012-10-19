@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -45,6 +47,40 @@ namespace Rock.Financial
         public TransactionDetailDto ( TransactionDetail transactionDetail )
         {
             CopyFromModel( transactionDetail );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "TransactionId", this.TransactionId );
+            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityId", this.EntityId );
+            dictionary.Add( "Amount", this.Amount );
+            dictionary.Add( "Summary", this.Summary );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.TransactionId = this.TransactionId;
+            expando.Entity = this.Entity;
+            expando.EntityId = this.EntityId;
+            expando.Amount = this.Amount;
+            expando.Summary = this.Summary;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -48,6 +50,46 @@ namespace Rock.Crm
         public PhoneNumberDto ( PhoneNumber phoneNumber )
         {
             CopyFromModel( phoneNumber );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "Number", this.Number );
+            dictionary.Add( "Extension", this.Extension );
+            dictionary.Add( "NumberTypeId", this.NumberTypeId );
+            dictionary.Add( "IsMessagingEnabled", this.IsMessagingEnabled );
+            dictionary.Add( "IsUnlisted", this.IsUnlisted );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.PersonId = this.PersonId;
+            expando.Number = this.Number;
+            expando.Extension = this.Extension;
+            expando.NumberTypeId = this.NumberTypeId;
+            expando.IsMessagingEnabled = this.IsMessagingEnabled;
+            expando.IsUnlisted = this.IsUnlisted;
+            expando.Description = this.Description;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

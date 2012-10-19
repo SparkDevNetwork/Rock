@@ -62,6 +62,8 @@ namespace Rock.Cms
         {
             return items.Select( m => new UserDto()
                 {
+                    ServiceType = m.ServiceType,
+                    ServiceName = m.ServiceName,
                     UserName = m.UserName,
                     Password = m.Password,
                     IsConfirmed = m.IsConfirmed,

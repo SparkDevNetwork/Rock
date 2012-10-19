@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -52,6 +54,54 @@ namespace Rock.Cms
         public SiteDto ( Site site )
         {
             CopyFromModel( site );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "Theme", this.Theme );
+            dictionary.Add( "DefaultPageId", this.DefaultPageId );
+            dictionary.Add( "FaviconUrl", this.FaviconUrl );
+            dictionary.Add( "AppleTouchIconUrl", this.AppleTouchIconUrl );
+            dictionary.Add( "FacebookAppId", this.FacebookAppId );
+            dictionary.Add( "FacebookAppSecret", this.FacebookAppSecret );
+            dictionary.Add( "LoginPageReference", this.LoginPageReference );
+            dictionary.Add( "RegistrationPageReference", this.RegistrationPageReference );
+            dictionary.Add( "ErrorPage", this.ErrorPage );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.Name = this.Name;
+            expando.Description = this.Description;
+            expando.Theme = this.Theme;
+            expando.DefaultPageId = this.DefaultPageId;
+            expando.FaviconUrl = this.FaviconUrl;
+            expando.AppleTouchIconUrl = this.AppleTouchIconUrl;
+            expando.FacebookAppId = this.FacebookAppId;
+            expando.FacebookAppSecret = this.FacebookAppSecret;
+            expando.LoginPageReference = this.LoginPageReference;
+            expando.RegistrationPageReference = this.RegistrationPageReference;
+            expando.ErrorPage = this.ErrorPage;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

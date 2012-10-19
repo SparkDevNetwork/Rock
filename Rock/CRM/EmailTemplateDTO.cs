@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -50,6 +52,50 @@ namespace Rock.Crm
         public EmailTemplateDto ( EmailTemplate emailTemplate )
         {
             CopyFromModel( emailTemplate );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "IsSystem", this.IsSystem );
+            dictionary.Add( "PersonId", this.PersonId );
+            dictionary.Add( "Category", this.Category );
+            dictionary.Add( "Title", this.Title );
+            dictionary.Add( "From", this.From );
+            dictionary.Add( "To", this.To );
+            dictionary.Add( "Cc", this.Cc );
+            dictionary.Add( "Bcc", this.Bcc );
+            dictionary.Add( "Subject", this.Subject );
+            dictionary.Add( "Body", this.Body );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.IsSystem = this.IsSystem;
+            expando.PersonId = this.PersonId;
+            expando.Category = this.Category;
+            expando.Title = this.Title;
+            expando.From = this.From;
+            expando.To = this.To;
+            expando.Cc = this.Cc;
+            expando.Bcc = this.Bcc;
+            expando.Subject = this.Subject;
+            expando.Body = this.Body;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

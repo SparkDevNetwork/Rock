@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -54,6 +56,58 @@ namespace Rock.Financial
         public TransactionDto ( Transaction transaction )
         {
             CopyFromModel( transaction );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Description", this.Description );
+            dictionary.Add( "TransactionDate", this.TransactionDate );
+            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityId", this.EntityId );
+            dictionary.Add( "BatchId", this.BatchId );
+            dictionary.Add( "CurrencyTypeId", this.CurrencyTypeId );
+            dictionary.Add( "CreditCardTypeId", this.CreditCardTypeId );
+            dictionary.Add( "Amount", this.Amount );
+            dictionary.Add( "RefundTransactionId", this.RefundTransactionId );
+            dictionary.Add( "TransactionImageId", this.TransactionImageId );
+            dictionary.Add( "TransactionCode", this.TransactionCode );
+            dictionary.Add( "GatewayId", this.GatewayId );
+            dictionary.Add( "SourceTypeId", this.SourceTypeId );
+            dictionary.Add( "Summary", this.Summary );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.Description = this.Description;
+            expando.TransactionDate = this.TransactionDate;
+            expando.Entity = this.Entity;
+            expando.EntityId = this.EntityId;
+            expando.BatchId = this.BatchId;
+            expando.CurrencyTypeId = this.CurrencyTypeId;
+            expando.CreditCardTypeId = this.CreditCardTypeId;
+            expando.Amount = this.Amount;
+            expando.RefundTransactionId = this.RefundTransactionId;
+            expando.TransactionImageId = this.TransactionImageId;
+            expando.TransactionCode = this.TransactionCode;
+            expando.GatewayId = this.GatewayId;
+            expando.SourceTypeId = this.SourceTypeId;
+            expando.Summary = this.Summary;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

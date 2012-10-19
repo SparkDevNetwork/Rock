@@ -10,6 +10,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
 using Rock.Data;
 
@@ -45,6 +47,40 @@ namespace Rock.Crm
         public PersonViewedDto ( PersonViewed personViewed )
         {
             CopyFromModel( personViewed );
+        }
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "ViewerPersonId", this.ViewerPersonId );
+            dictionary.Add( "TargetPersonId", this.TargetPersonId );
+            dictionary.Add( "ViewDateTime", this.ViewDateTime );
+            dictionary.Add( "IpAddress", this.IpAddress );
+            dictionary.Add( "Source", this.Source );
+            dictionary.Add( "Id", this.Id );
+            dictionary.Add( "Guid", this.Guid );
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        public virtual dynamic ToDynamic()
+        {
+            dynamic expando = new ExpandoObject();
+            expando.ViewerPersonId = this.ViewerPersonId;
+            expando.TargetPersonId = this.TargetPersonId;
+            expando.ViewDateTime = this.ViewDateTime;
+            expando.IpAddress = this.IpAddress;
+            expando.Source = this.Source;
+            expando.Id = this.Id;
+            expando.Guid = this.Guid;
+            return expando;
         }
 
         /// <summary>

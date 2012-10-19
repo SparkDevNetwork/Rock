@@ -45,34 +45,41 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSend_Click( object sender, EventArgs e )
         {
+            var mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+
+            var personDictionaries = new List<IDictionary<string, object>>();
+
             PersonService personService = new PersonService();
+            UserService userService = new UserService();
 
-            var mergeObjects = new List<object>();
-
-            var values = new Dictionary<string, string>();
-            values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-            mergeObjects.Add( values );
-
-            Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
-
-            foreach(Person person in personService.GetByEmail(tbEmail.Text))
+            foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
             {
-                var userObjects = new List<object>();
-
-                UserService userService = new UserService();
+                var users = new List<IDictionary<string,object>>();
                 foreach ( User user in userService.GetByPersonId( person.Id ) )
+                {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
-                        userObjects.Add( user );
+                    {
+                        var userDictionary = new UserDto(user).ToDictionary();
+                        userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
+                        users.Add(userDictionary);
+                    }
+                }
 
-                if ( userObjects.Count > 0 )
-                    personObjects.Add( person, userObjects );
+                if (users.Count > 0)
+                {
+                    IDictionary<string,object> personDictionary = new PersonDto(person).ToDictionary();
+                    personDictionary.Add("FirstName", person.FirstName);
+                    personDictionary.Add("Users", users.ToArray());
+                    personDictionaries.Add( personDictionary );
+                }
             }
 
-            if ( personObjects.Count > 0 )
+            if ( personDictionaries.Count > 0 )
             {
-                mergeObjects.Add( personObjects );
+                mergeObjects.Add( "Persons", personDictionaries.ToArray() );
 
-                var recipients = new Dictionary<string, List<object>>();
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( tbEmail.Text, mergeObjects );
 
                 Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
