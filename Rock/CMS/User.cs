@@ -82,7 +82,7 @@ namespace Rock.Cms
         /// </value>
         [NotAudited]
         [DataMember]
-        public DateTime? LastActivityDate { get; set; }
+        public DateTimeOffset? LastActivityDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Login Date.
@@ -91,7 +91,7 @@ namespace Rock.Cms
         /// Last Login Date.
         /// </value>
         [DataMember]
-        public DateTime? LastLoginDate { get; set; }
+        public DateTimeOffset? LastLoginDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Password Changed Date.
@@ -100,7 +100,7 @@ namespace Rock.Cms
         /// Last Password Changed Date.
         /// </value>
         [DataMember]
-        public DateTime? LastPasswordChangedDate { get; set; }
+        public DateTimeOffset? LastPasswordChangedDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Creation Date.
@@ -109,7 +109,7 @@ namespace Rock.Cms
         /// Creation Date.
         /// </value>
         [DataMember]
-        public DateTime? CreationDate { get; set; }
+        public DateTimeOffset? CreationDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Is On Line.
@@ -136,7 +136,7 @@ namespace Rock.Cms
         /// Last Locked Out Date.
         /// </value>
         [DataMember]
-        public DateTime? LastLockedOutDate { get; set; }
+        public DateTimeOffset? LastLockedOutDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Failed Password Attempt Count.
@@ -154,7 +154,7 @@ namespace Rock.Cms
         /// Failed Password Attempt Window Start.
         /// </value>
         [DataMember]
-        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+        public DateTimeOffset? FailedPasswordAttemptWindowStart { get; set; }
         
         /// <summary>
         /// Gets or sets the Api Key.
@@ -237,7 +237,7 @@ namespace Rock.Cms
         {
             get
             {
-                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, DateTime.Now.Ticks );
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, DateTimeOffset.Now.Ticks );
                 string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
                 return encryptedCode;
             }

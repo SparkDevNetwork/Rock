@@ -24,7 +24,7 @@ namespace Rock.Crm
 #pragma warning disable 1591
         public int? ViewerPersonId { get; set; }
         public int? TargetPersonId { get; set; }
-        public DateTime? ViewDateTime { get; set; }
+        public DateTimeOffset? ViewDateTime { get; set; }
         public string IpAddress { get; set; }
         public string Source { get; set; }
         public int Id { get; set; }

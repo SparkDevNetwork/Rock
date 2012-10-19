@@ -37,7 +37,7 @@ namespace Rock.Financial
         /// The batch date.
         /// </value>
         [DataMember]
-        public DateTime? BatchDate { get; set; }
+        public DateTimeOffset? BatchDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Batch"/> is closed.

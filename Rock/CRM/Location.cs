@@ -125,7 +125,7 @@ namespace Rock.Crm
         /// Standardize Attempt.
         /// </value>
         [DataMember]
-        public DateTime? StandardizeAttempt { get; set; }
+        public DateTimeOffset? StandardizeAttempt { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Service.
@@ -154,7 +154,7 @@ namespace Rock.Crm
         /// Standardize Date.
         /// </value>
         [DataMember]
-        public DateTime? StandardizeDate { get; set; }
+        public DateTimeOffset? StandardizeDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Attempt.
@@ -163,7 +163,7 @@ namespace Rock.Crm
         /// Geocode Attempt.
         /// </value>
         [DataMember]
-        public DateTime? GeocodeAttempt { get; set; }
+        public DateTimeOffset? GeocodeAttempt { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Service.
@@ -192,7 +192,7 @@ namespace Rock.Crm
         /// Geocode Date.
         /// </value>
         [DataMember]
-        public DateTime? GeocodeDate { get; set; }
+        public DateTimeOffset? GeocodeDate { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id

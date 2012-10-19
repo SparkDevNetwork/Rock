@@ -54,7 +54,7 @@ namespace Rock.Financial
         /// The start date.
         /// </value>
         [DataMember]
-        public DateTime StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
@@ -63,7 +63,7 @@ namespace Rock.Financial
         /// The end date.
         /// </value>
         [DataMember]
-        public DateTime EndDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the frequency type id.

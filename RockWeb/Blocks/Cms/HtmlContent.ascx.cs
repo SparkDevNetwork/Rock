@@ -88,8 +88,8 @@ namespace RockWeb.Blocks.Cms
 
                 hfVersion.Value = content.Version.ToString();
                 lVersion.Text = content.Version.ToString();
-                tbStartDate.Text = content.StartDateTime.HasValue ? content.StartDateTime.Value.ToShortDateString() : string.Empty;
-                tbExpireDate.Text = content.ExpireDateTime.HasValue ? content.ExpireDateTime.Value.ToShortDateString() : string.Empty;
+                tbStartDate.Text = content.StartDateTime.HasValue ? content.StartDateTime.Value.DateTime.ToShortDateString() : string.Empty;
+                tbExpireDate.Text = content.ExpireDateTime.HasValue ? content.ExpireDateTime.Value.DateTime.ToShortDateString() : string.Empty;
 
                 if ( _requireApproval )
                 {

@@ -184,7 +184,7 @@ namespace Rock.Crm
         /// Anniversary Date.
         /// </value>
         [DataMember]
-        public DateTime? AnniversaryDate { get; set; }
+        public DateTimeOffset? AnniversaryDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Graduation Date.
@@ -193,7 +193,7 @@ namespace Rock.Crm
         /// Graduation Date.
         /// </value>
         [DataMember]
-        public DateTime? GraduationDate { get; set; }
+        public DateTimeOffset? GraduationDate { get; set; }
         
         /// <summary>
         /// Gets or sets the Email.
@@ -418,7 +418,7 @@ namespace Rock.Crm
         /// The birth date.
         /// </value>
         [NotMapped]
-        public DateTime? BirthDate
+        public DateTimeOffset? BirthDate
         {
             // notes
             // if no birthday is available then DateTime.MinValue is returned
@@ -431,8 +431,8 @@ namespace Rock.Crm
                 }
                 else
                 {
-                    string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
-                    return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
+                    string birthYear = ( BirthYear ?? DateTimeOffset.MinValue.Year ).ToString();
+                    return DateTimeOffset.Parse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
                 }
             }
 

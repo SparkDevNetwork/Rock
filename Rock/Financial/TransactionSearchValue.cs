@@ -17,7 +17,7 @@ namespace Rock.Financial
         /// <value>
         /// The date range.
         /// </value>
-        public RangeValue<DateTime?> DateRange { get; set; }
+        public RangeValue<DateTimeOffset?> DateRange { get; set; }
         
         /// <summary>
         /// Gets or sets the amount range.

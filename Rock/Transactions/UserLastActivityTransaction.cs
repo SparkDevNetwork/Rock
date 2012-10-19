@@ -27,7 +27,7 @@ namespace Rock.Transactions
         /// <value>
         /// The last activity date.
         /// </value>
-        public DateTime LastActivityDate { get; set; }
+        public DateTimeOffset LastActivityDate { get; set; }
 
         /// <summary>
         /// Execute method to write transaction to the database.

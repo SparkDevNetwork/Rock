@@ -25,8 +25,8 @@ namespace Rock.Financial
         public int? PersonId { get; set; }
         public int? FundId { get; set; }
         public decimal Amount { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
         public int? FrequencyTypeId { get; set; }
         public decimal? FrequencyAmount { get; set; }
         public int Id { get; set; }
