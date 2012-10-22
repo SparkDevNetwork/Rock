@@ -249,6 +249,7 @@ namespace RockWeb.Blocks.Administration
 
             PageRouteService pageRouteService = new PageRouteService();
             PageRoute pageRoute = pageRouteService.Get( pageRouteId );
+            bool systemRoute = false;
 
             if ( pageRoute != null )
             {
@@ -258,11 +259,7 @@ namespace RockWeb.Blocks.Administration
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbPageNameReadOnly.Text = pageRoute.Page.Name;
                 tbRoute.Text = pageRoute.Route;
-
-                ddlPageName.Visible = !pageRoute.IsSystem;
-                tbPageNameReadOnly.Visible = pageRoute.IsSystem;
-                tbRoute.ReadOnly = pageRoute.IsSystem;
-                btnSave.Visible = !pageRoute.IsSystem;
+                systemRoute = pageRoute.IsSystem;
                 
                 if ( pageRoute.IsSystem )
                 {
@@ -272,8 +269,6 @@ namespace RockWeb.Blocks.Administration
                 {
                     btnCancel.Text = "Cancel";
                 }
-
-                //pageRoute.Page.PageRoutes
             }
             else
             {
@@ -282,6 +277,11 @@ namespace RockWeb.Blocks.Administration
                 hfPageRouteId.Value = string.Empty;
                 tbRoute.Text = string.Empty;
             }
+
+            ddlPageName.Visible = !systemRoute;
+            tbPageNameReadOnly.Visible = systemRoute;
+            tbRoute.ReadOnly = systemRoute;
+            btnSave.Visible = !systemRoute;
         }
 
         #endregion
