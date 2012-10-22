@@ -259,8 +259,8 @@ namespace Rock.CodeGeneration
 
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
-
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Service.cs" ) );
+            
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -404,7 +404,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Dto.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             WriteFile( file, sb );
         }
 
