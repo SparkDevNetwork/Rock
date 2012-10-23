@@ -147,6 +147,7 @@
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
+    <Compile Include="Constants\DisplayStrings.cs" />
     <Compile Include="Core\CodeGenerated\AttributeDto.cs" />
     <Compile Include="Core\CodeGenerated\AttributeQualifierDto.cs" />
     <Compile Include="Core\CodeGenerated\AttributeQualifierService.cs" />
@@ -226,6 +227,7 @@
     <Compile Include="Crm\PhoneNumberService.Partial.cs" />
     <Compile Include="Crm\DiscService.cs" />
     <Compile Include="Data\AlternateKeyAttribute.cs" />
+    <Compile Include="Data\FriendlyTypeNameAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />

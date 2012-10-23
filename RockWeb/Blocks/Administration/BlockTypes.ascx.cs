@@ -11,6 +11,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Cms;
+using Rock.Constants;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gBlockTypes.Visible = false;
-                nbMessage.Text = "You are not authorized to edit block types";
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.EntityTypeFriendlyName.ToLower() );
                 nbMessage.Visible = true;
             }
 
@@ -142,14 +143,9 @@ namespace RockWeb.Blocks.Administration
         protected void btnSave_Click( object sender, EventArgs e )
         {
             BlockType blockType;
-
-            int blockTypeId = 0;
-            if ( hfBlockTypeId.Value != string.Empty && !int.TryParse( hfBlockTypeId.Value, out blockTypeId ) )
-            {
-                blockTypeId = 0;
-            }
-
             BlockTypeService blockTypeService = new BlockTypeService();
+
+            int blockTypeId = int.Parse( hfBlockTypeId.Value );
 
             if ( blockTypeId == 0 )
             {
@@ -245,7 +241,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockType != null )
             {
-                lActionTitle.Text = "Edit Block Type";
+                lActionTitle.Text = ActionTitle.Edit( BlockType.EntityTypeFriendlyName );
                 hfBlockTypeId.Value = blockType.Id.ToString();
                 tbName.Text = blockType.Name;
                 tbPath.Text = blockType.Path;
@@ -253,8 +249,8 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lActionTitle.Text = "Add Block Type";
-                hfBlockTypeId.Value = string.Empty;
+                lActionTitle.Text = ActionTitle.Add( BlockType.EntityTypeFriendlyName );
+                hfBlockTypeId.Value = 0.ToString();
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;
                 tbDescription.Text = string.Empty;
