@@ -11,6 +11,7 @@ using System.Web.Routing;
 using System.Web.UI;
 using Rock;
 using Rock.Cms;
+using Rock.Constants;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -59,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gPageRoutes.Visible = false;
-                nbMessage.Text = "You are not authorized to edit page routes";
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( PageRoute.EntityTypeFriendlyName.ToLower() );
                 nbMessage.Visible = true;
             }
 
@@ -143,12 +144,8 @@ namespace RockWeb.Blocks.Administration
         {
             PageRoute pageRoute;
             PageRouteService pageRouteService = new PageRouteService();
-            
-            int pageRouteId = 0;
-            if ( !int.TryParse( hfPageRouteId.Value, out pageRouteId ) )
-            {
-                pageRouteId = 0;
-            }
+
+            int pageRouteId = int.Parse( hfPageRouteId.Value );
 
             if ( pageRouteId == 0 )
             {
@@ -167,7 +164,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
             {
-                nbMessage.Text = "This route is already being used on another page.";
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", "page" );
                 nbMessage.Visible = true;
                 return;
             }
@@ -249,39 +246,42 @@ namespace RockWeb.Blocks.Administration
 
             PageRouteService pageRouteService = new PageRouteService();
             PageRoute pageRoute = pageRouteService.Get( pageRouteId );
-            bool systemRoute = false;
+            bool readOnly;
 
             if ( pageRoute != null )
             {
-                lActionTitle.Text = "Edit Page Route";
                 ltIsSystem.Text = pageRoute.IsSystem.ToYesNo();
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbPageNameReadOnly.Text = pageRoute.Page.Name;
                 tbRoute.Text = pageRoute.Route;
-                systemRoute = pageRoute.IsSystem;
-                
+                readOnly = pageRoute.IsSystem;
+
                 if ( pageRoute.IsSystem )
                 {
+                    lActionTitle.Text = ActionTitle.View( PageRoute.EntityTypeFriendlyName );
                     btnCancel.Text = "Close";
                 }
                 else
                 {
+                    lActionTitle.Text = ActionTitle.Edit( PageRoute.EntityTypeFriendlyName );
                     btnCancel.Text = "Cancel";
                 }
             }
             else
             {
-                lActionTitle.Text = "Add Page Route";
+                lActionTitle.Text = ActionTitle.Add( PageRoute.EntityTypeFriendlyName );
+                hfPageRouteId.Value = 0.ToString();
                 ltIsSystem.Text = false.ToYesNo();
-                hfPageRouteId.Value = string.Empty;
+                ddlPageName.SelectedValue = string.Empty;
                 tbRoute.Text = string.Empty;
+                readOnly = false;
             }
 
-            ddlPageName.Visible = !systemRoute;
-            tbPageNameReadOnly.Visible = systemRoute;
-            tbRoute.ReadOnly = systemRoute;
-            btnSave.Visible = !systemRoute;
+            ddlPageName.Visible = !readOnly;
+            tbPageNameReadOnly.Visible = readOnly;
+            tbRoute.ReadOnly = readOnly;
+            btnSave.Visible = !readOnly;
         }
 
         #endregion
