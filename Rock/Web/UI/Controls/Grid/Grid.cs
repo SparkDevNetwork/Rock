@@ -34,6 +34,7 @@ namespace Rock.Web.UI.Controls
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions = new GridActions();
+        private const string DefaultEmptyDataText = "No Results Found";
 
         #region Properties
 
@@ -107,12 +108,48 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object rowItemText = this.ViewState["RowItemText"];
+                if ( string.IsNullOrWhiteSpace(rowItemText as string) && DataSource != null)
+                {
+                    Type dataSourceType = DataSource.GetType();
+                    Type itemType = dataSourceType.GetGenericArguments()[0];
+                    if ( itemType != null )
+                    {
+                        rowItemText = itemType.GetFriendlyTypeName().ToLower();
+                    }
+
+                }
                 return ( rowItemText as string );
             }
 
             set
             {
                 this.ViewState["RowItemText"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the text to display in the empty data row rendered when a <see cref="T:System.Web.UI.WebControls.GridView" /> control is bound to a data source that does not contain any records.
+        /// </summary>
+        /// <returns>The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.</returns>
+        public override string EmptyDataText
+        {
+            get
+            {
+                string result = base.EmptyDataText;
+                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
+                {
+                    Type dataSourceType = DataSource.GetType();
+                    Type itemType = dataSourceType.GetGenericArguments()[0];
+                    if ( itemType != null )
+                    {
+                        result = string.Format("No {0}s Found", itemType.GetFriendlyTypeName());
+                    }
+                }
+                return result;
+            }
+            set
+            {
+                base.EmptyDataText = value;
             }
         }
 
@@ -203,7 +240,7 @@ namespace Rock.Web.UI.Controls
             base.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
 
             this.ShowHeaderWhenEmpty = true;
-            this.EmptyDataText = "No Results Found";
+            this.EmptyDataText = DefaultEmptyDataText;
 
             // hack to turn off style="border-collapse: collapse"
             base.GridLines = GridLines.None;

@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                     if ( attribute != null )
                     {
-                        var values = Person.AttributeValues[attribute.Key].Value;
+                        var values = Person.AttributeValues[attribute.Key];
                         if ( values != null && values.Count > 0 )
                         {
                             attributesElement.Add( new XElement( "attribute",

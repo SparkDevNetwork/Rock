@@ -6,12 +6,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web.Routing;
 using Newtonsoft.Json;
+using Rock.Cms;
 
 namespace Rock
 {
@@ -54,12 +57,31 @@ namespace Rock
             var dict = expando as IDictionary<string, object>;
             var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
 
-            foreach (var prop in properties)
+            foreach ( var prop in properties )
             {
                 dict[prop.Name] = prop.GetValue( obj, null );
             }
 
             return expando;
+        }
+
+        /// <summary>
+        /// Gets the name of the friendly type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static string GetFriendlyTypeName( this Type type )
+        {
+            Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
+
+            if ( attrib != null )
+            {
+                return attrib.FriendlyTypeName;
+            }
+            else
+            {
+                return SplitCase( type.Name );
+            }
         }
 
         #endregion
@@ -87,7 +109,7 @@ namespace Rock
         /// <returns></returns>
         public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
         {
-            if (str == null)
+            if ( str == null )
                 return new string[0];
 
             string regex = whitespace ? @"[\s\|,;]+" : @"[\|,;]+";
@@ -98,6 +120,7 @@ namespace Rock
 
         /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
+        /// from http://www.codeproject.com/Articles/10890/Fastest-C-Case-Insenstive-String-Replace
         /// </summary>
         /// <param name="str">The source string.</param>
         /// <param name="oldValue">The value to replace.</param>
@@ -154,16 +177,27 @@ namespace Rock
             if ( str == null )
                 return null;
 
-            if (str.Length <= maxLength)
+            if ( str.Length <= maxLength )
                 return str;
 
             maxLength -= 3;
-            var truncatedString = str.Substring(0, maxLength);
+            var truncatedString = str.Substring( 0, maxLength );
             var lastSpace = truncatedString.LastIndexOf( ' ' );
             if ( lastSpace > 0 )
                 truncatedString = truncatedString.Substring( 0, lastSpace );
 
             return truncatedString + "...";
+        }
+
+        /// <summary>
+        /// Pluralizes the specified tring.
+        /// </summary>
+        /// <param name="str">The string to pluralize.</param>
+        /// <returns></returns>
+        public static string Pluralize( this string str )
+        {
+            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+            return pluralizationService.Pluralize( str );
         }
 
         #endregion
@@ -179,7 +213,7 @@ namespace Rock
         {
             if ( !id.HasValue )
                 return string.Empty;
-            
+
             var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id.Value );
             if ( definedValue != null )
                 return definedValue.Name;
@@ -201,16 +235,36 @@ namespace Rock
             return field ? 1 : 0;
         }
 
+        /// <summary>
+        /// To the yes no.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToYesNo( this bool value )
+        {
+            return value ? "Yes" : "No";
+        }
+
+        /// <summary>
+        /// To the true false.
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToTrueFalse( this bool value )
+        {
+            return value ? "True" : "False";
+        }
+
         #endregion
 
-        #region DateTimeOffset Extensions
+        #region DateTime Extensions
 
         /// <summary>
         /// Returns the age at the current date
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTimeOffset? start )
+        public static int Age( this DateTime? start )
         {
             if ( start.HasValue )
                 return start.Value.Age();
@@ -223,7 +277,7 @@ namespace Rock
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTimeOffset start )
+        public static int Age( this DateTime start )
         {
             var now = DateTime.Today;
             int age = now.Year - start.Year;
@@ -238,7 +292,7 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalMonths( this DateTimeOffset end, DateTimeOffset start )
+        public static int TotalMonths( this DateTime end, DateTime start )
         {
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
@@ -249,9 +303,9 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalYears( this DateTimeOffset end, DateTimeOffset start )
+        public static int TotalYears( this DateTime end, DateTime start )
         {
-            return (end.Year) - (start.Year);
+            return ( end.Year ) - ( start.Year );
         }
 
         /// <summary>
@@ -261,7 +315,7 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTimeOffset? dateTime, bool condensed = false, bool includeTime = true )
+        public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
         {
             if ( dateTime.HasValue )
             {
@@ -278,10 +332,10 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTimeOffset dateTime, bool condensed = false, bool includeTime = true )
+        public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
         {
-            DateTimeOffset start = dateTime;
-            DateTimeOffset end = DateTimeOffset.Now;
+            DateTime start = dateTime;
+            DateTime end = DateTime.Now;
 
             string direction = " Ago";
             TimeSpan timeSpan = end.Subtract( start );
@@ -329,7 +383,7 @@ namespace Rock
                     duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
             }
 
-            return "(" + duration + (condensed ? "" : direction) + ")";
+            return "(" + duration + ( condensed ? "" : direction ) + ")";
 
         }
 
@@ -376,8 +430,8 @@ namespace Rock
             string match = @"\b" + className + "\b";
             string css = webControl.CssClass;
 
-            if (!Regex.IsMatch(css, match, RegexOptions.IgnoreCase))
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase);
+            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
         }
 
         /// <summary>
@@ -435,7 +489,7 @@ namespace Rock
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue (this System.Web.UI.WebControls.DropDownList ddl, string value)
+        public static void SetValue( this System.Web.UI.WebControls.DropDownList ddl, string value )
         {
             try
             {
@@ -446,7 +500,7 @@ namespace Rock
                 if ( ddl.Items.Count > 0 )
                     ddl.SelectedIndex = 0;
             }
-                
+
         }
 
         #endregion
@@ -471,7 +525,7 @@ namespace Rock
         /// <returns></returns>
         public static T ConvertToEnum<T>( this String enumValue )
         {
-            return ( T )Enum.Parse( typeof( T ), enumValue.Replace(" " , "") );
+            return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
         }
 
         #endregion
@@ -485,7 +539,7 @@ namespace Rock
         /// <param name="items">The items.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns></returns>
-        public static string AsDelimited<T>( this List<T> items, string delimiter)
+        public static string AsDelimited<T>( this List<T> items, string delimiter )
         {
             List<string> strings = new List<string>();
             foreach ( T item in items )
@@ -582,7 +636,7 @@ namespace Rock
                             && method.GetParameters().Length == 2 )
                     .MakeGenericMethod( typeof( T ), type )
                     .Invoke( null, new object[] { source, lambda } );
-            return ( IOrderedQueryable<T> )result;
+            return (IOrderedQueryable<T>)result;
         }
 
         /// <summary>
@@ -600,6 +654,54 @@ namespace Rock
                 return source.OrderByDescending( sortProperty.Property );
         }
 
+
+        #endregion
+
+        #region Route Extensions
+
+        /// <summary>
+        /// Pages the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int PageId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["PageId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Routes the id.
+        /// </summary>
+        /// <param name="route">The route.</param>
+        /// <returns></returns>
+        public static int RouteId( this Route route )
+        {
+            if ( route.DataTokens != null )
+            {
+                return int.Parse( route.DataTokens["RouteId"] as string );
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Adds the page route.
+        /// </summary>
+        /// <param name="routes">The routes.</param>
+        /// <param name="pageRoute">The page route.</param>
+        public static void AddPageRoute( this Collection<RouteBase> routes, PageRoute pageRoute )
+        {
+            Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
+            route.DataTokens = new RouteValueDictionary();
+            route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
+            route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
+            routes.Add( route );
+        }
 
         #endregion
     }

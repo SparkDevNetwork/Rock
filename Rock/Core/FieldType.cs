@@ -81,7 +81,17 @@ namespace Rock.Core
         {
             return Read<FieldType>( id );
         }
-                
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static FieldType Read( Guid guid )
+        {
+            return Read<FieldType>( guid );
+        }
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
