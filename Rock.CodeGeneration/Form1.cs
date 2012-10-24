@@ -259,8 +259,8 @@ namespace Rock.CodeGeneration
 
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
-
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Service.cs" ) );
+            
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -293,8 +293,9 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "// http://creativecommons.org/licenses/by-nc-sa/3.0/" );
             sb.AppendLine( "//" );
             sb.AppendLine( "using System;" );
+            sb.AppendLine( "using System.Collections.Generic;" );
+            sb.AppendLine( "using System.Dynamic;" );
             sb.AppendLine( "" );
-
             sb.AppendLine( "using Rock.Data;" );
             sb.AppendLine( "" );
 
@@ -303,9 +304,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            //sb.AppendLine( "    [Serializable]" );
             sb.AppendFormat( "    public partial class {0}Dto : IDto" + Environment.NewLine, type.Name );
-            // : Dto<{0}>
             sb.AppendLine( "    {" );
 
             sb.AppendLine( "" );
@@ -336,6 +335,36 @@ namespace Rock.CodeGeneration
             sb.AppendFormat( "        public {0}Dto ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
             sb.AppendLine( "        {" );
             sb.AppendFormat( "            CopyFromModel( {0} );" + Environment.NewLine, lcName );
+            sb.AppendLine( "        }" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "        /// <summary>" );
+            sb.AppendLine( "        /// Creates a dictionary object." );
+            sb.AppendLine( "        /// </summary>" );
+            sb.AppendLine( "        /// <returns></returns>" );
+            sb.AppendLine( "        public virtual Dictionary<string, object> ToDictionary()" );
+            sb.AppendLine( "        {" );
+            sb.AppendLine( "            var dictionary = new Dictionary<string, object>();" );
+            foreach ( var property in properties )
+            {
+                sb.AppendFormat( "            dictionary.Add( \"{0}\", this.{0} );" + Environment.NewLine, property.Key );
+            }
+            sb.AppendLine( "            return dictionary;" );
+            sb.AppendLine( "        }" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "        /// <summary>" );
+            sb.AppendLine( "        /// Creates a dynamic object." );
+            sb.AppendLine( "        /// </summary>" );
+            sb.AppendLine( "        /// <returns></returns>" );
+            sb.AppendLine( "        public virtual dynamic ToDynamic()" );
+            sb.AppendLine( "        {" );
+            sb.AppendLine( "            dynamic expando = new ExpandoObject();" );
+            foreach ( var property in properties )
+            {
+                sb.AppendFormat( "            expando.{0} = this.{0};" + Environment.NewLine, property.Key );
+            }
+            sb.AppendLine( "            return expando;" );
             sb.AppendLine( "        }" );
             sb.AppendLine( "" );
 
@@ -375,7 +404,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, type.Name + "Dto.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             WriteFile( file, sb );
         }
 

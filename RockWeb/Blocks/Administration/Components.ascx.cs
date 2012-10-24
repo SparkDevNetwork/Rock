@@ -103,12 +103,13 @@ namespace RockWeb.Blocks.Administration
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 int order = 0;
-                foreach ( var component in components )
+                foreach ( var item in components )
                 {
-                    foreach ( var category in component.Value.Value.Attributes )
-                        foreach ( var attribute in category.Value )
-                            if ( attribute.Key == "Order" )
-                                Rock.Attribute.Helper.SaveAttributeValue( component.Value.Value, attribute, order.ToString(), CurrentPersonId );
+                    Component component = item.Value.Value;
+                    if (  component.Attributes.ContainsKey("Order") )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonId );
+                    }
                     order++;
                 }
             }

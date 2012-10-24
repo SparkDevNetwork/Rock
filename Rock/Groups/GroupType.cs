@@ -18,6 +18,7 @@ namespace Rock.Groups
     /// Group Type POCO Entity.
     /// </summary>
     [Table( "groupsGroupType" )]
+    [FriendlyTypeName("Group Type")]
     public partial class GroupType : Model<GroupType>
     {
         /// <summary>

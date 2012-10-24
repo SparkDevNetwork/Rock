@@ -12,6 +12,8 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+
 namespace Rock.Communication
 {
     /// <summary>
@@ -160,182 +162,90 @@ namespace Rock.Communication
         /// <summary>
         /// Sends the specified recipient merge values.
         /// </summary>
-        /// <param name="recipientMergeValues">The recipient merge values.</param>
-        public void Send( Dictionary<string, List<object>> recipientMergeValues )
+        /// <param name="recipients">The recipients.</param>
+        public void Send( Dictionary<string, Dictionary<string, object>> recipients )
         {
+            var configValues = new Dictionary<string,object>();
+
+            // Get all the global attribute values that begin with "Organization" or "Email"
+            // TODO: We don't want to allow access to all global attribute values, as that would be a security
+            // hole, but not sure limiting to those that start with "Organization" or "Email" is the best
+            // solution either.
+            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
+                .Where( v => 
+                    v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) ||
+                    v.Key.StartsWith( "Email", StringComparison.CurrentCultureIgnoreCase ) )
+                .ToList()
+                .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+
+            // Add any application config values as available merge objects
+            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+            {
+                configValues.Add( "Config_" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
+            }
+
+            // Recursively resolve any of the config values that may have other merge codes as part of their value
+            foreach ( var item in configValues.ToList() )
+            {
+                configValues[item.Key] = ResolveConfigValue( item.Value as string, configValues );
+            }
+
+            var configValuesList = configValues.ToList();
+
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
-            foreach ( KeyValuePair<string, List<object>> recipient in recipientMergeValues )
+            foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
             {
                 List<string> to = SplitRecipient( To );
                 to.Add( recipient.Key );
 
-                string subject = Resolve(Subject, recipient.Value);
-                string body = Resolve(Body, recipient.Value);
+                var mergeObjects = recipient.Value;
+
+                // Combine the global and config file merge values with the recipient specific merge values
+                configValuesList.ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
+
+                // Resolve any merge codes in the subject and body
+                string subject = Resolve( Subject, mergeObjects );
+                string body = Resolve( Body, mergeObjects );
 
                 Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
         }
 
-
-        private string Resolve( string content, List<object> objects )
-        {
-            if (content == null)
-                return string.Empty;
-
-            // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{.+}.*" ) )
-                return content;
-
-            string result = content;
-
-            // Get the global attributes and recursively resolve any that include other global attributes
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            Dictionary<string, string> globalAttributeValues = new Dictionary<string, string>();
-            foreach ( KeyValuePair<string, KeyValuePair<string, string>> kvp in globalAttributes.AttributeValues )
-                globalAttributeValues.Add( kvp.Key, ResolveGlobalAttributes( kvp.Value.Value, globalAttributes.AttributeValues ) );
-
-            // Resolve the content with the global attribute values
-            result = ResolveMergeCodes( result, globalAttributeValues );
-
-            // Resolve any objects that were included
-            foreach ( object item in objects )
-                result = ResolveMergeCodes( result, item );
-
-            // Resolve any application config values
-            Dictionary<string, string> configValues = new Dictionary<string, string>();
-            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
-                configValues.Add( "config:" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
-            result = ResolveMergeCodes( result, configValues );
-
-            return result;
-        }
-
-        private string ResolveGlobalAttributes( string value, Dictionary<string, KeyValuePair<string, string>> globalAttributes )
+        private string ResolveConfigValue( string value, Dictionary<string, object> globalAttributes )
         {
             // If the attribute doesn't contain any merge codes, return the content
-            if ( !Regex.IsMatch( value, @".*\{.+}.*" ) )
+            if ( !Regex.IsMatch( value, @".*\{\{.+\}\}.*" ) )
                 return value;
 
             // Resolve the merge codes
-            string content = value;
-            string result = ResolveMergeCodes(content, globalAttributes);
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( value );
+            string result = template.Render( Hash.FromDictionary( globalAttributes ) );
 
             // If anything was resolved, keep resolving until nothing changed.
-            while (result != content)
+            while ( result != value )
             {
-                content = result;
-                result = ResolveGlobalAttributes( content, globalAttributes);
+                value = result;
+                result = ResolveConfigValue( result, globalAttributes );
             }
 
             return result;
         }
 
-        private string ResolveMergeCodes( string content, object item )
+        private string Resolve( string content, Dictionary<string, object> mergeObjects )
         {
-            string result = content;
+            if ( content == null )
+                return string.Empty;
 
-            if ( item is Dictionary<string, string> )
-            {
-                Dictionary<string, string> items = item as Dictionary<string, string>;
-                foreach(KeyValuePair<string, string> kvp in items)
-                    result = result.ReplaceCaseInsensitive( "{" + kvp.Key + "}", kvp.Value );
-            }
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{\{.+\}\}.*" ) )
+                return content;
 
-            else if ( item is Dictionary<string, KeyValuePair<string, string>> )
-            {
-                Dictionary<string, KeyValuePair<string, string>> items = item as Dictionary<string, KeyValuePair<string, string>>;
-                foreach ( KeyValuePair<string, KeyValuePair<string, string>> kvp in items )
-                    result = result.ReplaceCaseInsensitive( "{" + kvp.Key + "}", kvp.Value.Value );
-            }
-
-            else if ( item is List<object> )
-            {
-                List<object> itemList = item as List<object>;
-                if ( itemList.Count > 0 )
-                {
-                    Type type = itemList[0].GetType();
-                    if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
-                        type = type.BaseType;
-
-                    string itemName = type.Name.ToLower();
-
-                    string contentLc = content.ToLower();
-                    int start = contentLc.IndexOf( "{" + itemName + ":repeatbegin}" );
-                    int end = contentLc.IndexOf( "{" + itemName + ":repeatend}" );
-
-                    if ( start >= 0 && end > start )
-                    {
-                        int startOffset = start + itemName.Length + 14;
-                        string targetContent = content.Substring( startOffset, end - startOffset );
-
-                        StringBuilder sb = new StringBuilder();
-                        foreach ( object subItem in itemList )
-                            sb.Append( ResolveMergeCodes( targetContent, subItem ) );
-
-                        result = result.Substring( 0, start ) + sb.ToString() + result.Substring( end + itemName.Length + 12 );
-                    }
-                }
-
-            }
-
-            else if ( item is Dictionary<object, List<object>> )
-            {
-                Dictionary<object, List<object>> itemList = item as Dictionary<object, List<object>>;
-                if ( itemList.Count > 0 )
-                {
-                    Type type = itemList.Keys.First().GetType();
-                    if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
-                        type = type.BaseType;
-
-                    string itemName = type.Name.ToLower();
-
-                    string contentLc = content.ToLower();
-                    int start = contentLc.IndexOf( "{" + itemName + ":repeatbegin}" );
-                    int end = contentLc.IndexOf( "{" + itemName + ":repeatend}" );
-
-                    if ( start >= 0 && end > start )
-                    {
-                        int startOffset = start + itemName.Length + 14;
-                        string targetContent = content.Substring( startOffset, end - startOffset );
-
-                        StringBuilder sb = new StringBuilder();
-                        foreach ( KeyValuePair<object, List<object>> kvp in itemList )
-                        {
-                            string resolvedContent = ResolveMergeCodes( targetContent, kvp.Key );
-                            sb.Append( ResolveMergeCodes( resolvedContent, kvp.Value ) );
-                        }
-
-                        result = result.Substring( 0, start ) + sb.ToString() + result.Substring( end + itemName.Length + 12 );
-                    }
-                }
-            }
-
-            else
-            {
-                Type type = item.GetType();
-                if ( type.Namespace == "System.Data.Entity.DynamicProxies")
-                    type = type.BaseType;
-
-                string itemName = type.Name;
-
-                string resultLc = result.ToLower();
-
-                PropertyInfo[] properties = item.GetType().GetProperties();
-                foreach ( PropertyInfo propertyInfo in properties )
-                {
-                    string mergeCode = string.Format( "{{{0}:{1}}}", type.Name, propertyInfo.Name );
-                    if ( resultLc.Contains( mergeCode.ToLower() ) )
-                    {
-                        object value = propertyInfo.GetValue( item, null );
-                        result = result.ReplaceCaseInsensitive( mergeCode, value != null ? value.ToString() : "" );
-                    }
-                }
-            }
-
-            return result;
-
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( content );
+            return template.Render( Hash.FromDictionary(mergeObjects) );
         }
 
         private List<string> SplitRecipient( string recipients )

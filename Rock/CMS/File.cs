@@ -88,7 +88,7 @@ namespace Rock.Cms
         /// The last modified time.
         /// </value>
         [DataMember]
-        public DateTimeOffset? LastModifiedTime { get; set; }
+        public DateTime? LastModifiedTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Description.

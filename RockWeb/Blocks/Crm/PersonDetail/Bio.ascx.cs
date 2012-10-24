@@ -58,13 +58,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             if ( Person.BirthDate.HasValue)
-                lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", new DateTimeOffset(Person.BirthDate.Value).Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
+                lAge.Text = string.Format( "{0} yrs old <em>{1}</em>", Person.BirthDate.Value.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
     
             lGender.Text = Person.Gender.ToString();
 
             lMaritalStatus.Text = Person.MaritalStatusId.DefinedValue();
             if ( Person.AnniversaryDate.HasValue )
-                lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", new DateTimeOffset(Person.AnniversaryDate.Value).Age(), Person.AnniversaryDate.Value.ToString("MM/dd") );
+                lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );
         }
     }
 }
