@@ -23,7 +23,7 @@ namespace Rock.Cms
         /// <param name="personId">The person id.</param>
         public override void Save( File item, int? personId )
         {
-            item.LastModifiedTime = DateTimeOffset.Now;
+            item.LastModifiedTime = DateTime.Now;
             base.Save( item, personId );
         }
     }

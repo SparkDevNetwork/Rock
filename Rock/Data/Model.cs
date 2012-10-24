@@ -92,14 +92,36 @@ namespace Rock.Data
         // to tell WCF Data Services not to worry about the associated properties.
 
         /// <summary>
+        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
+        /// </summary>
+        /// <value>
+        /// The attribute categories.
+        /// </value>
+        public SortedDictionary<string, List<string>> AttributeCategories
+        {
+            get
+            {
+                if ( _attributeCategories == null && !_attributesLoaded )
+                {
+                    Attribute.Helper.LoadAttributes( this );
+                    _attributesLoaded = true;
+                }
+                return _attributeCategories;
+            }
+            set { _attributeCategories = value; }
+        }
+        private SortedDictionary<string, List<string>> _attributeCategories;
+
+        /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
-        /// The <see cref="AttributeValues"/> property should be used to get attribute values
+        /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
+        /// is the attribute key, and value is the cached attribute
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
         [NotMapped]
-        public SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> Attributes
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
         {
             get 
             {
@@ -112,16 +134,17 @@ namespace Rock.Data
             }
             set { _attributes = value; }
         }
-        private SortedDictionary<string, List<Rock.Web.Cache.AttributeCache>> _attributes;
+        private Dictionary<string, Rock.Web.Cache.AttributeCache> _attributes;
 
         /// <summary>
-        /// Dictionary of all attributes and their value.
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
+        /// associated with the attribute and object instance
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues
         {
             get 
             {
@@ -134,7 +157,7 @@ namespace Rock.Data
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> _attributeValues;
+        private Dictionary<string, List<Rock.Core.AttributeValueDto>> _attributeValues;
 
         #endregion
     }

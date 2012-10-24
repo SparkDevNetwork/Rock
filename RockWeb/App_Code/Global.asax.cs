@@ -15,9 +15,11 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Routing;
+using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Rock;
 using Rock.Cms;
 using Rock.Communication;
 using Rock.Core;
@@ -269,21 +271,16 @@ namespace RockWeb
                         if ( status == "500" )
                         {
                             // setup merge codes for email
-                            var mergeObjects = new List<object>();
-
-                            var values = new Dictionary<string, string>();
-
-                            string exceptionDetails = "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" );
-                            values.Add( "ExceptionDetails", exceptionDetails );
-                            mergeObjects.Add( values );
-
+                            var mergeObjects = new Dictionary<string, object>();
+                            mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                            
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
                             if ( emailAddressesList != null )
                             {
                                 string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                var recipients = new Dictionary<string, List<object>>();
+                                var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
                                 {
@@ -310,6 +307,9 @@ namespace RockWeb
                             Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
                             Context.ApplicationInstance.CompleteRequest();
                         }
+                        
+                        // intentially throw ThreadAbort
+                        Response.End();
                     }
                 }
             }
@@ -326,6 +326,7 @@ namespace RockWeb
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
             message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
 
             // check for inner exception
@@ -525,11 +526,7 @@ namespace RockWeb
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
             {
                 // Create the custom route and save the page id in the DataTokens collection
-                Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
-                route.DataTokens = new RouteValueDictionary();
-                route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
-                route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
-                routes.Add( route );
+                routes.AddPageRoute( pageRoute );
             }
 
 

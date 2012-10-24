@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Group
                         {
                             HtmlGenericControl durationSpan = new HtmlGenericControl( "span" );
                             durationSpan.AddCssClass( "duration" );
-                            durationSpan.InnerText = group.AttributeValues[_durationAttributeKey].Value[0].Value;
+                            durationSpan.InnerText = group.AttributeValues[_durationAttributeKey][0].Value;
                             lb.Controls.Add( durationSpan );
                         }
                     }
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Group
                         if ( group != null &&
                             group.AttributeValues.ContainsKey( _videoAttributeKey ) )
                         {
-                            hfVideoUrl.Value = group.AttributeValues[_videoAttributeKey].Value[0].Value;
+                            hfVideoUrl.Value = group.AttributeValues[_videoAttributeKey][0].Value;
 
                             MemberService memberService = new MemberService();
                             var groupMember = memberService.GetByGroupIdAndPersonIdAndGroupRoleId(

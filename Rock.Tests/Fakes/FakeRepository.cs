@@ -63,22 +63,22 @@ namespace Rock.Tests.Fakes
             return FirstOrDefault( where );
         }
 
-        public virtual DateTimeOffset? DateCreated( T entity )
+        public virtual DateTime? DateCreated( T entity )
         {
             return DateCreated( entity.EntityTypeName, entity.Id );
         }
 
-        public virtual DateTimeOffset? DateCreated( string entityTypeName, int entityId )
+        public virtual DateTime? DateCreated( string entityTypeName, int entityId )
         {
             return null; 
         }
 
-        public virtual DateTimeOffset? DateLastModified( T entity )
+        public virtual DateTime? DateLastModified( T entity )
         {
             return DateLastModified( entity.EntityTypeName, entity.Id );
         }
 
-        public virtual DateTimeOffset? DateLastModified( string entityTypeName, int entityId )
+        public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
         {
             return null;
         }

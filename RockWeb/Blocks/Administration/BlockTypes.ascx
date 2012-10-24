@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gBlockTypes" runat="server" EmptyDataText="No Block Types Found" RowItemText="block type" AllowSorting="true">
+            <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />

@@ -457,6 +457,13 @@ span.cke_skin_kama {
     word-wrap:break-word;   
 }
 
+#splash #content #content-box .exception-message 
+{
+    font-size: 9px;
+    color: #515151;
+    word-wrap:break-word;   
+}
+
 /* user registration styles */
 .not-me 
 {

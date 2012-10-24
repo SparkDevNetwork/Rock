@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Security
             foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
-                if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+                if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"][0].Value ) )
                 {
                     string loginTypeName = component.GetType().Name;
 
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Security
                         if (
                             user.ServiceName == componentName &&
                             component.AttributeValues.ContainsKey( "Active" ) &&
-                            bool.Parse( component.AttributeValues["Active"].Value[0].Value )
+                            bool.Parse( component.AttributeValues["Active"][0].Value )
                         )
                         {
                             if ( component.Authenticate( user, tbPassword.Text ) )
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Security
                 foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
                 {
                     var component = serviceEntry.Value.Value;
-                    if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"].Value[0].Value ) )
+                    if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"][0].Value ) )
                     {
                         string loginTypeName = component.GetType().Name;
                         if ( lb.ID == "lb" + loginTypeName + "Login" )

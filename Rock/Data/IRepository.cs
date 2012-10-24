@@ -74,7 +74,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        DateTimeOffset? DateCreated( T entity );
+        DateTime? DateCreated( T entity );
 
         /// <summary>
         /// Date the entity was created.
@@ -82,14 +82,14 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        DateTimeOffset? DateCreated( string entityTypeName, int entityId );
+        DateTime? DateCreated( string entityTypeName, int entityId );
 
         /// <summary>
         /// Date the entity was last modified.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        DateTimeOffset? DateLastModified( T entity );
+        DateTime? DateLastModified( T entity );
 
         /// <summary>
         /// Date the entity was last modified.
@@ -97,7 +97,7 @@ namespace Rock.Data
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        DateTimeOffset? DateLastModified( string entityTypeName, int entityId );
+        DateTime? DateLastModified( string entityTypeName, int entityId );
 
         /// <summary>
         /// The person id who created entity.
