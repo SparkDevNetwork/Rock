@@ -54,7 +54,7 @@ public partial class GroupTypes : RockBlock
         else
         {
             gGroupType.Visible = false;
-            nbMessage.Text = WarningMessage.NotAuthorizedToEdit( GroupType.EntityTypeFriendlyName.ToLower() );
+            nbMessage.Text = WarningMessage.NotAuthorizedToEdit( GroupType.EntityTypeFriendlyName );
             nbMessage.Visible = true;
         }
 
@@ -238,7 +238,6 @@ public partial class GroupTypes : RockBlock
             tbName.Text = groupType.Name;
             tbDescription.Text = groupType.Description;
             ddlDefaultGroupRole.SelectedValue = ( groupType.DefaultGroupRoleId ?? None.Id ).ToString();
-            tbDefaultGroupRoleReadOnly.Text = groupType.DefaultGroupRole == null ? None.Text : groupType.DefaultGroupRole.Name;
             readOnly = groupType.IsSystem;
 
             if ( groupType.IsSystem )
@@ -261,8 +260,7 @@ public partial class GroupTypes : RockBlock
             tbDescription.Text = string.Empty;
         }
 
-        ddlDefaultGroupRole.Visible = !readOnly;
-        tbDefaultGroupRoleReadOnly.Visible = readOnly;
+        ddlDefaultGroupRole.Enabled = !readOnly;
         tbName.ReadOnly = readOnly;
         tbDescription.ReadOnly = readOnly;
         btnSave.Visible = !readOnly;

@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gEmailTemplates.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.EntityTypeFriendlyName.ToLower() );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
             }
 

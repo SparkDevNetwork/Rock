@@ -19,7 +19,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string DuplicateFoundMessage( string nameFieldname, string itemFieldName )
         {
-            return string.Format( "This {0} is already being used by another {1}.", nameFieldname, itemFieldName );
+            return string.Format( "This {0} is already being used by another {1}.", nameFieldname.ToLower(), itemFieldName.ToLower() );
         }
 
         /// <summary>
@@ -28,14 +28,9 @@ namespace Rock.Constants
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <param name="pluralize">if set to <c>true</c> [pluralize].</param>
         /// <returns></returns>
-        public static string NotAuthorizedToEdit( string itemFieldName, bool pluralize = true )
+        public static string NotAuthorizedToEdit( string itemFieldName)
         {
-            string result = string.Format( "You are not authorized to edit {0}.", itemFieldName );
-            if ( pluralize )
-            {
-                result += "s";
-            }
-            return result;
+            return string.Format( "You are not authorized to edit {0}.", itemFieldName.Pluralize().ToLower() );
         }
     }
 

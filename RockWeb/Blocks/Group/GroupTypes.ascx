@@ -28,7 +28,6 @@
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Groups.GroupType, Rock" PropertyName="Name" />
                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Groups.GroupType, Rock" PropertyName="Description" />
                 <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Groups.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
-                <Rock:DataTextBox ID="tbDefaultGroupRoleReadOnly" runat="server" SourceTypeName="Rock.Groups.GroupRole, Rock" PropertyName="Name" ReadOnly="true" Visible="false" LabelText="Default Group Role" />
             </fieldset>
 
             <div class="actions">
