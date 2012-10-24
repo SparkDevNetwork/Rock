@@ -307,6 +307,9 @@ namespace RockWeb
                             Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
                             Context.ApplicationInstance.CompleteRequest();
                         }
+                        
+                        // intentially throw ThreadAbort
+                        Response.End();
                     }
                 }
             }
@@ -323,6 +326,7 @@ namespace RockWeb
             string message = string.Empty;
 
             message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
             message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
 
             // check for inner exception
