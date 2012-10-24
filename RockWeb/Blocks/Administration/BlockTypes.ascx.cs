@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gBlockTypes.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.EntityTypeFriendlyName.ToLower() );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
             }
 

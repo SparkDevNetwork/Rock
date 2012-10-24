@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gPageRoutes.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( PageRoute.EntityTypeFriendlyName.ToLower() );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( PageRoute.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
             }
 
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
             {
-                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", "page" );
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", Rock.Cms.Page.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
                 return;
             }
@@ -253,7 +253,6 @@ namespace RockWeb.Blocks.Administration
                 ltIsSystem.Text = pageRoute.IsSystem.ToYesNo();
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
-                tbPageNameReadOnly.Text = pageRoute.Page.Name;
                 tbRoute.Text = pageRoute.Route;
                 readOnly = pageRoute.IsSystem;
 
@@ -278,8 +277,7 @@ namespace RockWeb.Blocks.Administration
                 readOnly = false;
             }
 
-            ddlPageName.Visible = !readOnly;
-            tbPageNameReadOnly.Visible = readOnly;
+            ddlPageName.Enabled = !readOnly;
             tbRoute.ReadOnly = readOnly;
             btnSave.Visible = !readOnly;
         }

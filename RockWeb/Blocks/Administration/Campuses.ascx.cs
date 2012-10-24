@@ -37,7 +37,6 @@ namespace RockWeb.Blocks.Administration
                 gCampuses.Actions.IsAddEnabled = true;
                 gCampuses.Actions.AddClick += gCampuses_Add;
                 gCampuses.GridRebind += gCampuses_GridRebind;
-                gCampuses.EmptyDataText = "No Campuses Found";
             }
         }
 
@@ -59,7 +58,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gCampuses.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( "campuses", false );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Campus.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
             }
 
@@ -160,7 +159,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( campusService.Queryable().Count( a => a.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( campus.Id ) ) > 0 )
             {
-                nbMessage.Text = WarningMessage.DuplicateFoundMessage("name", "campus");
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Campus.EntityTypeFriendlyName );
                 nbMessage.Visible = true;
                 return;
             }
@@ -209,7 +208,7 @@ namespace RockWeb.Blocks.Administration
         {
             pnlList.Visible = false;
             pnlDetails.Visible = true;
-            
+
             CampusService campusService = new CampusService();
             Campus campus = campusService.Get( campusId );
 

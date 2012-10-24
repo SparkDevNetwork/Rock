@@ -142,7 +142,7 @@ namespace Rock.Web.UI.Controls
                     Type itemType = dataSourceType.GetGenericArguments()[0];
                     if ( itemType != null )
                     {
-                        result = string.Format("No {0}s Found", itemType.GetFriendlyTypeName());
+                        result = string.Format("No {0} Found", itemType.GetFriendlyTypeName().Pluralize());
                     }
                 }
                 return result;
