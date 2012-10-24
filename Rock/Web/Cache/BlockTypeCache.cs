@@ -50,7 +50,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Core.AttributeValueDto>>> AttributeValues { get; private set; }
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
@@ -64,9 +64,8 @@ namespace Rock.Web.Cache
             if ( blockTypeModel != null )
             {
                 Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
-                foreach ( var category in blockTypeModel.Attributes )
-                    foreach ( var attribute in category.Value )
-                        Rock.Attribute.Helper.SaveAttributeValues( blockTypeModel, attribute, this.AttributeValues[attribute.Key].Value, personId );
+                foreach ( var attribute in blockTypeModel.Attributes )
+                    Rock.Attribute.Helper.SaveAttributeValues( blockTypeModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
         }
 
@@ -107,9 +106,8 @@ namespace Rock.Web.Cache
                     blockType.AttributeValues = blockTypeModel.AttributeValues;
 
                     if (blockTypeModel.Attributes != null)
-                        foreach ( var category in blockTypeModel.Attributes )
-                            foreach ( var attribute in category.Value )
-                                blockType.AttributeIds.Add( attribute.Id );
+                        foreach ( var attribute in blockTypeModel.Attributes )
+                            blockType.AttributeIds.Add( attribute.Value.Id );
 
                     // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
                     // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any

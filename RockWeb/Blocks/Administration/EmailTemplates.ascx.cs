@@ -7,7 +7,9 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
+using Rock.Constants;
 using Rock.Crm;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -58,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gEmailTemplates.Visible = false;
-                nbMessage.Text = "You are not authorized to edit email templates";
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.EntityTypeFriendlyName.ToLower() );
                 nbMessage.Visible = true;
             }
 
@@ -152,11 +154,7 @@ namespace RockWeb.Blocks.Administration
             EmailTemplateService emailTemplateService = new EmailTemplateService();
             EmailTemplate emailTemplate;
 
-            int emailTemplateId = 0;
-            if ( !int.TryParse( hfEmailTemplateId.Value, out emailTemplateId ) )
-            {
-                emailTemplateId = 0;
-            }
+            int emailTemplateId = int.Parse(hfEmailTemplateId.Value);
 
             if ( emailTemplateId == 0 )
             {
@@ -200,7 +198,7 @@ namespace RockWeb.Blocks.Administration
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( "[All]" );
+            ddlCategoryFilter.Items.Add( new ListItem(All.Text, All.Id.ToString()) );
 
             EmailTemplateService emailTemplateService = new EmailTemplateService();
             var items = emailTemplateService.Queryable().
@@ -225,7 +223,7 @@ namespace RockWeb.Blocks.Administration
 
             var emailTemplates = emailTemplateService.Queryable();
 
-            if ( ddlCategoryFilter.SelectedValue != "[All]" )
+            if ( ddlCategoryFilter.SelectedValue != All.Id.ToString() )
             {
                 emailTemplates = emailTemplates.Where( a => a.Category.Trim() == ddlCategoryFilter.SelectedValue );
             }
@@ -256,7 +254,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( emailTemplate != null )
             {
-                lActionTitle.Text = "Edit Email Template";
+                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.EntityTypeFriendlyName );
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 tbCategory.Text = emailTemplate.Category;
@@ -270,7 +268,9 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lActionTitle.Text = "Add Email Template";
+                lActionTitle.Text = ActionTitle.Add( EmailTemplate.EntityTypeFriendlyName );
+                hfEmailTemplateId.Value = 0.ToString();
+
                 tbCategory.Text = string.Empty;
                 tbTitle.Text = string.Empty;
                 tbFrom.Text = string.Empty;

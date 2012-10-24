@@ -265,31 +265,38 @@ namespace RockWeb.Blocks.Security
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 PersonService personService = new PersonService();
-                Rock.Cms.UserService userService = new Rock.Cms.UserService();
-
                 Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
                 if ( person != null )
                 {
-                    var mergeObjects = new List<object>();
+                    var mergeObjects = new Dictionary<string, object>();
+                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                    var values = new Dictionary<string, string>();
-                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                    mergeObjects.Add( values );
+                    var personDictionaries = new List<IDictionary<string, object>>();
 
-                    Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
-                    var userObjects = new List<object>();
+                    var users = new List<IDictionary<string, object>>();
+                    UserService userService = new UserService();
+                    foreach ( User user in userService.GetByPersonId( person.Id ) )
+                    {
+                        if ( user.ServiceType == AuthenticationServiceType.Internal )
+                        {
+                            var userDictionary = new UserDto( user ).ToDictionary();
+                            userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
+                            users.Add( userDictionary );
+                        }
+                    }
 
-                    mergeObjects.Add( person );
+                    if ( users.Count > 0 )
+                    {
+                        IDictionary<string, object> personDictionary = new PersonDto( person ).ToDictionary();
+                        personDictionary.Add( "FirstName", person.FirstName );
+                        personDictionary.Add( "Users", users.ToArray() );
+                        personDictionaries.Add( personDictionary );
+                    }
 
-                    foreach ( var user in userService.GetByPersonId( person.Id ) )
-                        if (user.ServiceType == AuthenticationServiceType.Internal)
-                            userObjects.Add( user );
+                    mergeObjects.Add( "Persons", personDictionaries.ToArray() );
 
-                    personObjects.Add( person, userObjects );
-                    mergeObjects.Add(personObjects);
-
-                    var recipients = new Dictionary<string, List<object>>();
-                    recipients.Add(person.Email, mergeObjects);
+                    var recipients = new Dictionary<string, Dictionary<string, object>>();
+                    recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
                     SetSMTPParameters( email );
@@ -311,15 +318,16 @@ namespace RockWeb.Blocks.Security
             {
                 Rock.Cms.User user = CreateUser( person, false );
 
-                var mergeObjects = new List<object>();
-                mergeObjects.Add( person );
-                mergeObjects.Add( user );
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                var values = new Dictionary<string, string>();
-                values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                mergeObjects.Add( values );
+                var personDictionary = new PersonDto( person ).ToDictionary();
+                personDictionary.Add( "FirstName", person.FirstName );
+                mergeObjects.Add( "Person", personDictionary );
 
-                var recipients = new Dictionary<string, List<object>>();
+                mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
 
                 Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
@@ -344,15 +352,16 @@ namespace RockWeb.Blocks.Security
 
                 if ( person != null )
                 {
-                    var mergeObjects = new List<object>();
-                    mergeObjects.Add( person );
-                    mergeObjects.Add( user );
+                    var mergeObjects = new Dictionary<string, object>();
+                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                    var values = new Dictionary<string, string>();
-                    values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-                    mergeObjects.Add( values );
+                    var personDictionary = new PersonDto( person ).ToDictionary();
+                    personDictionary.Add("FirstName", person.FirstName);
+                    mergeObjects.Add( "Person", personDictionary );
 
-                    var recipients = new Dictionary<string, List<object>>();
+                    mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+
+                    var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );

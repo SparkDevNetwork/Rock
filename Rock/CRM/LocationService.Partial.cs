@@ -67,7 +67,7 @@ namespace Rock.Crm
 
             // Try each of the standardization services that were found through MEF
             foreach ( KeyValuePair<int, Lazy<Rock.Address.StandardizeComponent, Rock.Extension.IComponentData>> service in Rock.Address.StandardizeContainer.Instance.Components )
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value[0].Value ) )
+                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"][0].Value ) )
                 {
                     string result;
                     bool success = service.Value.Value.Standardize( location, out result );
@@ -124,7 +124,7 @@ namespace Rock.Crm
             // Try each of the geocoding services that were found through MEF
 
             foreach ( KeyValuePair<int, Lazy<Rock.Address.GeocodeComponent, Rock.Extension.IComponentData>> service in Rock.Address.GeocodeContainer.Instance.Components )
-                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"].Value[0].Value ) )
+                if ( !service.Value.Value.AttributeValues.ContainsKey( "Active" ) || bool.Parse( service.Value.Value.AttributeValues["Active"][0].Value ) )
                 {
                     string result;
                     bool success = service.Value.Value.Geocode( location, out result );

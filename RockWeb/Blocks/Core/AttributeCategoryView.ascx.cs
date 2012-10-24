@@ -7,20 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Runtime.Caching;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
+using System.Xml.Linq;
+using System.Xml.Xsl;
 
 using Rock;
 using Rock.Core;
-using Rock.Field;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
 
 namespace RockWeb.Blocks.Core
 {
@@ -107,7 +100,7 @@ namespace RockWeb.Blocks.Core
                                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                                 if ( attribute != null )
                                 {
-                                    var values = model.AttributeValues[attribute.Key].Value;
+                                    var values = model.AttributeValues[attribute.Key];
                                     if ( values != null && values.Count > 0 )
                                     {
                                         attributesElement.Add( new XElement( "attribute",
