@@ -189,6 +189,17 @@ namespace Rock
             return truncatedString + "...";
         }
 
+        /// <summary>
+        /// Pluralizes the specified tring.
+        /// </summary>
+        /// <param name="str">The string to pluralize.</param>
+        /// <returns></returns>
+        public static string Pluralize( this string str )
+        {
+            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+            return pluralizationService.Pluralize( str );
+        }
+
         #endregion
 
         #region Int Extensions
