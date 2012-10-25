@@ -3,8 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -48,7 +46,7 @@ namespace Rock.Crm
         [MaxLength( 100 )]
         [DataMember]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -58,7 +56,7 @@ namespace Rock.Crm
         [Required]
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Order.
         /// </summary>
@@ -67,7 +65,25 @@ namespace Rock.Crm
         /// </value>
         [DataMember]
         public int? Order { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the max count.
+        /// </summary>
+        /// <value>
+        /// The max count.
+        /// </value>
+        [DataMember]
+        public int? MaxCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the min count.
+        /// </summary>
+        /// <value>
+        /// The min count.
+        /// </value>
+        [DataMember]
+        public int? MinCount { get; set; }
+
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>

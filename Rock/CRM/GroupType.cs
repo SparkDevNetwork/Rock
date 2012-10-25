@@ -3,13 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -18,7 +16,7 @@ namespace Rock.Crm
     /// Group Type POCO Entity.
     /// </summary>
     [Table( "crmGroupType" )]
-    [FriendlyTypeName("Group Type")]
+    [FriendlyTypeName( "Group Type" )]
     public partial class GroupType : Model<GroupType>
     {
         /// <summary>
@@ -30,7 +28,7 @@ namespace Rock.Crm
         [Required]
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
@@ -41,7 +39,7 @@ namespace Rock.Crm
         [MaxLength( 100 )]
         [DataMember]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -50,7 +48,7 @@ namespace Rock.Crm
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Default Group Role Id.
         /// </summary>
@@ -59,13 +57,13 @@ namespace Rock.Crm
         /// </value>
         [DataMember]
         public int? DefaultGroupRoleId { get; set; }
-        
+
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
         public override string EntityTypeName { get { return "Groups.GroupType"; } }
-        
+
         /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
@@ -73,7 +71,7 @@ namespace Rock.Crm
         /// Collection of Groups.
         /// </value>
         public virtual ICollection<Group> Groups { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Child Group Types.
         /// </summary>
@@ -81,7 +79,7 @@ namespace Rock.Crm
         /// Collection of Child Group Types.
         /// </value>
         public virtual ICollection<GroupType> ChildGroupTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Parent Group Types.
         /// </summary>
@@ -89,7 +87,7 @@ namespace Rock.Crm
         /// Collection of Parent Group Types.
         /// </value>
         public virtual ICollection<GroupType> ParentGroupTypes { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Group Roles.
         /// </summary>
@@ -97,7 +95,7 @@ namespace Rock.Crm
         /// Collection of Group Roles.
         /// </value>
         public virtual ICollection<GroupRole> Roles { get; set; }
-        
+
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
@@ -107,7 +105,7 @@ namespace Rock.Crm
         {
             return Read<GroupType>( id );
         }
-        
+
         /// <summary>
         /// Gets or sets the Default Group Role.
         /// </summary>
@@ -115,6 +113,14 @@ namespace Rock.Crm
         /// A <see cref="GroupRole"/> object.
         /// </value>
         public virtual GroupRole DefaultGroupRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location types.
+        /// </summary>
+        /// <value>
+        /// The location types.
+        /// </value>
+        public virtual ICollection<GroupTypeLocationType> LocationTypes { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -138,8 +144,8 @@ namespace Rock.Crm
         /// </summary>
         public GroupTypeConfiguration()
         {
-            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey("ChildGroupTypeId"); m.MapRightKey("ParentGroupTypeId"); m.ToTable("groupsGroupTypeAssociation" ); } );
-            this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete(false);
+            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "ChildGroupTypeId" ); m.MapRightKey( "ParentGroupTypeId" ); m.ToTable( "crmGroupTypeAssociation" ); } );
+            this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
         }
     }
 }

@@ -69,6 +69,7 @@ namespace Rock.Crm
                     Name = m.Name,
                     Description = m.Description,
                     IsSecurityRole = m.IsSecurityRole,
+                    IsActive = m.IsActive,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

@@ -29,6 +29,8 @@ namespace Rock.Crm
         public string Name { get; set; }
         public string Description { get; set; }
         public int? Order { get; set; }
+        public int? MaxCount { get; set; }
+        public int? MinCount { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -61,6 +63,8 @@ namespace Rock.Crm
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
             dictionary.Add( "Order", this.Order );
+            dictionary.Add( "MaxCount", this.MaxCount );
+            dictionary.Add( "MinCount", this.MinCount );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -78,6 +82,8 @@ namespace Rock.Crm
             expando.Name = this.Name;
             expando.Description = this.Description;
             expando.Order = this.Order;
+            expando.MaxCount = this.MaxCount;
+            expando.MinCount = this.MinCount;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -97,6 +103,8 @@ namespace Rock.Crm
                 this.Name = groupRole.Name;
                 this.Description = groupRole.Description;
                 this.Order = groupRole.Order;
+                this.MaxCount = groupRole.MaxCount;
+                this.MinCount = groupRole.MinCount;
                 this.Id = groupRole.Id;
                 this.Guid = groupRole.Guid;
             }
@@ -116,6 +124,8 @@ namespace Rock.Crm
                 groupRole.Name = this.Name;
                 groupRole.Description = this.Description;
                 groupRole.Order = this.Order;
+                groupRole.MaxCount = this.MaxCount;
+                groupRole.MinCount = this.MinCount;
                 groupRole.Id = this.Id;
                 groupRole.Guid = this.Guid;
             }

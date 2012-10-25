@@ -87,6 +87,16 @@ namespace Rock.Crm
         [Required]
         [DataMember]
         public bool IsSecurityRole { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool IsActive { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id

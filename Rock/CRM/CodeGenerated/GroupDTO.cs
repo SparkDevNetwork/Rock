@@ -31,6 +31,7 @@ namespace Rock.Crm
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsSecurityRole { get; set; }
+        public bool IsActive { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,6 +66,7 @@ namespace Rock.Crm
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
             dictionary.Add( "IsSecurityRole", this.IsSecurityRole );
+            dictionary.Add( "IsActive", this.IsActive );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -84,6 +86,7 @@ namespace Rock.Crm
             expando.Name = this.Name;
             expando.Description = this.Description;
             expando.IsSecurityRole = this.IsSecurityRole;
+            expando.IsActive = this.IsActive;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -105,6 +108,7 @@ namespace Rock.Crm
                 this.Name = group.Name;
                 this.Description = group.Description;
                 this.IsSecurityRole = group.IsSecurityRole;
+                this.IsActive = group.IsActive;
                 this.Id = group.Id;
                 this.Guid = group.Guid;
             }
@@ -126,6 +130,7 @@ namespace Rock.Crm
                 group.Name = this.Name;
                 group.Description = this.Description;
                 group.IsSecurityRole = this.IsSecurityRole;
+                group.IsActive = this.IsActive;
                 group.Id = this.Id;
                 group.Guid = this.Guid;
             }
