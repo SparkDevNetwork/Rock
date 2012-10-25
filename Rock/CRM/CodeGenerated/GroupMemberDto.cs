@@ -20,7 +20,7 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for Member object
     /// </summary>
-    public partial class MemberDto : IDto
+    public partial class GroupMemberDto : IDto
     {
 
 #pragma warning disable 1591
@@ -35,7 +35,7 @@ namespace Rock.Crm
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
-        public MemberDto ()
+        public GroupMemberDto ()
         {
         }
 
@@ -43,7 +43,7 @@ namespace Rock.Crm
         /// Instantiates a new DTO object from the entity
         /// </summary>
         /// <param name="member"></param>
-        public MemberDto ( GroupMember member )
+        public GroupMemberDto ( GroupMember member )
         {
             CopyFromModel( member );
         }

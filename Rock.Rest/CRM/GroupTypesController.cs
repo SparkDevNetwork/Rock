@@ -12,13 +12,13 @@
 
 using Rock.Crm;
 
-namespace Rock.Rest.Groups
+namespace Rock.Rest.Crm
 {
     /// <summary>
-    /// Groups REST API
+    /// GroupTypes REST API
     /// </summary>
-    public partial class GroupsController : Rock.Rest.ApiController<Rock.Crm.Group, Rock.Crm.GroupDto>
+    public partial class GroupTypesController : Rock.Rest.ApiController<Rock.Crm.GroupType, Rock.Crm.GroupTypeDto>
     {
-        public GroupsController() : base( new Rock.Crm.GroupService() ) { } 
+        public GroupTypesController() : base( new Rock.Crm.GroupTypeService() ) { } 
     }
 }

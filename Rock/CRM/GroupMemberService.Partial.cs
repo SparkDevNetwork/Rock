@@ -14,7 +14,7 @@ namespace Rock.Crm
     /// <summary>
     /// Member POCO Service class
     /// </summary>
-    public partial class MemberService : Service<GroupMember, MemberDto>
+    public partial class GroupMemberService : Service<GroupMember, GroupMemberDto>
     {
         /// <summary>
         /// Gets Members by Group Id

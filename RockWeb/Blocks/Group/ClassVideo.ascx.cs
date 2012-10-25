@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Group
                         {
                             hfVideoUrl.Value = group.AttributeValues[_videoAttributeKey][0].Value;
 
-                            MemberService memberService = new MemberService();
+                            GroupMemberService memberService = new GroupMemberService();
                             var groupMember = memberService.GetByGroupIdAndPersonIdAndGroupRoleId(
                                 groupId, CurrentPersonId.Value, roleId );
                             if ( groupMember == null )

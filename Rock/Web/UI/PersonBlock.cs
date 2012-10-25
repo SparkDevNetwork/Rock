@@ -59,7 +59,7 @@ namespace Rock.Web.UI
             if ( Person == null )
                 return null;
 
-            var service = new MemberService();
+            var service = new GroupMemberService();
             groups = service.Queryable()
                 .Where( m =>
                     m.PersonId == Person.Id &&
