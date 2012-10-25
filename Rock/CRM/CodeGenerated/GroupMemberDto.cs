@@ -18,7 +18,7 @@ using Rock.Data;
 namespace Rock.Crm
 {
     /// <summary>
-    /// Data Transfer Object for Member object
+    /// Data Transfer Object for GroupMember object
     /// </summary>
     public partial class GroupMemberDto : IDto
     {
@@ -42,10 +42,10 @@ namespace Rock.Crm
         /// <summary>
         /// Instantiates a new DTO object from the entity
         /// </summary>
-        /// <param name="member"></param>
-        public GroupMemberDto ( GroupMember member )
+        /// <param name="groupMember"></param>
+        public GroupMemberDto ( GroupMember groupMember )
         {
-            CopyFromModel( member );
+            CopyFromModel( groupMember );
         }
 
         /// <summary>
@@ -88,13 +88,13 @@ namespace Rock.Crm
         {
             if ( model is GroupMember )
             {
-                var member = (GroupMember)model;
-                this.IsSystem = member.IsSystem;
-                this.GroupId = member.GroupId;
-                this.PersonId = member.PersonId;
-                this.GroupRoleId = member.GroupRoleId;
-                this.Id = member.Id;
-                this.Guid = member.Guid;
+                var groupMember = (GroupMember)model;
+                this.IsSystem = groupMember.IsSystem;
+                this.GroupId = groupMember.GroupId;
+                this.PersonId = groupMember.PersonId;
+                this.GroupRoleId = groupMember.GroupRoleId;
+                this.Id = groupMember.Id;
+                this.Guid = groupMember.Guid;
             }
         }
 
@@ -106,13 +106,13 @@ namespace Rock.Crm
         {
             if ( model is GroupMember )
             {
-                var member = (GroupMember)model;
-                member.IsSystem = this.IsSystem;
-                member.GroupId = this.GroupId;
-                member.PersonId = this.PersonId;
-                member.GroupRoleId = this.GroupRoleId;
-                member.Id = this.Id;
-                member.Guid = this.Guid;
+                var groupMember = (GroupMember)model;
+                groupMember.IsSystem = this.IsSystem;
+                groupMember.GroupId = this.GroupId;
+                groupMember.PersonId = this.PersonId;
+                groupMember.GroupRoleId = this.GroupRoleId;
+                groupMember.Id = this.Id;
+                groupMember.Guid = this.Guid;
             }
         }
     }
