@@ -12,7 +12,7 @@
 
 using Rock.Crm;
 
-namespace Rock.Rest.Groups
+namespace Rock.Rest.Crm
 {
     /// <summary>
     /// GroupRoles REST API

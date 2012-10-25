@@ -20,20 +20,20 @@ namespace Rock.Crm
     /// <summary>
     /// Member Service class
     /// </summary>
-    public partial class MemberService : Service<GroupMember, MemberDto>
+    public partial class GroupMemberService : Service<GroupMember, GroupMemberDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemberService"/> class
+        /// Initializes a new instance of the <see cref="GroupMemberService"/> class
         /// </summary>
-        public MemberService()
+        public GroupMemberService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemberService"/> class
+        /// Initializes a new instance of the <see cref="GroupMemberService"/> class
         /// </summary>
-        public MemberService(IRepository<GroupMember> repository) : base(repository)
+        public GroupMemberService(IRepository<GroupMember> repository) : base(repository)
         {
         }
 
@@ -49,7 +49,7 @@ namespace Rock.Crm
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MemberDto> QueryableDto( )
+        public override IQueryable<GroupMemberDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,9 +58,9 @@ namespace Rock.Crm
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MemberDto> QueryableDto( IQueryable<GroupMember> items )
+        public IQueryable<GroupMemberDto> QueryableDto( IQueryable<GroupMember> items )
         {
-            return items.Select( m => new MemberDto()
+            return items.Select( m => new GroupMemberDto()
                 {
                     IsSystem = m.IsSystem,
                     GroupId = m.GroupId,

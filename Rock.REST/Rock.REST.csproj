@@ -127,10 +127,10 @@
     <Compile Include="Financial\PledgesController.cs" />
     <Compile Include="Financial\TransactionDetailsController.cs" />
     <Compile Include="Financial\TransactionsController.cs" />
-    <Compile Include="Groups\GroupRolesController.cs" />
-    <Compile Include="Groups\GroupsController.cs" />
-    <Compile Include="Groups\GroupTypesController.cs" />
-    <Compile Include="Groups\MembersController.cs" />
+    <Compile Include="Crm\GroupRolesController.cs" />
+    <Compile Include="Crm\GroupsController.cs" />
+    <Compile Include="Crm\GroupTypesController.cs" />
+    <Compile Include="Crm\GroupMembersController.cs" />
     <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\SearchController.cs" />
