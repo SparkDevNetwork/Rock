@@ -70,9 +70,9 @@ namespace RockWeb.Blocks.Administration
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 var authService = new Rock.Cms.AuthService();
-                var groupService = new Rock.Groups.GroupService();
+                var groupService = new Rock.Crm.GroupService();
 
-                Rock.Groups.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+                Rock.Crm.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
                 if ( group != null )
                 {
                     foreach(var auth in authService.Queryable().Where( a => a.GroupId == group.Id).ToList())
@@ -106,9 +106,9 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var groupService = new Rock.Groups.GroupService();
+                var groupService = new Rock.Crm.GroupService();
 
-                Rock.Groups.Group group;
+                Rock.Crm.Group group;
 
                 int groupId = 0;
                 if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out groupId ) )
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( groupId == 0 )
                 {
-                    group = new Rock.Groups.Group();
+                    group = new Rock.Crm.Group();
                     group.IsSystem = false;
                     group.IsSecurityRole = true;
                     // TODO: Need to figure out how to set/configure the "Role" group type
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = new Rock.Groups.GroupService().Queryable().
+            var queryable = new Rock.Crm.GroupService().Queryable().
                 Where( r => r.IsSecurityRole == true);
 
             if ( !string.IsNullOrWhiteSpace( tbNameFilter.Text ) )
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int groupId )
         {
-            var groupModel = new Rock.Groups.GroupService().Get( groupId );
+            var groupModel = new Rock.Crm.GroupService().Get( groupId );
 
             if ( groupModel != null )
             {

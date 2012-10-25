@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Groups
+namespace Rock.Crm
 {
     /// <summary>
     /// GroupLocation POCO class.

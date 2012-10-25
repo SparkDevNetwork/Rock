@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Groups;
+using Rock.Crm;
 
 namespace Rock.Rest.Groups
 {
     /// <summary>
     /// GroupRoles REST API
     /// </summary>
-    public partial class GroupRolesController : Rock.Rest.ApiController<Rock.Groups.GroupRole, Rock.Groups.GroupRoleDto>
+    public partial class GroupRolesController : Rock.Rest.ApiController<Rock.Crm.GroupRole, Rock.Crm.GroupRoleDto>
     {
-        public GroupRolesController() : base( new Rock.Groups.GroupRoleService() ) { } 
+        public GroupRolesController() : base( new Rock.Crm.GroupRoleService() ) { } 
     }
 }

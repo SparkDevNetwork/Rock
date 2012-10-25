@@ -11,7 +11,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Groups;
+using Rock.Crm;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Group
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Group
             }
         }
 
-        private HtmlGenericControl RenderBranch( IEnumerable<Rock.Groups.Group> groups, int level )
+        private HtmlGenericControl RenderBranch( IEnumerable<Rock.Crm.Group> groups, int level )
         {
             if ( level <= _levels )
             {

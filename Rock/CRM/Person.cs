@@ -299,7 +299,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Members.
         /// </value>
-        public virtual ICollection<Groups.GroupMember> Members { get; set; }
+        public virtual ICollection<Crm.GroupMember> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Pledges.

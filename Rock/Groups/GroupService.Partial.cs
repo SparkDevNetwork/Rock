@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Groups
+namespace Rock.Crm
 {
     /// <summary>
     /// Group POCO Service class

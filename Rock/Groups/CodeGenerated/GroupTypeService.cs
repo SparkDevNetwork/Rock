@@ -15,7 +15,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Groups
+namespace Rock.Crm
 {
     /// <summary>
     /// GroupType Service class
