@@ -517,6 +517,22 @@
     <Compile Include="Migrations\201210191237338_DotLiquid.Designer.cs">
       <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210250001532_AddGroupPageBlock1.cs" />
+    <Compile Include="Migrations\201210250001532_AddGroupPageBlock1.Designer.cs">
+      <DependentUpon>201210250001532_AddGroupPageBlock1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251812201_RenameGroupTables.cs" />
+    <Compile Include="Migrations\201210251812201_RenameGroupTables.Designer.cs">
+      <DependentUpon>201210251812201_RenameGroupTables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251813094_RenameGroupForeignKeys.cs" />
+    <Compile Include="Migrations\201210251813094_RenameGroupForeignKeys.Designer.cs">
+      <DependentUpon>201210251813094_RenameGroupForeignKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251820508_RenameGroupMember.cs" />
+    <Compile Include="Migrations\201210251820508_RenameGroupMember.Designer.cs">
+      <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -911,6 +927,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210191237338_DotLiquid.resx">
       <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210250001532_AddGroupPageBlock1.resx">
+      <DependentUpon>201210250001532_AddGroupPageBlock1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251812201_RenameGroupTables.resx">
+      <DependentUpon>201210251812201_RenameGroupTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251813094_RenameGroupForeignKeys.resx">
+      <DependentUpon>201210251813094_RenameGroupForeignKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251820508_RenameGroupMember.resx">
+      <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

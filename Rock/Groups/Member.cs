@@ -17,8 +17,8 @@ namespace Rock.Groups
     /// <summary>
     /// Member POCO Entity.
     /// </summary>
-    [Table( "groupsMember" )]
-    public partial class Member : Model<Member>
+    [Table( "crmGroupMember" )]
+    public partial class GroupMember : Model<GroupMember>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -65,9 +65,9 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Member Read( int id )
+        public static GroupMember Read( int id )
         {
-            return Read<Member>( id );
+            return Read<GroupMember>( id );
         }
         
         /// <summary>
@@ -117,7 +117,7 @@ namespace Rock.Groups
     /// <summary>
     /// Member Configuration class.
     /// </summary>
-    public partial class MemberConfiguration : EntityTypeConfiguration<Member>
+    public partial class MemberConfiguration : EntityTypeConfiguration<GroupMember>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberConfiguration"/> class.

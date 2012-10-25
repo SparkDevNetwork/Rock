@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Group
                                 groupId, CurrentPersonId.Value, roleId );
                             if ( groupMember == null )
                             {
-                                groupMember = new Member();
+                                groupMember = new GroupMember();
                                 groupMember.GroupId = groupId;
                                 groupMember.PersonId = CurrentPersonId.Value;
                                 groupMember.GroupRoleId = roleId;

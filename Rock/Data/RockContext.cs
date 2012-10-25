@@ -299,7 +299,7 @@ namespace Rock.Data
         /// <value>
         /// the Members.
         /// </value>
-        public DbSet<Rock.Groups.Member> Members { get; set; }
+        public DbSet<Rock.Groups.GroupMember> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.

@@ -17,7 +17,7 @@ namespace Rock.Groups
     /// <summary>
     /// Group Role POCO Entity.
     /// </summary>
-    [Table( "groupsGroupRole" )]
+    [Table( "crmGroupRole" )]
     public partial class GroupRole : Model<GroupRole>
     {
         /// <summary>
