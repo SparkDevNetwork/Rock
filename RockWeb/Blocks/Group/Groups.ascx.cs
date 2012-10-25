@@ -11,7 +11,6 @@ using System.Web.UI;
 using Rock;
 using Rock.Constants;
 using Rock.Crm;
-using Rock.Groups;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 

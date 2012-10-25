@@ -15,7 +15,7 @@ using System.Dynamic;
 
 using Rock.Data;
 
-namespace Rock.Groups
+namespace Rock.Crm
 {
     /// <summary>
     /// Data Transfer Object for Group object

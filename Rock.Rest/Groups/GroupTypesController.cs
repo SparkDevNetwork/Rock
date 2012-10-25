@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Groups;
+using Rock.Crm;
 
 namespace Rock.Rest.Groups
 {
     /// <summary>
     /// GroupTypes REST API
     /// </summary>
-    public partial class GroupTypesController : Rock.Rest.ApiController<Rock.Groups.GroupType, Rock.Groups.GroupTypeDto>
+    public partial class GroupTypesController : Rock.Rest.ApiController<Rock.Crm.GroupType, Rock.Crm.GroupTypeDto>
     {
-        public GroupTypesController() : base( new Rock.Groups.GroupTypeService() ) { } 
+        public GroupTypesController() : base( new Rock.Crm.GroupTypeService() ) { } 
     }
 }

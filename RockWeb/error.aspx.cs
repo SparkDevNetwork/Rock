@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Groups;
+using Rock.Crm;
 
 public partial class error : System.Web.UI.Page
 {

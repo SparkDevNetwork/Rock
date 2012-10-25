@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Groups;
+using Rock.Crm;
 
 namespace Rock.Rest.Groups
 {
     /// <summary>
     /// Members REST API
     /// </summary>
-    public partial class MembersController : Rock.Rest.ApiController<Rock.Groups.GroupMember, Rock.Groups.MemberDto>
+    public partial class MembersController : Rock.Rest.ApiController<Rock.Crm.GroupMember, Rock.Crm.MemberDto>
     {
-        public MembersController() : base( new Rock.Groups.MemberService() ) { } 
+        public MembersController() : base( new Rock.Crm.MemberService() ) { } 
     }
 }

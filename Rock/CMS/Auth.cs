@@ -112,9 +112,9 @@ namespace Rock.Cms
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
-        /// A <see cref="Groups.Group"/> object.
+        /// A <see cref="Crm.Group"/> object.
         /// </value>
-        public virtual Groups.Group Group { get; set; }
+        public virtual Crm.Group Group { get; set; }
         
         /// <summary>
         /// Gets or sets the Person.
