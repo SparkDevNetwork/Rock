@@ -20,7 +20,7 @@ namespace Rock.Groups
     /// <summary>
     /// Member Service class
     /// </summary>
-    public partial class MemberService : Service<Member, MemberDto>
+    public partial class MemberService : Service<GroupMember, MemberDto>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberService"/> class
@@ -33,16 +33,16 @@ namespace Rock.Groups
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberService"/> class
         /// </summary>
-        public MemberService(IRepository<Member> repository) : base(repository)
+        public MemberService(IRepository<GroupMember> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override Member CreateNew()
+        public override GroupMember CreateNew()
         {
-            return new Member();
+            return new GroupMember();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Groups
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MemberDto> QueryableDto( IQueryable<Member> items )
+        public IQueryable<MemberDto> QueryableDto( IQueryable<GroupMember> items )
         {
             return items.Select( m => new MemberDto()
                 {

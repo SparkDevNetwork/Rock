@@ -87,7 +87,7 @@ namespace Rock.Security
                     role.Name = groupModel.Name;
                     role.Users = new List<string>();
 
-                    foreach ( Rock.Groups.Member member in groupModel.Members )
+                    foreach ( Rock.Groups.GroupMember member in groupModel.Members )
                     {
                         role.Users.Add( member.Person.Guid.ToString() );
                     }

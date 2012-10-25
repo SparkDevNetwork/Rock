@@ -43,7 +43,7 @@ namespace Rock.Groups
         /// Instantiates a new DTO object from the entity
         /// </summary>
         /// <param name="member"></param>
-        public MemberDto ( Member member )
+        public MemberDto ( GroupMember member )
         {
             CopyFromModel( member );
         }
@@ -86,9 +86,9 @@ namespace Rock.Groups
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is Member )
+            if ( model is GroupMember )
             {
-                var member = (Member)model;
+                var member = (GroupMember)model;
                 this.IsSystem = member.IsSystem;
                 this.GroupId = member.GroupId;
                 this.PersonId = member.PersonId;
@@ -104,9 +104,9 @@ namespace Rock.Groups
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is Member )
+            if ( model is GroupMember )
             {
-                var member = (Member)model;
+                var member = (GroupMember)model;
                 member.IsSystem = this.IsSystem;
                 member.GroupId = this.GroupId;
                 member.PersonId = this.PersonId;

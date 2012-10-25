@@ -14,14 +14,14 @@ namespace Rock.Groups
     /// <summary>
     /// Member POCO Service class
     /// </summary>
-    public partial class MemberService : Service<Member, MemberDto>
+    public partial class MemberService : Service<GroupMember, MemberDto>
     {
         /// <summary>
         /// Gets Members by Group Id
         /// </summary>
         /// <param name="groupId">Group Id.</param>
         /// <returns>An enumerable list of Member objects.</returns>
-        public IEnumerable<Member> GetByGroupId( int groupId )
+        public IEnumerable<GroupMember> GetByGroupId( int groupId )
         {
             return Repository.Find( t => t.GroupId == groupId );
         }
@@ -33,7 +33,7 @@ namespace Rock.Groups
         /// <param name="personId">Person Id.</param>
         /// <param name="groupRoleId">Group Role Id.</param>
         /// <returns>Member object.</returns>
-        public Member GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId )
+        public GroupMember GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId )
         {
             return Repository.FirstOrDefault( t => t.GroupId == groupId && t.PersonId == personId && t.GroupRoleId == groupRoleId );
         }
@@ -43,7 +43,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="groupRoleId">Group Role Id.</param>
         /// <returns>An enumerable list of Member objects.</returns>
-        public IEnumerable<Member> GetByGroupRoleId( int groupRoleId )
+        public IEnumerable<GroupMember> GetByGroupRoleId( int groupRoleId )
         {
             return Repository.Find( t => t.GroupRoleId == groupRoleId );
         }
@@ -53,7 +53,7 @@ namespace Rock.Groups
         /// </summary>
         /// <param name="personId">Person Id.</param>
         /// <returns>An enumerable list of Member objects.</returns>
-        public IEnumerable<Member> GetByPersonId( int personId )
+        public IEnumerable<GroupMember> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );
         }

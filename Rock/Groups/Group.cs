@@ -12,12 +12,12 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Groups
+namespace Rock.Groups    
 {
     /// <summary>
     /// Group POCO Entity.
     /// </summary>
-    [Table( "groupsGroup" )]
+    [Table( "crmGroup" )]
     public partial class Group : Model<Group>
     {
         /// <summary>
@@ -118,7 +118,7 @@ namespace Rock.Groups
         /// <value>
         /// Collection of Members.
         /// </value>
-        public virtual ICollection<Member> Members { get; set; }
+        public virtual ICollection<GroupMember> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Locations.
