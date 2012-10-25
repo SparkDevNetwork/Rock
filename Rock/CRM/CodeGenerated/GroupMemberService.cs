@@ -18,7 +18,7 @@ using Rock.Data;
 namespace Rock.Crm
 {
     /// <summary>
-    /// Member Service class
+    /// GroupMember Service class
     /// </summary>
     public partial class GroupMemberService : Service<GroupMember, GroupMemberDto>
     {
