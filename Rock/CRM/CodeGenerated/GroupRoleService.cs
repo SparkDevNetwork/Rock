@@ -67,6 +67,8 @@ namespace Rock.Crm
                     Name = m.Name,
                     Description = m.Description,
                     Order = m.Order,
+                    MaxCount = m.MaxCount,
+                    MinCount = m.MinCount,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

@@ -205,6 +205,9 @@
     <Compile Include="Core\CodeGenerated\TagService.cs" />
     <Compile Include="Crm\CodeGenerated\LocationDto.cs" />
     <Compile Include="Crm\CodeGenerated\LocationService.cs" />
+    <Compile Include="Crm\GroupTypeLocationType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Crm\LocationService.Partial.cs" />
     <Compile Include="Crm\Campus.cs" />
     <Compile Include="Crm\CodeGenerated\CampusDto.cs" />
@@ -532,6 +535,10 @@
     <Compile Include="Migrations\201210251820508_RenameGroupMember.cs" />
     <Compile Include="Migrations\201210251820508_RenameGroupMember.Designer.cs">
       <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210252024399_AddGroupFields.cs" />
+    <Compile Include="Migrations\201210252024399_AddGroupFields.Designer.cs">
+      <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -939,6 +946,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210251820508_RenameGroupMember.resx">
       <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210252024399_AddGroupFields.resx">
+      <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
