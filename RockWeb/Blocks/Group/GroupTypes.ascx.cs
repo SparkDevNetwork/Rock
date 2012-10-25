@@ -164,7 +164,7 @@ public partial class GroupTypes : RockBlock
         // check for duplicates
         if ( groupTypeService.Queryable().Count( a => a.Name.Equals( groupType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupType.Id ) ) > 0 )
         {
-            nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", GroupType.EntityTypeFriendlyName.ToLower() );
+            nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", GroupType.EntityTypeFriendlyName );
             nbMessage.Visible = true;
             return;
         }
