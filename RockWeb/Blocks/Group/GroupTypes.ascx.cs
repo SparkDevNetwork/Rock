@@ -32,6 +32,11 @@ public partial class GroupTypes : RockBlock
             gGroupType.Actions.IsAddEnabled = true;
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridRebind += gGroupType_GridRebind;
+
+            gChildGroupTypes.DataKeyNames = new string[] { "key" };
+            gChildGroupTypes.Actions.IsAddEnabled = true;
+            gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
+            gChildGroupTypes.GridRebind += gChildGroupTypes_GridRebind;
         }
     }
 
@@ -110,6 +115,31 @@ public partial class GroupTypes : RockBlock
     private void gGroupType_GridRebind( object sender, EventArgs e )
     {
         BindGrid();
+    }
+
+
+    protected void gChildGroupTypes_Add( object sender, EventArgs e )
+    {
+        throw new NotImplementedException();
+    }
+
+    protected void gChildGroupTypes_Delete( object sender, RowEventArgs e )
+    {
+        throw new NotImplementedException();
+    }
+
+    protected void gChildGroupTypes_GridRebind( object sender, EventArgs e )
+    {
+        BindChildGroupTypesGrid();
+    }
+
+    /// <summary>
+    /// Binds the child group types grid.
+    /// </summary>
+    private void BindChildGroupTypesGrid()
+    {
+        gChildGroupTypes.DataSource = ViewState["ChildGroupTypes"];
+        gChildGroupTypes.DataBind();
     }
 
     #endregion
@@ -233,11 +263,13 @@ public partial class GroupTypes : RockBlock
 
         if ( groupType != null )
         {
-            ltIsSystem.Text = groupType.IsSystem.ToYesNo();
             hfGroupTypeId.Value = groupType.Id.ToString();
             tbName.Text = groupType.Name;
             tbDescription.Text = groupType.Description;
             ddlDefaultGroupRole.SelectedValue = ( groupType.DefaultGroupRoleId ?? None.Id ).ToString();
+            var list = new Dictionary<int, string>();
+            groupType.ChildGroupTypes.ToList().ForEach( a => list.Add( a.Id, a.Name ) );
+            ViewState["ChildGroupTypes"] = list;
             readOnly = groupType.IsSystem;
 
             if ( groupType.IsSystem )
@@ -254,16 +286,20 @@ public partial class GroupTypes : RockBlock
         else
         {
             lActionTitle.Text = ActionTitle.Add( GroupType.EntityTypeFriendlyName );
-            ltIsSystem.Text = false.ToYesNo();
+
             hfGroupTypeId.Value = 0.ToString();
             tbName.Text = string.Empty;
             tbDescription.Text = string.Empty;
+            ViewState["ChildGroupTypes"] = new Dictionary<int, string>();
         }
 
+        iconIsSystem.Visible = readOnly;
         ddlDefaultGroupRole.Enabled = !readOnly;
         tbName.ReadOnly = readOnly;
         tbDescription.ReadOnly = readOnly;
         btnSave.Visible = !readOnly;
+
+        BindChildGroupTypesGrid();
     }
 
     #endregion
