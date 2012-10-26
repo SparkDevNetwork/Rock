@@ -26,7 +26,6 @@ namespace Rock.Constants
         /// Nots the authorized to edit.
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
-        /// <param name="pluralize">if set to <c>true</c> [pluralize].</param>
         /// <returns></returns>
         public static string NotAuthorizedToEdit( string itemFieldName)
         {
@@ -47,6 +46,11 @@ namespace Rock.Constants
         /// <summary>
         /// 
         /// </summary>
+        public const string IdValue = "0";
+
+        /// <summary>
+        /// 
+        /// </summary>
         public const string Text = "<none>";
     }
 
@@ -59,6 +63,11 @@ namespace Rock.Constants
         /// 
         /// </summary>
         public const int Id = -1;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string IdValue = "-1";
 
         /// <summary>
         /// 

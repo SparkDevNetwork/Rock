@@ -205,6 +205,9 @@
     <Compile Include="Core\CodeGenerated\TagService.cs" />
     <Compile Include="Crm\CodeGenerated\LocationDto.cs" />
     <Compile Include="Crm\CodeGenerated\LocationService.cs" />
+    <Compile Include="Crm\GroupTypeLocationType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Crm\LocationService.Partial.cs" />
     <Compile Include="Crm\Campus.cs" />
     <Compile Include="Crm\CodeGenerated\CampusDto.cs" />
@@ -327,23 +330,23 @@
     <Compile Include="Financial\TransactionSearchValue.cs" />
     <Compile Include="Financial\CodeGenerated\TransactionService.cs" />
     <Compile Include="Financial\TransactionService.Partial.cs" />
-    <Compile Include="Groups\Group.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupDto.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupRoleDto.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupRoleService.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupService.cs" />
-    <Compile Include="Groups\GroupService.Partial.cs" />
-    <Compile Include="Groups\GroupRole.cs" />
-    <Compile Include="Groups\GroupRoleService.Partial.cs" />
-    <Compile Include="Groups\GroupType.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupTypeDto.cs" />
-    <Compile Include="Groups\CodeGenerated\GroupTypeService.cs" />
-    <Compile Include="Groups\GroupTypeService.Partial.cs" />
-    <Compile Include="Groups\Member.cs" />
-    <Compile Include="Groups\CodeGenerated\MemberDto.cs" />
-    <Compile Include="Groups\CodeGenerated\MemberService.cs" />
-    <Compile Include="Groups\MemberService.Partial.cs" />
-    <Compile Include="Groups\GroupLocation.cs" />
+    <Compile Include="Crm\Group.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupDto.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupRoleDto.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupService.cs" />
+    <Compile Include="Crm\GroupService.Partial.cs" />
+    <Compile Include="Crm\GroupRole.cs" />
+    <Compile Include="Crm\GroupRoleService.Partial.cs" />
+    <Compile Include="Crm\GroupType.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupTypeDto.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupTypeService.cs" />
+    <Compile Include="Crm\GroupTypeService.Partial.cs" />
+    <Compile Include="Crm\GroupMember.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupMemberDto.cs" />
+    <Compile Include="Crm\CodeGenerated\GroupMemberService.cs" />
+    <Compile Include="Crm\GroupMemberService.Partial.cs" />
+    <Compile Include="Crm\GroupLocation.cs" />
     <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
@@ -516,6 +519,26 @@
     <Compile Include="Migrations\201210191237338_DotLiquid.cs" />
     <Compile Include="Migrations\201210191237338_DotLiquid.Designer.cs">
       <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210250001532_AddGroupPageBlock1.cs" />
+    <Compile Include="Migrations\201210250001532_AddGroupPageBlock1.Designer.cs">
+      <DependentUpon>201210250001532_AddGroupPageBlock1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251812201_RenameGroupTables.cs" />
+    <Compile Include="Migrations\201210251812201_RenameGroupTables.Designer.cs">
+      <DependentUpon>201210251812201_RenameGroupTables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251813094_RenameGroupForeignKeys.cs" />
+    <Compile Include="Migrations\201210251813094_RenameGroupForeignKeys.Designer.cs">
+      <DependentUpon>201210251813094_RenameGroupForeignKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210251820508_RenameGroupMember.cs" />
+    <Compile Include="Migrations\201210251820508_RenameGroupMember.Designer.cs">
+      <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210252024399_AddGroupFields.cs" />
+    <Compile Include="Migrations\201210252024399_AddGroupFields.Designer.cs">
+      <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -911,6 +934,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210191237338_DotLiquid.resx">
       <DependentUpon>201210191237338_DotLiquid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210250001532_AddGroupPageBlock1.resx">
+      <DependentUpon>201210250001532_AddGroupPageBlock1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251812201_RenameGroupTables.resx">
+      <DependentUpon>201210251812201_RenameGroupTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251813094_RenameGroupForeignKeys.resx">
+      <DependentUpon>201210251813094_RenameGroupForeignKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210251820508_RenameGroupMember.resx">
+      <DependentUpon>201210251820508_RenameGroupMember.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210252024399_AddGroupFields.resx">
+      <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

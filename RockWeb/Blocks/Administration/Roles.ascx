@@ -34,8 +34,8 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Role</legend>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Groups.Group, Rock" PropertyName="Name" />
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Groups.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
         </fieldset>
 
         <div class="actions">
