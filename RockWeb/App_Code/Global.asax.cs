@@ -120,16 +120,23 @@ namespace RockWeb
         /// <param name="r">The r.</param>
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            // call a page on the site to keep IIS alive 
-            string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
-            WebRequest request = WebRequest.Create( url );
-            WebResponse response = request.GetResponse();
+            try
+            {
+                // call a page on the site to keep IIS alive 
+                string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
+                WebRequest request = WebRequest.Create( url );
+                WebResponse response = request.GetResponse();
 
-            // add cache item again
-            AddCallBack();
+                // add cache item again
+                AddCallBack();
 
-            // process the transaction queue
-            DrainTransactionQueue();
+                // process the transaction queue
+                DrainTransactionQueue();
+            }
+            catch ( Exception ex )
+            {
+                EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
+            }
         }
 
         /// <summary>
