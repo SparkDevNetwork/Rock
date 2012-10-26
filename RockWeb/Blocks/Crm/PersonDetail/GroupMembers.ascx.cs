@@ -10,7 +10,7 @@ using System.Xml.Linq;
 using System.Xml.Xsl;
 
 using Rock;
-using Rock.Groups;
+using Rock.Crm;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var groupsElement = new XElement( "groups" );
 
-            var memberService = new MemberService();
+            var memberService = new GroupMemberService();
             foreach ( dynamic group in memberService.Queryable()
                 .Where( m =>
                     m.PersonId == Person.Id &&

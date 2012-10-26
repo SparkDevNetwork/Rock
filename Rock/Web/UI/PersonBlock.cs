@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 using Rock.Crm;
-using Rock.Groups;
 
 namespace Rock.Web.UI
 {
@@ -61,7 +59,7 @@ namespace Rock.Web.UI
             if ( Person == null )
                 return null;
 
-            var service = new MemberService();
+            var service = new GroupMemberService();
             groups = service.Queryable()
                 .Where( m =>
                     m.PersonId == Person.Id &&
