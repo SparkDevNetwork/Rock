@@ -135,7 +135,14 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
+                try
+                {
+                    EventLog.WriteEntry( "Rock", string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
+                }
+                catch
+                {
+                    // intentionally blank
+                }
             }
         }
 
@@ -165,6 +172,7 @@ namespace RockWeb
                     }
                     catch
                     {
+                        // intentionally blank
                     }
                 }
 
