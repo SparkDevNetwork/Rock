@@ -160,8 +160,7 @@ public partial class Groups : RockBlock
         // check for duplicates within GroupType
         if ( groupService.Queryable().Where(g => g.GroupTypeId.Equals(group.GroupTypeId)).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
         {
-            nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Group.EntityTypeFriendlyName );
-            nbMessage.Visible = true;
+            tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.EntityTypeFriendlyName ) );
             return;
         }
 
@@ -246,7 +245,7 @@ public partial class Groups : RockBlock
 
         if ( group != null )
         {
-            lblIsSystem.Visible = group.IsSystem;
+            iconIsSystem.Visible = group.IsSystem;
             hfGroupId.Value = group.Id.ToString();
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
@@ -271,7 +270,7 @@ public partial class Groups : RockBlock
         else
         {
             lActionTitle.Text = ActionTitle.Add( Group.EntityTypeFriendlyName );
-            lblIsSystem.Visible = false;
+            iconIsSystem.Visible = false;
             hfGroupId.Value = 0.ToString();
             tbName.Text = string.Empty;
             tbDescription.Text = string.Empty;

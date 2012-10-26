@@ -82,8 +82,8 @@ namespace Rock.Web.UI.Controls
             dataValidator = new Validation.DataAnnotationValidator();
             dataValidator.ID = this.ID + "_dav";
             dataValidator.ControlToValidate = this.ID;
-            dataValidator.Display = ValidatorDisplay.None;
-            dataValidator.ForeColor = System.Drawing.Color.Red;
+            dataValidator.Display = ValidatorDisplay.Dynamic;
+            dataValidator.CssClass = "help-inline";
 
             Controls.Add( dataValidator );
         }

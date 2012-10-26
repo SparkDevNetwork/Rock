@@ -7,6 +7,7 @@
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                    <asp:BoundField DataField="Groups.Count" HeaderText="Group Count" SortExpression="Groups.Count" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                     <Rock:EditField OnClick="gGroupType_Edit" />
                     <Rock:DeleteField OnClick="gGroupType_Delete" />
@@ -22,12 +23,24 @@
 
             <fieldset>
                 <legend>
+                    <i id="iconIsSystem" runat="server" class="icon-eye-open"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
-                <Rock:LabeledText ID="ltIsSystem" runat="server" LabelText="System Group" />
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Groups.GroupType, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Groups.GroupType, Rock" PropertyName="Description" />
-                <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Groups.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
+                <div class="row-fluid">
+                    <div class="span6">
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Description" />
+                        <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
+                        </div>
+                    <div class="span6">
+                        <Rock:Grid ID="gChildGroupTypes" runat="server" AllowPaging="false" ShowActionExcelExport="false">
+                            <Columns>
+                                <asp:BoundField DataField="Value" HeaderText="Child Group Types" />
+                                <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+                </div>
             </fieldset>
 
             <div class="actions">
