@@ -540,6 +540,10 @@
     <Compile Include="Migrations\201210252024399_AddGroupFields.Designer.cs">
       <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210261717354_RenameGroupBlockTypePath.cs" />
+    <Compile Include="Migrations\201210261717354_RenameGroupBlockTypePath.Designer.cs">
+      <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -949,6 +953,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210252024399_AddGroupFields.resx">
       <DependentUpon>201210252024399_AddGroupFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210261717354_RenameGroupBlockTypePath.resx">
+      <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
