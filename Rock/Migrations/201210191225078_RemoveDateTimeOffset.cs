@@ -18,8 +18,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AlterColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTime());
-            AlterColumn("dbo.coreAudit", "DateTime", c => c.DateTime());
+            //AlterColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTime());
+            //AlterColumn("dbo.coreAudit", "DateTime", c => c.DateTime());
         }
         
         /// <summary>
@@ -27,8 +27,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            AlterColumn("dbo.coreAudit", "DateTime", c => c.DateTimeOffset());
-            AlterColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTimeOffset());
+            //AlterColumn("dbo.coreAudit", "DateTime", c => c.DateTimeOffset());
+            //AlterColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTimeOffset());
         }
     }
 }

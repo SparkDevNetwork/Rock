@@ -19,7 +19,7 @@ namespace Rock.Migrations
                         EntityName = c.String(nullable: false, maxLength: 200),
                         AuditType = c.Int(nullable: false),
                         Properties = c.String(),
-                        DateTime = c.DateTimeOffset(),
+                        DateTime = c.DateTime(),
                         PersonId = c.Int(),
                         Guid = c.Guid(nullable: false),
                     })
@@ -27,7 +27,7 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.crmPerson", t => t.PersonId, cascadeDelete: true)
                 .Index(t => t.PersonId);
             
-            AddColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTimeOffset());
+            AddColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTime());
             AddForeignKey("dbo.coreEntityChange", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
             AddForeignKey("dbo.coreExceptionLog", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
             CreateIndex("dbo.coreEntityChange", "CreatedByPersonId");
