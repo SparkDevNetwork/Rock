@@ -221,7 +221,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the auth entity.
         /// </summary>
-        public override string EntityTypeName { get { return "Financial.Transaction"; } }
+        public string DeprecatedEntityTypeName { get { return "Financial.Transaction"; } }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

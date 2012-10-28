@@ -65,7 +65,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Cms.PageRoute"; } }
+        public string DeprecatedEntityTypeName { get { return "Cms.PageRoute"; } }
         
         /// <summary>
         /// Gets or sets the Page.

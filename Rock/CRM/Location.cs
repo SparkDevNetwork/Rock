@@ -208,7 +208,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Crm.Location"; } }
+        public string DeprecatedEntityTypeName { get { return "Crm.Location"; } }
         
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

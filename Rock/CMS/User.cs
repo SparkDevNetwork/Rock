@@ -199,7 +199,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Cms.User"; } }
+        public string DeprecatedEntityTypeName { get { return "Cms.User"; } }
         
         /// <summary>
         /// Gets or sets the Person.

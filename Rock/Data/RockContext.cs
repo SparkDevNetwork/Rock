@@ -142,6 +142,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.DefinedValue> DefinedValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public DbSet<Rock.Core.EntityType> EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the Entity Changes.
         /// </summary>
         /// <value>
@@ -405,6 +413,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.AuditConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );

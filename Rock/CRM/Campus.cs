@@ -47,7 +47,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Crm.Campus"; } }
+        public string DeprecatedEntityTypeName { get { return "Crm.Campus"; } }
 
         /// <summary>
         /// Static Method to return an object based on the id

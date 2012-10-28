@@ -83,7 +83,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.DefinedType"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.DefinedType"; } }
         
         /// <summary>
         /// Gets or sets the Defined Values.

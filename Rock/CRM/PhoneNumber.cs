@@ -98,7 +98,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Crm.PhoneNumber"; } }
+        public string DeprecatedEntityTypeName { get { return "Crm.PhoneNumber"; } }
         
         /// <summary>
         /// Gets or sets the Person.

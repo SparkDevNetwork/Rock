@@ -40,17 +40,16 @@ namespace Rock.Core
         [Required]
         [DataMember]
         public int FieldTypeId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// Entity.
+        /// The entity type id.
         /// </value>
-        [MaxLength( 50 )]
         [DataMember]
-        public string Entity { get; set; }
-        
+        public int? EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
         /// </summary>
@@ -59,7 +58,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string EntityQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -69,7 +68,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Key.
@@ -175,7 +174,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.Attribute"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.Attribute"; } }
         
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -192,6 +191,14 @@ namespace Rock.Core
         /// A <see cref="FieldType"/> object.
         /// </value>
         public virtual FieldType FieldType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Rock.Core.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -216,6 +223,7 @@ namespace Rock.Core
         public AttributeConfiguration()
         {
             this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

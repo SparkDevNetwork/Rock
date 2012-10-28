@@ -64,7 +64,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.AttributeQualifier"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.AttributeQualifier"; } }
         
         /// <summary>
         /// Gets or sets the Attribute.

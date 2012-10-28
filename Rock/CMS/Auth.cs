@@ -23,16 +23,14 @@ namespace Rock.Cms
     public partial class Auth : Model<Auth>, IOrdered
     {
         /// <summary>
-        /// Gets or sets the Entity Type.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// Entity Type.
+        /// The entity type id.
         /// </value>
-        [Required]
-        [MaxLength( 200 )]
         [DataMember]
-        public string EntityType { get; set; }
-        
+        public int? EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Id.
         /// </summary>
@@ -101,12 +99,14 @@ namespace Rock.Cms
         /// </value>
         [DataMember]
         public int? GroupId { get; set; }
-        
+
         /// <summary>
-        /// Gets the auth entity.
+        /// Gets or sets the type of the entity.
         /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.Auth"; } }
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Rock.Core.EntityType EntityType { get; set; }
         
         /// <summary>
         /// Gets or sets the Group.
@@ -180,6 +180,7 @@ namespace Rock.Cms
         {
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
             this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

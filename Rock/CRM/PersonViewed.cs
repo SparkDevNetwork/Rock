@@ -71,7 +71,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Crm.PersonViewed"; } }
+        public string DeprecatedEntityTypeName { get { return "Crm.PersonViewed"; } }
         
         /// <summary>
         /// Gets or sets the Viewer Person.

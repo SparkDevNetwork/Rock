@@ -82,7 +82,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.ServiceLog"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.ServiceLog"; } }
 
         /// <summary>
         /// Static Method to return an object based on the id

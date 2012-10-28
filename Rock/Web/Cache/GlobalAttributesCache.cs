@@ -64,8 +64,8 @@ namespace Rock.Web.Cache
 
                 foreach ( Rock.Core.Attribute attribute in attributeService.Queryable().
                     Where( a => a.Entity == "" &&
-                        ( a.EntityQualifierColumn ?? string.Empty ) == "" &&
-                        ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
+                        ( a.EntityTypeQualifierColumn ?? string.Empty ) == "" &&
+                        ( a.EntityTypeQualifierValue ?? string.Empty ) == "" ) )
                 {
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
@@ -115,8 +115,8 @@ namespace Rock.Web.Cache
                 var attributeValue = attributeValueService.Queryable()
                     .Where( v =>
                         v.Attribute.Entity == "" &&
-                        ( v.Attribute.EntityQualifierColumn ?? string.Empty ) == "" &&
-                        ( v.Attribute.EntityQualifierValue ?? string.Empty ) == "" &&
+                        ( v.Attribute.EntityTypeQualifierColumn ?? string.Empty ) == "" &&
+                        ( v.Attribute.EntityTypeQualifierValue ?? string.Empty ) == "" &&
                         v.Attribute.Key == key &&
                         v.EntityId == null )
                     .FirstOrDefault();
@@ -124,7 +124,7 @@ namespace Rock.Web.Cache
                 if ( attributeValue == null )
                 {
                     var attributeService = new AttributeService();
-                    var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+                    var attribute = attributeService.Get(
                         string.Empty, string.Empty, string.Empty, key );
                     if ( attribute != null )
                     {

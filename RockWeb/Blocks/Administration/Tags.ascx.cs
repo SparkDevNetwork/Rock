@@ -143,8 +143,8 @@ namespace RockWeb.Blocks.Administration
             var tagService = new Rock.Core.TagService();
             var queryable = tagService.Queryable().
                 Where( t => t.Entity == _entity &&
-                    ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+                    ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( t.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
 
             if ( _ownerId.HasValue )
                 queryable = queryable.Where( t => t.OwnerId == _ownerId.Value );
@@ -182,8 +182,8 @@ namespace RockWeb.Blocks.Administration
                     tag = new Rock.Core.Tag();
                     tag.IsSystem = false;
                     tag.Entity = _entity;
-                    tag.EntityQualifierColumn = _entityQualifierColumn;
-                    tag.EntityQualifierValue = _entityQualifierValue;
+                    tag.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    tag.EntityTypeQualifierValue = _entityQualifierValue;
                     tag.OwnerId = _ownerId;
                     tagService.Add( tag, CurrentPersonId );
                 }
@@ -218,8 +218,8 @@ namespace RockWeb.Blocks.Administration
         {
             var queryable = new Rock.Core.TagService().Queryable().
                 Where( t => t.Entity == _entity &&
-                    ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+                    ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( t.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
                     
             if (_ownerId.HasValue)
                 queryable = queryable.Where(t => t.OwnerId == _ownerId.Value);

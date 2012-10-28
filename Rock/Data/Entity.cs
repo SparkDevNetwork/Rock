@@ -47,31 +47,6 @@ namespace Rock.Data
         private Guid _guid = Guid.NewGuid();
 
         /// <summary>
-        /// Gets the unique type name of the entity.  Typically this is the qualified name of the class
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        [NotMapped]
-        public abstract string EntityTypeName { get; }
-
-        /// <summary>
-        /// Gets the name of the entity type friendly.
-        /// </summary>
-        /// <value>
-        /// The name of the entity type friendly.
-        /// </value>
-        [NotMapped]
-        public static string EntityTypeFriendlyName
-        {
-            get
-            {
-                var type = typeof( T );
-                return type.GetFriendlyTypeName();
-            }
-        }
-
-        /// <summary>
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]
@@ -127,6 +102,35 @@ namespace Rock.Data
                 var valContext = new ValidationContext( this, serviceProvider: null, items: null );
                 _validationResults = new List<ValidationResult>();
                 return Validator.TryValidateObject( this, valContext, _validationResults );
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique type name of the entity.  
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual string EntityTypeName
+        {
+            get
+            {
+                return typeof( T ).Name;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the entity type friendly.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type friendly.
+        /// </value>
+        public static string EntityTypeFriendlyName
+        {
+            get
+            {
+                var type = typeof( T );
+                return type.GetFriendlyTypeName();
             }
         }
 

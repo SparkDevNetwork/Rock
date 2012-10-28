@@ -24,14 +24,6 @@ namespace Rock.Data
         #region ISecured implementation
 
         /// <summary>
-        /// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured"/> interface should return
-        /// a value that is unique across all <see cref="Rock.Security.ISecured"/> classes.  Typically this is the
-        /// qualified name of the class.
-        /// </summary>
-        [NotMapped]
-        public abstract override string EntityTypeName { get; }
-
-        /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
