@@ -25,9 +25,9 @@ namespace Rock
         /// <param name="baseType">base type.</param>
         /// <param name="directory">The directory.</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo directory = null )
+        public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo[] directories = null )
         {
-            return FindTypes( baseType, false, directory );
+            return FindTypes( baseType, false, directories );
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock
         /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
         /// <param name="directory">The directory.</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo directory = null )
+        public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo[] directories = null )
         {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
 
@@ -53,13 +53,16 @@ namespace Rock
                 if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
                     assemblies.Add( assembly.FullName.ToLower(), assembly );
 
-            if ( directory != null )
+            if ( directories != null )
             {
-                foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
+                foreach ( var directory in directories )
                 {
-                    Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
-                    if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
-                        assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
+                    foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
+                    {
+                        Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
+                        if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
+                            assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
+                    }
                 }
             }
 
