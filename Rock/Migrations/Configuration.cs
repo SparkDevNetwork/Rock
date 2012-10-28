@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    internal sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
+    public sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Configuration" /> class.

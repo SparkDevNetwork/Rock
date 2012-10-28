@@ -11,7 +11,7 @@ namespace Rock.Data
     /// <summary>
     /// Entity Framework Context
     /// </summary>
-    internal partial class RockContext : DbContext
+    public partial class RockContext : DbContext
     {
         /// <summary>
         /// Gets or sets the Auths.
