@@ -63,9 +63,9 @@ namespace Rock.Core
             return items.Select( m => new TagDto()
                 {
                     IsSystem = m.IsSystem,
-                    Entity = m.Entity,
-                    EntityQualifierColumn = m.EntityQualifierColumn,
-                    EntityQualifierValue = m.EntityQualifierValue,
+                    EntityTypeId = m.EntityTypeId,
+                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
                     Name = m.Name,
                     Order = m.Order,
                     OwnerId = m.OwnerId,

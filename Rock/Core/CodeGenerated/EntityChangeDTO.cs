@@ -26,7 +26,7 @@ namespace Rock.Core
 #pragma warning disable 1591
         public Guid ChangeSet { get; set; }
         public string ChangeType { get; set; }
-        public string EntityType { get; set; }
+        public int? EntityTypeId { get; set; }
         public int EntityId { get; set; }
         public string Property { get; set; }
         public string OriginalValue { get; set; }
@@ -62,7 +62,7 @@ namespace Rock.Core
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "ChangeSet", this.ChangeSet );
             dictionary.Add( "ChangeType", this.ChangeType );
-            dictionary.Add( "EntityType", this.EntityType );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "Property", this.Property );
             dictionary.Add( "OriginalValue", this.OriginalValue );
@@ -83,7 +83,7 @@ namespace Rock.Core
             dynamic expando = new ExpandoObject();
             expando.ChangeSet = this.ChangeSet;
             expando.ChangeType = this.ChangeType;
-            expando.EntityType = this.EntityType;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.EntityId = this.EntityId;
             expando.Property = this.Property;
             expando.OriginalValue = this.OriginalValue;
@@ -106,7 +106,7 @@ namespace Rock.Core
                 var entityChange = (EntityChange)model;
                 this.ChangeSet = entityChange.ChangeSet;
                 this.ChangeType = entityChange.ChangeType;
-                this.EntityType = entityChange.EntityType;
+                this.EntityTypeId = entityChange.EntityTypeId;
                 this.EntityId = entityChange.EntityId;
                 this.Property = entityChange.Property;
                 this.OriginalValue = entityChange.OriginalValue;
@@ -129,7 +129,7 @@ namespace Rock.Core
                 var entityChange = (EntityChange)model;
                 entityChange.ChangeSet = this.ChangeSet;
                 entityChange.ChangeType = this.ChangeType;
-                entityChange.EntityType = this.EntityType;
+                entityChange.EntityTypeId = this.EntityTypeId;
                 entityChange.EntityId = this.EntityId;
                 entityChange.Property = this.Property;
                 entityChange.OriginalValue = this.OriginalValue;

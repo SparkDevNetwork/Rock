@@ -17,26 +17,50 @@ namespace Rock.Core
     public partial class AttributeService : Service<Attribute, AttributeDto>
     {
         /// <summary>
-        /// Gets Attributes by Entity
+        /// Gets Attributes by EntityName
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entityName">Entity.</param>
         /// <returns>An enumerable list of Attribute objects.</returns>
-        public IEnumerable<Attribute> GetByEntity( string entity )
+        public IEnumerable<Attribute> Get( string entityName )
         {
-            return Repository.Find( t => ( t.Entity == entity || ( entity == null && t.Entity == null ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t =>
+                    t.EntityType.Name == entityName || ( entityName == null && !t.EntityTypeId.HasValue )
+                 )
+                .OrderBy( t => t.Order );
         }
-        
+
         /// <summary>
-        /// Gets Attribute by Entity And Entity Qualifier Column And Entity Qualifier Value And Key
+        /// Gets the attributes by EntityName and qualifier value.
         /// </summary>
-        /// <param name="entity">Entity.</param>
-        /// <param name="entityQualifierColumn">Entity Qualifier Column.</param>
-        /// <param name="entityQualifierValue">Entity Qualifier Value.</param>
+        /// <param name="entityName">The entity.</param>
+        /// <param name="entityTypeQualifierColumn">The entity qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> Get( string entityName, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            return Queryable().Where( t =>
+                t.EntityType.Name == entityName &&
+                t.EntityTypeQualifierColumn == entityTypeQualifierColumn &&
+                t.EntityTypeQualifierValue == entityTypeQualifierValue );
+        }
+
+        /// <summary>
+        /// Gets Attribute by EntityName, Qualifier value, and Key
+        /// </summary>
+        /// <param name="entityName">Entity.</param>
+        /// <param name="entityTypeQualifierColumn">Entity Qualifier Column.</param>
+        /// <param name="entityTypeQualifierValue">Entity Qualifier Value.</param>
         /// <param name="key">Key.</param>
         /// <returns>Attribute object.</returns>
-        public Attribute GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey( string entity, string entityQualifierColumn, string entityQualifierValue, string key )
+        public Attribute Get( string entityName, string entityTypeQualifierColumn, string entityTypeQualifierValue, string key )
         {
-            return Repository.FirstOrDefault( t => ( t.Entity == entity || ( entity == null && t.Entity == null ) ) && ( t.EntityQualifierColumn == entityQualifierColumn || ( entityQualifierColumn == null && t.EntityQualifierColumn == null ) ) && ( t.EntityQualifierValue == entityQualifierValue || ( entityQualifierValue == null && t.EntityQualifierValue == null ) ) && t.Key == key );
+            return Repository.FirstOrDefault( t => 
+                ( t.EntityType.Name == entityName || ( entityName == null && !t.EntityTypeId.HasValue ) ) && 
+                ( t.EntityTypeQualifierColumn == entityTypeQualifierColumn || ( entityTypeQualifierColumn == null && t.EntityTypeQualifierColumn == null ) ) && 
+                ( t.EntityTypeQualifierValue == entityTypeQualifierValue || ( entityTypeQualifierValue == null && t.EntityTypeQualifierValue == null ) ) && 
+                t.Key == key 
+            );
         }
         
         /// <summary>
@@ -50,28 +74,13 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Gets the attributes by entity qualifier.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <returns></returns>
-        public IQueryable<Attribute> GetAttributesByEntityQualifier( string entity, string entityQualifierColumn, string entityQualifierValue )
-        {
-            return Queryable().Where( t =>
-                t.Entity == entity &&
-                t.EntityQualifierColumn == entityQualifierColumn &&
-                t.EntityQualifierValue == entityQualifierValue );
-        }
-
-        /// <summary>
         /// Gets a global attribute.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public Attribute GetGlobalAttribute( string key )
         {
-            return this.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey( string.Empty, string.Empty, string.Empty, key );
+            return this.Get( null, string.Empty, string.Empty, key );
         }
     }
 }

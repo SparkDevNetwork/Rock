@@ -66,8 +66,8 @@ namespace RockWeb.Blocks.Core
                     AttributeService attributeService = new AttributeService();
                     foreach ( var item in attributeService.Queryable().
                         Where( a => a.Entity == contextTypeName &&
-                            ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
-                            ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue ).
+                            ( a.EntityTypeQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
+                            ( a.EntityTypeQualifierValue ?? string.Empty ) == entityQualifierValue ).
                         OrderBy( a => a.Category ).
                         ThenBy( a => a.Order ).
                         Select( a => new { a.Category, a.Id } ) )

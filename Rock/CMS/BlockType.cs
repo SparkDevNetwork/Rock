@@ -65,7 +65,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Cms.BlockType"; } }
+        public string DeprecatedEntityTypeName { get { return "Cms.BlockType"; } }
         
         /// <summary>
         /// Gets or sets the Blocks.

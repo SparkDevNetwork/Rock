@@ -25,9 +25,9 @@ namespace Rock.Core
 
 #pragma warning disable 1591
         public bool IsSystem { get; set; }
-        public string Entity { get; set; }
-        public string EntityQualifierColumn { get; set; }
-        public string EntityQualifierValue { get; set; }
+        public int? EntityTypeId { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         public string Name { get; set; }
         public int Order { get; set; }
         public int? OwnerId { get; set; }
@@ -59,9 +59,9 @@ namespace Rock.Core
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "Entity", this.Entity );
-            dictionary.Add( "EntityQualifierColumn", this.EntityQualifierColumn );
-            dictionary.Add( "EntityQualifierValue", this.EntityQualifierValue );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
+            dictionary.Add( "EntityQualifierColumn", this.EntityTypeQualifierColumn );
+            dictionary.Add( "EntityQualifierValue", this.EntityTypeQualifierValue );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "OwnerId", this.OwnerId );
@@ -78,9 +78,9 @@ namespace Rock.Core
         {
             dynamic expando = new ExpandoObject();
             expando.IsSystem = this.IsSystem;
-            expando.Entity = this.Entity;
-            expando.EntityQualifierColumn = this.EntityQualifierColumn;
-            expando.EntityQualifierValue = this.EntityQualifierValue;
+            expando.EntityTypeId = this.EntityTypeId;
+            expando.EntityQualifierColumn = this.EntityTypeQualifierColumn;
+            expando.EntityQualifierValue = this.EntityTypeQualifierValue;
             expando.Name = this.Name;
             expando.Order = this.Order;
             expando.OwnerId = this.OwnerId;
@@ -99,9 +99,9 @@ namespace Rock.Core
             {
                 var tag = (Tag)model;
                 this.IsSystem = tag.IsSystem;
-                this.Entity = tag.Entity;
-                this.EntityQualifierColumn = tag.EntityQualifierColumn;
-                this.EntityQualifierValue = tag.EntityQualifierValue;
+                this.EntityTypeId = tag.EntityTypeId;
+                this.EntityTypeQualifierColumn = tag.EntityTypeQualifierColumn;
+                this.EntityTypeQualifierValue = tag.EntityTypeQualifierValue;
                 this.Name = tag.Name;
                 this.Order = tag.Order;
                 this.OwnerId = tag.OwnerId;
@@ -120,9 +120,9 @@ namespace Rock.Core
             {
                 var tag = (Tag)model;
                 tag.IsSystem = this.IsSystem;
-                tag.Entity = this.Entity;
-                tag.EntityQualifierColumn = this.EntityQualifierColumn;
-                tag.EntityQualifierValue = this.EntityQualifierValue;
+                tag.EntityTypeId = this.EntityTypeId;
+                tag.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+                tag.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
                 tag.Name = this.Name;
                 tag.Order = this.Order;
                 tag.OwnerId = this.OwnerId;

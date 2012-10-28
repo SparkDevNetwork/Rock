@@ -79,7 +79,7 @@ namespace Rock.Attribute
 
                 // Remove any old attributes
                 Core.AttributeService attributeService = new Core.AttributeService();
-                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
+                foreach( var a in attributeService.Get(entity, entityQualifierColumn, entityQualifierValue).ToList())
                     if ( !existingKeys.Contains( a.Key ) )
                     {
                         attributeService.Delete( a, currentPersonId );
@@ -107,7 +107,7 @@ namespace Rock.Attribute
             Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Core.Attribute attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+            Core.Attribute attribute = attributeService.Get(
                 entity, entityQualifierColumn, entityQualifierValue, property.Key );
 
             if ( attribute == null )
@@ -116,8 +116,8 @@ namespace Rock.Attribute
                 updated = true;
                 attribute = new Core.Attribute();
                 attribute.Entity = entity;
-                attribute.EntityQualifierColumn = entityQualifierColumn;
-                attribute.EntityQualifierValue = entityQualifierValue;
+                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
                 attribute.IsGridColumn = false;
             }
@@ -188,12 +188,12 @@ namespace Rock.Attribute
             Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
+            foreach ( Rock.Core.Attribute attribute in attributeService.Get( entityType.FullName ) )
             {
-                if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
-                    ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
-                    ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
-                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityQualifierValue ) ) )
+                if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
+                    ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
+                    ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
+                    properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
                     attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
                 }

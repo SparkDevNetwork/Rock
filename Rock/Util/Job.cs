@@ -181,7 +181,7 @@ namespace Rock.Util
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Util.Job"; } }
+        public string DeprecatedEntityTypeName { get { return "Util.Job"; } }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

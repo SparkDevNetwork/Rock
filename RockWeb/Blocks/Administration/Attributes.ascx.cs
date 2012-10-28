@@ -372,8 +372,8 @@ namespace RockWeb.Blocks.Administration
                     attribute = new Rock.Core.Attribute();
                     attribute.IsSystem = false;
                     attribute.Entity = _entity;
-                    attribute.EntityQualifierColumn = _entityQualifierColumn;
-                    attribute.EntityQualifierValue = _entityQualifierValue;
+                    attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityTypeQualifierValue = _entityQualifierValue;
                     attributeService.Add( attribute, CurrentPersonId );
                 }
                 else
@@ -451,8 +451,8 @@ namespace RockWeb.Blocks.Administration
             AttributeService attributeService = new AttributeService();
             var items = attributeService.Queryable().
                 Where( a => a.Entity == _entity &&
-                    ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue &&
+                    ( a.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( a.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue &&
                     a.Category != string.Empty && a.Category != null ).
                 OrderBy( a => a.Category ).
                 Select( a => a.Category ).
@@ -471,8 +471,8 @@ namespace RockWeb.Blocks.Administration
         {
             var queryable = new Rock.Core.AttributeService().Queryable().
                 Where( a => a.Entity == _entity &&
-                    ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+                    ( a.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( a.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
             {

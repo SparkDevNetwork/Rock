@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Administration
             int definedTypeId = Convert.ToInt32( typeId );
                         
             var gridAttributes = attributeService
-                .GetAttributesByEntityQualifier( entity, entityQualifierColumn, typeId )
+                .Get( entity, entityQualifierColumn, typeId )
                 .Where( attr => attr.IsGridColumn );
 
             tbValueGridColumn.Text = string.Join(",",
@@ -287,8 +287,8 @@ namespace RockWeb.Blocks.Administration
         {
             var queryable = attributeService.Queryable().
                 Where( a => a.Entity == entity &&
-                ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
-                ( a.EntityQualifierValue ?? string.Empty ) == typeId );
+                ( a.EntityTypeQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
+                ( a.EntityTypeQualifierValue ?? string.Empty ) == typeId );
 
             rGridAttribute.DataSource = queryable.
                 OrderBy( a => a.Category ).

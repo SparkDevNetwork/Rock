@@ -44,7 +44,7 @@ namespace Rock.Crm
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
+        public string DeprecatedEntityTypeName { get { return "Crm.PersonMerged"; } }
 
         /// <summary>
         /// Gets a publicly viewable unique key for the model.

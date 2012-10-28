@@ -53,7 +53,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.TaggedItem"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.TaggedItem"; } }
         
         /// <summary>
         /// Gets or sets the Tag

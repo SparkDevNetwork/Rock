@@ -41,17 +41,15 @@ namespace Rock.Core
         [MaxLength( 10 )]
         [DataMember]
         public string ChangeType { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity Type.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// Entity Type.
+        /// The entity type id.
         /// </value>
-        [Required]
-        [MaxLength( 100 )]
         [DataMember]
-        public string EntityType { get; set; }
+        public int? EntityTypeId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Id.
@@ -111,6 +109,14 @@ namespace Rock.Core
         public int? CreatedByPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Rock.Core.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the created by person.
         /// </summary>
         /// <value>
@@ -122,7 +128,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.EntityChange"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.EntityChange"; } }
         
         /// <summary>
         /// Static Method to return an object based on the id
@@ -157,6 +163,7 @@ namespace Rock.Core
         public EntityChangeConfiguration()
         {
             this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

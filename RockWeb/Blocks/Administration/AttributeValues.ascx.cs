@@ -189,8 +189,8 @@ namespace RockWeb.Blocks.Administration
             AttributeService attributeService = new AttributeService();
             var items = attributeService.Queryable().
                 Where( a => a.Entity == _entity &&
-                    ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue &&
+                    ( a.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                    ( a.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue &&
                     a.Category != "" && a.Category != null ).
                 OrderBy( a => a.Category ).
                 Select( a => a.Category ).
@@ -209,8 +209,8 @@ namespace RockWeb.Blocks.Administration
                 var queryable = attributeService.
                     Queryable().
                     Where( a => a.Entity == _entity &&
-                        ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                        ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+                        ( a.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+                        ( a.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
 
                 if ( ddlCategoryFilter.SelectedValue != "[All]" )
                     queryable = queryable.

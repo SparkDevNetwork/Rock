@@ -205,7 +205,7 @@ namespace Rock.Crm
         public void SaveUserValue(Person person, string key, List<string> values, int? personId)
         {
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+            var attribute = attributeService.GetByKey(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key );
 
             if ( attribute == null )
@@ -216,8 +216,8 @@ namespace Rock.Crm
                 attribute = new Core.Attribute();
                 attribute.IsSystem = false;
                 attribute.Entity = Person.USER_VALUE_ENTITY;
-                attribute.EntityQualifierColumn = string.Empty;
-                attribute.EntityQualifierValue = string.Empty;
+                attribute.EntityTypeQualifierColumn = string.Empty;
+                attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
                 attribute.Category = string.Empty;
@@ -257,7 +257,7 @@ namespace Rock.Crm
         public List<string> GetUserValue( Person person, string key )
         {
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
+            var attribute = attributeService.GetByKey(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key);
 
             if (attribute != null)
@@ -283,8 +283,8 @@ namespace Rock.Crm
             foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
                 .Where( v =>
                     v.Attribute.Entity == Person.USER_VALUE_ENTITY &&
-                    v.Attribute.EntityQualifierColumn == string.Empty &&
-                    v.Attribute.EntityQualifierValue == string.Empty &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
             {
                 if (!values.Keys.Contains(attributeValue.Attribute.Key))

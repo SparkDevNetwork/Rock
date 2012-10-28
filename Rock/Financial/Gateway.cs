@@ -82,7 +82,7 @@ namespace Rock.Financial
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Financial.Gateway"; } }
+        public string DeprecatedEntityTypeName { get { return "Financial.Gateway"; } }
 
         /// <summary>
         /// Static Method to return an object based on the id

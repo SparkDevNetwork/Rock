@@ -62,7 +62,7 @@ namespace Rock.Core
         {
             return items.Select( m => new AuditDto()
                 {
-                    EntityType = m.EntityType,
+                    EntityTypeId = m.EntityTypeId,
                     EntityId = m.EntityId,
                     EntityName = m.EntityName,
                     AuditType = m.AuditType,

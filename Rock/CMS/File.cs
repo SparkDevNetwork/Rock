@@ -103,7 +103,7 @@ namespace Rock.Cms
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Cms.File"; } }
+        public string DeprecatedEntityTypeName { get { return "Cms.File"; } }
         
         /// <summary>
         /// Static Method to return an object based on the id

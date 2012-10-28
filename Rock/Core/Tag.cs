@@ -29,17 +29,16 @@ namespace Rock.Core
         [Required]
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// Entity.
+        /// The entity type id.
         /// </value>
-        [MaxLength( 50 )]
         [DataMember]
-        public string Entity { get; set; }
-        
+        public int? EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
         /// </summary>
@@ -48,7 +47,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string EntityQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -58,7 +57,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Name.
@@ -91,6 +90,14 @@ namespace Rock.Core
         public int? OwnerId { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Rock.Core.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the Owner Person.
         /// </summary>
         /// <value>
@@ -112,7 +119,7 @@ namespace Rock.Core
         /// Gets the auth entity.
         /// </summary>
         [NotMapped]
-        public override string EntityTypeName { get { return "Core.Tag"; } }
+        public string DeprecatedEntityTypeName { get { return "Core.Tag"; } }
         
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
@@ -153,6 +160,7 @@ namespace Rock.Core
         public TagConfiguration()
         {
             this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }
