@@ -544,6 +544,10 @@
     <Compile Include="Migrations\201210261717354_RenameGroupBlockTypePath.Designer.cs">
       <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.cs" />
+    <Compile Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.Designer.cs">
+      <DependentUpon>201210290411050_GroupTypeAssociationColumnFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -956,6 +960,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210261717354_RenameGroupBlockTypePath.resx">
       <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.resx">
+      <DependentUpon>201210290411050_GroupTypeAssociationColumnFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
