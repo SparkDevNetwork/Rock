@@ -144,7 +144,7 @@ namespace Rock.Crm
         /// </summary>
         public GroupTypeConfiguration()
         {
-            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "ChildGroupTypeId" ); m.MapRightKey( "ParentGroupTypeId" ); m.ToTable( "crmGroupTypeAssociation" ); } );
+            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "crmGroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
         }
     }
