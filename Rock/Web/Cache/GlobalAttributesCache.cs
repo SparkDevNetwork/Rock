@@ -62,14 +62,16 @@ namespace Rock.Web.Cache
                 var attributeService = new Rock.Core.AttributeService();
                 var attributeValueService = new Rock.Core.AttributeValueService();
 
-                foreach ( Rock.Core.Attribute attribute in attributeService.Queryable().
-                    Where( a => a.Entity == "" &&
-                        ( a.EntityTypeQualifierColumn ?? string.Empty ) == "" &&
-                        ( a.EntityTypeQualifierValue ?? string.Empty ) == "" ) )
+                foreach ( var attribute in attributeService.GetGlobalAttributes() )
                 {
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
-                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
+                    globalAttributes.AttributeValues.Add( attribute.Key,
+                        new KeyValuePair<string, string>(
+                            attribute.Name,
+                            ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue
+                        )
+                    );
                 }
 
                 cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
@@ -112,14 +114,7 @@ namespace Rock.Web.Cache
             {
                 // Save new value
                 var attributeValueService = new AttributeValueService();
-                var attributeValue = attributeValueService.Queryable()
-                    .Where( v =>
-                        v.Attribute.Entity == "" &&
-                        ( v.Attribute.EntityTypeQualifierColumn ?? string.Empty ) == "" &&
-                        ( v.Attribute.EntityTypeQualifierValue ?? string.Empty ) == "" &&
-                        v.Attribute.Key == key &&
-                        v.EntityId == null )
-                    .FirstOrDefault();
+                var attributeValue = attributeValueService.GetGlobalAttributeValue(key);
 
                 if ( attributeValue == null )
                 {

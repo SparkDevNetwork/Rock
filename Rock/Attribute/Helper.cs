@@ -21,7 +21,11 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
-        /// <param name="type">The type (should be a <see cref="IHasAttributes"/> object.</param>
+        /// <summary>
+        /// Uses reflection to find any <see cref="BlockPropertyAttribute" /> attributes for the specified type and will create and/or update
+        /// a <see cref="Rock.Core.Attribute" /> record for each attribute defined.
+        /// </summary>
+        /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
@@ -115,7 +119,7 @@ namespace Rock.Attribute
                 // If an existing attribute record doesn't exist, create a new one
                 updated = true;
                 attribute = new Core.Attribute();
-                attribute.Entity = entity;
+                attribute.EntityType = new Rock.Core.EntityTypeService().Get( entity, true, currentPersonId ); ;
                 attribute.EntityTypeQualifierColumn = entityQualifierColumn;
                 attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;

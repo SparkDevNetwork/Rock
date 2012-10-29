@@ -25,7 +25,8 @@ namespace Rock.Core
         {
             return Repository
                 .Find( t =>
-                    t.EntityType.Name == entityName || ( entityName == null && !t.EntityTypeId.HasValue )
+                    t.EntityType.Name == entityName || 
+                    ( entityName == null && !t.EntityTypeId.HasValue )
                  )
                 .OrderBy( t => t.Order );
         }
@@ -42,7 +43,8 @@ namespace Rock.Core
             return Queryable().Where( t =>
                 t.EntityType.Name == entityName &&
                 t.EntityTypeQualifierColumn == entityTypeQualifierColumn &&
-                t.EntityTypeQualifierValue == entityTypeQualifierValue );
+                t.EntityTypeQualifierValue == entityTypeQualifierValue 
+            );
         }
 
         /// <summary>
@@ -71,6 +73,15 @@ namespace Rock.Core
         public IEnumerable<Attribute> GetByFieldTypeId( int fieldTypeId )
         {
             return Repository.Find( t => t.FieldTypeId == fieldTypeId ).OrderBy( t => t.Order );
+        }
+
+        /// <summary>
+        /// Gets the global attributes.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetGlobalAttributes()
+        {
+            return this.Get( null, string.Empty, string.Empty);
         }
 
         /// <summary>

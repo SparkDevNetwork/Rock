@@ -34,7 +34,10 @@ namespace Rock.Core
         /// <returns>An enumerable list of AttributeValue objects.</returns>
         public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
-            return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Repository.Find( t => 
+                t.AttributeId == attributeId && 
+                ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+            );
         }
         
         /// <summary>
@@ -44,7 +47,9 @@ namespace Rock.Core
         /// <returns>An enumerable list of AttributeValue objects.</returns>
         public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
         {
-            return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Repository.Find( t => 
+                ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+            );
         }
 
         /// <summary>
@@ -58,6 +63,22 @@ namespace Rock.Core
             return Repository.AsQueryable().
                 Where( v => v.AttributeId == attributeId && v.EntityId == entityId ).
                 OrderBy( v => v.Order );
+        }
+
+        /// <summary>
+        /// Gets a global attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public AttributeValue GetGlobalAttributeValue( string key )
+        {
+            return Repository.FirstOrDefault( v => 
+                !v.Attribute.EntityTypeId.HasValue  && 
+                v.Attribute.EntityTypeQualifierColumn == string.Empty && 
+                v.Attribute.EntityTypeQualifierValue == null && 
+                v.Attribute.Key == key  &&
+                v.EntityId == null
+            );
         }
     }
 }
