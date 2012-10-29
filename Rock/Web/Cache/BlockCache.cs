@@ -240,6 +240,7 @@ namespace Rock.Web.Cache
                 foreach ( var attribute in blockModel.Attributes )
                     block.AttributeIds.Add( attribute.Value.Id );
 
+            block.TypeId = blockModel.TypeId;
             block.TypeName = blockModel.TypeName;
             block.BlockActions = blockModel.SupportedActions;
 
@@ -259,6 +260,14 @@ namespace Rock.Web.Cache
         #endregion
 
         #region ISecure Implementation
+
+        /// <summary>
+        /// Gets the Entity Type ID for this entity.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        public int TypeId { get; set; }
 
         /// <summary>
         /// The auth entity. The auth entity is a unique identifier for each type of class that implements

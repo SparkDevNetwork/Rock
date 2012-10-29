@@ -62,7 +62,7 @@ namespace Rock.Cms
         {
             return items.Select( m => new AuthDto()
                 {
-                    EntityType = m.EntityType,
+                    EntityTypeId = m.EntityTypeId,
                     EntityId = m.EntityId,
                     Order = m.Order,
                     Action = m.Action,

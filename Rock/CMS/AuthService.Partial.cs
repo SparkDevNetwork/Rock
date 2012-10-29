@@ -22,9 +22,14 @@ namespace Rock.Cms
         /// <param name="entityType">Entity Type.</param>
         /// <param name="entityId">Entity Id.</param>
         /// <returns>An enumerable list of Auth objects.</returns>
-        public IEnumerable<Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
+        public IEnumerable<Auth> Get( int entityTypeId, int? entityId )
         {
-            return Repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => 
+                    t.EntityTypeId == entityTypeId && 
+                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+                )
+                .OrderBy( t => t.Order );
         }
         
         /// <summary>
@@ -54,10 +59,10 @@ namespace Rock.Cms
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public IQueryable<Auth> GetAuths( string entityType, int? entityId, string action )
+        public IQueryable<Auth> GetAuths( int entityTypeId, int? entityId, string action )
         {
             return Queryable().
-                    Where( A => A.EntityType == entityType &&
+                    Where( A => A.EntityTypeId == entityTypeId &&
                         A.EntityId == entityId &&
                         A.Action == action ).
                     OrderBy( A => A.Order );

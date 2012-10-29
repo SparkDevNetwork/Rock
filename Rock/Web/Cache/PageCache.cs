@@ -595,6 +595,7 @@ namespace Rock.Web.Cache
                 foreach ( var pageContext in pageModel.PageContexts )
                     page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
+            page.TypeId = pageModel.TypeId;
             page.TypeName = pageModel.TypeName;
             page.SupportedActions = pageModel.SupportedActions;
 
@@ -655,6 +656,14 @@ namespace Rock.Web.Cache
         #endregion
 
         #region ISecure Implementation
+
+        /// <summary>
+        /// Gets the Entity Type ID for this entity.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        public int TypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the auth entity.
