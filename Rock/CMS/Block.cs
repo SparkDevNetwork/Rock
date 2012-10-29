@@ -103,12 +103,6 @@ namespace Rock.Cms
         public int OutputCacheDuration { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.Block"; } }
-        
-        /// <summary>
         /// Gets or sets the Html Contents.
         /// </summary>
         /// <value>

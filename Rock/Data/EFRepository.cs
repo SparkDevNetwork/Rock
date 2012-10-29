@@ -167,7 +167,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateCreated( T entity )
         {
-            return DateCreated( entity.EntityTypeName, entity.Id );
+            return DateCreated( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateLastModified( T entity )
         {
-            return DateLastModified( entity.EntityTypeName, entity.Id );
+            return DateLastModified( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? CreatedByPersonId( T entity )
         {
-            return CreatedByPersonId( entity.EntityTypeName, entity.Id );
+            return CreatedByPersonId( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? LastModifiedByPersonId( T entity )
         {
-            return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
+            return LastModifiedByPersonId( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IQueryable<Audit> Audits( T entity )
         {
-            return Audits( entity.EntityTypeName, entity.Id );
+            return Audits( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace Rock.Data
                         {
                             audit.DateTime = DateTime.Now;
                             audit.PersonId = PersonId;
-                            audit.EntityType = rockEntity.EntityTypeName;
+                            audit.EntityType = rockEntity.TypeName;
                             audit.EntityId = rockEntity.Id;
                             audit.EntityName = rockEntity.ToString().Ellipsis( 195 );
                             audit.Properties = modifiedProperties.AsDelimited( ";" );

@@ -44,12 +44,6 @@ namespace Rock.Crm
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Crm.Campus"; } }
-
-        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
