@@ -68,12 +68,6 @@ namespace Rock.Crm
         public string Source { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Crm.PersonViewed"; } }
-        
-        /// <summary>
         /// Gets or sets the Viewer Person.
         /// </summary>
         /// <value>

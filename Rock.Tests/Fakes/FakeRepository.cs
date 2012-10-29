@@ -65,7 +65,7 @@ namespace Rock.Tests.Fakes
 
         public virtual DateTime? DateCreated( T entity )
         {
-            return DateCreated( entity.EntityTypeName, entity.Id );
+            return DateCreated( entity.TypeName, entity.Id );
         }
 
         public virtual DateTime? DateCreated( string entityTypeName, int entityId )
@@ -75,7 +75,7 @@ namespace Rock.Tests.Fakes
 
         public virtual DateTime? DateLastModified( T entity )
         {
-            return DateLastModified( entity.EntityTypeName, entity.Id );
+            return DateLastModified( entity.TypeName, entity.Id );
         }
 
         public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
@@ -85,7 +85,7 @@ namespace Rock.Tests.Fakes
 
         public virtual int? CreatedByPersonId( T entity )
         {
-            return CreatedByPersonId( entity.EntityTypeName, entity.Id );
+            return CreatedByPersonId( entity.TypeName, entity.Id );
         }
 
         public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
@@ -95,7 +95,7 @@ namespace Rock.Tests.Fakes
 
         public virtual int? LastModifiedByPersonId( T entity )
         {
-            return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
+            return LastModifiedByPersonId( entity.TypeName, entity.Id );
         }
 
         public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
@@ -105,7 +105,7 @@ namespace Rock.Tests.Fakes
 
         public virtual IQueryable<Audit> Audits( T entity )
         {
-            return Audits( entity.EntityTypeName, entity.Id );
+            return Audits( entity.TypeName, entity.Id );
         }
 
         public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )

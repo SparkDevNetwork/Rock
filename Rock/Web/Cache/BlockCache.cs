@@ -240,7 +240,7 @@ namespace Rock.Web.Cache
                 foreach ( var attribute in blockModel.Attributes )
                     block.AttributeIds.Add( attribute.Value.Id );
 
-            block.EntityTypeName = blockModel.EntityTypeName;
+            block.TypeName = blockModel.TypeName;
             block.BlockActions = blockModel.SupportedActions;
 
             return block;
@@ -264,7 +264,7 @@ namespace Rock.Web.Cache
         /// The auth entity. The auth entity is a unique identifier for each type of class that implements
         /// the <see cref="Rock.Security.ISecured"/> interface.
         /// </summary>
-        public string EntityTypeName { get; set; }
+        public string TypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to

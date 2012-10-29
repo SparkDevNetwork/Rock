@@ -140,12 +140,6 @@ namespace Rock.Cms
         public string ErrorPage { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.Site"; } }
-        
-        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>

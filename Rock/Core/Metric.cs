@@ -162,12 +162,6 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Core.Metric"; } }
-        
-        /// <summary>
         /// Gets or sets the Metric Values.
         /// </summary>
         /// <value>
