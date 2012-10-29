@@ -138,11 +138,14 @@ namespace Rock.Web.UI.Controls
                 string result = base.EmptyDataText;
                 if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
                 {
-                    Type dataSourceType = DataSource.GetType();
-                    Type itemType = dataSourceType.GetGenericArguments()[0];
-                    if ( itemType != null )
+                    if ( DataSource != null )
                     {
-                        result = string.Format("No {0} Found", itemType.GetFriendlyTypeName().Pluralize());
+                        Type dataSourceType = DataSource.GetType();
+                        Type itemType = dataSourceType.GetGenericArguments()[0];
+                        if ( itemType != null )
+                        {
+                            result = string.Format( "No {0} Found", itemType.GetFriendlyTypeName().Pluralize() );
+                        }
                     }
                 }
                 return result;

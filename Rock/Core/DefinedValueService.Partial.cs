@@ -25,6 +25,17 @@ namespace Rock.Core
         {
             return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
         }
+
+        /// <summary>
+        /// Gets the by defined type GUID.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <returns></returns>
+        public IEnumerable<DefinedValue> GetByDefinedTypeGuid( Guid definedTypeGuid )
+        {
+            var definedType = new DefinedTypeService().GetByGuid( definedTypeGuid );
+            return GetByDefinedTypeId( definedType.Id );
+        }
         
         /// <summary>
         /// Gets Defined Value by Guid

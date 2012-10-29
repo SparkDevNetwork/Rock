@@ -57,6 +57,10 @@ namespace Rock.SystemGuid
         /// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
         /// </summary>
         public static Guid PERSON_PHONE_TYPE { get { return new Guid( "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD" ); } }
-    
+
+        /// <summary>
+        /// Guid for the types of Locations (such as Home, Main Office, etc)
+        /// </summary>
+        public static Guid LOCATION_LOCATION_TYPE { get { return new Guid( "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" ); } }
     }
 }
