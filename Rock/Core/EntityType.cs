@@ -15,35 +15,29 @@ using Rock.Data;
 namespace Rock.Core
 {
     [Table( "coreEntityType" )]
-    public partial class EntityType
+    public partial class EntityType : Entity<EntityType>
     {
-        [Key]
-        [DataMember]
-        public int Id { get; set; }
-
         /// <summary>
-        /// Gets or 
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// The GUID.
+        /// The name.
         /// </value>
+        [MaxLength( 100 )]
         [AlternateKey]
         [DataMember]
-        public Guid Guid
-        {
-            get { return _guid; }
-            set { _guid = value; }
-        }
-        private Guid _guid = Guid.NewGuid();
-
-        [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the name of the friendly.
+        /// </summary>
+        /// <value>
+        /// The name of the friendly.
+        /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string FriendlyName { get; set; }
-        
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -59,7 +53,7 @@ namespace Rock.Core
     /// <summary>
     /// Attribute Configuration class.
     /// </summary>
-    public partial class EntityTypeConfiguration : EntityTypeConfiguration<Tag>
+    public partial class EntityTypeConfiguration : EntityTypeConfiguration<EntityType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeConfiguration"/> class.

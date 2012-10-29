@@ -205,7 +205,7 @@ namespace Rock.Crm
         public void SaveUserValue(Person person, string key, List<string> values, int? personId)
         {
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByKey(
+            var attribute = attributeService.Get(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key );
 
             if ( attribute == null )
@@ -215,7 +215,7 @@ namespace Rock.Crm
 
                 attribute = new Core.Attribute();
                 attribute.IsSystem = false;
-                attribute.Entity = Person.USER_VALUE_ENTITY;
+                attribute.EntityType = new Rock.Core.EntityTypeService().Get( Person.USER_VALUE_ENTITY, true, null );
                 attribute.EntityTypeQualifierColumn = string.Empty;
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
@@ -257,7 +257,7 @@ namespace Rock.Crm
         public List<string> GetUserValue( Person person, string key )
         {
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByKey(
+            var attribute = attributeService.Get(
                 Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key);
 
             if (attribute != null)
@@ -282,7 +282,7 @@ namespace Rock.Crm
 
             foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
                 .Where( v =>
-                    v.Attribute.Entity == Person.USER_VALUE_ENTITY &&
+                    v.Attribute.EntityType.Name == Person.USER_VALUE_ENTITY &&
                     v.Attribute.EntityTypeQualifierColumn == string.Empty &&
                     v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )

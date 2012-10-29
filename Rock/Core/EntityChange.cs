@@ -50,7 +50,7 @@ namespace Rock.Core
         /// </value>
         [DataMember]
         public int? EntityTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Entity Id.
         /// </summary>
