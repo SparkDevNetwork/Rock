@@ -76,6 +76,27 @@ namespace Rock.Web.UI.Validation
             // get the control validation value
             string value = GetControlValidationValue( ControlToValidate );
 
+            if ( ValueMustBeInteger )
+            {
+                if ( !string.IsNullOrWhiteSpace( value ) )
+                {
+                    int intValue;
+                    if ( !int.TryParse( value, out intValue ) )
+                    {
+                        ErrorMessage = "Value must be an integer";
+                        return false;
+                    }
+                    else
+                    {
+                        if ( intValue < 0 )
+                        {
+                            ErrorMessage = "Value cannot be negative";
+                            return false;
+                        }
+                    }
+                }
+            }
+
             foreach ( var attribute in property.GetCustomAttributes(
                      typeof( ValidationAttribute ), true )
                        .OfType<ValidationAttribute>() )
@@ -112,6 +133,31 @@ namespace Rock.Web.UI.Validation
             return true;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [value must be integer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [value must be integer]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ValueMustBeInteger
+        {
+            get
+            {
+                // get the type that we are going to validate
+                Type source = GetValidatedType();
+
+                // get the property to validate
+                PropertyInfo property = GetValidatedProperty( source );
+
+                return ( property.PropertyType.IsEquivalentTo( typeof( int? ) ) || property.PropertyType.IsEquivalentTo( typeof( int ) ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the validated.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.InvalidOperationException">Null SourceTypeName can't be validated</exception>
         private Type GetValidatedType()
         {
             if ( string.IsNullOrEmpty( SourceTypeName ) )

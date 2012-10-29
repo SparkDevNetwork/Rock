@@ -91,12 +91,12 @@ public partial class Groups : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gGroups_Delete( object sender, RowEventArgs e )
     {
-        GroupService GroupService = new GroupService();
-        Group Group = GroupService.Get( (int)gGroups.DataKeys[e.RowIndex]["id"] );
+        GroupService groupService = new GroupService();
+        Group group = groupService.Get( (int)gGroups.DataKeys[e.RowIndex]["id"] );
         if ( CurrentBlock != null )
         {
-            GroupService.Delete( Group, CurrentPersonId );
-            GroupService.Save( Group, CurrentPersonId );
+            groupService.Delete( group, CurrentPersonId );
+            groupService.Save( group, CurrentPersonId );
         }
 
         BindGrid();
@@ -137,9 +137,9 @@ public partial class Groups : RockBlock
         Group group;
         GroupService groupService = new GroupService();
 
-        int GroupId = int.Parse( hfGroupId.Value );
+        int groupId = int.Parse( hfGroupId.Value );
 
-        if ( GroupId == 0 )
+        if ( groupId == 0 )
         {
             group = new Group();
             group.IsSystem = false;
@@ -147,7 +147,7 @@ public partial class Groups : RockBlock
         }
         else
         {
-            group = groupService.Get( GroupId );
+            group = groupService.Get( groupId );
         }
         
         group.Name = tbName.Text;
@@ -186,16 +186,16 @@ public partial class Groups : RockBlock
     /// </summary>
     private void BindGrid()
     {
-        GroupService GroupService = new GroupService();
+        GroupService groupService = new GroupService();
         SortProperty sortProperty = gGroups.SortProperty;
 
         if ( sortProperty != null )
         {
-            gGroups.DataSource = GroupService.Queryable().Sort( sortProperty ).ToList();
+            gGroups.DataSource = groupService.Queryable().Sort( sortProperty ).ToList();
         }
         else
         {
-            gGroups.DataSource = GroupService.Queryable().OrderBy( p => p.Name ).ToList();
+            gGroups.DataSource = groupService.Queryable().OrderBy( p => p.Name ).ToList();
         }
 
         gGroups.DataBind();
