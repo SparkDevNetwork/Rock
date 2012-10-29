@@ -34,8 +34,17 @@ namespace Rock.Migrations
         /// </summary>
         public RockCSharpMigrationCodeGenerator()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            rockAssembly = Assembly.Load( "Rock" );
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            if ( executingAssembly.GetName().Name == "Rock" )
+            {
+                rockAssembly = executingAssembly;
+            }
+            else
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+                rockAssembly = Assembly.Load( "Rock" );
+            }
+
             foreach ( var e in rockAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
             {
                 var attrib = e.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );

@@ -7,7 +7,9 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Entity;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -15,10 +17,13 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Routing;
+
 using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Cms;
 using Rock.Communication;
@@ -57,6 +62,17 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
+            // Check if database should be auto-migrated
+            bool autoMigrate = true;
+            if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
+            {
+                autoMigrate = true;
+            }
+            if ( autoMigrate )
+            {
+                Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+            }
+
             // Preload the commonly used objects
             LoadCacheObjects();
 
@@ -544,11 +560,10 @@ namespace RockWeb
                 routes.AddPageRoute( pageRoute );
             }
 
-
             // Add any custom api routes
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ),
-                new System.IO.DirectoryInfo( Server.MapPath( "~/bin" ) ) ) )
+                new DirectoryInfo[] { new DirectoryInfo( Server.MapPath( "~/bin" ) ), new DirectoryInfo( Server.MapPath( "~/Plugins" ) ) } ) )
             {
                 var controller = (Rock.Rest.IHasCustomRoutes)Activator.CreateInstance( type.Value );
                 if ( controller != null )
