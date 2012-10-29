@@ -24,7 +24,7 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
-        public string EntityType { get; set; }
+        public int EntityTypeId { get; set; }
         public int? EntityId { get; set; }
         public int Order { get; set; }
         public string Action { get; set; }
@@ -59,7 +59,7 @@ namespace Rock.Cms
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "EntityType", this.EntityType );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "Action", this.Action );
@@ -79,7 +79,7 @@ namespace Rock.Cms
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.EntityType = this.EntityType;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.EntityId = this.EntityId;
             expando.Order = this.Order;
             expando.Action = this.Action;
@@ -101,7 +101,7 @@ namespace Rock.Cms
             if ( model is Auth )
             {
                 var auth = (Auth)model;
-                this.EntityType = auth.EntityType;
+                this.EntityTypeId = auth.EntityTypeId;
                 this.EntityId = auth.EntityId;
                 this.Order = auth.Order;
                 this.Action = auth.Action;
@@ -123,7 +123,7 @@ namespace Rock.Cms
             if ( model is Auth )
             {
                 var auth = (Auth)model;
-                auth.EntityType = this.EntityType;
+                auth.EntityTypeId = this.EntityTypeId;
                 auth.EntityId = this.EntityId;
                 auth.Order = this.Order;
                 auth.Action = this.Action;

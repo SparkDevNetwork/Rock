@@ -560,6 +560,10 @@
     <Compile Include="Migrations\201210292010499_EntityTypeName.Designer.cs">
       <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210292200475_AuthEntityType.cs" />
+    <Compile Include="Migrations\201210292200475_AuthEntityType.Designer.cs">
+      <DependentUpon>201210292200475_AuthEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -622,6 +626,7 @@
     <Compile Include="Web\Cache\CampusCache.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\Cache\EntityTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedValue.cs" />
     <Compile Include="Web\Cache\GlobalAttributesCache.cs" />
@@ -981,6 +986,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210292010499_EntityTypeName.resx">
       <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210292200475_AuthEntityType.resx">
+      <DependentUpon>201210292200475_AuthEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

@@ -29,9 +29,8 @@ namespace Rock.Cms
         /// Entity Type.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
         [DataMember]
-        public string EntityType { get; set; }
+        public int EntityTypeId { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Id.
@@ -119,6 +118,14 @@ namespace Rock.Cms
         public virtual Crm.Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Core.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// The default authorization for a specific action.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -174,6 +181,7 @@ namespace Rock.Cms
         {
             this.HasOptional( p => p.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
             this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId).WillCascadeOnDelete( false );
         }
     }
 

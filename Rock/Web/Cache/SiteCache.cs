@@ -116,6 +116,7 @@ namespace Rock.Web.Cache
 
                     site.AttributeValues = siteModel.AttributeValues;
 
+                    site.TypeId = siteModel.TypeId;
                     site.TypeName = siteModel.TypeName;
                     site.SupportedActions = siteModel.SupportedActions;
 
@@ -142,6 +143,14 @@ namespace Rock.Web.Cache
         #endregion
 
         #region ISecure Implementation
+
+        /// <summary>
+        /// Gets the Entity Type ID for this entity.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        public int TypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the auth entity.
