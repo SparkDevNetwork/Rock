@@ -30,7 +30,7 @@ namespace Rock.Core
         /// <summary>
         /// Gets the specified type, and optionally creates new type if not found.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="entityName">Name of the entity.</param>
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
