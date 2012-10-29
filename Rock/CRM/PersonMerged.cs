@@ -41,12 +41,6 @@ namespace Rock.Crm
         public Guid CurrentGuid { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Crm.PersonMerged"; } }
-
-        /// <summary>
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]

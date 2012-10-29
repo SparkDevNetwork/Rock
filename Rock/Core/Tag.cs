@@ -109,12 +109,6 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Core.Tag"; } }
-        
-        /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>

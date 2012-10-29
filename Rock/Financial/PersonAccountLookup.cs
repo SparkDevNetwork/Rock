@@ -56,11 +56,6 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        public override string EntityTypeName { get { return "Financial.PersonAccountLookup"; } }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

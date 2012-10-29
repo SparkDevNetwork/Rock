@@ -50,12 +50,6 @@ namespace Rock.Core
         public int? EntityId { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Core.TaggedItem"; } }
-        
-        /// <summary>
         /// Gets or sets the Tag
         /// </summary>
         /// <value>

@@ -26,7 +26,7 @@ namespace Rock.Security
         /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the
         /// qualified name of the class.
         /// </summary>
-        public string EntityTypeName
+        public string TypeName
         {
             get { return _authEntity; }
         }
