@@ -116,7 +116,7 @@ namespace Rock.Web.Cache
 
                     site.AttributeValues = siteModel.AttributeValues;
 
-                    site.EntityTypeName = siteModel.EntityTypeName;
+                    site.TypeName = siteModel.TypeName;
                     site.SupportedActions = siteModel.SupportedActions;
 
                     cache.Set( cacheKey, site, new CacheItemPolicy() );
@@ -149,7 +149,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string EntityTypeName { get; set; }
+        public string TypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to

@@ -109,7 +109,10 @@ namespace Rock.Core
         /// </summary>
         [NotMapped]
         public string DeprecatedEntityTypeName { get { return "Core.Audit"; } }
-        
+
+        [NotMapped]
+        internal string EntityTypeName { get; set; }
+
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>

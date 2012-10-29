@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gBlockTypes.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( blockType != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( BlockType.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName );
                 hfBlockTypeId.Value = blockType.Id.ToString();
                 tbName.Text = blockType.Name;
                 tbPath.Text = blockType.Path;
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( BlockType.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName );
                 hfBlockTypeId.Value = 0.ToString();
                 tbName.Text = string.Empty;
                 tbPath.Text = string.Empty;

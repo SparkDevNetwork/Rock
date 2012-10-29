@@ -54,7 +54,7 @@ public partial class Groups : RockBlock
         else
         {
             gGroups.Visible = false;
-            nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Group.EntityTypeFriendlyName );
+            nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Group.FriendlyTypeName );
             nbMessage.Visible = true;
         }
 
@@ -160,7 +160,7 @@ public partial class Groups : RockBlock
         // check for duplicates within GroupType
         if ( groupService.Queryable().Where(g => g.GroupTypeId.Equals(group.GroupTypeId)).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
         {
-            tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.EntityTypeFriendlyName ) );
+            tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.FriendlyTypeName ) );
             return;
         }
 
@@ -258,18 +258,18 @@ public partial class Groups : RockBlock
 
             if ( group.IsSystem )
             {
-                lActionTitle.Text = ActionTitle.View( Group.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.View( Group.FriendlyTypeName );
                 btnCancel.Text = "Close";
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Edit( Group.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
                 btnCancel.Text = "Cancel";
             }
         }
         else
         {
-            lActionTitle.Text = ActionTitle.Add( Group.EntityTypeFriendlyName );
+            lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
             iconIsSystem.Visible = false;
             hfGroupId.Value = 0.ToString();
             tbName.Text = string.Empty;

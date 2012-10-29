@@ -34,7 +34,7 @@ namespace Rock.Transactions
                 {
                     var audit = new Audit();
                     auditDto.CopyToModel( audit );
-
+                    audit.EntityType = new EntityTypeService().Get( auditDto.EntityTypeName, true, audit.PersonId );
                     auditService.Add( audit, audit.PersonId );
                     auditService.Save( audit, audit.PersonId );
                 }

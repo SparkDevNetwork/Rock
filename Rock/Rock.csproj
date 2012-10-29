@@ -149,6 +149,7 @@
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
+    <Compile Include="Core\AuditDto.Partial.cs" />
     <Compile Include="Core\CodeGenerated\AttributeDto.cs" />
     <Compile Include="Core\CodeGenerated\AttributeQualifierDto.cs" />
     <Compile Include="Core\CodeGenerated\AttributeQualifierService.cs" />
