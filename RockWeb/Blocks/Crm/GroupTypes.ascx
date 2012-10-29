@@ -3,6 +3,7 @@
 <asp:UpdatePanel ID="upGroupType" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
+            <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
             <Rock:Grid ID="gGroupType" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
@@ -31,12 +32,18 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Description" />
                         <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
-                        </div>
+                    </div>
                     <div class="span6">
                         <Rock:Grid ID="gChildGroupTypes" runat="server" AllowPaging="false" ShowActionExcelExport="false">
                             <Columns>
                                 <asp:BoundField DataField="Value" HeaderText="Child Group Types" />
                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                        <Rock:Grid ID="gLocationTypes" runat="server" AllowPaging="false" ShowActionExcelExport="false">
+                            <Columns>
+                                <asp:BoundField DataField="Value" HeaderText="Location Types" />
+                                <Rock:DeleteField OnClick="gLocationTypes_Delete" />
                             </Columns>
                         </Rock:Grid>
                     </div>
@@ -50,7 +57,25 @@
 
         </asp:Panel>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+        <asp:Panel ID="pnlChildGroupTypePicker" runat="server" Visible="false">
+            <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
+
+            <div class="actions">
+                <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
+            </div>
+        </asp:Panel>
+
+        <asp:Panel ID="pnlLocationTypePicker" runat="server" Visible="false">
+            <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
+
+            <div class="actions">
+                <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
+            </div>
+        </asp:Panel>
+
+        <Rock:NotificationBox ID="nbWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
