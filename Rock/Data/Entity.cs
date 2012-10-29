@@ -106,12 +106,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the unique type name of the entity.  
+        /// Gets the unique type name of the entity.  Typically this is the qualified name of the class
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The name of the entity type.
         /// </value>
-        public virtual string EntityTypeName
+        public virtual string TypeName
         {
             get
             {
@@ -125,7 +125,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the entity type friendly.
         /// </value>
-        public static string EntityTypeFriendlyName
+        public static string FriendlyTypeName
         {
             get
             {

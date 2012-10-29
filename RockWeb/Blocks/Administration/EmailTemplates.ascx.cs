@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gEmailTemplates.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( EmailTemplate.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( emailTemplate != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.FriendlyTypeName );
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 tbCategory.Text = emailTemplate.Category;
@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( EmailTemplate.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Add( EmailTemplate.FriendlyTypeName );
                 hfEmailTemplateId.Value = 0.ToString();
 
                 tbCategory.Text = string.Empty;

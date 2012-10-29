@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gCampuses.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Campus.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Campus.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( campusService.Queryable().Count( a => a.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( campus.Id ) ) > 0 )
             {
-                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Campus.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Campus.FriendlyTypeName );
                 nbMessage.Visible = true;
                 return;
             }
@@ -214,13 +214,13 @@ namespace RockWeb.Blocks.Administration
 
             if ( campus != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( Campus.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Edit( Campus.FriendlyTypeName );
                 hfCampusId.Value = campus.Id.ToString();
                 tbCampusName.Text = campus.Name;
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Campus.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName );
                 hfCampusId.Value = 0.ToString();
                 tbCampusName.Text = string.Empty;
             }

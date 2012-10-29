@@ -167,7 +167,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateCreated( T entity )
         {
-            return DateCreated( entity.EntityTypeName, entity.Id );
+            return DateCreated( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace Rock.Data
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityType.Name == entityTypeName &&
                     a.EntityId == entityId &&
                     a.AuditType == AuditType.Add
                 )
@@ -196,7 +196,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateLastModified( T entity )
         {
-            return DateLastModified( entity.EntityTypeName, entity.Id );
+            return DateLastModified( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace Rock.Data
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityType.Name == entityTypeName &&
                     a.EntityId == entityId &&
                     ( a.AuditType == AuditType.Modify && a.AuditType == AuditType.Add )
                 )
@@ -225,7 +225,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? CreatedByPersonId( T entity )
         {
-            return CreatedByPersonId( entity.EntityTypeName, entity.Id );
+            return CreatedByPersonId( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace Rock.Data
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityType.Name == entityTypeName &&
                     a.EntityId == entityId &&
                     a.AuditType == AuditType.Add
                 )
@@ -254,7 +254,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? LastModifiedByPersonId( T entity )
         {
-            return LastModifiedByPersonId( entity.EntityTypeName, entity.Id );
+            return LastModifiedByPersonId( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace Rock.Data
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityType.Name == entityTypeName &&
                     a.EntityId == entityId &&
                     ( a.AuditType == AuditType.Modify || a.AuditType == AuditType.Add )
                 )
@@ -283,7 +283,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IQueryable<Audit> Audits( T entity )
         {
-            return Audits( entity.EntityTypeName, entity.Id );
+            return Audits( entity.TypeName, entity.Id );
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace Rock.Data
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityType.Name == entityTypeName &&
                     a.EntityId == entityId
                 );
         }
@@ -412,7 +412,7 @@ namespace Rock.Data
                         {
                             audit.DateTime = DateTime.Now;
                             audit.PersonId = PersonId;
-                            audit.EntityType = rockEntity.EntityTypeName;
+                            audit.EntityTypeName = rockEntity.TypeName;
                             audit.EntityId = rockEntity.Id;
                             audit.EntityName = rockEntity.ToString().Ellipsis( 195 );
                             audit.Properties = modifiedProperties.AsDelimited( ";" );
@@ -509,7 +509,7 @@ namespace Rock.Data
                             Rock.Core.EntityChange change = new Core.EntityChange();
                             change.ChangeSet = changeSet;
                             change.ChangeType = Context.Entry( entity ).State.ToString();
-                            change.EntityType = baseType.Name;
+                            change.EntityType = new EntityTypeService().Get( baseType.Name, true, personId );
                             change.Property = propInfo.Name;
                             change.OriginalValue = originalValueStr;
                             change.CurrentValue = currentValueStr;

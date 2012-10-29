@@ -70,7 +70,7 @@ namespace Rock.Data
         public IQueryable<AuthRule> FindAuthRules()
         {
             return ( from action in SupportedActions
-                     from rule in Authorization.AuthRules( this.EntityTypeName, this.Id, action )
+                     from rule in Authorization.AuthRules( this.TypeName, this.Id, action )
                      select rule ).AsQueryable();
         }
 
