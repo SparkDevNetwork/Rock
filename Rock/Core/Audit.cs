@@ -99,12 +99,6 @@ namespace Rock.Core
         public virtual Rock.Crm.Person Person { get; set; }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Core.Audit"; } }
-        
-        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>

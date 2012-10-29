@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 gPageRoutes.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( PageRoute.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( PageRoute.FriendlyTypeName );
                 nbMessage.Visible = true;
             }
 
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
             {
-                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", Rock.Cms.Page.EntityTypeFriendlyName );
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", Rock.Cms.Page.FriendlyTypeName );
                 nbMessage.Visible = true;
                 return;
             }
@@ -258,18 +258,18 @@ namespace RockWeb.Blocks.Administration
 
                 if ( pageRoute.IsSystem )
                 {
-                    lActionTitle.Text = ActionTitle.View( PageRoute.EntityTypeFriendlyName );
+                    lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName );
                     btnCancel.Text = "Close";
                 }
                 else
                 {
-                    lActionTitle.Text = ActionTitle.Edit( PageRoute.EntityTypeFriendlyName );
+                    lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName );
                     btnCancel.Text = "Cancel";
                 }
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( PageRoute.EntityTypeFriendlyName );
+                lActionTitle.Text = ActionTitle.Add( PageRoute.FriendlyTypeName );
                 hfPageRouteId.Value = 0.ToString();
                 ltIsSystem.Text = false.ToYesNo();
                 ddlPageName.SelectedValue = string.Empty;

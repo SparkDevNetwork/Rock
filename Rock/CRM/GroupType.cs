@@ -59,12 +59,6 @@ namespace Rock.Crm
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Crm.GroupType"; } }
-
-        /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>

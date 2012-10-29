@@ -64,7 +64,6 @@ namespace Rock.Core
                 {
                     Name = m.Name,
                     FriendlyName = m.FriendlyName,
-                    IsModel = m.IsModel,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

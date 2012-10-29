@@ -50,10 +50,16 @@ namespace Rock.Data
         /// Gets the unique type name of the entity.  Typically this is the qualified name of the class
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The name of the entity type.
         /// </value>
         [NotMapped]
-        public abstract string EntityTypeName { get; }
+        public virtual string TypeName 
+        {
+            get
+            {
+                return typeof( T ).Name;
+            }
+        }
 
         /// <summary>
         /// Gets the name of the entity type friendly.
@@ -62,7 +68,7 @@ namespace Rock.Data
         /// The name of the entity type friendly.
         /// </value>
         [NotMapped]
-        public static string EntityTypeFriendlyName
+        public static string FriendlyTypeName
         {
             get
             {

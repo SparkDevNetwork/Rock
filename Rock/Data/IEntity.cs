@@ -34,7 +34,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the entity type.
         /// </value>
-        string EntityTypeName { get; }
+        string TypeName { get; }
 
         /// <summary>
         /// Gets the encrypted key.

@@ -215,12 +215,6 @@ namespace Rock.Cms
         public string IconUrl { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.Page"; } }
-        
-        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>

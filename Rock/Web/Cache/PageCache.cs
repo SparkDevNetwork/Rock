@@ -595,7 +595,7 @@ namespace Rock.Web.Cache
                 foreach ( var pageContext in pageModel.PageContexts )
                     page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
-            page.EntityTypeName = pageModel.EntityTypeName;
+            page.TypeName = pageModel.TypeName;
             page.SupportedActions = pageModel.SupportedActions;
 
             return page;
@@ -662,7 +662,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The auth entity.
         /// </value>
-        public string EntityTypeName { get; set; }
+        public string TypeName { get; set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
