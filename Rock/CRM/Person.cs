@@ -264,12 +264,6 @@ namespace Rock.Crm
         }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Crm.Person"; } }
-        
-        /// <summary>
         /// Gets or sets the Users.
         /// </summary>
         /// <value>

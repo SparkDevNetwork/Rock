@@ -107,12 +107,6 @@ namespace Rock.Cms
         public DateTime? ExpireDateTime { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.HtmlContent"; } }
-        
-        /// <summary>
         /// Gets or sets the Block.
         /// </summary>
         /// <value>

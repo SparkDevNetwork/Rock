@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Crm;
+using Rock.Core;
 
-namespace Rock.Rest.Crm
+namespace Rock.Rest.Core
 {
     /// <summary>
-    /// GroupMembers REST API
+    /// EntityTypes REST API
     /// </summary>
-    public partial class GroupMembersController : Rock.Rest.ApiController<Rock.Crm.GroupMember, Rock.Crm.GroupMemberDto>
+    public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Core.EntityType, Rock.Core.EntityTypeDto>
     {
-        public GroupMembersController() : base( new Rock.Crm.GroupMemberService() ) { } 
+        public EntityTypesController() : base( new Rock.Core.EntityTypeService() ) { } 
     }
 }

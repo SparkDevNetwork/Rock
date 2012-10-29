@@ -72,12 +72,6 @@ namespace Rock.Cms
         public DateTime? CreatedDateTime { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.PageContext"; } }
-        
-        /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>

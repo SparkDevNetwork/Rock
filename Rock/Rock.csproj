@@ -163,12 +163,16 @@
     </Compile>
     <Compile Include="Core\CodeGenerated\AuditDto.cs" />
     <Compile Include="Core\CodeGenerated\AuditService.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\EntityType.cs" />
+    <Compile Include="Core\EntityTypeService.Partial.cs" />
     <Compile Include="Core\TaggedItemService.Partial.cs" />
     <Compile Include="Core\TagService.Partial.cs" />
     <Compile Include="Core\Tag.cs" />

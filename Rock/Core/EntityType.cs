@@ -14,6 +14,9 @@ using Rock.Data;
 
 namespace Rock.Core
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Table( "coreEntityType" )]
     public partial class EntityType : Entity<EntityType>
     {

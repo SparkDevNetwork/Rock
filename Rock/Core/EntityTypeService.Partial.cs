@@ -24,7 +24,7 @@ namespace Rock.Core
         /// <returns>An enumerable list of EntityType objects.</returns>
         public EntityType Get( string entityName )
         {
-            return Repository.FirstOrDefault( t => t.EntityTypeName == entityName );
+            return Repository.FirstOrDefault( t => t.TypeName == entityName );
         }
 
         /// <summary>
