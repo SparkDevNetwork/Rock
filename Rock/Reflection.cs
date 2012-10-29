@@ -23,7 +23,7 @@ namespace Rock
         /// will not be included in the result
         /// </summary>
         /// <param name="baseType">base type.</param>
-        /// <param name="directory">The directory.</param>
+        /// <param name="directories">The directories.</param>
         /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo[] directories = null )
         {
@@ -35,7 +35,7 @@ namespace Rock
         /// </summary>
         /// <param name="baseType">base type.</param>
         /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
-        /// <param name="directory">The directory.</param>
+        /// <param name="directories">The directories.</param>
         /// <returns></returns>
         public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo[] directories = null )
         {
