@@ -103,12 +103,6 @@ namespace Rock.Cms
         public int? GroupId { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.Auth"; } }
-        
-        /// <summary>
         /// Gets or sets the Group.
         /// </summary>
         /// <value>

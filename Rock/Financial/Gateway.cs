@@ -79,12 +79,6 @@ namespace Rock.Financial
         public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Financial.Gateway"; } }
-
-        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>

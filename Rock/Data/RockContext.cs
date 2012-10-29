@@ -150,6 +150,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.EntityChange> EntityChanges { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity types.
+        /// </summary>
+        /// <value>
+        /// The entity types.
+        /// </value>
+        public DbSet<Rock.Core.EntityType> EntityTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Exception Logs.
         /// </summary>
         /// <value>
@@ -406,6 +414,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );

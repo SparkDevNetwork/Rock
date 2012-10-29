@@ -163,12 +163,16 @@
     </Compile>
     <Compile Include="Core\CodeGenerated\AuditDto.cs" />
     <Compile Include="Core\CodeGenerated\AuditService.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\EntityType.cs" />
+    <Compile Include="Core\EntityTypeService.Partial.cs" />
     <Compile Include="Core\TaggedItemService.Partial.cs" />
     <Compile Include="Core\TagService.Partial.cs" />
     <Compile Include="Core\Tag.cs" />
@@ -551,6 +555,10 @@
     <Compile Include="Migrations\201210291656112_LocationTypes.cs" />
     <Compile Include="Migrations\201210291656112_LocationTypes.Designer.cs">
       <DependentUpon>201210291656112_LocationTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210292010499_EntityTypeName.cs" />
+    <Compile Include="Migrations\201210292010499_EntityTypeName.Designer.cs">
+      <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -970,6 +978,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210291656112_LocationTypes.resx">
       <DependentUpon>201210291656112_LocationTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210292010499_EntityTypeName.resx">
+      <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

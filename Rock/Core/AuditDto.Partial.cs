@@ -9,16 +9,25 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
+using System.Collections.Generic;
+using System.Dynamic;
 
-using Rock.Crm;
+using Rock.Data;
 
-namespace Rock.Rest.Crm
+namespace Rock.Core
 {
     /// <summary>
-    /// GroupMembers REST API
+    /// 
     /// </summary>
-    public partial class GroupMembersController : Rock.Rest.ApiController<Rock.Crm.GroupMember, Rock.Crm.GroupMemberDto>
+    public partial class AuditDto
     {
-        public GroupMembersController() : base( new Rock.Crm.GroupMemberService() ) { } 
+        /// <summary>
+        /// Gets or sets the name of the entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
+        internal string EntityTypeName { get; set; }
     }
 }

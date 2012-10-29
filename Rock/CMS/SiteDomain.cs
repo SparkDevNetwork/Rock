@@ -52,12 +52,6 @@ namespace Rock.Cms
         public string Domain { get; set; }
         
         /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string EntityTypeName { get { return "Cms.SiteDomain"; } }
-        
-        /// <summary>
         /// Gets or sets the Site.
         /// </summary>
         /// <value>
