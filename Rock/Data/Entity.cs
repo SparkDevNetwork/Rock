@@ -57,7 +57,7 @@ namespace Rock.Data
         {
             get
             {
-                return typeof( T ).Name;
+                return typeof( T ).FullName;
             }
         }
 
