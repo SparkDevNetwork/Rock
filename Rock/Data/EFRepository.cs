@@ -167,20 +167,20 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateCreated( T entity )
         {
-            return DateCreated( entity.TypeName, entity.Id );
+            return DateCreated( entity.TypeId, entity.Id );
         }
 
         /// <summary>
         /// Date the entity was created.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTime? DateCreated( string entityTypeName, int entityId )
+        public virtual DateTime? DateCreated( int entityTypeId, int entityId )
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityTypeId == entityTypeId &&
                     a.EntityId == entityId &&
                     a.AuditType == AuditType.Add
                 )
@@ -196,20 +196,20 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual DateTime? DateLastModified( T entity )
         {
-            return DateLastModified( entity.TypeName, entity.Id );
+            return DateLastModified( entity.TypeId, entity.Id );
         }
 
         /// <summary>
         /// Date the entity was last modified.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
+        public virtual DateTime? DateLastModified( int entityTypeId, int entityId )
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityTypeId == entityTypeId &&
                     a.EntityId == entityId &&
                     ( a.AuditType == AuditType.Modify && a.AuditType == AuditType.Add )
                 )
@@ -225,20 +225,20 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? CreatedByPersonId( T entity )
         {
-            return CreatedByPersonId( entity.TypeName, entity.Id );
+            return CreatedByPersonId( entity.TypeId, entity.Id );
         }
 
         /// <summary>
         /// The person id who created entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+        public virtual int? CreatedByPersonId( int entityTypeId, int entityId )
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityTypeId == entityTypeId &&
                     a.EntityId == entityId &&
                     a.AuditType == AuditType.Add
                 )
@@ -254,20 +254,20 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int? LastModifiedByPersonId( T entity )
         {
-            return LastModifiedByPersonId( entity.TypeName, entity.Id );
+            return LastModifiedByPersonId( entity.TypeId, entity.Id );
         }
 
         /// <summary>
         /// The person id who last modified the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+        public virtual int? LastModifiedByPersonId( int entityTypeId, int entityId )
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityTypeId == entityTypeId &&
                     a.EntityId == entityId &&
                     ( a.AuditType == AuditType.Modify || a.AuditType == AuditType.Add )
                 )
@@ -283,20 +283,20 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IQueryable<Audit> Audits( T entity )
         {
-            return Audits( entity.TypeName, entity.Id );
+            return Audits( entity.TypeId, entity.Id );
         }
 
         /// <summary>
         /// All the audits made to the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+        public virtual IQueryable<Audit> Audits( int entityTypeId, int entityId )
         {
             return _auditSet
                 .Where( a =>
-                    a.EntityType == entityTypeName &&
+                    a.EntityTypeId == entityTypeId &&
                     a.EntityId == entityId
                 );
         }
@@ -412,9 +412,9 @@ namespace Rock.Data
                         {
                             audit.DateTime = DateTime.Now;
                             audit.PersonId = PersonId;
-                            audit.EntityType = rockEntity.TypeName;
+                            audit.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(rockEntity.TypeName).Id;
                             audit.EntityId = rockEntity.Id;
-                            audit.EntityName = rockEntity.ToString().Ellipsis( 195 );
+                            audit.Title = rockEntity.ToString().Ellipsis( 195 );
                             audit.Properties = modifiedProperties.AsDelimited( ";" );
                             audits.Add( audit );
                         }

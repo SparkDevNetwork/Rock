@@ -19,12 +19,19 @@ namespace Rock.Cms
         /// <summary>
         /// Gets Auths by Entity Type And Entity Id
         /// </summary>
-        /// <param name="entityType">Entity Type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">Entity Id.</param>
-        /// <returns>An enumerable list of Auth objects.</returns>
-        public IEnumerable<Auth> GetByEntityTypeAndEntityId( string entityType, int? entityId )
+        /// <returns>
+        /// An enumerable list of Auth objects.
+        /// </returns>
+        public IEnumerable<Auth> Get( int entityTypeId, int? entityId )
         {
-            return Repository.Find( t => t.EntityType == entityType && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => 
+                    t.EntityTypeId == entityTypeId && 
+                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+                )
+                .OrderBy( t => t.Order );
         }
         
         /// <summary>
@@ -50,14 +57,14 @@ namespace Rock.Cms
         /// <summary>
         /// Gets the authorizations for the entity and action.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public IQueryable<Auth> GetAuths( string entityType, int? entityId, string action )
+        public IQueryable<Auth> GetAuths( int entityTypeId, int? entityId, string action )
         {
             return Queryable().
-                    Where( A => A.EntityType == entityType &&
+                    Where( A => A.EntityTypeId == entityTypeId &&
                         A.EntityId == entityId &&
                         A.Action == action ).
                     OrderBy( A => A.Order );

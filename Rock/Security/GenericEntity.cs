@@ -22,6 +22,20 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Gets the Entity Type ID for this entity.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        public int TypeId
+        {
+            get
+            {
+                // Read should never return null since it will create entity type if it doesn't exist
+                return Rock.Web.Cache.EntityTypeCache.Read( _authEntity ).Id;
+            }
+        }
+        /// <summary>
         /// The auth entity. Classes that implement the <see cref="ISecured"/> interface should return
         /// a value that is unique across all <see cref="ISecured"/> classes.  Typically this is the
         /// qualified name of the class.

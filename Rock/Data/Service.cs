@@ -180,12 +180,12 @@ namespace Rock.Data
         /// <summary>
         /// Date the entity was created.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTime? DateCreated( string entityTypeName, int entityId )
+        public virtual DateTime? DateCreated( int entityTypeId, int entityId )
         {
-            return _repository.DateCreated( entityTypeName, entityId );
+            return _repository.DateCreated( entityTypeId, entityId );
         }
 
         /// <summary>
@@ -201,12 +201,12 @@ namespace Rock.Data
         /// <summary>
         /// Date the entity was last modified.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
+        public virtual DateTime? DateLastModified( int entityTypeId, int entityId )
         {
-            return _repository.DateLastModified( entityTypeName, entityId );
+            return _repository.DateLastModified( entityTypeId, entityId );
         }
 
         /// <summary>
@@ -222,12 +222,12 @@ namespace Rock.Data
         /// <summary>
         /// The person id who created entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+        public virtual int? CreatedByPersonId( int entityTypeId, int entityId )
         {
-            return _repository.CreatedByPersonId( entityTypeName, entityId );
+            return _repository.CreatedByPersonId( entityTypeId, entityId );
         }
 
         /// <summary>
@@ -243,12 +243,12 @@ namespace Rock.Data
         /// <summary>
         /// The person id who last modified the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+        public virtual int? LastModifiedByPersonId( int entityTypeId, int entityId )
         {
-            return _repository.LastModifiedByPersonId( entityTypeName, entityId );
+            return _repository.LastModifiedByPersonId( entityTypeId, entityId );
         }
 
         /// <summary>
@@ -264,12 +264,12 @@ namespace Rock.Data
         /// <summary>
         /// All the audits made to the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+        public virtual IQueryable<Audit> Audits( int entityTypeId, int entityId )
         {
-            return _repository.Audits( entityTypeName, entityId );
+            return _repository.Audits( entityTypeId, entityId );
         }
 
         /// <summary>

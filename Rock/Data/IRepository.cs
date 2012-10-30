@@ -79,10 +79,10 @@ namespace Rock.Data
         /// <summary>
         /// Date the entity was created.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        DateTime? DateCreated( string entityTypeName, int entityId );
+        DateTime? DateCreated( int entityTypeId, int entityId );
 
         /// <summary>
         /// Date the entity was last modified.
@@ -94,10 +94,10 @@ namespace Rock.Data
         /// <summary>
         /// Date the entity was last modified.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        DateTime? DateLastModified( string entityTypeName, int entityId );
+        DateTime? DateLastModified( int entityTypeId, int entityId );
 
         /// <summary>
         /// The person id who created entity.
@@ -109,10 +109,10 @@ namespace Rock.Data
         /// <summary>
         /// The person id who created entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        int? CreatedByPersonId( string entityTypeName, int entityId );
+        int? CreatedByPersonId( int entityTypeId, int entityId );
         
         /// <summary>
         /// The person id who last modified entity.
@@ -124,10 +124,10 @@ namespace Rock.Data
         /// <summary>
         /// The person id who last modified the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        int? LastModifiedByPersonId( string entityTypeName, int entityId );
+        int? LastModifiedByPersonId( int entityTypeId, int entityId );
         
         /// <summary>
         /// All the audits made to the entity.
@@ -139,10 +139,10 @@ namespace Rock.Data
         /// <summary>
         /// All the audits made to the entity.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        IQueryable<Audit> Audits( string entityTypeName, int entityId );
+        IQueryable<Audit> Audits( int entityTypeId, int entityId );
 
         /// <summary>
         /// Adds the specified entity.
