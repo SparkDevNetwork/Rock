@@ -43,6 +43,7 @@ namespace Rock.Crm
         /// <value>
         /// Name.
         /// </value>
+        [Required]
         [MaxLength( 100 )]
         [DataMember]
         public string Name { get; set; }
@@ -53,18 +54,17 @@ namespace Rock.Crm
         /// <value>
         /// Description.
         /// </value>
-        [Required]
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the sort order.
         /// </summary>
         /// <value>
-        /// Order.
+        /// The sort order.
         /// </value>
         [DataMember]
-        public int? Order { get; set; }
+        public int? SortOrder { get; set; }
 
         /// <summary>
         /// Gets or sets the max count.

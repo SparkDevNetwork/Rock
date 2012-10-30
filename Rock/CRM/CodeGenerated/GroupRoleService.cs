@@ -66,7 +66,7 @@ namespace Rock.Crm
                     GroupTypeId = m.GroupTypeId,
                     Name = m.Name,
                     Description = m.Description,
-                    Order = m.Order,
+                    SortOrder = m.SortOrder,
                     MaxCount = m.MaxCount,
                     MinCount = m.MinCount,
                     Id = m.Id,
