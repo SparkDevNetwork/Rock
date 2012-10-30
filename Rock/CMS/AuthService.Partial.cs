@@ -19,9 +19,11 @@ namespace Rock.Cms
         /// <summary>
         /// Gets Auths by Entity Type And Entity Id
         /// </summary>
-        /// <param name="entityType">Entity Type.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">Entity Id.</param>
-        /// <returns>An enumerable list of Auth objects.</returns>
+        /// <returns>
+        /// An enumerable list of Auth objects.
+        /// </returns>
         public IEnumerable<Auth> Get( int entityTypeId, int? entityId )
         {
             return Repository
@@ -55,7 +57,7 @@ namespace Rock.Cms
         /// <summary>
         /// Gets the authorizations for the entity and action.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>

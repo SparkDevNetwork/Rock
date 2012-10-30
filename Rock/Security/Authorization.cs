@@ -260,7 +260,7 @@ namespace Rock.Security
         /// <summary>
         /// Returns the authorization rules for the specified entity and action.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>

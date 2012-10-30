@@ -24,7 +24,7 @@ namespace Rock.Core
     {
 
 #pragma warning disable 1591
-        public string EntityType { get; set; }
+        public int EntityTypeId { get; set; }
         public int EntityId { get; set; }
         public string EntityName { get; set; }
         public AuditType AuditType { get; set; }
@@ -58,7 +58,7 @@ namespace Rock.Core
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "EntityType", this.EntityType );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "EntityName", this.EntityName );
             dictionary.Add( "AuditType", this.AuditType );
@@ -77,7 +77,7 @@ namespace Rock.Core
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.EntityType = this.EntityType;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.EntityId = this.EntityId;
             expando.EntityName = this.EntityName;
             expando.AuditType = this.AuditType;
@@ -98,7 +98,7 @@ namespace Rock.Core
             if ( model is Audit )
             {
                 var audit = (Audit)model;
-                this.EntityType = audit.EntityType;
+                this.EntityTypeId = audit.EntityTypeId;
                 this.EntityId = audit.EntityId;
                 this.EntityName = audit.EntityName;
                 this.AuditType = audit.AuditType;
@@ -119,7 +119,7 @@ namespace Rock.Core
             if ( model is Audit )
             {
                 var audit = (Audit)model;
-                audit.EntityType = this.EntityType;
+                audit.EntityTypeId = this.EntityTypeId;
                 audit.EntityId = this.EntityId;
                 audit.EntityName = this.EntityName;
                 audit.AuditType = this.AuditType;

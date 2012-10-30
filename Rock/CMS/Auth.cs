@@ -23,10 +23,10 @@ namespace Rock.Cms
     public partial class Auth : Model<Auth>, IOrdered
     {
         /// <summary>
-        /// Gets or sets the Entity Type.
+        /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
-        /// Entity Type.
+        /// Entity Type Id.
         /// </value>
         [Required]
         [DataMember]
