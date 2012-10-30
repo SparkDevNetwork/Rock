@@ -414,7 +414,7 @@ namespace Rock.Data
                             audit.PersonId = PersonId;
                             audit.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(rockEntity.TypeName).Id;
                             audit.EntityId = rockEntity.Id;
-                            audit.EntityName = rockEntity.ToString().Ellipsis( 195 );
+                            audit.Title = rockEntity.ToString().Ellipsis( 195 );
                             audit.Properties = modifiedProperties.AsDelimited( ";" );
                             audits.Add( audit );
                         }
