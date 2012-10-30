@@ -94,7 +94,17 @@ public partial class GroupRoles : RockBlock
     protected void gGroupRoles_Delete( object sender, RowEventArgs e )
     {
         GroupRoleService groupRoleService = new GroupRoleService();
-        GroupRole groupRole = groupRoleService.Get( (int)gGroupRoles.DataKeys[e.RowIndex]["id"] );
+        int groupRoleId = (int)gGroupRoles.DataKeys[e.RowIndex]["id"];
+
+        string errorMessage;
+        if (!groupRoleService.CanDelete(groupRoleId, out errorMessage))
+        {
+            nbGridWarning.Text = errorMessage;
+            nbGridWarning.Visible = true;
+            return;
+        }
+
+        GroupRole groupRole = groupRoleService.Get( groupRoleId );
         if ( CurrentBlock != null )
         {
             groupRoleService.Delete( groupRole, CurrentPersonId );
