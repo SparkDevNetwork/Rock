@@ -11,22 +11,22 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AuthEntityType : RockMigration
+    public partial class AuditEntityType : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            // Update cmsAuth to use EntityTypeId foreign key instead of EntityType text field
-            AddColumn("dbo.cmsAuth", "EntityTypeId", c => c.Int(nullable: true));
+            // Update coreAudit to use EntityTypeId foreign key instead of EntityType text field
+            AddColumn("dbo.coreAudit", "EntityTypeId", c => c.Int(nullable: true));
 
             Sql( @"
                 ;WITH CTE
                 AS
                 (
                     SELECT DISTINCT [EntityType]
-                    FROM [cmsAuth] A
+                    FROM [coreAudit] A
                     LEFT OUTER JOIN [coreEntityType] E
                         ON E.[Name] = A.[EntityType]
                     WHERE E.[Id] IS NULL
@@ -37,18 +37,16 @@ namespace Rock.Migrations
 
                 UPDATE A
                 SET [EntityTypeId] = E.[Id]
-                FROM [cmsAuth] A
+                FROM [coreAudit] A
                 INNER JOIN [coreEntityType] E
                     ON E.[Name] = A.[EntityType]
 
-                ALTER TABLE [cmsAuth] ALTER COLUMN [EntityTypeId] int not null
+                ALTER TABLE [coreAudit] ALTER COLUMN [EntityTypeId] int not null
 " );
 
-            DropIndex( "cmsAuth", new[] { "EntityType", "EntityId" } );
-            AddForeignKey( "dbo.cmsAuth", "EntityTypeId", "dbo.coreEntityType", "Id" );
-            CreateIndex("dbo.cmsAuth", "EntityTypeId");
-            DropColumn("dbo.cmsAuth", "EntityType");
-            CreateIndex( "dbo.cmsAuth", new[] { "EntityTypeId", "EntityId" } );
+            AddForeignKey( "dbo.coreAudit", "EntityTypeId", "dbo.coreEntityType", "Id" );
+            CreateIndex("dbo.coreAudit", "EntityTypeId");
+            DropColumn("dbo.coreAudit", "EntityType");
         }
         
         /// <summary>
@@ -56,24 +54,23 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            // Update cmsAuth to use EntityType text field instead of EntityTypeId foreign key
-            AddColumn( "dbo.cmsAuth", "EntityType", c => c.String( nullable: true, maxLength: 200 ) );
+            // Update coreAudit to use EntityType text field instead of EntityTypeId foreign key
+            AddColumn( "dbo.coreAudit", "EntityType", c => c.String( nullable: true, maxLength: 100 ) );
 
             Sql( @"
 
                 UPDATE A
                 SET [EntityType] = E.[Name]
-                FROM [cmsAuth] A
+                FROM [coreAudit] A
                 INNER JOIN [coreEntityType] E
                     ON E.[Id] = A.[EntityTypeId]
 
-                ALTER TABLE [cmsAuth] ALTER COLUMN [EntityType] varchar(200) not null
+                ALTER TABLE [coreAudit] ALTER COLUMN [EntityType] varchar(100) not null
 " );
-            DropIndex( "dbo.cmsAuth", new[] { "EntityTypeId", "EntityId" } );
-            DropIndex( "dbo.cmsAuth", new[] { "EntityTypeId" } );
-            DropForeignKey("dbo.cmsAuth", "EntityTypeId", "dbo.coreEntityType");
-            DropColumn("dbo.cmsAuth", "EntityTypeId");
-            CreateIndex( "cmsAuth", new[] { "EntityType", "EntityId" } );
+
+            DropIndex( "dbo.coreAudit", new[] { "EntityTypeId" } );
+            DropForeignKey("dbo.coreAudit", "EntityTypeId", "dbo.coreEntityType");
+            DropColumn("dbo.coreAudit", "EntityTypeId");
         }
     }
 }

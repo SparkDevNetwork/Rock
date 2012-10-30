@@ -29,6 +29,11 @@ namespace Rock.Web.Cache
             return string.Format( "Rock:EntityType:{0}", id );
         }
 
+        /// <summary>
+        /// Reads the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         public static EntityTypeCache Read( string name )
         {
             if ( entityTypes.ContainsKey( name ) )

@@ -65,50 +65,50 @@ namespace Rock.Tests.Fakes
 
         public virtual DateTime? DateCreated( T entity )
         {
-            return DateCreated( entity.TypeName, entity.Id );
+            return DateCreated( entity.TypeId, entity.Id );
         }
 
-        public virtual DateTime? DateCreated( string entityTypeName, int entityId )
+        public virtual DateTime? DateCreated( int entityTypeId, int entityId )
         {
             return null; 
         }
 
         public virtual DateTime? DateLastModified( T entity )
         {
-            return DateLastModified( entity.TypeName, entity.Id );
+            return DateLastModified( entity.TypeId, entity.Id );
         }
 
-        public virtual DateTime? DateLastModified( string entityTypeName, int entityId )
+        public virtual DateTime? DateLastModified( int entityTypeId, int entityId )
         {
             return null;
         }
 
         public virtual int? CreatedByPersonId( T entity )
         {
-            return CreatedByPersonId( entity.TypeName, entity.Id );
+            return CreatedByPersonId( entity.TypeId, entity.Id );
         }
 
-        public virtual int? CreatedByPersonId( string entityTypeName, int entityId )
+        public virtual int? CreatedByPersonId( int entityTypeId, int entityId )
         {
             return null;
         }
 
         public virtual int? LastModifiedByPersonId( T entity )
         {
-            return LastModifiedByPersonId( entity.TypeName, entity.Id );
+            return LastModifiedByPersonId( entity.TypeId, entity.Id );
         }
 
-        public virtual int? LastModifiedByPersonId( string entityTypeName, int entityId )
+        public virtual int? LastModifiedByPersonId( int entityTypeId, int entityId )
         {
             return null;
         }
 
         public virtual IQueryable<Audit> Audits( T entity )
         {
-            return Audits( entity.TypeName, entity.Id );
+            return Audits( entity.TypeId, entity.Id );
         }
 
-        public virtual IQueryable<Audit> Audits( string entityTypeName, int entityId )
+        public virtual IQueryable<Audit> Audits( int entityTypeId, int entityId )
         {
             return null;
         }
