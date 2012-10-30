@@ -47,6 +47,21 @@ namespace Rock.Data
         private Guid _guid = Guid.NewGuid();
 
         /// <summary>
+        /// Gets the type id.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        public virtual int TypeId
+        {
+            get
+            {
+                // Read should never return null since it will create entity type if it doesn't exist
+                return Rock.Web.Cache.EntityTypeCache.Read( this.TypeName ).Id;
+            }
+        }
+
+        /// <summary>
         /// Gets the unique type name of the entity.  Typically this is the qualified name of the class
         /// </summary>
         /// <value>

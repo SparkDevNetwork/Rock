@@ -552,6 +552,10 @@
     <Compile Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.Designer.cs">
       <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210300018289_AuthAuditEntityType.cs" />
+    <Compile Include="Migrations\201210300018289_AuthAuditEntityType.Designer.cs">
+      <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -614,6 +618,7 @@
     <Compile Include="Web\Cache\CampusCache.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\Cache\EntityTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedValue.cs" />
     <Compile Include="Web\Cache\GlobalAttributesCache.cs" />
@@ -967,6 +972,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.resx">
       <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210300018289_AuthAuditEntityType.resx">
+      <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
