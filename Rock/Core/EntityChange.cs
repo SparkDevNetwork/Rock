@@ -41,18 +41,17 @@ namespace Rock.Core
         [MaxLength( 10 )]
         [DataMember]
         public string ChangeType { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity Type.
+        /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
-        /// Entity Type.
+        /// Entity Type Id.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
         [DataMember]
-        public string EntityType { get; set; }
-        
+        public int EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Id.
         /// </summary>
@@ -111,6 +110,14 @@ namespace Rock.Core
         public int? CreatedByPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Core.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the created by person.
         /// </summary>
         /// <value>
@@ -151,6 +158,7 @@ namespace Rock.Core
         public EntityChangeConfiguration()
         {
             this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Rock.Rest.Core
         {
             routes.MapHttpRoute(
                 name: "TaggedItemsByEntity",
-                routeTemplate: "api/taggeditems/{entity}/{ownerid}/{entityid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityid}/{name}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "taggeditems",
@@ -37,19 +37,19 @@ namespace Rock.Rest.Core
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name )
         {
-            return Post( entity, ownerId, entityId, name, string.Empty, string.Empty );
+            return Post( entityTypeId, ownerId, entityId, name, string.Empty, string.Empty );
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier )
         {
-            return Post( entity, ownerId, entityId, name, entityQualifier, string.Empty );
+            return Post( entityTypeId, ownerId, entityId, name, entityQualifier, string.Empty );
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -59,11 +59,11 @@ namespace Rock.Rest.Core
                     var tagService = new TagService();
                     var taggedItemService = new TaggedItemService();
 
-                    var tag = tagService.GetByEntityAndName( entity, entityQualifier, entityQualifierValue, ownerId, name );
+                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
                     if ( tag == null )
                     {
                         tag = new Tag();
-                        tag.Entity = entity;
+                        tag.EntityTypeId = entityTypeId;
                         tag.EntityQualifierColumn = entityQualifier;
                         tag.EntityQualifierValue = entityQualifierValue;
                         tag.OwnerId = ownerId;
@@ -72,7 +72,7 @@ namespace Rock.Rest.Core
                         tagService.Save( tag, user.PersonId );
                     }
 
-                    var taggedItem = taggedItemService.GetByTag( tag.Id, entityId );
+                    var taggedItem = taggedItemService.Get( tag.Id, entityId );
                     if ( taggedItem == null )
                     {
                         taggedItem = new TaggedItem();
@@ -90,19 +90,19 @@ namespace Rock.Rest.Core
         }
 
         [Authenticate]
-        public void Delete( string entity, int ownerId, int entityId, string name )
+        public void Delete( int entityTypeId, int ownerId, int entityId, string name )
         {
-            Delete( entity, ownerId, entityId, name, string.Empty, string.Empty );
+            Delete( entityTypeId, ownerId, entityId, name, string.Empty, string.Empty );
         }
 
         [Authenticate]
-        public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier )
+        public void Delete( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier )
         {
-            Delete( entity, ownerId, entityId, name, entityQualifier, string.Empty );
+            Delete( entityTypeId, ownerId, entityId, name, entityQualifier, string.Empty );
         }
 
         [Authenticate]
-        public void Delete( string entity, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
+        public void Delete( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -115,11 +115,11 @@ namespace Rock.Rest.Core
                     if ( name.Contains( '^' ) )
                         name = name.Split( '^' )[0];
 
-                    var tag = tagService.GetByEntityAndName( entity, entityQualifier, entityQualifierValue, ownerId, name );
+                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
                     if ( tag == null )
                         throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                    var taggedItem = taggedItemService.GetByTag( tag.Id, entityId );
+                    var taggedItem = taggedItemService.Get( tag.Id, entityId );
                     if ( taggedItem == null )
                         throw new HttpResponseException( HttpStatusCode.NotFound );
 

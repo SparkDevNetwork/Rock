@@ -63,7 +63,7 @@ namespace Rock.Core
             return items.Select( m => new TagDto()
                 {
                     IsSystem = m.IsSystem,
-                    Entity = m.Entity,
+                    EntityTypeId = m.EntityTypeId,
                     EntityQualifierColumn = m.EntityQualifierColumn,
                     EntityQualifierValue = m.EntityQualifierValue,
                     Name = m.Name,

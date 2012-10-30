@@ -64,7 +64,7 @@ namespace Rock.Core
                 {
                     ChangeSet = m.ChangeSet,
                     ChangeType = m.ChangeType,
-                    EntityType = m.EntityType,
+                    EntityTypeId = m.EntityTypeId,
                     EntityId = m.EntityId,
                     Property = m.Property,
                     OriginalValue = m.OriginalValue,

@@ -25,7 +25,7 @@ namespace Rock.Rest.Core
         {
             routes.MapHttpRoute(
                 name: "TagNamesAvail",
-                routeTemplate: "api/tags/availablenames/{entity}/{ownerid}/{entityid}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{entityid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "tags",
@@ -36,7 +36,7 @@ namespace Rock.Rest.Core
 
             routes.MapHttpRoute(
                 name: "TagsByEntity",
-                routeTemplate: "api/tags/{entity}/{ownerid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/tags/{entityTypeId}/{ownerid}/{name}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "tags",
@@ -46,22 +46,22 @@ namespace Rock.Rest.Core
         }
 
         [HttpGet]
-        public TagDto Get( string entity, int ownerId, string name )
+        public TagDto Get( int entityTypeId, int ownerId, string name )
         {
-            return Get( entity, ownerId, name, string.Empty, string.Empty );
+            return Get( entityTypeId, ownerId, name, string.Empty, string.Empty );
         }
 
         [HttpGet]
-        public TagDto Get( string entity, int ownerId, string name, string entityQualifier )
+        public TagDto Get( int entityTypeId, int ownerId, string name, string entityQualifier )
         {
-            return Get( entity, ownerId, name, entityQualifier, string.Empty );
+            return Get( entityTypeId, ownerId, name, entityQualifier, string.Empty );
         }
 
         [HttpGet]
-        public TagDto Get( string entity, int ownerId, string name, string entityQualifier, string entityQualifierValue )
+        public TagDto Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
-            var dto = service.QueryableDto( service.GetByEntity( entity, entityQualifier, entityQualifierValue, ownerId ) )
+            var dto = service.QueryableDto( service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ) )
                 .Where( t => t.Name == name)
                 .FirstOrDefault();
 
@@ -72,22 +72,22 @@ namespace Rock.Rest.Core
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( string entity, int ownerId, int entityId )
+        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId )
         {
-            return AvailableNames( entity, ownerId, entityId, string.Empty, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityId, string.Empty, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( string entity, int ownerId, int entityId, string entityQualifier )
+        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier )
         {
-            return AvailableNames( entity, ownerId, entityId, entityQualifier, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityId, entityQualifier, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( string entity, int ownerId, int entityId, string entityQualifier, string entityQualifierValue )
+        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
-            var items = service.GetByEntity( entity, entityQualifier, entityQualifierValue, ownerId )
+            var items = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
                 .Where( t => t.TaggedItems.Select( i => i.EntityId ).Contains( entityId ) == false )
                 .OrderBy( t => t.Name );
             return service.QueryableDto( items );
