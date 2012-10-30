@@ -150,9 +150,9 @@ public partial class GroupTypes : RockBlock
     {
         GroupTypeService groupTypeService = new GroupTypeService();
         int groupTypeId = (int)gGroupType.DataKeys[e.RowIndex]["id"];
-        if ( groupTypeService.IsChildGroupType( groupTypeId ) )
+        string errorMessage;
+        if ( !groupTypeService.CanDelete(groupTypeId, out errorMessage) )
         {
-            string errorMessage = "This group type is assigned as a child group type.";
             nbGridWarning.Text = errorMessage;
             nbGridWarning.Visible = true;
             return;

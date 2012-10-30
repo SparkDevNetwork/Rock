@@ -17,13 +17,37 @@ namespace Rock.Crm
     public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
     {
         /// <summary>
-        /// Gets Group Roles by Order
+        /// Gets the by sort order.
         /// </summary>
-        /// <param name="order">Order.</param>
-        /// <returns>An enumerable list of GroupRole objects.</returns>
-        public IEnumerable<GroupRole> GetByOrder( int? order )
+        /// <param name="sortOrder">The sort order.</param>
+        /// <returns></returns>
+        public IEnumerable<GroupRole> GetBySortOrder( int? sortOrder )
         {
-            return Repository.Find( t => ( t.SortOrder == order || ( order == null && t.SortOrder == null ) ) );
+            return Repository.Find( t => ( t.SortOrder == sortOrder || ( sortOrder == null && t.SortOrder == null ) ) );
+        }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified group role id.
+        /// </summary>
+        /// <param name="groupRoleId">The group role id.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified group role id; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( int groupRoleId, out string errorMessage )
+        {
+            GroupTypeService groupTypeService = new GroupTypeService();
+            var groupType = groupTypeService.Queryable().FirstOrDefault(a => (a.DefaultGroupRoleId ?? 0) == groupRoleId);
+            if ( groupType != null )
+            {
+                errorMessage = "This group role is assigned as a default group role for a group type.";
+                return false;
+            }
+            else
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
         }
     }
 }
