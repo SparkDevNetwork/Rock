@@ -552,17 +552,9 @@
     <Compile Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.Designer.cs">
       <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201210292200475_AuthEntityType.cs" />
-    <Compile Include="Migrations\201210292200475_AuthEntityType.Designer.cs">
-      <DependentUpon>201210292200475_AuthEntityType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201210292350598_AuditEntityType.cs" />
-    <Compile Include="Migrations\201210292350598_AuditEntityType.Designer.cs">
-      <DependentUpon>201210292350598_AuditEntityType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201210300006100_RenameAuditTitle.cs" />
-    <Compile Include="Migrations\201210300006100_RenameAuditTitle.Designer.cs">
-      <DependentUpon>201210300006100_RenameAuditTitle.cs</DependentUpon>
+    <Compile Include="Migrations\201210300018289_AuthAuditEntityType.cs" />
+    <Compile Include="Migrations\201210300018289_AuthAuditEntityType.Designer.cs">
+      <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -981,14 +973,8 @@
     <EmbeddedResource Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.resx">
       <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210292200475_AuthEntityType.resx">
-      <DependentUpon>201210292200475_AuthEntityType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210292350598_AuditEntityType.resx">
-      <DependentUpon>201210292350598_AuditEntityType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210300006100_RenameAuditTitle.resx">
-      <DependentUpon>201210300006100_RenameAuditTitle.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210300018289_AuthAuditEntityType.resx">
+      <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
