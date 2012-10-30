@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class RenameAuditTitle : IMigrationMetadata
+    public sealed partial class AuthAuditEntityType : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(RenameAuditTitle));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AuthAuditEntityType));
         
         string IMigrationMetadata.Id
         {
-            get { return "201210300006100_RenameAuditTitle"; }
+            get { return "201210300018289_AuthAuditEntityType"; }
         }
         
         string IMigrationMetadata.Source
