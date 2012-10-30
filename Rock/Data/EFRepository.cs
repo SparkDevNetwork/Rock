@@ -509,7 +509,7 @@ namespace Rock.Data
                             Rock.Core.EntityChange change = new Core.EntityChange();
                             change.ChangeSet = changeSet;
                             change.ChangeType = Context.Entry( entity ).State.ToString();
-                            change.EntityType = baseType.Name;
+                            change.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( baseType.Name ).Id;
                             change.Property = propInfo.Name;
                             change.OriginalValue = originalValueStr;
                             change.CurrentValue = currentValueStr;

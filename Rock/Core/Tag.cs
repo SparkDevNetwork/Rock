@@ -29,17 +29,17 @@ namespace Rock.Core
         [Required]
         [DataMember]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity.
+        /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
-        /// Entity.
+        /// Entity Type Id.
         /// </value>
-        [MaxLength( 50 )]
+        [Required]
         [DataMember]
-        public string Entity { get; set; }
-        
+        public int EntityTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
         /// </summary>
@@ -99,6 +99,14 @@ namespace Rock.Core
         public virtual Crm.Person Owner { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Core.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
@@ -147,6 +155,7 @@ namespace Rock.Core
         public TagConfiguration()
         {
             this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Rock.Core
 
 #pragma warning disable 1591
         public bool IsSystem { get; set; }
-        public string Entity { get; set; }
+        public int EntityTypeId { get; set; }
         public string EntityQualifierColumn { get; set; }
         public string EntityQualifierValue { get; set; }
         public string Name { get; set; }
@@ -59,7 +59,7 @@ namespace Rock.Core
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityQualifierColumn", this.EntityQualifierColumn );
             dictionary.Add( "EntityQualifierValue", this.EntityQualifierValue );
             dictionary.Add( "Name", this.Name );
@@ -78,7 +78,7 @@ namespace Rock.Core
         {
             dynamic expando = new ExpandoObject();
             expando.IsSystem = this.IsSystem;
-            expando.Entity = this.Entity;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.EntityQualifierColumn = this.EntityQualifierColumn;
             expando.EntityQualifierValue = this.EntityQualifierValue;
             expando.Name = this.Name;
@@ -99,7 +99,7 @@ namespace Rock.Core
             {
                 var tag = (Tag)model;
                 this.IsSystem = tag.IsSystem;
-                this.Entity = tag.Entity;
+                this.EntityTypeId = tag.EntityTypeId;
                 this.EntityQualifierColumn = tag.EntityQualifierColumn;
                 this.EntityQualifierValue = tag.EntityQualifierValue;
                 this.Name = tag.Name;
@@ -120,7 +120,7 @@ namespace Rock.Core
             {
                 var tag = (Tag)model;
                 tag.IsSystem = this.IsSystem;
-                tag.Entity = this.Entity;
+                tag.EntityTypeId = this.EntityTypeId;
                 tag.EntityQualifierColumn = this.EntityQualifierColumn;
                 tag.EntityQualifierValue = this.EntityQualifierValue;
                 tag.Name = this.Name;

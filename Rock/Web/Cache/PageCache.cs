@@ -328,7 +328,7 @@ namespace Rock.Web.Cache
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
-                        MethodInfo getMethod = service.GetMethod( "Get" );
+                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof(int) } );
                         keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
