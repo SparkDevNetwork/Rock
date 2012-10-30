@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        protected string _entity = string.Empty;
+        protected int _entityTypeId;
         protected string _entityQualifierColumn = string.Empty;
         protected string _entityQualifierValue = string.Empty;
         protected int? _ownerId;
@@ -59,9 +59,18 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _entity = AttributeValue( "Entity" );
-                if ( string.IsNullOrWhiteSpace( _entity ) )
-                    _entity = PageParameter( "Entity" );
+                string entityType = AttributeValue( "Entity" );
+                if ( string.IsNullOrWhiteSpace( entityType ) )
+                {
+                    entityType = PageParameter( "Entity" );
+                }
+
+                if ( string.IsNullOrWhiteSpace( AttributeValue( "Entity" ) ) )
+                {
+                    throw new Exception( "Entity is required" );
+                }
+
+                _entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
 
                 _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
                 if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
@@ -81,7 +90,7 @@ namespace RockWeb.Blocks.Administration
                     else
                         _ownerId = CurrentPersonId;
                 }
-                    
+
                 if ( _canConfigure )
                 {
                     rGrid.DataKeyNames = new string[] { "id" };
@@ -142,7 +151,7 @@ namespace RockWeb.Blocks.Administration
         {
             var tagService = new Rock.Core.TagService();
             var queryable = tagService.Queryable().
-                Where( t => t.Entity == _entity &&
+                Where( t => t.EntityTypeId == _entityTypeId &&
                     ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
                     ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
 
@@ -181,7 +190,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     tag = new Rock.Core.Tag();
                     tag.IsSystem = false;
-                    tag.Entity = _entity;
+                    tag.EntityTypeId = _entityTypeId;
                     tag.EntityQualifierColumn = _entityQualifierColumn;
                     tag.EntityQualifierValue = _entityQualifierValue;
                     tag.OwnerId = _ownerId;
@@ -217,7 +226,7 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             var queryable = new Rock.Core.TagService().Queryable().
-                Where( t => t.Entity == _entity &&
+                Where( t => t.EntityTypeId == _entityTypeId &&
                     ( t.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
                     ( t.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
                     
