@@ -19,15 +19,15 @@ namespace Rock.Core
         /// <summary>
         /// Gets the by entity.
         /// </summary>
-        /// <param name="entity">The entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="ownerId">The owner id.</param>
         /// <returns></returns>
-        public IQueryable<Tag> GetByEntity( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
+        public IQueryable<Tag> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
         {
             return Repository.AsQueryable()
-                .Where( t => t.Entity == entity &&
+                .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityQualifierColumn == entityQualifierColumn || ( t.EntityQualifierColumn == null && entityQualifierColumn == null ) ) &&
                     ( t.EntityQualifierValue == entityQualifierValue || ( t.EntityQualifierValue == null && entityQualifierValue == null ) ) &&
                     ( t.OwnerId == null || (ownerId.HasValue && t.OwnerId == ownerId) ) 
@@ -38,16 +38,16 @@ namespace Rock.Core
         /// <summary>
         /// Gets the name of the by entity and.
         /// </summary>
-        /// <param name="entity">The entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="ownerId">The owner id.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public Tag GetByEntityAndName( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId, string name )
+        public Tag Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, string name )
         {
             return Repository.AsQueryable()
-                .Where( t => t.Entity == entity &&
+                .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityQualifierColumn == entityQualifierColumn || ( t.EntityQualifierColumn == null && entityQualifierColumn == null ) ) &&
                     ( t.EntityQualifierValue == entityQualifierValue || ( t.EntityQualifierValue == null && entityQualifierValue == null ) ) &&
                     ( t.OwnerId == null || ( ownerId.HasValue && t.OwnerId == ownerId )) &&
