@@ -50,7 +50,7 @@ namespace Rock.Core
         [Required]
         [MaxLength( 200 )]
         [DataMember]
-        public string EntityName { get; set; }
+        public string Title { get; set; }
         
         /// <summary>
         /// Type of change: 0:Add, 1:Modify, 2:Delete
@@ -123,7 +123,7 @@ namespace Rock.Core
         /// </returns>
         public override string ToString()
         {
-            return this.EntityName;
+            return this.Title;
         }
 
     }

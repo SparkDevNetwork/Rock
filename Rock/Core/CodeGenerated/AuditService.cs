@@ -64,7 +64,7 @@ namespace Rock.Core
                 {
                     EntityTypeId = m.EntityTypeId,
                     EntityId = m.EntityId,
-                    EntityName = m.EntityName,
+                    Title = m.Title,
                     AuditType = m.AuditType,
                     Properties = m.Properties,
                     DateTime = m.DateTime,

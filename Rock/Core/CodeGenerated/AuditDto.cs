@@ -26,7 +26,7 @@ namespace Rock.Core
 #pragma warning disable 1591
         public int EntityTypeId { get; set; }
         public int EntityId { get; set; }
-        public string EntityName { get; set; }
+        public string Title { get; set; }
         public AuditType AuditType { get; set; }
         public string Properties { get; set; }
         public DateTime? DateTime { get; set; }
@@ -60,7 +60,7 @@ namespace Rock.Core
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityId", this.EntityId );
-            dictionary.Add( "EntityName", this.EntityName );
+            dictionary.Add( "Title", this.Title );
             dictionary.Add( "AuditType", this.AuditType );
             dictionary.Add( "Properties", this.Properties );
             dictionary.Add( "DateTime", this.DateTime );
@@ -79,7 +79,7 @@ namespace Rock.Core
             dynamic expando = new ExpandoObject();
             expando.EntityTypeId = this.EntityTypeId;
             expando.EntityId = this.EntityId;
-            expando.EntityName = this.EntityName;
+            expando.Title = this.Title;
             expando.AuditType = this.AuditType;
             expando.Properties = this.Properties;
             expando.DateTime = this.DateTime;
@@ -100,7 +100,7 @@ namespace Rock.Core
                 var audit = (Audit)model;
                 this.EntityTypeId = audit.EntityTypeId;
                 this.EntityId = audit.EntityId;
-                this.EntityName = audit.EntityName;
+                this.Title = audit.Title;
                 this.AuditType = audit.AuditType;
                 this.Properties = audit.Properties;
                 this.DateTime = audit.DateTime;
@@ -121,7 +121,7 @@ namespace Rock.Core
                 var audit = (Audit)model;
                 audit.EntityTypeId = this.EntityTypeId;
                 audit.EntityId = this.EntityId;
-                audit.EntityName = this.EntityName;
+                audit.Title = this.Title;
                 audit.AuditType = this.AuditType;
                 audit.Properties = this.Properties;
                 audit.DateTime = this.DateTime;
