@@ -556,6 +556,14 @@
     <Compile Include="Migrations\201210300018289_AuthAuditEntityType.Designer.cs">
       <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210301304400_EntityChangeEntityType.cs" />
+    <Compile Include="Migrations\201210301304400_EntityChangeEntityType.Designer.cs">
+      <DependentUpon>201210301304400_EntityChangeEntityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210301603196_TagEntityType.cs" />
+    <Compile Include="Migrations\201210301603196_TagEntityType.Designer.cs">
+      <DependentUpon>201210301603196_TagEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -975,6 +983,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210300018289_AuthAuditEntityType.resx">
       <DependentUpon>201210300018289_AuthAuditEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210301304400_EntityChangeEntityType.resx">
+      <DependentUpon>201210301304400_EntityChangeEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210301603196_TagEntityType.resx">
+      <DependentUpon>201210301603196_TagEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

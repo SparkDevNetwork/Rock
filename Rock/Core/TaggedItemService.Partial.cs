@@ -17,18 +17,18 @@ namespace Rock.Core
     public partial class TaggedItemService
     {
         /// <summary>
-        /// Gets the by entity.
+        /// Gets the tag by entity.
         /// </summary>
-        /// <param name="entity">The entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="ownerId">The owner id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public IQueryable<TaggedItem> GetByEntity( string entity, string entityQualifierColumn, string entityQualifierValue, int? ownerId, int entityId )
+        public IQueryable<TaggedItem> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, int entityId )
         {
             return Repository.AsQueryable()
-                .Where( t => t.Tag.Entity == entity &&
+                .Where( t => t.Tag.EntityTypeId == entityTypeId &&
                     ( t.Tag.EntityQualifierColumn == entityQualifierColumn || (t.Tag.EntityQualifierColumn == null && entityQualifierColumn == null)) &&
                     ( t.Tag.EntityQualifierValue == entityQualifierValue || (t.Tag.EntityQualifierValue == null && entityQualifierValue == null)) &&
                     ( t.Tag.OwnerId == null || ( ownerId.HasValue && t.Tag.OwnerId == ownerId ) ) &&
@@ -38,12 +38,12 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Gets the by tag.
+        /// Gets tag by tagId and entityId.
         /// </summary>
         /// <param name="tagId">The tag id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
-        public TaggedItem GetByTag( int tagId, int entityId )
+        public TaggedItem Get( int tagId, int entityId )
         {
             return Repository.AsQueryable()
                 .Where( t => t.TagId == tagId && t.EntityId == entityId)
