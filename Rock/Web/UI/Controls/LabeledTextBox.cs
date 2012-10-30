@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        protected RequiredFieldValidator validator;
+        protected RequiredFieldValidator requiredFieldValidator;
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
@@ -141,15 +141,15 @@ namespace Rock.Web.UI.Controls
             label = new Label();
             label.AssociatedControlID = this.ID;
 
-            validator = new RequiredFieldValidator();
-            validator.ID = this.ID + "_rfv";
-            validator.ControlToValidate = this.ID;
-            validator.Display = ValidatorDisplay.Dynamic;
-            validator.CssClass = "help-inline";
-            validator.Enabled = false;
+            requiredFieldValidator = new RequiredFieldValidator();
+            requiredFieldValidator.ID = this.ID + "_rfv";
+            requiredFieldValidator.ControlToValidate = this.ID;
+            requiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            requiredFieldValidator.CssClass = "help-inline";
+            requiredFieldValidator.Enabled = false;
 
             Controls.Add( label );
-            Controls.Add( validator );
+            Controls.Add( requiredFieldValidator );
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool isValid = !Required || validator.IsValid;
+            bool isValid = !Required || requiredFieldValidator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
                 ( isValid ? "" : " error" ) +
@@ -175,9 +175,9 @@ namespace Rock.Web.UI.Controls
 
             if ( Required )
             {
-                validator.Enabled = true;
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
+                requiredFieldValidator.Enabled = true;
+                requiredFieldValidator.ErrorMessage = LabelText + " is Required.";
+                requiredFieldValidator.RenderControl( writer );
             }
 
             if ( Tip.Trim() != string.Empty )

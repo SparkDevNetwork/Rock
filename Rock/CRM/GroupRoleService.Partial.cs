@@ -23,7 +23,7 @@ namespace Rock.Crm
         /// <returns>An enumerable list of GroupRole objects.</returns>
         public IEnumerable<GroupRole> GetByOrder( int? order )
         {
-            return Repository.Find( t => ( t.Order == order || ( order == null && t.Order == null ) ) );
+            return Repository.Find( t => ( t.SortOrder == order || ( order == null && t.SortOrder == null ) ) );
         }
     }
 }

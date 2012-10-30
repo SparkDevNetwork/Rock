@@ -28,7 +28,7 @@ namespace Rock.Crm
         public int? GroupTypeId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public int? Order { get; set; }
+        public int? SortOrder { get; set; }
         public int? MaxCount { get; set; }
         public int? MinCount { get; set; }
         public int Id { get; set; }
@@ -62,7 +62,7 @@ namespace Rock.Crm
             dictionary.Add( "GroupTypeId", this.GroupTypeId );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "Order", this.Order );
+            dictionary.Add( "SortOrder", this.SortOrder );
             dictionary.Add( "MaxCount", this.MaxCount );
             dictionary.Add( "MinCount", this.MinCount );
             dictionary.Add( "Id", this.Id );
@@ -81,7 +81,7 @@ namespace Rock.Crm
             expando.GroupTypeId = this.GroupTypeId;
             expando.Name = this.Name;
             expando.Description = this.Description;
-            expando.Order = this.Order;
+            expando.SortOrder = this.SortOrder;
             expando.MaxCount = this.MaxCount;
             expando.MinCount = this.MinCount;
             expando.Id = this.Id;
@@ -102,7 +102,7 @@ namespace Rock.Crm
                 this.GroupTypeId = groupRole.GroupTypeId;
                 this.Name = groupRole.Name;
                 this.Description = groupRole.Description;
-                this.Order = groupRole.Order;
+                this.SortOrder = groupRole.SortOrder;
                 this.MaxCount = groupRole.MaxCount;
                 this.MinCount = groupRole.MinCount;
                 this.Id = groupRole.Id;
@@ -123,7 +123,7 @@ namespace Rock.Crm
                 groupRole.GroupTypeId = this.GroupTypeId;
                 groupRole.Name = this.Name;
                 groupRole.Description = this.Description;
-                groupRole.Order = this.Order;
+                groupRole.SortOrder = this.SortOrder;
                 groupRole.MaxCount = this.MaxCount;
                 groupRole.MinCount = this.MinCount;
                 groupRole.Id = this.Id;

@@ -22,7 +22,7 @@ namespace Rock.Migrations
             AddPage( "91CCB1C9-5F9F-44F5-8BE2-9EC3A3CFD46F", "Group Types", "Manage Group Types", "40899BCD-82B0-47F2-8F2A-B6AA3877B445" );
             AddBlock( "40899BCD-82B0-47F2-8F2A-B6AA3877B445", "C443D72B-1A9E-41E7-8E70-4E9D39AE6AC3", "Group Types", "Content", "F3B2FC30-5ACE-4D1D-87F3-9712723D903F" ); 
             
-            AddBlockType( "Groups", "Allows for the configuration fo Groups", "~/Blocks/Group/Groups.ascx", "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" );
+            AddBlockType( "Groups", "Allows for the configuration of Groups", "~/Blocks/Group/Groups.ascx", "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" );
             AddPage( "91CCB1C9-5F9F-44F5-8BE2-9EC3A3CFD46F", "Groups", "Manage Groups and Group Members", "4D7624FB-A9AE-40BD-82CB-84C22F64343E" );
             AddBlock( "4D7624FB-A9AE-40BD-82CB-84C22F64343E", "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "Groups", "Content", "52B774FE-9ABF-4852-9496-6FAD4646F949" );
              

@@ -548,17 +548,9 @@
     <Compile Include="Migrations\201210261717354_RenameGroupBlockTypePath.Designer.cs">
       <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.cs" />
-    <Compile Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.Designer.cs">
-      <DependentUpon>201210290411050_GroupTypeAssociationColumnFix.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201210291656112_LocationTypes.cs" />
-    <Compile Include="Migrations\201210291656112_LocationTypes.Designer.cs">
-      <DependentUpon>201210291656112_LocationTypes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201210292010499_EntityTypeName.cs" />
-    <Compile Include="Migrations\201210292010499_EntityTypeName.Designer.cs">
-      <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
+    <Compile Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs" />
+    <Compile Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.Designer.cs">
+      <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201210292200475_AuthEntityType.cs" />
     <Compile Include="Migrations\201210292200475_AuthEntityType.Designer.cs">
@@ -986,14 +978,8 @@
     <EmbeddedResource Include="Migrations\201210261717354_RenameGroupBlockTypePath.resx">
       <DependentUpon>201210261717354_RenameGroupBlockTypePath.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210290411050_GroupTypeAssociationColumnFix.resx">
-      <DependentUpon>201210290411050_GroupTypeAssociationColumnFix.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210291656112_LocationTypes.resx">
-      <DependentUpon>201210291656112_LocationTypes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201210292010499_EntityTypeName.resx">
-      <DependentUpon>201210292010499_EntityTypeName.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.resx">
+      <DependentUpon>201210292322011_GroupTypeGroupRolesLocationTypeEntityTypeName.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210292200475_AuthEntityType.resx">
       <DependentUpon>201210292200475_AuthEntityType.cs</DependentUpon>
