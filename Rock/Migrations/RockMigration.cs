@@ -510,7 +510,7 @@ namespace Rock.Migrations
 
         #region DefinedType Methods
 
-        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
+        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
         {
             Sql( string.Format( @"
                 
@@ -525,14 +525,15 @@ namespace Rock.Migrations
                     [Name],[Description],
                     [Guid])
                 VALUES(
-                    1,@DefinedTypeId,@Order,
+                    {4},@DefinedTypeId,@Order,
                     '{1}','{2}',
                     '{3}')
 ",
                     definedTypeGuid,
                     name,
                     description.Replace( "'", "''" ),
-                    guid
+                    guid,
+                    isSystem.Bit().ToString()
                     ) );
         }
 
