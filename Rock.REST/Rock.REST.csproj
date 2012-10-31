@@ -85,6 +85,11 @@
     <Compile Include="Cms\BlockTypesController.cs" />
     <Compile Include="Cms\FilesController.cs" />
     <Compile Include="Cms\HtmlContentsController.cs" />
+    <Compile Include="Cms\MarketingCampaignAdsController.cs" />
+    <Compile Include="Cms\MarketingCampaignAdTypesController.cs" />
+    <Compile Include="Cms\MarketingCampaignAudiencesController.cs" />
+    <Compile Include="Cms\MarketingCampaignCampusController.cs" />
+    <Compile Include="Cms\MarketingCampaignsController.cs" />
     <Compile Include="Cms\PageContextsController.cs" />
     <Compile Include="Cms\PageRoutesController.cs" />
     <Compile Include="Cms\PagesController.cs" />
