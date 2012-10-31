@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "Quartz\Quartz.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockJobSchedulerService", "RockJobSchedulerService\RockJobSchedulerService.csproj", "{40A78663-3080-4A9D-9E11-38A188555C87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest_tempfixcase", "Rock.Rest\Rock.Rest_tempfixcase.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests", "Rock.Tests\Rock.Tests.csproj", "{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}"
 EndProject
