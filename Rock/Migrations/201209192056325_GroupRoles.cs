@@ -63,7 +63,7 @@ namespace Rock.Migrations
 " );
             
             AddForeignKey( "dbo.groupsGroup", "CampusId", "dbo.crmCampus", "Id" );
-            AddForeignKey("dbo.groupsGroupRole", "GroupTypeId", "dbo.groupsGroupType", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.groupsGroupRole", "GroupTypeId", "dbo.groupsGroupType", "Id", cascadeDelete: true);
             CreateIndex("dbo.groupsGroup", "CampusId");
             CreateIndex("dbo.groupsGroupRole", "GroupTypeId");
 
@@ -99,8 +99,8 @@ namespace Rock.Migrations
             DropTable("dbo.groupGroupLocation");
             CreateIndex("groupsGroupTypeRole", "GroupTypeId");
             CreateIndex("groupsGroupTypeRole", "GroupRoleId");
-            AddForeignKey("dbo.groupsGroupTypeRole", "GroupTypeId", "dbo.groupsGroupType", "Id", cascadeDelete: true);
-            AddForeignKey("dbo.groupsGroupTypeRole", "GroupRoleId", "dbo.groupsGroupRole", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.groupsGroupTypeRole", "GroupTypeId", "dbo.groupsGroupType", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.groupsGroupTypeRole", "GroupRoleId", "dbo.groupsGroupRole", "Id", cascadeDelete: true);
         }
     }
 }

@@ -140,7 +140,7 @@ DELETE [cmsPage] WHERE [Guid] = '1719F597-5BA9-458D-9362-9C3E558E5C82'
 DROP INDEX [dbo].[crmPerson].[ix_crmPerson_LastName] 
 
 " );
-            DropIndex( "crmPhoneNumber", "Number" );
+            DropIndex( "crmPhoneNumber", new[] { "Number" } );
         }
     }
 }

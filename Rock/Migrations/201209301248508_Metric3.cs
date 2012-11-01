@@ -10,7 +10,7 @@ namespace Rock.Migrations
             DropForeignKey("dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue");
             DropIndex("dbo.coreMetric", new[] { "CollectionFrequencyId" });
             AlterColumn("dbo.coreMetric", "CollectionFrequencyId", c => c.Int());
-            AddForeignKey("dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue", "Id");
+            AddForeignKey( "dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue", "Id");
             CreateIndex("dbo.coreMetric", "CollectionFrequencyId");
         }
         
@@ -20,7 +20,7 @@ namespace Rock.Migrations
             DropForeignKey("dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue");
             AlterColumn("dbo.coreMetric", "CollectionFrequencyId", c => c.Int(nullable: false));
             CreateIndex("dbo.coreMetric", "CollectionFrequencyId");
-            AddForeignKey("dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.coreMetric", "CollectionFrequencyId", "dbo.coreDefinedValue", "Id", cascadeDelete: true);
         }
     }
 }

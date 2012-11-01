@@ -28,8 +28,8 @@ namespace Rock.Migrations
                 .Index(t => t.PersonId);
             
             AddColumn("dbo.cmsFile", "LastModifiedTime", c => c.DateTime());
-            AddForeignKey("dbo.coreEntityChange", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
-            AddForeignKey("dbo.coreExceptionLog", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.coreEntityChange", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.coreExceptionLog", "CreatedByPersonId", "dbo.crmPerson", "Id", cascadeDelete: true);
             CreateIndex("dbo.coreEntityChange", "CreatedByPersonId");
             CreateIndex("dbo.coreExceptionLog", "CreatedByPersonId");
             DropColumn("dbo.cmsAuth", "CreatedDateTime");
