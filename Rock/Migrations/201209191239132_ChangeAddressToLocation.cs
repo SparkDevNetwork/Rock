@@ -98,11 +98,11 @@ namespace Rock.Migrations
                 SET IDENTITY_INSERT crmLocation OFF
 " );
 
-            DropForeignKey("crmAddress", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("crmAddress", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmAddress", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmAddress", "ModifiedByPersonId", "crmPerson");
             DropIndex("crmAddress", new[] { "CreatedByPersonId" });
             DropIndex("crmAddress", new[] { "ModifiedByPersonId" });
-            DropTable("crmAddress");
+            DropTable( "dbo.crmAddress" );
         }
         
         public override void Down()
@@ -139,8 +139,10 @@ namespace Rock.Migrations
             
             CreateIndex("crmAddress", "ModifiedByPersonId");
             CreateIndex("crmAddress", "CreatedByPersonId");
-            AddForeignKey("crmAddress", "ModifiedByPersonId", "crmPerson", "Id");
-            AddForeignKey("crmAddress", "CreatedByPersonId", "crmPerson", "Id");
+            CreateIndex( "crmAddress", new string[] { "Street1", "Street2", "City", "State", "Zip" }, true );
+            CreateIndex( "crmAddress", "Raw", true );
+            AddForeignKey( "dbo.crmAddress", "ModifiedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.crmAddress", "CreatedByPersonId", "crmPerson", "Id");
 
             Sql( @"
                 SET IDENTITY_INSERT crmAddress ON

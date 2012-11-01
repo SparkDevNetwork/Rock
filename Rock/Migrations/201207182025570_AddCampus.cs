@@ -6,9 +6,9 @@ namespace Rock.Migrations
     {
         public override void Up()
         {
-            RenameTable(name: "fiancialPersonAccountLookup", newName: "financialPersonAccountLookup");
+            RenameTable( name: "dbo.fiancialPersonAccountLookup", newName: "financialPersonAccountLookup" );
             CreateTable(
-                "crmCampus",
+                "dbo.crmCampus",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -23,7 +23,7 @@ namespace Rock.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "crmPersonMerged",
+                "dbo.crmPersonMerged",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: false),
@@ -38,13 +38,13 @@ namespace Rock.Migrations
             CreateIndex( "crmPersonMerged", "CurrentId" );
 
             DropIndex( "crmPersonTrail", new[] { "CurrentId" } );
-            DropTable("crmPersonTrail");
+            DropTable( "dbo.crmPersonTrail" );
         }
         
         public override void Down()
         {
             CreateTable(
-                "crmPersonTrail",
+                "dbo.crmPersonTrail",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -59,10 +59,10 @@ namespace Rock.Migrations
             CreateIndex( "crmPersonTrail", "CurrentId" );
 
             DropIndex( "crmPersonMerged", new[] { "CurrentId" } );
-            DropTable( "crmPersonMerged" );
+            DropTable( "dbo.crmPersonMerged" );
 
-            DropTable( "crmCampus" );
-            RenameTable(name: "financialPersonAccountLookup", newName: "fiancialPersonAccountLookup");
+            DropTable( "dbo.crmCampus" );
+            RenameTable( name: "dbo.financialPersonAccountLookup", newName: "fiancialPersonAccountLookup" );
         }
     }
 }

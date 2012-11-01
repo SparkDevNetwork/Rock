@@ -10,7 +10,7 @@ namespace Rock.Migrations
             AlterColumn("dbo.groupGroupLocation", "LocationTypeId", c => c.Int());
             AlterColumn("dbo.crmLocation", "Latitude", c => c.Double());
             AlterColumn("dbo.crmLocation", "Longitude", c => c.Double());
-            AddForeignKey("dbo.groupGroupLocation", "LocationTypeId", "dbo.coreDefinedValue", "Id");
+            AddForeignKey( "dbo.groupGroupLocation", "LocationTypeId", "dbo.coreDefinedValue", "Id");
             CreateIndex("dbo.groupGroupLocation", "LocationTypeId");
         }
         
