@@ -419,7 +419,7 @@ namespace Rock.CodeGeneration
             string pluralizedName = pls.Pluralize( type.Name );
 
             string baseName = new DirectoryInfo( rootFolder ).Name;
-            if ( baseName.EndsWith( ".Rest" ) )
+            if ( baseName.EndsWith( ".Rest", StringComparison.OrdinalIgnoreCase ) )
             {
                 baseName = baseName.Substring( 0, baseName.Length - 5 );
             }

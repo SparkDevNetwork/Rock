@@ -250,7 +250,6 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageRoute != null )
             {
-                ltIsSystem.Text = pageRoute.IsSystem.ToYesNo();
                 hfPageRouteId.Value = pageRoute.Id.ToString();
                 ddlPageName.SelectedValue = pageRoute.PageId.ToString();
                 tbRoute.Text = pageRoute.Route;
@@ -271,12 +270,12 @@ namespace RockWeb.Blocks.Administration
             {
                 lActionTitle.Text = ActionTitle.Add( PageRoute.FriendlyTypeName );
                 hfPageRouteId.Value = 0.ToString();
-                ltIsSystem.Text = false.ToYesNo();
                 ddlPageName.SelectedValue = string.Empty;
                 tbRoute.Text = string.Empty;
                 readOnly = false;
             }
 
+            iconIsSystem.Visible = readOnly;
             ddlPageName.Enabled = !readOnly;
             tbRoute.ReadOnly = readOnly;
             btnSave.Visible = !readOnly;

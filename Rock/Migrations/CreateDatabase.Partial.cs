@@ -1003,6 +1003,7 @@ SET IDENTITY_INSERT cmsHtmlContent OFF
         /// </summary>
         public void DeleteData()
         {
-        }
+            Sql( @"DROP PROCEDURE dbo.cmsFile_sp_getByID");
+       }
     }
 }
