@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -103,6 +104,22 @@ namespace Rock.Cms
         /// The event group.
         /// </value>
         public virtual Group EventGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign audiences.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign audiences.
+        /// </value>
+        public virtual ICollection<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign campuses.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign campuses.
+        /// </value>
+        public virtual ICollection<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

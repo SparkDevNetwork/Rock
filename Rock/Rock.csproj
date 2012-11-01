@@ -583,8 +583,13 @@
     <Compile Include="Migrations\201210302321525_MarketingCampaignTables.Designer.cs">
       <DependentUpon>201210302321525_MarketingCampaignTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.cs" />
+    <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.Designer.cs">
+      <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
+    <Compile Include="Migrations\RockMigration_2.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -1011,6 +1016,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210302321525_MarketingCampaignTables.resx">
       <DependentUpon>201210302321525_MarketingCampaignTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210312055490_MarketingPagesBlocks.resx">
+      <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

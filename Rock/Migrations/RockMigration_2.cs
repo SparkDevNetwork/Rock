@@ -13,7 +13,7 @@ namespace Rock.Migrations
     /// <summary>
     /// Custom Migration methods
     /// </summary>
-    public abstract class RockMigration : DbMigration
+    public abstract class RockMigration_2 : DbMigration
     {
         #region Block Type Methods
 
@@ -73,8 +73,8 @@ namespace Rock.Migrations
             return blockType;
         }
 
-        #endregion        
-        
+        #endregion
+
         #region Page Methods
 
         public void AddPage( string parentPageGuid, string name, string description, string guid )
@@ -183,24 +183,22 @@ namespace Rock.Migrations
         {
             var sb = new StringBuilder();
 
-            sb.Append(@"
+            sb.Append( @"
                 DECLARE @PageId int
-");
-            if (string.IsNullOrWhiteSpace(pageGuid))
+" );
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
                 SET @PageId = NULL
-");
+" );
             else
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
-",                     pageGuid);
+", pageGuid );
 
             sb.AppendFormat( @"
                 
                 DECLARE @BlockTypeId int
-                DECLARE @EntityTypeId int
                 SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
-                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
 
                 DECLARE @BlockId int
                 INSERT INTO [cmsBlock] (
@@ -222,36 +220,34 @@ namespace Rock.Migrations
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
-            Sql(sb.ToString());
+            Sql( sb.ToString() );
         }
 
         public void AddBlock( string pageGuid, string blockTypeGuid, BlockDto block )
         {
             var sb = new StringBuilder();
 
-            sb.Append(@"
+            sb.Append( @"
                 DECLARE @PageId int
-");
-            if (string.IsNullOrWhiteSpace(pageGuid))
+" );
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
                 SET @PageId = NULL
-");
+" );
             else
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [cmsPage] WHERE [Guid] = '{0}')
-",                     pageGuid);
+", pageGuid );
 
             sb.AppendFormat( @"
 
                 DECLARE @BlockTypeId int
-                DECLARE @EntityTypeId int
                 SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
-                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
 
                 DECLARE @BlockId int
                 INSERT INTO [cmsBlock] (
@@ -276,10 +272,10 @@ namespace Rock.Migrations
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
             Sql( sb.ToString() );
         }
@@ -288,10 +284,8 @@ namespace Rock.Migrations
         {
             Sql( string.Format( @"
                 DECLARE @BlockId int
-                DECLARE @EntityTypeId int
                 SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
-                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
-                DELETE [cmsAuth] WHERE [EntityTypeId] = @EntityTypeId AND [EntityId] = @BlockId
+                DELETE [cmsAuth] WHERE [EntityType] = 'Cms.Block' AND [EntityId] = @BlockId
                 DELETE [cmsBlock] WHERE [Guid] = '{0}'
 ",
                     guid
@@ -314,7 +308,7 @@ namespace Rock.Migrations
 
         #region Attribute Methods
 
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid)
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid )
         {
             Sql( string.Format( @"
                 
@@ -350,7 +344,7 @@ namespace Rock.Migrations
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue,
-                    guid)
+                    guid )
             );
         }
 
@@ -388,7 +382,7 @@ namespace Rock.Migrations
                     attribute.Key,
                     attribute.Name,
                     attribute.Category,
-                    attribute.Description.Replace("'","''"),
+                    attribute.Description.Replace( "'", "''" ),
                     attribute.Order,
                     attribute.IsGridColumn.Bit(),
                     attribute.DefaultValue,
@@ -452,7 +446,7 @@ namespace Rock.Migrations
 ",
                     blockGuid,
                     attributeGuid,
-                    value)
+                    value )
             );
         }
 
@@ -469,7 +463,7 @@ namespace Rock.Migrations
                 DELETE [coreAttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
 ",
                     blockGuid,
-                    attributeGuid)
+                    attributeGuid )
             );
         }
 
