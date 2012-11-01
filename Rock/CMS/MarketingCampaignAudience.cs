@@ -55,6 +55,20 @@ namespace Rock.Cms
         }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get
+            {
+                return AudienceTypeValue.Name;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the marketing campaign.
         /// </summary>
         /// <value>
@@ -109,7 +123,7 @@ namespace Rock.Cms
         /// </summary>
         public MarketingCampaignAudienceConfiguration()
         {
-            this.HasRequired( p => p.MarketingCampaign ).WithMany().HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.MarketingCampaign ).WithMany( p => p.MarketingCampaignAudiences).HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.AudienceTypeValue ).WithMany().HasForeignKey( p => p.AudienceTypeValueId ).WillCascadeOnDelete( true );
         }
     }

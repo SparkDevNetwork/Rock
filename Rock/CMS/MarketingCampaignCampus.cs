@@ -98,7 +98,7 @@ namespace Rock.Cms
         /// </summary>
         public MarketingCampaignCampusConfiguration()
         {
-            this.HasRequired( p => p.MarketingCampaign ).WithMany().HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.MarketingCampaign ).WithMany(p => p.MarketingCampaignCampuses ).HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
         }
     }
