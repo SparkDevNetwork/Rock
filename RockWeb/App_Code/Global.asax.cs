@@ -138,16 +138,19 @@ namespace RockWeb
         {
             try
             {
-                // call a page on the site to keep IIS alive 
-                string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
-                WebRequest request = WebRequest.Create( url );
-                WebResponse response = request.GetResponse();
+                if ( r == CacheItemRemovedReason.Expired )
+                {
+                    // call a page on the site to keep IIS alive 
+                    string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
+                    WebRequest request = WebRequest.Create( url );
+                    WebResponse response = request.GetResponse();
 
-                // add cache item again
-                AddCallBack();
+                    // add cache item again
+                    AddCallBack();
 
-                // process the transaction queue
-                DrainTransactionQueue();
+                    // process the transaction queue
+                    DrainTransactionQueue();
+                }
             }
             catch ( Exception ex )
             {

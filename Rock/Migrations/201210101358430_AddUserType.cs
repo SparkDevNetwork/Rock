@@ -8,7 +8,7 @@ namespace Rock.Migrations
     /// Creates page for managing Authentication services
     /// Deletes all previous authorizations and rebuilds them
     /// </summary>
-    public partial class AddUserType : RockMigration
+    public partial class AddUserType : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

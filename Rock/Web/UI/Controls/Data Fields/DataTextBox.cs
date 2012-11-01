@@ -116,12 +116,6 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( dataValidator.ValueMustBeInteger )
-            {
-                // HTML5 validation of number
-                Attributes["type"] = "number";
-            };
-
             RenderBase( writer );
 
             if ( Required )
