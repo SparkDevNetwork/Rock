@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
@@ -27,7 +26,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(250)]
         public string Description { get; set; }
 
@@ -37,7 +35,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction date.
         /// </value>
-        [DataMember]
         public DateTime? TransactionDate { get; set; }
 
         /// <summary>
@@ -46,7 +43,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -56,7 +52,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -65,7 +60,6 @@ namespace Rock.Financial
         /// <value>
         /// The batch id.
         /// </value>
-        [DataMember]
         public int? BatchId { get; set; }
 
         /// <summary>
@@ -74,7 +68,6 @@ namespace Rock.Financial
         /// <value>
         /// The currency type id.
         /// </value>
-        [DataMember]
         public int? CurrencyTypeId { get; set; }
 
         /// <summary>
@@ -83,7 +76,6 @@ namespace Rock.Financial
         /// <value>
         /// The credit card type id.
         /// </value>
-        [DataMember]
         public int? CreditCardTypeId { get; set; }
 
         /// <summary>
@@ -92,7 +84,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -101,7 +92,6 @@ namespace Rock.Financial
         /// <value>
         /// The refund transaction id.
         /// </value>
-        [DataMember]
         public int? RefundTransactionId { get; set; }
 
         /// <summary>
@@ -110,7 +100,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction image id.
         /// </value>
-        [DataMember]
         public int? TransactionImageId { get; set; }
 
         /// <summary>
@@ -119,7 +108,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction code.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string TransactionCode { get; set; }
 
@@ -129,7 +117,6 @@ namespace Rock.Financial
         /// <value>
         /// The gateway id.
         /// </value>
-        [DataMember]
         public int? GatewayId { get; set; }
 
         /// <summary>
@@ -138,7 +125,6 @@ namespace Rock.Financial
         /// <value>
         /// The source type id.
         /// </value>
-        [DataMember]
         public int? SourceTypeId { get; set; }
 
         /// <summary>
@@ -147,7 +133,6 @@ namespace Rock.Financial
         /// <value>
         /// The summary.
         /// </value>
-        [DataMember]
         [MaxLength(500)]
         public string Summary { get; set; }
 

@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -27,7 +25,6 @@ namespace Rock.Cms
         /// Temporary.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsTemporary { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Cms
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Cms
         /// <value>
         /// Data.
         /// </value>
-        [DataMember]
         public byte[] Data { get; set; }
         
         /// <summary>
@@ -56,7 +51,6 @@ namespace Rock.Cms
         /// Url.
         /// </value>
         [MaxLength( 255 )]
-        [DataMember]
         public string Url { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 255 )]
-        [DataMember]
         public string FileName { get; set; }
         
         /// <summary>
@@ -78,7 +71,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 255 )]
-        [DataMember]
         public string MimeType { get; set; }
 
         /// <summary>
@@ -87,7 +79,6 @@ namespace Rock.Cms
         /// <value>
         /// The last modified time.
         /// </value>
-        [DataMember]
         public DateTime? LastModifiedTime { get; set; }
 
         /// <summary>
@@ -96,7 +87,6 @@ namespace Rock.Cms
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>

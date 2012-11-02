@@ -7,7 +7,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
@@ -26,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The person id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -35,7 +33,6 @@ namespace Rock.Financial
         /// <value>
         /// The fund id.
         /// </value>
-        [DataMember]
         public int? FundId { get; set; }
 
         /// <summary>
@@ -44,7 +41,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -53,7 +49,6 @@ namespace Rock.Financial
         /// <value>
         /// The start date.
         /// </value>
-        [DataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -62,7 +57,6 @@ namespace Rock.Financial
         /// <value>
         /// The end date.
         /// </value>
-        [DataMember]
         public DateTime EndDate { get; set; }
 
         /// <summary>
@@ -71,7 +65,6 @@ namespace Rock.Financial
         /// <value>
         /// The frequency type id.
         /// </value>
-        [DataMember]
         public int? FrequencyTypeId { get; set; }
 
         /// <summary>
@@ -80,7 +73,6 @@ namespace Rock.Financial
         /// <value>
         /// The frequency amount.
         /// </value>
-        [DataMember]
         public decimal? FrequencyAmount { get; set; }
 
         /// <summary>

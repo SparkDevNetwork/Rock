@@ -7,7 +7,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Data;
 
@@ -25,7 +24,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction id.
         /// </value>
-        [DataMember]
         public int? TransactionId { get; set; }
 
         /// <summary>
@@ -34,7 +32,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -44,7 +41,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public string EntityId { get; set; }
 
         /// <summary>
@@ -53,7 +49,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -62,7 +57,6 @@ namespace Rock.Financial
         /// <value>
         /// The summary.
         /// </value>
-        [DataMember]
         [MaxLength(500)]
         public string Summary { get; set; }
 

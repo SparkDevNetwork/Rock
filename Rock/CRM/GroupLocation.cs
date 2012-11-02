@@ -6,8 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -26,7 +24,6 @@ namespace Rock.Crm
         /// </value>
         [Key]
         [Column(Order = 0)]
-        [DataMember]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Crm
         /// </value>
         [Key]
         [Column(Order = 1)]
-        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Crm
         /// <value>
         /// The location type.
         /// </value>
-        [DataMember]
         public int? LocationTypeId { get; set; }
 
         /// <summary>

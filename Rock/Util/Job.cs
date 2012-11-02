@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Util
@@ -26,7 +24,6 @@ namespace Rock.Util
         /// <value>
         /// Determines whether the job is a system job..
         /// </value>
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -35,7 +32,6 @@ namespace Rock.Util
         /// <value>
         /// Determines is the job is currently active..
         /// </value>
-        [DataMember]
         public bool? IsActive { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Util
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -56,7 +51,6 @@ namespace Rock.Util
         /// Notes about the job..
         /// </value>
         [MaxLength( 500 )]
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -66,7 +60,6 @@ namespace Rock.Util
         /// Assembly (.dll) that contains the job class..
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Assemby { get; set; }
         
         /// <summary>
@@ -77,7 +70,6 @@ namespace Rock.Util
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Class { get; set; }
         
         /// <summary>
@@ -88,7 +80,6 @@ namespace Rock.Util
         /// </value>
         [Required]
         [MaxLength( 120 )]
-        [DataMember]
         public string CronExpression { get; set; }
         
         /// <summary>
@@ -97,7 +88,6 @@ namespace Rock.Util
         /// <value>
         /// Date and time the job last completed successfully..
         /// </value>
-        [DataMember]
         public DateTime? LastSuccessfulRun { get; set; }
         
         /// <summary>
@@ -106,7 +96,6 @@ namespace Rock.Util
         /// <value>
         /// Last date and time the job attempted to run..
         /// </value>
-        [DataMember]
         public DateTime? LastRunDate { get; set; }
         
         /// <summary>
@@ -115,7 +104,6 @@ namespace Rock.Util
         /// <value>
         /// Number of seconds that the last job took to finish..
         /// </value>
-        [DataMember]
         public int? LastRunDuration { get; set; }
         
         /// <summary>
@@ -125,7 +113,6 @@ namespace Rock.Util
         /// The completion status from the last time the job was run (valid values 'Success', 'Exception', 'Error Loading Job')..
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string LastStatus { get; set; }
         
         /// <summary>
@@ -134,7 +121,6 @@ namespace Rock.Util
         /// <value>
         /// Message from the last run.  Usually used to store the exception message..
         /// </value>
-        [DataMember]
         public string LastStatusMessage { get; set; }
         
         /// <summary>
@@ -144,7 +130,6 @@ namespace Rock.Util
         /// Name of the scheduler that the job ran under.  This is used to determine if a job ran in IIS or the Windows service..
         /// </value>
         [MaxLength( 40 )]
-        [DataMember]
         public string LastRunSchedulerName { get; set; }
         
         /// <summary>
@@ -154,7 +139,6 @@ namespace Rock.Util
         /// Email addresses (separated with commas) to be used for notification..
         /// </value>
         [MaxLength( 1000 )]
-        [DataMember]
         public string NotificationEmails { get; set; }
         
         /// <summary>
@@ -164,7 +148,6 @@ namespace Rock.Util
         /// Enum[JobNotificationStatus].
         /// </value>
         [Required]
-        [DataMember]
         public JobNotificationStatus NotificationStatus { get; set; }
 
         /// <summary>

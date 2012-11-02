@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Text;
 
 using Rock;
@@ -29,7 +28,6 @@ namespace Rock.Cms
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -38,7 +36,6 @@ namespace Rock.Cms
         /// <value>
         /// Entity Id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
         
         /// <summary>
@@ -48,7 +45,6 @@ namespace Rock.Cms
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
@@ -59,7 +55,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 50 )]
-        [DataMember]
         public string Action { get; set; }
         
         /// <summary>
@@ -70,7 +65,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 1 )]
-        [DataMember]
         public string AllowOrDeny { get; set; }
         
         /// <summary>
@@ -80,7 +74,6 @@ namespace Rock.Cms
         /// Enum[SpecialRole].
         /// </value>
         [Required]
-        [DataMember]
         public SpecialRole SpecialRole { get; set; }
 
         /// <summary>
@@ -89,7 +82,6 @@ namespace Rock.Cms
         /// <value>
         /// Person Id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
         
         /// <summary>
@@ -98,7 +90,6 @@ namespace Rock.Cms
         /// <value>
         /// Group Id.
         /// </value>
-        [DataMember]
         public int? GroupId { get; set; }
         
         /// <summary>

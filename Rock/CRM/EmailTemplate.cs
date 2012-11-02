@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -27,7 +25,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Crm
         /// <value>
         /// Person Id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Crm
         /// Category.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -57,7 +52,6 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Title { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Crm
         /// From.
         /// </value>
         [MaxLength( 200 )]
-        [DataMember]
         public string From { get; set; }
         
         /// <summary>
@@ -76,7 +69,6 @@ namespace Rock.Crm
         /// <value>
         /// To.
         /// </value>
-        [DataMember]
         public string To { get; set; }
         
         /// <summary>
@@ -85,7 +77,6 @@ namespace Rock.Crm
         /// <value>
         /// Cc.
         /// </value>
-        [DataMember]
         public string Cc { get; set; }
         
         /// <summary>
@@ -94,7 +85,6 @@ namespace Rock.Crm
         /// <value>
         /// Bcc.
         /// </value>
-        [DataMember]
         public string Bcc { get; set; }
         
         /// <summary>
@@ -105,7 +95,6 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
         public string Subject { get; set; }
         
         /// <summary>
@@ -115,7 +104,6 @@ namespace Rock.Crm
         /// Body.
         /// </value>
         [Required]
-        [DataMember]
         public string Body { get; set; }
         
         /// <summary>

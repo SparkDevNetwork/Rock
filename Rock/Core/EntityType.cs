@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -28,7 +26,6 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 100 )]
         [AlternateKey]
-        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -38,7 +35,6 @@ namespace Rock.Core
         /// The name of the friendly.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string FriendlyName { get; set; }
 
         /// <summary>

@@ -15,8 +15,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -34,7 +32,6 @@ namespace Rock.Core
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -43,7 +40,6 @@ namespace Rock.Core
         /// <value>
         /// Type.
         /// </value>
-        [DataMember]
         public bool Type { get; set; }
         
         /// <summary>
@@ -53,7 +49,6 @@ namespace Rock.Core
         /// Category.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -64,7 +59,6 @@ namespace Rock.Core
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -74,7 +68,6 @@ namespace Rock.Core
         /// Subtitle.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Subtitle { get; set; }
     
         /// <summary>
@@ -83,7 +76,6 @@ namespace Rock.Core
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -92,7 +84,6 @@ namespace Rock.Core
         /// <value>
         /// MinValue.
         /// </value>
-        [DataMember]
         public int? MinValue { get; set; }
 
         /// <summary>
@@ -101,7 +92,6 @@ namespace Rock.Core
         /// <value>
         /// MaxValue.
         /// </value>
-        [DataMember]
         public int? MaxValue { get; set; }
 
         /// <summary>
@@ -110,7 +100,6 @@ namespace Rock.Core
         /// <value>
         /// CollectionFrequency.
         /// </value>
-        [DataMember]
         public int? CollectionFrequencyId { get; set; }
 
         /// <summary>
@@ -119,7 +108,6 @@ namespace Rock.Core
         /// <value>
         /// LastCollected Date Time.
         /// </value>
-        [DataMember]
         public DateTime? LastCollected { get; set; }
 
         /// <summary>
@@ -129,7 +117,6 @@ namespace Rock.Core
         /// Source.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Source { get; set; }
 
         /// <summary>
@@ -138,7 +125,6 @@ namespace Rock.Core
         /// <value>
         /// SourceSQL.
         /// </value>
-        [DataMember]
         public string SourceSQL { get; set; }
 
         /// <summary>
@@ -148,7 +134,6 @@ namespace Rock.Core
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
