@@ -7,7 +7,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading;
 using System.Web;
@@ -30,7 +29,6 @@ namespace Rock.Cms
         /// The type of the service.
         /// </value>
         [Required]
-        [DataMember]
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
@@ -41,7 +39,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
         public string ServiceName { get; set; }
 
         /// <summary>
@@ -52,7 +49,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 255 )]
-        [DataMember]
         public string UserName { get; set; }
         
         /// <summary>
@@ -62,7 +58,6 @@ namespace Rock.Cms
         /// Password.
         /// </value>
         [MaxLength( 128 )]
-        [DataMember]
         public string Password { get; set; }
         
         /// <summary>
@@ -71,7 +66,6 @@ namespace Rock.Cms
         /// <value>
         /// Is confirmed.
         /// </value>
-        [DataMember]
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
@@ -81,7 +75,6 @@ namespace Rock.Cms
         /// Last Activity Date.
         /// </value>
         [NotAudited]
-        [DataMember]
         public DateTime? LastActivityDate { get; set; }
         
         /// <summary>
@@ -90,7 +83,6 @@ namespace Rock.Cms
         /// <value>
         /// Last Login Date.
         /// </value>
-        [DataMember]
         public DateTime? LastLoginDate { get; set; }
         
         /// <summary>
@@ -99,7 +91,6 @@ namespace Rock.Cms
         /// <value>
         /// Last Password Changed Date.
         /// </value>
-        [DataMember]
         public DateTime? LastPasswordChangedDate { get; set; }
         
         /// <summary>
@@ -108,7 +99,6 @@ namespace Rock.Cms
         /// <value>
         /// Creation Date.
         /// </value>
-        [DataMember]
         public DateTime? CreationDate { get; set; }
         
         /// <summary>
@@ -117,7 +107,6 @@ namespace Rock.Cms
         /// <value>
         /// Is On Line.
         /// </value>
-        [DataMember]
         public bool? IsOnLine { get; set; }
         
         /// <summary>
@@ -126,7 +115,6 @@ namespace Rock.Cms
         /// <value>
         /// Is Locked Out.
         /// </value>
-        [DataMember]
         public bool? IsLockedOut { get; set; }
         
         /// <summary>
@@ -135,7 +123,6 @@ namespace Rock.Cms
         /// <value>
         /// Last Locked Out Date.
         /// </value>
-        [DataMember]
         public DateTime? LastLockedOutDate { get; set; }
         
         /// <summary>
@@ -144,7 +131,6 @@ namespace Rock.Cms
         /// <value>
         /// Failed Password Attempt Count.
         /// </value>
-        [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
         
         /// <summary>
@@ -153,7 +139,6 @@ namespace Rock.Cms
         /// <value>
         /// Failed Password Attempt Window Start.
         /// </value>
-        [DataMember]
         public DateTime? FailedPasswordAttemptWindowStart { get; set; }
         
         /// <summary>
@@ -163,7 +148,6 @@ namespace Rock.Cms
         /// Api Key.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string ApiKey { get; set; }
         
         /// <summary>
@@ -172,14 +156,13 @@ namespace Rock.Cms
         /// <value>
         /// Person Id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
         /// </summary>
         [NotMapped]
-        public bool IsAuthenticated
+        public virtual bool IsAuthenticated
         {
             get
             {
@@ -227,7 +210,7 @@ namespace Rock.Cms
         /// <summary>
         /// Gets the encrypted confirmation code.
         /// </summary>
-        public string ConfirmationCode
+        public virtual string ConfirmationCode
         {
             get
             {
@@ -240,7 +223,7 @@ namespace Rock.Cms
         /// <summary>
         /// Gets a urlencoded and encrypted confirmation code.
         /// </summary>
-        public string ConfirmationCodeEncoded
+        public virtual string ConfirmationCodeEncoded
         {
 
             get

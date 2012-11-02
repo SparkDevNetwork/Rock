@@ -9,7 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
@@ -29,7 +28,6 @@ namespace Rock.Cms
         [Required]
         [MaxLength( 100 )]
         [TrackChanges]
-        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -39,7 +37,6 @@ namespace Rock.Cms
         /// Title.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -49,7 +46,6 @@ namespace Rock.Cms
         /// IsSystem.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -58,7 +54,6 @@ namespace Rock.Cms
         /// <value>
         /// Parent Page Id.
         /// </value>
-        [DataMember]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -67,7 +62,6 @@ namespace Rock.Cms
         /// <value>
         /// Site Id.
         /// </value>
-        [DataMember]
         public int? SiteId { get; set; }
 
         /// <summary>
@@ -77,7 +71,6 @@ namespace Rock.Cms
         /// Layout.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Layout { get; set; }
 
         /// <summary>
@@ -87,7 +80,6 @@ namespace Rock.Cms
         /// Requires Encryption.
         /// </value>
         [Required]
-        [DataMember]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -97,7 +89,6 @@ namespace Rock.Cms
         /// Enable View State.
         /// </value>
         [Required]
-        [DataMember]
         public bool EnableViewState
         {
             get { return _enableViewState; }
@@ -112,7 +103,6 @@ namespace Rock.Cms
         /// Menu Display Description.
         /// </value>
         [Required]
-        [DataMember]
         public bool MenuDisplayDescription { get; set; }
 
         /// <summary>
@@ -122,7 +112,6 @@ namespace Rock.Cms
         /// Menu Display Icon.
         /// </value>
         [Required]
-        [DataMember]
         public bool MenuDisplayIcon { get; set; }
 
         /// <summary>
@@ -132,7 +121,6 @@ namespace Rock.Cms
         /// Menu Display Child Pages.
         /// </value>
         [Required]
-        [DataMember]
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
@@ -147,7 +135,6 @@ namespace Rock.Cms
         /// Enum[DisplayInNavWhen].
         /// </value>
         [Required]
-        [DataMember]
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
@@ -157,7 +144,6 @@ namespace Rock.Cms
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -167,7 +153,6 @@ namespace Rock.Cms
         /// Output Cache Duration.
         /// </value>
         [Required]
-        [DataMember]
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
@@ -176,7 +161,6 @@ namespace Rock.Cms
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -186,14 +170,13 @@ namespace Rock.Cms
         /// Include Admin Footer.
         /// </value>
         [Required]
-        [DataMember]
         public bool IncludeAdminFooter
         {
             get { return _includeAdminFooter; }
             set { _includeAdminFooter = value; }
         }
         private bool _includeAdminFooter = true;
-        
+
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
@@ -203,7 +186,7 @@ namespace Rock.Cms
         {
             return Read<Page>( id );
         }
-        
+
         /// <summary>
         /// Gets or sets the Icon Url.
         /// </summary>
@@ -211,9 +194,8 @@ namespace Rock.Cms
         /// Icon Url.
         /// </value>
         [MaxLength( 150 )]
-        [DataMember]
         public string IconUrl { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
@@ -293,7 +275,7 @@ namespace Rock.Cms
         /// Pages the sort hash.
         /// </summary>
         /// <returns></returns>
-        public string PageSortHash
+        public virtual string PageSortHash
         {
             get
             {
@@ -313,7 +295,7 @@ namespace Rock.Cms
         /// Pages the depth.
         /// </summary>
         /// <returns></returns>
-        public int PageDepth
+        public virtual int PageDepth
         {
             get
             {
@@ -335,7 +317,7 @@ namespace Rock.Cms
         /// <value>
         /// The drop down list text.
         /// </value>
-        public string DropDownListText
+        public virtual string DropDownListText
         {
             get
             {

@@ -6,7 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Data;
 
@@ -24,7 +23,6 @@ namespace Rock.Financial
         /// <value>
         /// The person id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -33,7 +31,6 @@ namespace Rock.Financial
         /// <value>
         /// The account.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Account { get; set; }
 

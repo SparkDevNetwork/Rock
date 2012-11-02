@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -27,7 +25,6 @@ namespace Rock.Cms
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -38,7 +35,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -47,7 +43,6 @@ namespace Rock.Cms
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -57,7 +52,6 @@ namespace Rock.Cms
         /// Theme.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Theme { get; set; }
         
         /// <summary>
@@ -66,7 +60,6 @@ namespace Rock.Cms
         /// <value>
         /// Default Page Id.
         /// </value>
-        [DataMember]
         public int? DefaultPageId { get; set; }
         
         /// <summary>
@@ -76,7 +69,6 @@ namespace Rock.Cms
         /// Favicon Url.
         /// </value>
         [MaxLength( 150 )]
-        [DataMember]
         public string FaviconUrl { get; set; }
         
         /// <summary>
@@ -86,7 +78,6 @@ namespace Rock.Cms
         /// Apple Touch Icon Url.
         /// </value>
         [MaxLength( 150 )]
-        [DataMember]
         public string AppleTouchIconUrl { get; set; }
         
         /// <summary>
@@ -96,7 +87,6 @@ namespace Rock.Cms
         /// Facebook App Id.
         /// </value>
         [MaxLength( 25 )]
-        [DataMember]
         public string FacebookAppId { get; set; }
         
         /// <summary>
@@ -106,7 +96,6 @@ namespace Rock.Cms
         /// Facebook App Secret.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string FacebookAppSecret { get; set; }
         
         /// <summary>
@@ -116,7 +105,6 @@ namespace Rock.Cms
         /// Login Page Reference.
         /// </value>
         [MaxLength( 10 )]
-        [DataMember]
         public string LoginPageReference { get; set; }
         
         /// <summary>
@@ -126,7 +114,6 @@ namespace Rock.Cms
         /// Registration Page Reference.
         /// </value>
         [MaxLength( 10 )]
-        [DataMember]
         public string RegistrationPageReference { get; set; }
         
         /// <summary>
@@ -136,7 +123,6 @@ namespace Rock.Cms
         /// Path to the error page for this site..
         /// </value>
         [MaxLength( 200 )]
-        [DataMember]
         public string ErrorPage { get; set; }
         
         /// <summary>

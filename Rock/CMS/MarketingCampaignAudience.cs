@@ -6,7 +6,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
@@ -23,7 +22,6 @@ namespace Rock.Cms
         /// <value>
         /// The marketing campaign id.
         /// </value>
-        [DataMember]
         public int MarketingCampaignId { get; set; }
 
         /// <summary>
@@ -32,7 +30,6 @@ namespace Rock.Cms
         /// <value>
         /// The audience type id.
         /// </value>
-        [DataMember]
         public int AudienceTypeValueId { get; set; }
 
         /// <summary>
@@ -41,7 +38,6 @@ namespace Rock.Cms
         /// <value>
         /// <c>true</c> if this instance is primary; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsPrimary { get; set; }
 
         /// <summary>
@@ -60,7 +56,7 @@ namespace Rock.Cms
         /// <value>
         /// The name.
         /// </value>
-        public string Name
+        public virtual string Name
         {
             get
             {

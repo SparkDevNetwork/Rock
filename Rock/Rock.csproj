@@ -897,6 +897,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201208181111566_UpdateEnums.resx">
       <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201208241555418_AddSearchPlugins.resx">
       <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>

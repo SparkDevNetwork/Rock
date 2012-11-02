@@ -6,8 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -25,7 +23,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -34,7 +31,6 @@ namespace Rock.Crm
         /// <value>
         /// Group Type Id.
         /// </value>
-        [DataMember]
         public int? GroupTypeId { get; set; }
 
         /// <summary>
@@ -45,7 +41,6 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,7 +49,6 @@ namespace Rock.Crm
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -63,7 +57,6 @@ namespace Rock.Crm
         /// <value>
         /// The sort order.
         /// </value>
-        [DataMember]
         public int? SortOrder { get; set; }
 
         /// <summary>
@@ -72,7 +65,6 @@ namespace Rock.Crm
         /// <value>
         /// The max count.
         /// </value>
-        [DataMember]
         public int? MaxCount { get; set; }
 
         /// <summary>
@@ -81,7 +73,6 @@ namespace Rock.Crm
         /// <value>
         /// The min count.
         /// </value>
-        [DataMember]
         public int? MinCount { get; set; }
 
         /// <summary>

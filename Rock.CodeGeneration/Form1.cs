@@ -166,16 +166,7 @@ namespace Rock.CodeGeneration
                 }
             }
 
-            Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
-
-            var properties = new Dictionary<string, string>();
-            foreach ( var property in type.GetProperties() )
-            {
-                if ( System.Attribute.IsDefined( property, dataMemberType ) )
-                {
-                    properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
-                }
-            }
+            var properties = GetEntityProperties( type );
 
             var sb = new StringBuilder();
 
@@ -271,13 +262,9 @@ namespace Rock.CodeGeneration
         /// <param name="type"></param>
         private void WriteDtoFile( string rootFolder, Type type )
         {
-            Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
             string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
 
-            var properties = new Dictionary<string, string>();
-            foreach ( var property in type.GetProperties() )
-                if ( System.Attribute.IsDefined( property, dataMemberType ) )
-                    properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+            var properties = GetEntityProperties( type );
 
             var sb = new StringBuilder();
 
@@ -415,7 +402,6 @@ namespace Rock.CodeGeneration
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
-            Type dataMemberType = typeof( System.Runtime.Serialization.DataMemberAttribute );
             string pluralizedName = pls.Pluralize( type.Name );
 
             string baseName = new DirectoryInfo( rootFolder ).Name;
@@ -434,14 +420,7 @@ namespace Rock.CodeGeneration
                 restNamespace = ".Rest." + restNamespace;
             }
 
-            var properties = new Dictionary<string, string>();
-            foreach ( var property in type.GetProperties() )
-            {
-                if ( System.Attribute.IsDefined( property, dataMemberType ) )
-                {
-                    properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
-                }
-            }
+            var properties = GetEntityProperties( type );
 
             var sb = new StringBuilder();
 
@@ -612,6 +591,21 @@ namespace Rock.CodeGeneration
             if ( propertyName == "ModifiedByPersonId" ) return true;
 
             return false;
+        }
+
+        private Dictionary<string, string> GetEntityProperties (Type type)
+        {
+            var properties = new Dictionary<string, string>();
+
+            foreach ( var property in type.GetProperties() )
+            {
+                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                {
+                    properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                }
+            }
+
+            return properties;
         }
     }
 }
