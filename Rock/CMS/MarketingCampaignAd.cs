@@ -156,7 +156,7 @@ namespace Rock.Cms
         /// </summary>
         public MarketingCampaignAdConfiguration()
         {
-            this.HasRequired( p => p.MarketingCampaign ).WithMany().HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.MarketingCampaign ).WithMany( a => a.MarketingCampaignAds ).HasForeignKey( p => p.MarketingCampaignId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.MarketingCampaignAdType ).WithMany().HasForeignKey( p => p.MarketingCampaignAdTypeId ).WillCascadeOnDelete( false );
         }
     }

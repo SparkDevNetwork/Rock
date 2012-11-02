@@ -37,5 +37,16 @@ namespace Rock.SystemGuid
         /// Business Record Type
         /// </summary>
         public static Guid PERSON_RECORD_TYPE_BUSINESS { get { return new Guid( "BF64ADD3-E70A-44CE-9C4B-E76BBED37550" ); } }
+
+        /// <summary>
+        /// Person Primary Phone
+        /// </summary>
+        public static Guid PERSON_PHONE_TYPE_PRIMARY { get { return new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ); } }
+
+        /// <summary>
+        /// Person Secondary Phone
+        /// </summary>
+        public static Guid PERSON_PHONE_TYPE_SECONDARY { get { return new Guid( "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303" ); } }
+
     }
 }
