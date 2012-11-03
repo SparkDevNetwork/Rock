@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
@@ -28,7 +27,6 @@ namespace Rock.Crm
         /// System indicates whether or not the campus is part of the core framework/system.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -40,7 +38,6 @@ namespace Rock.Crm
         [Required]
         [MaxLength( 100 )]
         [AlternateKey]
-        [DataMember]
         public string Name { get; set; }
 
         /// <summary>

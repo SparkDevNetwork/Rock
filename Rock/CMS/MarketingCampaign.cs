@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Data;
 
@@ -28,7 +27,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -37,7 +35,6 @@ namespace Rock.Cms
         /// <value>
         /// The contact person id.
         /// </value>
-        [DataMember]
         public int? ContactPersonId { get; set; }
 
         /// <summary>
@@ -47,7 +44,6 @@ namespace Rock.Cms
         /// The contact email.
         /// </value>
         [MaxLength( 254 )]
-        [DataMember]
         public string ContactEmail { get; set; }
 
         /// <summary>
@@ -57,7 +53,6 @@ namespace Rock.Cms
         /// The contact phone number.
         /// </value>
         [MaxLength( 20 )]
-        [DataMember]
         public string ContactPhoneNumber { get; set; }
 
         /// <summary>
@@ -67,7 +62,6 @@ namespace Rock.Cms
         /// The full name of the contact.
         /// </value>
         [MaxLength( 152 )]
-        [DataMember]
         public string ContactFullName { get; set; }
 
         /// <summary>
@@ -76,7 +70,6 @@ namespace Rock.Cms
         /// <value>
         /// The event group id.
         /// </value>
-        [DataMember]
         public int? EventGroupId { get; set; }
 
         /// <summary>

@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -27,7 +25,6 @@ namespace Rock.Core
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Core
         /// <value>
         /// Field Type Id.
         /// </value>
-        [DataMember]
         public int? FieldTypeId { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Core
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
@@ -56,7 +51,6 @@ namespace Rock.Core
         /// Category.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Core
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -76,7 +69,6 @@ namespace Rock.Core
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>

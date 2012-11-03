@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Data;
 
@@ -26,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -36,7 +34,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(500)]
         public string Description { get; set; }
 
@@ -46,7 +43,6 @@ namespace Rock.Financial
         /// <value>
         /// The API URL.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiUrl { get; set; }
 
@@ -56,7 +52,6 @@ namespace Rock.Financial
         /// <value>
         /// The API key.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiKey { get; set; }
 
@@ -66,7 +61,6 @@ namespace Rock.Financial
         /// <value>
         /// The API secret.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiSecret { get; set; }
 

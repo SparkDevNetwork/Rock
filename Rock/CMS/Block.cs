@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -27,7 +25,6 @@ namespace Rock.Cms
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Cms
         /// <value>
         /// Page Id.
         /// </value>
-        [DataMember]
         public int? PageId { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Cms
         /// Layout.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Layout { get; set; }
         
         /// <summary>
@@ -56,7 +51,6 @@ namespace Rock.Cms
         /// Block Type Id.
         /// </value>
         [Required]
-        [DataMember]
         public int BlockTypeId { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Zone { get; set; }
         
         /// <summary>
@@ -77,7 +70,6 @@ namespace Rock.Cms
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
@@ -89,7 +81,6 @@ namespace Rock.Cms
         [MaxLength( 100 )]
         [TrackChanges]
         [Required( ErrorMessage = "Name is required" )]
-        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -99,7 +90,6 @@ namespace Rock.Cms
         /// Output Cache Duration.
         /// </value>
         [Required]
-        [DataMember]
         public int OutputCacheDuration { get; set; }
         
         /// <summary>

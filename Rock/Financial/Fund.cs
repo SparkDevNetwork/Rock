@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
@@ -27,7 +26,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -37,7 +35,6 @@ namespace Rock.Financial
         /// <value>
         /// The name of the public.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string PublicName { get; set; }
 
@@ -47,7 +44,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(250)]
         public string Description { get; set; }
 
@@ -57,7 +53,6 @@ namespace Rock.Financial
         /// <value>
         /// The parent fund id.
         /// </value>
-        [DataMember]
         public int? ParentFundId { get; set; }
 
         /// <summary>
@@ -66,7 +61,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
@@ -75,7 +69,6 @@ namespace Rock.Financial
         /// <value>
         /// The order.
         /// </value>
-        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -84,7 +77,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsActive { get; set; }
 
         /// <summary>
@@ -93,7 +85,6 @@ namespace Rock.Financial
         /// <value>
         /// The start date.
         /// </value>
-        [DataMember]
         public DateTime? StartDate { get; set; }
 
         /// <summary>
@@ -102,7 +93,6 @@ namespace Rock.Financial
         /// <value>
         /// The end date.
         /// </value>
-        [DataMember]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -111,7 +101,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsPledgable { get; set; }
 
         /// <summary>
@@ -120,7 +109,6 @@ namespace Rock.Financial
         /// <value>
         /// The gl code.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string GlCode { get; set; }
 
@@ -130,7 +118,6 @@ namespace Rock.Financial
         /// <value>
         /// The fund type id.
         /// </value>
-        [DataMember]
         public int? FundTypeId { get; set; }
 
         /// <summary>
@@ -139,7 +126,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -149,7 +135,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
