@@ -25,23 +25,20 @@ namespace Rock.Security.Authentication
     public class Database : AuthenticationComponent
     {
         private static byte[] encryptionKey;
-        private static MachineKeySection machineKeyConfig = (MachineKeySection)ConfigurationManager.GetSection( "system.web/machineKey" );
 
         /// <summary>
         /// Initializes the <see cref="Database" /> class.
         /// </summary>
-        /// <exception cref="System.Configuration.ConfigurationErrorsException">Cannot use an Auto Generated machine key</exception>
+        /// <exception cref="System.Configuration.ConfigurationErrorsException">Authentication requires a 'PasswordKey' app setting</exception>
         static Database()
         {
-            string configKey;
-
-            configKey = machineKeyConfig.ValidationKey;
-            if ( configKey.Contains( "AutoGenerate" ) )
+            var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
+            if ( String.IsNullOrWhiteSpace( passwordKey ) )
             {
-                throw new ConfigurationErrorsException( "Cannot use an Auto Generated machine key" );
+                throw new ConfigurationErrorsException( "Authentication requires a 'PasswordKey' app setting" );
             }
 
-            encryptionKey = HexToByte( configKey );
+            encryptionKey = HexToByte( passwordKey );
         }
 
         /// <summary>

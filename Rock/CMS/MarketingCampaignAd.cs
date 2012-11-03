@@ -7,7 +7,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
@@ -24,7 +23,6 @@ namespace Rock.Cms
         /// <value>
         /// The marketing campaign id.
         /// </value>
-        [DataMember]
         public int MarketingCampaignId { get; set; }
 
         /// <summary>
@@ -33,7 +31,6 @@ namespace Rock.Cms
         /// <value>
         /// The marketing campaign ad type id.
         /// </value>
-        [DataMember]
         public int MarketingCampaignAdTypeId { get; set; }
 
         /// <summary>
@@ -42,7 +39,6 @@ namespace Rock.Cms
         /// <value>
         /// The priority.
         /// </value>
-        [DataMember]
         public int Priority { get; set; }
 
         /// <summary>
@@ -51,7 +47,6 @@ namespace Rock.Cms
         /// <value>
         /// The marketing campaign ad status.
         /// </value>
-        [DataMember]
         public MarketingCampaignAdStatus MarketingCampaignAdStatus { get; set; }
 
         /// <summary>
@@ -60,7 +55,6 @@ namespace Rock.Cms
         /// <value>
         /// The marketing campaign status person id.
         /// </value>
-        [DataMember]
         public int? MarketingCampaignStatusPersonId { get; set; }
 
         /// <summary>
@@ -69,7 +63,6 @@ namespace Rock.Cms
         /// <value>
         /// The start date.
         /// </value>
-        [DataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -78,7 +71,6 @@ namespace Rock.Cms
         /// <value>
         /// The end date.
         /// </value>
-        [DataMember]
         public DateTime EndDate { get; set; }
 
         /// <summary>
@@ -87,7 +79,6 @@ namespace Rock.Cms
         /// <value>
         /// The URL.
         /// </value>
-        [DataMember]
         [MaxLength(2000)]
         public string Url { get; set; }
 

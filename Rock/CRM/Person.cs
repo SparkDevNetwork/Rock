@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
@@ -33,7 +32,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -42,7 +40,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? RecordTypeId { get; set; }
         
         /// <summary>
@@ -51,7 +48,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? RecordStatusId { get; set; }
         
         /// <summary>
@@ -60,7 +56,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? RecordStatusReasonId { get; set; }
         
         /// <summary>
@@ -69,7 +64,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? PersonStatusId { get; set; }
         
         /// <summary>
@@ -78,7 +72,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? TitleId { get; set; }
         
         /// <summary>
@@ -88,7 +81,6 @@ namespace Rock.Crm
         /// Given Name.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string GivenName { get; set; }
 
         /// <summary>
@@ -99,7 +91,6 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [TrackChanges]
-        [DataMember]
         public string NickName { get; set; }
 
         /// <summary>
@@ -110,7 +101,6 @@ namespace Rock.Crm
         /// </value>
         [MaxLength( 50 )]
         [TrackChanges]
-        [DataMember]
         public string LastName { get; set; }
         
         /// <summary>
@@ -119,7 +109,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? SuffixId { get; set; }
         
         /// <summary>
@@ -128,7 +117,6 @@ namespace Rock.Crm
         /// <value>
         /// Photo Id.
         /// </value>
-        [DataMember]
         public int? PhotoId { get; set; }
         
         /// <summary>
@@ -137,7 +125,6 @@ namespace Rock.Crm
         /// <value>
         /// Birth Day.
         /// </value>
-        [DataMember]
         public int? BirthDay { get; set; }
         
         /// <summary>
@@ -146,7 +133,6 @@ namespace Rock.Crm
         /// <value>
         /// Birth Month.
         /// </value>
-        [DataMember]
         public int? BirthMonth { get; set; }
         
         /// <summary>
@@ -155,7 +141,6 @@ namespace Rock.Crm
         /// <value>
         /// Birth Year.
         /// </value>
-        [DataMember]
         public int? BirthYear { get; set; }
         
         /// <summary>
@@ -165,7 +150,6 @@ namespace Rock.Crm
         /// Enum[Gender].
         /// </value>
         [Required]
-        [DataMember]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -174,7 +158,6 @@ namespace Rock.Crm
         /// <value>
         /// .
         /// </value>
-        [DataMember]
         public int? MaritalStatusId { get; set; }
         
         /// <summary>
@@ -183,7 +166,6 @@ namespace Rock.Crm
         /// <value>
         /// Anniversary Date.
         /// </value>
-        [DataMember]
         public DateTime? AnniversaryDate { get; set; }
         
         /// <summary>
@@ -192,7 +174,6 @@ namespace Rock.Crm
         /// <value>
         /// Graduation Date.
         /// </value>
-        [DataMember]
         public DateTime? GraduationDate { get; set; }
         
         /// <summary>
@@ -202,7 +183,6 @@ namespace Rock.Crm
         /// Email.
         /// </value>
         [MaxLength( 75 )]
-        [DataMember]
         public string Email { get; set; }
         
         /// <summary>
@@ -211,7 +191,6 @@ namespace Rock.Crm
         /// <value>
         /// Email Is Active.
         /// </value>
-        [DataMember]
         public bool? IsEmailActive { get; set; }
         
         /// <summary>
@@ -221,7 +200,6 @@ namespace Rock.Crm
         /// Email Note.
         /// </value>
         [MaxLength( 250 )]
-        [DataMember]
         public string EmailNote { get; set; }
         
         /// <summary>
@@ -231,7 +209,6 @@ namespace Rock.Crm
         /// Do Not Email.
         /// </value>
         [Required]
-        [DataMember]
         public bool DoNotEmail { get; set; }
         
         /// <summary>
@@ -241,7 +218,6 @@ namespace Rock.Crm
         /// System Note.
         /// </value>
         [MaxLength( 1000 )]
-        [DataMember]
         public string SystemNote { get; set; }
         
         /// <summary>
@@ -250,7 +226,6 @@ namespace Rock.Crm
         /// <value>
         /// Viewed Count.
         /// </value>
-        [DataMember]
         public int? ViewedCount { get; set; }
         
         /// <summary>
@@ -375,7 +350,7 @@ namespace Rock.Crm
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
         /// </summary>
-        public string FirstName
+        public virtual string FirstName
         {
             get
             {
@@ -386,7 +361,7 @@ namespace Rock.Crm
         /// <summary>
         /// Gets the full name.
         /// </summary>
-        public string FullName
+        public virtual string FullName
         {
             get
             {
@@ -397,7 +372,7 @@ namespace Rock.Crm
         /// <summary>
         /// Gets the full name (Last, First)
         /// </summary>
-        public string FullNameLastFirst
+        public virtual string FullNameLastFirst
         {
             get
             {
@@ -412,7 +387,7 @@ namespace Rock.Crm
         /// The birth date.
         /// </value>
         [NotMapped]
-        public DateTime? BirthDate
+        public virtual DateTime? BirthDate
         {
             // notes
             // if no birthday is available then DateTime.MinValue is returned
@@ -450,7 +425,7 @@ namespace Rock.Crm
         /// <summary>
         /// Gets the impersonation parameter.
         /// </summary>
-        public string ImpersonationParameter
+        public virtual string ImpersonationParameter
         {
             get
             {
@@ -464,7 +439,7 @@ namespace Rock.Crm
         /// <value>
         /// The impersonated user.
         /// </value>
-        public Rock.Cms.User ImpersonatedUser
+        public virtual Rock.Cms.User ImpersonatedUser
         {
             get
             {

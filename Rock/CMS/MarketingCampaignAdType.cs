@@ -6,7 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Cms
@@ -23,7 +22,6 @@ namespace Rock.Cms
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -32,7 +30,6 @@ namespace Rock.Cms
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength( 100 )]
         public string Name { get; set; }
 
@@ -42,7 +39,6 @@ namespace Rock.Cms
         /// <value>
         /// The type of the date range.
         /// </value>
-        [DataMember]
         public DateRangeTypeEnum DateRangeType {get; set;}
 
         /// <summary>
