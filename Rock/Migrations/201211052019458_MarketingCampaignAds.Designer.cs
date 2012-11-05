@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class MarketingCampaignAdTypesUI : IMigrationMetadata
+    public sealed partial class MarketingCampaignAds : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(MarketingCampaignAdTypesUI));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(MarketingCampaignAds));
         
         string IMigrationMetadata.Id
         {
-            get { return "201211051723292_MarketingCampaignAdTypesUI"; }
+            get { return "201211052019458_MarketingCampaignAds"; }
         }
         
         string IMigrationMetadata.Source
