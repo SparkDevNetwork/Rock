@@ -8,15 +8,17 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+
+using Rock.Cms;
 using Rock.Data;
 
 namespace Rock.Core
 {
     /// <summary>
-    /// Tag POCO Entity.
+    /// Category POCO Entity.
     /// </summary>
-    [Table( "coreTag" )]
-    public partial class Tag : Model<Tag>, IOrdered
+    [Table( "coreCategory" )]
+    public partial class Category : Entity<Category>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -28,6 +30,30 @@ namespace Rock.Core
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets the parent category id.
+        /// </summary>
+        /// <value>
+        /// The parent category id.
+        /// </value>
+        public int? ParentCategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent category.
+        /// </summary>
+        /// <value>
+        /// The parent category
+        /// </value>
+        public virtual Category ParentCategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the child categories.
+        /// </summary>
+        /// <value>
+        /// The child categories.
+        /// </value>
+        public virtual ICollection<Category> ChildCategories { get; set; }
+
+        /// <summary>
         /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
@@ -37,6 +63,14 @@ namespace Rock.Core
         public int EntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets the Entity Qualifier Column.
         /// </summary>
         /// <value>
@@ -44,7 +78,7 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 50 )]
         public string EntityTypeQualifierColumn { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
         /// </summary>
@@ -53,74 +87,50 @@ namespace Rock.Core
         /// </value>
         [MaxLength( 200 )]
         public string EntityTypeQualifierValue { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name.
         /// </summary>
         /// <value>
-        /// Name.
+        /// The name.
         /// </value>
-        [Required]
-        [MaxLength( 100 )]
+        [MaxLength(100)]
         public string Name { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the Order.
-        /// </summary>
-        /// <value>
-        /// Order.
-        /// </value>
-        [Required]
-        public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Owner Person Id.
+        /// Gets or sets the file id.
         /// </summary>
         /// <value>
-        /// Owner Id.
+        /// The file id.
         /// </value>
-        public int? OwnerId { get; set; }
+        public int? FileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Owner Person.
+        /// Gets or sets the file.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// The file.
         /// </value>
-        public virtual Crm.Person Owner { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual File File { get; set; }
 
         /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Tag Read( int id )
+        public static Category Read( int id )
         {
-            return Read<Tag>( id );
+            return Read<Category>( id );
         }
 
         /// <summary>
-        /// Gets or sets the tagged items.
+        /// Reads the specified GUID.
         /// </summary>
-        /// <value>
-        /// The tagged items.
-        /// </value>
-        public virtual ICollection<TaggedItem> TaggedItems { get; set; }
-        
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static Category Read( Guid guid )
         {
-            get { return new Security.GenericEntity( "Global" ); }
+            return Read<Category>( guid );
         }
 
         /// <summary>
@@ -136,17 +146,18 @@ namespace Rock.Core
     }
 
     /// <summary>
-    /// Tag Configuration class.
+    /// Category Configuration class.
     /// </summary>
-    public partial class TagConfiguration : EntityTypeConfiguration<Tag>
+    public partial class CategoryConfiguration : EntityTypeConfiguration<Category>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TagConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="CategoryConfiguration" /> class.
         /// </summary>
-        public TagConfiguration()
+        public CategoryConfiguration()
         {
-            this.HasOptional( p => p.Owner ).WithMany().HasForeignKey( p => p.OwnerId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ParentCategory ).WithMany( p => p.ChildCategories).HasForeignKey( p => p.ParentCategoryId).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.File ).WithMany().HasForeignKey( p => p.FileId ).WillCascadeOnDelete( false );
         }
     }
 }
