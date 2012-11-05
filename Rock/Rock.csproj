@@ -124,6 +124,16 @@
     <Compile Include="Cms\CodeGenerated\FileService.cs" />
     <Compile Include="Cms\CodeGenerated\HtmlContentDTO.cs" />
     <Compile Include="Cms\CodeGenerated\HtmlContentService.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAdDto.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAdService.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAdTypeDto.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAdTypeService.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAudienceDto.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignAudienceService.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignCampusDto.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignCampusService.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignDto.cs" />
+    <Compile Include="Cms\CodeGenerated\MarketingCampaignService.cs" />
     <Compile Include="Cms\CodeGenerated\PageContextDTO.cs" />
     <Compile Include="Cms\CodeGenerated\PageContextService.cs" />
     <Compile Include="Cms\CodeGenerated\PageDTO.cs" />
@@ -137,6 +147,11 @@
     <Compile Include="Cms\CodeGenerated\UserDTO.cs" />
     <Compile Include="Cms\CodeGenerated\UserService.cs" />
     <Compile Include="Cms\FileService.Partial.cs" />
+    <Compile Include="Cms\MarketingCampaign.cs" />
+    <Compile Include="Cms\MarketingCampaignAd.cs" />
+    <Compile Include="Cms\MarketingCampaignAdType.cs" />
+    <Compile Include="Cms\MarketingCampaignAudience.cs" />
+    <Compile Include="Cms\MarketingCampaignCampus.cs" />
     <Compile Include="Cms\PageContextService.Partial.cs" />
     <Compile Include="Cms\HtmlContentService.Partial.cs" />
     <Compile Include="Cms\PageContext.cs" />
@@ -564,8 +579,17 @@
     <Compile Include="Migrations\201210301603196_TagEntityType.Designer.cs">
       <DependentUpon>201210301603196_TagEntityType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201210302321525_MarketingCampaignTables.cs" />
+    <Compile Include="Migrations\201210302321525_MarketingCampaignTables.Designer.cs">
+      <DependentUpon>201210302321525_MarketingCampaignTables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.cs" />
+    <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.Designer.cs">
+      <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
+    <Compile Include="Migrations\RockMigration_2.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\CreateDatabase.Partial.cs" />
     <Compile Include="Migrations\Metric2.Partial.cs">
@@ -599,6 +623,7 @@
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
     <Compile Include="SystemGuid\BlockType.cs" />
+    <Compile Include="SystemGuid\Site.cs" />
     <Compile Include="SystemGuid\GroupRole.cs" />
     <Compile Include="SystemGuid\DefinedValue.cs" />
     <Compile Include="SystemGuid\GroupType.cs" />
@@ -872,6 +897,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201208181111566_UpdateEnums.resx">
       <DependentUpon>201208181111566_UpdateEnums.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201208241555418_AddSearchPlugins.resx">
       <DependentUpon>201208241555418_AddSearchPlugins.cs</DependentUpon>
@@ -989,6 +1015,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210301603196_TagEntityType.resx">
       <DependentUpon>201210301603196_TagEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210302321525_MarketingCampaignTables.resx">
+      <DependentUpon>201210302321525_MarketingCampaignTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201210312055490_MarketingPagesBlocks.resx">
+      <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

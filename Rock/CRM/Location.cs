@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -27,7 +25,6 @@ namespace Rock.Crm
         /// Raw.
         /// </value>
         [MaxLength( 400 )]
-        [DataMember]
         public string Raw { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Crm
         /// Street 1.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Street1 { get; set; }
         
         /// <summary>
@@ -47,7 +43,6 @@ namespace Rock.Crm
         /// Street 2.
         /// </value>
         [MaxLength( 100 )]
-        [DataMember]
         public string Street2 { get; set; }
         
         /// <summary>
@@ -57,7 +52,6 @@ namespace Rock.Crm
         /// City.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string City { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Crm
         /// State.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string State { get; set; }
         
         /// <summary>
@@ -77,7 +70,6 @@ namespace Rock.Crm
         /// Country.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string Country { get; set; }
         
         /// <summary>
@@ -87,7 +79,6 @@ namespace Rock.Crm
         /// Zip.
         /// </value>
         [MaxLength( 10 )]
-        [DataMember]
         public string Zip { get; set; }
         
         /// <summary>
@@ -96,7 +87,6 @@ namespace Rock.Crm
         /// <value>
         /// Latitude.
         /// </value>
-        [DataMember]
         public double? Latitude { get; set; }
 
         /// <summary>
@@ -105,7 +95,6 @@ namespace Rock.Crm
         /// <value>
         /// Longitude.
         /// </value>
-        [DataMember]
         public double? Longitude { get; set; }
 
         /// <summary>
@@ -115,7 +104,6 @@ namespace Rock.Crm
         /// Parcel Id.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string ParcelId { get; set; }
 
         /// <summary>
@@ -124,7 +112,6 @@ namespace Rock.Crm
         /// <value>
         /// Standardize Attempt.
         /// </value>
-        [DataMember]
         public DateTime? StandardizeAttempt { get; set; }
         
         /// <summary>
@@ -134,7 +121,6 @@ namespace Rock.Crm
         /// Standardize Service.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string StandardizeService { get; set; }
         
         /// <summary>
@@ -144,7 +130,6 @@ namespace Rock.Crm
         /// .
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string StandardizeResult { get; set; }
         
         /// <summary>
@@ -153,7 +138,6 @@ namespace Rock.Crm
         /// <value>
         /// Standardize Date.
         /// </value>
-        [DataMember]
         public DateTime? StandardizeDate { get; set; }
         
         /// <summary>
@@ -162,7 +146,6 @@ namespace Rock.Crm
         /// <value>
         /// Geocode Attempt.
         /// </value>
-        [DataMember]
         public DateTime? GeocodeAttempt { get; set; }
         
         /// <summary>
@@ -172,7 +155,6 @@ namespace Rock.Crm
         /// Geocode Service.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string GeocodeService { get; set; }
         
         /// <summary>
@@ -182,7 +164,6 @@ namespace Rock.Crm
         /// .
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string GeocodeResult { get; set; }
         
         /// <summary>
@@ -191,7 +172,6 @@ namespace Rock.Crm
         /// <value>
         /// Geocode Date.
         /// </value>
-        [DataMember]
         public DateTime? GeocodeDate { get; set; }
         
         /// <summary>

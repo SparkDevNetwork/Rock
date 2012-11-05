@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -26,7 +24,6 @@ namespace Rock.Crm
         /// <value>
         /// Viewer Person Id.
         /// </value>
-        [DataMember]
         public int? ViewerPersonId { get; set; }
         
         /// <summary>
@@ -35,7 +32,6 @@ namespace Rock.Crm
         /// <value>
         /// Target Person Id.
         /// </value>
-        [DataMember]
         public int? TargetPersonId { get; set; }
         
         /// <summary>
@@ -44,7 +40,6 @@ namespace Rock.Crm
         /// <value>
         /// View Date Time.
         /// </value>
-        [DataMember]
         public DateTime? ViewDateTime { get; set; }
         
         /// <summary>
@@ -54,7 +49,6 @@ namespace Rock.Crm
         /// Ip Address.
         /// </value>
         [MaxLength( 25 )]
-        [DataMember]
         public string IpAddress { get; set; }
         
         /// <summary>
@@ -64,7 +58,6 @@ namespace Rock.Crm
         /// Source.
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string Source { get; set; }
         
         /// <summary>

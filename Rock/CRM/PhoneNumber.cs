@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -27,7 +25,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Crm
         /// Person Id.
         /// </value>
         [Required]
-        [DataMember]
         public int PersonId { get; set; }
         
         /// <summary>
@@ -48,27 +44,23 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 20 )]
-        [DataMember]
         public string Number { get; set; }
 
         /// <summary>
         /// Gets or sets the extension
         /// </summary>
         [MaxLength( 20 )]
-        [DataMember]
         public string Extension { get; set; }
 
         /// <summary>
         /// Type of phone number
         /// </summary>
-        [DataMember]
         public int? NumberTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets whether the number has been opted in for SMS
         /// </summary>
         [Required]
-        [DataMember]
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
@@ -82,7 +74,6 @@ namespace Rock.Crm
         /// <value>
         /// IsUnlisted.
         /// </value>
-        [DataMember]
         public bool IsUnlisted { get; set; }
 
         /// <summary>
@@ -91,7 +82,6 @@ namespace Rock.Crm
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>

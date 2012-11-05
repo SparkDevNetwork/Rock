@@ -59,13 +59,27 @@ namespace Rock.Web
                     site = Rock.Web.Cache.SiteCache.Read( sites[host] );
                 else
                 {
+                    int siteId = 1;
+
                     Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
                     Rock.Cms.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
-                        sites.Add( host, siteDomain.SiteId );
-                        site = Rock.Web.Cache.SiteCache.Read( siteDomain.SiteId );
+                        siteId = siteDomain.SiteId;
                     }
+                    else
+                    {
+                        var siteService = new Rock.Cms.SiteService();
+                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        if ( rockSite != null )
+                        {
+                            siteId = rockSite.Id;
+                        }
+                    }
+
+                    sites.Add( host, siteId );
+                    site = Rock.Web.Cache.SiteCache.Read( siteId );
+
                 }
 
                 cache[cacheKey] = sites;

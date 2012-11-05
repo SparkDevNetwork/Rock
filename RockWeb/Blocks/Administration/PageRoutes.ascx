@@ -24,8 +24,8 @@
             <fieldset>
                 <legend>
                     <asp:Literal ID="lActionTitle" runat="server" />
+                    <i id="iconIsSystem" runat="server" class="icon-eye-open"></i>
                 </legend>
-                <Rock:LabeledText ID="ltIsSystem" runat="server" LabelText="System Route" />
                 <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title" LabelText="Page Title" />
                 <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
             </fieldset>

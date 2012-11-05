@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm
@@ -27,7 +25,6 @@ namespace Rock.Crm
         /// Current Id.
         /// </value>
         [Required]
-        [DataMember]
         public int CurrentId { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Crm
         /// Current Guid.
         /// </value>
         [Required]
-        [DataMember]
         public Guid CurrentGuid { get; set; }
         
         /// <summary>

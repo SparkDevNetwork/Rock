@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -27,7 +25,6 @@ namespace Rock.Cms
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Cms
         /// Site Id.
         /// </value>
         [Required]
-        [DataMember]
         public int SiteId { get; set; }
         
         /// <summary>
@@ -48,7 +44,6 @@ namespace Rock.Cms
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
         public string Domain { get; set; }
         
         /// <summary>

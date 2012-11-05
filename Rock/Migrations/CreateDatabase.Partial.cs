@@ -61,8 +61,8 @@ namespace Rock.Migrations
             DropIndex( "crmPersonTrail", new[] { "CurrentId" } );
             DropIndex( "crmPerson", new[] { "Email" } );
             DropIndex( "crmEmailTemplate", new[] { "Guid" } );
-            DropIndex( "crmAddress", new[] { "Raw" } );
-            DropIndex( "crmAddress", new[] { "Street1", "Street2", "City", "State", "Zip" } );
+            //DropIndex( "crmAddress", new[] { "Raw" } );
+            //DropIndex( "crmAddress", new[] { "Street1", "Street2", "City", "State", "Zip" } );
             DropIndex( "coreFieldType", new[] { "Name" } );
             DropIndex( "coreExceptionLog", new[] { "SiteId" } );
             DropIndex( "coreExceptionLog", new[] { "ParentId" } );
@@ -78,10 +78,10 @@ namespace Rock.Migrations
             DropIndex( "cmsSiteDomain", new[] { "SiteId", "Domain" } );
             DropIndex( "cmsSiteDomain", new[] { "Domain" } );
             DropIndex( "cmsHtmlContent", new[] { "BlockId", "EntityValue", "Version" } );
-            DropIndex( "cmsBlockInstance", new[] { "Layout", "PageId", "Zone" } );
-            DropIndex( "cmsBlockInstance", new[] { "Layout" } );
-            DropIndex( "cmsBlock", new[] { "Path" } );
-            DropIndex( "cmsBlock", new[] { "Name" } );
+            //DropIndex( "cmsBlockInstance", new[] { "Layout", "PageId", "Zone" } );
+            //DropIndex( "cmsBlockInstance", new[] { "Layout" } );
+            //DropIndex( "cmsBlock", new[] { "Path" } );
+            //DropIndex( "cmsBlock", new[] { "Name" } );
             DropIndex( "cmsAuth", new[] { "EntityType", "EntityId" } );
         }
 
@@ -1003,6 +1003,7 @@ SET IDENTITY_INSERT cmsHtmlContent OFF
         /// </summary>
         public void DeleteData()
         {
-        }
+            Sql( @"DROP PROCEDURE dbo.cmsFile_sp_getByID");
+       }
     }
 }

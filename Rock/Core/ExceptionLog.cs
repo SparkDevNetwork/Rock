@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -27,7 +25,6 @@ namespace Rock.Core
         /// <value>
         /// Parent Id of the exeption, used for linking inner exceptions..
         /// </value>
-        [DataMember]
         public int? ParentId { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Core
         /// <value>
         /// Site Id that the exception occurred on..
         /// </value>
-        [DataMember]
         public int? SiteId { get; set; }
         
         /// <summary>
@@ -45,7 +41,6 @@ namespace Rock.Core
         /// <value>
         /// Page Id that the exception occurred on..
         /// </value>
-        [DataMember]
         public int? PageId { get; set; }
         
         /// <summary>
@@ -55,7 +50,6 @@ namespace Rock.Core
         /// Date / time that the exception occurred..
         /// </value>
         [Required]
-        [DataMember]
         public DateTime ExceptionDate { get; set; }
 
         /// <summary>
@@ -64,7 +58,6 @@ namespace Rock.Core
         /// <value>
         /// Created By Person Id.
         /// </value>
-        [DataMember]
         public int? CreatedByPersonId { get; set; }
 
         /// <summary>
@@ -81,7 +74,6 @@ namespace Rock.Core
         /// <value>
         /// Whether the exception has an inner exception..
         /// </value>
-        [DataMember]
         public bool? HasInnerException { get; set; }
         
         /// <summary>
@@ -91,7 +83,6 @@ namespace Rock.Core
         /// Status code that would have been thrown (404, 500, etc).
         /// </value>
         [MaxLength( 10 )]
-        [DataMember]
         public string StatusCode { get; set; }
         
         /// <summary>
@@ -101,7 +92,6 @@ namespace Rock.Core
         /// Name of the exception.
         /// </value>
         [MaxLength( 150 )]
-        [DataMember]
         public string ExceptionType { get; set; }
         
         /// <summary>
@@ -110,7 +100,6 @@ namespace Rock.Core
         /// <value>
         /// The exception message..
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -120,7 +109,6 @@ namespace Rock.Core
         /// What assembly the exception occurred in..
         /// </value>
         [MaxLength( 50 )]
-        [DataMember]
         public string Source { get; set; }
         
         /// <summary>
@@ -129,7 +117,6 @@ namespace Rock.Core
         /// <value>
         /// The stack trace that was produced..
         /// </value>
-        [DataMember]
         public string StackTrace { get; set; }
         
         /// <summary>
@@ -139,7 +126,6 @@ namespace Rock.Core
         /// The URL of the page that generated the exception..
         /// </value>
         [MaxLength( 250 )]
-        [DataMember]
         public string PageUrl { get; set; }
         
         /// <summary>
@@ -148,7 +134,6 @@ namespace Rock.Core
         /// <value>
         /// Server variables at the time of the exception..
         /// </value>
-        [DataMember]
         public string ServerVariables { get; set; }
         
         /// <summary>
@@ -157,7 +142,6 @@ namespace Rock.Core
         /// <value>
         /// Full query string..
         /// </value>
-        [DataMember]
         public string QueryString { get; set; }
         
         /// <summary>
@@ -166,7 +150,6 @@ namespace Rock.Core
         /// <value>
         /// Form items at the time of the exception..
         /// </value>
-        [DataMember]
         public string Form { get; set; }
         
         /// <summary>
@@ -175,7 +158,6 @@ namespace Rock.Core
         /// <value>
         /// Cookies at the time of the exception..
         /// </value>
-        [DataMember]
         public string Cookies { get; set; }
 
         /// <summary>
