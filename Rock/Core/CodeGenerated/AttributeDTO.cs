@@ -26,7 +26,7 @@ namespace Rock.Core
 #pragma warning disable 1591
         public bool IsSystem { get; set; }
         public int FieldTypeId { get; set; }
-        public string Entity { get; set; }
+        public int? EntityTypeId { get; set; }
         public string EntityQualifierColumn { get; set; }
         public string EntityQualifierValue { get; set; }
         public string Key { get; set; }
@@ -67,7 +67,7 @@ namespace Rock.Core
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "FieldTypeId", this.FieldTypeId );
-            dictionary.Add( "Entity", this.Entity );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityQualifierColumn", this.EntityQualifierColumn );
             dictionary.Add( "EntityQualifierValue", this.EntityQualifierValue );
             dictionary.Add( "Key", this.Key );
@@ -93,7 +93,7 @@ namespace Rock.Core
             dynamic expando = new ExpandoObject();
             expando.IsSystem = this.IsSystem;
             expando.FieldTypeId = this.FieldTypeId;
-            expando.Entity = this.Entity;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.EntityQualifierColumn = this.EntityQualifierColumn;
             expando.EntityQualifierValue = this.EntityQualifierValue;
             expando.Key = this.Key;
@@ -121,7 +121,7 @@ namespace Rock.Core
                 var attribute = (Attribute)model;
                 this.IsSystem = attribute.IsSystem;
                 this.FieldTypeId = attribute.FieldTypeId;
-                this.Entity = attribute.Entity;
+                this.EntityTypeId = attribute.EntityTypeId;
                 this.EntityQualifierColumn = attribute.EntityQualifierColumn;
                 this.EntityQualifierValue = attribute.EntityQualifierValue;
                 this.Key = attribute.Key;
@@ -149,7 +149,7 @@ namespace Rock.Core
                 var attribute = (Attribute)model;
                 attribute.IsSystem = this.IsSystem;
                 attribute.FieldTypeId = this.FieldTypeId;
-                attribute.Entity = this.Entity;
+                attribute.EntityTypeId = this.EntityTypeId;
                 attribute.EntityQualifierColumn = this.EntityQualifierColumn;
                 attribute.EntityQualifierValue = this.EntityQualifierValue;
                 attribute.Key = this.Key;

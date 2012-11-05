@@ -25,9 +25,9 @@ namespace Rock.Attribute
         /// <param name="entity">The entity.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public static bool UpdateAttributes( Type type, string entity, int? currentPersonId )
+        public static bool UpdateAttributes( Type type, int? entityTypeId, int? currentPersonId )
         {
-            return UpdateAttributes( type, entity, String.Empty, String.Empty, currentPersonId );
+            return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, currentPersonId );
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public static bool UpdateAttributes( Type type, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool attributesUpdated = false;
 
@@ -73,13 +73,13 @@ namespace Rock.Attribute
                 // Create any attributes that need to be created
                 foreach( var blockProperty in blockProperties)
                 {
-                    attributesUpdated = UpdateAttribute( blockProperty, entity, entityQualifierColumn, entityQualifierValue, currentPersonId) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
 
                 // Remove any old attributes
                 Core.AttributeService attributeService = new Core.AttributeService();
-                foreach( var a in attributeService.GetAttributesByEntityQualifier(entity, entityQualifierColumn, entityQualifierValue).ToList())
+                foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
                     if ( !existingKeys.Contains( a.Key ) )
                     {
                         attributeService.Delete( a, currentPersonId );
@@ -99,7 +99,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( BlockPropertyAttribute property, string entity, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( BlockPropertyAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
 
@@ -107,15 +107,15 @@ namespace Rock.Attribute
             Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Core.Attribute attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
-                entity, entityQualifierColumn, entityQualifierValue, property.Key );
+            Core.Attribute attribute = attributeService.Get(
+                entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
 
             if ( attribute == null )
             {
                 // If an existing attribute record doesn't exist, create a new one
                 updated = true;
                 attribute = new Core.Attribute();
-                attribute.Entity = entity;
+                attribute.EntityTypeId = entityTypeId;
                 attribute.EntityQualifierColumn = entityQualifierColumn;
                 attribute.EntityQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
@@ -188,7 +188,8 @@ namespace Rock.Attribute
             Rock.Core.AttributeValueService attributeValueService = new Rock.Core.AttributeValueService();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntity( entityType.FullName ) )
+            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType.FullName ).Id;
+            foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&

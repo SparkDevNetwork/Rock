@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         protected string typeId = string.Empty;
-        protected string entity = string.Empty;
+        protected int? entityTypeId = null;
         protected string entityQualifierColumn = string.Empty;
                         
         private bool canConfigure = false;
@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( typeId ) )
                     typeId = PageParameter( "typeId" );
 
-                entity = "Rock.Core.DefinedValue";
+                entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Core.DefinedValue" );
                 entityQualifierColumn = "DefinedTypeId";
                 canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Administration
             int definedTypeId = Convert.ToInt32( typeId );
                         
             var gridAttributes = attributeService
-                .GetAttributesByEntityQualifier( entity, entityQualifierColumn, typeId )
+                .Get( entityTypeId, entityQualifierColumn, typeId )
                 .Where( attr => attr.IsGridColumn );
 
             tbValueGridColumn.Text = string.Join(",",
@@ -285,12 +285,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGridAttribute_Bind( string typeId )
         {
-            var queryable = attributeService.Queryable().
-                Where( a => a.Entity == entity &&
-                ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
-                ( a.EntityQualifierValue ?? string.Empty ) == typeId );
-
-            rGridAttribute.DataSource = queryable.
+            rGridAttribute.DataSource = attributeService.Get( entityTypeId, entityQualifierColumn, typeId ).
                 OrderBy( a => a.Category ).
                 ThenBy( a => a.Key ).
                 ToList();
