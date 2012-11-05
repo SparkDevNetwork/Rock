@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201211052001525_Workflow"; }
+            get { return "201211052341140_Workflow"; }
         }
         
         string IMigrationMetadata.Source

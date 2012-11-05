@@ -67,7 +67,6 @@ namespace Rock.Util
                     ActivatedDateTime = m.ActivatedDateTime,
                     LastProcessedDateTime = m.LastProcessedDateTime,
                     CompletedDateTime = m.CompletedDateTime,
-                    Actions = m.Actions,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

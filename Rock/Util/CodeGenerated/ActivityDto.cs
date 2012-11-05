@@ -29,7 +29,6 @@ namespace Rock.Util
         public DateTime? ActivatedDateTime { get; set; }
         public DateTime? LastProcessedDateTime { get; set; }
         public DateTime? CompletedDateTime { get; set; }
-        public ICollection<Action> Actions { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -62,7 +61,6 @@ namespace Rock.Util
             dictionary.Add( "ActivatedDateTime", this.ActivatedDateTime );
             dictionary.Add( "LastProcessedDateTime", this.LastProcessedDateTime );
             dictionary.Add( "CompletedDateTime", this.CompletedDateTime );
-            dictionary.Add( "Actions", this.Actions );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -80,7 +78,6 @@ namespace Rock.Util
             expando.ActivatedDateTime = this.ActivatedDateTime;
             expando.LastProcessedDateTime = this.LastProcessedDateTime;
             expando.CompletedDateTime = this.CompletedDateTime;
-            expando.Actions = this.Actions;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -100,7 +97,6 @@ namespace Rock.Util
                 this.ActivatedDateTime = activity.ActivatedDateTime;
                 this.LastProcessedDateTime = activity.LastProcessedDateTime;
                 this.CompletedDateTime = activity.CompletedDateTime;
-                this.Actions = activity.Actions;
                 this.Id = activity.Id;
                 this.Guid = activity.Guid;
             }
@@ -120,7 +116,6 @@ namespace Rock.Util
                 activity.ActivatedDateTime = this.ActivatedDateTime;
                 activity.LastProcessedDateTime = this.LastProcessedDateTime;
                 activity.CompletedDateTime = this.CompletedDateTime;
-                activity.Actions = this.Actions;
                 activity.Id = this.Id;
                 activity.Guid = this.Guid;
             }

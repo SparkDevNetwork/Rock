@@ -48,7 +48,6 @@ namespace Rock.Migrations
                         Id = c.Int(nullable: false, identity: true),
                         ActivityId = c.Int(nullable: false),
                         ActionTypeId = c.Int(nullable: false),
-                        ActivatedDateTime = c.DateTime(),
                         LastProcessedDateTime = c.DateTime(),
                         CompletedDateTime = c.DateTime(),
                         Guid = c.Guid(nullable: false),
