@@ -591,6 +591,10 @@
     <Compile Include="Migrations\201211011641304_MarketingSystemData.Designer.cs">
       <DependentUpon>201211011641304_MarketingSystemData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201211051723292_MarketingCampaignAdTypesUI.cs" />
+    <Compile Include="Migrations\201211051723292_MarketingCampaignAdTypesUI.Designer.cs">
+      <DependentUpon>201211051723292_MarketingCampaignAdTypesUI.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -1026,6 +1030,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211011641304_MarketingSystemData.resx">
       <DependentUpon>201211011641304_MarketingSystemData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211051723292_MarketingCampaignAdTypesUI.resx">
+      <DependentUpon>201211051723292_MarketingCampaignAdTypesUI.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
