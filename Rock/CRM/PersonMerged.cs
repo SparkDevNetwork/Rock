@@ -40,7 +40,7 @@ namespace Rock.Crm
         /// Gets a publicly viewable unique key for the model.
         /// </summary>
         [NotMapped]
-        public string CurrentPublicKey
+        public virtual string CurrentPublicKey
         {
             get
             {
