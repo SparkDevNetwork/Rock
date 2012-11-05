@@ -587,9 +587,9 @@
     <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.Designer.cs">
       <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201211051633174_AttributeEntityTypeId.cs" />
-    <Compile Include="Migrations\201211051633174_AttributeEntityTypeId.Designer.cs">
-      <DependentUpon>201211051633174_AttributeEntityTypeId.cs</DependentUpon>
+    <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.cs" />
+    <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
+      <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1026,8 +1026,8 @@
     <EmbeddedResource Include="Migrations\201210312055490_MarketingPagesBlocks.resx">
       <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211051633174_AttributeEntityTypeId.resx">
-      <DependentUpon>201211051633174_AttributeEntityTypeId.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
+      <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

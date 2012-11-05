@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201211051633174_AttributeEntityTypeId"; }
+            get { return "201211051707503_AttributeEntityTypeId"; }
         }
         
         string IMigrationMetadata.Source

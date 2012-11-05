@@ -39,8 +39,8 @@ namespace Rock.Core
         {
             return Queryable().Where( t =>
                 ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) &&
-                t.EntityQualifierColumn == entityQualifierColumn &&
-                t.EntityQualifierValue == entityQualifierValue );
+                t.EntityTypeQualifierColumn == entityQualifierColumn &&
+                t.EntityTypeQualifierValue == entityQualifierValue );
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Rock.Core
         {
             return Repository.FirstOrDefault( t => 
                 ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) && 
-                ( t.EntityQualifierColumn == entityQualifierColumn || ( entityQualifierColumn == null && t.EntityQualifierColumn == null ) ) && 
-                ( t.EntityQualifierValue == entityQualifierValue || ( entityQualifierValue == null && t.EntityQualifierValue == null ) ) && 
+                ( t.EntityTypeQualifierColumn == entityQualifierColumn || ( entityQualifierColumn == null && t.EntityTypeQualifierColumn == null ) ) && 
+                ( t.EntityTypeQualifierValue == entityQualifierValue || ( entityQualifierValue == null && t.EntityTypeQualifierValue == null ) ) && 
                 t.Key == key );
         }
         

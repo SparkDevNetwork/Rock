@@ -60,7 +60,7 @@ namespace Rock.Core
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
-        public string EntityQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -69,7 +69,7 @@ namespace Rock.Core
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
-        public string EntityQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Key.

@@ -116,8 +116,8 @@ namespace Rock.Attribute
                 updated = true;
                 attribute = new Core.Attribute();
                 attribute.EntityTypeId = entityTypeId;
-                attribute.EntityQualifierColumn = entityQualifierColumn;
-                attribute.EntityQualifierValue = entityQualifierValue;
+                attribute.EntityTypeQualifierColumn = entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
                 attribute.IsGridColumn = false;
             }
@@ -191,10 +191,10 @@ namespace Rock.Attribute
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType.FullName ).Id;
             foreach ( Rock.Core.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
-                if ( string.IsNullOrEmpty( attribute.EntityQualifierColumn ) ||
-                    ( properties.ContainsKey( attribute.EntityQualifierColumn.ToLower() ) &&
-                    ( string.IsNullOrEmpty( attribute.EntityQualifierValue ) ||
-                    properties[attribute.EntityQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityQualifierValue ) ) )
+                if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
+                    ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
+                    ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
+                    properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
                     attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
                 }

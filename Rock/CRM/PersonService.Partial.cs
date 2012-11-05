@@ -217,8 +217,8 @@ namespace Rock.Crm
                 attribute = new Core.Attribute();
                 attribute.IsSystem = false;
                 attribute.EntityTypeId = PersonEntityTypeId;
-                attribute.EntityQualifierColumn = string.Empty;
-                attribute.EntityQualifierValue = string.Empty;
+                attribute.EntityTypeQualifierColumn = string.Empty;
+                attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
                 attribute.Category = string.Empty;
@@ -287,8 +287,8 @@ namespace Rock.Crm
             foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
                 .Where( v =>
                     v.Attribute.EntityTypeId == PersonEntityTypeId &&
-                    v.Attribute.EntityQualifierColumn == string.Empty &&
-                    v.Attribute.EntityQualifierValue == string.Empty &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
             {
                 if (!values.Keys.Contains(attributeValue.Attribute.Key))
