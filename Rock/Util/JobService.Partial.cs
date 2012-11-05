@@ -49,7 +49,8 @@ namespace Rock.Util
 
             // create attributes if needed 
             // TODO: next line should be moved to Job creation UI, when it's created
-            Rock.Attribute.Helper.UpdateAttributes( type, "Job", "Class", job.Class, null );
+            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Util.Job" ).Id;
+            Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", job.Class, null );
 
             // load up job attributes (parameters) 
             Rock.Attribute.Helper.LoadAttributes( job );

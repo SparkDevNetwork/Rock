@@ -189,7 +189,7 @@
 
                         object = (attribute === null) ? new Object() : attribute;
                         restUrl = rock.baseUrl + 'REST/Core/Attribute/';
-                        object.Entity = '<%= entity %>';
+                        object.Entity = '<%= entityTypeId %>';
                         object.EntityQualifierColumn = '<%= entityQualifierColumn %>';
                         object.Key = $('#<%= tbAttributeKey.ClientID %>').val();
                         object.Name = $('#<%= tbAttributeName.ClientID %>').val();

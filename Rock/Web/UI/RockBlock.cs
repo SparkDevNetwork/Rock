@@ -529,8 +529,10 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(),
-                "Rock.Cms.Block", "BlockTypeId", this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Cms.Block").Id;
+
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", 
+                this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
             {
                 this.CurrentBlock.ReloadAttributeValues();
             }
