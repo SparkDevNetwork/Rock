@@ -198,7 +198,9 @@ namespace Rock.Migrations
             sb.AppendFormat( @"
                 
                 DECLARE @BlockTypeId int
+                DECLARE @EntityTypeId int
                 SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
 
                 DECLARE @BlockId int
                 INSERT INTO [cmsBlock] (
@@ -220,10 +222,10 @@ namespace Rock.Migrations
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
             Sql(sb.ToString());
         }
@@ -247,7 +249,9 @@ namespace Rock.Migrations
             sb.AppendFormat( @"
 
                 DECLARE @BlockTypeId int
+                DECLARE @EntityTypeId int
                 SET @BlockTypeId = (SELECT [Id] FROM [cmsBlockType] WHERE [Guid] = '{0}')
+                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
 
                 DECLARE @BlockId int
                 INSERT INTO [cmsBlock] (
@@ -272,10 +276,10 @@ namespace Rock.Migrations
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
-                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES('Cms.Block',@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [cmsAuth] ([EntityType],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES('Cms.Block',@BlockId,0,'Configure','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
+                INSERT INTO [cmsAuth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
+                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
             Sql( sb.ToString() );
         }
@@ -284,8 +288,10 @@ namespace Rock.Migrations
         {
             Sql( string.Format( @"
                 DECLARE @BlockId int
+                DECLARE @EntityTypeId int
                 SET @BlockId = (SELECT [Id] FROM [cmsBlock] WHERE [Guid] = '{0}')
-                DELETE [cmsAuth] WHERE [EntityType] = 'Cms.Block' AND [EntityId] = @BlockId
+                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Guid] = 'B2DE7D41-EA40-42A9-B212-9DD2ADE2DDAE')
+                DELETE [cmsAuth] WHERE [EntityTypeId] = @EntityTypeId AND [EntityId] = @BlockId
                 DELETE [cmsBlock] WHERE [Guid] = '{0}'
 ",
                     guid
@@ -510,7 +516,7 @@ namespace Rock.Migrations
 
         #region DefinedType Methods
 
-        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid )
+        public void AddDefinedValue( string definedTypeGuid, string name, string description, string guid, bool isSystem = true )
         {
             Sql( string.Format( @"
                 
@@ -525,14 +531,15 @@ namespace Rock.Migrations
                     [Name],[Description],
                     [Guid])
                 VALUES(
-                    1,@DefinedTypeId,@Order,
+                    {4},@DefinedTypeId,@Order,
                     '{1}','{2}',
                     '{3}')
 ",
                     definedTypeGuid,
                     name,
                     description.Replace( "'", "''" ),
-                    guid
+                    guid,
+                    isSystem.Bit().ToString()
                     ) );
         }
 

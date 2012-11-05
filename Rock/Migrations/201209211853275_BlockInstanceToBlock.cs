@@ -8,15 +8,15 @@ namespace Rock.Migrations
         public override void Up()
         {
             DropForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType");
-            DropForeignKey("cmsBlockInstance", "PageId", "cmsPage");
-            DropForeignKey("cmsBlockInstance", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlockInstance", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlockInstance", "PageId", "cmsPage");
+            DropForeignKey( "dbo.cmsBlockInstance", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlockInstance", "ModifiedByPersonId", "crmPerson");
             DropIndex( "cmsBlockInstance", new[] { "BlockTypeId" } );
             DropIndex( "cmsBlockInstance", new[] { "PageId" } );
             DropIndex( "cmsBlockInstance", new[] { "CreatedByPersonId" } );
             DropIndex( "cmsBlockInstance", new[] { "ModifiedByPersonId" } );
 
-            DropForeignKey("cmsHtmlContent", "BlockId", "cmsBlockInstance");
+            DropForeignKey( "dbo.cmsHtmlContent", "BlockId", "cmsBlockInstance");
             DropIndex( "cmsHtmlContent", new[] { "BlockId" } );
             
             CreateTable(
@@ -87,7 +87,7 @@ namespace Rock.Migrations
                 UPDATE [cmsPageRoute] SET [Route] = 'BlockProperties/{BlockId}' WHERE [Guid] = '6438C940-96F7-4A7E-9DA5-A30FD4FF143A'
 " );
             
-            AddForeignKey("dbo.cmsHtmlContent", "BlockId", "dbo.cmsBlock", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.cmsHtmlContent", "BlockId", "dbo.cmsBlock", "Id", cascadeDelete: true);
             CreateIndex("dbo.cmsHtmlContent", "BlockId");
 
             DropTable("dbo.cmsBlockInstance");
@@ -169,16 +169,18 @@ namespace Rock.Migrations
             DropTable("dbo.cmsBlock");
 
             CreateIndex("cmsHtmlContent", "BlockId");
-            AddForeignKey("cmsHtmlContent", "BlockId", "cmsBlockInstance", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.cmsHtmlContent", "BlockId", "cmsBlockInstance", "Id", cascadeDelete: true);
 
             CreateIndex( "cmsBlockInstance", "ModifiedByPersonId" );
             CreateIndex( "cmsBlockInstance", "CreatedByPersonId" );
             CreateIndex( "cmsBlockInstance", "PageId" );
             CreateIndex( "cmsBlockInstance", "BlockTypeId" );
-            AddForeignKey( "cmsBlockInstance", "ModifiedByPersonId", "crmPerson", "Id" );
-            AddForeignKey("cmsBlockInstance", "CreatedByPersonId", "crmPerson", "Id");
-            AddForeignKey("cmsBlockInstance", "PageId", "cmsPage", "Id", cascadeDelete: true);
-            AddForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
+            CreateIndex( "cmsBlockInstance", "Layout" );
+            CreateIndex( "cmsBlockInstance", new string[] { "Layout", "PageId", "Zone" } );
+            AddForeignKey( "dbo.cmsBlockInstance", "ModifiedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.cmsBlockInstance", "CreatedByPersonId", "crmPerson", "Id");
+            AddForeignKey( "dbo.cmsBlockInstance", "PageId", "cmsPage", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
         }
     }
 }

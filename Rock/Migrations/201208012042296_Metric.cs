@@ -7,7 +7,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "coreMetricValue",
+                "dbo.coreMetricValue",
                 c => new
                 {
                     Id = c.Int( nullable: false, identity: true ),
@@ -28,7 +28,7 @@ namespace Rock.Migrations
                 .PrimaryKey( t => t.Id );
 
             CreateTable(
-                "coreMetric",
+                "dbo.coreMetric",
                 c => new
                 {
                     Id = c.Int( nullable: false, identity: true ),
@@ -58,27 +58,27 @@ namespace Rock.Migrations
             CreateIndex( "coreMetricValue", "MetricId" );
             CreateIndex( "coreMetric", "ModifiedByPersonId" );
             CreateIndex( "coreMetric", "CreatedByPersonId" );
-            AddForeignKey( "coreMetricValue", "ModifiedByPersonId", "crmPerson", "Id" );
-            AddForeignKey( "coreMetricValue", "CreatedByPersonId", "crmPerson", "Id" );
-            AddForeignKey( "coreMetricValue", "MetricId", "coreMetric", "Id", cascadeDelete: true );
-            AddForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson", "Id" );
-            AddForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.coreMetricValue", "ModifiedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.coreMetricValue", "CreatedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.coreMetricValue", "MetricId", "coreMetric", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.coreMetric", "ModifiedByPersonId", "crmPerson", "Id" );
+            AddForeignKey( "dbo.coreMetric", "CreatedByPersonId", "crmPerson", "Id" );
         }
 
         public override void Down()
         {
-            DropForeignKey( "coreMetric", "CreatedByPersonId", "crmPerson" );
-            DropForeignKey( "coreMetric", "ModifiedByPersonId", "crmPerson" );
-            DropForeignKey( "coreMetricValue", "MetricId", "coreMetric" );
-            DropForeignKey( "coreMetricValue", "CreatedByPersonId", "crmPerson" );
-            DropForeignKey( "coreMetricValue", "ModifiedByPersonId", "crmPerson" );
+            DropForeignKey( "dbo.coreMetric", "CreatedByPersonId", "crmPerson" );
+            DropForeignKey( "dbo.coreMetric", "ModifiedByPersonId", "crmPerson" );
+            DropForeignKey( "dbo.coreMetricValue", "MetricId", "coreMetric" );
+            DropForeignKey( "dbo.coreMetricValue", "CreatedByPersonId", "crmPerson" );
+            DropForeignKey( "dbo.coreMetricValue", "ModifiedByPersonId", "crmPerson" );
             DropIndex( "coreMetric", new[] { "CreatedByPersonId" } );
             DropIndex( "coreMetric", new[] { "ModifiedByPersonId" } );
             DropIndex( "coreMetricValue", new[] { "MetricId" } );
             DropIndex( "coreMetricValue", new[] { "CreatedByPersonId" } );
             DropIndex( "coreMetricValue", new[] { "ModifiedByPersonId" } );
-            DropTable( "coreMetric" );
-            DropTable( "coreMetricValue" );
+            DropTable( "dbo.coreMetric" );
+            DropTable( "dbo.coreMetricValue" );
         }
     }
 }

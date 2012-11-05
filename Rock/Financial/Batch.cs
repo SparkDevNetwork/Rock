@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Crm;
 using Rock.Data;
 
@@ -26,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -36,7 +34,6 @@ namespace Rock.Financial
         /// <value>
         /// The batch date.
         /// </value>
-        [DataMember]
         public DateTime? BatchDate { get; set; }
 
         /// <summary>
@@ -45,7 +42,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsClosed { get; set; }
 
         /// <summary>
@@ -54,7 +50,6 @@ namespace Rock.Financial
         /// <value>
         /// The campus id.
         /// </value>
-        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -63,7 +58,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -73,7 +67,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -82,7 +75,6 @@ namespace Rock.Financial
         /// <value>
         /// The foreign reference.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string ForeignReference { get; set; }
 

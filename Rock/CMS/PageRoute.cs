@@ -7,8 +7,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -26,7 +24,6 @@ namespace Rock.Cms
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Cms
         /// Page Id.
         /// </value>
         [Required]
-        [DataMember]
         public int PageId { get; set; }
         
         /// <summary>
@@ -48,7 +44,6 @@ namespace Rock.Cms
         [Route]
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
         public string Route { get; set; }
         
         /// <summary>

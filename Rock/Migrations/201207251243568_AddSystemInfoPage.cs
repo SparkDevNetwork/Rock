@@ -35,11 +35,11 @@ INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[O
 -- cmsBlockInstance
 DELETE [cmsBlockInstance] WHERE [Guid] = 'D1FD9A6B-C213-4074-8D84-EE5353635443'
 
--- cmsPage --
-DELETE [cmsPage] WHERE [Guid] = '8A97CC93-3E93-4286-8440-E5217B65A904'
-
 -- cmsPageRoute
 DELETE [cmsPageRoute] WHERE [Guid] = '617CF50F-C199-470A-8B32-F9115BDD02C0'
+
+-- cmsPage --
+DELETE [cmsPage] WHERE [Guid] = '8A97CC93-3E93-4286-8440-E5217B65A904'
 
 -- cmsBlock --
 DELETE [cmsBlock] WHERE [Guid] = 'DE08EFD7-4CF9-4BD5-9F72-C0151FD08523'

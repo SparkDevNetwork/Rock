@@ -7,7 +7,7 @@ namespace Rock.Migrations
     {
         public override void Up()
         {
-            AddForeignKey("dbo.crmPerson", "PhotoId", "dbo.cmsFile", "Id");
+            AddForeignKey( "dbo.crmPerson", "PhotoId", "dbo.cmsFile", "Id");
             CreateIndex("dbo.crmPerson", "PhotoId");
         }
         

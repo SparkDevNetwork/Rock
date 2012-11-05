@@ -9,7 +9,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class UniqueGuids : RockMigration
+    public partial class UniqueGuids : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

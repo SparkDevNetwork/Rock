@@ -13,6 +13,8 @@ namespace Rock.Data
     /// </summary>
     public partial class RockContext : DbContext
     {
+        #region Cms
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
@@ -92,6 +94,50 @@ namespace Rock.Data
         /// the Users.
         /// </value>
         public DbSet<Rock.Cms.User> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaigns.
+        /// </summary>
+        /// <value>
+        /// The marketing campaigns.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaign> MarketingCampaigns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ads.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ads.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAd> MarketingCampaignAds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ad types.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ad types.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign audiences.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign audiences.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign campuses.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign campuses.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
+
+        #endregion
+
+        #region Core
 
         /// <summary>
         /// Gets or sets the Attributes.
@@ -213,6 +259,10 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
 
+        #endregion
+
+        #region Crm
+
         /// <summary>
         /// Gets or sets the Location.
         /// </summary>
@@ -309,6 +359,10 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Crm.GroupMember> Members { get; set; }
 
+        #endregion
+
+        #region Util
+
         /// <summary>
         /// Gets or sets the Jobs.
         /// </summary>
@@ -316,6 +370,10 @@ namespace Rock.Data
         /// the Jobs.
         /// </value>
         public DbSet<Rock.Util.Job> Jobs { get; set; }
+
+        #endregion
+
+        #region Financial
 
         /// <summary>
         /// Gets or sets the batches.
@@ -373,6 +431,8 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
 
+        #endregion
+
         /// <summary>
         /// This method is called when the context has been initialized, but
         /// before the model has been locked down and used to initialize the context. 
@@ -407,6 +467,12 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Cms.SiteConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.SiteDomainConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Cms.UserConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAudienceConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignCampusConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
@@ -420,13 +486,20 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupRoleConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupLocationConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.MemberConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
@@ -434,11 +507,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupRoleConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupLocationConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.MemberConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
         }
     }

@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Crm    
@@ -27,7 +25,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +33,6 @@ namespace Rock.Crm
         /// <value>
         /// Parent Group Id.
         /// </value>
-        [DataMember]
         public int? ParentGroupId { get; set; }
         
         /// <summary>
@@ -46,7 +42,6 @@ namespace Rock.Crm
         /// Group Type Id.
         /// </value>
         [Required]
-        [DataMember]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -55,7 +50,6 @@ namespace Rock.Crm
         /// <value>
         /// Campus Id.
         /// </value>
-        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -66,7 +60,6 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -75,7 +68,6 @@ namespace Rock.Crm
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -85,7 +77,6 @@ namespace Rock.Crm
         /// Is Security Role.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSecurityRole { get; set; }
 
         /// <summary>
@@ -95,7 +86,6 @@ namespace Rock.Crm
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsActive { get; set; }
         
         /// <summary>

@@ -9,8 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -28,7 +26,6 @@ namespace Rock.Core
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -38,7 +35,6 @@ namespace Rock.Core
         /// MetricId.
         /// </value>
         [Required]
-        [DataMember]
         public int MetricId { get; set; }
 
         /// <summary>
@@ -49,7 +45,6 @@ namespace Rock.Core
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Value { get; set; }
         
         /// <summary>
@@ -58,7 +53,6 @@ namespace Rock.Core
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -68,7 +62,6 @@ namespace Rock.Core
         /// xValue.
         /// </value>
         [Required]
-        [DataMember]
         public string xValue { get; set; }
                 
         /// <summary>
@@ -78,7 +71,6 @@ namespace Rock.Core
         /// isDateBased.
         /// </value>
         [Required]
-        [DataMember]
         public bool isDateBased { get; set; }
 
         /// <summary>
@@ -87,7 +79,6 @@ namespace Rock.Core
         /// <value>
         /// Label.
         /// </value>
-        [DataMember]
         public string Label { get; set; }
 
         /// <summary>
@@ -97,7 +88,6 @@ namespace Rock.Core
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
         public int Order { get; set; }
         
         /// <summary>

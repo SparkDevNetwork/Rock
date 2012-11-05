@@ -7,9 +7,9 @@ namespace Rock.Migrations
     {
         public override void Up()
         {
-            DropForeignKey("cmsBlock", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlock", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlockInstance", "BlockId", "cmsBlock");
+            DropForeignKey( "dbo.cmsBlock", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlock", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlockInstance", "BlockId", "cmsBlock");
             DropIndex("cmsBlock", new[] { "CreatedByPersonId" });
             DropIndex("cmsBlock", new[] { "ModifiedByPersonId" });
             DropIndex("cmsBlockInstance", new[] { "BlockId" });
@@ -80,7 +80,7 @@ namespace Rock.Migrations
                 UPDATE [coreAttribute] SET [EntityQualifierColumn] = 'BlockTypeId' WHERE [EntityQualifierColumn] = 'BlockId'
 " );
             
-            AddForeignKey("dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
+            AddForeignKey( "dbo.cmsBlockInstance", "BlockTypeId", "dbo.cmsBlockType", "Id", cascadeDelete: true);
             CreateIndex("dbo.cmsBlockInstance", "BlockTypeId");
             DropColumn("dbo.cmsBlockInstance", "BlockId");
             DropTable("dbo.cmsBlock");
@@ -162,9 +162,11 @@ namespace Rock.Migrations
             CreateIndex("cmsBlockInstance", "BlockId");
             CreateIndex("cmsBlock", "ModifiedByPersonId");
             CreateIndex("cmsBlock", "CreatedByPersonId");
-            AddForeignKey("cmsBlockInstance", "BlockId", "cmsBlock", "Id", cascadeDelete: true);
-            AddForeignKey("cmsBlock", "ModifiedByPersonId", "crmPerson", "Id");
-            AddForeignKey("cmsBlock", "CreatedByPersonId", "crmPerson", "Id");
+            CreateIndex( "cmsBlock", "Name" );
+            CreateIndex( "cmsBlock", "Path" );
+            AddForeignKey( "dbo.cmsBlockInstance", "BlockId", "cmsBlock", "Id", cascadeDelete: true );
+            AddForeignKey( "dbo.cmsBlock", "ModifiedByPersonId", "crmPerson", "Id");
+            AddForeignKey( "dbo.cmsBlock", "CreatedByPersonId", "crmPerson", "Id");
         }
     }
 }

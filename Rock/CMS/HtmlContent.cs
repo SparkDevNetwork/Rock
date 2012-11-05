@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Cms
@@ -27,7 +25,6 @@ namespace Rock.Cms
         /// Block Id.
         /// </value>
         [Required]
-        [DataMember]
         public int BlockId { get; set; }
         
         /// <summary>
@@ -37,7 +34,6 @@ namespace Rock.Cms
         /// Entity Value.
         /// </value>
         [MaxLength( 200 )]
-        [DataMember]
         public string EntityValue { get; set; }
         
         /// <summary>
@@ -47,7 +43,6 @@ namespace Rock.Cms
         /// Version.
         /// </value>
         [Required]
-        [DataMember]
         public int Version { get; set; }
         
         /// <summary>
@@ -57,7 +52,6 @@ namespace Rock.Cms
         /// Content.
         /// </value>
         [Required]
-        [DataMember]
         public string Content { get; set; }
         
         /// <summary>
@@ -67,7 +61,6 @@ namespace Rock.Cms
         /// Approved.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsApproved { get; set; }
         
         /// <summary>
@@ -76,7 +69,6 @@ namespace Rock.Cms
         /// <value>
         /// Approved By Person Id.
         /// </value>
-        [DataMember]
         public int? ApprovedByPersonId { get; set; }
         
         /// <summary>
@@ -85,7 +77,6 @@ namespace Rock.Cms
         /// <value>
         /// Approved Date Time.
         /// </value>
-        [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
         
         /// <summary>
@@ -94,7 +85,6 @@ namespace Rock.Cms
         /// <value>
         /// Start Date Time.
         /// </value>
-        [DataMember]
         public DateTime? StartDateTime { get; set; }
         
         /// <summary>
@@ -103,7 +93,6 @@ namespace Rock.Cms
         /// <value>
         /// Expire Date Time.
         /// </value>
-        [DataMember]
         public DateTime? ExpireDateTime { get; set; }
         
         /// <summary>

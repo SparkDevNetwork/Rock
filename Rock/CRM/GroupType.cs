@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using Rock.Data;
 
 namespace Rock.Crm
@@ -26,7 +25,6 @@ namespace Rock.Crm
         /// System.
         /// </value>
         [Required]
-        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -37,7 +35,6 @@ namespace Rock.Crm
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -46,7 +43,6 @@ namespace Rock.Crm
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -55,7 +51,6 @@ namespace Rock.Crm
         /// <value>
         /// Default Group Role Id.
         /// </value>
-        [DataMember]
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>

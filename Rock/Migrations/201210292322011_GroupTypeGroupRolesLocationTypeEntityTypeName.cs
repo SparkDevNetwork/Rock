@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class GroupTypeGroupRolesLocationTypeEntityTypeName : RockMigration
+    public partial class GroupTypeGroupRolesLocationTypeEntityTypeName : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -23,8 +23,8 @@ namespace Rock.Migrations
             RenameColumn( table: "dbo.crmGroupTypeAssociation", name: "ParentGroupTypeId", newName: "ChildGroupTypeId" );
             Sql( "sp_rename 'crmGroupTypeAssociation.IX_ChildGroupTypeId', 'IX_GroupTypeId', 'INDEX'" );
             Sql( "sp_rename 'crmGroupTypeAssociation.IX_ParentGroupTypeId', 'IX_ChildGroupTypeId', 'INDEX'" );
-            Sql( "sp_rename 'FK_crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId', 'FK_crmGroupTypeAssociation_crmGroupType_GroupTypeId'" );
-            Sql( "sp_rename 'FK_crmGroupTypeAssociation_crmGroupType_ParentGroupTypeId' , 'FK_crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId'" );
+            Sql( "sp_rename '[FK_dbo.crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId]', 'FK_dbo.crmGroupTypeAssociation_crmGroupType_GroupTypeId'" );
+            Sql( "sp_rename '[FK_dbo.crmGroupTypeAssociation_crmGroupType_ParentGroupTypeId]' , 'FK_dbo.crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId'" );
 
             // LocationTypes
             AddDefinedType( "Location", "Location Type", "Location Types", "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" );
@@ -99,8 +99,8 @@ namespace Rock.Migrations
             DeleteDefinedType( "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" );
 
             // GroupTypeAssociationColumnFix
-            Sql( "sp_rename 'FK_crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId' , 'FK_crmGroupTypeAssociation_crmGroupType_ParentGroupTypeId'" );
-            Sql( "sp_rename 'FK_crmGroupTypeAssociation_crmGroupType_GroupTypeId', 'FK_crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId'" );
+            Sql( "sp_rename '[FK_dbo.crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId]' , 'FK_dbo.crmGroupTypeAssociation_crmGroupType_ParentGroupTypeId'" );
+            Sql( "sp_rename '[FK_dbo.crmGroupTypeAssociation_crmGroupType_GroupTypeId]', 'FK_dbo.crmGroupTypeAssociation_crmGroupType_ChildGroupTypeId'" );
             Sql( "sp_rename 'crmGroupTypeAssociation.IX_ChildGroupTypeId', 'IX_ParentGroupTypeId', 'INDEX'" );
             Sql( "sp_rename 'crmGroupTypeAssociation.IX_GroupTypeId', 'IX_ChildGroupTypeId', 'INDEX'" );
             RenameColumn( table: "dbo.crmGroupTypeAssociation", name: "ChildGroupTypeId", newName: "ParentGroupTypeId" );

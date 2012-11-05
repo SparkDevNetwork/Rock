@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -28,7 +26,6 @@ namespace Rock.Core
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -38,7 +35,6 @@ namespace Rock.Core
         /// Entity Id.
         /// </value>
         [Required]
-        [DataMember]
         public int EntityId { get; set; }
 
         /// <summary>
@@ -49,7 +45,6 @@ namespace Rock.Core
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
         public string Title { get; set; }
         
         /// <summary>
@@ -59,7 +54,6 @@ namespace Rock.Core
         /// Original Value.
         /// </value>
         [Required]
-        [DataMember]
         public AuditType AuditType { get; set; }
         
         /// <summary>
@@ -68,7 +62,6 @@ namespace Rock.Core
         /// <value>
         /// Properties.
         /// </value>
-        [DataMember]
         public string Properties { get; set; }
 
         /// <summary>
@@ -77,7 +70,6 @@ namespace Rock.Core
         /// <value>
         /// Date Time.
         /// </value>
-        [DataMember]
         public DateTime? DateTime { get; set; }
         
         /// <summary>
@@ -86,7 +78,6 @@ namespace Rock.Core
         /// <value>
         /// Person Id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>

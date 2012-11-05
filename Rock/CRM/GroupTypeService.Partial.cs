@@ -27,13 +27,14 @@ namespace Rock.Crm
         }
 
         /// <summary>
-        /// Determines whether GroupType is used as child group type in the database
+        /// Determines whether this instance can delete the specified group type id.
         /// </summary>
         /// <param name="groupTypeId">The group type id.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns>
-        ///   <c>true</c> if [is child group type] [the specified group type id]; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance can delete the specified group type id; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsChildGroupType( int groupTypeId )
+        public bool CanDelete( int groupTypeId, out string errorMessage )
         {
             RockContext context = new RockContext();
             context.Database.Connection.Open();
@@ -41,7 +42,17 @@ namespace Rock.Crm
             cmd.CommandText = string.Format( "select count(*) from crmGroupTypeAssociation where ChildGroupTypeId = {0} ", groupTypeId );
             var result = cmd.ExecuteScalar();
             int? count = result as int?;
-            return ( count > 0 );
+            bool canDelete = ( count > 0 );
+            if ( canDelete )
+            {
+                errorMessage = string.Empty;
+            }
+            else
+            {
+                errorMessage = "This group type is assigned as a child group type.";
+            }
+            return canDelete;
+
         }
 
         /// <summary>
@@ -52,7 +63,8 @@ namespace Rock.Crm
         /// <returns></returns>
         public override bool Delete( GroupType item, int? personId )
         {
-            if ( IsChildGroupType( item.Id ) )
+            string message;
+            if ( !CanDelete( item.Id, out message ) )
             {
                 return false;
             }
