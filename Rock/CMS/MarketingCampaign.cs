@@ -99,6 +99,14 @@ namespace Rock.Cms
         public virtual Group EventGroup { get; set; }
 
         /// <summary>
+        /// Gets or sets the marketing campaign ads.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ads.
+        /// </value>
+        public virtual ICollection<MarketingCampaignAd> MarketingCampaignAds { get; set; }
+
+        /// <summary>
         /// Gets or sets the marketing campaign audiences.
         /// </summary>
         /// <value>

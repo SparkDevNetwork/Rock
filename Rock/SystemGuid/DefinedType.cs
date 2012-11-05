@@ -62,5 +62,10 @@ namespace Rock.SystemGuid
         /// Guid for the types of Locations (such as Home, Main Office, etc)
         /// </summary>
         public static Guid LOCATION_LOCATION_TYPE { get { return new Guid( "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" ); } }
+
+        /// <summary>
+        /// Guid for Marketing Campaign Audience Type
+        /// </summary>
+        public static Guid MARKETING_CAMPAIGN_AUDIENCE_TYPE { get { return new Guid( "799301A3-2026-4977-994E-45DC68502559" ); } }
     }
 }
