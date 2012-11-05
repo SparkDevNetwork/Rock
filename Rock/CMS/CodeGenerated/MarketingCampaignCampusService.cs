@@ -62,6 +62,8 @@ namespace Rock.Cms
         {
             return items.Select( m => new MarketingCampaignCampusDto()
                 {
+                    MarketingCampaignId = m.MarketingCampaignId,
+                    CampusId = m.CampusId,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
