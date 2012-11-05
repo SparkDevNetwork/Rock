@@ -102,6 +102,7 @@
     <Compile Include="Core\AttributeValuesController.cs" />
     <Compile Include="Core\AttributesController.Partial.cs" />
     <Compile Include="Core\AuditsController.cs" />
+    <Compile Include="Core\CategoriesController.cs" />
     <Compile Include="Core\EntityTypesController.cs" />
     <Compile Include="Core\TaggedItemsController.cs" />
     <Compile Include="Core\TagsController.Partial.cs" />
@@ -139,8 +140,15 @@
     <Compile Include="Crm\GroupMembersController.cs" />
     <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\ActionsController.cs" />
+    <Compile Include="Util\ActionTypesController.cs" />
+    <Compile Include="Util\ActivitiesController.cs" />
+    <Compile Include="Util\ActivityTypesController.cs" />
     <Compile Include="Util\SearchController.cs" />
     <Compile Include="Util\JobsController.cs" />
+    <Compile Include="Util\WorkflowLogsController.cs" />
+    <Compile Include="Util\WorkflowsController.cs" />
+    <Compile Include="Util\WorkflowTypesController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock\Rock.csproj">

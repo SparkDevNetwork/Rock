@@ -178,6 +178,8 @@
     </Compile>
     <Compile Include="Core\CodeGenerated\AuditDto.cs" />
     <Compile Include="Core\CodeGenerated\AuditService.cs" />
+    <Compile Include="Core\CodeGenerated\CategoryDto.cs" />
+    <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
@@ -186,6 +188,7 @@
     <Compile Include="Core\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\Category.cs" />
     <Compile Include="Core\EntityType.cs" />
     <Compile Include="Core\EntityTypeService.Partial.cs" />
     <Compile Include="Core\TaggedItemService.Partial.cs" />
@@ -591,6 +594,10 @@
     <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201211052001525_Workflow.cs" />
+    <Compile Include="Migrations\201211052001525_Workflow.Designer.cs">
+      <DependentUpon>201211052001525_Workflow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -643,6 +650,27 @@
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
+    <Compile Include="Util\ActivityType.cs" />
+    <Compile Include="Util\ActionType.cs" />
+    <Compile Include="Util\Activity.cs" />
+    <Compile Include="Util\Action.cs" />
+    <Compile Include="Util\CodeGenerated\ActionDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActionService.cs" />
+    <Compile Include="Util\CodeGenerated\ActionTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActionTypeService.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityService.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityTypeService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowLogDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowLogService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTypeService.cs" />
+    <Compile Include="Util\WorkflowLog.cs" />
+    <Compile Include="Util\Workflow.cs" />
+    <Compile Include="Util\WorkflowType.cs" />
     <Compile Include="Util\Job.cs" />
     <Compile Include="Util\CodeGenerated\JobDto.cs" />
     <Compile Include="Util\CodeGenerated\JobService.cs" />
@@ -1028,6 +1056,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211052001525_Workflow.resx">
+      <DependentUpon>201211052001525_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
