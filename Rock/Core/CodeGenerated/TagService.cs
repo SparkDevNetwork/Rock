@@ -64,8 +64,8 @@ namespace Rock.Core
                 {
                     IsSystem = m.IsSystem,
                     EntityTypeId = m.EntityTypeId,
-                    EntityQualifierColumn = m.EntityQualifierColumn,
-                    EntityQualifierValue = m.EntityQualifierValue,
+                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
                     Name = m.Name,
                     Order = m.Order,
                     OwnerId = m.OwnerId,

@@ -45,6 +45,19 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the id.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static int? GetId( string name )
+        {
+            if (String.IsNullOrEmpty(name))
+                return null;
+
+            return Read( name ).Id;
+        }
+
+        /// <summary>
         /// Returns EntityType object from cache.  If entityType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
