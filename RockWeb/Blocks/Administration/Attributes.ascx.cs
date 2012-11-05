@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        protected string _entity = string.Empty;
+        protected int? _entityTypeId = null;
         protected string _entityQualifierColumn = string.Empty;
         protected string _entityQualifierValue = string.Empty;
         protected bool _displayValueEdit = false;
@@ -52,11 +52,12 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            _entity = AttributeValue( "Entity" );
-            if ( string.IsNullOrWhiteSpace( _entity ) )
+            string entityTypeName = AttributeValue( "Entity" );
+            if ( string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                _entity = PageParameter( "Entity" );
+                entityTypeName = PageParameter( "Entity" );
             }
+            _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( entityTypeName );
 
             _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
@@ -170,7 +171,7 @@ namespace RockWeb.Blocks.Administration
                     attributeValueService.Save( attributeValue, CurrentPersonId );
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
-                    if ( _entity == string.Empty && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
                     {
                         Rock.Web.Cache.GlobalAttributesCache.Flush();
                     }
@@ -371,9 +372,9 @@ namespace RockWeb.Blocks.Administration
                 {
                     attribute = new Rock.Core.Attribute();
                     attribute.IsSystem = false;
-                    attribute.Entity = _entity;
-                    attribute.EntityQualifierColumn = _entityQualifierColumn;
-                    attribute.EntityQualifierValue = _entityQualifierValue;
+                    attribute.EntityTypeId = _entityTypeId;
+                    attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityTypeQualifierValue = _entityQualifierValue;
                     attributeService.Add( attribute, CurrentPersonId );
                 }
                 else
@@ -449,14 +450,12 @@ namespace RockWeb.Blocks.Administration
             ddlCategoryFilter.Items.Add( "[All]" );
 
             AttributeService attributeService = new AttributeService();
-            var items = attributeService.Queryable().
-                Where( a => a.Entity == _entity &&
-                    ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue &&
-                    a.Category != string.Empty && a.Category != null ).
-                OrderBy( a => a.Category ).
-                Select( a => a.Category ).
-                Distinct().ToList();
+            var items = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
+                .Where( a => a.Category != string.Empty && a.Category != null )
+                .OrderBy( a => a.Category )
+                .Select( a => a.Category )
+                .Distinct()
+                .ToList();
 
             foreach ( var item in items )
             {
@@ -469,10 +468,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new Rock.Core.AttributeService().Queryable().
-                Where( a => a.Entity == _entity &&
-                    ( a.EntityQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-                    ( a.EntityQualifierValue ?? string.Empty ) == _entityQualifierValue );
+            AttributeService attributeService = new AttributeService();
+            var queryable = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
             {

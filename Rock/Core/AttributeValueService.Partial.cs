@@ -59,5 +59,23 @@ namespace Rock.Core
                 Where( v => v.AttributeId == attributeId && v.EntityId == entityId ).
                 OrderBy( v => v.Order );
         }
+
+        /// <summary>
+        /// Gets the global attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        public AttributeValue GetGlobalAttributeValue( string key )
+        {
+            return Repository.AsQueryable()
+                .Where( v =>
+                    !v.Attribute.EntityTypeId.HasValue &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.Key == key &&
+                    !v.EntityId.HasValue )
+                .FirstOrDefault();
+        }
     }
 }

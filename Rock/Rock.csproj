@@ -587,6 +587,14 @@
     <Compile Include="Migrations\201210312055490_MarketingPagesBlocks.Designer.cs">
       <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.cs" />
+    <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
+      <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201211052019458_MarketingCampaignAds.cs" />
+    <Compile Include="Migrations\201211052019458_MarketingCampaignAds.Designer.cs">
+      <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -1021,6 +1029,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201210312055490_MarketingPagesBlocks.resx">
       <DependentUpon>201210312055490_MarketingPagesBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
+      <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211052019458_MarketingCampaignAds.resx">
+      <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

@@ -62,10 +62,7 @@ namespace Rock.Web.Cache
                 var attributeService = new Rock.Core.AttributeService();
                 var attributeValueService = new Rock.Core.AttributeValueService();
 
-                foreach ( Rock.Core.Attribute attribute in attributeService.Queryable().
-                    Where( a => a.Entity == "" &&
-                        ( a.EntityQualifierColumn ?? string.Empty ) == "" &&
-                        ( a.EntityQualifierValue ?? string.Empty ) == "" ) )
+                foreach ( Rock.Core.Attribute attribute in attributeService.GetGlobalAttributes())
                 {
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
@@ -112,20 +109,12 @@ namespace Rock.Web.Cache
             {
                 // Save new value
                 var attributeValueService = new AttributeValueService();
-                var attributeValue = attributeValueService.Queryable()
-                    .Where( v =>
-                        v.Attribute.Entity == "" &&
-                        ( v.Attribute.EntityQualifierColumn ?? string.Empty ) == "" &&
-                        ( v.Attribute.EntityQualifierValue ?? string.Empty ) == "" &&
-                        v.Attribute.Key == key &&
-                        v.EntityId == null )
-                    .FirstOrDefault();
+                var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
 
                 if ( attributeValue == null )
                 {
                     var attributeService = new AttributeService();
-                    var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
-                        string.Empty, string.Empty, string.Empty, key );
+                    var attribute = attributeService.GetGlobalAttribute( key );
                     if ( attribute != null )
                     {
                         attributeValue = new AttributeValue();

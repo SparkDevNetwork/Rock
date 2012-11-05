@@ -26,9 +26,9 @@ namespace Rock.Core
 #pragma warning disable 1591
         public bool IsSystem { get; set; }
         public int FieldTypeId { get; set; }
-        public string Entity { get; set; }
-        public string EntityQualifierColumn { get; set; }
-        public string EntityQualifierValue { get; set; }
+        public int? EntityTypeId { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         public string Key { get; set; }
         public string Name { get; set; }
         public string Category { get; set; }
@@ -67,9 +67,9 @@ namespace Rock.Core
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "FieldTypeId", this.FieldTypeId );
-            dictionary.Add( "Entity", this.Entity );
-            dictionary.Add( "EntityQualifierColumn", this.EntityQualifierColumn );
-            dictionary.Add( "EntityQualifierValue", this.EntityQualifierValue );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
+            dictionary.Add( "EntityTypeQualifierColumn", this.EntityTypeQualifierColumn );
+            dictionary.Add( "EntityTypeQualifierValue", this.EntityTypeQualifierValue );
             dictionary.Add( "Key", this.Key );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Category", this.Category );
@@ -93,9 +93,9 @@ namespace Rock.Core
             dynamic expando = new ExpandoObject();
             expando.IsSystem = this.IsSystem;
             expando.FieldTypeId = this.FieldTypeId;
-            expando.Entity = this.Entity;
-            expando.EntityQualifierColumn = this.EntityQualifierColumn;
-            expando.EntityQualifierValue = this.EntityQualifierValue;
+            expando.EntityTypeId = this.EntityTypeId;
+            expando.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+            expando.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
             expando.Key = this.Key;
             expando.Name = this.Name;
             expando.Category = this.Category;
@@ -121,9 +121,9 @@ namespace Rock.Core
                 var attribute = (Attribute)model;
                 this.IsSystem = attribute.IsSystem;
                 this.FieldTypeId = attribute.FieldTypeId;
-                this.Entity = attribute.Entity;
-                this.EntityQualifierColumn = attribute.EntityQualifierColumn;
-                this.EntityQualifierValue = attribute.EntityQualifierValue;
+                this.EntityTypeId = attribute.EntityTypeId;
+                this.EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
+                this.EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
                 this.Key = attribute.Key;
                 this.Name = attribute.Name;
                 this.Category = attribute.Category;
@@ -149,9 +149,9 @@ namespace Rock.Core
                 var attribute = (Attribute)model;
                 attribute.IsSystem = this.IsSystem;
                 attribute.FieldTypeId = this.FieldTypeId;
-                attribute.Entity = this.Entity;
-                attribute.EntityQualifierColumn = this.EntityQualifierColumn;
-                attribute.EntityQualifierValue = this.EntityQualifierValue;
+                attribute.EntityTypeId = this.EntityTypeId;
+                attribute.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+                attribute.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
                 attribute.Key = this.Key;
                 attribute.Name = this.Name;
                 attribute.Category = this.Category;

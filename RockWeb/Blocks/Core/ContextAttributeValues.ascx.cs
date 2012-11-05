@@ -50,20 +50,20 @@ namespace RockWeb.Blocks.Core
                 _category = PageParameter( "AttributeCategory" );
 
             // Get the context entity
-            string contextTypeName = string.Empty;
+            int? contextEntityTypeId = null;
             Rock.Data.IEntity contextEntity = null;
             foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
             {
-                contextTypeName = entry.Key;
+                contextEntityTypeId = entry.Value.TypeId;
                 contextEntity = entry.Value;
                 // Should only be one.
                 break;
             }
 
-            if (!String.IsNullOrWhiteSpace(contextTypeName) && contextEntity != null)
+            if ( contextEntityTypeId.HasValue && contextEntity != null)
             {
                 ObjectCache cache = MemoryCache.Default;
-                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextTypeName, entityQualifierColumn, entityQualifierValue );
+                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextEntityTypeId, entityQualifierColumn, entityQualifierValue );
 
                 Dictionary<string, List<int>> cachedAttributes = cache[cacheKey] as Dictionary<string, List<int>>;
                 if ( cachedAttributes == null )
@@ -71,13 +71,11 @@ namespace RockWeb.Blocks.Core
                     cachedAttributes = new Dictionary<string, List<int>>();
 
                     AttributeService attributeService = new AttributeService();
-                    foreach ( var item in attributeService.Queryable().
-                        Where( a => a.Entity == contextTypeName &&
-                            ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
-                            ( a.EntityQualifierValue ?? string.Empty ) == entityQualifierValue ).
-                        OrderBy( a => a.Category ).
-                        ThenBy( a => a.Order ).
-                        Select( a => new { a.Category, a.Id } ) )
+                    foreach ( var item in attributeService
+                        .Get( contextEntityTypeId, entityQualifierColumn, entityQualifierValue )
+                        .OrderBy( a => a.Category )
+                        .ThenBy( a => a.Order )
+                        .Select( a => new { a.Category, a.Id } ) )
                     {
                         if ( !cachedAttributes.ContainsKey( item.Category ) )
                             cachedAttributes.Add( item.Category, new List<int>() );
