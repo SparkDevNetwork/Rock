@@ -30,6 +30,7 @@ namespace Rock.Cms
         /// <value>
         /// The name.
         /// </value>
+        [Required]
         [MaxLength( 100 )]
         public string Name { get; set; }
 
