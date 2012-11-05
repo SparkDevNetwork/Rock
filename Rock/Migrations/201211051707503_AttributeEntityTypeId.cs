@@ -18,7 +18,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.coreAttribute", "EntityTypeId", c => c.Int());
+            AddColumn( "dbo.coreAttribute", "EntityTypeId", c => c.Int() );
 
             Sql( @"
                 ;WITH CTE
@@ -46,9 +46,15 @@ namespace Rock.Migrations
             DropIndex( "dbo.coreAttribute", new[] { "Entity" } );
             DropColumn( "dbo.coreAttribute", "Entity" );
 
-            AddForeignKey("dbo.coreAttribute", "EntityTypeId", "dbo.coreEntityType", "Id");
-            CreateIndex("dbo.coreAttribute", "EntityTypeId");
-            CreateIndex( "dbo.coreAttribute", new[] { "EntityTypeId", "EntityQualifierColumn", "EntityQualifierValue", "Key" } );
+            AddForeignKey( "dbo.coreAttribute", "EntityTypeId", "dbo.coreEntityType", "Id" );
+            CreateIndex( "dbo.coreAttribute", "EntityTypeId" );
+
+            RenameColumn( table: "dbo.coreAttribute", name: "EntityQualifierColumn", newName: "EntityTypeQualifierColumn" );
+            RenameColumn( table: "dbo.coreAttribute", name: "EntityQualifierValue", newName: "EntityTypeQualifierValue" );
+            RenameColumn( table: "dbo.coreTag", name: "EntityQualifierColumn", newName: "EntityTypeQualifierColumn" );
+            RenameColumn( table: "dbo.coreTag", name: "EntityQualifierValue", newName: "EntityTypeQualifierValue" );
+
+            CreateIndex( "dbo.coreAttribute", new[] { "EntityTypeId", "EntityTypeQualifierColumn", "EntityTypeQualifierValue", "Key" } );
         }
         
         /// <summary>
@@ -56,7 +62,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            AddColumn("dbo.coreAttribute", "Entity", c => c.String(maxLength: 50));
+            AddColumn( "dbo.coreAttribute", "Entity", c => c.String( maxLength: 50 ) );
 
             Sql( @"
                 UPDATE A
@@ -66,12 +72,18 @@ namespace Rock.Migrations
                     ON E.[Id] = A.[EntityTypeId]
 " );
 
-            DropIndex( "dbo.coreAttribute", new[] { "EntityTypeId", "EntityQualifierColumn", "EntityQualifierValue", "Key" } );
+            DropIndex( "dbo.coreAttribute", new[] { "EntityTypeId", "EntityTypeQualifierColumn", "EntityTypeQualifierValue", "Key" } );
             DropIndex( "dbo.coreAttribute", new[] { "EntityTypeId" } );
-            DropForeignKey("dbo.coreAttribute", "EntityTypeId", "dbo.coreEntityType");
-            DropColumn("dbo.coreAttribute", "EntityTypeId");
+            DropForeignKey( "dbo.coreAttribute", "EntityTypeId", "dbo.coreEntityType" );
+            DropColumn( "dbo.coreAttribute", "EntityTypeId" );
 
             CreateIndex( "dbo.coreAttribute", new[] { "Entity" } );
+
+            RenameColumn( table: "dbo.coreAttribute", name: "EntityTypeQualifierColumn", newName: "EntityQualifierColumn" );
+            RenameColumn( table: "dbo.coreAttribute", name: "EntityTypeQualifierValue", newName: "EntityQualifierValue" );
+            RenameColumn( table: "dbo.coreTag", name: "EntityTypeQualifierColumn", newName: "EntityQualifierColumn" );
+            RenameColumn( table: "dbo.coreTag", name: "EntityTypeQualifierValue", newName: "EntityQualifierValue" );
+
             CreateIndex( "dbo.coreAttribute", new[] { "Entity", "EntityQualifierColumn", "EntityQualifierValue", "Key" } );
         }
     }

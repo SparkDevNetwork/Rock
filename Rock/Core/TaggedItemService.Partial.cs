@@ -29,8 +29,8 @@ namespace Rock.Core
         {
             return Repository.AsQueryable()
                 .Where( t => t.Tag.EntityTypeId == entityTypeId &&
-                    ( t.Tag.EntityQualifierColumn == entityQualifierColumn || (t.Tag.EntityQualifierColumn == null && entityQualifierColumn == null)) &&
-                    ( t.Tag.EntityQualifierValue == entityQualifierValue || (t.Tag.EntityQualifierValue == null && entityQualifierValue == null)) &&
+                    ( t.Tag.EntityTypeQualifierColumn == entityQualifierColumn || (t.Tag.EntityTypeQualifierColumn == null && entityQualifierColumn == null)) &&
+                    ( t.Tag.EntityTypeQualifierValue == entityQualifierValue || (t.Tag.EntityTypeQualifierValue == null && entityQualifierValue == null)) &&
                     ( t.Tag.OwnerId == null || ( ownerId.HasValue && t.Tag.OwnerId == ownerId ) ) &&
                     t.EntityId == entityId
                     )

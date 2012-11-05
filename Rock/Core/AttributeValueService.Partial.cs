@@ -71,8 +71,8 @@ namespace Rock.Core
             return Repository.AsQueryable()
                 .Where( v =>
                     !v.Attribute.EntityTypeId.HasValue &&
-                    v.Attribute.EntityQualifierColumn == string.Empty &&
-                    v.Attribute.EntityQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
                     v.Attribute.Key == key &&
                     !v.EntityId.HasValue )
                 .FirstOrDefault();

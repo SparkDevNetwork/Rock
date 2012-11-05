@@ -373,8 +373,8 @@ namespace RockWeb.Blocks.Administration
                     attribute = new Rock.Core.Attribute();
                     attribute.IsSystem = false;
                     attribute.EntityTypeId = _entityTypeId;
-                    attribute.EntityQualifierColumn = _entityQualifierColumn;
-                    attribute.EntityQualifierValue = _entityQualifierValue;
+                    attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityTypeQualifierValue = _entityQualifierValue;
                     attributeService.Add( attribute, CurrentPersonId );
                 }
                 else
