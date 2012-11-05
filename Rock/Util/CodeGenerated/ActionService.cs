@@ -64,7 +64,6 @@ namespace Rock.Util
                 {
                     ActivityId = m.ActivityId,
                     ActionTypeId = m.ActionTypeId,
-                    ActivatedDateTime = m.ActivatedDateTime,
                     LastProcessedDateTime = m.LastProcessedDateTime,
                     CompletedDateTime = m.CompletedDateTime,
                     Id = m.Id,

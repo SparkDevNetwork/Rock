@@ -30,8 +30,6 @@ namespace Rock.Util
         public DateTime? ActivatedDateTime { get; set; }
         public DateTime? LastProcessedDateTime { get; set; }
         public DateTime? CompletedDateTime { get; set; }
-        public ICollection<Activity> Activities { get; set; }
-        public ICollection<WorkflowLog> LogEntries { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -65,8 +63,6 @@ namespace Rock.Util
             dictionary.Add( "ActivatedDateTime", this.ActivatedDateTime );
             dictionary.Add( "LastProcessedDateTime", this.LastProcessedDateTime );
             dictionary.Add( "CompletedDateTime", this.CompletedDateTime );
-            dictionary.Add( "Activities", this.Activities );
-            dictionary.Add( "LogEntries", this.LogEntries );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -85,8 +81,6 @@ namespace Rock.Util
             expando.ActivatedDateTime = this.ActivatedDateTime;
             expando.LastProcessedDateTime = this.LastProcessedDateTime;
             expando.CompletedDateTime = this.CompletedDateTime;
-            expando.Activities = this.Activities;
-            expando.LogEntries = this.LogEntries;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -107,8 +101,6 @@ namespace Rock.Util
                 this.ActivatedDateTime = workflow.ActivatedDateTime;
                 this.LastProcessedDateTime = workflow.LastProcessedDateTime;
                 this.CompletedDateTime = workflow.CompletedDateTime;
-                this.Activities = workflow.Activities;
-                this.LogEntries = workflow.LogEntries;
                 this.Id = workflow.Id;
                 this.Guid = workflow.Guid;
             }
@@ -129,8 +121,6 @@ namespace Rock.Util
                 workflow.ActivatedDateTime = this.ActivatedDateTime;
                 workflow.LastProcessedDateTime = this.LastProcessedDateTime;
                 workflow.CompletedDateTime = this.CompletedDateTime;
-                workflow.Activities = this.Activities;
-                workflow.LogEntries = this.LogEntries;
                 workflow.Id = this.Id;
                 workflow.Guid = this.Guid;
             }

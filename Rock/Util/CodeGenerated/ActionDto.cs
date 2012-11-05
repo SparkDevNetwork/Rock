@@ -26,7 +26,6 @@ namespace Rock.Util
 #pragma warning disable 1591
         public int ActivityId { get; set; }
         public int ActionTypeId { get; set; }
-        public DateTime? ActivatedDateTime { get; set; }
         public DateTime? LastProcessedDateTime { get; set; }
         public DateTime? CompletedDateTime { get; set; }
         public int Id { get; set; }
@@ -58,7 +57,6 @@ namespace Rock.Util
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "ActivityId", this.ActivityId );
             dictionary.Add( "ActionTypeId", this.ActionTypeId );
-            dictionary.Add( "ActivatedDateTime", this.ActivatedDateTime );
             dictionary.Add( "LastProcessedDateTime", this.LastProcessedDateTime );
             dictionary.Add( "CompletedDateTime", this.CompletedDateTime );
             dictionary.Add( "Id", this.Id );
@@ -75,7 +73,6 @@ namespace Rock.Util
             dynamic expando = new ExpandoObject();
             expando.ActivityId = this.ActivityId;
             expando.ActionTypeId = this.ActionTypeId;
-            expando.ActivatedDateTime = this.ActivatedDateTime;
             expando.LastProcessedDateTime = this.LastProcessedDateTime;
             expando.CompletedDateTime = this.CompletedDateTime;
             expando.Id = this.Id;
@@ -94,7 +91,6 @@ namespace Rock.Util
                 var action = (Action)model;
                 this.ActivityId = action.ActivityId;
                 this.ActionTypeId = action.ActionTypeId;
-                this.ActivatedDateTime = action.ActivatedDateTime;
                 this.LastProcessedDateTime = action.LastProcessedDateTime;
                 this.CompletedDateTime = action.CompletedDateTime;
                 this.Id = action.Id;
@@ -113,7 +109,6 @@ namespace Rock.Util
                 var action = (Action)model;
                 action.ActivityId = this.ActivityId;
                 action.ActionTypeId = this.ActionTypeId;
-                action.ActivatedDateTime = this.ActivatedDateTime;
                 action.LastProcessedDateTime = this.LastProcessedDateTime;
                 action.CompletedDateTime = this.CompletedDateTime;
                 action.Id = this.Id;

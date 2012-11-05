@@ -19,6 +19,8 @@ namespace Rock.Util
     [Table( "utilAction" )]
     public partial class Action : Model<Action>
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the activity id.
         /// </summary>
@@ -52,14 +54,6 @@ namespace Rock.Util
         public virtual ActionType ActionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the activated date time.
-        /// </summary>
-        /// <value>
-        /// The activated date time.
-        /// </value>
-        public DateTime? ActivatedDateTime { get; set; }
-
-        /// <summary>
         /// Gets or sets the last processed date time.
         /// </summary>
         /// <value>
@@ -76,6 +70,20 @@ namespace Rock.Util
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsActive
+        {
+            get
+            {
+                return !CompletedDateTime.HasValue;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>
@@ -88,6 +96,53 @@ namespace Rock.Util
                 return this.Activity;
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Processes this instance.
+        /// </summary>
+        /// <exception cref="System.SystemException"></exception>
+        public virtual void Process()
+        {
+            WorkflowActionComponent workflowAction = this.ActionType.WorkflowAction;
+            if ( workflowAction == null )
+            {
+                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
+            }
+
+            bool success = workflowAction.Execute(this.Activity.Workflow);
+
+            if ( success )
+            {
+                if ( this.ActionType.IsActionCompletedOnSuccess )
+                {
+                    this.CompletedDateTime = DateTime.Now;
+                }
+
+                if ( this.ActionType.IsActivityCompletedOnSuccess )
+                {
+                    this.Activity.CompletedDateTime = DateTime.Now;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} : {1}", this.ActionType.ToString(), this.Id );
+        }
+
+        #endregion
+
+        #region Static Methods
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -109,18 +164,11 @@ namespace Rock.Util
             return Read<Action>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} : {1}", this.ActionType.ToString(), this.Id );
-        }
+        #endregion
 
     }
+
+    #region EF Configuration
 
     /// <summary>
     /// Action Configuration class.
@@ -136,5 +184,7 @@ namespace Rock.Util
             this.HasRequired( m => m.ActionType ).WithMany().HasForeignKey( m => m.ActionTypeId).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 }
 

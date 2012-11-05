@@ -60,7 +60,7 @@ namespace Rock.Util
         /// The name of the action service.
         /// </value>
         [Required]
-        [MaxLength(200)]
+        [MaxLength( 200 )]
         public string ActionServiceName { get; set; }
 
         /// <summary>
@@ -89,6 +89,33 @@ namespace Rock.Util
             get
             {
                 return this.ActivityType;
+            }
+        }
+
+        /// <summary>
+        /// Gets the workflow action.
+        /// </summary>
+        /// <value>
+        /// The workflow action.
+        /// </value>
+        public virtual WorkflowActionComponent WorkflowAction
+        {
+            get
+            {
+                foreach ( var serviceEntry in WorkflowActionContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    string componentName = component.GetType().FullName;
+                    if (
+                        componentName == this.ActionServiceName &&
+                        component.AttributeValues.ContainsKey( "Active" ) &&
+                        bool.Parse( component.AttributeValues["Active"][0].Value )
+                    )
+                    {
+                        return component;
+                    }
+                }
+                return null;
             }
         }
 
@@ -138,5 +165,6 @@ namespace Rock.Util
             this.HasRequired( m => m.ActivityType ).WithMany( m => m.ActionTypes ).HasForeignKey( m => m.ActivityTypeId ).WillCascadeOnDelete( true );
         }
     }
+
 }
 

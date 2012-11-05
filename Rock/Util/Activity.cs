@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 
 using Rock.Data;
 
@@ -19,6 +20,8 @@ namespace Rock.Util
     [Table( "utilActivity" )]
     public partial class Activity : Model<Activity>
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the workflow id.
         /// </summary>
@@ -76,12 +79,80 @@ namespace Rock.Util
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsActive
+        {
+            get
+            {
+                return ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+            }
+        }
+
+        /// <summary>
+        /// Does activity need processing.
+        /// </summary>
+        /// <param name="processStartTime">The process start time.</param>
+        /// <returns></returns>
+        public virtual bool NeedsProcessing( DateTime processStartTime )
+        {
+            if ( !this.IsActive )
+            {
+                return false;
+            }
+
+            if ( !LastProcessedDateTime.HasValue || 
+                LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Processes this instance.
+        /// </summary>
+        public virtual void Process()
+        {
+            this.LastProcessedDateTime = DateTime.Now;
+
+            foreach ( var action in this.ActiveActions )
+            {
+                action.Process();
+
+                // If action inactivated this activity, exit
+                if ( !this.IsActive )
+                    return;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the activities.
         /// </summary>
         /// <value>
         /// The activities.
         /// </value>
-        public ICollection<Rock.Util.Action> Actions { get; set; }
+        public virtual ICollection<Rock.Util.Action> Actions { get; set; }
+
+        /// <summary>
+        /// Gets the active actions.
+        /// </summary>
+        /// <value>
+        /// The active actions.
+        /// </value>
+        public virtual IEnumerable<Rock.Util.Action> ActiveActions
+        {
+            get
+            {
+                return this.Actions
+                    .Where( a => a.IsActive )
+                    .OrderBy( a => a.ActionType.Order );
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -96,6 +167,25 @@ namespace Rock.Util
                 return this.Workflow;
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} : {1}", this.ActivityType.ToString(), this.Id );
+        }
+
+        #endregion
+
+        #region Static Methods
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -117,18 +207,11 @@ namespace Rock.Util
             return Read<Activity>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} : {1}", this.ActivityType.ToString(), this.Id );
-        }
+        #endregion
 
     }
+
+    #region EF Configuration
 
     /// <summary>
     /// Activity Configuration class.
@@ -144,5 +227,7 @@ namespace Rock.Util
             this.HasRequired( m => m.ActivityType ).WithMany().HasForeignKey( m => m.ActivityTypeId).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 }
 

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 
 using Rock.Data;
 
@@ -19,6 +20,8 @@ namespace Rock.Util
     [Table( "utilWorkflow" )]
     public partial class Workflow : Model<Workflow>
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the workflow type id.
         /// </summary>
@@ -78,12 +81,54 @@ namespace Rock.Util
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsActive
+        {
+            get
+            {
+                return ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the activities.
         /// </summary>
         /// <value>
         /// The activities.
         /// </value>
-        public ICollection<Activity> Activities { get; set; }
+        public virtual ICollection<Activity> Activities { get; set; }
+
+        /// <summary>
+        /// Gets the active activities.
+        /// </summary>
+        /// <value>
+        /// The active activities.
+        /// </value>
+        public virtual IEnumerable<Activity> ActiveActivities
+        {
+            get
+            {
+                return this.Activities.Where( a => a.IsActive );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has active activities.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has active activities; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool HasActiveActivities
+        {
+            get
+            {
+                return this.Activities.Any( a => a.IsActive );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the log entries.
@@ -91,7 +136,7 @@ namespace Rock.Util
         /// <value>
         /// The log entries.
         /// </value>
-        public ICollection<WorkflowLog> LogEntries { get; set; }
+        public virtual ICollection<WorkflowLog> LogEntries { get; set; }
 
         /// <summary>
         /// Gets the parent authority.
@@ -106,6 +151,44 @@ namespace Rock.Util
                 return this.WorkflowType;
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        public virtual void Process()
+        {
+            DateTime processStartTime = DateTime.Now;
+            while ( ProcessActivity( processStartTime ) ) { }
+        }
+
+        public virtual bool ProcessActivity( DateTime processStartTime )
+        {
+            foreach ( var activity in this.Activities )
+            {
+                if ( activity.NeedsProcessing( processStartTime ) )
+                {
+                    activity.Process();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0} : {1}", this.WorkflowType.ToString(), this.Id );
+        }
+
+        #endregion
+
+        #region Static Methods
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -127,18 +210,10 @@ namespace Rock.Util
             return Read<Workflow>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0} : {1}", this.WorkflowType.ToString(), this.Id );
-        }
-
+        #endregion
     }
+
+    #region EF Configuration
 
     /// <summary>
     /// Workflow Configuration class.
@@ -153,5 +228,7 @@ namespace Rock.Util
             this.HasRequired( m => m.WorkflowType ).WithMany().HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
 }
 

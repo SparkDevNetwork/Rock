@@ -594,9 +594,9 @@
     <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201211052001525_Workflow.cs" />
-    <Compile Include="Migrations\201211052001525_Workflow.Designer.cs">
-      <DependentUpon>201211052001525_Workflow.cs</DependentUpon>
+    <Compile Include="Migrations\201211052341140_Workflow.cs" />
+    <Compile Include="Migrations\201211052341140_Workflow.Designer.cs">
+      <DependentUpon>201211052341140_Workflow.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -654,6 +654,8 @@
     <Compile Include="Util\ActionType.cs" />
     <Compile Include="Util\Activity.cs" />
     <Compile Include="Util\Action.cs" />
+    <Compile Include="Util\WorkflowActionComponent.cs" />
+    <Compile Include="Util\WorkflowActionContainer.cs" />
     <Compile Include="Util\CodeGenerated\ActionDto.cs" />
     <Compile Include="Util\CodeGenerated\ActionService.cs" />
     <Compile Include="Util\CodeGenerated\ActionTypeDto.cs" />
@@ -1057,11 +1059,13 @@
     <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211052001525_Workflow.resx">
-      <DependentUpon>201211052001525_Workflow.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201211052341140_Workflow.resx">
+      <DependentUpon>201211052341140_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Util\WorkflowAction\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
