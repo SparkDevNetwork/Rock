@@ -204,9 +204,10 @@ namespace Rock.Crm
         /// <param name="personId"></param>
         public void SaveUserValue(Person person, string key, List<string> values, int? personId)
         {
+            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
-                Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key );
+            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if ( attribute == null )
             {
@@ -215,9 +216,9 @@ namespace Rock.Crm
 
                 attribute = new Core.Attribute();
                 attribute.IsSystem = false;
-                attribute.Entity = Person.USER_VALUE_ENTITY;
-                attribute.EntityQualifierColumn = string.Empty;
-                attribute.EntityQualifierValue = string.Empty;
+                attribute.EntityTypeId = PersonEntityTypeId;
+                attribute.EntityTypeQualifierColumn = string.Empty;
+                attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
                 attribute.Category = string.Empty;
@@ -256,9 +257,10 @@ namespace Rock.Crm
         /// <returns></returns>
         public List<string> GetUserValue( Person person, string key )
         {
+            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
             var attributeService = new Core.AttributeService();
-            var attribute = attributeService.GetByEntityAndEntityQualifierColumnAndEntityQualifierValueAndKey(
-                Person.USER_VALUE_ENTITY, string.Empty, string.Empty, key);
+            var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if (attribute != null)
             {
@@ -278,13 +280,15 @@ namespace Rock.Crm
         /// <returns></returns>
         public Dictionary<string, List<string>> GetUserValues( Person person )
         {
+            int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
+
             var values = new Dictionary<string, List<string>>();
 
             foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
                 .Where( v =>
-                    v.Attribute.Entity == Person.USER_VALUE_ENTITY &&
-                    v.Attribute.EntityQualifierColumn == string.Empty &&
-                    v.Attribute.EntityQualifierValue == string.Empty &&
+                    v.Attribute.EntityTypeId == PersonEntityTypeId &&
+                    v.Attribute.EntityTypeQualifierColumn == string.Empty &&
+                    v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
             {
                 if (!values.Keys.Contains(attributeValue.Attribute.Key))

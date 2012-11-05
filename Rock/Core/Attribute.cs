@@ -36,16 +36,23 @@ namespace Rock.Core
         /// </value>
         [Required]
         public int FieldTypeId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Entity.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// Entity.
+        /// The entity type id.
         /// </value>
-        [MaxLength( 50 )]
-        public string Entity { get; set; }
-        
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual Core.EntityType EntityType { get; set; }
+
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
         /// </summary>
@@ -53,7 +60,7 @@ namespace Rock.Core
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
-        public string EntityQualifierColumn { get; set; }
+        public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Entity Qualifier Value.
@@ -62,7 +69,7 @@ namespace Rock.Core
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
-        public string EntityQualifierValue { get; set; }
+        public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Key.
@@ -194,6 +201,7 @@ namespace Rock.Core
         public AttributeConfiguration()
         {
             this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 }

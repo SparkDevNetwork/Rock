@@ -64,8 +64,8 @@ namespace Rock.Rest.Core
                     {
                         tag = new Tag();
                         tag.EntityTypeId = entityTypeId;
-                        tag.EntityQualifierColumn = entityQualifier;
-                        tag.EntityQualifierValue = entityQualifierValue;
+                        tag.EntityTypeQualifierColumn = entityQualifier;
+                        tag.EntityTypeQualifierValue = entityQualifierValue;
                         tag.OwnerId = ownerId;
                         tag.Name = name;
                         tagService.Add( tag, user.PersonId );
