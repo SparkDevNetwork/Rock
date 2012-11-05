@@ -24,6 +24,8 @@ namespace Rock.Cms
     {
 
 #pragma warning disable 1591
+        public int MarketingCampaignId { get; set; }
+        public int CampusId { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -51,6 +53,8 @@ namespace Rock.Cms
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "MarketingCampaignId", this.MarketingCampaignId );
+            dictionary.Add( "CampusId", this.CampusId );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -63,6 +67,8 @@ namespace Rock.Cms
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
+            expando.MarketingCampaignId = this.MarketingCampaignId;
+            expando.CampusId = this.CampusId;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -77,6 +83,8 @@ namespace Rock.Cms
             if ( model is MarketingCampaignCampus )
             {
                 var marketingCampaignCampus = (MarketingCampaignCampus)model;
+                this.MarketingCampaignId = marketingCampaignCampus.MarketingCampaignId;
+                this.CampusId = marketingCampaignCampus.CampusId;
                 this.Id = marketingCampaignCampus.Id;
                 this.Guid = marketingCampaignCampus.Guid;
             }
@@ -91,6 +99,8 @@ namespace Rock.Cms
             if ( model is MarketingCampaignCampus )
             {
                 var marketingCampaignCampus = (MarketingCampaignCampus)model;
+                marketingCampaignCampus.MarketingCampaignId = this.MarketingCampaignId;
+                marketingCampaignCampus.CampusId = this.CampusId;
                 marketingCampaignCampus.Id = this.Id;
                 marketingCampaignCampus.Guid = this.Guid;
             }

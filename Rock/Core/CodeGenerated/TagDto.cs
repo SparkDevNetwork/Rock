@@ -60,8 +60,8 @@ namespace Rock.Core
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
-            dictionary.Add( "EntityQualifierColumn", this.EntityTypeQualifierColumn );
-            dictionary.Add( "EntityQualifierValue", this.EntityTypeQualifierValue );
+            dictionary.Add( "EntityTypeQualifierColumn", this.EntityTypeQualifierColumn );
+            dictionary.Add( "EntityTypeQualifierValue", this.EntityTypeQualifierValue );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "OwnerId", this.OwnerId );
@@ -79,8 +79,8 @@ namespace Rock.Core
             dynamic expando = new ExpandoObject();
             expando.IsSystem = this.IsSystem;
             expando.EntityTypeId = this.EntityTypeId;
-            expando.EntityQualifierColumn = this.EntityTypeQualifierColumn;
-            expando.EntityQualifierValue = this.EntityTypeQualifierValue;
+            expando.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+            expando.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
             expando.Name = this.Name;
             expando.Order = this.Order;
             expando.OwnerId = this.OwnerId;

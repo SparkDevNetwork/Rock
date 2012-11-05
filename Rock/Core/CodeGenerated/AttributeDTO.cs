@@ -68,8 +68,8 @@ namespace Rock.Core
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "FieldTypeId", this.FieldTypeId );
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
-            dictionary.Add( "EntityQualifierColumn", this.EntityTypeQualifierColumn );
-            dictionary.Add( "EntityQualifierValue", this.EntityTypeQualifierValue );
+            dictionary.Add( "EntityTypeQualifierColumn", this.EntityTypeQualifierColumn );
+            dictionary.Add( "EntityTypeQualifierValue", this.EntityTypeQualifierValue );
             dictionary.Add( "Key", this.Key );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Category", this.Category );
@@ -94,8 +94,8 @@ namespace Rock.Core
             expando.IsSystem = this.IsSystem;
             expando.FieldTypeId = this.FieldTypeId;
             expando.EntityTypeId = this.EntityTypeId;
-            expando.EntityQualifierColumn = this.EntityTypeQualifierColumn;
-            expando.EntityQualifierValue = this.EntityTypeQualifierValue;
+            expando.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+            expando.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
             expando.Key = this.Key;
             expando.Name = this.Name;
             expando.Category = this.Category;
