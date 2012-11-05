@@ -104,7 +104,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     protected void gMarketingCampaignAdType_Delete( object sender, RowEventArgs e )
     {
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-        int MarketingCampaignAdTypeId = (int)gMarketingCampaignAdType.DataKeys[e.RowIndex]["id"];
+        int marketingCampaignAdTypeId = (int)gMarketingCampaignAdType.DataKeys[e.RowIndex]["id"];
 
         /*
         string errorMessage;
@@ -116,7 +116,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
         }
         */
 
-        MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( MarketingCampaignAdTypeId );
+        MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
         if ( CurrentBlock != null )
         {
             marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonId );
@@ -151,6 +151,17 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
     protected void gMarketingCampaignAdAttributeType_GridRebind( object sender, EventArgs e )
     {
+    }
+
+    private void BindMarketingCampaignAdAttributeTypeGrid()
+    {
+        //
+        MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+
+        int marketingCampaignAdTypeId = int.Parse( hfMarketingCampaignAdTypeId.Value );
+        MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
+        //marketingCampaignAdType.Attributes
+
     }
 
     #endregion
@@ -243,8 +254,11 @@ public partial class MarketingCampaignAdTypes : RockBlock
     private void LoadDropDowns()
     {
         ddlDateRangeType.Items.Clear();
-        ddlDateRangeType.Items.Add( new ListItem( DateRangeTypeEnum.SingleDate.ConvertToString().SplitCase(), ( (int)DateRangeTypeEnum.SingleDate ).ToString() ) );
-        ddlDateRangeType.Items.Add( new ListItem( DateRangeTypeEnum.DateRange.ConvertToString().SplitCase(), ( (int)DateRangeTypeEnum.DateRange ).ToString() ) );
+
+        foreach ( DateRangeTypeEnum dateRangeType in Enum.GetValues( typeof( DateRangeTypeEnum ) ) )
+        {
+            ddlDateRangeType.Items.Add( new ListItem( dateRangeType.ConvertToString().SplitCase(), ( (int)dateRangeType ).ToString() ) );
+        }
     }
 
     /// <summary>
@@ -288,6 +302,8 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
         iconIsSystem.Visible = readOnly;
         btnSave.Visible = !readOnly;
+
+        BindMarketingCampaignAdAttributeTypeGrid();
     }
 
     #endregion
