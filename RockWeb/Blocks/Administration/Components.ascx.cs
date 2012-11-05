@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var component in _container.Dictionary )
             {
                 Type type = component.Value.Value.GetType();
-                if ( Rock.Attribute.Helper.UpdateAttributes( type, type.FullName, string.Empty, string.Empty, null ) )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName), string.Empty, string.Empty, null ) )
                     Rock.Attribute.Helper.LoadAttributes( component.Value.Value );
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );
             }
