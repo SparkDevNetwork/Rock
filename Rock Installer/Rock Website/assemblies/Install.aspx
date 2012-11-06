@@ -12,14 +12,6 @@
 
 <script language="CS" runat="server">
 	
-	// you want the Rock ChMS, well here we go! (better hold on...)
-	
-	//
-	// The purpose of this page is to download the base files for the install (Ionic.Zip.ddl and Install.aspx) and 
-	// do some inital checks of the environment to ensure it is possible to write to the file system of the 
-	// web server and make sure that the web server can connect to the internet. Hopefully no one every sees
-	// this page as it should redirect to the Install.aspx page.
-	//
 	
 	//
 	// some constants

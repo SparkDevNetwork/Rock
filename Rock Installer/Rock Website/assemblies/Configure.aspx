@@ -80,7 +80,7 @@
     	File.Delete(Server.MapPath(".") + @"\Install.aspx");
     	File.Delete(Server.MapPath(".") + @"\Configure.aspx");
     	File.Delete(Server.MapPath(".") + @"\RockInstall.zip");
-    	//File.Delete(Server.MapPath(".") + @"\Start.aspx");
+    	File.Delete(Server.MapPath(".") + @"\Start.aspx");
     }
     
     
