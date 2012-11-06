@@ -17,7 +17,7 @@ namespace Rock.Cms
     /// MarketingCampaign POCO Entity
     /// </summary>
     [Table( "cmsMarketingCampaign" )]
-    public partial class MarketingCampaign : Model<MarketingCampaign>, IExportable
+    public partial class MarketingCampaign : Model<MarketingCampaign>
     {
         /// <summary>
         /// Gets or sets the title.
@@ -131,34 +131,6 @@ namespace Rock.Cms
         public override string ToString()
         {
             return this.Title;
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            throw new NotImplementedException();
         }
     }
 
