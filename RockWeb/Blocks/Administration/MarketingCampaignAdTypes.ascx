@@ -33,7 +33,8 @@
                     <div class="span6">
                         <Rock:Grid ID="gMarketingCampaignAdAttributeTypes" runat="server" AllowPaging="false" ShowActionExcelExport="false">
                             <Columns>
-                                <asp:BoundField DataField="Value" HeaderText="Attribute Types" />
+                                <asp:BoundField DataField="Name" HeaderText="Attribute Types" />
+                                <Rock:EditField OnClick="gMarketingCampaignAdAttributeType_Edit" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAdAttributeType_Delete" />
                             </Columns>
                         </Rock:Grid>
@@ -44,6 +45,39 @@
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+            </div>
+
+        </asp:Panel>
+
+        <asp:Panel ID="pnlAdTypeAttribute" runat="server" Visible="false">
+            <asp:HiddenField ID="hfAttributeGuid" runat="server" />
+            <fieldset>
+                <legend>
+                    <asp:Literal ID="lAttributeActionTitle" runat="server"></asp:Literal>
+                </legend>
+                <div class="row-fluid">
+
+                    <div class="span6">
+                        <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
+                        <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
+                        <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                    </div>
+
+                    <div class="span6">
+                        <Rock:DataDropDownList ID="ddlAttributeFieldType" runat="server" LabelText="Field Type" SourceTypeName="Rock.Core.FieldType, Rock" PropertyName="Name" DataValueField="Id" DataTextField="Name" />
+                        <asp:PlaceHolder ID="phAttributeFieldTypeQualifiers" runat="server"></asp:PlaceHolder>
+                        <Rock:DataTextBox ID="tbAttributeDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
+                        <Rock:LabeledCheckBox ID="cbAttributeMultiValue" runat="server" LabelText="Allow Multiple Values" />
+                        <Rock:LabeledCheckBox ID="cbAttributeRequired" runat="server" LabelText="Required" />
+                    </div>
+
+                </div>
+            </fieldset>
+
+            <div class="actions">
+                <asp:LinkButton ID="btnSaveAttribute" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveAttribute_Click" />
+                <asp:LinkButton ID="btnCancelAttribute" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelAttribute_Click" />
             </div>
 
         </asp:Panel>
