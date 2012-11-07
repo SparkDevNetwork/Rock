@@ -65,7 +65,6 @@ namespace Rock.Util
                     ActivityTypeId = m.ActivityTypeId,
                     Name = m.Name,
                     Order = m.Order,
-                    ActionServiceName = m.ActionServiceName,
                     IsActionCompletedOnSuccess = m.IsActionCompletedOnSuccess,
                     IsActivityCompletedOnSuccess = m.IsActivityCompletedOnSuccess,
                     Id = m.Id,

@@ -59,7 +59,7 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ComponentDescription( int id, KeyValuePair<string, Component> service )
+        public ComponentDescription( int id, KeyValuePair<string, ComponentManaged> service )
         {
             Id = id;
 

@@ -10,12 +10,12 @@ namespace Rock.Extension
     /// <summary>
     /// Interface for MEF Container
     /// </summary>
-    public interface IContainer
+    public interface IContainerManaged
     {
         /// <summary>
         /// Gets the component name and attributes.
         /// </summary>
-        Dictionary<int, KeyValuePair<string, IComponent>> Dictionary { get; }
+        Dictionary<int, KeyValuePair<string, ComponentManaged>> Dictionary { get; }
 
         /// <summary>
         /// Refreshes the components.

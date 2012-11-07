@@ -11,7 +11,7 @@ namespace Rock.Address
     /// <summary>
     /// The base class for all address geocoding components
     /// </summary>
-    public abstract class GeocodeComponent : Component
+    public abstract class GeocodeComponent : ComponentManaged
     {
         /// <summary>
         /// Abstract method for geocoding the specified address.  Derived classes should implement
