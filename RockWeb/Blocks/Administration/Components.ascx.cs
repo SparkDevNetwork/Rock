@@ -18,16 +18,16 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// Used to manage the <see cref="Rock.MEF.StandardizeService"/> classes found through MEF.  Provides a way to edit the value
+    /// Used to manage the <see cref="Rock.Extension.ComponentManaged"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
-    [BlockProperty( 0, "Component Container", "The Rock Extension Component Container to manage", true)]
+    [BlockProperty( 0, "Component Container", "The Rock Extension Managed Component Container to manage", true)]
     public partial class Components : RockBlock
     {
         #region Private Variables
 
         private bool _isAuthorizedToConfigure = false;
-        private IContainer _container;
+        private IContainerManaged _container;
 
         #endregion
 
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
                 {
-                    _container = instanceProperty.GetValue( null, null ) as IContainer;
+                    _container = instanceProperty.GetValue( null, null ) as IContainerManaged;
                     if ( _container != null )
                     {
                         if ( !Page.IsPostBack )
@@ -59,13 +59,13 @@ namespace RockWeb.Blocks.Administration
                         rGrid.GridRebind += rGrid_GridRebind;
                     }
                     else
-                        DisplayError( "Could not get Container instance from Instance property" );
+                        DisplayError( "Could not get ContainerManaged instance from Instance property" );
                 }
                 else
-                    DisplayError( "Container class does not have an 'Instance' property" );
+                    DisplayError( "ContainerManaged class does not have an 'Instance' property" );
             }
             else
-                DisplayError( "Could not get the type of the specified Component Container" );
+                DisplayError( "Could not get the type of the specified Manged Component Container" );
         }
 
         protected override void LoadViewState( object savedState )
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Administration
                 int order = 0;
                 foreach ( var item in components )
                 {
-                    Component component = item.Value.Value;
+                    ComponentManaged component = item.Value.Value;
                     if (  component.Attributes.ContainsKey("Order") )
                     {
                         Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonId );

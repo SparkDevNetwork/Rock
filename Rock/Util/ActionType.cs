@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
+using Rock.Core;
 using Rock.Data;
 
 namespace Rock.Util
@@ -49,14 +50,12 @@ namespace Rock.Util
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the MEF service name of the action.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// The name of the action service.
+        /// The entity type id.
         /// </value>
-        [Required]
-        [MaxLength( 200 )]
-        public string ActionServiceName { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is action completed on success.
@@ -87,6 +86,14 @@ namespace Rock.Util
         public virtual ActivityType ActivityType { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets the workflow action.
         /// </summary>
         /// <value>
@@ -96,17 +103,16 @@ namespace Rock.Util
         {
             get
             {
-                foreach ( var serviceEntry in WorkflowActionContainer.Instance.Components )
+                if ( this.EntityType != null )
                 {
-                    var component = serviceEntry.Value.Value;
-                    string componentName = component.GetType().FullName;
-                    if (
-                        componentName == this.ActionServiceName &&
-                        component.AttributeValues.ContainsKey( "Active" ) &&
-                        bool.Parse( component.AttributeValues["Active"][0].Value )
-                    )
+                    foreach ( var serviceEntry in WorkflowActionContainer.Instance.Components )
                     {
-                        return component;
+                        var component = serviceEntry.Value.Value;
+                        string componentName = component.GetType().FullName;
+                        if ( componentName == this.EntityType.Name )
+                        {
+                            return component;
+                        }
                     }
                 }
                 return null;

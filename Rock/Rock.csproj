@@ -263,9 +263,12 @@
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
-    <Compile Include="Extension\Component.cs" />
-    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ComponentManaged.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IComponent.cs" />
+    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ContainerManaged.cs" />
     <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
@@ -299,7 +302,7 @@
     <Compile Include="Crm\EmailTemplate.cs" />
     <Compile Include="Crm\Person.cs" />
     <Compile Include="Crm\PhoneNumber.cs" />
-    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IContainerManaged.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
     <Compile Include="Field\Types\SelectMulti.cs" />
     <Compile Include="Field\Types\Document.cs" />
@@ -655,6 +658,7 @@
     <Compile Include="Util\Activity.cs" />
     <Compile Include="Util\Action.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
+    <Compile Include="Util\WorkflowAction\SetStatus.cs" />
     <Compile Include="Util\WorkflowTypeService.Partial.cs" />
     <Compile Include="Util\WorkflowService.Partial.cs" />
     <Compile Include="Util\WorkflowActionComponent.cs" />
@@ -1066,9 +1070,7 @@
       <DependentUpon>201211052341140_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Util\WorkflowAction\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
