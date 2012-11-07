@@ -18,6 +18,9 @@ namespace Rock.Util
     [Table( "utilActionType" )]
     public partial class ActionType : Model<ActionType>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the activity type id.
         /// </summary>
@@ -25,14 +28,6 @@ namespace Rock.Util
         /// The activity type id.
         /// </value>
         public int ActivityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the activity.
-        /// </summary>
-        /// <value>
-        /// The type of the activity.
-        /// </value>
-        public virtual ActivityType ActivityType { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -70,6 +65,7 @@ namespace Rock.Util
         /// <c>true</c> if this instance is action completed on success; otherwise, <c>false</c>.
         /// </value>
         public bool IsActionCompletedOnSuccess { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is activity completed on success.
         /// </summary>
@@ -78,19 +74,17 @@ namespace Rock.Util
         /// </value>
         public bool IsActivityCompletedOnSuccess { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets or sets the type of the activity.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The type of the activity.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ActivityType;
-            }
-        }
+        public virtual ActivityType ActivityType { get; set; }
 
         /// <summary>
         /// Gets the workflow action.
@@ -120,6 +114,39 @@ namespace Rock.Util
         }
 
         /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ActivityType;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
@@ -139,18 +166,11 @@ namespace Rock.Util
             return Read<ActionType>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
+        #endregion
 
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// ActionType Configuration class.
@@ -165,6 +185,8 @@ namespace Rock.Util
             this.HasRequired( m => m.ActivityType ).WithMany( m => m.ActionTypes ).HasForeignKey( m => m.ActivityTypeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
 
 }
 

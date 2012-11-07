@@ -73,6 +73,7 @@ namespace Rock.Util
                     EntryActivityTypeId = m.EntryActivityTypeId,
                     ProcessingIntervalSeconds = m.ProcessingIntervalSeconds,
                     IsPersisted = m.IsPersisted,
+                    LoggingLevel = m.LoggingLevel,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

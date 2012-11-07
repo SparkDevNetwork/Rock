@@ -66,7 +66,7 @@ namespace Rock.Util
                     WorkflowTypeId = m.WorkflowTypeId,
                     Name = m.Name,
                     Description = m.Description,
-                    IsCreatedOnStart = m.IsCreatedOnStart,
+                    IsActivatedWithWorkflow = m.IsActivatedWithWorkflow,
                     Order = m.Order,
                     Id = m.Id,
                     Guid = m.Guid,

@@ -63,6 +63,8 @@ namespace Rock.Util
             return items.Select( m => new WorkflowDto()
                 {
                     WorkflowTypeId = m.WorkflowTypeId,
+                    Name = m.Name,
+                    Description = m.Description,
                     Status = m.Status,
                     IsProcessing = m.IsProcessing,
                     ActivatedDateTime = m.ActivatedDateTime,
