@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,15 +21,25 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for PersonMerged object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PersonMergedDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int CurrentId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid CurrentGuid { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -104,6 +115,48 @@ namespace Rock.Crm
                 personMerged.Id = this.Id;
                 personMerged.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonMergedDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonMerged ToModel( this PersonMergedDto value )
+        {
+            PersonMerged result = new PersonMerged();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonMerged> ToModel( this List<PersonMergedDto> value )
+        {
+            List<PersonMerged> result = new List<PersonMerged>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonMergedDto> ToDto( this List<PersonMerged> value )
+        {
+            List<PersonMergedDto> result = new List<PersonMergedDto>();
+            value.ForEach( a => result.Add( new PersonMergedDto( a ) ) );
+            return result;
         }
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,27 +21,73 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for Fund object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class FundDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string PublicName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ParentFundId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsTaxDeductible { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsActive { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? StartDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? EndDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsPledgable { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string GlCode { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FundTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Entity { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -164,6 +211,48 @@ namespace Rock.Financial
                 fund.Id = this.Id;
                 fund.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FundDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Fund ToModel( this FundDto value )
+        {
+            Fund result = new Fund();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Fund> ToModel( this List<FundDto> value )
+        {
+            List<Fund> result = new List<Fund>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<FundDto> ToDto( this List<Fund> value )
+        {
+            List<FundDto> result = new List<FundDto>();
+            value.ForEach( a => result.Add( new FundDto( a ) ) );
+            return result;
         }
     }
 }
