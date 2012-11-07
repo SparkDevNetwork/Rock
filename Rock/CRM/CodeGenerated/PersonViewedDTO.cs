@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for PersonViewed object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PersonViewedDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int? ViewerPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? TargetPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? ViewDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string IpAddress { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Source { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -119,6 +139,48 @@ namespace Rock.Crm
                 personViewed.Id = this.Id;
                 personViewed.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonViewedDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonViewed ToModel( this PersonViewedDto value )
+        {
+            PersonViewed result = new PersonViewed();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonViewed> ToModel( this List<PersonViewedDto> value )
+        {
+            List<PersonViewed> result = new List<PersonViewed>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonViewedDto> ToDto( this List<PersonViewed> value )
+        {
+            List<PersonViewedDto> result = new List<PersonViewedDto>();
+            value.ForEach( a => result.Add( new PersonViewedDto( a ) ) );
+            return result;
         }
     }
 }

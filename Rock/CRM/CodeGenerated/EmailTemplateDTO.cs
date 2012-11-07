@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,23 +21,57 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for EmailTemplate object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class EmailTemplateDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Category { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Title { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string From { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string To { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Cc { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Bcc { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Subject { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Body { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -144,6 +179,48 @@ namespace Rock.Crm
                 emailTemplate.Id = this.Id;
                 emailTemplate.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EmailTemplateDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EmailTemplate ToModel( this EmailTemplateDto value )
+        {
+            EmailTemplate result = new EmailTemplate();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EmailTemplate> ToModel( this List<EmailTemplateDto> value )
+        {
+            List<EmailTemplate> result = new List<EmailTemplate>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EmailTemplateDto> ToDto( this List<EmailTemplate> value )
+        {
+            List<EmailTemplateDto> result = new List<EmailTemplateDto>();
+            value.ForEach( a => result.Add( new EmailTemplateDto( a ) ) );
+            return result;
         }
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for FieldType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class FieldTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Assembly { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Class { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -119,6 +139,48 @@ namespace Rock.Core
                 fieldType.Id = this.Id;
                 fieldType.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FieldTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static FieldType ToModel( this FieldTypeDto value )
+        {
+            FieldType result = new FieldType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<FieldType> ToModel( this List<FieldTypeDto> value )
+        {
+            List<FieldType> result = new List<FieldType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<FieldTypeDto> ToDto( this List<FieldType> value )
+        {
+            List<FieldTypeDto> result = new List<FieldTypeDto>();
+            value.ForEach( a => result.Add( new FieldTypeDto( a ) ) );
+            return result;
         }
     }
 }

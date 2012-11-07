@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,28 +21,77 @@ namespace Rock.Util
     /// <summary>
     /// Data Transfer Object for Job object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class JobDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsActive { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Assemby { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Class { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string CronExpression { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastSuccessfulRun { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastRunDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? LastRunDuration { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string LastStatus { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string LastStatusMessage { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string LastRunSchedulerName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string NotificationEmails { get; set; }
+
+        /// <summary />
+        [DataMember]
         public JobNotificationStatus NotificationStatus { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -169,6 +219,48 @@ namespace Rock.Util
                 job.Id = this.Id;
                 job.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class JobDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Job ToModel( this JobDto value )
+        {
+            Job result = new Job();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Job> ToModel( this List<JobDto> value )
+        {
+            List<Job> result = new List<Job>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<JobDto> ToDto( this List<Job> value )
+        {
+            List<JobDto> result = new List<JobDto>();
+            value.ForEach( a => result.Add( new JobDto( a ) ) );
+            return result;
         }
     }
 }
