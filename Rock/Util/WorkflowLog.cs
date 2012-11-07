@@ -19,6 +19,9 @@ namespace Rock.Util
     [Table( "utilWorkflowLog" )]
     public partial class WorkflowLog : Entity<WorkflowLog>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the workflow id.
         /// </summary>
@@ -26,14 +29,6 @@ namespace Rock.Util
         /// The workflow id.
         /// </value>
         public int WorkflowId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the  workflow.
-        /// </summary>
-        /// <value>
-        /// The workflow.
-        /// </value>
-        public virtual Workflow Workflow { get; set; }
 
         /// <summary>
         /// Gets or sets the log date time.
@@ -52,6 +47,37 @@ namespace Rock.Util
         /// </value>
         [Required]
         public string LogText { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the  workflow.
+        /// </summary>
+        /// <value>
+        /// The workflow.
+        /// </value>
+        public virtual Workflow Workflow { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return string.Format( "{0}: {1}", this.LogDateTime.ToString(), this.LogText );
+        }
+
+        #endregion
+
+        #region Static Methods
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -73,18 +99,11 @@ namespace Rock.Util
             return Read<WorkflowLog>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0}: {1}", this.LogDateTime.ToString(), this.LogText );
-        }
+        #endregion
 
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// WorkflowLog Configuration class.
@@ -99,5 +118,8 @@ namespace Rock.Util
             this.HasRequired( m => m.Workflow ).WithMany( m => m.LogEntries).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }
 

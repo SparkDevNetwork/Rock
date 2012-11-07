@@ -28,7 +28,7 @@ namespace Rock.Util
         public int WorkflowTypeId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public bool IsCreatedOnStart { get; set; }
+        public bool IsActivatedWithWorkflow { get; set; }
         public int Order { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
@@ -61,7 +61,7 @@ namespace Rock.Util
             dictionary.Add( "WorkflowTypeId", this.WorkflowTypeId );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "IsCreatedOnStart", this.IsCreatedOnStart );
+            dictionary.Add( "IsActivatedWithWorkflow", this.IsActivatedWithWorkflow );
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
@@ -79,7 +79,7 @@ namespace Rock.Util
             expando.WorkflowTypeId = this.WorkflowTypeId;
             expando.Name = this.Name;
             expando.Description = this.Description;
-            expando.IsCreatedOnStart = this.IsCreatedOnStart;
+            expando.IsActivatedWithWorkflow = this.IsActivatedWithWorkflow;
             expando.Order = this.Order;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
@@ -99,7 +99,7 @@ namespace Rock.Util
                 this.WorkflowTypeId = activityType.WorkflowTypeId;
                 this.Name = activityType.Name;
                 this.Description = activityType.Description;
-                this.IsCreatedOnStart = activityType.IsCreatedOnStart;
+                this.IsActivatedWithWorkflow = activityType.IsActivatedWithWorkflow;
                 this.Order = activityType.Order;
                 this.Id = activityType.Id;
                 this.Guid = activityType.Guid;
@@ -119,7 +119,7 @@ namespace Rock.Util
                 activityType.WorkflowTypeId = this.WorkflowTypeId;
                 activityType.Name = this.Name;
                 activityType.Description = this.Description;
-                activityType.IsCreatedOnStart = this.IsCreatedOnStart;
+                activityType.IsActivatedWithWorkflow = this.IsActivatedWithWorkflow;
                 activityType.Order = this.Order;
                 activityType.Id = this.Id;
                 activityType.Guid = this.Guid;

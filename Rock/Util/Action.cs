@@ -19,7 +19,8 @@ namespace Rock.Util
     [Table( "utilAction" )]
     public partial class Action : Model<Action>
     {
-        #region Properties
+
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the activity id.
@@ -30,28 +31,12 @@ namespace Rock.Util
         public int ActivityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the  activity.
-        /// </summary>
-        /// <value>
-        /// The activity.
-        /// </value>
-        public virtual Activity Activity { get; set; }
-
-        /// <summary>
         /// Gets or sets the activity type id.
         /// </summary>
         /// <value>
         /// The activity type id.
         /// </value>
         public int ActionTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the activity.
-        /// </summary>
-        /// <value>
-        /// The type of the activity.
-        /// </value>
-        public virtual ActionType ActionType { get; set; }
 
         /// <summary>
         /// Gets or sets the last processed date time.
@@ -68,6 +53,26 @@ namespace Rock.Util
         /// The completed date time.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the  activity.
+        /// </summary>
+        /// <value>
+        /// The activity.
+        /// </value>
+        public virtual Activity Activity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the activity.
+        /// </summary>
+        /// <value>
+        /// The type of the activity.
+        /// </value>
+        public virtual ActionType ActionType { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
@@ -107,26 +112,52 @@ namespace Rock.Util
         /// <exception cref="System.SystemException"></exception>
         public virtual void Process()
         {
+            AddSystemLogEntry( "Processing..." );
+
             WorkflowActionComponent workflowAction = this.ActionType.WorkflowAction;
             if ( workflowAction == null )
             {
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
 
-            bool success = workflowAction.Execute(this.Activity.Workflow);
+            bool success = workflowAction.Execute(this);
+
+            AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
             if ( success )
             {
                 if ( this.ActionType.IsActionCompletedOnSuccess )
                 {
-                    this.CompletedDateTime = DateTime.Now;
+                    this.MarkComplete();
                 }
 
                 if ( this.ActionType.IsActivityCompletedOnSuccess )
                 {
-                    this.Activity.CompletedDateTime = DateTime.Now;
+                    this.Activity.MarkComplete();
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a log entry.
+        /// </summary>
+        /// <param name="logEntry">The log entry.</param>
+        public virtual void AddLogEntry( string logEntry )
+        {
+            if ( this.Activity != null &&
+                this.Activity.Workflow != null )
+            {
+                this.Activity.Workflow.AddLogEntry( string.Format( "{0}|{1}: {2}", this.Activity.ToString(), this.ToString(), logEntry ) );
+            }
+        }
+
+        /// <summary>
+        /// Marks this action as complete.
+        /// </summary>
+        public virtual void MarkComplete()
+        {
+            CompletedDateTime = DateTime.Now;
+            AddSystemLogEntry( "Completed" );
         }
 
         /// <summary>
@@ -137,12 +168,48 @@ namespace Rock.Util
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} : {1}", this.ActionType.ToString(), this.Id );
+            return string.Format( "{0}[{1}]", this.ActionType.ToString(), this.Id );
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Logs a system event.
+        /// </summary>
+        /// <param name="logEntry">The log entry.</param>
+        private void AddSystemLogEntry( string logEntry )
+        {
+            if ( this.Activity != null &&
+                this.Activity.Workflow != null &&
+                this.Activity.Workflow.WorkflowType != null &&
+                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action )
+            {
+                AddLogEntry( logEntry );
+            }
         }
 
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Activates the specified action type.
+        /// </summary>
+        /// <param name="actionType">Type of the action.</param>
+        /// <param name="activity">The activity.</param>
+        /// <returns></returns>
+        internal static Action Activate( ActionType actionType, Activity activity)
+        {
+            var action = new Action();
+            action.Activity = activity;
+            action.ActionType = actionType;
+
+            action.AddSystemLogEntry( "Activated" );
+
+            return action;
+        }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -168,7 +235,7 @@ namespace Rock.Util
 
     }
 
-    #region EF Configuration
+    #region Entity Configuration
 
     /// <summary>
     /// Action Configuration class.
@@ -186,5 +253,6 @@ namespace Rock.Util
     }
 
     #endregion
+
 }
 

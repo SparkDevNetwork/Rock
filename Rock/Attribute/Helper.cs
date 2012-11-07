@@ -21,8 +21,11 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
-        /// <param name="type">The type (should be a <see cref="IHasAttributes"/> object.</param>
-        /// <param name="entity">The entity.</param>
+        /// <summary>
+        /// Updates the attributes.
+        /// </summary>
+        /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
         public static bool UpdateAttributes( Type type, int? entityTypeId, int? currentPersonId )
@@ -31,11 +34,11 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Uses reflection to find any <see cref="BlockPropertyAttribute"/> attributes for the specified type and will create and/or update
-        /// a <see cref="Rock.Core.Attribute"/> record for each attribute defined.
+        /// Uses reflection to find any <see cref="BlockPropertyAttribute" /> attributes for the specified type and will create and/or update
+        /// a <see cref="Rock.Core.Attribute" /> record for each attribute defined.
         /// </summary>
-        /// <param name="type">The type (should be a <see cref="IHasAttributes"/> object.</param>
-        /// <param name="entity">The entity.</param>
+        /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
@@ -91,10 +94,10 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Adds or Updates a <see cref="Rock.Core.Attribute"/> item for the attribute.
+        /// Adds or Updates a <see cref="Rock.Core.Attribute" /> item for the attribute.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="entity">The entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>

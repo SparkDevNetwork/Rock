@@ -20,7 +20,8 @@ namespace Rock.Util
     [Table( "utilWorkflow" )]
     public partial class Workflow : Model<Workflow>
     {
-        #region Properties
+
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the workflow type id.
@@ -31,12 +32,22 @@ namespace Rock.Util
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the workflow.
+        /// Gets or sets the Name.
         /// </summary>
         /// <value>
-        /// The type of the workflow.
+        /// Friendly name for the job..
         /// </value>
-        public virtual WorkflowType WorkflowType { get; set; }
+        [Required]
+        [MaxLength( 100 )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Notes about the job..
+        /// </value>
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
@@ -79,6 +90,18 @@ namespace Rock.Util
         /// The completed date time.
         /// </value>
         public DateTime? CompletedDateTime { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the type of the workflow.
+        /// </summary>
+        /// <value>
+        /// The type of the workflow.
+        /// </value>
+        public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
@@ -154,15 +177,71 @@ namespace Rock.Util
 
         #endregion
 
-        #region Methods
+        #region Public Methods
 
+        /// <summary>
+        /// Processes this instance.
+        /// </summary>
         public virtual void Process()
         {
+            AddSystemLogEntry( "Processing..." );
+
             DateTime processStartTime = DateTime.Now;
             while ( ProcessActivity( processStartTime ) ) { }
+
+            this.LastProcessedDateTime = DateTime.Now;
+
+            AddSystemLogEntry( "Processing Complete" );
+
+            if ( !this.HasActiveActivities )
+            {
+                MarkComplete();
+            }
         }
 
-        public virtual bool ProcessActivity( DateTime processStartTime )
+        /// <summary>
+        /// Adds a log entry.
+        /// </summary>
+        /// <param name="logEntry">The log entry.</param>
+        public virtual void AddLogEntry( string logEntry )
+        {
+            var workflowLog = new WorkflowLog();
+            workflowLog.LogDateTime = DateTime.Now;
+            workflowLog.LogText = logEntry;
+
+            this.LogEntries.Add( workflowLog );
+        }
+
+        /// <summary>
+        /// Marks this workflow as complete.
+        /// </summary>
+        public virtual void MarkComplete()
+        {
+            CompletedDateTime = DateTime.Now;
+            AddSystemLogEntry( "Completed" );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Processes the activity.
+        /// </summary>
+        /// <param name="processStartTime">The process start time.</param>
+        /// <returns></returns>
+        private bool ProcessActivity( DateTime processStartTime )
         {
             foreach ( var activity in this.Activities )
             {
@@ -176,19 +255,50 @@ namespace Rock.Util
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// adds a system log entry
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <param name="logEntry">The log entry.</param>
+        private void AddSystemLogEntry( string logEntry )
         {
-            return string.Format( "{0} : {1}", this.WorkflowType.ToString(), this.Id );
+            if ( this.WorkflowType != null && (
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                this.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ))
+            {
+                AddLogEntry( logEntry );
+            }
         }
 
         #endregion
 
         #region Static Methods
+
+        /// <summary>
+        /// Activates the specified workflow type.
+        /// </summary>
+        /// <param name="workflowType">Type of the workflow.</param>
+        /// <returns></returns>
+        internal static Workflow Activate( WorkflowType workflowType )
+        {
+            var workflow = new Workflow();
+            workflow.WorkflowType = workflowType;
+            workflow.Status = "Activated";
+            workflow.IsProcessing = false;
+            workflow.ActivatedDateTime = DateTime.Now;
+
+            workflow.AddSystemLogEntry( "Activated" );
+
+            foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
+            {
+                if ( activityType.IsActivatedWithWorkflow ||
+                    ( workflowType.EntryActivityTypeId.HasValue && activityType.Id == workflowType.EntryActivityTypeId.Value ) )
+                {
+                    workflow.Activities.Add( Activity.Activate(activityType, workflow) );
+                }
+            }
+
+            return workflow;
+        }
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -211,9 +321,10 @@ namespace Rock.Util
         }
 
         #endregion
+
     }
 
-    #region EF Configuration
+    #region Entity Configuration
 
     /// <summary>
     /// Workflow Configuration class.
@@ -230,5 +341,6 @@ namespace Rock.Util
     }
 
     #endregion
+
 }
 

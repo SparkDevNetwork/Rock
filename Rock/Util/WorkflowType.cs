@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 
 using Rock.Cms;
 using Rock.Core;
@@ -21,6 +22,9 @@ namespace Rock.Util
     [Table( "utilWorkflowType" )]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -64,14 +68,6 @@ namespace Rock.Util
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>
-        /// The category.
-        /// </value>
-        public virtual Category Category { get; set; }
-
-        /// <summary>
         /// Gets or sets the Order.
         /// </summary>
         /// <value>
@@ -87,14 +83,6 @@ namespace Rock.Util
         /// The file id.
         /// </value>
         public int? FileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the file.
-        /// </summary>
-        /// <value>
-        /// The file.
-        /// </value>
-        public virtual File File { get; set; }
 
         /// <summary>
         /// Gets or sets the work term.
@@ -115,14 +103,6 @@ namespace Rock.Util
         public int? EntryActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entry activity.
-        /// </summary>
-        /// <value>
-        /// The type of the entry activity.
-        /// </value>
-        public virtual ActivityType EntryActivityType { get; set; }
-
-        /// <summary>
         /// Gets or sets the processing interval seconds.
         /// </summary>
         /// <value>
@@ -139,12 +119,67 @@ namespace Rock.Util
         public bool IsPersisted { get; set; }
 
         /// <summary>
+        /// Gets or sets the logging level.
+        /// </summary>
+        /// <value>
+        /// The logging level.
+        /// </value>
+        public WorkflowLoggingLevel LoggingLevel { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file.
+        /// </summary>
+        /// <value>
+        /// The file.
+        /// </value>
+        public virtual File File { get; set; }
+
+        /// <summary>
         /// Gets or sets the activity types.
         /// </summary>
         /// <value>
         /// The activity types.
         /// </value>
         public virtual ICollection<ActivityType> ActivityTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entry activity.
+        /// </summary>
+        /// <value>
+        /// The type of the entry activity.
+        /// </value>
+        public virtual ActivityType EntryActivityType { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+
+        #region Static Methods
 
         /// <summary>
         /// Static Method to return an object based on the id
@@ -166,18 +201,11 @@ namespace Rock.Util
             return Read<WorkflowType>( guid );
         }
 
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
+        #endregion
 
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// WorkflowType Configuration class.
@@ -194,5 +222,39 @@ namespace Rock.Util
             this.HasOptional( m => m.File ).WithMany().HasForeignKey( m => m.FileId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// The level of details to log
+    /// </summary>
+    public enum WorkflowLoggingLevel
+    {
+
+        /// <summary>
+        /// Don't log any details
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Log workflow events
+        /// </summary>
+        Workflow = 1,
+
+        /// <summary>
+        /// Log workflow and activity events
+        /// </summary>
+        Activity = 2,
+
+        /// <summary>
+        /// Log workflow, activity, and action events
+        /// </summary>
+        Action = 3
+    }
+
+    #endregion
+
 }
 

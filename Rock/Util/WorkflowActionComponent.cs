@@ -17,8 +17,8 @@ namespace Rock.Util
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
-        /// <param name="workflow">The workflow.</param>
+        /// <param name="action">The action.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( Workflow workflow );
+        public abstract Boolean Execute( Action action );
     }
 }

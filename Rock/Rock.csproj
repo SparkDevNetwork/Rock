@@ -654,6 +654,9 @@
     <Compile Include="Util\ActionType.cs" />
     <Compile Include="Util\Activity.cs" />
     <Compile Include="Util\Action.cs" />
+    <Compile Include="Jobs\ProcessWorkflows.cs" />
+    <Compile Include="Util\WorkflowTypeService.Partial.cs" />
+    <Compile Include="Util\WorkflowService.Partial.cs" />
     <Compile Include="Util\WorkflowActionComponent.cs" />
     <Compile Include="Util\WorkflowActionContainer.cs" />
     <Compile Include="Util\CodeGenerated\ActionDto.cs" />

@@ -25,6 +25,8 @@ namespace Rock.Util
 
 #pragma warning disable 1591
         public int WorkflowTypeId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public string Status { get; set; }
         public bool IsProcessing { get; set; }
         public DateTime? ActivatedDateTime { get; set; }
@@ -58,6 +60,8 @@ namespace Rock.Util
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "WorkflowTypeId", this.WorkflowTypeId );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "Description", this.Description );
             dictionary.Add( "Status", this.Status );
             dictionary.Add( "IsProcessing", this.IsProcessing );
             dictionary.Add( "ActivatedDateTime", this.ActivatedDateTime );
@@ -76,6 +80,8 @@ namespace Rock.Util
         {
             dynamic expando = new ExpandoObject();
             expando.WorkflowTypeId = this.WorkflowTypeId;
+            expando.Name = this.Name;
+            expando.Description = this.Description;
             expando.Status = this.Status;
             expando.IsProcessing = this.IsProcessing;
             expando.ActivatedDateTime = this.ActivatedDateTime;
@@ -96,6 +102,8 @@ namespace Rock.Util
             {
                 var workflow = (Workflow)model;
                 this.WorkflowTypeId = workflow.WorkflowTypeId;
+                this.Name = workflow.Name;
+                this.Description = workflow.Description;
                 this.Status = workflow.Status;
                 this.IsProcessing = workflow.IsProcessing;
                 this.ActivatedDateTime = workflow.ActivatedDateTime;
@@ -116,6 +124,8 @@ namespace Rock.Util
             {
                 var workflow = (Workflow)model;
                 workflow.WorkflowTypeId = this.WorkflowTypeId;
+                workflow.Name = this.Name;
+                workflow.Description = this.Description;
                 workflow.Status = this.Status;
                 workflow.IsProcessing = this.IsProcessing;
                 workflow.ActivatedDateTime = this.ActivatedDateTime;

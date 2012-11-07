@@ -35,6 +35,7 @@ namespace Rock.Util
         public int? EntryActivityTypeId { get; set; }
         public int? ProcessingIntervalSeconds { get; set; }
         public bool IsPersisted { get; set; }
+        public WorkflowLoggingLevel LoggingLevel { get; set; }
         public int Id { get; set; }
         public Guid Guid { get; set; }
 #pragma warning restore 1591
@@ -73,6 +74,7 @@ namespace Rock.Util
             dictionary.Add( "EntryActivityTypeId", this.EntryActivityTypeId );
             dictionary.Add( "ProcessingIntervalSeconds", this.ProcessingIntervalSeconds );
             dictionary.Add( "IsPersisted", this.IsPersisted );
+            dictionary.Add( "LoggingLevel", this.LoggingLevel );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -96,6 +98,7 @@ namespace Rock.Util
             expando.EntryActivityTypeId = this.EntryActivityTypeId;
             expando.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
             expando.IsPersisted = this.IsPersisted;
+            expando.LoggingLevel = this.LoggingLevel;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -121,6 +124,7 @@ namespace Rock.Util
                 this.EntryActivityTypeId = workflowType.EntryActivityTypeId;
                 this.ProcessingIntervalSeconds = workflowType.ProcessingIntervalSeconds;
                 this.IsPersisted = workflowType.IsPersisted;
+                this.LoggingLevel = workflowType.LoggingLevel;
                 this.Id = workflowType.Id;
                 this.Guid = workflowType.Guid;
             }
@@ -146,6 +150,7 @@ namespace Rock.Util
                 workflowType.EntryActivityTypeId = this.EntryActivityTypeId;
                 workflowType.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
                 workflowType.IsPersisted = this.IsPersisted;
+                workflowType.LoggingLevel = this.LoggingLevel;
                 workflowType.Id = this.Id;
                 workflowType.Guid = this.Guid;
             }
