@@ -47,48 +47,45 @@ namespace Rock.Attribute
         {
             bool attributesUpdated = false;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            List<string> existingKeys = new List<string>();
+
+            var blockProperties = new List<BlockPropertyAttribute>();
+
+            // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
+            int properties = 0;
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
             {
-                List<string> existingKeys = new List<string>();
-
-                var blockProperties = new List<BlockPropertyAttribute>();
-
-                // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
-                int properties = 0;
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+                var contextAttribute = (ContextAwareAttribute)customAttribute;
+                if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
                 {
-                    var contextAttribute = (ContextAwareAttribute)customAttribute;
-                    if ( String.IsNullOrWhiteSpace( contextAttribute.EntityType ) )
-                    {
-                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                        properties++;
+                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                    properties++;
 
-                        blockProperties.Add( new BlockPropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
-                    }
+                    blockProperties.Add( new BlockPropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
                 }
-                        
-                // Add any property attributes that were defined for the block
-                foreach ( var customAttribute in type.GetCustomAttributes( typeof( BlockPropertyAttribute ), true ) )
-                {
-                    blockProperties.Add( (BlockPropertyAttribute)customAttribute );
-                }
-
-                // Create any attributes that need to be created
-                foreach( var blockProperty in blockProperties)
-                {
-                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
-                    existingKeys.Add( blockProperty.Key );
-                }
-
-                // Remove any old attributes
-                Core.AttributeService attributeService = new Core.AttributeService();
-                foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
-                    if ( !existingKeys.Contains( a.Key ) )
-                    {
-                        attributeService.Delete( a, currentPersonId );
-                        attributeService.Save( a, currentPersonId );
-                    }
             }
+
+            // Add any property attributes that were defined for the block
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( BlockPropertyAttribute ), true ) )
+            {
+                blockProperties.Add( (BlockPropertyAttribute)customAttribute );
+            }
+
+            // Create any attributes that need to be created
+            foreach ( var blockProperty in blockProperties )
+            {
+                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
+                existingKeys.Add( blockProperty.Key );
+            }
+
+            // Remove any old attributes
+            Core.AttributeService attributeService = new Core.AttributeService();
+            foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+                if ( !existingKeys.Contains( a.Key ) )
+                {
+                    attributeService.Delete( a, currentPersonId );
+                    attributeService.Save( a, currentPersonId );
+                }
 
             return attributesUpdated;
         }

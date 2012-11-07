@@ -5,11 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Util
@@ -98,33 +98,17 @@ namespace Rock.Util
         }
 
         /// <summary>
-        /// Does activity need processing.
-        /// </summary>
-        /// <param name="processStartTime">The process start time.</param>
-        /// <returns></returns>
-        public virtual bool NeedsProcessing( DateTime processStartTime )
-        {
-            if ( !this.IsActive )
-            {
-                return false;
-            }
-
-            if ( !LastProcessedDateTime.HasValue || 
-                LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Gets or sets the activities.
         /// </summary>
         /// <value>
         /// The activities.
         /// </value>
-        public virtual ICollection<Rock.Util.Action> Actions { get; set; }
+        public virtual ICollection<Action> Actions
+        {
+            get { return _actions ?? ( _actions = new Collection<Action>() ); }
+            set { _actions = value; }
+        }
+        private ICollection<Action> _actions;
 
         /// <summary>
         /// Gets the active actions.

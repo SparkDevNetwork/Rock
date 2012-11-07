@@ -33,7 +33,9 @@ namespace Rock.Util.WorkflowAction
         /// <returns></returns>
         public override bool Execute(Action action)
         {
-            action.Activity.Workflow.Status = action.AttributeValues["Status"][0].Value;
+            string status = action.ActionType.AttributeValues["Status"][0].Value;
+            action.Activity.Workflow.Status = status;
+            action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
             return true;
         }
     }

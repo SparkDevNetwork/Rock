@@ -5,11 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-
 using Rock.Cms;
 using Rock.Core;
 using Rock.Data;
@@ -152,7 +152,12 @@ namespace Rock.Util
         /// <value>
         /// The activity types.
         /// </value>
-        public virtual ICollection<ActivityType> ActivityTypes { get; set; }
+        public virtual ICollection<ActivityType> ActivityTypes
+        {
+            get { return _activityTypes ?? ( _activityTypes = new Collection<ActivityType>() ); }
+            set { _activityTypes = value; }
+        }
+        private ICollection<ActivityType> _activityTypes;
 
         /// <summary>
         /// Gets or sets the type of the entry activity.

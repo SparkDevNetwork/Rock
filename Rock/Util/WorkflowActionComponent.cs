@@ -26,15 +26,14 @@ namespace Rock.Util
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionComponent" /> class.
         /// </summary>
-        public WorkflowActionComponent() : base()
+        public WorkflowActionComponent()
         {
             Type type = this.GetType();
 
+            var ActionTypeEntityType = EntityTypeCache.Read( typeof( Rock.Util.ActionType ).FullName );
             this.EntityType = EntityTypeCache.Read( type.FullName );
-            var ActionEntityType = EntityTypeCache.Read( typeof( Rock.Util.Action ).FullName );
-            Rock.Attribute.Helper.UpdateAttributes( type, ActionEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
+            Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
         }
-
 
         /// <summary>
         /// Executes the specified workflow.
