@@ -23,9 +23,9 @@ namespace Rock.Util
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        public Workflow Activate( WorkflowType workflowType, int? currentPersonId )
+        public Workflow Activate( WorkflowType workflowType, string name, int? currentPersonId )
         {
-            var workflow = Workflow.Activate( workflowType );
+            var workflow = Workflow.Activate( workflowType, name );
             
             this.Add( workflow, currentPersonId );
             this.Save( workflow, currentPersonId );

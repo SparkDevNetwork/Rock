@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class Workflow : IMigrationMetadata
+    public sealed partial class workflow : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Workflow));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(workflow));
         
         string IMigrationMetadata.Id
         {
-            get { return "201211052341140_Workflow"; }
+            get { return "201211072016329_workflow"; }
         }
         
         string IMigrationMetadata.Source

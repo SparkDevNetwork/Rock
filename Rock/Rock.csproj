@@ -597,9 +597,9 @@
     <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201211052341140_Workflow.cs" />
-    <Compile Include="Migrations\201211052341140_Workflow.Designer.cs">
-      <DependentUpon>201211052341140_Workflow.cs</DependentUpon>
+    <Compile Include="Migrations\201211072016329_workflow.cs" />
+    <Compile Include="Migrations\201211072016329_workflow.Designer.cs">
+      <DependentUpon>201211072016329_workflow.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1066,8 +1066,8 @@
     <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211052341140_Workflow.resx">
-      <DependentUpon>201211052341140_Workflow.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201211072016329_workflow.resx">
+      <DependentUpon>201211072016329_workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

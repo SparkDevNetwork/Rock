@@ -120,6 +120,8 @@ namespace Rock.Util
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
 
+            Rock.Attribute.Helper.LoadAttributes( this.ActionType );
+
             bool success = workflowAction.Execute(this);
 
             AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );

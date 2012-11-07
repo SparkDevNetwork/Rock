@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class Workflow : RockMigration
+    public partial class workflow : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -84,6 +84,8 @@ namespace Rock.Migrations
                     {
                         Id = c.Int(nullable: false, identity: true),
                         WorkflowTypeId = c.Int(nullable: false),
+                        Name = c.String(nullable: false, maxLength: 100),
+                        Description = c.String(),
                         Status = c.String(nullable: false, maxLength: 100),
                         IsProcessing = c.Boolean(nullable: false),
                         ActivatedDateTime = c.DateTime(),
@@ -112,6 +114,7 @@ namespace Rock.Migrations
                         EntryActivityTypeId = c.Int(),
                         ProcessingIntervalSeconds = c.Int(),
                         IsPersisted = c.Boolean(nullable: false),
+                        LoggingLevel = c.Int(nullable: false),
                         Guid = c.Guid(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
@@ -132,7 +135,7 @@ namespace Rock.Migrations
                         WorkflowTypeId = c.Int(nullable: false),
                         Name = c.String(nullable: false, maxLength: 100),
                         Description = c.String(),
-                        IsCreatedOnStart = c.Boolean(nullable: false),
+                        IsActivatedWithWorkflow = c.Boolean(nullable: false),
                         Order = c.Int(nullable: false),
                         Guid = c.Guid(nullable: false),
                     })
@@ -149,14 +152,16 @@ namespace Rock.Migrations
                         ActivityTypeId = c.Int(nullable: false),
                         Name = c.String(nullable: false, maxLength: 100),
                         Order = c.Int(nullable: false),
-                        ActionServiceName = c.String(nullable: false, maxLength: 200),
+                        EntityTypeId = c.Int(nullable: false),
                         IsActionCompletedOnSuccess = c.Boolean(nullable: false),
                         IsActivityCompletedOnSuccess = c.Boolean(nullable: false),
                         Guid = c.Guid(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.utilActivityType", t => t.ActivityTypeId, cascadeDelete: true)
-                .Index(t => t.ActivityTypeId);
+                .ForeignKey("dbo.coreEntityType", t => t.EntityTypeId, cascadeDelete: true)
+                .Index(t => t.ActivityTypeId)
+                .Index(t => t.EntityTypeId);
             
             CreateIndex( "dbo.utilActionType", "Guid", true );
             CreateTable(
@@ -182,6 +187,7 @@ namespace Rock.Migrations
         public override void Down()
         {
             DropIndex("dbo.utilWorkflowLog", new[] { "WorkflowId" });
+            DropIndex("dbo.utilActionType", new[] { "EntityTypeId" });
             DropIndex("dbo.utilActionType", new[] { "ActivityTypeId" });
             DropIndex("dbo.utilActivityType", new[] { "WorkflowTypeId" });
             DropIndex("dbo.utilWorkflowType", new[] { "EntryActivityTypeId" });
@@ -196,6 +202,7 @@ namespace Rock.Migrations
             DropIndex("dbo.coreCategory", new[] { "EntityTypeId" });
             DropIndex("dbo.coreCategory", new[] { "ParentCategoryId" });
             DropForeignKey("dbo.utilWorkflowLog", "WorkflowId", "dbo.utilWorkflow");
+            DropForeignKey("dbo.utilActionType", "EntityTypeId", "dbo.coreEntityType");
             DropForeignKey("dbo.utilActionType", "ActivityTypeId", "dbo.utilActivityType");
             DropForeignKey("dbo.utilActivityType", "WorkflowTypeId", "dbo.utilWorkflowType");
             DropForeignKey("dbo.utilWorkflowType", "EntryActivityTypeId", "dbo.utilActivityType");

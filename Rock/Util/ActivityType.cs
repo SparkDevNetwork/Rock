@@ -5,11 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Util
@@ -92,7 +92,12 @@ namespace Rock.Util
         /// <value>
         /// The action types.
         /// </value>
-        public virtual ICollection<ActionType> ActionTypes { get; set; }
+        public virtual ICollection<ActionType> ActionTypes
+        {
+            get { return _actionTypes ?? ( _actionTypes = new Collection<ActionType>() ); }
+            set { _actionTypes = value; }
+        }
+        private ICollection<ActionType> _actionTypes;
 
         /// <summary>
         /// Gets the parent authority.

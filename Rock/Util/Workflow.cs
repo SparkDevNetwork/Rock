@@ -5,11 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Util
@@ -123,7 +123,12 @@ namespace Rock.Util
         /// <value>
         /// The activities.
         /// </value>
-        public virtual ICollection<Activity> Activities { get; set; }
+        public virtual ICollection<Activity> Activities 
+        {
+            get { return _activities ?? ( _activities = new Collection<Activity>() ); }
+            set { _activities = value; }
+        }
+        private ICollection<Activity> _activities;
 
         /// <summary>
         /// Gets the active activities.
@@ -135,7 +140,9 @@ namespace Rock.Util
         {
             get
             {
-                return this.Activities.Where( a => a.IsActive );
+                return this.Activities
+                    .Where( a => a.IsActive )
+                    .OrderBy( a => a.ActivityType.Order );
             }
         }
 
@@ -159,7 +166,12 @@ namespace Rock.Util
         /// <value>
         /// The log entries.
         /// </value>
-        public virtual ICollection<WorkflowLog> LogEntries { get; set; }
+        public virtual ICollection<WorkflowLog> LogEntries
+        {
+            get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }
+            set { _logEntries = value; }
+        }
+        private ICollection<WorkflowLog> _logEntries;
 
         /// <summary>
         /// Gets the parent authority.
@@ -243,9 +255,10 @@ namespace Rock.Util
         /// <returns></returns>
         private bool ProcessActivity( DateTime processStartTime )
         {
-            foreach ( var activity in this.Activities )
+            foreach ( var activity in this.ActiveActivities)
             {
-                if ( activity.NeedsProcessing( processStartTime ) )
+                if ( !activity.LastProcessedDateTime.HasValue || 
+                    activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                 {
                     activity.Process();
                     return true;
@@ -278,10 +291,11 @@ namespace Rock.Util
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
         /// <returns></returns>
-        internal static Workflow Activate( WorkflowType workflowType )
+        internal static Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = new Workflow();
             workflow.WorkflowType = workflowType;
+            workflow.Name = name;
             workflow.Status = "Activated";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = DateTime.Now;
