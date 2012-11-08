@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for AttributeValue object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class AttributeValueDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int AttributeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Value { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -119,6 +139,48 @@ namespace Rock.Core
                 attributeValue.Id = this.Id;
                 attributeValue.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AttributeValueDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AttributeValue ToModel( this AttributeValueDto value )
+        {
+            AttributeValue result = new AttributeValue();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AttributeValue> ToModel( this List<AttributeValueDto> value )
+        {
+            List<AttributeValue> result = new List<AttributeValue>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AttributeValueDto> ToDto( this List<AttributeValue> value )
+        {
+            List<AttributeValueDto> result = new List<AttributeValueDto>();
+            value.ForEach( a => result.Add( new AttributeValueDto( a ) ) );
+            return result;
         }
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,15 +21,25 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for PersonAccountLookup object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PersonAccountLookupDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Account { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -104,6 +115,48 @@ namespace Rock.Financial
                 personAccountLookup.Id = this.Id;
                 personAccountLookup.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonAccountLookupDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonAccountLookup ToModel( this PersonAccountLookupDto value )
+        {
+            PersonAccountLookup result = new PersonAccountLookup();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonAccountLookup> ToModel( this List<PersonAccountLookupDto> value )
+        {
+            List<PersonAccountLookup> result = new List<PersonAccountLookup>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonAccountLookupDto> ToDto( this List<PersonAccountLookup> value )
+        {
+            List<PersonAccountLookupDto> result = new List<PersonAccountLookupDto>();
+            value.ForEach( a => result.Add( new PersonAccountLookupDto( a ) ) );
+            return result;
         }
     }
 }

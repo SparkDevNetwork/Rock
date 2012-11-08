@@ -1179,7 +1179,7 @@ namespace Rock.Web.UI
                 }
             }
 
-			// add base path to url -- Fixed bug #84
+            // add base path to url -- Fixed bug #84
             url = (HttpContext.Current.Request.ApplicationPath == "/") ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
 
             return url;

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for PhoneNumber object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PhoneNumberDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Number { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Extension { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? NumberTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsMessagingEnabled { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsUnlisted { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -134,6 +163,48 @@ namespace Rock.Crm
                 phoneNumber.Id = this.Id;
                 phoneNumber.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PhoneNumberDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PhoneNumber ToModel( this PhoneNumberDto value )
+        {
+            PhoneNumber result = new PhoneNumber();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PhoneNumber> ToModel( this List<PhoneNumberDto> value )
+        {
+            List<PhoneNumber> result = new List<PhoneNumber>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PhoneNumberDto> ToDto( this List<PhoneNumber> value )
+        {
+            List<PhoneNumberDto> result = new List<PhoneNumberDto>();
+            value.ForEach( a => result.Add( new PhoneNumberDto( a ) ) );
+            return result;
         }
     }
 }

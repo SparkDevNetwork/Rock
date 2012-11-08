@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,22 +21,53 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for HtmlContent object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class HtmlContentDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int BlockId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Version { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Content { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsApproved { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ApprovedByPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? StartDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -139,6 +171,48 @@ namespace Rock.Cms
                 htmlContent.Id = this.Id;
                 htmlContent.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class HtmlContentDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static HtmlContent ToModel( this HtmlContentDto value )
+        {
+            HtmlContent result = new HtmlContent();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<HtmlContent> ToModel( this List<HtmlContentDto> value )
+        {
+            List<HtmlContent> result = new List<HtmlContent>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<HtmlContentDto> ToDto( this List<HtmlContent> value )
+        {
+            List<HtmlContentDto> result = new List<HtmlContentDto>();
+            value.ForEach( a => result.Add( new HtmlContentDto( a ) ) );
+            return result;
         }
     }
 }
