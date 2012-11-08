@@ -10,7 +10,7 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="admin-page-list">
+      <div class="page-list-as-blocks">
         <h1>
           <xsl:value-of select="page/@title"/>
         </h1>

@@ -717,25 +717,25 @@ div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete
     display: none; 
 }
 
-/* admin page nav */
-.admin-page-list h1 
+/* page list as blocks */
+.page-list-as-blocks h1 
 {
     font-size: 16px;   
 }
 
-.admin-page-list ul 
+.page-list-as-blocks ul 
 {
     list-style: none;
 }
 
-.admin-page-list li 
+.page-list-as-blocks li 
 {
     margin: 0 0 12px 0;
     float: left;
     width: 330px;
 }
 
-.admin-page-list li a 
+.page-list-as-blocks li a 
 {
     display: block;
     --margin-bottom: 4px;
