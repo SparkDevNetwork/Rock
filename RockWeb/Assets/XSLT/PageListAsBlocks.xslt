@@ -38,8 +38,7 @@
 				<xsl:attribute name="href">
 					<xsl:value-of select="@id"/>
 				</xsl:attribute>
-				<xsl:value-of select="@title"/>
-			</a>
+        <h3><xsl:value-of select="@title"/></h3>
       
         <xsl:if test="@display-description = 'true'">
           <span>
@@ -57,6 +56,8 @@
 					</xsl:for-each>
 				</ul>
 			</xsl:if>
+      
+      </a>
 		</li>
 	</xsl:template>
 </xsl:stylesheet>
