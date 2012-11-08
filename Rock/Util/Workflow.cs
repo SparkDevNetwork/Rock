@@ -198,6 +198,8 @@ namespace Rock.Util
         {
             AddSystemLogEntry( "Processing..." );
 
+            this.LoadAttributes();
+
             DateTime processStartTime = DateTime.Now;
             while ( ProcessActivity( processStartTime ) ) { }
 
@@ -255,13 +257,16 @@ namespace Rock.Util
         /// <returns></returns>
         private bool ProcessActivity( DateTime processStartTime )
         {
-            foreach ( var activity in this.ActiveActivities)
+            if ( this.IsActive )
             {
-                if ( !activity.LastProcessedDateTime.HasValue || 
-                    activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
+                foreach ( var activity in this.ActiveActivities )
                 {
-                    activity.Process();
-                    return true;
+                    if ( !activity.LastProcessedDateTime.HasValue ||
+                        activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
+                    {
+                        activity.Process();
+                        return true;
+                    }
                 }
             }
             return false;
@@ -290,6 +295,7 @@ namespace Rock.Util
         /// Activates the specified workflow type.
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
+        /// <param name="name">The name.</param>
         /// <returns></returns>
         internal static Workflow Activate( WorkflowType workflowType, string name )
         {

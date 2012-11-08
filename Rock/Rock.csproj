@@ -658,6 +658,8 @@
     <Compile Include="Util\Activity.cs" />
     <Compile Include="Util\Action.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
+    <Compile Include="Util\WorkflowAction\CompleteWorkflow.cs" />
+    <Compile Include="Util\WorkflowAction\ActivateActivity.cs" />
     <Compile Include="Util\WorkflowAction\SetStatus.cs" />
     <Compile Include="Util\WorkflowTypeService.Partial.cs" />
     <Compile Include="Util\WorkflowService.Partial.cs" />

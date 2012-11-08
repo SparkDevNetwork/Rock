@@ -123,7 +123,7 @@ namespace Rock.Web.Cache
 
             if ( blockModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( blockModel );
+                blockModel.LoadAttributes();
                 foreach ( var attribute in blockModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
@@ -141,7 +141,7 @@ namespace Rock.Web.Cache
 
                 if ( blockModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( blockModel );
+                    blockModel.LoadAttributes();
 
                     this.AttributeValues = blockModel.AttributeValues;
 
@@ -215,7 +215,7 @@ namespace Rock.Web.Cache
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( blockModel );
+                    blockModel.LoadAttributes();
 
                     block = BlockCache.CopyModel( blockModel );
 

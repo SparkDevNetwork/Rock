@@ -65,9 +65,12 @@ namespace Rock.Jobs
 
             foreach ( var workflow in service.GetActive() )
             {
-                service.Process( workflow, null );
+                if ( !workflow.LastProcessedDateTime.HasValue ||
+                    DateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
+                {
+                    service.Process( workflow, null );
+                }
             }
-
         }
     }
 }
