@@ -182,6 +182,8 @@
     <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeWorkflowTriggerDto.cs" />
+    <Compile Include="Core\CodeGenerated\EntityTypeWorkflowTriggerService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>

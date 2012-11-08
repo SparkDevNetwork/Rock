@@ -27,6 +27,7 @@ namespace Rock.Util
         public int ActivityTypeId { get; set; }
         public string Name { get; set; }
         public int Order { get; set; }
+        public int EntityTypeId { get; set; }
         public bool IsActionCompletedOnSuccess { get; set; }
         public bool IsActivityCompletedOnSuccess { get; set; }
         public int Id { get; set; }
@@ -59,6 +60,7 @@ namespace Rock.Util
             dictionary.Add( "ActivityTypeId", this.ActivityTypeId );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Order", this.Order );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "IsActionCompletedOnSuccess", this.IsActionCompletedOnSuccess );
             dictionary.Add( "IsActivityCompletedOnSuccess", this.IsActivityCompletedOnSuccess );
             dictionary.Add( "Id", this.Id );
@@ -76,6 +78,7 @@ namespace Rock.Util
             expando.ActivityTypeId = this.ActivityTypeId;
             expando.Name = this.Name;
             expando.Order = this.Order;
+            expando.EntityTypeId = this.EntityTypeId;
             expando.IsActionCompletedOnSuccess = this.IsActionCompletedOnSuccess;
             expando.IsActivityCompletedOnSuccess = this.IsActivityCompletedOnSuccess;
             expando.Id = this.Id;
@@ -95,6 +98,7 @@ namespace Rock.Util
                 this.ActivityTypeId = actionType.ActivityTypeId;
                 this.Name = actionType.Name;
                 this.Order = actionType.Order;
+                this.EntityTypeId = actionType.EntityTypeId;
                 this.IsActionCompletedOnSuccess = actionType.IsActionCompletedOnSuccess;
                 this.IsActivityCompletedOnSuccess = actionType.IsActivityCompletedOnSuccess;
                 this.Id = actionType.Id;
@@ -114,6 +118,7 @@ namespace Rock.Util
                 actionType.ActivityTypeId = this.ActivityTypeId;
                 actionType.Name = this.Name;
                 actionType.Order = this.Order;
+                actionType.EntityTypeId = this.EntityTypeId;
                 actionType.IsActionCompletedOnSuccess = this.IsActionCompletedOnSuccess;
                 actionType.IsActivityCompletedOnSuccess = this.IsActivityCompletedOnSuccess;
                 actionType.Id = this.Id;
