@@ -83,7 +83,7 @@ public partial class GroupRoles : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gGroupRoles_Edit( object sender, RowEventArgs e )
     {
-        ShowEdit( (int)gGroupRoles.DataKeys[e.RowIndex]["id"] );
+        ShowEdit( (int)e.RowKeyValue );
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public partial class GroupRoles : RockBlock
     protected void gGroupRoles_Delete( object sender, RowEventArgs e )
     {
         GroupRoleService groupRoleService = new GroupRoleService();
-        int groupRoleId = (int)gGroupRoles.DataKeys[e.RowIndex]["id"];
+        int groupRoleId = (int)e.RowKeyValue;
 
         string errorMessage;
         if (!groupRoleService.CanDelete(groupRoleId, out errorMessage))
