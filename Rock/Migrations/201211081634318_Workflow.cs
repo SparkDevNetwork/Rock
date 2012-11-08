@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class workflow : RockMigration
+    public partial class Workflow : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -42,62 +42,26 @@ namespace Rock.Migrations
             
             CreateIndex( "dbo.coreCategory", "Guid", true );
             CreateTable(
-                "dbo.utilAction",
+                "dbo.coreEntityTypeWorkflowTrigger",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        ActivityId = c.Int(nullable: false),
-                        ActionTypeId = c.Int(nullable: false),
-                        LastProcessedDateTime = c.DateTime(),
-                        CompletedDateTime = c.DateTime(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.utilActivity", t => t.ActivityId, cascadeDelete: true)
-                .ForeignKey("dbo.utilActionType", t => t.ActionTypeId)
-                .Index(t => t.ActivityId)
-                .Index(t => t.ActionTypeId);
-            
-            CreateIndex( "dbo.utilAction", "Guid", true );
-            CreateTable(
-                "dbo.utilActivity",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        WorkflowId = c.Int(nullable: false),
-                        ActivityTypeId = c.Int(nullable: false),
-                        ActivatedDateTime = c.DateTime(),
-                        LastProcessedDateTime = c.DateTime(),
-                        CompletedDateTime = c.DateTime(),
-                        Guid = c.Guid(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.utilWorkflow", t => t.WorkflowId, cascadeDelete: true)
-                .ForeignKey("dbo.utilActivityType", t => t.ActivityTypeId)
-                .Index(t => t.WorkflowId)
-                .Index(t => t.ActivityTypeId);
-            
-            CreateIndex( "dbo.utilActivity", "Guid", true );
-            CreateTable(
-                "dbo.utilWorkflow",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
+                        IsSystem = c.Boolean(nullable: false),
+                        EntityTypeId = c.Int(nullable: false),
+                        EntityTypeQualifierColumn = c.String(maxLength: 50),
+                        EntityTypeQualifierValue = c.String(maxLength: 200),
                         WorkflowTypeId = c.Int(nullable: false),
-                        Name = c.String(nullable: false, maxLength: 100),
-                        Description = c.String(),
-                        Status = c.String(nullable: false, maxLength: 100),
-                        IsProcessing = c.Boolean(nullable: false),
-                        ActivatedDateTime = c.DateTime(),
-                        LastProcessedDateTime = c.DateTime(),
-                        CompletedDateTime = c.DateTime(),
+                        EntityTriggerType = c.Int(nullable: false),
+                        WorkflowName = c.String(nullable: false, maxLength: 100),
                         Guid = c.Guid(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.coreEntityType", t => t.EntityTypeId)
                 .ForeignKey("dbo.utilWorkflowType", t => t.WorkflowTypeId, cascadeDelete: true)
+                .Index(t => t.EntityTypeId)
                 .Index(t => t.WorkflowTypeId);
             
-            CreateIndex( "dbo.utilWorkflow", "Guid", true );
+            CreateIndex( "dbo.coreEntityTypeWorkflowTrigger", "Guid", true );
             CreateTable(
                 "dbo.utilWorkflowType",
                 c => new
@@ -165,6 +129,63 @@ namespace Rock.Migrations
             
             CreateIndex( "dbo.utilActionType", "Guid", true );
             CreateTable(
+                "dbo.utilAction",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        ActivityId = c.Int(nullable: false),
+                        ActionTypeId = c.Int(nullable: false),
+                        LastProcessedDateTime = c.DateTime(),
+                        CompletedDateTime = c.DateTime(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.utilActivity", t => t.ActivityId, cascadeDelete: true)
+                .ForeignKey("dbo.utilActionType", t => t.ActionTypeId)
+                .Index(t => t.ActivityId)
+                .Index(t => t.ActionTypeId);
+            
+            CreateIndex( "dbo.utilAction", "Guid", true );
+            CreateTable(
+                "dbo.utilActivity",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        WorkflowId = c.Int(nullable: false),
+                        ActivityTypeId = c.Int(nullable: false),
+                        ActivatedDateTime = c.DateTime(),
+                        LastProcessedDateTime = c.DateTime(),
+                        CompletedDateTime = c.DateTime(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.utilWorkflow", t => t.WorkflowId, cascadeDelete: true)
+                .ForeignKey("dbo.utilActivityType", t => t.ActivityTypeId)
+                .Index(t => t.WorkflowId)
+                .Index(t => t.ActivityTypeId);
+            
+            CreateIndex( "dbo.utilActivity", "Guid", true );
+            CreateTable(
+                "dbo.utilWorkflow",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        WorkflowTypeId = c.Int(nullable: false),
+                        Name = c.String(nullable: false, maxLength: 100),
+                        Description = c.String(),
+                        Status = c.String(nullable: false, maxLength: 100),
+                        IsProcessing = c.Boolean(nullable: false),
+                        ActivatedDateTime = c.DateTime(),
+                        LastProcessedDateTime = c.DateTime(),
+                        CompletedDateTime = c.DateTime(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.utilWorkflowType", t => t.WorkflowTypeId, cascadeDelete: true)
+                .Index(t => t.WorkflowTypeId);
+            
+            CreateIndex( "dbo.utilWorkflow", "Guid", true );
+            CreateTable(
                 "dbo.utilWorkflowLog",
                 c => new
                     {
@@ -187,42 +208,47 @@ namespace Rock.Migrations
         public override void Down()
         {
             DropIndex("dbo.utilWorkflowLog", new[] { "WorkflowId" });
+            DropIndex("dbo.utilWorkflow", new[] { "WorkflowTypeId" });
+            DropIndex("dbo.utilActivity", new[] { "ActivityTypeId" });
+            DropIndex("dbo.utilActivity", new[] { "WorkflowId" });
+            DropIndex("dbo.utilAction", new[] { "ActionTypeId" });
+            DropIndex("dbo.utilAction", new[] { "ActivityId" });
             DropIndex("dbo.utilActionType", new[] { "EntityTypeId" });
             DropIndex("dbo.utilActionType", new[] { "ActivityTypeId" });
             DropIndex("dbo.utilActivityType", new[] { "WorkflowTypeId" });
             DropIndex("dbo.utilWorkflowType", new[] { "EntryActivityTypeId" });
             DropIndex("dbo.utilWorkflowType", new[] { "FileId" });
             DropIndex("dbo.utilWorkflowType", new[] { "CategoryId" });
-            DropIndex("dbo.utilWorkflow", new[] { "WorkflowTypeId" });
-            DropIndex("dbo.utilActivity", new[] { "ActivityTypeId" });
-            DropIndex("dbo.utilActivity", new[] { "WorkflowId" });
-            DropIndex("dbo.utilAction", new[] { "ActionTypeId" });
-            DropIndex("dbo.utilAction", new[] { "ActivityId" });
+            DropIndex("dbo.coreEntityTypeWorkflowTrigger", new[] { "WorkflowTypeId" });
+            DropIndex("dbo.coreEntityTypeWorkflowTrigger", new[] { "EntityTypeId" });
             DropIndex("dbo.coreCategory", new[] { "FileId" });
             DropIndex("dbo.coreCategory", new[] { "EntityTypeId" });
             DropIndex("dbo.coreCategory", new[] { "ParentCategoryId" });
             DropForeignKey("dbo.utilWorkflowLog", "WorkflowId", "dbo.utilWorkflow");
+            DropForeignKey("dbo.utilWorkflow", "WorkflowTypeId", "dbo.utilWorkflowType");
+            DropForeignKey("dbo.utilActivity", "ActivityTypeId", "dbo.utilActivityType");
+            DropForeignKey("dbo.utilActivity", "WorkflowId", "dbo.utilWorkflow");
+            DropForeignKey("dbo.utilAction", "ActionTypeId", "dbo.utilActionType");
+            DropForeignKey("dbo.utilAction", "ActivityId", "dbo.utilActivity");
             DropForeignKey("dbo.utilActionType", "EntityTypeId", "dbo.coreEntityType");
             DropForeignKey("dbo.utilActionType", "ActivityTypeId", "dbo.utilActivityType");
             DropForeignKey("dbo.utilActivityType", "WorkflowTypeId", "dbo.utilWorkflowType");
             DropForeignKey("dbo.utilWorkflowType", "EntryActivityTypeId", "dbo.utilActivityType");
             DropForeignKey("dbo.utilWorkflowType", "FileId", "dbo.cmsFile");
             DropForeignKey("dbo.utilWorkflowType", "CategoryId", "dbo.coreCategory");
-            DropForeignKey("dbo.utilWorkflow", "WorkflowTypeId", "dbo.utilWorkflowType");
-            DropForeignKey("dbo.utilActivity", "ActivityTypeId", "dbo.utilActivityType");
-            DropForeignKey("dbo.utilActivity", "WorkflowId", "dbo.utilWorkflow");
-            DropForeignKey("dbo.utilAction", "ActionTypeId", "dbo.utilActionType");
-            DropForeignKey("dbo.utilAction", "ActivityId", "dbo.utilActivity");
+            DropForeignKey("dbo.coreEntityTypeWorkflowTrigger", "WorkflowTypeId", "dbo.utilWorkflowType");
+            DropForeignKey("dbo.coreEntityTypeWorkflowTrigger", "EntityTypeId", "dbo.coreEntityType");
             DropForeignKey("dbo.coreCategory", "FileId", "dbo.cmsFile");
             DropForeignKey("dbo.coreCategory", "EntityTypeId", "dbo.coreEntityType");
             DropForeignKey("dbo.coreCategory", "ParentCategoryId", "dbo.coreCategory");
             DropTable("dbo.utilWorkflowLog");
-            DropTable("dbo.utilActionType");
-            DropTable("dbo.utilActivityType");
-            DropTable("dbo.utilWorkflowType");
             DropTable("dbo.utilWorkflow");
             DropTable("dbo.utilActivity");
             DropTable("dbo.utilAction");
+            DropTable("dbo.utilActionType");
+            DropTable("dbo.utilActivityType");
+            DropTable("dbo.utilWorkflowType");
+            DropTable("dbo.coreEntityTypeWorkflowTrigger");
             DropTable("dbo.coreCategory");
         }
     }

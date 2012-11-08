@@ -18,6 +18,9 @@ namespace Rock.Core
     [Table( "coreEntityType" )]
     public partial class EntityType : Entity<EntityType>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -37,6 +40,10 @@ namespace Rock.Core
         [MaxLength( 100 )]
         public string FriendlyName { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -47,18 +54,50 @@ namespace Rock.Core
         {
             return this.Name;
         }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Reads the specified id.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static EntityType Read( int id )
+        {
+            return Read<EntityType>( id );
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static EntityType Read( Guid guid )
+        {
+            return Read<EntityType>( guid );
+        }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+
     /// <summary>
-    /// Attribute Configuration class.
+    /// Entity Type Configuration class.
     /// </summary>
     public partial class EntityTypeConfiguration : EntityTypeConfiguration<EntityType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttributeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="EntityTypeConfiguration"/> class.
         /// </summary>
         public EntityTypeConfiguration()
         {
         }
     }
+
+    #endregion
+
 }

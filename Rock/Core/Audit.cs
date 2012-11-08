@@ -134,6 +134,8 @@ namespace Rock.Core
         }
     }
 
+    #region Enumerations
+
     /// <summary>
     /// Type of audit done to an entity
     /// </summary>
@@ -155,5 +157,6 @@ namespace Rock.Core
         Delete = 2
     }
 
+    #endregion
 
 }
