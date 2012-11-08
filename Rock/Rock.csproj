@@ -595,10 +595,6 @@
     <Compile Include="Migrations\201211052019458_MarketingCampaignAds.Designer.cs">
       <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201211082029052_add-migration ChangeXsltFoAdminPageBlock.cs" />
-    <Compile Include="Migrations\201211082029052_add-migration ChangeXsltFoAdminPageBlock.Designer.cs">
-      <DependentUpon>201211082029052_add-migration ChangeXsltFoAdminPageBlock.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -1039,9 +1035,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211052019458_MarketingCampaignAds.resx">
       <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211082029052_add-migration ChangeXsltFoAdminPageBlock.resx">
-      <DependentUpon>201211082029052_add-migration ChangeXsltFoAdminPageBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

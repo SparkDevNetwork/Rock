@@ -730,8 +730,12 @@ div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete
 
 .page-list-as-blocks li 
 {
-    margin: 0 0 12px 0;
+    background-color: #D6D6D6;
+    border-radius: 4px 4px 4px 4px;
     float: left;
+    height: 80px;
+    margin: 0 12px 12px 0;
+    padding: 12px;
     width: 330px;
 }
 

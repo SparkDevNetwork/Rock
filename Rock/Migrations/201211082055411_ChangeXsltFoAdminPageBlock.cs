@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class addmigrationChangeXsltFoAdminPageBlock : RockMigration
+    public partial class ChangeXsltFoAdminPageBlock : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

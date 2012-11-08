@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class addmigrationChangeXsltFoAdminPageBlock : IMigrationMetadata
+    public sealed partial class ChangeXsltFoAdminPageBlock : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(addmigrationChangeXsltFoAdminPageBlock));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ChangeXsltFoAdminPageBlock));
         
         string IMigrationMetadata.Id
         {
-            get { return "201211082029052_add-migration ChangeXsltFoAdminPageBlock"; }
+            get { return "201211082055411_ChangeXsltFoAdminPageBlock"; }
         }
         
         string IMigrationMetadata.Source
