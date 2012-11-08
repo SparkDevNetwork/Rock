@@ -331,8 +331,19 @@ namespace Rock.Crm
         public static List<PersonDto> ToDto( this List<Person> value )
         {
             List<PersonDto> result = new List<PersonDto>();
-            value.ForEach( a => result.Add( new PersonDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonDto ToDto( this Person value )
+        {
+            return new PersonDto( value );
+        }
+
     }
 }

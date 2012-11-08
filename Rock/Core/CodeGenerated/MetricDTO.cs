@@ -243,8 +243,19 @@ namespace Rock.Core
         public static List<MetricDto> ToDto( this List<Metric> value )
         {
             List<MetricDto> result = new List<MetricDto>();
-            value.ForEach( a => result.Add( new MetricDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MetricDto ToDto( this Metric value )
+        {
+            return new MetricDto( value );
+        }
+
     }
 }

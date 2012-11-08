@@ -171,8 +171,19 @@ namespace Rock.Core
         public static List<AttributeQualifierDto> ToDto( this List<AttributeQualifier> value )
         {
             List<AttributeQualifierDto> result = new List<AttributeQualifierDto>();
-            value.ForEach( a => result.Add( new AttributeQualifierDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AttributeQualifierDto ToDto( this AttributeQualifier value )
+        {
+            return new AttributeQualifierDto( value );
+        }
+
     }
 }

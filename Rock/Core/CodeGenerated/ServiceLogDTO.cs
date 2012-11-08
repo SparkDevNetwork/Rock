@@ -187,8 +187,19 @@ namespace Rock.Core
         public static List<ServiceLogDto> ToDto( this List<ServiceLog> value )
         {
             List<ServiceLogDto> result = new List<ServiceLogDto>();
-            value.ForEach( a => result.Add( new ServiceLogDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ServiceLogDto ToDto( this ServiceLog value )
+        {
+            return new ServiceLogDto( value );
+        }
+
     }
 }

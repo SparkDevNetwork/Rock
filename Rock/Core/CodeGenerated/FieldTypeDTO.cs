@@ -179,8 +179,19 @@ namespace Rock.Core
         public static List<FieldTypeDto> ToDto( this List<FieldType> value )
         {
             List<FieldTypeDto> result = new List<FieldTypeDto>();
-            value.ForEach( a => result.Add( new FieldTypeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static FieldTypeDto ToDto( this FieldType value )
+        {
+            return new FieldTypeDto( value );
+        }
+
     }
 }

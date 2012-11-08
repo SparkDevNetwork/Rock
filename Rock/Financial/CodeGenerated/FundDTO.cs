@@ -251,8 +251,19 @@ namespace Rock.Financial
         public static List<FundDto> ToDto( this List<Fund> value )
         {
             List<FundDto> result = new List<FundDto>();
-            value.ForEach( a => result.Add( new FundDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static FundDto ToDto( this Fund value )
+        {
+            return new FundDto( value );
+        }
+
     }
 }
