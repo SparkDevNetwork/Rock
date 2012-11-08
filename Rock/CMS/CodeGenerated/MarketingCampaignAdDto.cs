@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for MarketingCampaignAd object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class MarketingCampaignAdDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int MarketingCampaignId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int MarketingCampaignAdTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Priority { get; set; }
+
+        /// <summary />
+        [DataMember]
         public MarketingCampaignAdStatus MarketingCampaignAdStatus { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MarketingCampaignStatusPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime StartDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime EndDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Url { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -134,6 +163,48 @@ namespace Rock.Cms
                 marketingCampaignAd.Id = this.Id;
                 marketingCampaignAd.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class MarketingCampaignAdDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAd ToModel( this MarketingCampaignAdDto value )
+        {
+            MarketingCampaignAd result = new MarketingCampaignAd();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignAd> ToModel( this List<MarketingCampaignAdDto> value )
+        {
+            List<MarketingCampaignAd> result = new List<MarketingCampaignAd>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignAdDto> ToDto( this List<MarketingCampaignAd> value )
+        {
+            List<MarketingCampaignAdDto> result = new List<MarketingCampaignAdDto>();
+            value.ForEach( a => result.Add( new MarketingCampaignAdDto( a ) ) );
+            return result;
         }
     }
 }

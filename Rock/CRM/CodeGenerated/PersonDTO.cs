@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,37 +21,113 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for Person object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PersonDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? RecordTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? RecordStatusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? RecordStatusReasonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PersonStatusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? TitleId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string GivenName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string NickName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string LastName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? SuffixId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PhotoId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? BirthDay { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? BirthMonth { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? BirthYear { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Gender Gender { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MaritalStatusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? AnniversaryDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? GraduationDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Email { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsEmailActive { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EmailNote { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool DoNotEmail { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string SystemNote { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ViewedCount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -214,6 +291,48 @@ namespace Rock.Crm
                 person.Id = this.Id;
                 person.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Person ToModel( this PersonDto value )
+        {
+            Person result = new Person();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Person> ToModel( this List<PersonDto> value )
+        {
+            List<Person> result = new List<Person>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PersonDto> ToDto( this List<Person> value )
+        {
+            List<PersonDto> result = new List<PersonDto>();
+            value.ForEach( a => result.Add( new PersonDto( a ) ) );
+            return result;
         }
     }
 }

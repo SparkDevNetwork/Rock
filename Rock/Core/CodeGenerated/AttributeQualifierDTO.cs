@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,17 +21,33 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for AttributeQualifier object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class AttributeQualifierDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int AttributeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Key { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Value { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -114,6 +131,48 @@ namespace Rock.Core
                 attributeQualifier.Id = this.Id;
                 attributeQualifier.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AttributeQualifierDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AttributeQualifier ToModel( this AttributeQualifierDto value )
+        {
+            AttributeQualifier result = new AttributeQualifier();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AttributeQualifier> ToModel( this List<AttributeQualifierDto> value )
+        {
+            List<AttributeQualifier> result = new List<AttributeQualifier>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AttributeQualifierDto> ToDto( this List<AttributeQualifier> value )
+        {
+            List<AttributeQualifierDto> result = new List<AttributeQualifierDto>();
+            value.ForEach( a => result.Add( new AttributeQualifierDto( a ) ) );
+            return result;
         }
     }
 }

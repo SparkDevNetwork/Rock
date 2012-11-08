@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,27 +21,73 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for Transaction object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class TransactionDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? TransactionDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Entity { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? BatchId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CurrencyTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CreditCardTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public decimal Amount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? RefundTransactionId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? TransactionImageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string TransactionCode { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? GatewayId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? SourceTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Summary { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -164,6 +211,48 @@ namespace Rock.Financial
                 transaction.Id = this.Id;
                 transaction.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class TransactionDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Transaction ToModel( this TransactionDto value )
+        {
+            Transaction result = new Transaction();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Transaction> ToModel( this List<TransactionDto> value )
+        {
+            List<Transaction> result = new List<Transaction>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<TransactionDto> ToDto( this List<Transaction> value )
+        {
+            List<TransactionDto> result = new List<TransactionDto>();
+            value.ForEach( a => result.Add( new TransactionDto( a ) ) );
+            return result;
         }
     }
 }

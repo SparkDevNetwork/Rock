@@ -8,13 +8,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Crm;
 using Rock.Data;
+
 namespace Rock.Cms
 {
     /// <summary>
     /// 
     /// </summary>
     [Table( "cmsMarketingCampaignCampus")]
-    public partial class MarketingCampaignCampus : Model<MarketingCampaignCampus>, IExportable
+    public partial class MarketingCampaignCampus : Model<MarketingCampaignCampus>
     {
         /// <summary>
         /// Gets or sets the marketing campaign id.
@@ -56,34 +57,6 @@ namespace Rock.Cms
         public static MarketingCampaignCampus Read( int id )
         {
             return Read<MarketingCampaignCampus>( id );
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            throw new NotImplementedException();
         }
     }
 

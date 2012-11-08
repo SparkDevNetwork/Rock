@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for Pledge object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PledgeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FundId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public decimal Amount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime StartDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime EndDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FrequencyTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public decimal? FrequencyAmount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -129,6 +155,48 @@ namespace Rock.Financial
                 pledge.Id = this.Id;
                 pledge.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PledgeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Pledge ToModel( this PledgeDto value )
+        {
+            Pledge result = new Pledge();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Pledge> ToModel( this List<PledgeDto> value )
+        {
+            List<Pledge> result = new List<Pledge>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PledgeDto> ToDto( this List<Pledge> value )
+        {
+            List<PledgeDto> result = new List<PledgeDto>();
+            value.ForEach( a => result.Add( new PledgeDto( a ) ) );
+            return result;
         }
     }
 }
