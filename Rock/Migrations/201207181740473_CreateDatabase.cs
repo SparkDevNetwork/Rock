@@ -1,13 +1,19 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class CreateDatabase : DbMigration
     {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
         public override void Up()
         {
             CreateTable(
-                "cmsAuth",
+                "dbo.cmsAuth",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -36,7 +42,7 @@ namespace Rock.Migrations
                 .Index(t => t.PersonId);
             
             CreateTable(
-                "crmPerson",
+                "dbo.crmPerson",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -91,7 +97,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsUser",
+                "dbo.cmsUser",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -125,7 +131,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "crmEmailTemplate",
+                "dbo.crmEmailTemplate",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -154,7 +160,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "crmPhoneNumber",
+                "dbo.crmPhoneNumber",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -177,7 +183,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "groupsMember",
+                "dbo.groupsMember",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -204,7 +210,7 @@ namespace Rock.Migrations
                 .Index(t => t.GroupRoleId);
             
             CreateTable(
-                "groupsGroup",
+                "dbo.groupsGroup",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -231,7 +237,7 @@ namespace Rock.Migrations
                 .Index(t => t.GroupTypeId);
             
             CreateTable(
-                "groupsGroupType",
+                "dbo.groupsGroupType",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -254,7 +260,7 @@ namespace Rock.Migrations
                 .Index(t => t.DefaultGroupRoleId);
             
             CreateTable(
-                "groupsGroupRole",
+                "dbo.groupsGroupRole",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -275,7 +281,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialPledge",
+                "dbo.financialPledge",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -305,7 +311,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialFund",
+                "dbo.financialFund",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -340,7 +346,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreDefinedValue",
+                "dbo.coreDefinedValue",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -364,7 +370,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreDefinedType",
+                "dbo.coreDefinedType",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -389,7 +395,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreFieldType",
+                "dbo.coreFieldType",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -411,7 +417,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreAttribute",
+                "dbo.coreAttribute",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -444,7 +450,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreAttributeQualifier",
+                "dbo.coreAttributeQualifier",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -468,7 +474,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreAttributeValue",
+                "dbo.coreAttributeValue",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -492,7 +498,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialTransactionFund",
+                "dbo.financialTransactionFund",
                 c => new
                     {
                         TransactionId = c.Int(nullable: false),
@@ -506,7 +512,7 @@ namespace Rock.Migrations
                 .Index(t => t.FundId);
             
             CreateTable(
-                "financialTransaction",
+                "dbo.financialTransaction",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -547,7 +553,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialBatch",
+                "dbo.financialBatch",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -571,7 +577,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialGateway",
+                "dbo.financialGateway",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -593,7 +599,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "financialTransactionDetail",
+                "dbo.financialTransactionDetail",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -617,7 +623,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "fiancialPersonAccountLookup",
+                "dbo.fiancialPersonAccountLookup",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -630,7 +636,7 @@ namespace Rock.Migrations
                 .Index(t => t.PersonId);
             
             CreateTable(
-                "cmsBlock",
+                "dbo.cmsBlock",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -651,7 +657,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsBlockInstance",
+                "dbo.cmsBlockInstance",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -680,7 +686,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsHtmlContent",
+                "dbo.cmsHtmlContent",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -710,7 +716,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsPage",
+                "dbo.cmsPage",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -748,7 +754,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsPageRoute",
+                "dbo.cmsPageRoute",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -770,7 +776,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsSite",
+                "dbo.cmsSite",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -801,7 +807,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsSiteDomain",
+                "dbo.cmsSiteDomain",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -823,7 +829,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "cmsFile",
+                "dbo.cmsFile",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -847,7 +853,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "coreEntityChange",
+                "dbo.coreEntityChange",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -867,7 +873,7 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonId);
             
             CreateTable(
-                "coreExceptionLog",
+                "dbo.coreExceptionLog",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -894,7 +900,7 @@ namespace Rock.Migrations
                 .Index(t => t.PersonId);
             
             CreateTable(
-                "coreServiceLog",
+                "dbo.coreServiceLog",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -909,7 +915,7 @@ namespace Rock.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "crmAddress",
+                "dbo.crmAddress",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -943,7 +949,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "crmPersonTrail",
+                "dbo.crmPersonTrail",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -956,7 +962,7 @@ namespace Rock.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "crmPersonViewed",
+                "dbo.crmPersonViewed",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -974,7 +980,7 @@ namespace Rock.Migrations
                 .Index(t => t.TargetPersonId);
             
             CreateTable(
-                "utilJob",
+                "dbo.utilJob",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -1006,7 +1012,7 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonId);
             
             CreateTable(
-                "groupsGroupTypeAssociation",
+                "dbo.groupsGroupTypeAssociation",
                 c => new
                     {
                         ChildGroupTypeId = c.Int(nullable: false),
@@ -1019,7 +1025,7 @@ namespace Rock.Migrations
                 .Index(t => t.ParentGroupTypeId);
             
             CreateTable(
-                "groupsGroupTypeRole",
+                "dbo.groupsGroupTypeRole",
                 c => new
                     {
                         GroupTypeId = c.Int(nullable: false),
@@ -1035,7 +1041,10 @@ namespace Rock.Migrations
             AddData();
             
         }
-        
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
         public override void Down()
         {
             DeleteData();
@@ -1157,162 +1166,162 @@ namespace Rock.Migrations
             DropIndex("cmsAuth", new[] { "GroupId" });
             DropIndex("cmsAuth", new[] { "ModifiedByPersonId" });
             DropIndex("cmsAuth", new[] { "CreatedByPersonId" });
-            DropForeignKey("groupsGroupTypeRole", "GroupRoleId", "groupsGroupType");
-            DropForeignKey("groupsGroupTypeRole", "GroupTypeId", "groupsGroupRole");
-            DropForeignKey("groupsGroupTypeAssociation", "ParentGroupTypeId", "groupsGroupType");
-            DropForeignKey("groupsGroupTypeAssociation", "ChildGroupTypeId", "groupsGroupType");
-            DropForeignKey("utilJob", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("utilJob", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("crmPersonViewed", "TargetPersonId", "crmPerson");
-            DropForeignKey("crmPersonViewed", "ViewerPersonId", "crmPerson");
-            DropForeignKey("crmAddress", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("crmAddress", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreExceptionLog", "PersonId", "crmPerson");
-            DropForeignKey("coreEntityChange", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsFile", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsFile", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsSiteDomain", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsSiteDomain", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsSiteDomain", "SiteId", "cmsSite");
-            DropForeignKey("cmsSite", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsSite", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsSite", "DefaultPageId", "cmsPage");
-            DropForeignKey("cmsPageRoute", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsPageRoute", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsPageRoute", "PageId", "cmsPage");
-            DropForeignKey("cmsPage", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsPage", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsPage", "SiteId", "cmsSite");
-            DropForeignKey("cmsPage", "ParentPageId", "cmsPage");
-            DropForeignKey("cmsHtmlContent", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsHtmlContent", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsHtmlContent", "ApprovedByPersonId", "crmPerson");
-            DropForeignKey("cmsHtmlContent", "BlockId", "cmsBlockInstance");
-            DropForeignKey("cmsBlockInstance", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlockInstance", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlockInstance", "PageId", "cmsPage");
-            DropForeignKey("cmsBlockInstance", "BlockId", "cmsBlock");
-            DropForeignKey("cmsBlock", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsBlock", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("fiancialPersonAccountLookup", "PersonId", "crmPerson");
-            DropForeignKey("financialTransactionDetail", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialTransactionDetail", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialTransactionDetail", "TransactionId", "financialTransaction");
-            DropForeignKey("financialGateway", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialGateway", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialBatch", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialBatch", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialTransaction", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialTransaction", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialTransaction", "SourceTypeId", "coreDefinedValue");
-            DropForeignKey("financialTransaction", "GatewayId", "financialGateway");
-            DropForeignKey("financialTransaction", "CreditCardTypeId", "coreDefinedValue");
-            DropForeignKey("financialTransaction", "CurrencyTypeId", "coreDefinedValue");
-            DropForeignKey("financialTransaction", "BatchId", "financialBatch");
-            DropForeignKey("financialTransactionFund", "FundId", "financialFund");
-            DropForeignKey("financialTransactionFund", "TransactionId", "financialTransaction");
-            DropForeignKey("coreAttributeValue", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreAttributeValue", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreAttributeValue", "AttributeId", "coreAttribute");
-            DropForeignKey("coreAttributeQualifier", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreAttributeQualifier", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreAttributeQualifier", "AttributeId", "coreAttribute");
-            DropForeignKey("coreAttribute", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreAttribute", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreAttribute", "FieldTypeId", "coreFieldType");
-            DropForeignKey("coreFieldType", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreFieldType", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreDefinedType", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreDefinedType", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreDefinedType", "FieldTypeId", "coreFieldType");
-            DropForeignKey("coreDefinedValue", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("coreDefinedValue", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("coreDefinedValue", "DefinedTypeId", "coreDefinedType");
-            DropForeignKey("financialFund", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialFund", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialFund", "FundTypeId", "coreDefinedValue");
-            DropForeignKey("financialFund", "ParentFundId", "financialFund");
-            DropForeignKey("financialPledge", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("financialPledge", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("financialPledge", "FrequencyTypeId", "coreDefinedValue");
-            DropForeignKey("financialPledge", "FundId", "financialFund");
-            DropForeignKey("financialPledge", "PersonId", "crmPerson");
-            DropForeignKey("groupsGroupRole", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("groupsGroupRole", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("groupsGroupType", "DefaultGroupRoleId", "groupsGroupRole");
-            DropForeignKey("groupsGroupType", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("groupsGroupType", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("groupsGroup", "GroupTypeId", "groupsGroupType");
-            DropForeignKey("groupsGroup", "ParentGroupId", "groupsGroup");
-            DropForeignKey("groupsGroup", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("groupsGroup", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("groupsMember", "GroupRoleId", "groupsGroupRole");
-            DropForeignKey("groupsMember", "GroupId", "groupsGroup");
-            DropForeignKey("groupsMember", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("groupsMember", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("groupsMember", "PersonId", "crmPerson");
-            DropForeignKey("crmPhoneNumber", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("crmPhoneNumber", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("crmPhoneNumber", "PersonId", "crmPerson");
-            DropForeignKey("crmEmailTemplate", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("crmEmailTemplate", "PersonId", "crmPerson");
-            DropForeignKey("crmEmailTemplate", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsUser", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsUser", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("cmsUser", "PersonId", "crmPerson");
-            DropForeignKey("crmPerson", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("crmPerson", "CreatedByPersonId", "crmPerson");
-            DropForeignKey("crmPerson", "TitleId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "SuffixId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "RecordTypeId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "RecordStatusReasonId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "RecordStatusId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "PersonStatusId", "coreDefinedValue");
-            DropForeignKey("crmPerson", "MaritalStatusId", "coreDefinedValue");
-            DropForeignKey("cmsAuth", "PersonId", "crmPerson");
-            DropForeignKey("cmsAuth", "GroupId", "groupsGroup");
-            DropForeignKey("cmsAuth", "ModifiedByPersonId", "crmPerson");
-            DropForeignKey("cmsAuth", "CreatedByPersonId", "crmPerson");
-            DropTable("groupsGroupTypeRole");
-            DropTable("groupsGroupTypeAssociation");
-            DropTable("utilJob");
-            DropTable("crmPersonViewed");
-            DropTable("crmPersonTrail");
-            DropTable("crmAddress");
-            DropTable("coreServiceLog");
-            DropTable("coreExceptionLog");
-            DropTable("coreEntityChange");
-            DropTable("cmsFile");
-            DropTable("cmsSiteDomain");
-            DropTable("cmsSite");
-            DropTable("cmsPageRoute");
-            DropTable("cmsPage");
-            DropTable("cmsHtmlContent");
-            DropTable("cmsBlockInstance");
-            DropTable("cmsBlock");
-            DropTable("fiancialPersonAccountLookup");
-            DropTable("financialTransactionDetail");
-            DropTable("financialGateway");
-            DropTable("financialBatch");
-            DropTable("financialTransaction");
-            DropTable("financialTransactionFund");
-            DropTable("coreAttributeValue");
-            DropTable("coreAttributeQualifier");
-            DropTable("coreAttribute");
-            DropTable("coreFieldType");
-            DropTable("coreDefinedType");
-            DropTable("coreDefinedValue");
-            DropTable("financialFund");
-            DropTable("financialPledge");
-            DropTable("groupsGroupRole");
-            DropTable("groupsGroupType");
-            DropTable("groupsGroup");
-            DropTable("groupsMember");
-            DropTable("crmPhoneNumber");
-            DropTable("crmEmailTemplate");
-            DropTable("cmsUser");
-            DropTable("crmPerson");
-            DropTable("cmsAuth");
+            DropForeignKey( "dbo.groupsGroupTypeRole", "GroupTypeId", "groupsGroupType" );
+            DropForeignKey( "dbo.groupsGroupTypeRole", "GroupRoleId", "groupsGroupRole" );
+            DropForeignKey( "dbo.groupsGroupTypeAssociation", "ParentGroupTypeId", "groupsGroupType");
+            DropForeignKey( "dbo.groupsGroupTypeAssociation", "ChildGroupTypeId", "groupsGroupType");
+            DropForeignKey( "dbo.utilJob", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.utilJob", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPersonViewed", "TargetPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPersonViewed", "ViewerPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmAddress", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmAddress", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreExceptionLog", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.coreEntityChange", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsFile", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsFile", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsSiteDomain", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsSiteDomain", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsSiteDomain", "SiteId", "cmsSite");
+            DropForeignKey( "dbo.cmsSite", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsSite", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsSite", "DefaultPageId", "cmsPage");
+            DropForeignKey( "dbo.cmsPageRoute", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsPageRoute", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsPageRoute", "PageId", "cmsPage");
+            DropForeignKey( "dbo.cmsPage", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsPage", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsPage", "SiteId", "cmsSite");
+            DropForeignKey( "dbo.cmsPage", "ParentPageId", "cmsPage");
+            DropForeignKey( "dbo.cmsHtmlContent", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsHtmlContent", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsHtmlContent", "ApprovedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsHtmlContent", "BlockId", "cmsBlockInstance");
+            DropForeignKey( "dbo.cmsBlockInstance", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlockInstance", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlockInstance", "PageId", "cmsPage");
+            DropForeignKey( "dbo.cmsBlockInstance", "BlockId", "cmsBlock");
+            DropForeignKey( "dbo.cmsBlock", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsBlock", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.fiancialPersonAccountLookup", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransactionDetail", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransactionDetail", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransactionDetail", "TransactionId", "financialTransaction");
+            DropForeignKey( "dbo.financialGateway", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialGateway", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialBatch", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialBatch", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransaction", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransaction", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialTransaction", "SourceTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.financialTransaction", "GatewayId", "financialGateway");
+            DropForeignKey( "dbo.financialTransaction", "CreditCardTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.financialTransaction", "CurrencyTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.financialTransaction", "BatchId", "financialBatch");
+            DropForeignKey( "dbo.financialTransactionFund", "FundId", "financialFund");
+            DropForeignKey( "dbo.financialTransactionFund", "TransactionId", "financialTransaction");
+            DropForeignKey( "dbo.coreAttributeValue", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttributeValue", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttributeValue", "AttributeId", "coreAttribute");
+            DropForeignKey( "dbo.coreAttributeQualifier", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttributeQualifier", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttributeQualifier", "AttributeId", "coreAttribute");
+            DropForeignKey( "dbo.coreAttribute", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttribute", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreAttribute", "FieldTypeId", "coreFieldType");
+            DropForeignKey( "dbo.coreFieldType", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreFieldType", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreDefinedType", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreDefinedType", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreDefinedType", "FieldTypeId", "coreFieldType");
+            DropForeignKey( "dbo.coreDefinedValue", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreDefinedValue", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.coreDefinedValue", "DefinedTypeId", "coreDefinedType");
+            DropForeignKey( "dbo.financialFund", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialFund", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialFund", "FundTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.financialFund", "ParentFundId", "financialFund");
+            DropForeignKey( "dbo.financialPledge", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialPledge", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.financialPledge", "FrequencyTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.financialPledge", "FundId", "financialFund");
+            DropForeignKey( "dbo.financialPledge", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroupRole", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroupRole", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroupType", "DefaultGroupRoleId", "groupsGroupRole");
+            DropForeignKey( "dbo.groupsGroupType", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroupType", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroup", "GroupTypeId", "groupsGroupType");
+            DropForeignKey( "dbo.groupsGroup", "ParentGroupId", "groupsGroup");
+            DropForeignKey( "dbo.groupsGroup", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsGroup", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsMember", "GroupRoleId", "groupsGroupRole");
+            DropForeignKey( "dbo.groupsMember", "GroupId", "groupsGroup");
+            DropForeignKey( "dbo.groupsMember", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsMember", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.groupsMember", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPhoneNumber", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPhoneNumber", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPhoneNumber", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.crmEmailTemplate", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmEmailTemplate", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.crmEmailTemplate", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsUser", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsUser", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsUser", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPerson", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPerson", "CreatedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.crmPerson", "TitleId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "SuffixId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "RecordTypeId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "RecordStatusReasonId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "RecordStatusId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "PersonStatusId", "coreDefinedValue");
+            DropForeignKey( "dbo.crmPerson", "MaritalStatusId", "coreDefinedValue");
+            DropForeignKey( "dbo.cmsAuth", "PersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsAuth", "GroupId", "groupsGroup");
+            DropForeignKey( "dbo.cmsAuth", "ModifiedByPersonId", "crmPerson");
+            DropForeignKey( "dbo.cmsAuth", "CreatedByPersonId", "crmPerson");
+            DropTable( "dbo.groupsGroupTypeRole" );
+            DropTable( "dbo.groupsGroupTypeAssociation" );
+            DropTable( "dbo.utilJob" );
+            DropTable( "dbo.crmPersonViewed" );
+            DropTable( "dbo.crmPersonTrail" );
+            DropTable( "dbo.crmAddress" );
+            DropTable( "dbo.coreServiceLog" );
+            DropTable( "dbo.coreExceptionLog" );
+            DropTable( "dbo.coreEntityChange" );
+            DropTable( "dbo.cmsFile" );
+            DropTable( "dbo.cmsSiteDomain" );
+            DropTable( "dbo.cmsSite" );
+            DropTable( "dbo.cmsPageRoute" );
+            DropTable( "dbo.cmsPage" );
+            DropTable( "dbo.cmsHtmlContent" );
+            DropTable( "dbo.cmsBlockInstance" );
+            DropTable( "dbo.cmsBlock" );
+            DropTable( "dbo.fiancialPersonAccountLookup" );
+            DropTable( "dbo.financialTransactionDetail" );
+            DropTable( "dbo.financialGateway" );
+            DropTable( "dbo.financialBatch" );
+            DropTable( "dbo.financialTransaction" );
+            DropTable( "dbo.financialTransactionFund" );
+            DropTable( "dbo.coreAttributeValue" );
+            DropTable( "dbo.coreAttributeQualifier" );
+            DropTable( "dbo.coreAttribute" );
+            DropTable( "dbo.coreFieldType" );
+            DropTable( "dbo.coreDefinedType" );
+            DropTable( "dbo.coreDefinedValue" );
+            DropTable( "dbo.financialFund" );
+            DropTable( "dbo.financialPledge" );
+            DropTable( "dbo.groupsGroupRole" );
+            DropTable( "dbo.groupsGroupType" );
+            DropTable( "dbo.groupsGroup" );
+            DropTable( "dbo.groupsMember" );
+            DropTable( "dbo.crmPhoneNumber" );
+            DropTable( "dbo.crmEmailTemplate" );
+            DropTable( "dbo.cmsUser" );
+            DropTable( "dbo.crmPerson" );
+            DropTable( "dbo.cmsAuth" );
         }
     }
 }

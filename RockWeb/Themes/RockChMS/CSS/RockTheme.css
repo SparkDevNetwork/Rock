@@ -72,6 +72,11 @@ a {
   -webkit-transition: background-color 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
 }
 
+a:hover 
+{
+    text-decoration: none;   
+}
+
 form {
     margin: 0;
 }
@@ -156,6 +161,7 @@ header.navbar .content .account-name {
 	display: block;
 	float: right;
 	font-size: 11px;
+    color: #aaa;
 }
 
 header.navbar .content .account-name > span:after {
@@ -203,7 +209,8 @@ header.navbar .content .filter-search {
 header.navbar .content div.filter-search input 
 {
     background-color: transparent;
-    color: #a9a8a8;   
+    color: #a9a8a8;
+    font-size: 13px;   
 }
 
 header.navbar .content div.filter-search .filter 
@@ -217,6 +224,13 @@ div.filter-search dl.dropdown
 }
 
 /* page nav */
+
+header.navbar nav
+{
+    position: relative;
+    z-index: 9999;
+}
+
 header.navbar nav ul {
     list-style: none outside none;
 }
@@ -235,9 +249,9 @@ header.navbar nav > ul > li {
 }
 
 header.navbar nav > ul > li:hover {
-    border-color: rgba(0,0,0,0.5);
-	z-index: 2;
-	background: rgba(97,97,97,0.9);
+    border-color: #b0b0b0;
+	z-index: 50;
+	background: #c3c3c3;
 }
 
 header.navbar nav > ul > li a 
@@ -248,7 +262,7 @@ header.navbar nav > ul > li a
 }
 
 header.navbar nav > ul > li:hover a {
-	color: #fff;
+	color: #515151;
 }
 
 header.navbar nav > ul > li:first-child {
@@ -268,19 +282,14 @@ header.navbar nav ul li .nav-menu section
 header.navbar nav ul li .nav-menu {
 	left: -999em;
 	position: absolute;
-	background: -moz-linear-gradient(top, rgba(97,97,97,1) 0%, rgba(97,97,97,1) 30%, rgba(81,81,81,1) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(97,97,97,1)), color-stop(30%,rgba(97,97,97,1)), color-stop(100%,rgba(81,81,81,1)));
-    background: -webkit-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
-    background: -o-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
-    background: -ms-linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
-    background: linear-gradient(top, rgba(97,97,97,1) 0%,rgba(97,97,97,1) 30%,rgba(81,81,81,1) 100%);
+    background: #c3c3c3;
     border-radius: 0 0 4px 4px;
 	margin-top: -2px;
 	padding: 0 24px 24px 24px;
-	border-color: background: rgba(0,0,0,0.8);
+	border-color: #b0b0b0;
 	border-width: 0 1px 1px 1px;
 	border-style: solid;
-	color: #4c4c4c;
+	color: #2f2f2f;
 	-webkit-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     -moz-box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
     box-shadow: 3px 5px 8px rgba(0,0,0,0.27);
@@ -292,7 +301,7 @@ header.navbar nav ul li .nav-menu .width-1column {
 
 header.navbar nav ul li .nav-menu header 
 {
-   color: #CBCBCB; 
+   color: #515151; 
 }
 
 header.navbar nav ul li .nav-menu header > strong {
@@ -302,7 +311,7 @@ header.navbar nav ul li .nav-menu header > strong {
 	padding: 16px 0 6px 0;
 	border-bottom: 1px solid #999;
 	margin-bottom: 6px;
-	color: #ddd;
+	color: #2f2f2f;
 }
 
 header.navbar nav ul li .nav-menu header > img {
@@ -314,24 +323,23 @@ header.navbar nav ul li .nav-menu ul {
 	list-style-type: square;
 	width: 100%;
 	margin-top: 6px;
-	color: #CBCBCB;
+	color: #2f2f2f;
 }
 
 header.navbar nav ul li .nav-menu ul	li {
 	width: 160px;
 	float: left;
 	margin-right: 10px;
-	
 }
 								
 header.navbar nav ul li .nav-menu ul li a {
 	text-decoration: none;
-	color: #cbcbcb;
+	color: #2f2f2f;
 	text-shadow: none;
 }
 
 header.navbar nav ul li .nav-menu ul li a:hover {
-	color: #aaa;
+	color: #7c7c7c;
 }
 
 /* header lock mechanism */
@@ -364,7 +372,11 @@ header.navbar nav ul li .nav-menu ul li a:hover {
     font-size: 28px;
     margin-top: 6px;
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+    font-weight: normal;
+    letter-spacing: -0.03em;
 }
 
 /* footer bar */
@@ -417,3 +429,9 @@ header.navbar nav ul li .nav-menu ul li a:hover {
 	padding: 16px;
 }
 
+/* person details overrides */
+aside.contact-info header
+{
+    font-weight: normal;
+    font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
+}

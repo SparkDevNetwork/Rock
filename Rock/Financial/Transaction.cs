@@ -6,9 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
 
@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Transaction POCO class.
     /// </summary>
     [Table("financialTransaction")]
-    public partial class Transaction : ModelWithAttributes<Transaction>, IAuditable
+    public partial class Transaction : Model<Transaction>
     {
         /// <summary>
         /// Gets or sets the description.
@@ -26,7 +26,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(250)]
         public string Description { get; set; }
 
@@ -36,7 +35,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction date.
         /// </value>
-        [DataMember]
         public DateTime? TransactionDate { get; set; }
 
         /// <summary>
@@ -45,7 +43,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -55,7 +52,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -64,7 +60,6 @@ namespace Rock.Financial
         /// <value>
         /// The batch id.
         /// </value>
-        [DataMember]
         public int? BatchId { get; set; }
 
         /// <summary>
@@ -73,7 +68,6 @@ namespace Rock.Financial
         /// <value>
         /// The currency type id.
         /// </value>
-        [DataMember]
         public int? CurrencyTypeId { get; set; }
 
         /// <summary>
@@ -82,7 +76,6 @@ namespace Rock.Financial
         /// <value>
         /// The credit card type id.
         /// </value>
-        [DataMember]
         public int? CreditCardTypeId { get; set; }
 
         /// <summary>
@@ -91,7 +84,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -100,7 +92,6 @@ namespace Rock.Financial
         /// <value>
         /// The refund transaction id.
         /// </value>
-        [DataMember]
         public int? RefundTransactionId { get; set; }
 
         /// <summary>
@@ -109,7 +100,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction image id.
         /// </value>
-        [DataMember]
         public int? TransactionImageId { get; set; }
 
         /// <summary>
@@ -118,7 +108,6 @@ namespace Rock.Financial
         /// <value>
         /// The transaction code.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string TransactionCode { get; set; }
 
@@ -128,7 +117,6 @@ namespace Rock.Financial
         /// <value>
         /// The gateway id.
         /// </value>
-        [DataMember]
         public int? GatewayId { get; set; }
 
         /// <summary>
@@ -137,7 +125,6 @@ namespace Rock.Financial
         /// <value>
         /// The source type id.
         /// </value>
-        [DataMember]
         public int? SourceTypeId { get; set; }
 
         /// <summary>
@@ -146,9 +133,18 @@ namespace Rock.Financial
         /// <value>
         /// The summary.
         /// </value>
-        [DataMember]
         [MaxLength(500)]
         public string Summary { get; set; }
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Transaction Read( int id )
+        {
+            return Read<Transaction>( id );
+        }
 
         /// <summary>
         /// Gets or sets the batch.
@@ -208,61 +204,15 @@ namespace Rock.Financial
         //public virtual ICollection<Fund> Funds { get; set; }
 
         /// <summary>
-        /// Gets or sets the modified date time.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created date time.
-        /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        public override string AuthEntity { get { return "Financial.Transaction"; } }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Amount.ToString();
+        }
     }
 
     /// <summary>
@@ -281,8 +231,6 @@ namespace Rock.Financial
             this.HasOptional(t => t.CreditCardType).WithMany().HasForeignKey(t => t.CreditCardTypeId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.Gateway).WithMany(g => g.Transactions).HasForeignKey(t => t.GatewayId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.SourceType).WithMany().HasForeignKey(t => t.SourceTypeId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

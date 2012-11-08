@@ -5,31 +5,21 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Web;
 using System.Web.Security;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,
-        "{0}, Your account has been confirmed.  Thank you for creating the account" )]
-    [Rock.Attribute.Property( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,
-        "{0}, Enter a new password for your '{1}' account" )]
-    [Rock.Attribute.Property( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,
-        "{0}, The password for your '{1}' account has been changed" )]
-    [Rock.Attribute.Property( 3, "Delete", "DeleteCaption", "Captions", "", false,
-        "Are you sure you want to delete the '{0}' account?" )]
-    [Rock.Attribute.Property( 4, "Deleted", "DeletedCaption", "Captions", "", false,
-        "The account has been deleted." )]
-    [Rock.Attribute.Property( 5, "Invalid", "InvalidCaption", "Captions", "", false,
-        "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
-    public partial class ConfirmAccount : Rock.Web.UI.Block
+    [BlockProperty( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account" )]
+    [BlockProperty( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,"{0}, Enter a new password for your '{1}' account" )]
+    [BlockProperty( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,"{0}, The password for your '{1}' account has been changed" )]
+    [BlockProperty( 3, "Delete", "DeleteCaption", "Captions", "", false,"Are you sure you want to delete the '{0}' account?" )]
+    [BlockProperty( 4, "Deleted", "DeletedCaption", "Captions", "", false,"The account has been deleted." )]
+    [BlockProperty( 5, "Invalid", "InvalidCaption", "Captions", "", false,"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
+    public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserService userService = null;
         private User user = null;
@@ -57,7 +47,7 @@ namespace RockWeb.Blocks.Security
 
         #endregion
 
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load"/> event.

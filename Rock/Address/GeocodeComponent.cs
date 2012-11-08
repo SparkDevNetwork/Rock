@@ -17,12 +17,12 @@ namespace Rock.Address
         /// Abstract method for geocoding the specified address.  Derived classes should implement
         /// this method to geocode the address.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result code unique to the service.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public abstract bool Geocode( Rock.CRM.Address address, out string result );
+        public abstract bool Geocode( Rock.Crm.Location location, out string result );
     }
 
 }

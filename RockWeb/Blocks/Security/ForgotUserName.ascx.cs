@@ -6,27 +6,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
+using Rock.Cms;
 using Rock.Communication;
-using Rock.CMS;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [Rock.Attribute.Property( 0, "Heading", "HeadingCaption", "Captions", "", false,
-        "Enter your email address below and we'll send you your account user name" )]
-    [Rock.Attribute.Property( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,
-        "There are not any accounts for the email address you entered" )]
-    [Rock.Attribute.Property( 2, "Success", "SuccessCaption", "Captions", "", false,
-        "Your user name has been sent to the email address you entered" )]
-    public partial class ForgotUserName : Rock.Web.UI.Block
+    [BlockProperty( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
+    [BlockProperty( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
+    [BlockProperty( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
+    public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
-        #region Overridden Page Methods
+        #region Overridden RockPage Methods
 
         protected override void OnLoad( EventArgs e )
         {
@@ -50,34 +45,41 @@ namespace RockWeb.Blocks.Security
 
         protected void btnSend_Click( object sender, EventArgs e )
         {
+            var mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+
+            var personDictionaries = new List<IDictionary<string, object>>();
+
             PersonService personService = new PersonService();
+            UserService userService = new UserService();
 
-            var mergeObjects = new List<object>();
-
-            var values = new Dictionary<string, string>();
-            values.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
-            mergeObjects.Add( values );
-
-            Dictionary<object, List<object>> personObjects = new Dictionary<object, List<object>>();
-
-            foreach(Person person in personService.GetByEmail(tbEmail.Text))
+            foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
             {
-                var userObjects = new List<object>();
-
-                UserService userService = new UserService();
+                var users = new List<IDictionary<string,object>>();
                 foreach ( User user in userService.GetByPersonId( person.Id ) )
-                    if ( user.AuthenticationType != AuthenticationType.Facebook )
-                        userObjects.Add( user );
+                {
+                    if ( user.ServiceType == AuthenticationServiceType.Internal )
+                    {
+                        var userDictionary = new UserDto(user).ToDictionary();
+                        userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
+                        users.Add(userDictionary);
+                    }
+                }
 
-                if ( userObjects.Count > 0 )
-                    personObjects.Add( person, userObjects );
+                if (users.Count > 0)
+                {
+                    IDictionary<string,object> personDictionary = new PersonDto(person).ToDictionary();
+                    personDictionary.Add("FirstName", person.FirstName);
+                    personDictionary.Add("Users", users.ToArray());
+                    personDictionaries.Add( personDictionary );
+                }
             }
 
-            if ( personObjects.Count > 0 )
+            if ( personDictionaries.Count > 0 )
             {
-                mergeObjects.Add( personObjects );
+                mergeObjects.Add( "Persons", personDictionaries.ToArray() );
 
-                var recipients = new Dictionary<string, List<object>>();
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( tbEmail.Text, mergeObjects );
 
                 Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
@@ -93,20 +95,22 @@ namespace RockWeb.Blocks.Security
 
         private void SetSMTPParameters( Email email )
         {
-            email.Server = GlobalAttributes.Value( "SMTPServer" );
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            email.Server = globalAttributes.GetValue( "SMTPServer" );
 
             int port = 0;
-            if ( !Int32.TryParse( GlobalAttributes.Value( "SMTPPort" ), out port ) )
+            if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
                 port = 0;
             email.Port = port;
 
             bool useSSL = false;
-            if ( !bool.TryParse( GlobalAttributes.Value( "SMTPUseSSL" ), out useSSL ) )
+            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
                 useSSL = false;
             email.UseSSL = useSSL;
 
-            email.UserName = GlobalAttributes.Value( "SMTPUserName" );
-            email.Password = GlobalAttributes.Value( "SMTPPassword" );
+            email.UserName = globalAttributes.GetValue( "SMTPUserName" );
+            email.Password = globalAttributes.GetValue( "SMTPPassword" );
         }
 
 

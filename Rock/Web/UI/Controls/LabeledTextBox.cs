@@ -9,15 +9,22 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
-{   
+{
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
     public class LabeledTextBox : TextBox
     {
+        /// <summary>
+        /// 
+        /// </summary>
         protected Label label;
-        protected RequiredFieldValidator validator;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected RequiredFieldValidator requiredFieldValidator;
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
@@ -36,7 +43,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 if ( ViewState["Required"] != null )
-                    return ( bool )ViewState["Required"];
+                    return (bool)ViewState["Required"];
                 else
                     return false;
             }
@@ -134,15 +141,15 @@ namespace Rock.Web.UI.Controls
             label = new Label();
             label.AssociatedControlID = this.ID;
 
-            validator = new RequiredFieldValidator();
-            validator.ID = this.ID + "_rfv";
-            validator.ControlToValidate = this.ID;
-            validator.Display = ValidatorDisplay.Dynamic;
-            validator.CssClass = "help-inline";
-            validator.Enabled = false;
+            requiredFieldValidator = new RequiredFieldValidator();
+            requiredFieldValidator.ID = this.ID + "_rfv";
+            requiredFieldValidator.ControlToValidate = this.ID;
+            requiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            requiredFieldValidator.CssClass = "help-inline";
+            requiredFieldValidator.Enabled = false;
 
             Controls.Add( label );
-            Controls.Add( validator );
+            Controls.Add( requiredFieldValidator );
         }
 
         /// <summary>
@@ -151,11 +158,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool isValid = !Required || validator.IsValid;
+            bool isValid = !Required || requiredFieldValidator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
-                (isValid ? "" : " error") +
-                (Required ? " required" : ""));
+                ( isValid ? "" : " error" ) +
+                ( Required ? " required" : "" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             label.AddCssClass( "control-label" );
@@ -168,9 +175,9 @@ namespace Rock.Web.UI.Controls
 
             if ( Required )
             {
-                validator.Enabled = true;
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
+                requiredFieldValidator.Enabled = true;
+                requiredFieldValidator.ErrorMessage = LabelText + " is Required.";
+                requiredFieldValidator.RenderControl( writer );
             }
 
             if ( Tip.Trim() != string.Empty )
@@ -204,6 +211,29 @@ namespace Rock.Web.UI.Controls
         protected void RenderBase( HtmlTextWriter writer )
         {
             base.Render( writer );
+        }
+
+        /// <summary>
+        /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        /// <returns>The text displayed in the <see cref="T:System.Web.UI.WebControls.TextBox" /> control. The default is an empty string ("").</returns>
+        public override string Text
+        {
+            get
+            {
+                if ( base.Text == null )
+                {
+                    return null;
+                }
+                else   
+                {
+                    return base.Text.Trim(); 
+                }
+            }
+            set
+            {
+                base.Text = value;
+            }
         }
 
     }

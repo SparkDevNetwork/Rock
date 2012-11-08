@@ -7,16 +7,22 @@ using System.Xml.Linq;
 
 namespace Rock.Communication
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SendGridEmailProvider: IEmailProvider
     {
         private string _userName = string.Empty;
         private string _password = string.Empty;
         private string _urlBase = "https://sendgrid.com";
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SendGridEmailProvider" /> class.
+        /// </summary>
         public SendGridEmailProvider()
         {
             // load up parameters from global settings
-            var globalAttributes = Rock.Web.Cache.GlobalAttributes.Read();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
             if ( globalAttributes.AttributeValues.ContainsKey("SendGridUsername") )
                 _userName = globalAttributes.AttributeValues["SendGridUsername"].Value;

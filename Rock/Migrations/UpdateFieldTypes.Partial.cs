@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 
 namespace Rock.Migrations
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class UpdateFieldTypes
     {
+        /// <summary>
+        /// Datas up.
+        /// </summary>
         public void DataUp()
         {
             Sql( @"
@@ -36,11 +43,14 @@ INSERT INTO [coreFieldType] ([System],[Name],[Description],[Assembly],[Class],[C
 " );
         }
 
+        /// <summary>
+        /// Datas down.
+        /// </summary>
         public void DataDown()
         {
             Sql( @"
 DECLARE @AdminID int
-SELECT @AdminID = [Id] FROM [crmPerson] WHERE [Guid] = 'AD28DA19-4AF1-408F-9090-2672F8376F27'INSERT INTO [coreFieldType] ([System],[Name],[Description],[Assembly],[Class],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,'Currency','A Currency Field','Rock','Rock.Field.Types.Currency','Jul 19 2012  6:00:00:000AM','Jul 19 2012  6:00:00:000AM',1,1,'50EABC9A-A29D-4A65-984A-87891B230533')
+SELECT @AdminID = [Id] FROM [crmPerson] WHERE [Guid] = 'AD28DA19-4AF1-408F-9090-2672F8376F27'
 
 PRINT 'Updating Field Types'
 UPDATE [coreFieldType] SET [Class]='Rock.FieldTypes.Boolean',[ModifiedDateTime]='2012-07-13 13:00:19.380',[ModifiedByPersonId]=@AdminID WHERE [Guid]='1EDAFDED-DFE6-4334-B019-6EECBA89E05A'

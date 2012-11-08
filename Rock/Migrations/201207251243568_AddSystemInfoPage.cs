@@ -1,7 +1,7 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class AddSystemInfoPage : DbMigration
     {
         public override void Up()
@@ -24,7 +24,7 @@ SET @PageId = SCOPE_IDENTITY()
 INSERT INTO [cmsPageRoute] ([IsSystem],[PageId],[Route],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,@PageId,'SystemInfo','Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'617CF50F-C199-470A-8B32-F9115BDD02C0')
 
 -- cmsBlockInstance
-INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(0,@PageId,NULL,@BlockId,'Content',0,'SystemInfo',0,'Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'D1FD9A6B-C213-4074-8D84-EE5353635443')
+INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,@PageId,NULL,@BlockId,'Content',0,'SystemInfo',0,'Jul 25 2012 06:00:00:000AM','Jul 25 2012 06:00:00:000AM',1,1,'D1FD9A6B-C213-4074-8D84-EE5353635443')
 " );
         }
 
@@ -35,11 +35,11 @@ INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[O
 -- cmsBlockInstance
 DELETE [cmsBlockInstance] WHERE [Guid] = 'D1FD9A6B-C213-4074-8D84-EE5353635443'
 
--- cmsPage --
-DELETE [cmsPage] WHERE [Guid] = '8A97CC93-3E93-4286-8440-E5217B65A904'
-
 -- cmsPageRoute
 DELETE [cmsPageRoute] WHERE [Guid] = '617CF50F-C199-470A-8B32-F9115BDD02C0'
+
+-- cmsPage --
+DELETE [cmsPage] WHERE [Guid] = '8A97CC93-3E93-4286-8440-E5217B65A904'
 
 -- cmsBlock --
 DELETE [cmsBlock] WHERE [Guid] = 'DE08EFD7-4CF9-4BD5-9F72-C0151FD08523'

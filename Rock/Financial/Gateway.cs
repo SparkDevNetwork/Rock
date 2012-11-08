@@ -6,9 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -17,7 +17,7 @@ namespace Rock.Financial
     /// Payment Gateway POCO class.
     /// </summary>
     [Table("financialGateway")]
-    public partial class Gateway : ModelWithAttributes<Gateway>, IAuditable
+    public partial class Gateway : Model<Gateway>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -25,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -35,7 +34,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(500)]
         public string Description { get; set; }
 
@@ -45,7 +43,6 @@ namespace Rock.Financial
         /// <value>
         /// The API URL.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiUrl { get; set; }
 
@@ -55,7 +52,6 @@ namespace Rock.Financial
         /// <value>
         /// The API key.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiKey { get; set; }
 
@@ -65,7 +61,6 @@ namespace Rock.Financial
         /// <value>
         /// The API secret.
         /// </value>
-        [DataMember]
         [MaxLength(100)]
         public string ApiSecret { get; set; }
 
@@ -78,56 +73,25 @@ namespace Rock.Financial
         public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>
-        /// Gets or sets the modified date time.
+        /// Static Method to return an object based on the id
         /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Gateway Read( int id )
+        {
+            return Read<Gateway>( id );
+        }
 
         /// <summary>
-        /// Gets or sets the created date time.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>
@@ -140,8 +104,6 @@ namespace Rock.Financial
         /// </summary>
         public GatewayConfiguration()
         {
-            this.HasOptional(g => g.CreatedByPerson).WithMany().HasForeignKey(g => g.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(g => g.ModifiedByPerson).WithMany().HasForeignKey(g => g.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

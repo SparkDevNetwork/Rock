@@ -18,17 +18,14 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class SystemInfo : Rock.Web.UI.Block
-	{
+    public partial class SystemInfo : Rock.Web.UI.RockBlock
+    {
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            BuildMemoryCacheDetails();
-        }
+            lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
-        private void BuildMemoryCacheDetails()
-        {
             var cache = MemoryCache.Default;
 
             StringBuilder sbItems = new StringBuilder();
@@ -38,25 +35,25 @@ namespace RockWeb.Blocks.Administration
             var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
             foreach ( KeyValuePair<string, object> cachItem in cache.AsQueryable().ToList() )
             {
-                int size = 0;
+                //int size = 0;
 
-                try
-                {
-                    using ( var memStream = new MemoryStream() )
-                    {
-                        binaryFormatter.Serialize( memStream, cachItem.Value );
-                        size = memStream.ToArray().Length;
-                        memStream.Close();
-                    }
+                //try
+                //{
+                //    using ( var memStream = new MemoryStream() )
+                //    {
+                //        binaryFormatter.Serialize( memStream, cachItem.Value );
+                //        size = memStream.ToArray().Length;
+                //        memStream.Close();
+                //    }
 
-                    sbItems.AppendFormat( "<p>{0} ({1:N0} bytes)</p>", cachItem.Key, size );
-                    totalSize += size;
+                //    sbItems.AppendFormat( "<p>{0} ({1:N0} bytes)</p>", cachItem.Key, size );
+                //    totalSize += size;
 
-                }
-                catch (SystemException ex)
-                {
-                    sbItems.AppendFormat( "<p>{0} (Could Not Determine Size: {1})</p>", cachItem.Key, ex.Message );
-                }
+                //}
+                //catch (SystemException ex)
+                //{
+                //    sbItems.AppendFormat( "<p>{0} (Could Not Determine Size: {1})</p>", cachItem.Key, ex.Message );
+                //}
             }
 
             StringBuilder sb = new StringBuilder();
@@ -113,6 +110,14 @@ namespace RockWeb.Blocks.Administration
             lCacheOverview.Text = sb.ToString();
             lCacheObjects.Text = sbItems.ToString();
 
+            var routes = new SortedDictionary<string, System.Web.Routing.Route>();
+            foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
+                routes.Add( route.Url, route );
+
+            sb = new StringBuilder();
+            foreach(var routeItem in routes)
+                sb.AppendFormat("{0}<br/>", routeItem.Key);
+            lRoutes.Text = sb.ToString();
         }
 
     }

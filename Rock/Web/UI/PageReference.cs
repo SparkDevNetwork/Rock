@@ -4,14 +4,14 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System;
+using System.Web.UI;
 
 namespace Rock.Web.UI
 {
     /// <summary>
     /// Helper class to work with the PageReference field type
     /// </summary>
-    public class PageReference : System.Web.UI.UserControl
+    public class PageReference : UserControl
     {
         // private members
         private int _pageId = -1;
@@ -75,8 +75,8 @@ namespace Rock.Web.UI
 
             if ( items.Length == 2 )
             {
-                Int32.TryParse( items[0], out _pageId );
-                Int32.TryParse( items[1], out _routeId );
+                int.TryParse( items[0], out _pageId );
+                int.TryParse( items[1], out _routeId );
             }
         }
 

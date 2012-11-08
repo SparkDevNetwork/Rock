@@ -6,9 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
 
@@ -18,7 +18,7 @@ namespace Rock.Financial
     /// Fund POCO class.
     /// </summary>
     [Table("financialFund")]
-    public partial class Fund : ModelWithAttributes<Fund>, IAuditable
+    public partial class Fund : Model<Fund>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -26,7 +26,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -36,7 +35,6 @@ namespace Rock.Financial
         /// <value>
         /// The name of the public.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string PublicName { get; set; }
 
@@ -46,7 +44,6 @@ namespace Rock.Financial
         /// <value>
         /// The description.
         /// </value>
-        [DataMember]
         [MaxLength(250)]
         public string Description { get; set; }
 
@@ -56,7 +53,6 @@ namespace Rock.Financial
         /// <value>
         /// The parent fund id.
         /// </value>
-        [DataMember]
         public int? ParentFundId { get; set; }
 
         /// <summary>
@@ -65,7 +61,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
@@ -74,7 +69,6 @@ namespace Rock.Financial
         /// <value>
         /// The order.
         /// </value>
-        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -83,7 +77,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsActive { get; set; }
 
         /// <summary>
@@ -92,7 +85,6 @@ namespace Rock.Financial
         /// <value>
         /// The start date.
         /// </value>
-        [DataMember]
         public DateTime? StartDate { get; set; }
 
         /// <summary>
@@ -101,7 +93,6 @@ namespace Rock.Financial
         /// <value>
         /// The end date.
         /// </value>
-        [DataMember]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -110,7 +101,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsPledgable { get; set; }
 
         /// <summary>
@@ -119,7 +109,6 @@ namespace Rock.Financial
         /// <value>
         /// The gl code.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string GlCode { get; set; }
 
@@ -129,7 +118,6 @@ namespace Rock.Financial
         /// <value>
         /// The fund type id.
         /// </value>
-        [DataMember]
         public int? FundTypeId { get; set; }
 
         /// <summary>
@@ -138,7 +126,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -148,7 +135,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -193,61 +179,25 @@ namespace Rock.Financial
         //public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>
-        /// Gets or sets the modified date time.
+        /// Static Method to return an object based on the id
         /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Fund Read( int id )
+        {
+            return Read<Fund>( id );
+        }
 
         /// <summary>
-        /// Gets or sets the created date time.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        public override string AuthEntity { get { return "Financial.Fund"; } }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>
@@ -262,8 +212,6 @@ namespace Rock.Financial
         {
             this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
             this.HasOptional(f => f.FundType).WithMany().HasForeignKey(f => f.FundTypeId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

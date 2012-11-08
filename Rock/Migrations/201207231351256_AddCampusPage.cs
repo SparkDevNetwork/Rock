@@ -1,7 +1,7 @@
 namespace Rock.Migrations
 {
     using System.Data.Entity.Migrations;
-    
+#pragma warning disable 1591
     public partial class AddCampusPage : DbMigration
     {
         public override void Up()
@@ -17,11 +17,11 @@ SET @BlockId = SCOPE_IDENTITY()
 DECLARE @PageId int
 DECLARE @Order int
 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [cmsPage] WHERE [ParentPageId] = 77;
-INSERT INTO [cmsPage] ([Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[IconUrl],[Guid])VALUES('Campuses','Campuses',0,77,1,'Default',0,1,1,0,0,0,ISNULL(@Order,0),0,'Screen to administrate campuses.',1,'Jul 23 2012 06:00:00:000AM','Jul 23 2012 06:00:00:000AM',1,1,NULL,'5EE91A54-C750-48DC-9392-F1F0F0581C3A')
+INSERT INTO [cmsPage] ([Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],[RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],[Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[IconUrl],[Guid])VALUES('Campuses','Campuses',1,77,1,'Default',0,1,1,0,0,0,ISNULL(@Order,0),0,'Screen to administrate campuses.',1,'Jul 23 2012 06:00:00:000AM','Jul 23 2012 06:00:00:000AM',1,1,NULL,'5EE91A54-C750-48DC-9392-F1F0F0581C3A')
 SET @PageId = SCOPE_IDENTITY()
 
 -- cmsBlockInstance
-INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(0,@PageId,NULL,@BlockId,'Content',0,'Campuses',0,'Jul 23 2012 06:00:00:000AM','Jul 23 2012 06:00:00:000AM',1,1,'CB71352B-C10B-453A-8879-0EFF8707355A')
+INSERT INTO [cmsBlockInstance] ([IsSystem],[PageId],[Layout],[BlockId],[Zone],[Order],[Name],[OutputCacheDuration],[CreatedDateTime],[ModifiedDateTime],[CreatedByPersonId],[ModifiedByPersonId],[Guid])VALUES(1,@PageId,NULL,@BlockId,'Content',0,'Campuses',0,'Jul 23 2012 06:00:00:000AM','Jul 23 2012 06:00:00:000AM',1,1,'CB71352B-C10B-453A-8879-0EFF8707355A')
 " );
         }
 

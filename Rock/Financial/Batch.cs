@@ -6,9 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Data;
 
 namespace Rock.Financial
@@ -17,7 +17,7 @@ namespace Rock.Financial
     /// Batch POCO class.
     /// </summary>
     [Table("financialBatch")]
-    public partial class Batch : ModelWithAttributes<Batch>, IAuditable
+    public partial class Batch : Model<Batch>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -25,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The name.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Name { get; set; }
 
@@ -35,7 +34,6 @@ namespace Rock.Financial
         /// <value>
         /// The batch date.
         /// </value>
-        [DataMember]
         public DateTime? BatchDate { get; set; }
 
         /// <summary>
@@ -44,7 +42,6 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
-        [DataMember]
         public bool IsClosed { get; set; }
 
         /// <summary>
@@ -53,7 +50,6 @@ namespace Rock.Financial
         /// <value>
         /// The campus id.
         /// </value>
-        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -62,7 +58,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string Entity { get; set; }
 
@@ -72,7 +67,6 @@ namespace Rock.Financial
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -81,7 +75,6 @@ namespace Rock.Financial
         /// <value>
         /// The foreign reference.
         /// </value>
-        [DataMember]
         [MaxLength(50)]
         public string ForeignReference { get; set; }
 
@@ -96,61 +89,25 @@ namespace Rock.Financial
         public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>
-        /// Gets or sets the modified date time.
+        /// Static Method to return an object based on the id
         /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Batch Read( int id )
+        {
+            return Read<Batch>( id );
+        }
 
         /// <summary>
-        /// Gets or sets the created date time.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        public override string AuthEntity { get { return "Financial.Batch"; } }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 
     /// <summary>
@@ -163,8 +120,6 @@ namespace Rock.Financial
         /// </summary>
         public BatchConfiguration()
         {
-            this.HasOptional(p => p.CreatedByPerson).WithMany().HasForeignKey(p => p.CreatedByPersonId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

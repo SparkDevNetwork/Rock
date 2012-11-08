@@ -8,9 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Crm;
 
 namespace Rock.Security
 {
@@ -48,26 +47,26 @@ namespace Rock.Security
 
         /// <summary>
         /// Authorizations is a static variable for storing all authorizations.  It uses multiple Dictionary objects similiar 
-        /// to a multi-dimensional array to store information.  The first dimension is the entity type, second is the entity
+        /// to a multi-dimensional array to store information.  The first dimension is the entity type id, second is the entity
         /// ID, third is the action, and the fourth dimension is a list of AuthRules for the action.
         /// </summary>
-        public static Dictionary<string, Dictionary<int, Dictionary<string, List<AuthRule>>>> Authorizations { get; set; }
-        
+        public static Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> Authorizations { get; set; }
+
         /// <summary>
         /// Load the static Authorizations object
         /// </summary>
         public static void Load()
         {
-            Authorizations = new Dictionary<string, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
+            Authorizations = new Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
 
             AuthService authService = new AuthService();
 
             foreach ( Auth auth in authService.Queryable().
-                OrderBy( A => A.EntityType ).ThenBy( A => A.EntityId ).ThenBy( A => A.Action ).ThenBy( A => A.Order ) )
+                OrderBy( A => A.EntityTypeId ).ThenBy( A => A.EntityId ).ThenBy( A => A.Action ).ThenBy( A => A.Order ) )
             {
-                if ( !Authorizations.ContainsKey( auth.EntityType ) )
-                    Authorizations.Add( auth.EntityType, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
-                Dictionary<int, Dictionary<string, List<AuthRule>>> entityAuths = Authorizations[auth.EntityType];
+                if ( !Authorizations.ContainsKey( auth.EntityTypeId ) )
+                    Authorizations.Add( auth.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                Dictionary<int, Dictionary<string, List<AuthRule>>> entityAuths = Authorizations[auth.EntityTypeId];
 
                 if ( !entityAuths.ContainsKey( auth.EntityId ?? 0 ) )
                     entityAuths.Add( auth.EntityId ?? 0, new Dictionary<string, List<AuthRule>>() );
@@ -84,10 +83,10 @@ namespace Rock.Security
         /// <summary>
         /// Reloads the authorizations for the specified entity and action.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
-        public static void ReloadAction( string entityType, int entityId, string action )
+        public static void ReloadAction( int entityTypeId, int entityId, string action )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -95,18 +94,18 @@ namespace Rock.Security
             else
             {
                 // Delete the current authorizations
-                if ( Authorizations.ContainsKey( entityType ) )
-                    if ( Authorizations[entityType].ContainsKey( entityId ) )
-                        if ( Authorizations[entityType][entityId].ContainsKey( action ) )
-                            Authorizations[entityType][entityId][action] = new List<AuthRule>();
+                if ( Authorizations.ContainsKey( entityTypeId ) )
+                    if ( Authorizations[entityTypeId].ContainsKey( entityId ) )
+                        if ( Authorizations[entityTypeId][entityId].ContainsKey( action ) )
+                            Authorizations[entityTypeId][entityId][action] = new List<AuthRule>();
 
                 // Find the Authrules for the given entity type, entity id, and action
                 AuthService authService = new AuthService();
-                foreach ( Auth auth in authService.GetAuths(entityType, entityId, action))
+                foreach ( Auth auth in authService.GetAuths( entityTypeId, entityId, action ) )
                 {
-                    if ( !Authorizations.ContainsKey( auth.EntityType ) )
-                        Authorizations.Add( auth.EntityType, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
-                    Dictionary<int, Dictionary<string, List<AuthRule>>> entityAuths = Authorizations[auth.EntityType];
+                    if ( !Authorizations.ContainsKey( auth.EntityTypeId ) )
+                        Authorizations.Add( auth.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                    Dictionary<int, Dictionary<string, List<AuthRule>>> entityAuths = Authorizations[auth.EntityTypeId];
 
                     if ( !entityAuths.ContainsKey( auth.EntityId ?? 0 ) )
                         entityAuths.Add( auth.EntityId ?? 0, new Dictionary<string, List<AuthRule>>() );
@@ -133,88 +132,113 @@ namespace Rock.Security
         /// Evaluates whether a selected user is allowed to perform the selected action on the selected
         /// entity.
         /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="action"></param>
-        /// <param name="user"></param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="specialRole">The special role.</param>
         /// <returns></returns>
         public static bool Authorized( ISecured entity, string action, SpecialRole specialRole )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
+            {
                 Load();
+            }
+
+            var entityTypeId = entity.TypeId;
 
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
             // one to find the first one specific to the selected user or a role that the selected user belongs 
             // to.  If a match is found return whether the user is allowed (true) or denied (false) access
-            if ( Authorizations.Keys.Contains( entity.AuthEntity ) &&
-                Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
-                Authorizations[entity.AuthEntity][entity.Id].Keys.Contains( action ) )
-
-                foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
+            if ( Authorizations.Keys.Contains( entityTypeId ) &&
+                Authorizations[entityTypeId].Keys.Contains( entity.Id ) &&
+                Authorizations[entityTypeId][entity.Id].Keys.Contains( action ) )
+            {
+                foreach ( AuthRule authRule in Authorizations[entityTypeId][entity.Id][action] )
+                {
                     if ( authRule.SpecialRole == specialRole )
+                    {
                         return authRule.AllowOrDeny == "A";
+                    }
+                }
+            }
 
             // If no match was found for the selected user on the current entity instance, check to see if the instance
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
             if ( entity.ParentAuthority != null )
+            {
                 return Authorized( entity.ParentAuthority, action, specialRole );
+            }
             else
+            {
                 return entity.IsAllowedByDefault( action );
+            }
         }
 
         /// <summary>
-        /// Evaluates whether a selected user is allowed to perform the selected action on the selected
+        /// Evaluates whether a selected person is allowed to perform the selected action on the selected
         /// entity.
         /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="action"></param>
-        /// <param name="user"></param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, Rock.CMS.User user )
+        public static bool Authorized( ISecured entity, string action, Rock.Crm.Person person )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
+            {
                 Load();
+            }
+
+            var entityTypeId = entity.TypeId;
 
             // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
-            // one to find the first one specific to the selected user or a role that the selected user belongs 
-            // to.  If a match is found return whether the user is allowed (true) or denied (false) access
-            if ( Authorizations.Keys.Contains( entity.AuthEntity ) &&
-                Authorizations[entity.AuthEntity].Keys.Contains( entity.Id ) &&
-                Authorizations[entity.AuthEntity][entity.Id].Keys.Contains( action ) )
+                // one to find the first one specific to the selected user or a role that the selected user belongs 
+                // to.  If a match is found return whether the user is allowed (true) or denied (false) access
+            if ( Authorizations.Keys.Contains( entityTypeId ) &&
+                Authorizations[entityTypeId].Keys.Contains( entity.Id ) &&
+                Authorizations[entityTypeId][entity.Id].Keys.Contains( action ) )
             {
+                string userName = person != null ? person.Guid.ToString() : string.Empty;
 
-                string userName = user != null ? user.Person.Guid.ToString() : string.Empty;
-
-                foreach ( AuthRule authRule in Authorizations[entity.AuthEntity][entity.Id][action] )
+                foreach ( AuthRule authRule in Authorizations[entityTypeId][entity.Id][action] )
                 {
                     // All Users
                     if ( authRule.SpecialRole == SpecialRole.AllUsers )
+                    {
                         return authRule.AllowOrDeny == "A";
+                    }
 
                     // All Authenticated Users
-                    if (authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && userName.Trim() != string.Empty)
+                    if ( authRule.SpecialRole == SpecialRole.AllAuthenticatedUsers && userName.Trim() != string.Empty )
+                    {
                         return authRule.AllowOrDeny == "A";
+                    }
 
                     // All Unauthenticated Users
                     if ( authRule.SpecialRole == SpecialRole.AllUnAuthenticatedUsers && userName.Trim() == string.Empty )
+                    {
                         return authRule.AllowOrDeny == "A";
+                    }
 
-                    if ( authRule.SpecialRole == SpecialRole.None && userName != string.Empty )
+                    if ( authRule.SpecialRole == SpecialRole.None && person != null )
                     {
                         // See if person has been authorized to entity
-                        if ( authRule.PersonId.HasValue && 
-                            user.PersonId.HasValue && 
-                            authRule.PersonId.Value == user.PersonId.Value )
+                        if ( authRule.PersonId.HasValue &&
+                            authRule.PersonId.Value == person.Id )
+                        {
                             return authRule.AllowOrDeny == "A";
+                        }
 
                         // See if person is in role authorized
-                        if (authRule.GroupId.HasValue)
+                        if ( authRule.GroupId.HasValue )
                         {
                             Role role = Role.Read( authRule.GroupId.Value );
                             if ( role != null && role.IsUserInRole( userName ) )
+                            {
                                 return authRule.AllowOrDeny == "A";
+                            }
                         }
                     }
                 }
@@ -224,32 +248,43 @@ namespace Rock.Security
             // has a parent authority defined and if so evaluate that entities authorization rules.  If there is no
             // parent authority return the defualt authorization
             if ( entity.ParentAuthority != null )
-                return Authorized( entity.ParentAuthority, action, user );
+            {
+                return Authorized( entity.ParentAuthority, action, person );
+            }
             else
+            {
                 return entity.IsAllowedByDefault( action );
-
+            }
         }
 
         /// <summary>
         /// Returns the authorization rules for the specified entity and action.
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityId">The entity id.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        public static List<AuthRule> AuthRules( string entityType, int entityId, string action )
+        public static List<AuthRule> AuthRules( int entityTypeId, int entityId, string action )
         {
             List<AuthRule> rules = new List<AuthRule>();
 
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
+            {
                 Load();
+            }
 
             // Find the Authrules for the given entity type, entity id, and action
-            if (Authorizations.ContainsKey(entityType))
-                if ( Authorizations[entityType].ContainsKey( entityId ) )
-                    if (Authorizations[entityType][entityId].ContainsKey(action))
-                        rules = Authorizations[entityType][entityId][action];
+            if ( Authorizations.ContainsKey( entityTypeId ) )
+            {
+                if ( Authorizations[entityTypeId].ContainsKey( entityId ) )
+                {
+                    if ( Authorizations[entityTypeId][entityId].ContainsKey( action ) )
+                    {
+                        rules = Authorizations[entityTypeId][entityId][action];
+                    }
+                }
+            }
 
             return rules;
         }
@@ -296,19 +331,28 @@ namespace Rock.Security
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
+            {
                 Load();
+            }
+
+            var sourceEntityTypeId = sourceEntity.TypeId;
+            var targetEntityTypeId = targetEntity.TypeId;
 
             AuthService authService = new AuthService();
 
             // Delete the current authorizations for the target entity
-            foreach ( Auth auth in authService.GetByEntityTypeAndEntityId( targetEntity.AuthEntity, targetEntity.Id ) )
+            foreach ( Auth auth in authService.Get( targetEntityTypeId, targetEntity.Id ) )
+            {
                 authService.Delete( auth, personId );
+            }
 
             Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
 
             int order = 0;
-            if ( Authorizations.ContainsKey( sourceEntity.AuthEntity ) && Authorizations[sourceEntity.AuthEntity].ContainsKey( sourceEntity.Id ) )
-                foreach ( KeyValuePair<string, List<AuthRule>> action in Authorizations[sourceEntity.AuthEntity][sourceEntity.Id] )
+            if ( Authorizations.ContainsKey( sourceEntityTypeId ) && Authorizations[sourceEntityTypeId].ContainsKey( sourceEntity.Id ) )
+            {
+                foreach ( KeyValuePair<string, List<AuthRule>> action in Authorizations[sourceEntityTypeId][sourceEntity.Id] )
+                {
                     if ( targetEntity.SupportedActions.Contains( action.Key ) )
                     {
                         newActions.Add( action.Key, new List<AuthRule>() );
@@ -316,7 +360,7 @@ namespace Rock.Security
                         foreach ( AuthRule rule in action.Value )
                         {
                             Auth auth = new Auth();
-                            auth.EntityType = targetEntity.AuthEntity;
+                            auth.EntityTypeId = targetEntityTypeId;
                             auth.EntityId = targetEntity.Id;
                             auth.Order = order;
                             auth.Action = action.Key;
@@ -333,16 +377,34 @@ namespace Rock.Security
                             order++;
                         }
                     }
+                }
+            }
 
-            if ( !Authorizations.ContainsKey( targetEntity.AuthEntity ) )
-                Authorizations.Add( targetEntity.AuthEntity, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+            if ( !Authorizations.ContainsKey( targetEntityTypeId ) )
+            {
+                Authorizations.Add( targetEntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+            }
 
-            Dictionary<int, Dictionary<string, List<AuthRule>>> entityType = Authorizations[targetEntity.AuthEntity];
+            Dictionary<int, Dictionary<string, List<AuthRule>>> entityType = Authorizations[targetEntityTypeId];
 
             if ( !entityType.ContainsKey( targetEntity.Id ) )
+            {
                 entityType.Add( targetEntity.Id, new Dictionary<string, List<AuthRule>>() );
+            }
 
             entityType[targetEntity.Id] = newActions;
+        }
+
+        /// <summary>
+        /// Finds the auth rules.
+        /// </summary>
+        /// <param name="securableObject">The securable object.</param>
+        /// <returns></returns>
+        public static IQueryable<AuthRule> FindAuthRules( ISecured securableObject )
+        {
+            return ( from action in securableObject.SupportedActions
+                     from rule in AuthRules( securableObject.TypeId, securableObject.Id, action )
+                     select rule ).AsQueryable();
         }
     }
 
@@ -415,40 +477,44 @@ namespace Rock.Security
             get
             {
                 // All Users
-                switch (SpecialRole)
+                switch ( SpecialRole )
                 {
-                    case CMS.SpecialRole.AllUsers:
+                    case Cms.SpecialRole.AllUsers:
                         return "All Users";
 
-                    case CMS.SpecialRole.AllAuthenticatedUsers:
+                    case Cms.SpecialRole.AllAuthenticatedUsers:
                         return "All Authenticated Users";
 
-                    case CMS.SpecialRole.AllUnAuthenticatedUsers:
+                    case Cms.SpecialRole.AllUnAuthenticatedUsers:
                         return "All Un-Authenticated Users";
 
                     default:
 
-                        if (PersonId.HasValue)
+                        if ( PersonId.HasValue )
                         {
                             try
                             {
-                                Rock.CRM.PersonService personService = new CRM.PersonService();
-                                Rock.CRM.Person person = personService.Get( PersonId.Value );
-                                if (person != null)
+                                PersonService personService = new PersonService();
+                                Person person = personService.Get( PersonId.Value );
+                                if ( person != null )
+                                {
                                     return person.FullName + " (User)";
+                                }
                             }
-                            catch {}
+                            catch { }
                         }
 
-                        if (GroupId.HasValue)
+                        if ( GroupId.HasValue )
                         {
-                            try 
+                            try
                             {
-                                var role = Role.Read(GroupId.Value);
-                                if (role != null)
+                                var role = Role.Read( GroupId.Value );
+                                if ( role != null )
+                                {
                                     return role.Name + " (Role)";
+                                }
                             }
-                            catch {}
+                            catch { }
                         }
 
                         return "*** Unknown User/Role ***";
@@ -481,7 +547,7 @@ namespace Rock.Security
         /// Initializes a new instance of the <see cref="AuthRule"/> class.
         /// </summary>
         /// <param name="auth">The auth.</param>
-        public AuthRule( Rock.CMS.Auth auth )
+        public AuthRule( Auth auth )
         {
             Id = auth.Id;
             EntityId = auth.EntityId;
@@ -492,5 +558,4 @@ namespace Rock.Security
             Order = auth.Order;
         }
     }
-
 }

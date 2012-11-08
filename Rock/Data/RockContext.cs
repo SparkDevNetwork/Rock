@@ -8,18 +8,28 @@ using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Rock.Data
 {
-	/// <summary>
-	/// Entity Framework Context
-	/// </summary>
-    internal partial class RockContext : DbContext
+    /// <summary>
+    /// Entity Framework Context
+    /// </summary>
+    public partial class RockContext : DbContext
     {
+        #region Cms
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
         /// the Auths.
         /// </value>
-        public DbSet<Rock.CMS.Auth> Auths { get; set; }
+        public DbSet<Rock.Cms.Auth> Auths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Block Types.
+        /// </summary>
+        /// <value>
+        /// the Block Types.
+        /// </value>
+        public DbSet<Rock.Cms.BlockType> BlockTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the Blocks.
@@ -27,15 +37,7 @@ namespace Rock.Data
         /// <value>
         /// the Blocks.
         /// </value>
-        public DbSet<Rock.CMS.Block> Blocks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Block Instances.
-        /// </summary>
-        /// <value>
-        /// the Block Instances.
-        /// </value>
-        public DbSet<Rock.CMS.BlockInstance> BlockInstances { get; set; }
+        public DbSet<Rock.Cms.Block> Blocks { get; set; }
 
         /// <summary>
         /// Gets or sets the Files.
@@ -43,7 +45,7 @@ namespace Rock.Data
         /// <value>
         /// the Files.
         /// </value>
-        public DbSet<Rock.CMS.File> Files { get; set; }
+        public DbSet<Rock.Cms.File> Files { get; set; }
 
         /// <summary>
         /// Gets or sets the Html Contents.
@@ -51,7 +53,7 @@ namespace Rock.Data
         /// <value>
         /// the Html Contents.
         /// </value>
-        public DbSet<Rock.CMS.HtmlContent> HtmlContents { get; set; }
+        public DbSet<Rock.Cms.HtmlContent> HtmlContents { get; set; }
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -59,7 +61,7 @@ namespace Rock.Data
         /// <value>
         /// the Pages.
         /// </value>
-        public DbSet<Rock.CMS.Page> Pages { get; set; }
+        public DbSet<Rock.Cms.Page> Pages { get; set; }
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -67,7 +69,7 @@ namespace Rock.Data
         /// <value>
         /// the Page Routes.
         /// </value>
-        public DbSet<Rock.CMS.PageRoute> PageRoutes { get; set; }
+        public DbSet<Rock.Cms.PageRoute> PageRoutes { get; set; }
 
         /// <summary>
         /// Gets or sets the Sites.
@@ -75,7 +77,7 @@ namespace Rock.Data
         /// <value>
         /// the Sites.
         /// </value>
-        public DbSet<Rock.CMS.Site> Sites { get; set; }
+        public DbSet<Rock.Cms.Site> Sites { get; set; }
 
         /// <summary>
         /// Gets or sets the Site Domains.
@@ -83,7 +85,7 @@ namespace Rock.Data
         /// <value>
         /// the Site Domains.
         /// </value>
-        public DbSet<Rock.CMS.SiteDomain> SiteDomains { get; set; }
+        public DbSet<Rock.Cms.SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
         /// Gets or sets the Users.
@@ -91,7 +93,51 @@ namespace Rock.Data
         /// <value>
         /// the Users.
         /// </value>
-        public DbSet<Rock.CMS.User> Users { get; set; }
+        public DbSet<Rock.Cms.User> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaigns.
+        /// </summary>
+        /// <value>
+        /// The marketing campaigns.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaign> MarketingCampaigns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ads.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ads.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAd> MarketingCampaignAds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ad types.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ad types.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign audiences.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign audiences.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign campuses.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign campuses.
+        /// </value>
+        public DbSet<Rock.Cms.MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
+
+        #endregion
+
+        #region Core
 
         /// <summary>
         /// Gets or sets the Attributes.
@@ -118,6 +164,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the Attribute Values.
+        /// </summary>
+        /// <value>
+        /// the Attribute Values.
+        /// </value>
+        public DbSet<Rock.Core.Audit> Audits { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -142,6 +196,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.EntityChange> EntityChanges { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity types.
+        /// </summary>
+        /// <value>
+        /// The entity types.
+        /// </value>
+        public DbSet<Rock.Core.EntityType> EntityTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Exception Logs.
         /// </summary>
         /// <value>
@@ -158,6 +220,22 @@ namespace Rock.Data
         public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
+        public DbSet<Rock.Core.Metric> Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
+        public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the Service Logs.
         /// </summary>
         /// <value>
@@ -166,12 +244,32 @@ namespace Rock.Data
         public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
 
         /// <summary>
-        /// Gets or sets the Addresses.
+        /// Gets or sets the Tags.
         /// </summary>
         /// <value>
-        /// the Addresses.
+        /// the Tags.
         /// </value>
-        public DbSet<Rock.CRM.Address> Addresses { get; set; }
+        public DbSet<Rock.Core.Tag> Tags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Tagged Items.
+        /// </summary>
+        /// <value>
+        /// the Tagged Items.
+        /// </value>
+        public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
+
+        #endregion
+
+        #region Crm
+
+        /// <summary>
+        /// Gets or sets the Location.
+        /// </summary>
+        /// <value>
+        /// the Location.
+        /// </value>
+        public DbSet<Rock.Crm.Location> Locations { get; set; }
 
         /// <summary>
         /// Gets or sets the Campuses.
@@ -179,7 +277,7 @@ namespace Rock.Data
         /// <value>
         /// the Campuses.
         /// </value>
-        public DbSet<Rock.CRM.Campus> Campuses { get; set; }
+        public DbSet<Rock.Crm.Campus> Campuses { get; set; }
 
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -187,7 +285,7 @@ namespace Rock.Data
         /// <value>
         /// the Email Templates.
         /// </value>
-        public DbSet<Rock.CRM.EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<Rock.Crm.EmailTemplate> EmailTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the People.
@@ -195,7 +293,7 @@ namespace Rock.Data
         /// <value>
         /// the People.
         /// </value>
-        public DbSet<Rock.CRM.Person> People { get; set; }
+        public DbSet<Rock.Crm.Person> People { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Trails.
@@ -203,7 +301,7 @@ namespace Rock.Data
         /// <value>
         /// the Person Trails.
         /// </value>
-        public DbSet<Rock.CRM.PersonMerged> PersonMerges { get; set; }
+        public DbSet<Rock.Crm.PersonMerged> PersonMerges { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Vieweds.
@@ -211,7 +309,7 @@ namespace Rock.Data
         /// <value>
         /// the Person Vieweds.
         /// </value>
-        public DbSet<Rock.CRM.PersonViewed> PersonVieweds { get; set; }
+        public DbSet<Rock.Crm.PersonViewed> PersonVieweds { get; set; }
 
         /// <summary>
         /// Gets or sets the Phone Numbers.
@@ -219,7 +317,7 @@ namespace Rock.Data
         /// <value>
         /// the Phone Numbers.
         /// </value>
-        public DbSet<Rock.CRM.PhoneNumber> PhoneNumbers { get; set; }
+        public DbSet<Rock.Crm.PhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets or sets the Groups.
@@ -227,7 +325,7 @@ namespace Rock.Data
         /// <value>
         /// the Groups.
         /// </value>
-        public DbSet<Rock.Groups.Group> Groups { get; set; }
+        public DbSet<Rock.Crm.Group> Groups { get; set; }
 
         /// <summary>
         /// Gets or sets the Group Roles.
@@ -235,7 +333,7 @@ namespace Rock.Data
         /// <value>
         /// the Group Roles.
         /// </value>
-        public DbSet<Rock.Groups.GroupRole> GroupRoles { get; set; }
+        public DbSet<Rock.Crm.GroupRole> GroupRoles { get; set; }
 
         /// <summary>
         /// Gets or sets the Group Types.
@@ -243,7 +341,15 @@ namespace Rock.Data
         /// <value>
         /// the Group Types.
         /// </value>
-        public DbSet<Rock.Groups.GroupType> GroupTypes { get; set; }
+        public DbSet<Rock.Crm.GroupType> GroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Locations.
+        /// </summary>
+        /// <value>
+        /// the Group Locations.
+        /// </value>
+        public DbSet<Rock.Crm.GroupLocation> GroupLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the Members.
@@ -251,7 +357,11 @@ namespace Rock.Data
         /// <value>
         /// the Members.
         /// </value>
-        public DbSet<Rock.Groups.Member> Members { get; set; }
+        public DbSet<Rock.Crm.GroupMember> Members { get; set; }
+
+        #endregion
+
+        #region Util
 
         /// <summary>
         /// Gets or sets the Jobs.
@@ -260,6 +370,10 @@ namespace Rock.Data
         /// the Jobs.
         /// </value>
         public DbSet<Rock.Util.Job> Jobs { get; set; }
+
+        #endregion
+
+        #region Financial
 
         /// <summary>
         /// Gets or sets the batches.
@@ -317,6 +431,7 @@ namespace Rock.Data
         /// </value>
         public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
 
+        #endregion
 
         /// <summary>
         /// This method is called when the context has been initialized, but
@@ -325,47 +440,76 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+            ContextHelper.AddConfigurations( modelBuilder );
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ContextHelper
+    {
+        /// <summary>
+        /// Adds the configurations.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder.</param>
+        public static void AddConfigurations(DbModelBuilder modelBuilder)
+        {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Configurations.Add( new Rock.CMS.AuthConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlockConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.BlockInstanceConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.FileConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.HtmlContentConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.PageConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.PageRouteConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.SiteConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.SiteDomainConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CMS.UserConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.PageRouteConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.SiteConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.SiteDomainConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.UserConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAudienceConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignCampusConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.AuditConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.AddressConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.CampusConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.PersonConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.PersonMergedConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.PersonViewedConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.CRM.PhoneNumberConfiguration() );
-            modelBuilder.Configurations.Add(new Rock.Financial.BatchConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.FundConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.PledgeConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.TransactionConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.TransactionDetailConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.PersonAccountLookupConfiguration());
-            modelBuilder.Configurations.Add(new Rock.Financial.TransactionFundConfiguration());
-            modelBuilder.Configurations.Add( new Rock.Groups.GroupConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Groups.GroupRoleConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Groups.GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Groups.MemberConfiguration() );
+
+            modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupRoleConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.GroupLocationConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.MemberConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
+
+            modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
+
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
-		}
+        }
     }
 }
 

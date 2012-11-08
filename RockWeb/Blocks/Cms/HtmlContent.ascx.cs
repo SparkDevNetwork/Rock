@@ -8,24 +8,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.CMS;
+using Rock.Cms;
+using Rock.Security;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [Rock.Security.AdditionalActions( new string[] { "Approve" } )]
-    [Rock.Attribute.Property( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [Rock.Attribute.Property( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
-    [Rock.Attribute.Property( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
-    [Rock.Attribute.Property( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-    [Rock.Attribute.Property( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
-    [Rock.Attribute.Property( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
-
-    public partial class HtmlContent : Rock.Web.UI.Block
+    [AdditionalActions( new string[] { "Approve" } )]
+    [BlockProperty( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
+    [BlockProperty( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
+    [BlockProperty( 2, "Cache Duration", "CacheDuration", "", "Number of seconds to cache the content.", false, "0", "Rock", "Rock.Field.Types.Integer" )]
+    [BlockProperty( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
+    [BlockProperty( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
+    [BlockProperty( 5, "Support Versions", "Advanced", "Support content versioning?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 6, "Require Approval", "Advanced", "Require that content be approved?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    public partial class HtmlContent : Rock.Web.UI.RockBlock
     {
         #region Private Global Variables
 
@@ -40,22 +41,22 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            PageInstance.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-            PageInstance.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
 
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            PageInstance.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
+            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
             _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
 
-            mpeContent.OnOkScript = string.Format("saveHtmlContent_{0}();", BlockInstance.Id);
+            mpeContent.OnOkScript = string.Format( "saveHtmlContent_{0}();", CurrentBlock.Id );
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
@@ -75,9 +76,9 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.CMS.HtmlContent content = service.GetActiveContent( BlockInstance.Id, EntityValue() );
+            Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
             if ( content == null )
-                content = new Rock.CMS.HtmlContent();
+                content = new Rock.Cms.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -131,7 +132,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
-                Rock.CMS.HtmlContent content = null;
+                Rock.Cms.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -141,7 +142,7 @@ namespace RockWeb.Blocks.Cms
                 int version = 0;
                 if ( !Int32.TryParse( hfVersion.Value, out version ) )
                     version = 0;
-                content = service.GetByBlockIdAndEntityValueAndVersion( BlockInstance.Id, entityValue, version );
+                content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
 
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
@@ -153,16 +154,16 @@ namespace RockWeb.Blocks.Cms
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.CMS.HtmlContent();
-                    content.BlockId = BlockInstance.Id;
+                    content = new Rock.Cms.HtmlContent();
+                    content.BlockId = CurrentBlock.Id;
                     content.EntityValue = entityValue;
 
                     if ( _supportVersioning )
                     {
                         int? maxVersion = service.Queryable().
-                            Where( c => c.BlockId == BlockInstance.Id &&
+                            Where( c => c.BlockId == CurrentBlock.Id &&
                                 c.EntityValue == entityValue ).
-                            Select( c => ( int? )c.Version ).Max();
+                            Select( c => (int?)c.Version ).Max();
 
                         content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
                     }
@@ -247,22 +248,22 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = "";
 
-            int cacheDuration = Int32.Parse( AttributeValue( "CacheDuration" ) );
             string cachedContent = GetCacheItem( entityValue ) as string;
 
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.CMS.HtmlContent content = new HtmlContentService().GetActiveContent( BlockInstance.Id, entityValue );
+                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
-                {
                     html = content.Content;
+                else
+                    html = string.Empty;
 
-                    // cache content
-                    if ( cacheDuration > 0 )
-                        AddCacheItem( entityValue, html, cacheDuration );
-                }
+                // cache content
+                int cacheDuration = 0;
+                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
+                    AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;
@@ -275,16 +276,41 @@ namespace RockWeb.Blocks.Cms
 
         private void BindGrid()
         {
-            HtmlContentService service = new HtmlContentService();
+            var HtmlService = new HtmlContentService();
+            var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-            var versions = service.GetContent( BlockInstance.Id, EntityValue() ).
+            var personService = new Rock.Crm.PersonService();
+            var versionAudits = new Dictionary<int, Rock.Core.Audit>();
+            var modifiedPersons = new Dictionary<int, string>();
+
+            foreach ( var version in content )
+            {
+                var lastAudit = HtmlService.Audits( version )
+                    .Where( a => a.AuditType == Rock.Core.AuditType.Add ||
+                        a.AuditType == Rock.Core.AuditType.Modify )
+                    .OrderByDescending( h => h.DateTime )
+                    .FirstOrDefault();
+                if ( lastAudit != null )
+                    versionAudits.Add( version.Id, lastAudit );
+            }
+
+            foreach ( var audit in versionAudits.Values )
+            {
+                if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
+                {
+                    var modifiedPerson = personService.Get( audit.PersonId.Value, true );
+                    modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
+                }
+            }
+
+            var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
                     v.Content,
-                    ModifiedDateTime = v.ModifiedDateTime.ToElapsedString(),
-                    ModifiedByPerson = v.ModifiedByPerson != null ? v.ModifiedByPerson.FullName : "",
+                    ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
+                    ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
                     Approved = v.IsApproved,
                     ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
                     v.StartDateTime,

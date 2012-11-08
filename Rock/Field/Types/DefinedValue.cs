@@ -19,12 +19,38 @@ namespace Rock.Field.Types
     public class DefinedValue : FieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                try
+                {
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( Int32.Parse( value ) );
+                    if ( definedValue != null )
+                        return definedValue.Name;
+                }
+                catch { }
+
+                return "Unknown Defined Value: " + value;
+            }
+            else
+                return string.Empty;
+        }
+
+        /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
         /// <returns></returns>
         public override List<string> ConfigurationKeys()
         {
-            List<string> configKeys = new List<string>();
+            var configKeys = base.ConfigurationKeys();
             configKeys.Add( "definedtype" );
             return configKeys;
         }
@@ -35,7 +61,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override List<Control> ConfigurationControls()
         {
-            List<Control> controls = new  List<Control>();
+            var controls = base.ConfigurationControls();
 
             DropDownList ddl = new DropDownList();
 

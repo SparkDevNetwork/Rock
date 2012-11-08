@@ -4,8 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Financial
 {
@@ -23,7 +24,6 @@ namespace Rock.Financial
         /// </value>
         [Key]
         [Column(Order = 0)]
-        [DataMember]
         public int TransactionId { get; set; }
 
         /// <summary>
@@ -34,7 +34,6 @@ namespace Rock.Financial
         /// </value>
         [Key]
         [Column(Order = 1)]
-        [DataMember]
         public int FundId { get; set; }
 
         /// <summary>
@@ -43,7 +42,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal? Amount { get; set; }
 
         /// <summary>

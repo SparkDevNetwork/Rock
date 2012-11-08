@@ -12,14 +12,14 @@
 
     <asp:Panel ID="pnlLists" runat="server" CssClass="pill-content">
 
-        <div id="divPage" runat="server" >
-            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found">
+        <div id="divPage" runat="server" class="pill-pane" >
+            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gPageBlocks_Edit" />
@@ -28,14 +28,14 @@
             </Rock:Grid>
         </div>
 
-        <div id="divLayout" runat="server" >
+        <div id="divLayout" runat="server" class="pill-pane" >
             <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.Block.Name") %>
+                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gLayoutBlocks_Edit" />
@@ -49,13 +49,13 @@
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
-        <asp:HiddenField ID="hfBlockInstanceId" runat="server" />
+        <asp:HiddenField ID="hfBlockId" runat="server" />
 
         <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
-            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="Name" />
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.CMS.BlockInstance, Rock" PropertyName="BlockId" LabelText="Type" />
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="Name" />
+            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="BlockTypeId" LabelText="Type" />
         </fieldset>
 
         <div class="actions">
