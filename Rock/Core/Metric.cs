@@ -13,10 +13,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Core
@@ -25,236 +23,144 @@ namespace Rock.Core
     /// Metric POCO Entity.
     /// </summary>
     [Table( "coreMetric" )]
-    public partial class Metric : Model<Metric>, IAuditable, IOrdered
+    public partial class Metric : Model<Metric>, IOrdered
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Type.
-		/// </summary>
-		/// <value>
-		/// Type.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool Type { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Category.
-		/// </summary>
-		/// <value>
-		/// Category.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Category { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Title.
-		/// </summary>
-		/// <value>
-		/// Title.
-		/// </value>
-		[Required]
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Title { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Subtitle.
-		/// </summary>
-		/// <value>
-		/// Subtitle.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Subtitle { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Description.
-		/// </summary>
-		/// <value>
-		/// Description.
-		/// </value>
-		[DataMember]
-		public string Description { get; set; }
-
-		/// <summary>
-		/// Gets or sets the MinValue.
-		/// </summary>
-		/// <value>
-		/// MinValue.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int MinValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the MaxValue.
-		/// </summary>
-		/// <value>
-		/// MaxValue.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int MaxValue { get; set; }
-
-		/// <summary>
-		/// Gets or sets the CollectionFrequency.
-		/// </summary>
-		/// <value>
-		/// CollectionFrequency.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int CollectionFrequency { get; set; }
-
-		/// <summary>
-		/// Gets or sets the LastCollected date.
-		/// </summary>
-		/// <value>
-		/// LastCollected.
-		/// </value>
-		[Required]
-		[DataMember]
-		public DateTime LastCollected { get; set; }
-
-		/// <summary>
-		/// Gets or sets the Source.
-		/// </summary>
-		/// <value>
-		/// Source.
-		/// </value>
-		[MaxLength( 100 )]
-		[DataMember]
-		public string Source { get; set; }
-
-		/// <summary>
-		/// Gets or sets the SourceSQL.
-		/// </summary>
-		/// <value>
-		/// SourceSQL.
-		/// </value>
-		[DataMember]
-		public string SourceSQL { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Order.
-		/// </summary>
-		/// <value>
-		/// Order.
-		/// </value>
-		[Required]
-		[DataMember]
-		public int Order { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created Date Time.
-		/// </summary>
-		/// <value>
-		/// Created Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? CreatedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified Date Time.
-		/// </summary>
-		/// <value>
-		/// Modified Date Time.
-		/// </value>
-		[DataMember]
-		public DateTime? ModifiedDateTime { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Created By Person Id.
-		/// </summary>
-		/// <value>
-		/// Created By Person Id.
-		/// </value>
-		[DataMember]
-		public int? CreatedByPersonId { get; set; }
-		
-		/// <summary>
-		/// Gets or sets the Modified By Person Id.
-		/// </summary>
-		/// <value>
-		/// Modified By Person Id.
-		/// </value>
-		[DataMember]
-		public int? ModifiedByPersonId { get; set; }
-		
-		/// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
+        /// <summary>
+        /// Gets or sets the System.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Core.DTO.Metric"/> object.
+        /// System.
         /// </value>
-		public Rock.Core.DTO.Metric DataTransferObject
-		{
-			get 
-			{ 
-				Rock.Core.DTO.Metric dto = new Rock.Core.DTO.Metric();
-				dto.Id = this.Id;
-				dto.Guid = this.Guid;
-				dto.IsSystem = this.IsSystem;
-				dto.Type= this.Type;
-				dto.Category = this.Category;
-				dto.Title = this.Title;
-				dto.Subtitle = this.Subtitle;
-				dto.Description = this.Description;
-				dto.MinValue = this.MinValue;
-				dto.MaxValue = this.MaxValue;
-				dto.CollectionFrequency = this.CollectionFrequency;
-				dto.LastCollected = this.LastCollected;
-				dto.Source = this.Source;
-				dto.SourceSQL = this.SourceSQL;
-				dto.Order = this.Order;
-				dto.CreatedDateTime = this.CreatedDateTime;
-				dto.ModifiedDateTime = this.ModifiedDateTime;
-				dto.CreatedByPersonId = this.CreatedByPersonId;
-				dto.ModifiedByPersonId = this.ModifiedByPersonId;
-				return dto; 
-			}
-		}
+        [Required]
+        public bool IsSystem { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Type.
+        /// </summary>
+        /// <value>
+        /// Type.
+        /// </value>
+        public bool Type { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        /// <value>
+        /// Category.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Category { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Title.
+        /// </summary>
+        /// <value>
+        /// Title.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
+        public string Title { get; set; }
 
         /// <summary>
-        /// Gets the auth entity.
+        /// Gets or sets the Subtitle.
         /// </summary>
-		[NotMapped]
-		public override string AuthEntity { get { return "Core.Metric"; } }
+        /// <value>
+        /// Subtitle.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Subtitle { get; set; }
+    
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MinValue.
+        /// </summary>
+        /// <value>
+        /// MinValue.
+        /// </value>
+        public int? MinValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MaxValue.
+        /// </summary>
+        /// <value>
+        /// MaxValue.
+        /// </value>
+        public int? MaxValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CollectionFrequency.
+        /// </summary>
+        /// <value>
+        /// CollectionFrequency.
+        /// </value>
+        public int? CollectionFrequencyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LastCollected Date Time.
+        /// </summary>
+        /// <value>
+        /// LastCollected Date Time.
+        /// </value>
+        public DateTime? LastCollected { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Source.
+        /// </summary>
+        /// <value>
+        /// Source.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceSQL.
+        /// </summary>
+        /// <value>
+        /// SourceSQL.
+        /// </value>
+        public string SourceSQL { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        public int Order { get; set; }
         
-		/// <summary>
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Metric Read( int id )
+        {
+            return Read<Metric>( id );
+        }
+
+        /// <summary>
         /// Gets or sets the Metric Values.
         /// </summary>
         /// <value>
         /// Collection of Metric Values.
         /// </value>
-		public virtual ICollection<MetricValue> MetricValues { get; set; }
-               
-		/// <summary>
-        /// Gets or sets the Created By Person.
+        public virtual ICollection<MetricValue> MetricValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CollectionFrequency.
         /// </summary>
         /// <value>
-        /// A <see cref="CRM.Person"/> object.
+        /// A <see cref="Core.DefinedValue"/> object.
         /// </value>
-		public virtual CRM.Person CreatedByPerson { get; set; }
-        
-		/// <summary>
-        /// Gets or sets the Modified By Person.
-        /// </summary>
-        /// <value>
-        /// A <see cref="CRM.Person"/> object.
-        /// </value>
-		public virtual CRM.Person ModifiedByPerson { get; set; }
+        public virtual Core.DefinedValue CollectionFrequency { get; set; }
 
         /// <summary>
         /// Gets the parent authority.
@@ -265,11 +171,14 @@ namespace Rock.Core
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Metric"/> class.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        public Metric()
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            
+            return this.Title;
         }
     }
     /// <summary>
@@ -282,9 +191,7 @@ namespace Rock.Core
         /// </summary>
         public MetricConfiguration()
         {
-			//this.HasOptional( p => p.MetricValues ).WithMany().HasForeignKey( p => MetricId ).WillCascadeOnDelete( true );
-			this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-			this.HasOptional( p => p.ModifiedByPerson ).WithMany().HasForeignKey( p => p.ModifiedByPersonId ).WillCascadeOnDelete(false);
-		}
+            this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
+        }
     }
 }

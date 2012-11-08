@@ -14,13 +14,13 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Pages : Rock.Web.UI.Block
-	{
+    public partial class Pages : Rock.Web.UI.RockBlock
+    {
         #region Fields
 
         private bool canConfigure = false;
-        private Rock.Web.Cache.Page _page = null;
-        private Rock.CMS.PageService pageService = new Rock.CMS.PageService();
+        private Rock.Web.Cache.PageCache _page = null;
+        private Rock.Cms.PageService pageService = new Rock.Cms.PageService();
 
         #endregion
 
@@ -31,12 +31,12 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-                _page = Rock.Web.Cache.Page.Read( pageId );
+                _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page != null )
-                    canConfigure = _page.IsAuthorized( "Configure", CurrentUser );
+                    canConfigure = _page.IsAuthorized( "Configure", CurrentPerson );
                 else
-                    canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
+                    canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 if ( canConfigure )
                 {
@@ -45,16 +45,6 @@ namespace RockWeb.Blocks.Administration
                     rGrid.Actions.AddClick += rGrid_GridAdd;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
-
-                    string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this page?');
-                }});
-        }});
-    ", rGrid.ClientID );
-
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGrid.ClientID ), script, true );
                 }
                 else
                 {
@@ -103,10 +93,10 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
-                Rock.Web.Cache.Page.Flush( page.Id );
+                Rock.Web.Cache.PageCache.Flush( page.Id );
 
                 pageService.Delete( page, CurrentPersonId );
                 pageService.Save( page, CurrentPersonId );
@@ -140,7 +130,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.Page page;
+            Rock.Cms.Page page;
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -148,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.CMS.Page();
+                page = new Rock.Cms.Page();
 
                 if ( _page != null )
                 {
@@ -158,14 +148,14 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     page.ParentPageId = null;
-                    page.SiteId = PageInstance.Site.Id;
+                    page.SiteId = CurrentPage.Site.Id;
                 }
 
                 page.Title = tbPageName.Text;
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.CMS.Page lastPage =
+                Rock.Cms.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -214,14 +204,14 @@ namespace RockWeb.Blocks.Administration
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.ThemePath ), "Layouts" ) );
+            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
             foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
                 ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
         }
 
         protected void ShowEdit( int pageId )
         {
-            Rock.CMS.Page page = pageService.Get( pageId );
+            Rock.Cms.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
@@ -241,7 +231,7 @@ namespace RockWeb.Blocks.Administration
                     if ( _page != null )
                         ddlLayout.Text = _page.Layout;
                     else
-                        ddlLayout.Text = PageInstance.Layout;
+                        ddlLayout.Text = CurrentPage.Layout;
                 }
                 catch { }
 

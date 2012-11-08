@@ -8,6 +8,8 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Web.UI;
+
 namespace Rock.Address.Geocode
 {
     /// <summary>
@@ -16,50 +18,50 @@ namespace Rock.Address.Geocode
     [Description( "Address Geocoding service from Tele Atlas (EZ-Locate)" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "TelaAtlas" )]
-    [Rock.Attribute.Property( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
-    [Rock.Attribute.Property( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
-    [Rock.Attribute.Property( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
+    [BlockProperty( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
+    [BlockProperty( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
+    [BlockProperty( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
     public class TelaAtlas : GeocodeComponent
     {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
-        /// <param name="address">The address.</param>
+        /// <param name="location">The location.</param>
         /// <param name="result">The result.</param>
         /// <returns>
         /// True/False value of whether the address was standardized was succesfully
         /// </returns>
-        public override bool Geocode( Rock.CRM.Address address, out string result )
+        public override bool Geocode( Rock.Crm.Location location, out string result )
         {
-            if ( address != null )
+            if ( location != null )
             {
                 var aptc = new Rock.TeleAtlas.Authentication.AuthenticationPortTypeClient();
 
                 int encryptedId;
                 int rc = aptc.requestChallenge( AttributeValue( "UserID" ), 0, out encryptedId );
-                if ( rc == 0)
+                if ( rc == 0 )
                 {
-                    int key = elfHash(AttributeValue("Password"));
-				    int unencryptedChallenge = encryptedId ^ key;
-				    int permutedChallenge = permute(unencryptedChallenge);
-				    int response = permutedChallenge ^ key;
+                    int key = elfHash( AttributeValue( "Password" ) );
+                    int unencryptedChallenge = encryptedId ^ key;
+                    int permutedChallenge = permute( unencryptedChallenge );
+                    int response = permutedChallenge ^ key;
 
                     int cred;
 
                     rc = aptc.answerChallenge( response, encryptedId, out cred );
-                    if (rc == 0 )
+                    if ( rc == 0 )
                     {
                         var addressParts = new Rock.TeleAtlas.Geocoding.NameValue[5];
-                        addressParts[0] = NameValue( "Addr", string.Format( "{0} {1}", address.Street1, address.Street2 ) );
-                        addressParts[1] = NameValue( "City", address.City );
-                        addressParts[2] = NameValue( "State", address.State );
-                        addressParts[3] = NameValue( "ZIP", address.Zip );
+                        addressParts[0] = NameValue( "Addr", string.Format( "{0} {1}", location.Street1, location.Street2 ) );
+                        addressParts[1] = NameValue( "City", location.City );
+                        addressParts[2] = NameValue( "State", location.State );
+                        addressParts[3] = NameValue( "ZIP", location.Zip );
                         addressParts[4] = NameValue( "Plus4", string.Empty );
 
                         var gptc = new Rock.TeleAtlas.Geocoding.GeocodingPortTypeClient();
 
                         Rock.TeleAtlas.Geocoding.Geocode returnedGeocode;
-                        rc = gptc.findAddress( AttributeValue("EZLocateService"), addressParts, cred, out returnedGeocode );
+                        rc = gptc.findAddress( AttributeValue( "EZLocateService" ), addressParts, cred, out returnedGeocode );
                         if ( rc == 0 )
                         {
                             if ( returnedGeocode.resultCode == 0 )
@@ -88,8 +90,8 @@ namespace Rock.Address.Geocode
 
                                     if ( matchType.value == "1" )
                                     {
-                                        address.Latitude = double.Parse( latitude.value );
-                                        address.Longitude = double.Parse( longitude.value );
+                                        location.Latitude = double.Parse( latitude.value );
+                                        location.Longitude = double.Parse( longitude.value );
 
                                         return true;
                                     }
@@ -132,14 +134,14 @@ namespace Rock.Address.Geocode
                 }
             }
 
-            return ( int )result;
+            return (int)result;
         }
 
         private int permute( int inputValue )
         {
             long result = inputValue;
             result *= 39371;
-            return ( int )( result % 0x3fffffff );
+            return (int)( result % 0x3fffffff );
         }
 
         private int makeKey( string account )

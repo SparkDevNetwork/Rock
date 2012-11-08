@@ -5,9 +5,9 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-using Rock.CRM;
+using Rock.Crm;
 using Rock.Core;
 using Rock.Data;
 
@@ -17,7 +17,7 @@ namespace Rock.Financial
     /// Pledge POCO class.
     /// </summary>
     [Table("financialPledge")]
-    public partial class Pledge : ModelWithAttributes<Pledge>, IAuditable
+    public partial class Pledge : Model<Pledge>
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -25,7 +25,6 @@ namespace Rock.Financial
         /// <value>
         /// The person id.
         /// </value>
-        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -34,7 +33,6 @@ namespace Rock.Financial
         /// <value>
         /// The fund id.
         /// </value>
-        [DataMember]
         public int? FundId { get; set; }
 
         /// <summary>
@@ -43,7 +41,6 @@ namespace Rock.Financial
         /// <value>
         /// The amount.
         /// </value>
-        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -52,7 +49,6 @@ namespace Rock.Financial
         /// <value>
         /// The start date.
         /// </value>
-        [DataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -61,7 +57,6 @@ namespace Rock.Financial
         /// <value>
         /// The end date.
         /// </value>
-        [DataMember]
         public DateTime EndDate { get; set; }
 
         /// <summary>
@@ -70,7 +65,6 @@ namespace Rock.Financial
         /// <value>
         /// The frequency type id.
         /// </value>
-        [DataMember]
         public int? FrequencyTypeId { get; set; }
 
         /// <summary>
@@ -79,7 +73,6 @@ namespace Rock.Financial
         /// <value>
         /// The frequency amount.
         /// </value>
-        [DataMember]
         public decimal? FrequencyAmount { get; set; }
 
         /// <summary>
@@ -106,62 +99,26 @@ namespace Rock.Financial
         /// </value>
         public virtual DefinedValue FrequencyType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the modified date time.
+         /// <summary>
+        /// Static Method to return an object based on the id
         /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Pledge Read( int id )
+        {
+            return Read<Pledge>( id );
+        }
 
         /// <summary>
-        /// Gets or sets the created date time.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        /// <value>
-        /// The created date time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person id.
-        /// </summary>
-        /// <value>
-        /// The created by person id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person id.
-        /// </summary>
-        /// <value>
-        /// The modified by person id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the created by person.
-        /// </summary>
-        /// <value>
-        /// The created by person.
-        /// </value>
-        public virtual Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified by person.
-        /// </summary>
-        /// <value>
-        /// The modified by person.
-        /// </value>
-        public virtual Person ModifiedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        public override string AuthEntity { get { return "Financial.TransactionDetail"; } }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Amount.ToString();
+        }
     }
 
     /// <summary>
@@ -177,8 +134,6 @@ namespace Rock.Financial
             this.HasOptional(p => p.Person).WithMany(p => p.Pledges).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.Fund).WithMany(f => f.Pledges).HasForeignKey(p => p.FundId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.FrequencyType).WithMany().HasForeignKey(p => p.FrequencyTypeId).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.ModifiedByPerson).WithMany().HasForeignKey(p => p.ModifiedByPersonId).WillCascadeOnDelete(false);
         }
     }
 }

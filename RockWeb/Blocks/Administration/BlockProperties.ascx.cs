@@ -10,9 +10,9 @@ using System.Web.UI.HtmlControls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class BlockProperties : Rock.Web.UI.Block
+    public partial class BlockProperties : Rock.Web.UI.RockBlock
     {
-        private Rock.Web.Cache.BlockInstance _blockInstance = null;
+        private Rock.Web.Cache.BlockCache _block = null;
         private string _zoneName = string.Empty;
 
         protected override void OnInit( EventArgs e )
@@ -23,14 +23,13 @@ namespace RockWeb.Blocks.Administration
             
             try
             {
-                int blockInstanceId = Convert.ToInt32( PageParameter( "BlockInstance" ) );
-                _blockInstance = Rock.Web.Cache.BlockInstance.Read( blockInstanceId );
+                int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+                _block = Rock.Web.Cache.BlockCache.Read( blockId );
 
-                if ( _blockInstance.IsAuthorized( "Configure", CurrentUser ) )
+                if ( _block.IsAuthorized( "Configure", CurrentPerson ) )
                 {
-                    var attributeControls = Rock.Attribute.Helper.GetEditControls( _blockInstance, !Page.IsPostBack );
-                    foreach ( HtmlGenericControl fs in attributeControls )
-                        phAttributes.Controls.Add( fs );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( _block, phAttributes, !Page.IsPostBack );
                 }
                 else
                 {
@@ -47,21 +46,13 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _blockInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( !Page.IsPostBack && _block.IsAuthorized( "Configure", CurrentPerson ) )
             {
-                tbBlockName.Text = _blockInstance.Name;
-                tbCacheDuration.Text = _blockInstance.OutputCacheDuration.ToString();
+                tbBlockName.Text = _block.Name;
+                tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 
             base.OnLoad( e );
-        }
-
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
-
-            if ( Page.IsPostBack && !Page.IsValid )
-                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _blockInstance );
         }
 
         protected void masterPage_OnSave( object sender, EventArgs e )
@@ -70,24 +61,27 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    Rock.CMS.BlockInstanceService blockInstanceService = new Rock.CMS.BlockInstanceService();
-                    Rock.CMS.BlockInstance blockInstance = blockInstanceService.Get( _blockInstance.Id );
+                    var blockService = new Rock.Cms.BlockService();
+                    var block = blockService.Get( _block.Id );
 
-                    Rock.Attribute.Helper.LoadAttributes( blockInstance );
+                    Rock.Attribute.Helper.LoadAttributes( block );
 
-                    blockInstance.Name = tbBlockName.Text;
-                    blockInstance.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
-                    blockInstanceService.Save( blockInstance, CurrentPersonId );
+                    block.Name = tbBlockName.Text;
+                    block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
+                    blockService.Save( block, CurrentPersonId );
 
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _blockInstance );
-                    _blockInstance.SaveAttributeValues( CurrentPersonId );
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, _block );
+                    _block.SaveAttributeValues( CurrentPersonId );
 
-                    Rock.Web.Cache.BlockInstance.Flush( _blockInstance.Id );
+                    Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }
 
                 string script = "window.parent.closeModal()";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
+            else
+                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
+
         }
 
         private void DisplayError( string message )

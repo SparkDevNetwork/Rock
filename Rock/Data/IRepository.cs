@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Core;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -22,6 +24,13 @@ namespace Rock.Data
         /// </summary>
         /// <returns></returns>
         IQueryable<T> AsQueryable();
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models, 
+        /// with optional eager loading of properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        IQueryable<T> AsQueryable( string includes );
 
         /// <summary>
         /// Gets an <see cref="IEnumerable{T}"/> list of all models.
@@ -61,6 +70,81 @@ namespace Rock.Data
         T FirstOrDefault( Expression<Func<T, bool>> where );
 
         /// <summary>
+        /// Date the entity was created.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        DateTime? DateCreated( T entity );
+
+        /// <summary>
+        /// Date the entity was created.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        DateTime? DateCreated( int entityTypeId, int entityId );
+
+        /// <summary>
+        /// Date the entity was last modified.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        DateTime? DateLastModified( T entity );
+
+        /// <summary>
+        /// Date the entity was last modified.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        DateTime? DateLastModified( int entityTypeId, int entityId );
+
+        /// <summary>
+        /// The person id who created entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        int? CreatedByPersonId( T entity );
+
+        /// <summary>
+        /// The person id who created entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        int? CreatedByPersonId( int entityTypeId, int entityId );
+        
+        /// <summary>
+        /// The person id who last modified entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        int? LastModifiedByPersonId( T entity );
+
+        /// <summary>
+        /// The person id who last modified the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        int? LastModifiedByPersonId( int entityTypeId, int entityId );
+        
+        /// <summary>
+        /// All the audits made to the entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        IQueryable<Audit> Audits( T entity );
+
+        /// <summary>
+        /// All the audits made to the entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <returns></returns>
+        IQueryable<Audit> Audits( int entityTypeId, int entityId );
+
+        /// <summary>
         /// Adds the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -81,8 +165,9 @@ namespace Rock.Data
         /// <summary>
         /// Saves any changes made in the current context
         /// </summary>
-        /// <param name="personId">The person id.</param>
+        /// <param name="PersonId">The person id.</param>
+        /// <param name="audits">The audits.</param>
         /// <returns></returns>
-        List<Rock.Core.EntityChange> Save( int? personId );
+        List<Rock.Core.EntityChange> Save( int? PersonId, List<Rock.Core.AuditDto> audits);
     }
 }

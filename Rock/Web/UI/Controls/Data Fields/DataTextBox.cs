@@ -73,6 +73,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public void ShowErrorMessage( string errorMessage )
+        {
+            dataValidator.ErrorMessage = errorMessage;
+            dataValidator.IsValid = false;
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -83,7 +93,7 @@ namespace Rock.Web.UI.Controls
             dataValidator.ID = this.ID + "_dav";
             dataValidator.ControlToValidate = this.ID;
             dataValidator.Display = ValidatorDisplay.Dynamic;
-            dataValidator.CssClass = "validation-error";
+            dataValidator.CssClass = "help-inline";
             Controls.Add( dataValidator );
         }
 
@@ -93,7 +103,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool isValid = ( !Required || validator.IsValid ) && dataValidator.IsValid;
+            bool isValid = ( !Required || requiredFieldValidator.IsValid ) && dataValidator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
                 ( isValid ? "" : " error" ) +
@@ -105,13 +115,14 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            base.MaxLength = dataValidator.ValueMaxLength;
 
             RenderBase( writer );
 
             if ( Required )
             {
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
+                requiredFieldValidator.ErrorMessage = LabelText + " is Required.";
+                requiredFieldValidator.RenderControl( writer );
             }
 
             dataValidator.RenderControl( writer );
@@ -138,6 +149,37 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsValid
+        {
+            get
+            {
+                return dataValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Texts as integer.
+        /// </summary>
+        /// <returns></returns>
+        public int? TextAsInteger()
+        {
+            int value;
+            if ( int.TryParse( this.Text, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

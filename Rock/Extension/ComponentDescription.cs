@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Extension
 {
@@ -38,6 +39,14 @@ namespace Rock.Extension
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ComponentDescription"/> is active.
         /// </summary>
         /// <value>
@@ -46,31 +55,30 @@ namespace Rock.Extension
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ComponentDescription"/> class.
+        /// Initializes a new instance of the <see cref="ComponentDescription" /> class.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ComponentDescription( int id, Rock.Attribute.IHasAttributes service )
+        public ComponentDescription( int id, KeyValuePair<string, Component> service )
         {
             Id = id;
 
-            Type type = service.GetType();
+            Type type = service.Value.GetType();
 
-            Name = type.Name;
+            Name = service.Key;
+            Order = service.Value.Order;
+            IsActive = service.Value.IsActive;
 
             // Look for a DescriptionAttribute on the class and if found, use its value for the description
             // property of this class
             var descAttributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), false );
             if ( descAttributes != null )
+            {
                 foreach ( System.ComponentModel.DescriptionAttribute descAttribute in descAttributes )
+                {
                     Description = descAttribute.Description;
-
-            // If the class has an PropertyAttribute with 'Active' as the key get it's value for the property
-            // otherwise default to true
-            if ( service.AttributeValues.ContainsKey( "Active" ) )
-                IsActive = bool.Parse( service.AttributeValues["Active"].Value[0].Value );
-            else
-                IsActive = true;
+                }
+            }
         }
     }
 }

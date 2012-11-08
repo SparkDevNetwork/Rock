@@ -6,29 +6,28 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
 
-namespace Rock.CRM
+namespace Rock.Crm
 {
     /// <summary>
     /// Campus POCO Entity.
     /// </summary>
     [Table( "crmCampus" )]
-    public partial class Campus : ModelWithAttributes<Campus>, IAuditable
+    public partial class Campus : Model<Campus>
     {
-		/// <summary>
-		/// Gets or sets the System.
-		/// </summary>
-		/// <value>
-		/// System.
-		/// </value>
-		[Required]
-		[DataMember]
-		public bool IsSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the System.
+        /// </summary>
+        /// <value>
+        /// System indicates whether or not the campus is part of the core framework/system.
+        /// </value>
+        [Required]
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -36,70 +35,19 @@ namespace Rock.CRM
         /// <value>
         /// Given Name.
         /// </value>
+        [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [AlternateKey]
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Created Date Time.
+        /// Static Method to return an object based on the id
         /// </summary>
-        /// <value>
-        /// Created Date Time.
-        /// </value>
-        [DataMember]
-        public DateTime? CreatedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Modified Date Time.
-        /// </summary>
-        /// <value>
-        /// Modified Date Time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Created By Person Id.
-        /// </summary>
-        /// <value>
-        /// Created By Person Id.
-        /// </value>
-        [DataMember]
-        public int? CreatedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Modified By Person Id.
-        /// </summary>
-        /// <value>
-        /// Modified By Person Id.
-        /// </value>
-        [DataMember]
-        public int? ModifiedByPersonId { get; set; }
-
-        /// <summary>
-        /// Gets the auth entity.
-        /// </summary>
-        [NotMapped]
-        public override string AuthEntity { get { return "CRM.Campus"; } }
-
-        /// <summary>
-        /// Gets a Data Transfer Object (lightweight) version of this object.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.CRM.DTO.Campus"/> object.
-        /// </value>
-        [NotMapped]
-        public Rock.CRM.DTO.Campus DataTransferObject
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Campus Read( int id )
         {
-            get
-            {
-                Rock.CRM.DTO.Campus dto = new Rock.CRM.DTO.Campus();
-                dto.Id = this.Id;
-                dto.Guid = this.Guid;
-                dto.IsSystem = this.IsSystem;
-                dto.Name = this.Name;
-                return dto;
-            }
+            return Read<Campus>( id );
         }
 
         /// <summary>
@@ -114,6 +62,7 @@ namespace Rock.CRM
         }
 
     }
+
     /// <summary>
     /// Campus Configuration class.
     /// </summary>
@@ -126,5 +75,4 @@ namespace Rock.CRM
         {
         }
     }
-
 }

@@ -16,7 +16,7 @@ namespace Rock.Web
     /// <summary>
     /// Rock custom route handler
     /// </summary>
-    public class RockRouteHandler : IRouteHandler
+    public sealed class RockRouteHandler : IRouteHandler
     {
         /// <summary>
         /// Determine the logical page being requested by evaluating the routedata, or querystring and
@@ -33,19 +33,19 @@ namespace Rock.Web
             int routeId = -1;
 
             // Pages using the default routing URL will have the page id in the RouteData.Values collection
-			if ( requestContext.RouteData.Values["PageId"] != null )
-			{
-				pageId = (string)requestContext.RouteData.Values["PageId"];
-			}
-			// Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
-			else if ( requestContext.RouteData.DataTokens["PageId"] != null )
-			{
-				pageId = (string)requestContext.RouteData.DataTokens["PageId"];
-				routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
-			}
-			// If page has not been specified get the site by the domain and use the site's default page
-			else
-			{
+            if ( requestContext.RouteData.Values["PageId"] != null )
+            {
+                pageId = (string)requestContext.RouteData.Values["PageId"];
+            }
+            // Pages that use a custom URL route will have the page id in the RouteDate.DataTokens collection
+            else if ( requestContext.RouteData.DataTokens["PageId"] != null )
+            {
+                pageId = (string)requestContext.RouteData.DataTokens["PageId"];
+                routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+            }
+            // If page has not been specified get the site by the domain and use the site's default page
+            else
+            {
                 string host = requestContext.HttpContext.Request.Url.Host;
                 string cacheKey = "Rock:DomainSites";
 
@@ -54,18 +54,32 @@ namespace Rock.Web
                 if ( sites == null )
                     sites = new Dictionary<string, int>();
 
-                Rock.Web.Cache.Site site = null;
+                Rock.Web.Cache.SiteCache site = null;
                 if ( sites.ContainsKey( host ) )
-                    site = Rock.Web.Cache.Site.Read( sites[host] );
+                    site = Rock.Web.Cache.SiteCache.Read( sites[host] );
                 else
                 {
-                    Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
-                    Rock.CMS.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    int siteId = 1;
+
+                    Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
+                    Rock.Cms.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
-                        sites.Add( host, siteDomain.SiteId );
-                        site = Rock.Web.Cache.Site.Read( siteDomain.SiteId );
+                        siteId = siteDomain.SiteId;
                     }
+                    else
+                    {
+                        var siteService = new Rock.Cms.SiteService();
+                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        if ( rockSite != null )
+                        {
+                            siteId = rockSite.Id;
+                        }
+                    }
+
+                    sites.Add( host, siteId );
+                    site = Rock.Web.Cache.SiteCache.Read( siteId );
+
                 }
 
                 cache[cacheKey] = sites;
@@ -75,13 +89,13 @@ namespace Rock.Web
 
                 if ( string.IsNullOrEmpty( pageId ) )
                     throw new SystemException( "Invalid Site Configuration" );
-			}
+            }
 
-            Rock.Web.Cache.Page page = null;
+            Rock.Web.Cache.PageCache page = null;
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
-                page = Rock.Web.Cache.Page.Read( Convert.ToInt32( pageId ) );
+                page = Rock.Web.Cache.PageCache.Read( Convert.ToInt32( pageId ) );
                 if ( page == null )
                 {
                     return new HttpHandlerError( 404 );
@@ -94,15 +108,15 @@ namespace Rock.Web
                 page.RouteId = routeId;
 
                 // Return the page using the cached route
-                Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.Page ) );
-                cmsPage.PageInstance = page;
+                Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.RockPage ) );
+                cmsPage.CurrentPage = page;
                 return cmsPage;
             }
             else
             {
-                string theme = "RockCMS";
+                string theme = "RockCms";
                 string layout = "Default";
-                string layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                 if ( page != null )
                 {
@@ -111,18 +125,18 @@ namespace Rock.Web
 
                     theme = page.Site.Theme;
                     layout = page.Layout;
-                    layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                     page.LayoutPath = layoutPath;
                 }
                 else
-                    page = Cache.Page.Read( new CMS.Page() );
+                    page = Cache.PageCache.Read( new Cms.Page() );
 
                 try
                 {
                     // Return the page for the selected theme and layout
-                    Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
                 catch ( System.Web.HttpException )
@@ -131,23 +145,23 @@ namespace Rock.Web
                     layout = "Default";
 
                     // If not using the Rock theme, verify that default Layout exists in the selected theme directory
-                    if ( theme != "RockCMS" &&
+                    if ( theme != "RockCms" &&
                         !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/{0}/Layouts/Default.aspx", theme ) ) ) )
                     {
                         // If default layout doesn't exist in the selected theme, switch to the Default layout
-                        theme = "RockCMS";
+                        theme = "RockCms";
                         layout = "Default";
                     }
 
                     // Build the path to the aspx file to
-                    layoutPath = Rock.Web.Cache.Page.FormatPath( theme, layout );
+                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
                     if ( page != null )
                         page.LayoutPath = layoutPath;
 
                     // Return the default layout and/or theme
-                    Rock.Web.UI.Page cmsPage = ( Rock.Web.UI.Page )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.Page ) );
-                    cmsPage.PageInstance = page;
+                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+                    cmsPage.CurrentPage = page;
                     return cmsPage;
                 }
             }

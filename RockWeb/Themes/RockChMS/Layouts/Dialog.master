@@ -6,7 +6,7 @@
     <title></title>
 
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockCMS/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
@@ -16,12 +16,10 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
     
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.5.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.9.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-modal.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap-tabs.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
-
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
 
     <style>
@@ -65,7 +63,7 @@
         <div id="pnl1"></div>
 
         <div id="footerPanel" class="modal-footer">
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancel_Click " CausesValidation="false" />
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click " />
         </div>
 

@@ -3,7 +3,7 @@
 function saveBlockMove() {
 
     // The current block's id
-    var blockInstanceId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
+    var blockId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
 
     // The new zone selected
     var zoneName = $('#block-move-zone').val();
@@ -13,14 +13,14 @@ function saveBlockMove() {
         type: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+        url: rock.baseUrl + 'api/blocks/' + blockId,
         success: function (getData, status, xhr) {
 
             // Update the new zone
             getData.Zone = zoneName;
 
             // Set the appropriate parent value (layout or page)
-            if ($('#block-move-Location_0').attr('checked') == true) {
+            if ($('#block-move-Location_0').attr('checked') == 'checked') {
                 getData.Layout = null;
                 getData.PageId = rock.pageId;
             }
@@ -35,11 +35,11 @@ function saveBlockMove() {
                 contentType: 'application/json',
                 dataType: 'json',
                 data: JSON.stringify(getData),
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/Move/' + blockInstanceId,
+                url: rock.baseUrl + 'api/blocks/move/' + blockId,
                 success: function (data, status, xhr) {
 
                     // Get a reference to the block instance's container div
-                    var $source = $('#bid_' + blockInstanceId);
+                    var $source = $('#bid_' + blockId);
 
                     // Get a reference to the new zone's container
                     var $target = $('#zone-' + $('#block-move-zone').val());
@@ -80,7 +80,7 @@ function saveBlockMove() {
 $(document).ready(function () {
 
     // Bind the click event of the block move anchor tag
-    $('a.blockinstance-move').click(function () {
+    $('a.block-move').click(function () {
 
         // Get a reference to the anchor tag for use in the dialog success function
         $moveLink = $(this);
@@ -110,22 +110,22 @@ $(document).ready(function () {
 
 
     // Bind the block instance delete anchor
-    $('a.blockinstance-delete').click(function () {
+    $('a.block-delete').click(function () {
 
         if (confirm('Are you sure you want to delete this block?')) {
 
-            var blockInstanceId = $(this).attr('href');
+            var blockId = $(this).attr('href');
 
             // delete the block instance
             $.ajax({
                 type: 'DELETE',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: rock.baseUrl + 'REST/CMS/BlockInstance/' + blockInstanceId,
+                url: rock.baseUrl + 'api/blocks/' + blockId,
                 success: function (data, status, xhr) {
 
                     // Remove the block instance's container div
-                    $('#bid_' + blockInstanceId).remove();
+                    $('#bid_' + blockId).remove();
 
                 },
                 error: function (xhr, status, error) {

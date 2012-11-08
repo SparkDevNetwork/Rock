@@ -23,62 +23,42 @@ using System.Linq;
 using Quartz;
 
 using Rock.Core;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
-	/// <summary>
-	/// Job to keep a heartbeat of the job process so we know when the jobs stop working
-	/// </summary>
-	/// <author>Jon Edmiston</author>
+    /// <summary>
+    /// Job to keep a heartbeat of the job process so we know when the jobs stop working
+    /// </summary>
+    /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
     public class JobPulse : IJob
-	{
+    {
         
         /// <summary> 
-		/// Empty constructor for job initilization
-		/// <para>
-		/// Jobs require a public empty constructor so that the
-		/// scheduler can instantiate the class whenever it needs.
-		/// </para>
-		/// </summary>
-		public JobPulse()
-		{
-		}
-		
-		/// <summary> 
-		/// Job that updates the JobPulse setting with the current date/time.
+        /// Empty constructor for job initilization
+        /// <para>
+        /// Jobs require a public empty constructor so that the
+        /// scheduler can instantiate the class whenever it needs.
+        /// </para>
+        /// </summary>
+        public JobPulse()
+        {
+        }
+        
+        /// <summary> 
+        /// Job that updates the JobPulse setting with the current date/time.
         /// This will allow us to notify an admin if the jobs stop running.
         /// 
         /// Called by the <see cref="IScheduler" /> when a
-		/// <see cref="ITrigger" /> fires that is associated with
-		/// the <see cref="IJob" />.
-		/// </summary>
-		public virtual void  Execute(IJobExecutionContext context)
-		{
+        /// <see cref="ITrigger" /> fires that is associated with
+        /// the <see cref="IJob" />.
+        /// </summary>
+        public virtual void  Execute(IJobExecutionContext context)
+        {
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            globalAttributesCache.SetValue( "JobPulse", DateTime.Now.ToString(), null, true );
+        }
 
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                AttributeService attribService = new AttributeService();
-                AttributeValueService attributeValueService = new AttributeValueService();
-
-                Rock.Core.Attribute jobPulseAttrib = attribService.GetGlobalAttribute( "JobPulse" );
-                Rock.Core.AttributeValue jobPulseAttribValue = jobPulseAttrib.AttributeValues.FirstOrDefault();
-
-                // create attribute value if one does not exist
-                if ( jobPulseAttribValue == null )
-                {
-                    jobPulseAttribValue = new AttributeValue();
-                    jobPulseAttribValue.AttributeId = jobPulseAttrib.Id;
-                    attributeValueService.Add( jobPulseAttribValue, null );
-                }
-
-                // store todays date and time
-                jobPulseAttribValue.Value = DateTime.Now.ToString();
-
-                // save attribute
-                attributeValueService.Save( jobPulseAttribValue, null );
-            }
-		}
-
-	}
+    }
 }

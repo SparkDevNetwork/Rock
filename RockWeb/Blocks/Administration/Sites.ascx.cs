@@ -1,33 +1,37 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+﻿// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Cms;
+using Rock.Data;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class Sites : Rock.Web.UI.Block
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class Sites : RockBlock
     {
-        #region Fields
-        
-        Rock.CMS.SiteService siteService = new Rock.CMS.SiteService();
-        Rock.CMS.SiteDomainService siteDomainService = new Rock.CMS.SiteDomainService();
-        
-        #endregion
-
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            base.OnInit( e );
+
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 gSites.DataKeyNames = new string[] { "id" };
                 gSites.Actions.IsAddEnabled = true;
@@ -36,26 +40,18 @@ namespace RockWeb.Blocks.Administration
             }
 
             SecurityField securityField = gSites.Columns[3] as SecurityField;
-            securityField.EntityType = typeof(Rock.CMS.Site);
-
-            string script = @"
-        Sys.Application.add_load(function () {
-            $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this site?');
-                });
-        });
-    ";
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", gSites.ClientID ), script, true );
-
-            base.OnInit( e );
+            securityField.EntityType = typeof( Rock.Cms.Site );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
-
         {
             nbMessage.Visible = false;
 
-            if ( PageInstance.IsAuthorized( "Configure", CurrentUser ) )
+            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -77,31 +73,52 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        protected void gSites_Edit( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Add event of the gSites control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gSites_Add( object sender, EventArgs e )
         {
-            ShowEdit( ( int )gSites.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( 0 );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gSites control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gSites_Edit( object sender, RowEventArgs e )
+        {
+            ShowEdit( (int)gSites.DataKeys[e.RowIndex]["id"] );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gSites control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Delete( object sender, RowEventArgs e )
         {
-            Rock.CMS.Site site = siteService.Get( ( int )gSites.DataKeys[e.RowIndex]["id"] );
-            if ( BlockInstance != null )
+            SiteService siteService = new SiteService();
+            Site site = siteService.Get( (int)gSites.DataKeys[e.RowIndex]["id"] );
+            if ( CurrentBlock != null )
             {
                 siteService.Delete( site, CurrentPersonId );
                 siteService.Save( site, CurrentPersonId );
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                SiteCache.Flush( site.Id );
             }
 
             BindGrid();
         }
 
-        void gSites_Add( object sender, EventArgs e )
-        {
-            ShowEdit( 0 );
-        }
-
-        void gSites_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gSites control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gSites_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -110,49 +127,64 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             pnlDetails.Visible = false;
             pnlList.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.CMS.Site site;
-            Rock.CMS.SiteDomain sd;
+            Site site;
+            SiteDomain sd;
             bool newSite = false;
-                        
-            using ( new Rock.Data.UnitOfWorkScope() )
+
+            using ( new UnitOfWorkScope() )
             {
-                siteService = new Rock.CMS.SiteService();
-                siteDomainService = new Rock.CMS.SiteDomainService();
+                SiteService siteService = new SiteService();
+                SiteDomainService siteDomainService = new SiteDomainService();
 
                 int siteId = 0;
-                if ( !Int32.TryParse( hfSiteId.Value, out siteId ) )
+                if ( !int.TryParse( hfSiteId.Value, out siteId ) )
+                {
                     siteId = 0;
+                }
 
                 if ( siteId == 0 )
                 {
                     newSite = true;
-                    site = new Rock.CMS.Site();
+                    site = new Rock.Cms.Site();
                     siteService.Add( site, CurrentPersonId );
                 }
                 else
                 {
                     site = siteService.Get( siteId );
                     foreach ( var domain in site.SiteDomains.ToList() )
+                    {
                         siteDomainService.Delete( domain, CurrentPersonId );
+                    }
+
                     site.SiteDomains.Clear();
                 }
 
                 site.Name = tbSiteName.Text;
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
-                site.DefaultPageId = Convert.ToInt32( ddlDefaultPage.SelectedValue );
+                site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
 
                 foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
                 {
-                    sd = new Rock.CMS.SiteDomain();
+                    sd = new SiteDomain();
                     sd.Domain = domain;
                     sd.Guid = Guid.NewGuid();
                     site.SiteDomains.Add( sd );
@@ -163,12 +195,20 @@ namespace RockWeb.Blocks.Administration
                 site.FacebookAppId = tbFacebookAppId.Text;
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
 
+                if ( !site.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
                 siteService.Save( site, CurrentPersonId );
 
                 if ( newSite )
-                    Rock.Security.Authorization.CopyAuthorization( PageInstance.Site, site, CurrentPersonId );
+                {
+                    Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                }
 
-                Rock.Web.Cache.Site.Flush( site.Id );
+                SiteCache.Flush( site.Id );
 
                 BindGrid();
 
@@ -181,35 +221,42 @@ namespace RockWeb.Blocks.Administration
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
+            SiteService siteService = new SiteService();
             gSites.DataSource = siteService.Queryable().OrderBy( s => s.Name ).ToList();
             gSites.DataBind();
         }
 
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
         private void LoadDropDowns()
         {
-            ddlDefaultPage.Items.Clear();
-            foreach ( var page in new Rock.CMS.PageService().GetByParentPageId( null ) )
-                AddPage( page, 1 );
+            PageService pageService = new PageService();
+            List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
+            ddlDefaultPage.DataSource = allPages.OrderBy( a => a.PageSortHash );
+            ddlDefaultPage.DataBind();
 
             ddlTheme.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.ThemePath ) );
-            foreach ( var themeDir in di.Parent.EnumerateDirectories())
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
+            foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
+            {
                 ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name ) );
+            }
         }
 
-        private void AddPage( Rock.CMS.Page page, int level )
-        {
-            string pageName = new string( '-', level ) + page.Name;
-            ddlDefaultPage.Items.Add( new ListItem( pageName, page.Id.ToString() ) );
-            foreach ( var childPage in page.Pages )
-                AddPage( childPage, level + 1 );
-        }
-
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="siteId">The site id.</param>
         protected void ShowEdit( int siteId )
         {
-            Rock.CMS.Site site = siteService.Get( siteId );
+            SiteService siteService = new SiteService();
+            Site site = siteService.Get( siteId );
 
             if ( site != null )
             {
@@ -220,9 +267,11 @@ namespace RockWeb.Blocks.Administration
                 tbDescription.Text = site.Description;
                 ddlTheme.SetValue( site.Theme );
                 if ( site.DefaultPageId.HasValue )
+                {
                     ddlDefaultPage.SelectedValue = site.DefaultPageId.Value.ToString();
+                }
 
-                tbSiteDomains.Text = string.Join("\n", site.SiteDomains.Select(dom => dom.Domain).ToArray());
+                tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
                 tbFaviconUrl.Text = site.FaviconUrl;
                 tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
                 tbFacebookAppId.Text = site.FacebookAppId;
@@ -233,7 +282,7 @@ namespace RockWeb.Blocks.Administration
                 lAction.Text = "Add";
                 tbSiteName.Text = string.Empty;
                 tbDescription.Text = string.Empty;
-                ddlTheme.Text = PageInstance.Site.Theme;
+                ddlTheme.Text = CurrentPage.Site.Theme;
                 tbSiteDomains.Text = string.Empty;
                 tbFaviconUrl.Text = string.Empty;
                 tbAppleTouchIconUrl.Text = string.Empty;
@@ -246,6 +295,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-
     }
 }

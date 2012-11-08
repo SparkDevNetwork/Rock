@@ -5,8 +5,9 @@
 //
 
 using System;
-
 using System.Collections.Generic;
+
+using Rock.Web.UI;
 
 namespace Rock.Extension
 {
@@ -33,8 +34,8 @@ namespace Rock.Extension
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [Rock.Attribute.Property( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
-    [Rock.Attribute.Property( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [BlockProperty( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
+    [BlockProperty( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
     public abstract class Component : Rock.Attribute.IHasAttributes
     {
         /// <summary>
@@ -42,22 +43,32 @@ namespace Rock.Extension
         /// </summary>
         public int Id { get { return 0; } }
 
+         /// <summary>
+        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
+        /// </summary>
+        /// <value>
+        /// The attribute categories.
+        /// </value>
+        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+
         /// <summary>
-        /// List of attributes associated with the object grouped by category.  This property will not include
-        /// the attribute values. The <see cref="AttributeValues"/> property should be used to get attribute values
+        /// List of attributes associated with the object.  This property will not include the attribute values.
+        /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
+        /// is the attribute key, and value is the cached attribute
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
-        public SortedDictionary<string, List<Rock.Web.Cache.Attribute>> Attributes { get; set; }
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their values.
+        /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
+        /// associated with the attribute and object instance
         /// </summary>
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, List<Rock.Web.Cache.AttributeValue>>> AttributeValues { get; set; }
+        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes
@@ -68,7 +79,7 @@ namespace Rock.Extension
         {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
-                return this.AttributeValues[key].Value[0].Value;
+                return this.AttributeValues[key][0].Value;
 
             return null;
         }
@@ -77,18 +88,61 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the order.
         /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         public int Order
         {
             get
             {
                 int order = 0;
-                if ( AttributeValues.ContainsKey( "Order" ) )
-                    if ( !( Int32.TryParse( AttributeValues["Order"].Value[0].Value, out order ) ) )
-                        order = 0;
+                if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"][0].Value, out order ) ) )
+                {
+                    foreach(var attribute in Attributes)
+                    {
+                        if ( attribute.Key == "Order" )
+                        {
+                            if ( Int32.TryParse( attribute.Value.DefaultValue, out order ) )
+                                return order;
+                            else
+                                return 0;
+                        }
+                    }
+                }
                 return order;
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive
+        {
+            get
+            {
+                bool isActive = false;
+                if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"][0].Value, out isActive ) ) )
+                {
+                    foreach ( var attribute in Attributes )
+                    {
+                        if ( attribute.Key == "Active" )
+                        {
+                            if ( Boolean.TryParse( attribute.Value.DefaultValue, out isActive ) )
+                                return isActive;
+                            else
+                                return false;
+                        }
+                    }
+                }
+                return isActive;
+            }
+        }
+
+
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="Component"/> class.
         /// </summary>

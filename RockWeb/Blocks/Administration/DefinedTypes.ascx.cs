@@ -18,17 +18,17 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class DefinedTypes : Rock.Web.UI.Block
+    public partial class DefinedTypes : Rock.Web.UI.RockBlock
     {
         #region Fields
 
         protected string typeId = string.Empty;
-        protected string entity = string.Empty;
+        protected int? entityTypeId = null;
         protected string entityQualifierColumn = string.Empty;
                         
         private bool canConfigure = false;
         private Rock.Core.DefinedTypeService typeService = new Rock.Core.DefinedTypeService();
-		private Rock.Core.DefinedValueService valueService = new Rock.Core.DefinedValueService();
+        private Rock.Core.DefinedValueService valueService = new Rock.Core.DefinedValueService();
         private Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
 
         #endregion
@@ -43,9 +43,9 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( typeId ) )
                     typeId = PageParameter( "typeId" );
 
-                entity = "Rock.Core.DefinedValue";
+                entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Core.DefinedValue" );
                 entityQualifierColumn = "DefinedTypeId";
-                canConfigure = PageInstance.IsAuthorized( "Configure", CurrentUser );
+                canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
 
@@ -57,28 +57,17 @@ namespace RockWeb.Blocks.Administration
                     rGridType.Actions.IsAddEnabled = true;
                     rGridType.Actions.ClientAddScript = "editType(0)";
 
-					//assign type values grid actions
-					rGridValue.DataKeyNames = new string[] { "id" };
-					rGridValue.GridRebind += new GridRebindEventHandler( rGridValue_GridRebind );
-					rGridValue.Actions.IsAddEnabled = true;
-					rGridValue.Actions.ClientAddScript = "editValue(0)";
+                    //assign type values grid actions
+                    rGridValue.DataKeyNames = new string[] { "id" };
+                    rGridValue.GridRebind += new GridRebindEventHandler( rGridValue_GridRebind );
+                    rGridValue.Actions.IsAddEnabled = true;
+                    rGridValue.Actions.ClientAddScript = "editValue(0)";
 
                     //assign attributes grid actions
                     rGridAttribute.DataKeyNames = new string[] { "id" };
                     rGridAttribute.GridRebind += new GridRebindEventHandler( rGridAttribute_GridRebind );
                     rGridAttribute.Actions.IsAddEnabled = true;
                     rGridAttribute.Actions.ClientAddScript = "editAttribute(0)";
-
-					string script = string.Format( @"
-                        Sys.Application.add_load(function () {{
-                            $('td.grid-icon-cell.delete a').click(function(){{
-                                return confirm('Are you sure you want to delete this setting?');
-                            }});
-                        }});
-                    ", rGridType.ClientID );
-
-					this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "grid-confirm-delete-{0}", rGridValue.ClientID ), script, true );
-
                 }
                 else
                 {
@@ -105,7 +94,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-		protected void ddlDefinedValueFilter_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlDefinedValueFilter_SelectedIndexChanged( object sender, EventArgs e )
         {
             rGridValue_Bind( typeId );
         }
@@ -119,21 +108,21 @@ namespace RockWeb.Blocks.Administration
         protected void rGridType_Delete( object sender, RowEventArgs e )
         {
             Rock.Core.DefinedType type = typeService.Get( (int)rGridType.DataKeys[e.RowIndex]["id"] );
-			
-			if ( type != null )
+            
+            if ( type != null )
             {
-                Rock.Web.Cache.Attribute.Flush( type.Id );
-				
-				// if this DefinedType has DefinedValues, delete them
-				var hasDefinedValues = valueService
-				.GetByDefinedTypeId( type.Id )
-				.ToList();
+                Rock.Web.Cache.AttributeCache.Flush( type.Id );
+                
+                // if this DefinedType has DefinedValues, delete them
+                var hasDefinedValues = valueService
+                .GetByDefinedTypeId( type.Id )
+                .ToList();
 
-				foreach ( var value in hasDefinedValues )
-				{
-					valueService.Delete( value, CurrentPersonId );
-					valueService.Save( value, CurrentPersonId );
-				}
+                foreach ( var value in hasDefinedValues )
+                {
+                    valueService.Delete( value, CurrentPersonId );
+                    valueService.Save( value, CurrentPersonId );
+                }
 
                 typeService.Delete( type, CurrentPersonId );
                 typeService.Save( type, CurrentPersonId );
@@ -143,26 +132,26 @@ namespace RockWeb.Blocks.Administration
         }
 
         protected void rGridValue_Delete( object sender, RowEventArgs e )
-		{
-			Rock.Core.DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+        {
+            Rock.Core.DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
 
-			if ( value != null)
-			{
-				Rock.Web.Cache.Attribute.Flush( value.Id );
+            if ( value != null)
+            {
+                Rock.Web.Cache.AttributeCache.Flush( value.Id );
 
-				valueService.Delete( value, CurrentPersonId );
-				valueService.Save( value, CurrentPersonId );
-			}
+                valueService.Delete( value, CurrentPersonId );
+                valueService.Save( value, CurrentPersonId );
+            }
 
-			rGridValue_Bind( typeId );
-		}
-		
-		protected void rGridAttribute_Delete( object sender, RowEventArgs e )
+            rGridValue_Bind( typeId );
+        }
+        
+        protected void rGridAttribute_Delete( object sender, RowEventArgs e )
         {
             Rock.Core.Attribute attribute = attributeService.Get( (int)rGridAttribute.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
-                Rock.Web.Cache.Attribute.Flush( attribute.Id );
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
                 attributeService.Delete( attribute, CurrentPersonId );
                 attributeService.Save( attribute, CurrentPersonId );
@@ -170,56 +159,56 @@ namespace RockWeb.Blocks.Administration
 
             rGridAttribute_Bind( hfTypeId.Value );
         }
-		
+        
         void rGridType_GridRebind( object sender, EventArgs e )
         {
             rGridType_Bind();
         }
 
         void rGridValue_GridRebind( object sender, EventArgs e )
-		{
-			rGridValue_Bind( typeId );
-		}
+        {
+            rGridValue_Bind( typeId );
+        }
 
-		void rGridAttribute_GridRebind( object sender, EventArgs e )
+        void rGridAttribute_GridRebind( object sender, EventArgs e )
         {
             rGridAttribute_Bind( typeId );
         }
-		
+        
         #endregion
 
         #region Edit Events
 
         protected void btnRefresh_Click( object sender, EventArgs e )
         {
-			typeId = hfTypeId.Value;
+            typeId = hfTypeId.Value;
 
             BindFilter();
             rGridType_Bind();
-			rGridValue_Bind( typeId );
-			rGridAttribute_Bind( typeId );
+            rGridValue_Bind( typeId );
+            rGridAttribute_Bind( typeId );
         }
 
-		protected void typeValues_Edit( object sender, CommandEventArgs e )
+        protected void typeValues_Edit( object sender, CommandEventArgs e )
         {
             typeId = e.CommandArgument.ToString();
-			hfTypeId.Value = typeId;
-			rGridValue_Bind( typeId );
-			
-			pnlContent.Visible = false;
-			pnlValues.Visible = true;
+            hfTypeId.Value = typeId;
+            rGridValue_Bind( typeId );
+            
+            pnlContent.Visible = false;
+            pnlValues.Visible = true;
         }
 
-		protected void btnValueClose_Click( object sender, EventArgs e )
-		{
-			pnlValues.Visible = false;
-			pnlContent.Visible = true;
-		}
+        protected void btnValueClose_Click( object sender, EventArgs e )
+        {
+            pnlValues.Visible = false;
+            pnlContent.Visible = true;
+        }
 
         protected void typeAttributes_Edit( object sender, RowEventArgs e )
         {
             typeId = rGridType.DataKeys[e.RowIndex]["id"].ToString();
-            hfTypeId.Value = typeId;            			
+            hfTypeId.Value = typeId;                        
             rGridAttribute_Bind( typeId );
 
             pnlContent.Visible = false;
@@ -238,21 +227,21 @@ namespace RockWeb.Blocks.Administration
 
         private void BindFilter()
         {
-			if ( ddlCategoryFilter.SelectedItem == null )
-			{
-				ddlCategoryFilter.Items.Clear();
-				ddlCategoryFilter.Items.Add( "[All]" );
+            if ( ddlCategoryFilter.SelectedItem == null )
+            {
+                ddlCategoryFilter.Items.Clear();
+                ddlCategoryFilter.Items.Add( "[All]" );
 
-				DefinedTypeService typeService = new DefinedTypeService();
-				var items = typeService.Queryable().
-					Where( a => a.Category != "" && a.Category != null ).
-					OrderBy( a => a.Category ).
-					Select( a => a.Category ).
-					Distinct().ToList();
+                DefinedTypeService typeService = new DefinedTypeService();
+                var items = typeService.Queryable().
+                    Where( a => a.Category != "" && a.Category != null ).
+                    OrderBy( a => a.Category ).
+                    Select( a => a.Category ).
+                    Distinct().ToList();
 
-				foreach ( var item in items )
-					ddlCategoryFilter.Items.Add( item );
-			}
+                foreach ( var item in items )
+                    ddlCategoryFilter.Items.Add( item );
+            }
         }
 
         private void rGridType_Bind()
@@ -271,37 +260,32 @@ namespace RockWeb.Blocks.Administration
             rGridType.DataBind();            
         }
 
-		protected void rGridValue_Bind( string typeId )
-		{
-			int definedTypeId = Convert.ToInt32( typeId );
-						
-			var gridAttributes = attributeService
-				.GetAttributesByEntityQualifier( entity, entityQualifierColumn, typeId )
-				.Where( attr => attr.IsGridColumn );
+        protected void rGridValue_Bind( string typeId )
+        {
+            int definedTypeId = Convert.ToInt32( typeId );
+                        
+            var gridAttributes = attributeService
+                .Get( entityTypeId, entityQualifierColumn, typeId )
+                .Where( attr => attr.IsGridColumn );
 
-			tbValueGridColumn.Text = string.Join(",",
-				gridAttributes.AsEnumerable()
-				.Select( attr => attr.Name )
-			);
-			
-			var queryable = valueService.Queryable().
-				Where( a => a.DefinedTypeId == definedTypeId );
+            tbValueGridColumn.Text = string.Join(",",
+                gridAttributes.AsEnumerable()
+                .Select( attr => attr.Name )
+            );
+            
+            var queryable = valueService.Queryable().
+                Where( a => a.DefinedTypeId == definedTypeId );
 
             rGridValue.DataSource = queryable.
-				OrderBy( a => a.Order).
-				ToList();
+                OrderBy( a => a.Order).
+                ToList();
 
-			rGridValue.DataBind();
-		}
+            rGridValue.DataBind();
+        }
 
         protected void rGridAttribute_Bind( string typeId )
         {
-            var queryable = attributeService.Queryable().
-                Where( a => a.Entity == entity &&
-                ( a.EntityQualifierColumn ?? string.Empty ) == entityQualifierColumn &&
-				( a.EntityQualifierValue ?? string.Empty ) == typeId );
-
-            rGridAttribute.DataSource = queryable.
+            rGridAttribute.DataSource = attributeService.Get( entityTypeId, entityQualifierColumn, typeId ).
                 OrderBy( a => a.Category ).
                 ThenBy( a => a.Key ).
                 ToList();
@@ -317,8 +301,8 @@ namespace RockWeb.Blocks.Administration
             pnlMessage.Visible = true;
 
             pnlContent.Visible = false;
-			pnlValues.Visible = false;
-			pnlAttributes.Visible = false;
+            pnlValues.Visible = false;
+            pnlAttributes.Visible = false;
         }
 
         #endregion

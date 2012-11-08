@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upRoles" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
     <asp:Panel ID="pnlList" runat="server">
 
@@ -14,7 +14,7 @@
         </fieldset>
         </div>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" >
+        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="role" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
@@ -34,8 +34,8 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Role</legend>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Groups.Group, Rock" PropertyName="Name" />
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Groups.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
         </fieldset>
 
         <div class="actions">

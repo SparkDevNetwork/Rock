@@ -27,7 +27,7 @@ namespace Rock.Data
         /// Gets or sets a value indicating whether all changes should be saved when scope ends.
         /// </summary>
         /// <value>
-        /// 	<c>true</c> if changes should be saved; otherwise, <c>false</c>.
+        ///     <c>true</c> if changes should be saved; otherwise, <c>false</c>.
         /// </value>
         public bool SaveAllChangesAtScopeEnd { get; set; }
 
@@ -65,17 +65,31 @@ namespace Rock.Data
         /// </summary>
         public void Dispose()
         {
+            Dispose( true );
+            GC.SuppressFinalize( this );
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose( bool disposing )
+        {
             if ( !isDisposed )
             {
-                currentScope = null;
-                //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
-
-                if ( SaveAllChangesAtScopeEnd )
+                if ( disposing )
                 {
-                    objectContext.SaveChanges();
+                    currentScope = null;
+                    //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
+
+                    if ( SaveAllChangesAtScopeEnd )
+                    {
+                        objectContext.SaveChanges();
+                    }
+
+                    objectContext.Dispose();
                 }
 
-                objectContext.Dispose();
                 isDisposed = true;
             }
         }

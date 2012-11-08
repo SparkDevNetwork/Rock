@@ -11,73 +11,142 @@ using NuGet;
 
 namespace Rock.Services.NuGet
 {
-	public class WebProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
-	{
-		private bool _isBindingRedirectSupported = false;
+    /// <summary>
+    /// 
+    /// </summary>
+    public class WebProjectSystem : PhysicalFileSystem, IProjectSystem, IFileSystem
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        private bool _isBindingRedirectSupported = false;
 
-		public bool IsBindingRedirectSupported { get { return _isBindingRedirectSupported; } }
+        /// <summary>
+        /// Gets a value indicating whether this instance is binding redirect supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is binding redirect supported; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBindingRedirectSupported { get { return _isBindingRedirectSupported; } }
 
-		public WebProjectSystem( string siteRoot ) : base( siteRoot ) {	}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebProjectSystem" /> class.
+        /// </summary>
+        /// <param name="siteRoot">The site root.</param>
+        public WebProjectSystem( string siteRoot ) : base( siteRoot ) {    }
 
-		public void AddFrameworkReference( string name )
-		{
-			throw new NotImplementedException();
-		}
+        /// <summary>
+        /// Adds the framework reference.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void AddFrameworkReference( string name )
+        {
+            throw new NotImplementedException();
+        }
 
-		public void AddReference( string referencePath, Stream stream )
-		{
-			string fileName = Path.GetFileName( referencePath );
-			string fullPath = this.GetFullPath( GetReferencePath( fileName ) );
-			this.AddFile( fullPath, stream );
-		}
+        /// <summary>
+        /// Adds the reference.
+        /// </summary>
+        /// <param name="referencePath">The reference path.</param>
+        /// <param name="stream">The stream.</param>
+        public void AddReference( string referencePath, Stream stream )
+        {
+            string fileName = Path.GetFileName( referencePath );
+            string fullPath = this.GetFullPath( GetReferencePath( fileName ) );
+            this.AddFile( fullPath, stream );
+        }
 
-		protected virtual string GetReferencePath( string name )
-		{
-			return Path.Combine( "bin", name );
-		}
+        /// <summary>
+        /// Gets the reference path.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        protected virtual string GetReferencePath( string name )
+        {
+            return Path.Combine( "bin", name );
+        }
 
-		public bool IsSupportedFile( string path )
-		{
-		    return ( !path.StartsWith( "tools", StringComparison.OrdinalIgnoreCase ) && !Path.GetFileName( path ).Equals( "app.config", StringComparison.OrdinalIgnoreCase ) );
-		}
+        /// <summary>
+        /// Determines whether [is supported file] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>
+        ///   <c>true</c> if [is supported file] [the specified path]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSupportedFile( string path )
+        {
+            return ( !path.StartsWith( "tools", StringComparison.OrdinalIgnoreCase ) && !Path.GetFileName( path ).Equals( "app.config", StringComparison.OrdinalIgnoreCase ) );
+        }
 
-		public string ProjectName
-		{
-			get { return Root; }
-		}
+        /// <summary>
+        /// Gets the name of the project.
+        /// </summary>
+        /// <value>
+        /// The name of the project.
+        /// </value>
+        public string ProjectName
+        {
+            get { return Root; }
+        }
 
-		public bool ReferenceExists( string name )
-		{
-			string referencePath = GetReferencePath( name );
-			return FileExists( referencePath );
-		}
+        /// <summary>
+        /// References the exists.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public bool ReferenceExists( string name )
+        {
+            string referencePath = GetReferencePath( name );
+            return FileExists( referencePath );
+        }
 
-		public void RemoveReference( string name )
-		{
-			DeleteFile( GetReferencePath( name ) );
-			if ( !this.GetFiles( "bin", false ).Any<string>() )
-			{
-				DeleteDirectory( "bin" );
-			}
-		}
+        /// <summary>
+        /// Removes the reference.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void RemoveReference( string name )
+        {
+            DeleteFile( GetReferencePath( name ) );
+            if ( !this.GetFiles( "bin", false ).Any<string>() )
+            {
+                DeleteDirectory( "bin" );
+            }
+        }
 
-		public string ResolvePath( string path )
-		{
-			return path;
-		}
+        /// <summary>
+        /// Resolves the path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public string ResolvePath( string path )
+        {
+            return path;
+        }
 
-		public FrameworkName TargetFramework
-		{
-			get { return VersionUtility.DefaultTargetFramework; }
-		}
+        /// <summary>
+        /// Gets the target framework.
+        /// </summary>
+        /// <value>
+        /// The target framework.
+        /// </value>
+        public FrameworkName TargetFramework
+        {
+            get { return VersionUtility.DefaultTargetFramework; }
+        }
 
-		public dynamic GetPropertyValue( string propertyName )
-		{
-			if ( ( propertyName != null ) && propertyName.Equals( "RootNamespace", StringComparison.OrdinalIgnoreCase ) )
-			{
-				return string.Empty;
-			}
-			return null;
-		}
-	}
+        /// <summary>
+        /// Gets the property value.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public dynamic GetPropertyValue( string propertyName )
+        {
+            if ( ( propertyName != null ) && propertyName.Equals( "RootNamespace", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return string.Empty;
+            }
+            return null;
+        }
+    }
 }

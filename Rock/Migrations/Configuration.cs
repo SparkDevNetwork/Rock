@@ -1,17 +1,31 @@
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class Configuration : DbMigrationsConfiguration<Rock.Data.RockContext>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Configuration" /> class.
+        /// </summary>
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            CodeGenerator = new RockCSharpMigrationCodeGenerator();
         }
 
+        /// <summary>
+        /// Seeds the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
         protected override void Seed(Rock.Data.RockContext context)
         {
             //  This method will be called after migrating to the latest version.

@@ -18,43 +18,44 @@
 #endregion
 
 using Quartz;
+using Rock.Web.UI;
 
 namespace Rock.Jobs
 {
-	
-	/// <summary>
-	/// Job to keep a heartbeat of the job process so we know when the jobs stop working
-	/// </summary>
-	/// <author>Jon Edmiston</author>
+    
+    /// <summary>
+    /// Job to keep a heartbeat of the job process so we know when the jobs stop working
+    /// </summary>
+    /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [Rock.Attribute.Property( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
-    [Rock.Attribute.Property( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
+    [BlockProperty( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
+    [BlockProperty( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
     public class TestJob : IJob
-	{
+    {
         
         
         /// <summary> 
-		/// Empty constructor for job initilization
-		/// <para>
-		/// Jobs require a public empty constructor so that the
-		/// scheduler can instantiate the class whenever it needs.
-		/// </para>
-		/// </summary>
-		public TestJob()
-		{
-		}
-		
-		/// <summary> 
-		/// Job that updates the JobPulse setting with the current date/time.
+        /// Empty constructor for job initilization
+        /// <para>
+        /// Jobs require a public empty constructor so that the
+        /// scheduler can instantiate the class whenever it needs.
+        /// </para>
+        /// </summary>
+        public TestJob()
+        {
+        }
+        
+        /// <summary> 
+        /// Job that updates the JobPulse setting with the current date/time.
         /// This will allow us to notify an admin if the jobs stop running.
         /// 
         /// Called by the <see cref="IScheduler" /> when a
-		/// <see cref="ITrigger" /> fires that is associated with
-		/// the <see cref="IJob" />.
-		/// </summary>
-		public virtual void  Execute(IJobExecutionContext context)
-		{
+        /// <see cref="ITrigger" /> fires that is associated with
+        /// the <see cref="IJob" />.
+        /// </summary>
+        public virtual void  Execute(IJobExecutionContext context)
+        {
             
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
@@ -62,7 +63,7 @@ namespace Rock.Jobs
             string key2 = dataMap.GetString( "EmailServerPort" );
             
             // I don't do much
-		}
+        }
 
-	}
+    }
 }
