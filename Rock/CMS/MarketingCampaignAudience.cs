@@ -14,7 +14,7 @@ namespace Rock.Cms
     /// MarketingCampaignAudience POCO Entity
     /// </summary>
     [Table( "cmsMarketingCampaignAudience" )]
-    public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>, IExportable
+    public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>
     {
         /// <summary>
         /// Gets or sets the marketing campaign id.
@@ -79,34 +79,6 @@ namespace Rock.Cms
         /// The audience type value.
         /// </value>
         public virtual Core.DefinedValue AudienceTypeValue { get; set; }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            throw new NotImplementedException();
-        }
     }
 
     /// <summary>

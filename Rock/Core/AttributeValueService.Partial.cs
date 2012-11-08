@@ -64,7 +64,6 @@ namespace Rock.Core
         /// Gets the global attribute value.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="entityId">The entity id.</param>
         /// <returns></returns>
         public AttributeValue GetGlobalAttributeValue( string key )
         {
