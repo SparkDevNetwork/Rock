@@ -26,13 +26,13 @@ namespace RockWeb.Blocks.Administration
                 grdScheduledJobs.DataKeyNames = new string[] { "id" };
                 grdScheduledJobs.Actions.IsAddEnabled = true;
                 grdScheduledJobs.Actions.AddClick += grdScheduledJobs_Add;
-                grdScheduledJobs.GridRebind += grdScheduledJobs_GridRebind;                
+                grdScheduledJobs.GridRebind += grdScheduledJobs_GridRebind;
             }
 
             string script = @"
         Sys.Application.add_load(function () {
             $('td.grid-icon-cell.delete a').click(function(){
-                return confirm('Are you sure you want to delete this campus?');
+                return confirm('Are you sure you want to delete this job?');
                 });
         });
     ";
@@ -69,40 +69,18 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        void grdScheduledJobs_Add(object sender, EventArgs e)
+        protected void grdScheduledJobs_Add(object sender, EventArgs e)
         {
             grdScheduledJobs.SelectedIndex = -1;
             ResetDetailFields();
             pnlDetails.Visible = true;
-            pnlGrid.Visible = false;           
+            pnlGrid.Visible = false;
         }
 
-        void grdScheduledJobs_GridRebind(object sender, EventArgs e)
+        protected void grdScheduledJobs_GridRebind(object sender, EventArgs e)
         {
             BindScheduledJobs();
         }
-
-        //protected override void OnInit(EventArgs e)
-        //{
-        //    base.OnInit(e);
-        //    Rock.Web.UI.Controls.GridRebindEventHandler rebindGridEventHandler = BindScheduledJobs;
-        //    grdScheduledJobs.GridRebind += rebindGridEventHandler;
-        //    grdScheduledJobs.Actions.IsAddEnabled = true;
-        //    Page.Load += delegate
-        //    {
-        //       // if (!Page.IsPostBack)
-        //   //     {
-        //            try
-        //            {                   
-        //                BindScheduledJobs();
-        //            }
-        //            catch (Exception ex)
-        //            {
-
-        //            }
-        //      //  }
-        //    };
-        //}
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
@@ -126,15 +104,7 @@ namespace RockWeb.Blocks.Administration
             job.NotificationStatus = (JobNotificationStatus)int.Parse(drpNotificationStatus.SelectedValue);
             job.CronExpression = tbCronExpression.Text;
             jobService.Save(job, CurrentPersonId);
-            //if (job.Id > 0)
-            //{
-            //    jobService.Save(job, CurrentPersonId);
-            //}
-            //else
-            //{
-            //    jobService.Add(job, CurrentPersonId);
 
-            //}
             pnlDetails.Visible = false;
             pnlGrid.Visible = true;
             BindScheduledJobs();
@@ -149,12 +119,18 @@ namespace RockWeb.Blocks.Administration
 
         protected void grdScheduledJobs_Delete(object sender, RowEventArgs e)
         {
+            int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
+            Job job = jobService.Get(id);
+            jobService.Delete(job, CurrentPersonId);
+            jobService.Save(job, CurrentPersonId);
+            BindScheduledJobs();
         }
 
         protected void grdScheduledJobs_Edit(object sender, RowEventArgs e)
         {
             pnlDetails.Visible = true;
             pnlGrid.Visible = false;
+
             grdScheduledJobs.SelectedIndex = e.RowIndex;
             int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
             Job job = jobService.Get(id);
@@ -173,57 +149,6 @@ namespace RockWeb.Blocks.Administration
                 drpNotificationStatus.Items.Add(item);
             }
         }
-
-
-        //protected void grdScheduledJobs_RowEditing(object sender, GridViewEditEventArgs e)
-        //{
-        //    pnlDetails.Visible = true;
-        //    pnlGrid.Visible = false;
-        //    grdScheduledJobs.EditIndex = e.NewEditIndex;
-        //    int id = (int)grdScheduledJobs.DataKeys[e.NewEditIndex].Value;
-        //    Job job = jobService.Get(id);
-        //    tbName.Text = job.Name;
-        //    tbDescription.Text = job.Description;
-        //    cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-        //    tbAssembly.Text = job.Assemby;
-        //    tbClass.Text = job.Class;
-        //    tbNotificationEmails.Text = job.NotificationEmails;
-        //    drpNotificationStatus.SelectedValue = ((int)job.NotificationStatus).ToString();
-        //    tbCronExpression.Text = job.CronExpression;
-        //    foreach (int value in Enum.GetValues(typeof(JobNotificationStatus)))
-        //    {
-        //        string text = ((JobNotificationStatus)value).ToString();
-        //        ListItem item = new ListItem(text, value.ToString());
-        //        drpNotificationStatus.Items.Add(item);
-        //    }
-        //    BindScheduledJobs();
-        //    pnlDetails.Visible = true;
-        //}
-
-        //protected void grdScheduledJobs_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-        //{        
-        //    grdScheduledJobs.EditIndex = -1;
-        //    BindScheduledJobs();
-        //}
-
-        //protected void grdScheduledJobs_RowUpdating(object sender, GridViewUpdateEventArgs e)
-        //{
-        //    int jobId = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
-        //    Job job = jobService.Get(jobId);
-        //    GridViewRow row = grdScheduledJobs.Rows[e.RowIndex];
-        //    job.Name = ((TextBox)row.FindControl("txtName")).Text;
-        //    job.Description = ((TextBox)row.FindControl("txtDescription")).Text;
-        //    job.IsActive = ((CheckBox)row.FindControl("cbxIsActive")).Checked;
-        //    job.Assemby = ((TextBox)row.FindControl("txtAssembly")).Text;
-        //    job.Class = ((TextBox)row.FindControl("txtClass")).Text;
-        //    job.CronExpression = ((TextBox)row.FindControl("txtCronExpression")).Text;
-        //    job.NotificationEmails = ((TextBox)row.FindControl("txtNotificationEmails")).Text;
-
-        //    jobService.Save(job, CurrentPersonId);
-
-        //    grdScheduledJobs.EditIndex = -1;
-        //    BindScheduledJobs();
-        //}
 
         private void BindScheduledJobs()
         {

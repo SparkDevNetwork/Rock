@@ -4,73 +4,11 @@
     <ContentTemplate>
         <asp:Panel ID="pnlGrid" runat="server">
             <Rock:Grid ID="grdScheduledJobs" runat="server" EmptyDataText="No Scheduled Jobs Found">
-                <Columns>
-                    <%--  <asp:TemplateField HeaderText="Name">
-                        <ItemTemplate>
-                            <asp:Label ID="lblName" runat="server" Text='<%# Eval("Name") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Description">
-                        <ItemTemplate>
-                            <asp:Label ID="lblName" runat="server" Text='<%# Eval("Description") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Active">
-                        <ItemTemplate>
-                            <asp:Label ID="lblIsActive" runat="server" Text='<%# Eval("IsActive") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Assembly">
-                        <ItemTemplate>
-                            <asp:Label ID="lblAssembly" runat="server" Text='<%# Eval("Assemby") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Class">
-                        <ItemTemplate>
-                            <asp:Label ID="lblClass" runat="server" Text='<%# Eval("Class") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="CRON">
-                        <ItemTemplate>
-                            <asp:Label ID="lblCronExpression" runat="server" Text='<%# Eval("CronExpression") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Last Successful Run">
-                        <ItemTemplate>
-                            <asp:Label ID="lblLastSuccessfulRun" runat="server" Text='<%# Eval("LastSuccessfulRun") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Last Run Date">
-                        <ItemTemplate>
-                            <asp:Label ID="lblLastRunDate" runat="server" Text='<%# Eval("LastRunDate") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Last Run Duration">
-                        <ItemTemplate>
-                            <asp:Label ID="lblLastRunDuration" runat="server" Text='<%# Eval("LastRunDuration") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Last Status">
-                        <ItemTemplate>
-                            <asp:Label ID="lblLastStatus" runat="server" Text='<%# Eval("LastStatus") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Notification Emails">
-                        <ItemTemplate>
-                            <asp:Label ID="lblNotificationEmails" runat="server" Text='<%# Eval("NotificationEmails") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Notification Status">
-                        <ItemTemplate>
-                            <asp:Label ID="lblNotificationStatus" runat="server" Text='<%# Eval("NotificationStatus") %>' />
-                        </ItemTemplate>
-                    </asp:TemplateField>         --%>
+                <Columns>                  
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
                     <asp:BoundField DataField="IsActive" HeaderText="Active" />
-                    <asp:BoundField DataField="Assemby" HeaderText="Assembly" />
-                   <%-- <asp:BoundField DataField="Class" HeaderText="Class" />
-                    <asp:BoundField DataField="CronExpression" HeaderText="CRON" />--%>
+                    <asp:BoundField DataField="Assemby" HeaderText="Assembly" />                
                     <asp:BoundField DataField="LastSuccessfulRun" HeaderText="Last Successful Run" />
                     <asp:BoundField DataField="LastRunDate" HeaderText="Last Run Date" />
                     <asp:BoundField DataField="LastRunDuration" HeaderText="Last Run Duration" />
