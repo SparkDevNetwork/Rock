@@ -10,7 +10,7 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="admin-page-list">
+      <div class="page-list-as-blocks">
         <h1>
           <xsl:value-of select="page/@title"/>
         </h1>
@@ -38,8 +38,7 @@
 				<xsl:attribute name="href">
 					<xsl:value-of select="@id"/>
 				</xsl:attribute>
-				<xsl:value-of select="@title"/>
-			</a>
+        <h3><xsl:value-of select="@title"/></h3>
       
         <xsl:if test="@display-description = 'true'">
           <span>
@@ -57,6 +56,8 @@
 					</xsl:for-each>
 				</ul>
 			</xsl:if>
+      
+      </a>
 		</li>
 	</xsl:template>
 </xsl:stylesheet>
