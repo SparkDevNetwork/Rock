@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// 
     /// </summary>
     [Table( "cmsMarketingCampaignAd")]
-    public partial class MarketingCampaignAd : Model<MarketingCampaignAd>, IExportable
+    public partial class MarketingCampaignAd : Model<MarketingCampaignAd>
     {
         /// <summary>
         /// Gets or sets the marketing campaign id.
@@ -107,34 +107,6 @@ namespace Rock.Cms
         /// The type of the marketing campaign ad.
         /// </value>
         public virtual MarketingCampaignAdType MarketingCampaignAdType { get; set; }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            throw new NotImplementedException();
-        }
     }
 
     /// <summary>

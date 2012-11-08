@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for PageContext object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class PageContextDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int PageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Entity { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string IdParameter { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -119,6 +139,48 @@ namespace Rock.Cms
                 pageContext.Id = this.Id;
                 pageContext.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PageContextDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PageContext ToModel( this PageContextDto value )
+        {
+            PageContext result = new PageContext();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PageContext> ToModel( this List<PageContextDto> value )
+        {
+            List<PageContext> result = new List<PageContext>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<PageContextDto> ToDto( this List<PageContext> value )
+        {
+            List<PageContextDto> result = new List<PageContextDto>();
+            value.ForEach( a => result.Add( new PageContextDto( a ) ) );
+            return result;
         }
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for Tag object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class TagDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? OwnerId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -129,6 +155,48 @@ namespace Rock.Core
                 tag.Id = this.Id;
                 tag.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class TagDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Tag ToModel( this TagDto value )
+        {
+            Tag result = new Tag();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Tag> ToModel( this List<TagDto> value )
+        {
+            List<Tag> result = new List<Tag>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<TagDto> ToDto( this List<Tag> value )
+        {
+            List<TagDto> result = new List<TagDto>();
+            value.ForEach( a => result.Add( new TagDto( a ) ) );
+            return result;
         }
     }
 }

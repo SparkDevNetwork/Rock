@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,19 +21,41 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for ServiceLog object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class ServiceLogDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public DateTime? Time { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Input { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Type { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Result { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool Success { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -124,6 +147,48 @@ namespace Rock.Core
                 serviceLog.Id = this.Id;
                 serviceLog.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ServiceLogDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ServiceLog ToModel( this ServiceLogDto value )
+        {
+            ServiceLog result = new ServiceLog();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ServiceLog> ToModel( this List<ServiceLogDto> value )
+        {
+            List<ServiceLog> result = new List<ServiceLog>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ServiceLogDto> ToDto( this List<ServiceLog> value )
+        {
+            List<ServiceLogDto> result = new List<ServiceLogDto>();
+            value.ForEach( a => result.Add( new ServiceLogDto( a ) ) );
+            return result;
         }
     }
 }

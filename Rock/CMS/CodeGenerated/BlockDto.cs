@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for Block object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class BlockDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Layout { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int BlockTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Zone { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int OutputCacheDuration { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -134,6 +163,48 @@ namespace Rock.Cms
                 block.Id = this.Id;
                 block.Guid = this.Guid;
             }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class BlockDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Block ToModel( this BlockDto value )
+        {
+            Block result = new Block();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Block> ToModel( this List<BlockDto> value )
+        {
+            List<Block> result = new List<Block>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<BlockDto> ToDto( this List<Block> value )
+        {
+            List<BlockDto> result = new List<BlockDto>();
+            value.ForEach( a => result.Add( new BlockDto( a ) ) );
+            return result;
         }
     }
 }
