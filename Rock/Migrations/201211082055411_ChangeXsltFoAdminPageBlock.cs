@@ -20,7 +20,12 @@ namespace Rock.Migrations
         {
             Sql( @"
     -- Update location of xslt file
-    UPDATE [coreAttributeValue] SET [Value] = '~/Assets/XSLT/PageListAsBlocks.xslt' WHERE [Guid] = '26AF0210-F562-40FE-A171-62295D87836D'
+    DECLARE @AttributeId int
+    SET @AttributeId = (SELECT [id] FROM [coreAttribute] WHERE guid = 'D8A029F8-83BE-454A-99D3-94D879EBF87C')
+    UPDATE [coreAttributeValue] 
+        SET [Value] = '~/Assets/XSLT/PageListAsBlocks.xslt' 
+    WHERE [AttributeId] = @AttributeId 
+    AND [Value] = '~/Assets/XSLT/AdminPageList.xslt'
 " );
         }
         
@@ -31,7 +36,12 @@ namespace Rock.Migrations
         {
             Sql( @"
     -- Update location of xslt file
-    UPDATE [coreAttributeValue] SET [Value] = '~/Assets/XSLT/AdminPageList.xslt' WHERE [Guid] = '26AF0210-F562-40FE-A171-62295D87836D'
+    DECLARE @AttributeId int
+    SET @AttributeId = (SELECT [id] FROM [coreAttribute] WHERE guid = 'D8A029F8-83BE-454A-99D3-94D879EBF87C')
+    UPDATE [coreAttributeValue] 
+        SET [Value] = '~/Assets/XSLT/AdminPageList.xslt' 
+    WHERE [AttributeId] = @AttributeId 
+    AND [Value] = '~/Assets/XSLT/PageListAsBlocks.xslt'
 " );
         }
     }
