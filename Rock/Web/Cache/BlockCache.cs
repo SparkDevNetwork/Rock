@@ -134,22 +134,19 @@ namespace Rock.Web.Cache
         /// </summary>
         public void ReloadAttributeValues()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var blockService = new Cms.BlockService();
+            var blockModel = blockService.Get( this.Id );
+
+            if ( blockModel != null )
             {
-                var blockService = new Cms.BlockService();
-                var blockModel = blockService.Get( this.Id );
+                blockModel.LoadAttributes();
 
-                if ( blockModel != null )
-                {
-                    blockModel.LoadAttributes();
+                this.AttributeValues = blockModel.AttributeValues;
 
-                    this.AttributeValues = blockModel.AttributeValues;
-
-                    this.AttributeIds = new List<int>();
-                    if ( blockModel.Attributes != null )
-                        foreach ( var attribute in blockModel.Attributes )
-                            this.AttributeIds.Add( attribute.Value.Id );
-                }
+                this.AttributeIds = new List<int>();
+                if ( blockModel.Attributes != null )
+                    foreach ( var attribute in blockModel.Attributes )
+                        this.AttributeIds.Add( attribute.Value.Id );
             }
         }
 

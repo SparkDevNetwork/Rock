@@ -15,41 +15,41 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Core
 {
     /// <summary>
-    /// ActionType Service class
+    /// EntityTypeWorkflowTrigger Service class
     /// </summary>
-    public partial class ActionTypeService : Service<ActionType, ActionTypeDto>
+    public partial class EntityTypeWorkflowTriggerService : Service<EntityTypeWorkflowTrigger, EntityTypeWorkflowTriggerDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionTypeService"/> class
+        /// Initializes a new instance of the <see cref="EntityTypeWorkflowTriggerService"/> class
         /// </summary>
-        public ActionTypeService()
+        public EntityTypeWorkflowTriggerService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionTypeService"/> class
+        /// Initializes a new instance of the <see cref="EntityTypeWorkflowTriggerService"/> class
         /// </summary>
-        public ActionTypeService(IRepository<ActionType> repository) : base(repository)
+        public EntityTypeWorkflowTriggerService(IRepository<EntityTypeWorkflowTrigger> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override ActionType CreateNew()
+        public override EntityTypeWorkflowTrigger CreateNew()
         {
-            return new ActionType();
+            return new EntityTypeWorkflowTrigger();
         }
 
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ActionTypeDto> QueryableDto( )
+        public override IQueryable<EntityTypeWorkflowTriggerDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,16 +58,17 @@ namespace Rock.Util
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActionTypeDto> QueryableDto( IQueryable<ActionType> items )
+        public IQueryable<EntityTypeWorkflowTriggerDto> QueryableDto( IQueryable<EntityTypeWorkflowTrigger> items )
         {
-            return items.Select( m => new ActionTypeDto()
+            return items.Select( m => new EntityTypeWorkflowTriggerDto()
                 {
-                    ActivityTypeId = m.ActivityTypeId,
-                    Name = m.Name,
-                    Order = m.Order,
+                    IsSystem = m.IsSystem,
                     EntityTypeId = m.EntityTypeId,
-                    IsActionCompletedOnSuccess = m.IsActionCompletedOnSuccess,
-                    IsActivityCompletedOnSuccess = m.IsActivityCompletedOnSuccess,
+                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
+                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
+                    WorkflowTypeId = m.WorkflowTypeId,
+                    EntityTriggerType = m.EntityTriggerType,
+                    WorkflowName = m.WorkflowName,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
