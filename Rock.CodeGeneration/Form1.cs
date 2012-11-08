@@ -428,9 +428,20 @@ namespace Rock.CodeGeneration
         public static List<{0}Dto> ToDto( this List<{0}> value )
         {{
             List<{0}Dto> result = new List<{0}Dto>();
-            value.ForEach( a => result.Add( new {0}Dto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }}
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static {0}Dto ToDto( this {0} value )
+        {{
+            return new {0}Dto( value );
+        }}
+
     }}
 }}";
 

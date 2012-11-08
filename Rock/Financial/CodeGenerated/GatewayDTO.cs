@@ -179,8 +179,19 @@ namespace Rock.Financial
         public static List<GatewayDto> ToDto( this List<Gateway> value )
         {
             List<GatewayDto> result = new List<GatewayDto>();
-            value.ForEach( a => result.Add( new GatewayDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GatewayDto ToDto( this Gateway value )
+        {
+            return new GatewayDto( value );
+        }
+
     }
 }
