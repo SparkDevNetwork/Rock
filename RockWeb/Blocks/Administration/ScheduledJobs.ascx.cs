@@ -1,18 +1,25 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml;
+
 using Rock;
 using Rock.Core;
 using Rock.Util;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class ScheduledJobs : Rock.Web.UI.Block
+    public partial class ScheduledJobs : RockBlock
     {
         private JobService jobService = new JobService();
 
@@ -21,7 +28,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit(EventArgs e)
         {
-            if (PageInstance.IsAuthorized("Configure", CurrentUser))
+            if (CurrentPage.IsAuthorized("Configure", CurrentPerson))
             {
                 grdScheduledJobs.DataKeyNames = new string[] { "id" };
                 grdScheduledJobs.Actions.IsAddEnabled = true;
@@ -44,7 +51,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad(EventArgs e)
         {
             nbMessage.Visible = false;
-            if (PageInstance.IsAuthorized("Configure", CurrentUser))
+            if (CurrentPage.IsAuthorized("Configure", CurrentPerson))
             {
                 if (!Page.IsPostBack)
                 {
