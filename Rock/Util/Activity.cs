@@ -153,18 +153,25 @@ namespace Rock.Util
             AddSystemLogEntry( "Processing..." );
 
             this.LastProcessedDateTime = DateTime.Now;
-            
+
+            this.LoadAttributes();
+
             foreach ( var action in this.ActiveActions )
             {
-                action.Process();
+                // If action was not successful, exit
+                if ( !action.Process() )
+                    break;
 
-                // If action inactivated this activity, exit
+                // If action completed this activity, exit
                 if ( !this.IsActive )
+                    break;
+
+                // If action completed this workflow, exit
+                if ( !this.Workflow.IsActive )
                     break;
             }
 
             AddSystemLogEntry( "Processing Complete" );
-
         }
 
         /// <summary>
@@ -175,7 +182,7 @@ namespace Rock.Util
         {
             if ( this.Workflow != null )
             {
-                this.Workflow.AddLogEntry( string.Format( "{0}: {1}", this.ToString(), logEntry ) );
+                this.Workflow.AddLogEntry( string.Format( "'{0}' Activity: {1}", this.ToString(), logEntry ) );
             }
         }
 

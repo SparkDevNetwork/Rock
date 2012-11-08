@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
+using Rock;
 using Rock.Extension;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -189,7 +190,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
                     {
-                        Rock.Attribute.Helper.LoadAttributes( component.Value.Value );
+                        component.Value.Value.LoadAttributes();
                     }
                 }
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );

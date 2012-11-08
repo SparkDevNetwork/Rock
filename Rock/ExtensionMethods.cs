@@ -657,6 +657,19 @@ namespace Rock
 
         #endregion
 
+        #region IHasAttributes extensions
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        {
+            Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        #endregion
+
         #region Route Extensions
 
         /// <summary>

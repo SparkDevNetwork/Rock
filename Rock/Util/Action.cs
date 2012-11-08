@@ -110,7 +110,7 @@ namespace Rock.Util
         /// Processes this instance.
         /// </summary>
         /// <exception cref="System.SystemException"></exception>
-        public virtual void Process()
+        public virtual bool  Process()
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -120,7 +120,7 @@ namespace Rock.Util
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
 
-            Rock.Attribute.Helper.LoadAttributes( this.ActionType );
+            this.ActionType.LoadAttributes();
 
             bool success = workflowAction.Execute(this);
 
@@ -138,6 +138,8 @@ namespace Rock.Util
                     this.Activity.MarkComplete();
                 }
             }
+
+            return success;
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace Rock.Util
             if ( this.Activity != null &&
                 this.Activity.Workflow != null )
             {
-                this.Activity.Workflow.AddLogEntry( string.Format( "{0}|{1}: {2}", this.Activity.ToString(), this.ToString(), logEntry ) );
+                this.Activity.Workflow.AddLogEntry( string.Format( "'{0}' Action: {1}", this.ToString(), logEntry ) );
             }
         }
 

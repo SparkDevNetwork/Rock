@@ -56,7 +56,7 @@ namespace Rock.Util
             }
 
             // load up job attributes (parameters) 
-            Rock.Attribute.Helper.LoadAttributes( job );
+            job.LoadAttributes();
 
             JobDataMap map = new JobDataMap();
 

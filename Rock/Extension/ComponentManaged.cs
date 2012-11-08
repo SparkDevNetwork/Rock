@@ -148,7 +148,7 @@ namespace Rock.Extension
         /// </summary>
         public ComponentManaged()
         {
-            Rock.Attribute.Helper.LoadAttributes( this );
+            this.LoadAttributes();
         }
     }
 }

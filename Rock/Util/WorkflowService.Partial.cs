@@ -21,6 +21,7 @@ namespace Rock.Util
         /// Activates a new worflow instance
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
+        /// <param name="name">The name.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
         public Workflow Activate( WorkflowType workflowType, string name, int? currentPersonId )

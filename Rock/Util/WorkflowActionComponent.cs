@@ -41,5 +41,26 @@ namespace Rock.Util
         /// <param name="action">The action.</param>
         /// <returns></returns>
         public abstract Boolean Execute( Action action );
+
+        /// <summary>
+        /// Gets the attribute value for the action
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        protected string GetAttributeValue( Action action, string key )
+        {
+            var values = action.ActionType.AttributeValues;
+            if ( values.ContainsKey( key ) )
+            {
+                var keyValues = values[key];
+                if ( keyValues.Count == 1 )
+                {
+                    return keyValues[0].Value;
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }

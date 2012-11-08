@@ -8,6 +8,8 @@ using System;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
+using Rock;
+
 namespace RockWeb.Blocks.Administration
 {
     public partial class BlockProperties : Rock.Web.UI.RockBlock
@@ -64,7 +66,7 @@ namespace RockWeb.Blocks.Administration
                     var blockService = new Rock.Cms.BlockService();
                     var block = blockService.Get( _block.Id );
 
-                    Rock.Attribute.Helper.LoadAttributes( block );
+                    block.LoadAttributes();
 
                     block.Name = tbBlockName.Text;
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
