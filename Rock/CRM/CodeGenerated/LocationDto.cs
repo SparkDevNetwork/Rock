@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,31 +21,89 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for Location object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class LocationDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Raw { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Street1 { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Street2 { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string City { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string State { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Country { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Zip { get; set; }
+
+        /// <summary />
+        [DataMember]
         public double? Latitude { get; set; }
+
+        /// <summary />
+        [DataMember]
         public double? Longitude { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ParcelId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? StandardizeAttempt { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string StandardizeService { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string StandardizeResult { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? StandardizeDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? GeocodeAttempt { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string GeocodeService { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string GeocodeResult { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? GeocodeDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -185,5 +244,58 @@ namespace Rock.Crm
                 location.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class LocationDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Location ToModel( this LocationDto value )
+        {
+            Location result = new Location();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Location> ToModel( this List<LocationDto> value )
+        {
+            List<Location> result = new List<Location>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<LocationDto> ToDto( this List<Location> value )
+        {
+            List<LocationDto> result = new List<LocationDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static LocationDto ToDto( this Location value )
+        {
+            return new LocationDto( value );
+        }
+
     }
 }

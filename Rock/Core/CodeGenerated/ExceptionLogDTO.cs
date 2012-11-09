@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,29 +21,81 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for ExceptionLog object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class ExceptionLogDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int? ParentId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? SiteId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime ExceptionDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CreatedByPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? HasInnerException { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string StatusCode { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ExceptionType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Source { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string StackTrace { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string PageUrl { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ServerVariables { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string QueryString { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Form { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Cookies { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -175,5 +228,58 @@ namespace Rock.Core
                 exceptionLog.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ExceptionLogDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ExceptionLog ToModel( this ExceptionLogDto value )
+        {
+            ExceptionLog result = new ExceptionLog();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ExceptionLog> ToModel( this List<ExceptionLogDto> value )
+        {
+            List<ExceptionLog> result = new List<ExceptionLog>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ExceptionLogDto> ToDto( this List<ExceptionLog> value )
+        {
+            List<ExceptionLogDto> result = new List<ExceptionLogDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ExceptionLogDto ToDto( this ExceptionLog value )
+        {
+            return new ExceptionLogDto( value );
+        }
+
     }
 }

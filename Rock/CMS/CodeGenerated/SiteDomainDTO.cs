@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,16 +21,29 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for SiteDomain object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class SiteDomainDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int SiteId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Domain { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -110,5 +124,58 @@ namespace Rock.Cms
                 siteDomain.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class SiteDomainDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static SiteDomain ToModel( this SiteDomainDto value )
+        {
+            SiteDomain result = new SiteDomain();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<SiteDomain> ToModel( this List<SiteDomainDto> value )
+        {
+            List<SiteDomain> result = new List<SiteDomain>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<SiteDomainDto> ToDto( this List<SiteDomain> value )
+        {
+            List<SiteDomainDto> result = new List<SiteDomainDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static SiteDomainDto ToDto( this SiteDomain value )
+        {
+            return new SiteDomainDto( value );
+        }
+
     }
 }

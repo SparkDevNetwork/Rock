@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for GroupRole object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class GroupRoleDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? GroupTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? SortOrder { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MaxCount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MinCount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -130,5 +156,58 @@ namespace Rock.Crm
                 groupRole.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GroupRoleDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupRole ToModel( this GroupRoleDto value )
+        {
+            GroupRole result = new GroupRole();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<GroupRole> ToModel( this List<GroupRoleDto> value )
+        {
+            List<GroupRole> result = new List<GroupRole>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<GroupRoleDto> ToDto( this List<GroupRole> value )
+        {
+            List<GroupRoleDto> result = new List<GroupRoleDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupRoleDto ToDto( this GroupRole value )
+        {
+            return new GroupRoleDto( value );
+        }
+
     }
 }

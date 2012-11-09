@@ -282,6 +282,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "using System.Dynamic;" );
+            sb.AppendLine( "using System.Runtime.Serialization;" );
             sb.AppendLine( "" );
             sb.AppendLine( "using Rock.Data;" );
             sb.AppendLine( "" );
@@ -291,21 +292,21 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
+            sb.AppendLine( "    [Serializable]" );
+            sb.AppendLine( "    [DataContract]" );
             sb.AppendFormat( "    public partial class {0}Dto : IDto" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
-            sb.AppendLine( "" );
-            sb.AppendLine( "#pragma warning disable 1591" );
             foreach ( var property in properties )
             {
                 if ( !BaseDtoProperty( property.Key ) )
                 {
+                    sb.AppendLine( "        /// <summary />" );
+                    sb.AppendLine( "        [DataMember]" );
                     sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
+                    sb.AppendLine( "" );
                 }
             }
-            sb.AppendLine( "#pragma warning restore 1591" );
-
-            sb.AppendLine( "" );
 
             sb.AppendLine( "        /// <summary>" );
             sb.AppendLine( "        /// Instantiates a new DTO object" );
@@ -387,10 +388,64 @@ namespace Rock.CodeGeneration
             }
             sb.AppendLine( "            }" );
             sb.AppendLine( "        }" );
-
             sb.AppendLine( "    }" );
-            sb.AppendLine( "}" );
 
+            string extensionSection = @"
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class {0}DtoExtension
+    {{
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static {0} ToModel( this {0}Dto value )
+        {{
+            {0} result = new {0}();
+            value.CopyToModel( result );
+            return result;
+        }}
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static List<{0}> ToModel( this List<{0}Dto> value )
+        {{
+            List<{0}> result = new List<{0}>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }}
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static List<{0}Dto> ToDto( this List<{0}> value )
+        {{
+            List<{0}Dto> result = new List<{0}Dto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }}
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static {0}Dto ToDto( this {0} value )
+        {{
+            return new {0}Dto( value );
+        }}
+
+    }}
+}}";
+
+            sb.AppendFormat( extensionSection, type.Name );
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             WriteFile( file, sb );
         }
@@ -583,6 +638,8 @@ namespace Rock.CodeGeneration
         {
             return false;
 
+            /*
+             
             if ( propertyName == "Id" ) return true;
             if ( propertyName == "Guid" ) return true;
             if ( propertyName == "CreatedDateTime" ) return true;
@@ -591,6 +648,8 @@ namespace Rock.CodeGeneration
             if ( propertyName == "ModifiedByPersonId" ) return true;
 
             return false;
+            
+             */ 
         }
 
         private Dictionary<string, string> GetEntityProperties (Type type)

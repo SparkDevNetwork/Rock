@@ -43,11 +43,8 @@ namespace Rock.Web.UI.Validation
         {
             get
             {
-                // get the type that we are going to validate
-                Type source = GetValidatedType();
-
                 // get the property to validate
-                PropertyInfo property = GetValidatedProperty( source );
+                PropertyInfo property = GetValidatedProperty();
 
                 var attributes = property.GetCustomAttributes( typeof( RequiredAttribute ), true ).OfType<RequiredAttribute>();
 
@@ -67,11 +64,8 @@ namespace Rock.Web.UI.Validation
         /// </returns>
         protected override bool EvaluateIsValid()
         {
-            // get the type that we are going to validate
-            Type source = GetValidatedType();
-
             // get the property to validate
-            PropertyInfo property = GetValidatedProperty( source );
+            PropertyInfo property = GetValidatedProperty();
 
             // get the control validation value
             string value = GetControlValidationValue( ControlToValidate );
@@ -143,13 +137,42 @@ namespace Rock.Web.UI.Validation
         {
             get
             {
-                // get the type that we are going to validate
-                Type source = GetValidatedType();
-
                 // get the property to validate
-                PropertyInfo property = GetValidatedProperty( source );
+                PropertyInfo property = GetValidatedProperty();
 
                 return ( property.PropertyType.IsEquivalentTo( typeof( int? ) ) || property.PropertyType.IsEquivalentTo( typeof( int ) ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the maxlength of the value.
+        /// </summary>
+        /// <value>
+        /// The length of the value.
+        /// </value>
+        public int ValueMaxLength
+        {
+            get
+            {
+                PropertyInfo pi = GetValidatedProperty();
+                MaxLengthAttribute maxLengthAttribute = pi.GetCustomAttribute<MaxLengthAttribute>( true );
+                if ( maxLengthAttribute != null )
+                {
+                    return maxLengthAttribute.Length;
+                }
+                else
+                {
+                    if ( ValueMustBeInteger )
+                    {
+                        return 10;
+                    }
+                    else
+                    {
+                        // 0 means not set (no limit)
+                        return 0;
+                    }
+                }
+
             }
         }
 
@@ -177,8 +200,14 @@ namespace Rock.Web.UI.Validation
             return validatedType;
         }
 
-        private PropertyInfo GetValidatedProperty( Type source )
+        /// <summary>
+        /// Gets the validated property.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.InvalidOperationException"></exception>
+        private PropertyInfo GetValidatedProperty()
         {
+            Type source = GetValidatedType();
             PropertyInfo property = source.GetProperty( PropertyName,
               BindingFlags.Public | BindingFlags.Instance );
 

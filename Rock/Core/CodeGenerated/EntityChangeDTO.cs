@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,22 +21,53 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for EntityChange object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class EntityChangeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public Guid ChangeSet { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ChangeType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Property { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string OriginalValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string CurrentValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CreatedByPersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -140,5 +172,58 @@ namespace Rock.Core
                 entityChange.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EntityChangeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityChange ToModel( this EntityChangeDto value )
+        {
+            EntityChange result = new EntityChange();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityChange> ToModel( this List<EntityChangeDto> value )
+        {
+            List<EntityChange> result = new List<EntityChange>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityChangeDto> ToDto( this List<EntityChange> value )
+        {
+            List<EntityChangeDto> result = new List<EntityChangeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityChangeDto ToDto( this EntityChange value )
+        {
+            return new EntityChangeDto( value );
+        }
+
     }
 }

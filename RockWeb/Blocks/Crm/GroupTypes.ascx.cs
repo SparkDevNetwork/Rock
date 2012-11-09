@@ -13,6 +13,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Core;
 using Rock.Crm;
+using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,7 +82,7 @@ public partial class GroupTypes : RockBlock
             gChildGroupTypes.Actions.IsAddEnabled = true;
             gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
             gChildGroupTypes.GridRebind += gChildGroupTypes_GridRebind;
-            gChildGroupTypes.EmptyDataText = Server.HtmlEncode(None.Text);
+            gChildGroupTypes.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gLocationTypes.DataKeyNames = new string[] { "key" };
             gLocationTypes.Actions.IsAddEnabled = true;
@@ -138,7 +139,7 @@ public partial class GroupTypes : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gGroupType_Edit( object sender, RowEventArgs e )
     {
-        ShowEdit( (int)gGroupType.DataKeys[e.RowIndex]["id"] );
+        ShowEdit( (int)e.RowKeyValue );
     }
 
     /// <summary>
@@ -149,16 +150,16 @@ public partial class GroupTypes : RockBlock
     protected void gGroupType_Delete( object sender, RowEventArgs e )
     {
         GroupTypeService groupTypeService = new GroupTypeService();
-        int groupTypeId = (int)gGroupType.DataKeys[e.RowIndex]["id"];
+        int groupTypeId = (int)e.RowKeyValue;
         string errorMessage;
-        if ( !groupTypeService.CanDelete(groupTypeId, out errorMessage) )
+        if ( !groupTypeService.CanDelete( groupTypeId, out errorMessage ) )
         {
             nbGridWarning.Text = errorMessage;
             nbGridWarning.Visible = true;
             return;
         }
 
-        GroupType groupType = groupTypeService.Get( groupTypeId  );
+        GroupType groupType = groupTypeService.Get( groupTypeId );
         if ( CurrentBlock != null )
         {
             groupTypeService.Delete( groupType, CurrentPersonId );
@@ -226,7 +227,7 @@ public partial class GroupTypes : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gChildGroupTypes_Delete( object sender, RowEventArgs e )
     {
-        int childGroupTypeId = (int)gChildGroupTypes.DataKeys[e.RowIndex]["key"];
+        int childGroupTypeId = (int)e.RowKeyValue;
         ChildGroupTypesDictionary.Remove( childGroupTypeId );
         BindChildGroupTypesGrid();
     }
@@ -324,7 +325,7 @@ public partial class GroupTypes : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gLocationTypes_Delete( object sender, RowEventArgs e )
     {
-        int locationTypeId = (int)gLocationTypes.DataKeys[e.RowIndex]["key"];
+        int locationTypeId = (int)e.RowKeyValue;
         LocationTypesDictionary.Remove( locationTypeId );
         BindLocationTypesGrid();
     }
@@ -437,7 +438,7 @@ public partial class GroupTypes : RockBlock
         }
 
         DefinedValueService definedValueService = new DefinedValueService();
-        
+
         groupType.LocationTypes = new List<GroupTypeLocationType>();
         groupType.LocationTypes.Clear();
         foreach ( var item in LocationTypesDictionary )
@@ -462,7 +463,10 @@ public partial class GroupTypes : RockBlock
             return;
         }
 
-        groupTypeService.Save( groupType, CurrentPersonId );
+        RockTransactionScope.WrapTransaction( () =>
+            {
+                groupTypeService.Save( groupType, CurrentPersonId );
+            } );
 
         BindGrid();
         pnlDetails.Visible = false;

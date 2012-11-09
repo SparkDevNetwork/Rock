@@ -14,7 +14,7 @@ namespace Rock.Cms
     /// 
     /// </summary>
     [Table( "cmsMarketingCampaignAdType" )]
-    public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>, IExportable
+    public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -30,6 +30,7 @@ namespace Rock.Cms
         /// <value>
         /// The name.
         /// </value>
+        [Required]
         [MaxLength( 100 )]
         public string Name { get; set; }
 
@@ -49,34 +50,6 @@ namespace Rock.Cms
         public static MarketingCampaignAdType Read( int id )
         {
             return Read<MarketingCampaignAdType>( id );
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            throw new System.NotImplementedException();
         }
     }
 

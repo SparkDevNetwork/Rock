@@ -99,6 +99,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -149,8 +150,10 @@
     <Compile Include="Cms\FileService.Partial.cs" />
     <Compile Include="Cms\MarketingCampaign.cs" />
     <Compile Include="Cms\MarketingCampaignAd.cs" />
+    <Compile Include="Cms\MarketingCampaignAdDto.partial.cs" />
     <Compile Include="Cms\MarketingCampaignAdType.cs" />
     <Compile Include="Cms\MarketingCampaignAudience.cs" />
+    <Compile Include="Cms\MarketingCampaignAudienceDto.partial.cs" />
     <Compile Include="Cms\MarketingCampaignCampus.cs" />
     <Compile Include="Cms\PageContextService.Partial.cs" />
     <Compile Include="Cms\HtmlContentService.Partial.cs" />
@@ -264,6 +267,7 @@
     <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
+    <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\ComponentManaged.cs" />
@@ -600,9 +604,21 @@
     <Compile Include="Migrations\201211051707503_AttributeEntityTypeId.Designer.cs">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201211081634318_Workflow.cs" />
-    <Compile Include="Migrations\201211081634318_Workflow.Designer.cs">
-      <DependentUpon>201211081634318_Workflow.cs</DependentUpon>
+    <Compile Include="Migrations\201211052019458_MarketingCampaignAds.cs" />
+    <Compile Include="Migrations\201211052019458_MarketingCampaignAds.Designer.cs">
+      <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201211082055411_ChangeXsltFoAdminPageBlock.cs" />
+    <Compile Include="Migrations\201211082055411_ChangeXsltFoAdminPageBlock.Designer.cs">
+      <DependentUpon>201211082055411_ChangeXsltFoAdminPageBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201211090000198_ScheduledJobs.cs" />
+    <Compile Include="Migrations\201211090000198_ScheduledJobs.Designer.cs">
+      <DependentUpon>201211090000198_ScheduledJobs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201211090015130_SiteMapPage.cs" />
+    <Compile Include="Migrations\201211090015130_SiteMapPage.Designer.cs">
+      <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1071,8 +1087,17 @@
     <EmbeddedResource Include="Migrations\201211051707503_AttributeEntityTypeId.resx">
       <DependentUpon>201211051707503_AttributeEntityTypeId.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211081634318_Workflow.resx">
-      <DependentUpon>201211081634318_Workflow.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201211052019458_MarketingCampaignAds.resx">
+      <DependentUpon>201211052019458_MarketingCampaignAds.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211082055411_ChangeXsltFoAdminPageBlock.resx">
+      <DependentUpon>201211082055411_ChangeXsltFoAdminPageBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211090000198_ScheduledJobs.resx">
+      <DependentUpon>201211090000198_ScheduledJobs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211090015130_SiteMapPage.resx">
+      <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

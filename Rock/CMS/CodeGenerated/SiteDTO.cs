@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,25 +21,65 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for Site object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class SiteDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Theme { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? DefaultPageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string FaviconUrl { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string AppleTouchIconUrl { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string FacebookAppId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string FacebookAppSecret { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string LoginPageReference { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string RegistrationPageReference { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ErrorPage { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -155,5 +196,58 @@ namespace Rock.Cms
                 site.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class SiteDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Site ToModel( this SiteDto value )
+        {
+            Site result = new Site();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Site> ToModel( this List<SiteDto> value )
+        {
+            List<Site> result = new List<Site>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<SiteDto> ToDto( this List<Site> value )
+        {
+            List<SiteDto> result = new List<SiteDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static SiteDto ToDto( this Site value )
+        {
+            return new SiteDto( value );
+        }
+
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for Gateway object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class GatewayDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ApiUrl { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ApiKey { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ApiSecret { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -120,5 +140,58 @@ namespace Rock.Financial
                 gateway.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GatewayDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Gateway ToModel( this GatewayDto value )
+        {
+            Gateway result = new Gateway();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Gateway> ToModel( this List<GatewayDto> value )
+        {
+            List<Gateway> result = new List<Gateway>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<GatewayDto> ToDto( this List<Gateway> value )
+        {
+            List<GatewayDto> result = new List<GatewayDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GatewayDto ToDto( this Gateway value )
+        {
+            return new GatewayDto( value );
+        }
+
     }
 }
