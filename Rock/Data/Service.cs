@@ -18,6 +18,14 @@ namespace Rock.Data
     /// <typeparam name="T"></typeparam>
     public class Service<T> where T : Rock.Data.Entity<T>
     {
+        /// <summary>
+        /// Gets or sets the save messages.
+        /// </summary>
+        /// <value>
+        /// The save messages.
+        /// </value>
+        public virtual List<string> ErrorMessages { get; set; }
+
         private IRepository<T> _repository;
         /// <summary>
         /// Gets the Repository.
@@ -328,27 +336,41 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
-        public virtual void Save( T item, int? personId )
+        /// <returns></returns>
+        public virtual bool Save( T item, int? personId)
         {
+            ErrorMessages = new List<string>();
+
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            var audits = new List<Core.AuditDto>();
-            var entityChanges = _repository.Save( personId, audits );
+            List<EntityChange> changes;
+            List<AuditDto> audits;
+            List<string> errorMessages;
 
-            if ( entityChanges != null && entityChanges.Count > 0 )
+            if ( _repository.Save( personId, out changes, out audits, out errorMessages ) )
             {
-                var transaction = new Rock.Transactions.EntityChangeTransaction();
-                transaction.Changes = entityChanges;
-                transaction.PersonId = personId;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                if ( changes != null && changes.Count > 0 )
+                {
+                    var transaction = new Rock.Transactions.EntityChangeTransaction();
+                    transaction.Changes = changes;
+                    transaction.PersonId = personId;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+
+                if ( audits != null && audits.Count > 0 )
+                {
+                    var transaction = new Rock.Transactions.AuditTransaction();
+                    transaction.Audits = audits;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+
+                return true;
             }
-
-            if ( audits != null && audits.Count > 0 )
+            else
             {
-                var transaction = new Rock.Transactions.AuditTransaction();
-                transaction.Audits = audits;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                ErrorMessages = errorMessages;
+                return false;
             }
         }
 

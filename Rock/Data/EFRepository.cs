@@ -43,10 +43,14 @@ namespace Rock.Data
             get
             {
                 if ( UnitOfWorkScope.CurrentObjectContext != null )
+                {
                     return UnitOfWorkScope.CurrentObjectContext;
+                }
 
                 if ( _context == null )
+                {
                     _context = new RockContext();
+                }
 
                 return _context;
             }
@@ -95,8 +99,12 @@ namespace Rock.Data
         {
             DbQuery<T> value = _objectSet;
             if ( !String.IsNullOrEmpty( includes ) )
+            {
                 foreach ( var include in includes.SplitDelimitedValues() )
+                {
                     value = value.Include( include );
+                }
+            }
             return value;
         }
 
@@ -333,11 +341,14 @@ namespace Rock.Data
         /// need to be logged
         /// </summary>
         /// <param name="PersonId">The id of the person making the change</param>
+        /// <param name="changes">The changes.</param>
         /// <param name="audits">The audits.</param>
         /// <returns></returns>
-        public List<Rock.Core.EntityChange> Save( int? PersonId, List<Rock.Core.AuditDto> audits )
+        public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
         {
-            var entityChanges = new List<Core.EntityChange>();
+            changes = new List<EntityChange>();
+            audits = new List<AuditDto>();
+            errorMessages = new List<string>();
 
             Context.ChangeTracker.DetectChanges();
 
@@ -373,6 +384,7 @@ namespace Rock.Data
                             rockEntity.RaiseUpdatingEvent( out cancel, PersonId );
                             if ( cancel )
                             {
+                                errorMessages.Add( string.Format( "Update cancelled by {0} event handler", rockEntity.TypeName ) );
                                 contextAdapter.ObjectContext.Detach( entry );
                             }
                             else
@@ -389,7 +401,9 @@ namespace Rock.Data
                 {
                     Type rockEntityType = rockEntity.GetType();
                     if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                    {
                         rockEntityType = rockEntityType.BaseType;
+                    }
 
                     if ( AuditClass( rockEntityType ) )
                     {
@@ -404,7 +418,9 @@ namespace Rock.Data
                             {
                                 var dbPropertyEntry = dbEntity.Property( propInfo.Name );
                                 if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                                {
                                     modifiedProperties.Add( propInfo.Name );
+                                }
                             }
                         }
 
@@ -422,30 +438,41 @@ namespace Rock.Data
                 }
             }
 
+            if ( errorMessages.Count > 0 )
+            {
+                return false;
+            }
+
             Context.SaveChanges();
 
             foreach ( object modifiedEntity in addedEntities )
             {
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
+                {
                     model.RaiseAddedEvent( PersonId );
+                }
             }
 
             foreach ( object deletedEntity in deletedEntities )
             {
                 var model = deletedEntity as Entity<T>;
                 if ( model != null )
+                {
                     model.RaiseDeletedEvent( PersonId );
+                }
             }
 
             foreach ( object modifiedEntity in modifiedEntities )
             {
                 var model = modifiedEntity as Entity<T>;
                 if ( model != null )
+                {
                     model.RaiseUpdatedEvent( PersonId );
+                }
             }
 
-            return entityChanges;
+            return true;
         }
 
         /// <summary>
@@ -466,9 +493,11 @@ namespace Rock.Data
         /// <returns></returns>
         private bool AuditProperty( PropertyInfo propertyInfo )
         {
-            if (propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
+            if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
                 propertyInfo.GetCustomAttribute( typeof( System.Runtime.Serialization.DataMemberAttribute ) ) != null )
+            {
                 return true;
+            }
             return false;
         }
 
@@ -504,7 +533,9 @@ namespace Rock.Data
                         if ( currentValueStr != originalValueStr )
                         {
                             if ( entityChanges == null )
+                            {
                                 entityChanges = new List<Core.EntityChange>();
+                            }
 
                             Rock.Core.EntityChange change = new Core.EntityChange();
                             change.ChangeSet = changeSet;
