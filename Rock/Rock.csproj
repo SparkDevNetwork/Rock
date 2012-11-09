@@ -620,6 +620,10 @@
     <Compile Include="Migrations\201211090015130_SiteMapPage.Designer.cs">
       <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201211091209534_Workflow.cs" />
+    <Compile Include="Migrations\201211091209534_Workflow.Designer.cs">
+      <DependentUpon>201211091209534_Workflow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -1098,6 +1102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211090015130_SiteMapPage.resx">
       <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211091209534_Workflow.resx">
+      <DependentUpon>201211091209534_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
