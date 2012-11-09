@@ -607,6 +607,10 @@
     <Compile Include="Migrations\201211090000198_ScheduledJobs.Designer.cs">
       <DependentUpon>201211090000198_ScheduledJobs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201211090015130_SiteMapPage.cs" />
+    <Compile Include="Migrations\201211090015130_SiteMapPage.Designer.cs">
+      <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration_2.cs" />
@@ -1053,6 +1057,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211090000198_ScheduledJobs.resx">
       <DependentUpon>201211090000198_ScheduledJobs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211090015130_SiteMapPage.resx">
+      <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
