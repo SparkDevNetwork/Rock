@@ -155,8 +155,19 @@ namespace Rock.Crm
         public static List<CampusDto> ToDto( this List<Campus> value )
         {
             List<CampusDto> result = new List<CampusDto>();
-            value.ForEach( a => result.Add( new CampusDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static CampusDto ToDto( this Campus value )
+        {
+            return new CampusDto( value );
+        }
+
     }
 }

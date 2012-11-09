@@ -211,8 +211,19 @@ namespace Rock.Core
         public static List<EntityChangeDto> ToDto( this List<EntityChange> value )
         {
             List<EntityChangeDto> result = new List<EntityChangeDto>();
-            value.ForEach( a => result.Add( new EntityChangeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityChangeDto ToDto( this EntityChange value )
+        {
+            return new EntityChangeDto( value );
+        }
+
     }
 }

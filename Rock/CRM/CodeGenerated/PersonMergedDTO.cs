@@ -155,8 +155,19 @@ namespace Rock.Crm
         public static List<PersonMergedDto> ToDto( this List<PersonMerged> value )
         {
             List<PersonMergedDto> result = new List<PersonMergedDto>();
-            value.ForEach( a => result.Add( new PersonMergedDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonMergedDto ToDto( this PersonMerged value )
+        {
+            return new PersonMergedDto( value );
+        }
+
     }
 }

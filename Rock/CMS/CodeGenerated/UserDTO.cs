@@ -267,8 +267,19 @@ namespace Rock.Cms
         public static List<UserDto> ToDto( this List<User> value )
         {
             List<UserDto> result = new List<UserDto>();
-            value.ForEach( a => result.Add( new UserDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static UserDto ToDto( this User value )
+        {
+            return new UserDto( value );
+        }
+
     }
 }

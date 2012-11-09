@@ -187,8 +187,19 @@ namespace Rock.Core
         public static List<DefinedTypeDto> ToDto( this List<DefinedType> value )
         {
             List<DefinedTypeDto> result = new List<DefinedTypeDto>();
-            value.ForEach( a => result.Add( new DefinedTypeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static DefinedTypeDto ToDto( this DefinedType value )
+        {
+            return new DefinedTypeDto( value );
+        }
+
     }
 }

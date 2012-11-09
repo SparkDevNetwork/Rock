@@ -163,8 +163,19 @@ namespace Rock.Cms
         public static List<MarketingCampaignAdTypeDto> ToDto( this List<MarketingCampaignAdType> value )
         {
             List<MarketingCampaignAdTypeDto> result = new List<MarketingCampaignAdTypeDto>();
-            value.ForEach( a => result.Add( new MarketingCampaignAdTypeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAdTypeDto ToDto( this MarketingCampaignAdType value )
+        {
+            return new MarketingCampaignAdTypeDto( value );
+        }
+
     }
 }

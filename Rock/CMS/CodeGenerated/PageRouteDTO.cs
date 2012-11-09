@@ -163,8 +163,19 @@ namespace Rock.Cms
         public static List<PageRouteDto> ToDto( this List<PageRoute> value )
         {
             List<PageRouteDto> result = new List<PageRouteDto>();
-            value.ForEach( a => result.Add( new PageRouteDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PageRouteDto ToDto( this PageRoute value )
+        {
+            return new PageRouteDto( value );
+        }
+
     }
 }

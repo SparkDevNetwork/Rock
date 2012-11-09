@@ -12,30 +12,31 @@ using Rock;
 using Rock.Cms;
 using Rock.Constants;
 using Rock.Core;
+using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Core.Attribute;
 
 public partial class MarketingCampaignAdTypes : RockBlock
 {
-    #region Child Grid ViewState
+    #region Child Grid States
 
     /// <summary>
-    /// Gets or sets the state of the attribute dto view.
+    /// Gets or sets the state of the attributes.
     /// </summary>
     /// <value>
-    /// The state of the attribute dto view.
+    /// The state of the attributes.
     /// </value>
-    private List<AttributeDto> AttributeDtoViewState
+    private List<AttributeDto> AttributesState
     {
         get
         {
-            return ViewState["AttributeDtoViewState"] as List<AttributeDto>;
+            return ViewState["AttributesState"] as List<AttributeDto>;
         }
 
         set
         {
-            ViewState["AttributeDtoViewState"] = value;
+            ViewState["AttributesState"] = value;
         }
     }
 
@@ -113,7 +114,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gMarketingCampaignAdType_Edit( object sender, RowEventArgs e )
     {
-        ShowEdit( (int)gMarketingCampaignAdType.DataKeys[e.RowIndex]["id"] );
+        ShowEdit( (int)e.RowKeyValue );
     }
 
     /// <summary>
@@ -124,7 +125,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     protected void gMarketingCampaignAdType_Delete( object sender, RowEventArgs e )
     {
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-        int marketingCampaignAdTypeId = (int)gMarketingCampaignAdType.DataKeys[e.RowIndex]["id"];
+        int marketingCampaignAdTypeId = (int)e.RowKeyValue;
 
         /* todo
         string errorMessage;
@@ -177,7 +178,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gMarketingCampaignAdAttributeType_Edit( object sender, RowEventArgs e )
     {
-        Guid attributeGuid = new Guid( gMarketingCampaignAdAttributeTypes.DataKeys[e.RowIndex]["Guid"].ToString() );
+        Guid attributeGuid = (Guid)e.RowKeyValue;
         gMarketingCampaignAdAttributeType_ShowEdit( attributeGuid );
     }
 
@@ -193,7 +194,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
         if ( attributeGuid != Guid.Empty )
         {
-            Attribute attribute = AttributeDtoViewState.First( a => a.Guid.Equals( attributeGuid ) ).ToModel();
+            Attribute attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) ).ToModel();
             lAttributeActionTitle.Text = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
             hfAttributeGuid.Value = attribute.Guid.ToString();
             tbAttributeKey.Text = attribute.Key;
@@ -227,11 +228,8 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// <exception cref="System.NotImplementedException"></exception>
     protected void gMarketingCampaignAdAttributeType_Delete( object sender, RowEventArgs e )
     {
-        Guid attributeGuid = new Guid( gMarketingCampaignAdAttributeTypes.DataKeys[e.RowIndex]["Guid"].ToString() );
-        List<Attribute> attributes = AttributeDtoViewState.ToModel();
-        var attribute = attributes.FirstOrDefault( a => a.Guid.Equals( attributeGuid ) );
-        attributes.Remove( attribute );
-        AttributeDtoViewState = attributes.ToDto();
+        Guid attributeGuid = (Guid)e.RowKeyValue;
+        AttributesState.RemoveDto<AttributeDto>( attributeGuid );
 
         BindMarketingCampaignAdAttributeTypeGrid();
     }
@@ -270,17 +268,8 @@ public partial class MarketingCampaignAdTypes : RockBlock
             return;
         }
 
-        List<Attribute> currentAttributes = AttributeDtoViewState.ToModel();
-
-        Attribute existingAttribute = currentAttributes.FirstOrDefault( a => a.Guid.Equals( attribute.Guid ) );
-        if ( existingAttribute != null )
-        {
-            currentAttributes.Remove( existingAttribute );
-        }
-
-        currentAttributes.Add( attribute );
-
-        AttributeDtoViewState = currentAttributes.ToDto();
+        AttributesState.RemoveDto<AttributeDto>( attribute.Guid );
+        AttributesState.Add( new AttributeDto( attribute ) );
 
         pnlDetails.Visible = true;
         pnlList.Visible = false;
@@ -306,7 +295,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// </summary>
     private void BindMarketingCampaignAdAttributeTypeGrid()
     {
-        gMarketingCampaignAdAttributeTypes.DataSource = AttributeDtoViewState.OrderBy( a => a.Name ).ToList();
+        gMarketingCampaignAdAttributeTypes.DataSource = AttributesState.OrderBy( a => a.Name ).ToList();
         gMarketingCampaignAdAttributeTypes.DataBind();
     }
 
@@ -363,52 +352,52 @@ public partial class MarketingCampaignAdTypes : RockBlock
             return;
         }
 
-        //TODO: Figure out Start/Commit/Rollback block
-
-        marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
-
-        // get it back to make sure we have a good Id for it for the Attributes
-        marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
-
-        // delete AdTypeAttributes that are no longer configured in the UI
-        AttributeService attributeService = new AttributeService();
-        var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable()
-            .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-            && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
-
-        var deletedAttributes = from attr in qry
-                                where !( from d in AttributeDtoViewState
-                                         select d.Guid ).Contains( attr.Guid )
-                                select attr;
-
-        deletedAttributes.ToList().ForEach( a =>
-            {
-                var attr = attributeService.Get( a.Guid );
-                attributeService.Delete( attr, CurrentPersonId );
-                attributeService.Save( attr, CurrentPersonId );
-            } );
-
-        // add/update the AdTypes that are assigned in the UI
-        foreach ( var item in AttributeDtoViewState )
+        RockTransactionScope.WrapTransaction( () =>
         {
-            Attribute adTypeAttribute = qry.FirstOrDefault( a => a.Guid.Equals( item.Guid ) );
-            if ( adTypeAttribute == null )
-            {
-                adTypeAttribute = item.ToModel();
-                attributeService.Add( adTypeAttribute, CurrentPersonId );
-            }
-            else
-            {
-                item.Id = adTypeAttribute.Id;
-                item.CopyToModel( adTypeAttribute );
-            }
+            marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
 
-            adTypeAttribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
-            adTypeAttribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
+            // get it back to make sure we have a good Id for it for the Attributes
+            marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
 
-            adTypeAttribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( marketingCampaignAdType.TypeName ).Id;
-            attributeService.Save( adTypeAttribute, CurrentPersonId );
-        }
+            // delete AdTypeAttributes that are no longer configured in the UI
+            AttributeService attributeService = new AttributeService();
+            var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
+
+            var deletedAttributes = from attr in qry
+                                    where !( from d in AttributesState
+                                             select d.Guid ).Contains( attr.Guid )
+                                    select attr;
+
+            deletedAttributes.ToList().ForEach( a =>
+                {
+                    var attr = attributeService.Get( a.Guid );
+                    attributeService.Delete( attr, CurrentPersonId );
+                    attributeService.Save( attr, CurrentPersonId );
+                } );
+
+            // add/update the AdTypes that are assigned in the UI
+            foreach ( var attributeState in AttributesState )
+            {
+                Attribute attribute = qry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                if ( attribute == null )
+                {
+                    attribute = attributeState.ToModel();
+                    attributeService.Add( attribute, CurrentPersonId );
+                }
+                else
+                {
+                    attributeState.Id = attribute.Id;
+                    attributeState.CopyToModel( attribute );
+                }
+
+                attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
+                attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
+                attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( marketingCampaignAdType.TypeName ).Id;
+                attributeService.Save( attribute, CurrentPersonId );
+            }
+        } );
 
         BindGrid();
         pnlDetails.Visible = false;
@@ -470,7 +459,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
         MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
         bool readOnly = false;
-        AttributeDtoViewState = new List<Attribute>().ToDto();
+        AttributesState = new List<Attribute>().ToDto();
 
         if ( marketingCampaignAdType != null )
         {
@@ -480,12 +469,11 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
             AttributeService attributeService = new AttributeService();
 
-            var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable();
+            var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
 
-            List<Attribute> adTypeAttributes = qry.Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) ).ToList();
-
-            AttributeDtoViewState = adTypeAttributes.ToDto();
+            AttributesState = qry.ToList().ToDto();
 
             readOnly = marketingCampaignAdType.IsSystem;
 

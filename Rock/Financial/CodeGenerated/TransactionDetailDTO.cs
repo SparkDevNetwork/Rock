@@ -179,8 +179,19 @@ namespace Rock.Financial
         public static List<TransactionDetailDto> ToDto( this List<TransactionDetail> value )
         {
             List<TransactionDetailDto> result = new List<TransactionDetailDto>();
-            value.ForEach( a => result.Add( new TransactionDetailDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static TransactionDetailDto ToDto( this TransactionDetail value )
+        {
+            return new TransactionDetailDto( value );
+        }
+
     }
 }

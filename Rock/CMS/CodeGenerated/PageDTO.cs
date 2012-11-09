@@ -275,8 +275,19 @@ namespace Rock.Cms
         public static List<PageDto> ToDto( this List<Page> value )
         {
             List<PageDto> result = new List<PageDto>();
-            value.ForEach( a => result.Add( new PageDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PageDto ToDto( this Page value )
+        {
+            return new PageDto( value );
+        }
+
     }
 }
