@@ -18,7 +18,7 @@ public partial class SiteMap : RockBlock
 
         List<Rock.Cms.Page> pageList = pageService.Queryable().ToList();
         string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
-        foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Name ) )
+        foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
             treeHtml += "<li>" + page.Name + Environment.NewLine;
             AddChildNodes( ref treeHtml, page, pageList );
@@ -36,12 +36,12 @@ public partial class SiteMap : RockBlock
     /// <param name="pageList">The page list.</param>
     protected void AddChildNodes( ref string nodeHtml, Rock.Cms.Page parentPage, List<Rock.Cms.Page> pageList )
     {
-        var childPages = pageList.Where( a => a.ParentPageId.Equals( parentPage.Id ) ).OrderBy( a => a.Order );
+        var childPages = pageList.Where( a => a.ParentPageId.Equals( parentPage.Id ) );
         if ( childPages.Count() > 0 )
         {
             nodeHtml += "<ul>" + Environment.NewLine;
 
-            foreach ( var childPage in childPages )
+            foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 string childNodeHtml = "<li>" + childPage.Name + Environment.NewLine;
                 if ( childPage.Blocks.Count > 0 )
