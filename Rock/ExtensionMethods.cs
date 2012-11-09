@@ -704,5 +704,71 @@ namespace Rock
         }
 
         #endregion
+
+        #region IEntity, IDto extensions
+        
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="id">The id.</param>
+        public static void RemoveEntity<T>( this List<T> list, int id ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+        }
+
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="guid">The GUID.</param>
+        public static void RemoveEntity<T>( this List<T> list, Guid guid ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+
+        }
+
+        /// <summary>
+        /// Removes the dto.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="id">The id.</param>
+        public static void RemoveDto<T>( this List<T> list, int id ) where T : Rock.Data.IDto
+        {
+            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+
+        }
+
+        /// <summary>
+        /// Removes the dto.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="guid">The GUID.</param>
+        public static void RemoveDto<T>( this List<T> list, Guid guid ) where T : Rock.Data.IDto
+        {
+            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+        }
+        
+        #endregion
     }
 }

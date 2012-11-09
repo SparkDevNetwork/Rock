@@ -39,18 +39,18 @@
                     <div class="span6">
                         <Rock:Grid ID="gMarketingCampaignAds" runat="server" AllowPaging="false" ShowActionExcelExport="false">
                             <Columns>
-                                <asp:BoundField DataField="Value.Name" HeaderText="Ad Type" />
-                                <asp:BoundField DataField="Value.DateText" HeaderText="Date" />
-                                <asp:BoundField DataField="Value.StatusText" HeaderText="Approval Status" />
-                                <asp:BoundField DataField="Value.Priority" HeaderText="Priority" />
+                                <asp:BoundField DataField="Name" HeaderText="Ad Type" />
+                                <asp:BoundField DataField="StartDate" HeaderText="Date" />
+                                <asp:BoundField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" />
+                                <asp:BoundField DataField="Priority" HeaderText="Priority" />
                                 <Rock:EditField OnClick="gMarketingCampaignAds_Edit" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
                             </Columns>
                         </Rock:Grid>
                         <Rock:Grid ID="gMarketingCampaignAudiences" runat="server" AllowPaging="false" ShowActionExcelExport="false">
                             <Columns>
-                                <asp:BoundField DataField="Value.AudienceTypeValueName" HeaderText="Audience" />
-                                <Rock:BoolField DataField="Value.IsPrimary" HeaderText="Primary" />
+                                <asp:BoundField DataField="Name" HeaderText="Audience" />
+                                <Rock:BoolField DataField="IsPrimary" HeaderText="Primary" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                             </Columns>
                         </Rock:Grid>
@@ -72,7 +72,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlMarketingCampaignAudiencePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlMarketingCampaignAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAudience, Rock" PropertyName="Name" LabelText="Select Audiences" />
+            <Rock:DataDropDownList ID="ddlMarketingCampaignAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAudienceDto, Rock" PropertyName="Name" LabelText="Select Audiences" />
             <Rock:LabeledCheckBox ID="ckMarketingCampaignAudienceIsPrimary" runat="server" LabelText="Primary Audience" />
 
             <div class="actions">
@@ -92,7 +92,7 @@
 
         <asp:Panel ID="pnlMarketingCampaignAdEditor" runat="server" Visible="false">
             <Rock:LabeledTextBox ID="tbCampaignTitle" runat="server" LabelText="Campaign Title" ReadOnly="true" />
-            <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAdType, Rock" PropertyName="Name" LabelText="Ad Type" />
+            <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAdTypeDto, Rock" PropertyName="Name" LabelText="Ad Type" />
             <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
             <Rock:LabeledDropDownList ID="ddlMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
             <!-- ToDo: Better Person picker -->

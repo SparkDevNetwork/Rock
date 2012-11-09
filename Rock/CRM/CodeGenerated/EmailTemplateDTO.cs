@@ -219,8 +219,19 @@ namespace Rock.Crm
         public static List<EmailTemplateDto> ToDto( this List<EmailTemplate> value )
         {
             List<EmailTemplateDto> result = new List<EmailTemplateDto>();
-            value.ForEach( a => result.Add( new EmailTemplateDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EmailTemplateDto ToDto( this EmailTemplate value )
+        {
+            return new EmailTemplateDto( value );
+        }
+
     }
 }

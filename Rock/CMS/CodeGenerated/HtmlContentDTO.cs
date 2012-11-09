@@ -211,8 +211,19 @@ namespace Rock.Cms
         public static List<HtmlContentDto> ToDto( this List<HtmlContent> value )
         {
             List<HtmlContentDto> result = new List<HtmlContentDto>();
-            value.ForEach( a => result.Add( new HtmlContentDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static HtmlContentDto ToDto( this HtmlContent value )
+        {
+            return new HtmlContentDto( value );
+        }
+
     }
 }

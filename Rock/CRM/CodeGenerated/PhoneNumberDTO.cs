@@ -203,8 +203,19 @@ namespace Rock.Crm
         public static List<PhoneNumberDto> ToDto( this List<PhoneNumber> value )
         {
             List<PhoneNumberDto> result = new List<PhoneNumberDto>();
-            value.ForEach( a => result.Add( new PhoneNumberDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PhoneNumberDto ToDto( this PhoneNumber value )
+        {
+            return new PhoneNumberDto( value );
+        }
+
     }
 }

@@ -195,8 +195,19 @@ namespace Rock.Crm
         public static List<GroupRoleDto> ToDto( this List<GroupRole> value )
         {
             List<GroupRoleDto> result = new List<GroupRoleDto>();
-            value.ForEach( a => result.Add( new GroupRoleDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupRoleDto ToDto( this GroupRole value )
+        {
+            return new GroupRoleDto( value );
+        }
+
     }
 }

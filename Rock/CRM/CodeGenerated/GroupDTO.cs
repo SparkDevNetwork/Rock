@@ -203,8 +203,19 @@ namespace Rock.Crm
         public static List<GroupDto> ToDto( this List<Group> value )
         {
             List<GroupDto> result = new List<GroupDto>();
-            value.ForEach( a => result.Add( new GroupDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupDto ToDto( this Group value )
+        {
+            return new GroupDto( value );
+        }
+
     }
 }
