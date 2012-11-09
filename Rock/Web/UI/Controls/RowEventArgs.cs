@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -22,12 +23,33 @@ namespace Rock.Web.UI.Controls
         public int RowIndex { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RowEventArgs"/> class.
+        /// Gets the row key value.
         /// </summary>
-        /// <param name="rowIndex">Index of the row.</param>
-        public RowEventArgs( int rowIndex )
+        /// <value>
+        /// The row key value.
+        /// </value>
+        public object RowKeyValue { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        public RowEventArgs( GridViewRow row )
         {
-            RowIndex = rowIndex;
+            if ( row != null )
+            {
+                RowIndex = row.RowIndex;
+
+                Grid grid = ( row.Parent.Parent as Grid );
+                if ( grid.DataKeyNames.Length > 0 )
+                {
+                    RowKeyValue = grid.DataKeys[row.RowIndex].Value;
+                }
+            }
+            else
+            {
+                RowIndex = -1;
+            }
         }
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,15 +21,25 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for EntityType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class EntityTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string FriendlyName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -105,5 +116,58 @@ namespace Rock.Core
                 entityType.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EntityTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityType ToModel( this EntityTypeDto value )
+        {
+            EntityType result = new EntityType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityType> ToModel( this List<EntityTypeDto> value )
+        {
+            List<EntityType> result = new List<EntityType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityTypeDto> ToDto( this List<EntityType> value )
+        {
+            List<EntityTypeDto> result = new List<EntityTypeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityTypeDto ToDto( this EntityType value )
+        {
+            return new EntityTypeDto( value );
+        }
+
     }
 }

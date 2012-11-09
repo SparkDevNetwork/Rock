@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,26 +21,69 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for Metric object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class MetricDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool Type { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Category { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Title { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Subtitle { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MinValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? MaxValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CollectionFrequencyId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastCollected { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Source { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string SourceSQL { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -160,5 +204,58 @@ namespace Rock.Core
                 metric.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class MetricDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Metric ToModel( this MetricDto value )
+        {
+            Metric result = new Metric();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Metric> ToModel( this List<MetricDto> value )
+        {
+            List<Metric> result = new List<Metric>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MetricDto> ToDto( this List<Metric> value )
+        {
+            List<MetricDto> result = new List<MetricDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MetricDto ToDto( this Metric value )
+        {
+            return new MetricDto( value );
+        }
+
     }
 }

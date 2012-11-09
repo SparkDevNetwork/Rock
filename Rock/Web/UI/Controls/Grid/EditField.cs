@@ -94,7 +94,7 @@ namespace Rock.Web.UI.Controls
             if ( LinkButtonClick != null )
             {
                 GridViewRow row = ( GridViewRow )( ( LinkButton )sender ).Parent.Parent;
-                RowEventArgs args = new RowEventArgs( row.RowIndex );
+                RowEventArgs args = new RowEventArgs( row );
                 LinkButtonClick( sender, args );
             }
         }

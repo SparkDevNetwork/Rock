@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for Audit object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class AuditDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Title { get; set; }
+
+        /// <summary />
+        [DataMember]
         public AuditType AuditType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Properties { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? DateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -130,5 +156,58 @@ namespace Rock.Core
                 audit.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AuditDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Audit ToModel( this AuditDto value )
+        {
+            Audit result = new Audit();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Audit> ToModel( this List<AuditDto> value )
+        {
+            List<Audit> result = new List<Audit>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AuditDto> ToDto( this List<Audit> value )
+        {
+            List<AuditDto> result = new List<AuditDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AuditDto ToDto( this Audit value )
+        {
+            return new AuditDto( value );
+        }
+
     }
 }

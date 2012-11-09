@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,17 +21,33 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for BlockType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class BlockTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Path { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -115,5 +132,58 @@ namespace Rock.Cms
                 blockType.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class BlockTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BlockType ToModel( this BlockTypeDto value )
+        {
+            BlockType result = new BlockType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<BlockType> ToModel( this List<BlockTypeDto> value )
+        {
+            List<BlockType> result = new List<BlockType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<BlockTypeDto> ToDto( this List<BlockType> value )
+        {
+            List<BlockTypeDto> result = new List<BlockTypeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BlockTypeDto ToDto( this BlockType value )
+        {
+            return new BlockTypeDto( value );
+        }
+
     }
 }

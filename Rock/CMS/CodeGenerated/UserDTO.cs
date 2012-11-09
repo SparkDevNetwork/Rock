@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,29 +21,81 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for User object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class UserDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public AuthenticationServiceType ServiceType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ServiceName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string UserName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Password { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsConfirmed { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastActivityDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastLoginDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastPasswordChangedDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? CreationDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsOnLine { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsLockedOut { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastLockedOutDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ApiKey { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -175,5 +228,58 @@ namespace Rock.Cms
                 user.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class UserDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static User ToModel( this UserDto value )
+        {
+            User result = new User();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<User> ToModel( this List<UserDto> value )
+        {
+            List<User> result = new List<User>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<UserDto> ToDto( this List<User> value )
+        {
+            List<UserDto> result = new List<UserDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static UserDto ToDto( this User value )
+        {
+            return new UserDto( value );
+        }
+
     }
 }

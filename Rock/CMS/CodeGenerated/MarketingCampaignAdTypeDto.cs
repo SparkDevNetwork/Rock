@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,16 +21,29 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for MarketingCampaignAdType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class MarketingCampaignAdTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateRangeTypeEnum DateRangeType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -110,5 +124,58 @@ namespace Rock.Cms
                 marketingCampaignAdType.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class MarketingCampaignAdTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAdType ToModel( this MarketingCampaignAdTypeDto value )
+        {
+            MarketingCampaignAdType result = new MarketingCampaignAdType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignAdType> ToModel( this List<MarketingCampaignAdTypeDto> value )
+        {
+            List<MarketingCampaignAdType> result = new List<MarketingCampaignAdType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignAdTypeDto> ToDto( this List<MarketingCampaignAdType> value )
+        {
+            List<MarketingCampaignAdTypeDto> result = new List<MarketingCampaignAdTypeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAdTypeDto ToDto( this MarketingCampaignAdType value )
+        {
+            return new MarketingCampaignAdTypeDto( value );
+        }
+
     }
 }

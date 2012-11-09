@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,15 +21,25 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for MarketingCampaignCampus object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class MarketingCampaignCampusDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int MarketingCampaignId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int CampusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -105,5 +116,58 @@ namespace Rock.Cms
                 marketingCampaignCampus.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class MarketingCampaignCampusDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignCampus ToModel( this MarketingCampaignCampusDto value )
+        {
+            MarketingCampaignCampus result = new MarketingCampaignCampus();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignCampus> ToModel( this List<MarketingCampaignCampusDto> value )
+        {
+            List<MarketingCampaignCampus> result = new List<MarketingCampaignCampus>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<MarketingCampaignCampusDto> ToDto( this List<MarketingCampaignCampus> value )
+        {
+            List<MarketingCampaignCampusDto> result = new List<MarketingCampaignCampusDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignCampusDto ToDto( this MarketingCampaignCampus value )
+        {
+            return new MarketingCampaignCampusDto( value );
+        }
+
     }
 }

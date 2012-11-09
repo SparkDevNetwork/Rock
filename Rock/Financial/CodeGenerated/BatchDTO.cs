@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for Batch object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class BatchDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? BatchDate { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsClosed { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CampusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Entity { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string ForeignReference { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -130,5 +156,58 @@ namespace Rock.Financial
                 batch.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class BatchDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Batch ToModel( this BatchDto value )
+        {
+            Batch result = new Batch();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Batch> ToModel( this List<BatchDto> value )
+        {
+            List<Batch> result = new List<Batch>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<BatchDto> ToDto( this List<Batch> value )
+        {
+            List<BatchDto> result = new List<BatchDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BatchDto ToDto( this Batch value )
+        {
+            return new BatchDto( value );
+        }
+
     }
 }

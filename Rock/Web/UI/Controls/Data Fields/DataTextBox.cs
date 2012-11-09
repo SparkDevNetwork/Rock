@@ -115,6 +115,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            base.MaxLength = dataValidator.ValueMaxLength;
 
             RenderBase( writer );
 

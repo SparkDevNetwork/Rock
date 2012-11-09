@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Cms
     /// <summary>
     /// Data Transfer Object for Auth object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class AuthDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Action { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string AllowOrDeny { get; set; }
+
+        /// <summary />
+        [DataMember]
         public SpecialRole SpecialRole { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? PersonId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? GroupId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -135,5 +164,58 @@ namespace Rock.Cms
                 auth.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AuthDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Auth ToModel( this AuthDto value )
+        {
+            Auth result = new Auth();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Auth> ToModel( this List<AuthDto> value )
+        {
+            List<Auth> result = new List<Auth>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AuthDto> ToDto( this List<Auth> value )
+        {
+            List<AuthDto> result = new List<AuthDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AuthDto ToDto( this Auth value )
+        {
+            return new AuthDto( value );
+        }
+
     }
 }

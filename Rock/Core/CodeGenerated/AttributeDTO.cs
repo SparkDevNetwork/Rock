@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,27 +21,73 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for Attribute object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class AttributeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int FieldTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Key { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Category { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsGridColumn { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string DefaultValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsMultiValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsRequired { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -165,5 +212,58 @@ namespace Rock.Core
                 attribute.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AttributeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Attribute ToModel( this AttributeDto value )
+        {
+            Attribute result = new Attribute();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Attribute> ToModel( this List<AttributeDto> value )
+        {
+            List<Attribute> result = new List<Attribute>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<AttributeDto> ToDto( this List<Attribute> value )
+        {
+            List<AttributeDto> result = new List<AttributeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static AttributeDto ToDto( this Attribute value )
+        {
+            return new AttributeDto( value );
+        }
+
     }
 }

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,18 +21,37 @@ namespace Rock.Financial
     /// <summary>
     /// Data Transfer Object for TransactionDetail object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class TransactionDetailDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int? TransactionId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Entity { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public decimal Amount { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Summary { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -120,5 +140,58 @@ namespace Rock.Financial
                 transactionDetail.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class TransactionDetailDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static TransactionDetail ToModel( this TransactionDetailDto value )
+        {
+            TransactionDetail result = new TransactionDetail();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<TransactionDetail> ToModel( this List<TransactionDetailDto> value )
+        {
+            List<TransactionDetail> result = new List<TransactionDetail>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<TransactionDetailDto> ToDto( this List<TransactionDetail> value )
+        {
+            List<TransactionDetailDto> result = new List<TransactionDetailDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static TransactionDetailDto ToDto( this TransactionDetail value )
+        {
+            return new TransactionDetailDto( value );
+        }
+
     }
 }

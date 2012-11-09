@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Crm
     /// <summary>
     /// Data Transfer Object for Group object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class GroupDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ParentGroupId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int GroupTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CampusId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsSecurityRole { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsActive { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -135,5 +164,58 @@ namespace Rock.Crm
                 group.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GroupDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Group ToModel( this GroupDto value )
+        {
+            Group result = new Group();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Group> ToModel( this List<GroupDto> value )
+        {
+            List<Group> result = new List<Group>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<GroupDto> ToDto( this List<Group> value )
+        {
+            List<GroupDto> result = new List<GroupDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupDto ToDto( this Group value )
+        {
+            return new GroupDto( value );
+        }
+
     }
 }
