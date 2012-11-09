@@ -166,8 +166,10 @@ namespace Rock.Data
         /// Saves any changes made in the current context
         /// </summary>
         /// <param name="PersonId">The person id.</param>
+        /// <param name="changes">The changes.</param>
         /// <param name="audits">The audits.</param>
+        /// <param name="messages">The messages.</param>
         /// <returns></returns>
-        List<Rock.Core.EntityChange> Save( int? PersonId, List<Rock.Core.AuditDto> audits);
+        bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages);
     }
 }
