@@ -41,10 +41,10 @@ namespace Rock.Util
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="action">The workflow action.</param>
-        /// <param name="entity">Optional entity that triggered the workflow.</param>
+        /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( Action action, IEntity entity, out List<string> errorMessages );
+        public abstract Boolean Execute( Action action, IDto dto, out List<string> errorMessages );
 
         /// <summary>
         /// Gets the attribute value for the action

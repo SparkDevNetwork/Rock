@@ -27,10 +27,10 @@ namespace Rock.Util.WorkflowAction
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="entity">The entity.</param>
+        /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( Action action, IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Action action, IDto dto, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -38,9 +38,9 @@ namespace Rock.Util.WorkflowAction
             var recipients = new Dictionary<string, Dictionary<string, object>>();
             var mergeObjects = new Dictionary<string, object>();
 
-            if ( entity != null )
+            if ( dto != null )
             {
-                mergeObjects.Add( "Entity", entity );
+                mergeObjects.Add( "Entity", dto.ToDictionary() );
             }
 
             recipients.Add( recipientEmail, mergeObjects );

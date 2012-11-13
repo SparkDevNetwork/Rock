@@ -325,7 +325,7 @@ namespace Rock.Data
                 var workflow = Rock.Util.Workflow.Activate( trigger.WorkflowType, trigger.WorkflowName );
 
                 List<string> workflowErrors;
-                if ( !workflow.Process( entity, out workflowErrors ) )
+                if ( !workflow.Process( entity.Dto, out workflowErrors ) )
                 {
                     ErrorMessages.AddRange( workflowErrors );
                     return false;
