@@ -40,7 +40,7 @@ namespace Rock.Util.WorkflowAction
 
             if ( dto != null )
             {
-                mergeObjects.Add( "Entity", dto.ToDictionary() );
+                mergeObjects.Add( "Entity", dto );
             }
 
             recipients.Add( recipientEmail, mergeObjects );

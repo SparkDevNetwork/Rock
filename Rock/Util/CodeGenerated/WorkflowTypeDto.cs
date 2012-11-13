@@ -23,7 +23,7 @@ namespace Rock.Util
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class WorkflowTypeDto : IDto
+    public partial class WorkflowTypeDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -196,6 +196,16 @@ namespace Rock.Util
                 workflowType.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>

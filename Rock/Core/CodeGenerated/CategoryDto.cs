@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for Category object
     /// </summary>
-    public partial class CategoryDto : IDto
+    [Serializable]
+    [DataContract]
+    public partial class CategoryDto : IDto, DotLiquid.ILiquidizable
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ParentCategoryId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FileId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -130,5 +156,68 @@ namespace Rock.Core
                 category.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class CategoryDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Category ToModel( this CategoryDto value )
+        {
+            Category result = new Category();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Category> ToModel( this List<CategoryDto> value )
+        {
+            List<Category> result = new List<Category>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<CategoryDto> ToDto( this List<Category> value )
+        {
+            List<CategoryDto> result = new List<CategoryDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static CategoryDto ToDto( this Category value )
+        {
+            return new CategoryDto( value );
+        }
+
     }
 }

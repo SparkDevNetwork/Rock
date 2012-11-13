@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,20 +21,45 @@ namespace Rock.Core
     /// <summary>
     /// Data Transfer Object for EntityTypeWorkflowTrigger object
     /// </summary>
-    public partial class EntityTypeWorkflowTriggerDto : IDto
+    [Serializable]
+    [DataContract]
+    public partial class EntityTypeWorkflowTriggerDto : IDto, DotLiquid.ILiquidizable
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int WorkflowTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public EntityTriggerType EntityTriggerType { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string WorkflowName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -130,5 +156,68 @@ namespace Rock.Core
                 entityTypeWorkflowTrigger.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EntityTypeWorkflowTriggerDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityTypeWorkflowTrigger ToModel( this EntityTypeWorkflowTriggerDto value )
+        {
+            EntityTypeWorkflowTrigger result = new EntityTypeWorkflowTrigger();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityTypeWorkflowTrigger> ToModel( this List<EntityTypeWorkflowTriggerDto> value )
+        {
+            List<EntityTypeWorkflowTrigger> result = new List<EntityTypeWorkflowTrigger>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<EntityTypeWorkflowTriggerDto> ToDto( this List<EntityTypeWorkflowTrigger> value )
+        {
+            List<EntityTypeWorkflowTriggerDto> result = new List<EntityTypeWorkflowTriggerDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityTypeWorkflowTriggerDto ToDto( this EntityTypeWorkflowTrigger value )
+        {
+            return new EntityTypeWorkflowTriggerDto( value );
+        }
+
     }
 }
