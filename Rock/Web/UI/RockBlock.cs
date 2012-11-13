@@ -531,10 +531,13 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read("Rock.Cms.Block").Id;
 
-            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", 
-                this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                this.CurrentBlock.ReloadAttributeValues();
+                if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
+                    this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+                {
+                    this.CurrentBlock.ReloadAttributeValues();
+                }
             }
         }
 

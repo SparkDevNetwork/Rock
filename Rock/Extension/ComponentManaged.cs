@@ -36,7 +36,7 @@ namespace Rock.Extension
     /// </summary>
     [BlockProperty( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
     [BlockProperty( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
-    public abstract class Component : Rock.Attribute.IHasAttributes
+    public abstract class ComponentManaged : Rock.Attribute.IHasAttributes
     {
         /// <summary>
         /// Gets the id.
@@ -144,11 +144,11 @@ namespace Rock.Extension
 
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="Component"/> class.
+        /// Initializes a new instance of the <see cref="ComponentManaged"/> class.
         /// </summary>
-        public Component()
+        public ComponentManaged()
         {
-            Rock.Attribute.Helper.LoadAttributes( this );
+            this.LoadAttributes();
         }
     }
 }

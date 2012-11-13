@@ -75,5 +75,13 @@ namespace Rock.Data
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
         bool IsValid { get; }
+
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <value>
+        /// The dto.
+        /// </value>
+        IDto Dto { get; }
     }
 }

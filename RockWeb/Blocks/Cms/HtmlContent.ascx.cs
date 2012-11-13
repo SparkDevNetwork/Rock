@@ -205,14 +205,23 @@ namespace RockWeb.Blocks.Cms
 
                 content.Content = txtHtmlContentEditor.Text;
 
-                service.Save( content, CurrentPersonId );
-
-                // flush cache content 
-                this.FlushCacheItem( entityValue );
+                if ( service.Save( content, CurrentPersonId ) )
+                {
+                    // flush cache content 
+                    this.FlushCacheItem( entityValue );
+                    ShowView();
+                }
+                else
+                {
+                    // TODO: service.ErrorMessages;
+                }
 
             }
 
-            ShowView();
+            else
+            {
+                ShowView();
+            }
         }
 
         #endregion

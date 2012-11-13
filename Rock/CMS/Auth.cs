@@ -117,6 +117,15 @@ namespace Rock.Cms
         public virtual Core.EntityType EntityType { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// The default authorization for a specific action.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -158,6 +167,7 @@ namespace Rock.Cms
 
             return sb.ToString();
         }
+
     }
 
     /// <summary>

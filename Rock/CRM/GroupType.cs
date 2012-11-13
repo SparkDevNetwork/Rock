@@ -112,6 +112,15 @@ namespace Rock.Crm
         public virtual ICollection<GroupTypeLocationType> LocationTypes { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

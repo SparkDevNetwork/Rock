@@ -172,6 +172,14 @@ namespace Rock.Data
         public DbSet<Rock.Core.Audit> Audits { get; set; }
 
         /// <summary>
+        /// Gets or sets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public DbSet<Rock.Core.Category> Categories { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -364,12 +372,76 @@ namespace Rock.Data
         #region Util
 
         /// <summary>
+        /// Gets or sets the actions.
+        /// </summary>
+        /// <value>
+        /// The actions.
+        /// </value>
+        public DbSet<Rock.Util.Action> Actions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action types.
+        /// </summary>
+        /// <value>
+        /// The action types.
+        /// </value>
+        public DbSet<Rock.Util.ActionType> ActionTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the activities.
+        /// </summary>
+        /// <value>
+        /// The activities.
+        /// </value>
+        public DbSet<Rock.Util.Activity> Activities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the activity types.
+        /// </summary>
+        /// <value>
+        /// The activity types.
+        /// </value>
+        public DbSet<Rock.Util.ActivityType> ActivityTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Jobs.
         /// </summary>
         /// <value>
         /// the Jobs.
         /// </value>
         public DbSet<Rock.Util.Job> Jobs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflows.
+        /// </summary>
+        /// <value>
+        /// The workflows.
+        /// </value>
+        public DbSet<Rock.Util.Workflow> Workflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow logs.
+        /// </summary>
+        /// <value>
+        /// The workflow logs.
+        /// </value>
+        public DbSet<Rock.Util.WorkflowLog> WorkflowLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The entity type workflow triggers.
+        /// </value>
+        public DbSet<Rock.Util.WorkflowTrigger> WorkflowTriggers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow types.
+        /// </summary>
+        /// <value>
+        /// The workflow types.
+        /// </value>
+        public DbSet<Rock.Util.WorkflowType> WorkflowTypes { get; set; }
 
         #endregion
 
@@ -477,6 +549,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.AuditConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Core.CategoryConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
@@ -508,7 +581,15 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
 
+            modelBuilder.Configurations.Add( new Rock.Util.ActionConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.ActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.ActivityConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.ActivityTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.WorkflowConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.WorkflowLogConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTriggerConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTypeConfiguration() );
         }
     }
 }

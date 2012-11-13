@@ -23,7 +23,7 @@ namespace Rock.Cms
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MarketingCampaignAdDto : IDto
+    public partial class MarketingCampaignAdDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -164,6 +164,16 @@ namespace Rock.Cms
                 marketingCampaignAd.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>

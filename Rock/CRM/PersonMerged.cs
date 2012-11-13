@@ -50,6 +50,15 @@ namespace Rock.Crm
         }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
