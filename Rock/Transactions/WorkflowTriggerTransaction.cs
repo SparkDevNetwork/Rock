@@ -9,8 +9,8 @@ using System.Linq;
 using System.Web;
 using System.IO;
 
-using Rock.Core;
 using Rock.Data;
+using Rock.Util;
 
 namespace Rock.Transactions
 {
@@ -25,7 +25,7 @@ namespace Rock.Transactions
         /// <value>
         /// The workflow trigger.
         /// </value>
-        public EntityTypeWorkflowTrigger Trigger { get; set; }
+        public WorkflowTriggerDto Trigger { get; set; }
 
         /// <summary>
         /// Gets or sets the dto entity.
@@ -50,16 +50,22 @@ namespace Rock.Transactions
         {
             if ( Trigger != null )
             {
-                var workflow = Rock.Util.Workflow.Activate( Trigger.WorkflowType, Trigger.WorkflowName );
+                var workflowTypeService = new WorkflowTypeService();
+                var workflowType = workflowTypeService.Get( Trigger.WorkflowTypeId );
 
-                List<string> workflowErrors;
-                if (workflow.Process( Dto, out workflowErrors ) )
+                if ( workflowType != null )
                 {
-                    if ( Trigger.WorkflowType.IsPersisted )
+                    var workflow = Rock.Util.Workflow.Activate( workflowType, Trigger.WorkflowName );
+
+                    List<string> workflowErrors;
+                    if ( workflow.Process( Dto, out workflowErrors ) )
                     {
-                        var workflowService = new Rock.Util.WorkflowService();
-                        workflowService.Add( workflow, PersonId );
-                        workflowService.Save( workflow, PersonId );
+                        if ( workflowType.IsPersisted )
+                        {
+                            var workflowService = new Rock.Util.WorkflowService();
+                            workflowService.Add( workflow, PersonId );
+                            workflowService.Save( workflow, PersonId );
+                        }
                     }
                 }
             }

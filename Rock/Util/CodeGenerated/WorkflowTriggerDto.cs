@@ -16,14 +16,14 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Util
 {
     /// <summary>
-    /// Data Transfer Object for EntityTypeWorkflowTrigger object
+    /// Data Transfer Object for WorkflowTrigger object
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class EntityTypeWorkflowTriggerDto : IDto, DotLiquid.ILiquidizable
+    public partial class WorkflowTriggerDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -47,7 +47,7 @@ namespace Rock.Core
 
         /// <summary />
         [DataMember]
-        public EntityTriggerType EntityTriggerType { get; set; }
+        public WorkflowTriggerType WorkflowTriggerType { get; set; }
 
         /// <summary />
         [DataMember]
@@ -64,17 +64,17 @@ namespace Rock.Core
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
-        public EntityTypeWorkflowTriggerDto ()
+        public WorkflowTriggerDto ()
         {
         }
 
         /// <summary>
         /// Instantiates a new DTO object from the entity
         /// </summary>
-        /// <param name="entityTypeWorkflowTrigger"></param>
-        public EntityTypeWorkflowTriggerDto ( EntityTypeWorkflowTrigger entityTypeWorkflowTrigger )
+        /// <param name="workflowTrigger"></param>
+        public WorkflowTriggerDto ( WorkflowTrigger workflowTrigger )
         {
-            CopyFromModel( entityTypeWorkflowTrigger );
+            CopyFromModel( workflowTrigger );
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Rock.Core
             dictionary.Add( "EntityTypeQualifierColumn", this.EntityTypeQualifierColumn );
             dictionary.Add( "EntityTypeQualifierValue", this.EntityTypeQualifierValue );
             dictionary.Add( "WorkflowTypeId", this.WorkflowTypeId );
-            dictionary.Add( "EntityTriggerType", this.EntityTriggerType );
+            dictionary.Add( "WorkflowTriggerType", this.WorkflowTriggerType );
             dictionary.Add( "WorkflowName", this.WorkflowName );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
@@ -108,7 +108,7 @@ namespace Rock.Core
             expando.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
             expando.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
             expando.WorkflowTypeId = this.WorkflowTypeId;
-            expando.EntityTriggerType = this.EntityTriggerType;
+            expando.WorkflowTriggerType = this.WorkflowTriggerType;
             expando.WorkflowName = this.WorkflowName;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
@@ -121,18 +121,18 @@ namespace Rock.Core
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is EntityTypeWorkflowTrigger )
+            if ( model is WorkflowTrigger )
             {
-                var entityTypeWorkflowTrigger = (EntityTypeWorkflowTrigger)model;
-                this.IsSystem = entityTypeWorkflowTrigger.IsSystem;
-                this.EntityTypeId = entityTypeWorkflowTrigger.EntityTypeId;
-                this.EntityTypeQualifierColumn = entityTypeWorkflowTrigger.EntityTypeQualifierColumn;
-                this.EntityTypeQualifierValue = entityTypeWorkflowTrigger.EntityTypeQualifierValue;
-                this.WorkflowTypeId = entityTypeWorkflowTrigger.WorkflowTypeId;
-                this.EntityTriggerType = entityTypeWorkflowTrigger.EntityTriggerType;
-                this.WorkflowName = entityTypeWorkflowTrigger.WorkflowName;
-                this.Id = entityTypeWorkflowTrigger.Id;
-                this.Guid = entityTypeWorkflowTrigger.Guid;
+                var workflowTrigger = (WorkflowTrigger)model;
+                this.IsSystem = workflowTrigger.IsSystem;
+                this.EntityTypeId = workflowTrigger.EntityTypeId;
+                this.EntityTypeQualifierColumn = workflowTrigger.EntityTypeQualifierColumn;
+                this.EntityTypeQualifierValue = workflowTrigger.EntityTypeQualifierValue;
+                this.WorkflowTypeId = workflowTrigger.WorkflowTypeId;
+                this.WorkflowTriggerType = workflowTrigger.WorkflowTriggerType;
+                this.WorkflowName = workflowTrigger.WorkflowName;
+                this.Id = workflowTrigger.Id;
+                this.Guid = workflowTrigger.Guid;
             }
         }
 
@@ -142,18 +142,18 @@ namespace Rock.Core
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is EntityTypeWorkflowTrigger )
+            if ( model is WorkflowTrigger )
             {
-                var entityTypeWorkflowTrigger = (EntityTypeWorkflowTrigger)model;
-                entityTypeWorkflowTrigger.IsSystem = this.IsSystem;
-                entityTypeWorkflowTrigger.EntityTypeId = this.EntityTypeId;
-                entityTypeWorkflowTrigger.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
-                entityTypeWorkflowTrigger.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
-                entityTypeWorkflowTrigger.WorkflowTypeId = this.WorkflowTypeId;
-                entityTypeWorkflowTrigger.EntityTriggerType = this.EntityTriggerType;
-                entityTypeWorkflowTrigger.WorkflowName = this.WorkflowName;
-                entityTypeWorkflowTrigger.Id = this.Id;
-                entityTypeWorkflowTrigger.Guid = this.Guid;
+                var workflowTrigger = (WorkflowTrigger)model;
+                workflowTrigger.IsSystem = this.IsSystem;
+                workflowTrigger.EntityTypeId = this.EntityTypeId;
+                workflowTrigger.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
+                workflowTrigger.EntityTypeQualifierValue = this.EntityTypeQualifierValue;
+                workflowTrigger.WorkflowTypeId = this.WorkflowTypeId;
+                workflowTrigger.WorkflowTriggerType = this.WorkflowTriggerType;
+                workflowTrigger.WorkflowName = this.WorkflowName;
+                workflowTrigger.Id = this.Id;
+                workflowTrigger.Guid = this.Guid;
             }
         }
 
@@ -171,16 +171,16 @@ namespace Rock.Core
     /// <summary>
     /// 
     /// </summary>
-    public static class EntityTypeWorkflowTriggerDtoExtension
+    public static class WorkflowTriggerDtoExtension
     {
         /// <summary>
         /// To the model.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static EntityTypeWorkflowTrigger ToModel( this EntityTypeWorkflowTriggerDto value )
+        public static WorkflowTrigger ToModel( this WorkflowTriggerDto value )
         {
-            EntityTypeWorkflowTrigger result = new EntityTypeWorkflowTrigger();
+            WorkflowTrigger result = new WorkflowTrigger();
             value.CopyToModel( result );
             return result;
         }
@@ -190,9 +190,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<EntityTypeWorkflowTrigger> ToModel( this List<EntityTypeWorkflowTriggerDto> value )
+        public static List<WorkflowTrigger> ToModel( this List<WorkflowTriggerDto> value )
         {
-            List<EntityTypeWorkflowTrigger> result = new List<EntityTypeWorkflowTrigger>();
+            List<WorkflowTrigger> result = new List<WorkflowTrigger>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -202,9 +202,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<EntityTypeWorkflowTriggerDto> ToDto( this List<EntityTypeWorkflowTrigger> value )
+        public static List<WorkflowTriggerDto> ToDto( this List<WorkflowTrigger> value )
         {
-            List<EntityTypeWorkflowTriggerDto> result = new List<EntityTypeWorkflowTriggerDto>();
+            List<WorkflowTriggerDto> result = new List<WorkflowTriggerDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
@@ -214,9 +214,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static EntityTypeWorkflowTriggerDto ToDto( this EntityTypeWorkflowTrigger value )
+        public static WorkflowTriggerDto ToDto( this WorkflowTrigger value )
         {
-            return new EntityTypeWorkflowTriggerDto( value );
+            return new WorkflowTriggerDto( value );
         }
 
     }

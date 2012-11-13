@@ -59,10 +59,6 @@ namespace Rock.Util
 
         /// <summary />
         [DataMember]
-        public int? EntryActivityTypeId { get; set; }
-
-        /// <summary />
-        [DataMember]
         public int? ProcessingIntervalSeconds { get; set; }
 
         /// <summary />
@@ -112,7 +108,6 @@ namespace Rock.Util
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "FileId", this.FileId );
             dictionary.Add( "WorkTerm", this.WorkTerm );
-            dictionary.Add( "EntryActivityTypeId", this.EntryActivityTypeId );
             dictionary.Add( "ProcessingIntervalSeconds", this.ProcessingIntervalSeconds );
             dictionary.Add( "IsPersisted", this.IsPersisted );
             dictionary.Add( "LoggingLevel", this.LoggingLevel );
@@ -136,7 +131,6 @@ namespace Rock.Util
             expando.Order = this.Order;
             expando.FileId = this.FileId;
             expando.WorkTerm = this.WorkTerm;
-            expando.EntryActivityTypeId = this.EntryActivityTypeId;
             expando.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
             expando.IsPersisted = this.IsPersisted;
             expando.LoggingLevel = this.LoggingLevel;
@@ -162,7 +156,6 @@ namespace Rock.Util
                 this.Order = workflowType.Order;
                 this.FileId = workflowType.FileId;
                 this.WorkTerm = workflowType.WorkTerm;
-                this.EntryActivityTypeId = workflowType.EntryActivityTypeId;
                 this.ProcessingIntervalSeconds = workflowType.ProcessingIntervalSeconds;
                 this.IsPersisted = workflowType.IsPersisted;
                 this.LoggingLevel = workflowType.LoggingLevel;
@@ -188,7 +181,6 @@ namespace Rock.Util
                 workflowType.Order = this.Order;
                 workflowType.FileId = this.FileId;
                 workflowType.WorkTerm = this.WorkTerm;
-                workflowType.EntryActivityTypeId = this.EntryActivityTypeId;
                 workflowType.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
                 workflowType.IsPersisted = this.IsPersisted;
                 workflowType.LoggingLevel = this.LoggingLevel;

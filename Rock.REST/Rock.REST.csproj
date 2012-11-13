@@ -107,7 +107,7 @@
     <Compile Include="Core\AuditsController.cs" />
     <Compile Include="Core\CategoriesController.cs" />
     <Compile Include="Core\EntityTypesController.cs" />
-    <Compile Include="Core\EntityTypeWorkflowTriggersController.cs" />
+    <Compile Include="Util\WorkflowTriggersController.cs" />
     <Compile Include="Core\TaggedItemsController.cs" />
     <Compile Include="Core\TagsController.Partial.cs" />
     <Compile Include="Core\DefinedTypesController.cs" />

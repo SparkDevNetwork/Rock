@@ -10,15 +10,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
 using Rock.Data;
-using Rock.Util;
 
-namespace Rock.Core
+namespace Rock.Util
 {
     /// <summary>
     /// 
     /// </summary>
-    [Table( "coreEntityTypeWorkflowTrigger" )]
-    public partial class EntityTypeWorkflowTrigger : Entity<EntityTypeWorkflowTrigger>
+    [Table( "utilWorkflowTrigger" )]
+    public partial class WorkflowTrigger : Entity<WorkflowTrigger>
     {
         #region Entity Properties
 
@@ -74,7 +73,7 @@ namespace Rock.Core
         /// The type of the entity change.
         /// </value>
         [Required]
-        public EntityTriggerType EntityTriggerType { get; set; }
+        public WorkflowTriggerType WorkflowTriggerType { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the workflow.
@@ -139,9 +138,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static EntityTypeWorkflowTrigger Read( int id )
+        public static WorkflowTrigger Read( int id )
         {
-            return Read<EntityTypeWorkflowTrigger>( id );
+            return Read<WorkflowTrigger>( id );
         }
 
         /// <summary>
@@ -149,9 +148,9 @@ namespace Rock.Core
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static EntityTypeWorkflowTrigger Read( Guid guid )
+        public static WorkflowTrigger Read( Guid guid )
         {
-            return Read<EntityTypeWorkflowTrigger>( guid );
+            return Read<WorkflowTrigger>( guid );
         }
 
         #endregion
@@ -162,12 +161,12 @@ namespace Rock.Core
     /// <summary>
     /// EntityTypeWorkflowTrigger Configuration class.
     /// </summary>
-    public partial class EntityTypeWorkflowTriggerConfiguration : EntityTypeConfiguration<EntityTypeWorkflowTrigger>
+    public partial class WorkflowTriggerConfiguration : EntityTypeConfiguration<WorkflowTrigger>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityTypeWorkflowTriggerConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowTriggerConfiguration"/> class.
         /// </summary>
-        public EntityTypeWorkflowTriggerConfiguration()
+        public WorkflowTriggerConfiguration()
         {
             this.HasRequired( m => m.EntityType ).WithMany().HasForeignKey( m => m.EntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( m => m.WorkflowType ).WithMany().HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
@@ -179,9 +178,9 @@ namespace Rock.Core
     #region Enumerations
 
     /// <summary>
-    /// Type of audit done to an entity
+    /// Type of workflow trigger
     /// </summary>
-    public enum EntityTriggerType
+    public enum WorkflowTriggerType
     {
         /// <summary>
         /// Pre Save
