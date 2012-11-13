@@ -113,6 +113,15 @@ namespace Rock.Util
             }
         }
 
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
         #endregion
 
         #region Methods
