@@ -25,6 +25,11 @@
 	// page events
 	//
 	
+	private void Page_Init(object sender, System.EventArgs e)
+	{
+    	this.EnableViewState = false;
+    }
+	
 	void Page_Load(object sender, EventArgs e)
 	{
 		
@@ -145,6 +150,7 @@
 		    // move to next step
 		    pTestEnv.Visible = true;
 		    pDatabaseConfig.Visible = false;
+		    pWelcome.Visible = false;
 		    
 		    
 		}
@@ -161,6 +167,7 @@
     	// change active panels
     	pTestEnv.Visible = false;
     	pDownloadZip.Visible = true;
+    	pWelcome.Visible = false;
     	
     	if (downloadSuccessful) {
     		// let's unzip this bad boy
@@ -185,7 +192,7 @@
 			
 			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
 			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
-			rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Host;
+			rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;
 			rockWebConfig.Save();
 			
 			
@@ -405,28 +412,28 @@
 							<div class="control-group">
 								<label class="control-label" for="inputEmail">Database Server</label>
 								<div class="controls">
-									<asp:TextBox ID="txtServerName" runat="server" CssClass="required-field" Text="vserver01.cytanium.com"></asp:TextBox>
+									<asp:TextBox ID="txtServerName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
 								</div>
 							</div>
 							
 							<div class="control-group">
 								<label class="control-label" for="inputEmail">Database Name</label>
 								<div class="controls">
-									<asp:TextBox ID="txtDatabaseName" runat="server" CssClass="required-field" Text="sparkdevcms"></asp:TextBox>
+									<asp:TextBox ID="txtDatabaseName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
 								</div>
 							</div>
 							
 							<div class="control-group">
 								<label class="control-label" for="inputEmail">Database Username</label>
 								<div class="controls">
-									<asp:TextBox ID="txtUsername" runat="server" CssClass="required-field" Text="RockDevUser"></asp:TextBox>
+									<asp:TextBox ID="txtUsername" runat="server" CssClass="required-field" Text=""></asp:TextBox>
 								</div>
 							</div>
 							
 							<div class="control-group">
 								<label class="control-label" for="inputEmail">Database Password</label>
 								<div class="controls">
-									<asp:TextBox ID="txtPassword" runat="server" CssClass="required-field" Text="DM1w3tPH5nOorQO"></asp:TextBox>
+									<asp:TextBox ID="txtPassword" runat="server" CssClass="required-field" Text=""></asp:TextBox>
 								</div>
 							</div>
 							

@@ -64,15 +64,19 @@
     text-decoration: none;
 }
 
+.grid-table tbody tr:nth-child(even) 
+{
+	background: #d2d2d2;
+}
+
 .grid-table tbody tr:hover 
 {
-    background-color: #d6d4d4;
-    background-color: rgba(255, 255, 255, 0.04);
-    -webkit-transition: all 200ms ease-in-out;
+    background-color: #d9ecf2;
+    /*-webkit-transition: all 200ms ease-in-out;
 	-moz-transition: all 200ms ease-in-out;
 	-o-transition: all 200ms ease-in-out;
 	-ms-transition: all 200ms ease-in-out;
-	transition: all 200ms ease-in-out;
+	transition: all 200ms ease-in-out;*/
 }
 
 .grid-icon-cell
