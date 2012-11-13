@@ -98,20 +98,29 @@ namespace Rock.Core
         public virtual Core.EntityType EntityType { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Static Method to return an object based on the id
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Attribute Read( int id )
+        public static Tag Read( int id )
         {
-            return Read<Attribute>( id );
+            return Read<Tag>( id );
         }
 
         /// <summary>
-        /// Gets or sets the Attribute Qualifiers.
+        /// Gets or sets the tagged items.
         /// </summary>
         /// <value>
-        /// Collection of Attribute Qualifiers.
+        /// The tagged items.
         /// </value>
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
@@ -136,12 +145,12 @@ namespace Rock.Core
     }
 
     /// <summary>
-    /// Attribute Configuration class.
+    /// Tag Configuration class.
     /// </summary>
     public partial class TagConfiguration : EntityTypeConfiguration<Tag>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttributeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="TagConfiguration" /> class.
         /// </summary>
         public TagConfiguration()
         {

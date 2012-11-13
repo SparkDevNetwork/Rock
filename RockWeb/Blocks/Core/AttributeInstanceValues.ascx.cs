@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Core
                 attributeValue.Value = value;
                 attributeValueService.Save( attributeValue, _currentPersonId );
 
-                Rock.Attribute.Helper.LoadAttributes( _model );
+                _model.LoadAttributes();
             }
 
             lvAttributeValues.EditIndex = -1;
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Core
 
                 attributeValueService.Add( attributeValue, _currentPersonId);
                 attributeValueService.Save( attributeValue, _currentPersonId );
-                Rock.Attribute.Helper.LoadAttributes( _model );
+                _model.LoadAttributes();
             }
 
             lvAttributeValues.EditIndex = -1;
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Core
             {
                 attributeValueService.Delete( attributeValue, _currentPersonId );
                 attributeValueService.Save( attributeValue, _currentPersonId );
-                Rock.Attribute.Helper.LoadAttributes( _model );
+                _model.LoadAttributes();
             }
 
             BindData();

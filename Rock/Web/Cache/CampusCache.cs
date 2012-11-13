@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
                 Rock.Crm.Campus campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( campusModel );
+                    campusModel.LoadAttributes();
 
                     campus = CampusCache.CopyModel( campusModel );
  

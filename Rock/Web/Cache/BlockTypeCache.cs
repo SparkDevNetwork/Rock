@@ -63,7 +63,7 @@ namespace Rock.Web.Cache
 
             if ( blockTypeModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
+                blockTypeModel.LoadAttributes();
                 foreach ( var attribute in blockTypeModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValues( blockTypeModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
@@ -101,7 +101,7 @@ namespace Rock.Web.Cache
 
                     blockType.IsInstancePropertiesVerified = false;
 
-                    Rock.Attribute.Helper.LoadAttributes( blockTypeModel );
+                    blockTypeModel.LoadAttributes();
 
                     blockType.AttributeValues = blockTypeModel.AttributeValues;
 

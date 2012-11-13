@@ -10,6 +10,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Services;
 using System.Linq;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Security;
 
@@ -95,7 +97,7 @@ namespace Rock.Data
             {
                 if ( _attributeCategories == null && !_attributesLoaded )
                 {
-                    Attribute.Helper.LoadAttributes( this );
+                    this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeCategories;
@@ -119,7 +121,7 @@ namespace Rock.Data
             {
                 if ( _attributes == null && !_attributesLoaded )
                 {
-                    Attribute.Helper.LoadAttributes( this );
+                    this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributes; 
@@ -142,7 +144,7 @@ namespace Rock.Data
             {
                 if ( _attributeValues == null && !_attributesLoaded )
                 {
-                    Attribute.Helper.LoadAttributes( this );
+                    this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeValues; 

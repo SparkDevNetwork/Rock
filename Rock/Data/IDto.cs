@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Data
 {
@@ -27,7 +28,19 @@ namespace Rock.Data
         /// The GUID.
         /// </value>
         Guid Guid { get; set; }
-        
+
+        /// <summary>
+        /// Creates a dictionary object.
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, object> ToDictionary();
+
+        /// <summary>
+        /// Creates a dynamic object.
+        /// </summary>
+        /// <returns></returns>
+        dynamic ToDynamic();
+
         /// <summary>
         /// Copies from model.
         /// </summary>

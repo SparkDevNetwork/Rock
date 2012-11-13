@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+
 using Rock.Crm;
 
 namespace Rock.Transactions

@@ -164,6 +164,15 @@ namespace Rock.Cms
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Gets or sets the Include Admin Footer.
         /// </summary>
         /// <value>

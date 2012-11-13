@@ -41,6 +41,15 @@ namespace Rock.Cms
         public bool IsPrimary { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Reads the specified id.
         /// </summary>
         /// <param name="id">The id.</param>

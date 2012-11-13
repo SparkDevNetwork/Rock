@@ -11,7 +11,7 @@ namespace Rock.Address
     /// <summary>
     /// The base class for all address standardization components
     /// </summary>
-    public abstract class StandardizeComponent : Component
+    public abstract class StandardizeComponent : ComponentManaged
     {
         /// <summary>
         /// Abstract method for standardizing the specified address.  Derived classes should implement
