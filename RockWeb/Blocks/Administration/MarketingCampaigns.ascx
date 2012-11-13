@@ -113,21 +113,23 @@
             <div class="row-fluid">
                 <div class="span6">
                     <Rock:LabeledTextBox ID="tbSummaryText" runat="server" LabelText="Summary Text" />
-                    <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
+
                     <Rock:LabeledDropDownList ID="ddlMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
                     <!-- ToDo: Better Person picker -->
                     <Rock:DataDropDownList ID="ddlMarketingCampaignAdStatusPerson" runat="server" DataTextField="Fullname" DataValueField="Id" SourceTypeName="Rock.Crm.Person, Rock" PropertyName="FullName" LabelText="Approver" />
                 </div>
+
                 <div class="span6">
-                    <div class="row-fluid">
-                        <div class="span3">
-                            <Rock:DataTextBox ID="tbStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" />
-                        </div>
-                        <div class="span3">
-                            <Rock:DataTextBox ID="tbEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" />
+                    <div class="control-group">
+                        <asp:Label ID="lblDateRange" runat="server" CssClass="control-label" Text="Date" AssociatedControlID="tbStartDate" />
+                        <div class="form-inline controls">
+                            <asp:TextBox ID="tbStartDate" runat="server" />
+                            <asp:Literal ID="ltlTo" runat="server" Text=" to " />
+                            <asp:TextBox ID="tbEndDate" runat="server" />
                         </div>
                     </div>
                     <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Url" LabelText="Url" />
+                    <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
                 </div>
             </div>
             <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAdTypeDto, Rock" PropertyName="Name"
