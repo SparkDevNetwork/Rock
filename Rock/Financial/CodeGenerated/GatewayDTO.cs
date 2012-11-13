@@ -23,7 +23,7 @@ namespace Rock.Financial
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GatewayDto : IDto
+    public partial class GatewayDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -140,6 +140,16 @@ namespace Rock.Financial
                 gateway.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>

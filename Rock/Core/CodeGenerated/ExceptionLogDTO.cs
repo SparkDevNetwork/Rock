@@ -23,7 +23,7 @@ namespace Rock.Core
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class ExceptionLogDto : IDto
+    public partial class ExceptionLogDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -228,6 +228,16 @@ namespace Rock.Core
                 exceptionLog.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>

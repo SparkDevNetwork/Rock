@@ -23,7 +23,7 @@ namespace Rock.Core
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class AttributeDto : IDto
+    public partial class AttributeDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -212,6 +212,16 @@ namespace Rock.Core
                 attribute.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>

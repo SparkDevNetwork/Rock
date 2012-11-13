@@ -53,7 +53,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\AjaxControlToolkit.dll</HintPath>
     </Reference>
-    <Reference Include="DotLiquid">
+    <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -181,14 +182,26 @@
     </Compile>
     <Compile Include="Core\CodeGenerated\AuditDto.cs" />
     <Compile Include="Core\CodeGenerated\AuditService.cs" />
+    <Compile Include="Core\CodeGenerated\CategoryDto.cs" />
+    <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
+    <Compile Include="Migrations\201211132237208_Workflow.cs" />
+    <Compile Include="Migrations\201211132237208_Workflow.Designer.cs">
+      <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTriggerService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\Category.cs" />
+    <Compile Include="Util\WorkflowTriggerCache.cs" />
+    <Compile Include="Util\WorkflowTriggerService.Partial.cs" />
+    <Compile Include="Util\WorkflowTrigger.cs" />
     <Compile Include="Core\EntityType.cs" />
     <Compile Include="Core\EntityTypeService.Partial.cs" />
     <Compile Include="Core\TaggedItemService.Partial.cs" />
@@ -264,9 +277,12 @@
     <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
-    <Compile Include="Extension\Component.cs" />
-    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ComponentManaged.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IComponent.cs" />
+    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ContainerManaged.cs" />
     <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
@@ -300,7 +316,7 @@
     <Compile Include="Crm\EmailTemplate.cs" />
     <Compile Include="Crm\Person.cs" />
     <Compile Include="Crm\PhoneNumber.cs" />
-    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IContainerManaged.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
     <Compile Include="Field\Types\SelectMulti.cs" />
     <Compile Include="Field\Types\Document.cs" />
@@ -656,6 +672,7 @@
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
+    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
@@ -663,6 +680,36 @@
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
+    <Compile Include="Util\ActivityType.cs" />
+    <Compile Include="Util\ActionType.cs" />
+    <Compile Include="Util\Activity.cs" />
+    <Compile Include="Util\Action.cs" />
+    <Compile Include="Jobs\ProcessWorkflows.cs" />
+    <Compile Include="Util\WorkflowAction\CompleteWorkflow.cs" />
+    <Compile Include="Util\WorkflowAction\ActivateActivity.cs" />
+    <Compile Include="Util\WorkflowAction\SendEmail.cs" />
+    <Compile Include="Util\WorkflowAction\SetStatus.cs" />
+    <Compile Include="Util\WorkflowTypeService.Partial.cs" />
+    <Compile Include="Util\WorkflowService.Partial.cs" />
+    <Compile Include="Util\WorkflowActionComponent.cs" />
+    <Compile Include="Util\WorkflowActionContainer.cs" />
+    <Compile Include="Util\CodeGenerated\ActionDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActionService.cs" />
+    <Compile Include="Util\CodeGenerated\ActionTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActionTypeService.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityService.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\ActivityTypeService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowLogDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowLogService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowService.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTypeDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTypeService.cs" />
+    <Compile Include="Util\WorkflowLog.cs" />
+    <Compile Include="Util\Workflow.cs" />
+    <Compile Include="Util\WorkflowType.cs" />
     <Compile Include="Util\Job.cs" />
     <Compile Include="Util\CodeGenerated\JobDto.cs" />
     <Compile Include="Util\CodeGenerated\JobService.cs" />
@@ -1060,6 +1107,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211090015130_SiteMapPage.resx">
       <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211132237208_Workflow.resx">
+      <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
