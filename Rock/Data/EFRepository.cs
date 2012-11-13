@@ -343,6 +343,7 @@ namespace Rock.Data
         /// <param name="PersonId">The id of the person making the change</param>
         /// <param name="changes">The changes.</param>
         /// <param name="audits">The audits.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
         {

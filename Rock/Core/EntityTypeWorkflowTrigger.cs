@@ -105,7 +105,16 @@ namespace Rock.Core
         /// The type of the workflow.
         /// </value>
         public virtual WorkflowType WorkflowType { get; set; }
-        
+
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
         #endregion
 
         #region Methods

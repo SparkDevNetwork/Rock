@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,25 +21,65 @@ namespace Rock.Util
     /// <summary>
     /// Data Transfer Object for WorkflowType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class WorkflowTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool? IsActive { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? CategoryId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? FileId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string WorkTerm { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? EntryActivityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? ProcessingIntervalSeconds { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsPersisted { get; set; }
+
+        /// <summary />
+        [DataMember]
         public WorkflowLoggingLevel LoggingLevel { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -155,5 +196,58 @@ namespace Rock.Util
                 workflowType.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class WorkflowTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static WorkflowType ToModel( this WorkflowTypeDto value )
+        {
+            WorkflowType result = new WorkflowType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<WorkflowType> ToModel( this List<WorkflowTypeDto> value )
+        {
+            List<WorkflowType> result = new List<WorkflowType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<WorkflowTypeDto> ToDto( this List<WorkflowType> value )
+        {
+            List<WorkflowTypeDto> result = new List<WorkflowTypeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static WorkflowTypeDto ToDto( this WorkflowType value )
+        {
+            return new WorkflowTypeDto( value );
+        }
+
     }
 }

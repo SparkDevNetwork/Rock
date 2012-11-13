@@ -83,6 +83,15 @@ namespace Rock.Cms
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Reads the specified id.
         /// </summary>
         /// <param name="id">The id.</param>

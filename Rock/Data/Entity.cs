@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Services.Common;
-using System.Runtime.Serialization;
 
 namespace Rock.Data
 {
@@ -17,18 +15,14 @@ namespace Rock.Data
     /// Base class that all models need to inherit from
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [DataServiceKey( "Id" )]
-    [DataContract]
-    public abstract class Entity<T> : IEntity
+    public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
     {
-        // Note: The DataServiceKey attribute is part of the magic behind WCF Data Services. This allows
-        // the service to interface with EF and fetch data.
+        #region Entity Properties
 
         /// <summary>
         /// The Id
         /// </summary>
         [Key]
-        [DataMember]
         public int Id { get; set; }
 
         /// <summary>
@@ -38,13 +32,16 @@ namespace Rock.Data
         /// The GUID.
         /// </value>
         [AlternateKey]
-        [DataMember]
         public Guid Guid
         {
             get { return _guid; }
             set { _guid = value; }
         }
         private Guid _guid = Guid.NewGuid();
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets the type id.
@@ -73,35 +70,6 @@ namespace Rock.Data
             get
             {
                 return typeof( T ).FullName;
-            }
-        }
-
-        /// <summary>
-        /// Gets the name of the entity type friendly.
-        /// </summary>
-        /// <value>
-        /// The name of the entity type friendly.
-        /// </value>
-        [NotMapped]
-        public static string FriendlyTypeName
-        {
-            get
-            {
-                var type = typeof( T );
-                return type.GetFriendlyTypeName();
-            }
-        }
-
-        /// <summary>
-        /// Gets a publicly viewable unique key for the model.
-        /// </summary>
-        [NotMapped]
-        public string EncryptedKey
-        {
-            get
-            {
-                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
 
@@ -151,6 +119,66 @@ namespace Rock.Data
             }
         }
 
+        #endregion
+
+        #region Abstract Properties
+
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public abstract IDto Dto { get; }
+
+        #endregion
+
+        #region Static Properties
+
+        /// <summary>
+        /// Gets the name of the entity type friendly.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type friendly.
+        /// </value>
+        [NotMapped]
+        public static string FriendlyTypeName
+        {
+            get
+            {
+                var type = typeof( T );
+                return type.GetFriendlyTypeName();
+            }
+        }
+
+        /// <summary>
+        /// Gets a publicly viewable unique key for the model.
+        /// </summary>
+        [NotMapped]
+        public string EncryptedKey
+        {
+            get
+            {
+                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier );
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Converts object to dictionary for DotLiquid.
+        /// </summary>
+        /// <returns></returns>
+        public virtual object ToLiquid()
+        {
+            return this.Dto.ToDictionary();
+        }
+
+        #endregion
+
+        #region Static Methods
+
         /// <summary>
         /// Static method to return an object based on the id
         /// </summary>
@@ -172,6 +200,8 @@ namespace Rock.Data
         {
             return new Service<TT>().Get( guid );
         }
+
+        #endregion
 
         #region Events
 
@@ -396,6 +426,8 @@ namespace Rock.Data
 
     #endregion
 
+    #region KeyEntity
+
     /// <summary>
     /// Object used for current model (context) implementation 
     /// </summary>
@@ -415,6 +447,8 @@ namespace Rock.Data
             Key = key;
         }
     }
+
+    #endregion
 
 
 }

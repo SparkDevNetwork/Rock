@@ -4,7 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 
+using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
 
@@ -38,9 +40,11 @@ namespace Rock.Util
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
-        /// <param name="action">The action.</param>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">Optional entity that triggered the workflow.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( Action action );
+        public abstract Boolean Execute( Action action, IEntity entity, out List<string> errorMessages );
 
         /// <summary>
         /// Gets the attribute value for the action
