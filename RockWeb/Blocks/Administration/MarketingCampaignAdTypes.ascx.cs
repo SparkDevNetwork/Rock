@@ -361,7 +361,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
             // delete AdTypeAttributes that are no longer configured in the UI
             AttributeService attributeService = new AttributeService();
-            var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable()
+            var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
 
@@ -394,7 +394,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
                 attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
                 attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
-                attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( marketingCampaignAdType.TypeName ).Id;
+                attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new MarketingCampaignAd().TypeName ).Id;
                 attributeService.Save( attribute, CurrentPersonId );
             }
         } );
@@ -464,7 +464,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
 
             AttributeService attributeService = new AttributeService();
 
-            var qry = attributeService.GetByEntityTypeId( marketingCampaignAdType.TypeId ).AsQueryable()
+            var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
 
