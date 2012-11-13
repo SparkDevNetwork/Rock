@@ -118,8 +118,11 @@ namespace Rock.Util
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
         /// <exception cref="System.SystemException"></exception>
-        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
+        internal virtual bool Process( IDto dto, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -131,7 +134,7 @@ namespace Rock.Util
 
             this.ActionType.LoadAttributes();
 
-            bool success = workflowAction.Execute( this, entity, out errorMessages );
+            bool success = workflowAction.Execute( this, dto, out errorMessages );
 
             AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 

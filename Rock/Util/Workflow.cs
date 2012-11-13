@@ -214,10 +214,10 @@ namespace Rock.Util
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        /// <param name="entity">The entity.</param>
+        /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public virtual bool Process( IEntity entity, out List<string> errorMessages )
+        public virtual bool Process( IDto dto, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -225,7 +225,7 @@ namespace Rock.Util
 
             DateTime processStartTime = DateTime.Now;
 
-            while ( ProcessActivity( processStartTime, entity, out errorMessages )
+            while ( ProcessActivity( processStartTime, dto, out errorMessages )
                 && errorMessages.Count == 0 ) { }
 
             this.LastProcessedDateTime = DateTime.Now;
@@ -281,10 +281,10 @@ namespace Rock.Util
         /// Processes the activity.
         /// </summary>
         /// <param name="processStartTime">The process start time.</param>
-        /// <param name="entity">The entity.</param>
+        /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private bool ProcessActivity( DateTime processStartTime, IEntity entity, out List<string> errorMessages )
+        private bool ProcessActivity( DateTime processStartTime, IDto dto, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {
@@ -293,7 +293,7 @@ namespace Rock.Util
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        return activity.Process(entity, out errorMessages);
+                        return activity.Process( dto, out errorMessages );
                     }
                 }
             }

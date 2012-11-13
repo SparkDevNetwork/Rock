@@ -157,7 +157,10 @@ namespace Rock.Util
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
+        /// <param name="dto">The dto.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        internal virtual bool Process( IDto dto, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -170,7 +173,7 @@ namespace Rock.Util
             foreach ( var action in this.ActiveActions )
             {
                 List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( entity, out actionErrorMessages );
+                bool actionSuccess = action.Process( dto, out actionErrorMessages );
                 errorMessages.Concat( actionErrorMessages );
 
                 // If action was not successful, exit
