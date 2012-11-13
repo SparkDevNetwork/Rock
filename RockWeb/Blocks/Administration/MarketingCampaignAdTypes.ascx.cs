@@ -433,12 +433,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// </summary>
     private void LoadDropDowns()
     {
-        ddlDateRangeType.Items.Clear();
-
-        foreach ( DateRangeTypeEnum dateRangeType in Enum.GetValues( typeof( DateRangeTypeEnum ) ) )
-        {
-            ddlDateRangeType.Items.Add( new ListItem( dateRangeType.ConvertToString().SplitCase(), ( (int)dateRangeType ).ToString() ) );
-        }
+        ddlDateRangeType.BindToEnum( typeof( DateRangeTypeEnum ) );
 
         FieldTypeService fieldTypeService = new FieldTypeService();
         List<FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
