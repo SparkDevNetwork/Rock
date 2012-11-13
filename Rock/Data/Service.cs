@@ -173,7 +173,7 @@ namespace Rock.Data
 
         //    return null;
         //}
-         */ 
+         */
 
         /// <summary>
         /// Date the entity was created.
@@ -311,6 +311,31 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Triggers the workflows.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="triggerType">Type of the trigger.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        private bool TriggerWorkflows( IEntity entity, EntityTriggerType triggerType, int? personId )
+        {
+            var triggerService = new EntityTypeWorkflowTriggerService();
+            foreach ( var trigger in triggerService.Get( entity.TypeName, triggerType ) )
+            {
+                var workflow = Rock.Util.Workflow.Activate( trigger.WorkflowType, trigger.WorkflowName );
+
+                List<string> workflowErrors;
+                if ( !workflow.Process( entity, out workflowErrors ) )
+                {
+                    ErrorMessages.AddRange( workflowErrors );
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -318,11 +343,21 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Delete( T item, int? personId )
         {
+            ErrorMessages = new List<string>();
+
+            if ( !TriggerWorkflows( item, EntityTriggerType.PreDelete, personId ) )
+            {
+                return false;
+            }
+
             bool cancel = false;
             item.RaiseDeletingEvent( out cancel, personId );
             if ( !cancel )
             {
                 _repository.Delete( item );
+
+                TriggerWorkflows( item, EntityTriggerType.PostDelete, personId );
+
                 return true;
             }
             else
@@ -337,9 +372,14 @@ namespace Rock.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public virtual bool Save( T item, int? personId)
+        public virtual bool Save( T item, int? personId )
         {
             ErrorMessages = new List<string>();
+
+            if ( !TriggerWorkflows( item, EntityTriggerType.PreSave, personId ) )
+            {
+                return false;
+            }
 
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
@@ -364,6 +404,8 @@ namespace Rock.Data
                     transaction.Audits = audits;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
+
+                TriggerWorkflows( item, EntityTriggerType.PostSave, personId );
 
                 return true;
             }

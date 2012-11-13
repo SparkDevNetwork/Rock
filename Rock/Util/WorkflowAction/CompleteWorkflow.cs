@@ -1,10 +1,13 @@
-﻿//
+﻿using System.Collections.Generic;
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Data;
 
 namespace Rock.Util.WorkflowAction
 {
@@ -20,11 +23,16 @@ namespace Rock.Util.WorkflowAction
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="action">The action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute(Action action)
+        public override bool Execute( Action action, IEntity entity, out List<string> errorMessages )
         {
+            errorMessages = new List<string>();
+
             action.Activity.Workflow.MarkComplete();
             action.AddLogEntry( "Marked workflow complete" );
+
             return true;
         }
     }

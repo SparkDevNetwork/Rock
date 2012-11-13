@@ -324,7 +324,6 @@ namespace RockWeb
                                 if ( recipients.Count > 0 )
                                 {
                                     Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                                    SetSMTPParameters( email );  //TODO move this set up to the email object
                                     email.Send( recipients );
                                 }
                             }
@@ -371,30 +370,6 @@ namespace RockWeb
             }
 
             return message;
-        }
-
-        /// <summary>
-        /// Sets the SMTP parameters.
-        /// </summary>
-        /// <param name="email">The email.</param>
-        private void SetSMTPParameters( Email email )
-        {
-            var globalAttributesCache = GlobalAttributesCache.Read();
-
-            email.Server = globalAttributesCache.GetValue( "SMTPServer" );
-
-            int port = 0;
-            if ( !Int32.TryParse( globalAttributesCache.GetValue( "SMTPPort" ), out port ) )
-                port = 0;
-            email.Port = port;
-
-            bool useSSL = false;
-            if ( !bool.TryParse( globalAttributesCache.GetValue( "SMTPUseSSL" ), out useSSL ) )
-                useSSL = false;
-            email.UseSSL = useSSL;
-
-            email.UserName = globalAttributesCache.GetValue( "SMTPUserName" );
-            email.Password = globalAttributesCache.GetValue( "SMTPPassword" );
         }
 
         /// <summary>

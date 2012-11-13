@@ -140,6 +140,15 @@ namespace Rock.Util
             }
         }
 
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -148,7 +157,7 @@ namespace Rock.Util
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        public virtual void Process()
+        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -156,22 +165,36 @@ namespace Rock.Util
 
             this.LoadAttributes();
 
+            errorMessages = new List<string>();
+
             foreach ( var action in this.ActiveActions )
             {
+                List<string> actionErrorMessages;
+                bool actionSuccess = action.Process( entity, out actionErrorMessages );
+                errorMessages.Concat( actionErrorMessages );
+
                 // If action was not successful, exit
-                if ( !action.Process() )
+                if ( !actionSuccess )
+                {
                     break;
+                }
 
                 // If action completed this activity, exit
                 if ( !this.IsActive )
+                {
                     break;
+                }
 
                 // If action completed this workflow, exit
                 if ( !this.Workflow.IsActive )
+                {
                     break;
+                }
             }
 
             AddSystemLogEntry( "Processing Complete" );
+
+            return errorMessages.Count == 0;
         }
 
         /// <summary>
