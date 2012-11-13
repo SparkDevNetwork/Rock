@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,17 +21,33 @@ namespace Rock.Util
     /// <summary>
     /// Data Transfer Object for Action object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class ActionDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int ActivityId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int ActionTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -115,5 +132,58 @@ namespace Rock.Util
                 action.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ActionDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Action ToModel( this ActionDto value )
+        {
+            Action result = new Action();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Action> ToModel( this List<ActionDto> value )
+        {
+            List<Action> result = new List<Action>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ActionDto> ToDto( this List<Action> value )
+        {
+            List<ActionDto> result = new List<ActionDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ActionDto ToDto( this Action value )
+        {
+            return new ActionDto( value );
+        }
+
     }
 }

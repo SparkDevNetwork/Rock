@@ -187,6 +187,15 @@ namespace Rock.Util
             }
         }
 
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
         #endregion
 
         #region Public Methods
@@ -194,14 +203,30 @@ namespace Rock.Util
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        public virtual void Process()
+        /// <returns></returns>
+        public virtual bool Process()
+        {
+            List<string> errorMessages;
+            bool result = Process( null, out errorMessages );
+            return result;
+        }
+
+        /// <summary>
+        /// Processes this instance.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public virtual bool Process( IEntity entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
             this.LoadAttributes();
 
             DateTime processStartTime = DateTime.Now;
-            while ( ProcessActivity( processStartTime ) ) { }
+
+            while ( ProcessActivity( processStartTime, entity, out errorMessages )
+                && errorMessages.Count == 0 ) { }
 
             this.LastProcessedDateTime = DateTime.Now;
 
@@ -211,6 +236,8 @@ namespace Rock.Util
             {
                 MarkComplete();
             }
+
+            return errorMessages.Count == 0;
         }
 
         /// <summary>
@@ -254,8 +281,10 @@ namespace Rock.Util
         /// Processes the activity.
         /// </summary>
         /// <param name="processStartTime">The process start time.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private bool ProcessActivity( DateTime processStartTime )
+        private bool ProcessActivity( DateTime processStartTime, IEntity entity, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {
@@ -264,11 +293,12 @@ namespace Rock.Util
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        activity.Process();
-                        return true;
+                        return activity.Process(entity, out errorMessages);
                     }
                 }
             }
+
+            errorMessages = new List<string>();
             return false;
         }
 
@@ -300,7 +330,7 @@ namespace Rock.Util
         internal static Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = new Workflow();
-            workflow.WorkflowType = workflowType;
+            workflow.WorkflowTypeId = workflowType.Id;
             workflow.Name = name;
             workflow.Status = "Activated";
             workflow.IsProcessing = false;

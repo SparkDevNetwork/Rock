@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using DotLiquid;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -156,6 +157,8 @@ namespace Rock.Communication
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
+            SetSMTPParameters();
+
             Email.Send( From, to, cc, bcc, Subject, Body, Server, Port, UseSSL, UserName, Password );
         }
 
@@ -195,6 +198,8 @@ namespace Rock.Communication
             List<string> cc = SplitRecipient( Cc );
             List<string> bcc = SplitRecipient( Bcc );
 
+            SetSMTPParameters();
+
             foreach ( KeyValuePair<string, Dictionary<string, object>> recipient in recipients )
             {
                 List<string> to = SplitRecipient( To );
@@ -212,6 +217,27 @@ namespace Rock.Communication
                 Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
         }
+
+        private void SetSMTPParameters( )
+        {
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            this.Server = globalAttributes.GetValue( "SMTPServer" );
+
+            int port = 0;
+            if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
+                port = 0;
+            this.Port = port;
+
+            bool useSSL = false;
+            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
+                useSSL = false;
+            this.UseSSL = useSSL;
+
+            this.UserName = globalAttributes.GetValue( "SMTPUserName" );
+            this.Password = globalAttributes.GetValue( "SMTPPassword" );
+        }
+
 
         private string ResolveConfigValue( string value, Dictionary<string, object> globalAttributes )
         {
@@ -245,6 +271,7 @@ namespace Rock.Communication
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
             Template template = Template.Parse( content );
+
             return template.Render( Hash.FromDictionary(mergeObjects) );
         }
 

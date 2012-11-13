@@ -4,16 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Configuration;
-using System.Security.Cryptography;
 using System.Linq;
-using System.Text;
-using System.Web;
-using System.Web.Configuration;
 
-using Rock.Cms;
+using Rock.Data;
 using Rock.Web.UI;
 
 namespace Rock.Util.WorkflowAction
@@ -31,9 +27,13 @@ namespace Rock.Util.WorkflowAction
         /// Executes the specified workflow.
         /// </summary>
         /// <param name="action">The action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( Action action )
+        public override bool Execute( Action action, IEntity entity, out List<string> errorMessages )
         {
+            errorMessages = new List<string>();
+
             string activityTypeId = GetAttributeValue( action, "ActivityType" );
             if ( String.IsNullOrWhiteSpace( activityTypeId ) )
             {

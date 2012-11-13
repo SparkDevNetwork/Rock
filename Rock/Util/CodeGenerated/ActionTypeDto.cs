@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,19 +21,41 @@ namespace Rock.Util
     /// <summary>
     /// Data Transfer Object for ActionType object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class ActionTypeDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int ActivityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsActionCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -125,5 +148,58 @@ namespace Rock.Util
                 actionType.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ActionTypeDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ActionType ToModel( this ActionTypeDto value )
+        {
+            ActionType result = new ActionType();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ActionType> ToModel( this List<ActionTypeDto> value )
+        {
+            List<ActionType> result = new List<ActionType>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<ActionTypeDto> ToDto( this List<ActionType> value )
+        {
+            List<ActionTypeDto> result = new List<ActionTypeDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ActionTypeDto ToDto( this ActionType value )
+        {
+            return new ActionTypeDto( value );
+        }
+
     }
 }

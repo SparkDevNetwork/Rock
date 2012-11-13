@@ -159,6 +159,15 @@ namespace Rock.Cms
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
         /// </summary>
         [NotMapped]

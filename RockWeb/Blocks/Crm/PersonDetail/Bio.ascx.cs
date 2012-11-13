@@ -30,8 +30,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var workflowType = workflowTypeService.Get( 1 );
 
                 var workflowService = new Rock.Util.WorkflowService();
-                //var workflow = workflowService.Activate( workflowType, "Test", CurrentPersonId );
-                var workflow = workflowService.Get( 1 );
+                var workflow = workflowService.Activate( workflowType, "Test", CurrentPersonId );
+                //var workflow = workflowService.Get( 1 );
                 workflowService.Process( workflow, CurrentPersonId );
                 workflowService.Save( workflow, CurrentPersonId );
             }

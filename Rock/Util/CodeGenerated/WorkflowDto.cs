@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,21 +21,49 @@ namespace Rock.Util
     /// <summary>
     /// Data Transfer Object for Workflow object
     /// </summary>
+    [Serializable]
+    [DataContract]
     public partial class WorkflowDto : IDto
     {
-
-#pragma warning disable 1591
+        /// <summary />
+        [DataMember]
         public int WorkflowTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Description { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Status { get; set; }
+
+        /// <summary />
+        [DataMember]
         public bool IsProcessing { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? ActivatedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int Id { get; set; }
+
+        /// <summary />
+        [DataMember]
         public Guid Guid { get; set; }
-#pragma warning restore 1591
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -135,5 +164,58 @@ namespace Rock.Util
                 workflow.Guid = this.Guid;
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class WorkflowDtoExtension
+    {
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Workflow ToModel( this WorkflowDto value )
+        {
+            Workflow result = new Workflow();
+            value.CopyToModel( result );
+            return result;
+        }
+
+        /// <summary>
+        /// To the model.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<Workflow> ToModel( this List<WorkflowDto> value )
+        {
+            List<Workflow> result = new List<Workflow>();
+            value.ForEach( a => result.Add( a.ToModel() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static List<WorkflowDto> ToDto( this List<Workflow> value )
+        {
+            List<WorkflowDto> result = new List<WorkflowDto>();
+            value.ForEach( a => result.Add( a.ToDto() ) );
+            return result;
+        }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static WorkflowDto ToDto( this Workflow value )
+        {
+            return new WorkflowDto( value );
+        }
+
     }
 }
