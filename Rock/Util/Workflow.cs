@@ -340,8 +340,7 @@ namespace Rock.Util
 
             foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
             {
-                if ( activityType.IsActivatedWithWorkflow ||
-                    ( workflowType.EntryActivityTypeId.HasValue && activityType.Id == workflowType.EntryActivityTypeId.Value ) )
+                if ( activityType.IsActivatedWithWorkflow)
                 {
                     workflow.Activities.Add( Activity.Activate(activityType, workflow) );
                 }

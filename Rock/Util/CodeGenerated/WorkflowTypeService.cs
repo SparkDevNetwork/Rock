@@ -70,7 +70,6 @@ namespace Rock.Util
                     Order = m.Order,
                     FileId = m.FileId,
                     WorkTerm = m.WorkTerm,
-                    EntryActivityTypeId = m.EntryActivityTypeId,
                     ProcessingIntervalSeconds = m.ProcessingIntervalSeconds,
                     IsPersisted = m.IsPersisted,
                     LoggingLevel = m.LoggingLevel,

@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Util;
 
-namespace Rock.Rest.Core
+namespace Rock.Rest.Util
 {
     /// <summary>
-    /// EntityTypeWorkflowTriggers REST API
+    /// WorkflowTriggers REST API
     /// </summary>
-    public partial class EntityTypeWorkflowTriggersController : Rock.Rest.ApiController<Rock.Core.EntityTypeWorkflowTrigger, Rock.Core.EntityTypeWorkflowTriggerDto>
+    public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Util.WorkflowTrigger, Rock.Util.WorkflowTriggerDto>
     {
-        public EntityTypeWorkflowTriggersController() : base( new Rock.Core.EntityTypeWorkflowTriggerService() ) { } 
+        public WorkflowTriggersController() : base( new Rock.Util.WorkflowTriggerService() ) { } 
     }
 }

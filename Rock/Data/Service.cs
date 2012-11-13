@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Core;
+using Rock.Util;
 
 namespace Rock.Data
 {
@@ -317,28 +318,33 @@ namespace Rock.Data
         /// <param name="triggerType">Type of the trigger.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private bool TriggerWorkflows( IEntity entity, EntityTriggerType triggerType, int? personId )
+        private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
         {
-            var triggerService = new EntityTypeWorkflowTriggerService();
-            foreach ( var trigger in triggerService.Get( entity.TypeName, triggerType ) )
+            foreach ( var trigger in WorkflowTriggerCache.Instance.Triggers( entity.TypeName, triggerType ) )
             {
-                if ( triggerType == EntityTriggerType.PreSave || triggerType == EntityTriggerType.PreDelete )
+                if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
                 {
-                    var workflow = Rock.Util.Workflow.Activate( trigger.WorkflowType, trigger.WorkflowName );
+                    var workflowTypeService = new WorkflowTypeService();
+                    var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
 
-                    List<string> workflowErrors;
-                    if ( !workflow.Process( entity.Dto, out workflowErrors ) )
+                    if ( workflowType != null )
                     {
-                        ErrorMessages.AddRange( workflowErrors );
-                        return false;
-                    }
-                    else
-                    {
-                        if ( trigger.WorkflowType.IsPersisted )
+                        var workflow = Rock.Util.Workflow.Activate( workflowType, trigger.WorkflowName );
+
+                        List<string> workflowErrors;
+                        if ( !workflow.Process( entity.Dto, out workflowErrors ) )
                         {
-                            var workflowService = new Rock.Util.WorkflowService();
-                            workflowService.Add( workflow, personId );
-                            workflowService.Save( workflow, personId );
+                            ErrorMessages.AddRange( workflowErrors );
+                            return false;
+                        }
+                        else
+                        {
+                            if ( workflowType.IsPersisted )
+                            {
+                                var workflowService = new Rock.Util.WorkflowService();
+                                workflowService.Add( workflow, personId );
+                                workflowService.Save( workflow, personId );
+                            }
                         }
                     }
                 }
@@ -364,7 +370,7 @@ namespace Rock.Data
         {
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, EntityTriggerType.PreDelete, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreDelete, personId ) )
             {
                 return false;
             }
@@ -375,7 +381,7 @@ namespace Rock.Data
             {
                 _repository.Delete( item );
 
-                TriggerWorkflows( item, EntityTriggerType.PostDelete, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personId );
 
                 return true;
             }
@@ -395,7 +401,7 @@ namespace Rock.Data
         {
             ErrorMessages = new List<string>();
 
-            if ( !TriggerWorkflows( item, EntityTriggerType.PreSave, personId ) )
+            if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personId ) )
             {
                 return false;
             }
@@ -424,7 +430,7 @@ namespace Rock.Data
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
 
-                TriggerWorkflows( item, EntityTriggerType.PostSave, personId );
+                TriggerWorkflows( item, WorkflowTriggerType.PostSave, personId );
 
                 return true;
             }

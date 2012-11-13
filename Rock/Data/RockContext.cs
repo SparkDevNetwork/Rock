@@ -212,14 +212,6 @@ namespace Rock.Data
         public DbSet<Rock.Core.EntityType> EntityTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type workflow triggers.
-        /// </summary>
-        /// <value>
-        /// The entity type workflow triggers.
-        /// </value>
-        public DbSet<Rock.Core.EntityTypeWorkflowTrigger> EntityTypeWorkflowTriggers { get; set; }
-
-        /// <summary>
         /// Gets or sets the Exception Logs.
         /// </summary>
         /// <value>
@@ -436,6 +428,14 @@ namespace Rock.Data
         public DbSet<Rock.Util.WorkflowLog> WorkflowLogs { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The entity type workflow triggers.
+        /// </value>
+        public DbSet<Rock.Util.WorkflowTrigger> WorkflowTriggers { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow types.
         /// </summary>
         /// <value>
@@ -554,7 +554,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.EntityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.EntityTypeWorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
@@ -589,6 +588,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.WorkflowConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.WorkflowLogConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Util.WorkflowTypeConfiguration() );
         }
     }

@@ -186,8 +186,12 @@
     <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
-    <Compile Include="Core\CodeGenerated\EntityTypeWorkflowTriggerDto.cs" />
-    <Compile Include="Core\CodeGenerated\EntityTypeWorkflowTriggerService.cs" />
+    <Compile Include="Migrations\201211132237208_Workflow.cs" />
+    <Compile Include="Migrations\201211132237208_Workflow.Designer.cs">
+      <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
+    <Compile Include="Util\CodeGenerated\WorkflowTriggerService.cs" />
     <Compile Include="Core\CodeGenerated\MetricDto.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -195,8 +199,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Category.cs" />
-    <Compile Include="Core\EntityTypeWorkflowTriggerService.Partial.cs" />
-    <Compile Include="Core\EntityTypeWorkflowTrigger.cs" />
+    <Compile Include="Util\WorkflowTriggerCache.cs" />
+    <Compile Include="Util\WorkflowTriggerService.Partial.cs" />
+    <Compile Include="Util\WorkflowTrigger.cs" />
     <Compile Include="Core\EntityType.cs" />
     <Compile Include="Core\EntityTypeService.Partial.cs" />
     <Compile Include="Core\TaggedItemService.Partial.cs" />
@@ -621,10 +626,6 @@
     <Compile Include="Migrations\201211090015130_SiteMapPage.cs" />
     <Compile Include="Migrations\201211090015130_SiteMapPage.Designer.cs">
       <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201211091209534_Workflow.cs" />
-    <Compile Include="Migrations\201211091209534_Workflow.Designer.cs">
-      <DependentUpon>201211091209534_Workflow.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1107,8 +1108,8 @@
     <EmbeddedResource Include="Migrations\201211090015130_SiteMapPage.resx">
       <DependentUpon>201211090015130_SiteMapPage.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201211091209534_Workflow.resx">
-      <DependentUpon>201211091209534_Workflow.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201211132237208_Workflow.resx">
+      <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

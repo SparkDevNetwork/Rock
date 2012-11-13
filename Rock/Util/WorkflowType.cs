@@ -95,14 +95,6 @@ namespace Rock.Util
         public string WorkTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the entry activity type id.
-        /// </summary>
-        /// <value>
-        /// The entry activity type id.
-        /// </value>
-        public int? EntryActivityTypeId { get; set; }
-
-        /// <summary>
         /// Gets or sets the processing interval seconds.
         /// </summary>
         /// <value>
@@ -158,14 +150,6 @@ namespace Rock.Util
             set { _activityTypes = value; }
         }
         private ICollection<ActivityType> _activityTypes;
-
-        /// <summary>
-        /// Gets or sets the type of the entry activity.
-        /// </summary>
-        /// <value>
-        /// The type of the entry activity.
-        /// </value>
-        public virtual ActivityType EntryActivityType { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -231,7 +215,6 @@ namespace Rock.Util
         /// </summary>
         public WorkflowTypeConfiguration()
         {
-            this.HasOptional( m => m.EntryActivityType ).WithMany().HasForeignKey( m => m.EntryActivityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( m => m.Category ).WithMany().HasForeignKey( m => m.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( m => m.File ).WithMany().HasForeignKey( m => m.FileId ).WillCascadeOnDelete( false );
         }
