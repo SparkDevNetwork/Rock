@@ -299,7 +299,6 @@ namespace RockWeb.Blocks.Security
                     recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
-                    SetSMTPParameters( email );
                     email.Send( recipients );
                 }
                 else
@@ -331,7 +330,6 @@ namespace RockWeb.Blocks.Security
                 recipients.Add( person.Email, mergeObjects );
 
                 Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
-                SetSMTPParameters( email );
                 email.Send( recipients );
 
                 ShowPanel( 4 );
@@ -365,7 +363,6 @@ namespace RockWeb.Blocks.Security
                     recipients.Add( person.Email, mergeObjects );
 
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
-                    SetSMTPParameters( email );
                     email.Send( recipients );
 
                     lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
@@ -448,26 +445,6 @@ namespace RockWeb.Blocks.Security
         {
             Rock.Cms.UserService userService = new Rock.Cms.UserService();
             return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
-        }
-
-        private void SetSMTPParameters( Email email )
-        {
-            var globalAttributes = GlobalAttributesCache.Read();
-
-            email.Server = globalAttributes.GetValue( "SMTPServer" );
-
-            int port = 0;
-            if (!Int32.TryParse(globalAttributes.GetValue( "SMTPPort" ), out port))
-                port = 0;
-            email.Port = port;
-
-            bool useSSL = false;
-            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
-                useSSL = false;
-            email.UseSSL = useSSL;
-
-            email.UserName = globalAttributes.GetValue( "SMTPUserName" );
-            email.Password = globalAttributes.GetValue( "SMTPPassword" );
         }
 
         #endregion

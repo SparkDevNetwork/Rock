@@ -123,7 +123,7 @@ namespace Rock.Web.Cache
 
             if ( blockModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( blockModel );
+                blockModel.LoadAttributes();
                 foreach ( var attribute in blockModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
@@ -134,22 +134,19 @@ namespace Rock.Web.Cache
         /// </summary>
         public void ReloadAttributeValues()
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var blockService = new Cms.BlockService();
+            var blockModel = blockService.Get( this.Id );
+
+            if ( blockModel != null )
             {
-                var blockService = new Cms.BlockService();
-                var blockModel = blockService.Get( this.Id );
+                blockModel.LoadAttributes();
 
-                if ( blockModel != null )
-                {
-                    Rock.Attribute.Helper.LoadAttributes( blockModel );
+                this.AttributeValues = blockModel.AttributeValues;
 
-                    this.AttributeValues = blockModel.AttributeValues;
-
-                    this.AttributeIds = new List<int>();
-                    if ( blockModel.Attributes != null )
-                        foreach ( var attribute in blockModel.Attributes )
-                            this.AttributeIds.Add( attribute.Value.Id );
-                }
+                this.AttributeIds = new List<int>();
+                if ( blockModel.Attributes != null )
+                    foreach ( var attribute in blockModel.Attributes )
+                        this.AttributeIds.Add( attribute.Value.Id );
             }
         }
 
@@ -215,7 +212,7 @@ namespace Rock.Web.Cache
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( blockModel );
+                    blockModel.LoadAttributes();
 
                     block = BlockCache.CopyModel( blockModel );
 

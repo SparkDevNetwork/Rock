@@ -9,7 +9,7 @@ using System;
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// 
+    /// System Site guids
     /// </summary>
     public static class Site
     {

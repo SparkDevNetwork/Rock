@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Group
 
                 foreach ( var group in groups )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( group );
+                    group.LoadAttributes();
 
                     HtmlGenericControl li = new HtmlGenericControl( "li" );
                     ul.Controls.Add( li );

@@ -18,7 +18,7 @@ namespace Rock.Address
     /// <summary>
     /// Singleton class that uses MEF to load and cache all of the StandardizeComponent classes
     /// </summary>
-    public class StandardizeContainer : Container<StandardizeComponent, IComponentData>
+    public class StandardizeContainer : ContainerManaged<StandardizeComponent, IComponentData>
     {
         private static StandardizeContainer instance;
 

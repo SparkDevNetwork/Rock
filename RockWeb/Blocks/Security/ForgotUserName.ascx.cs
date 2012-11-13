@@ -83,7 +83,6 @@ namespace RockWeb.Blocks.Security
                 recipients.Add( tbEmail.Text, mergeObjects );
 
                 Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_FORGOT_USERNAME );
-                SetSMTPParameters( email );
                 email.Send( recipients );
 
                 pnlEntry.Visible = false;
@@ -92,27 +91,6 @@ namespace RockWeb.Blocks.Security
             else
                 pnlWarning.Visible = true;
         }
-
-        private void SetSMTPParameters( Email email )
-        {
-            var globalAttributes = GlobalAttributesCache.Read();
-
-            email.Server = globalAttributes.GetValue( "SMTPServer" );
-
-            int port = 0;
-            if ( !Int32.TryParse( globalAttributes.GetValue( "SMTPPort" ), out port ) )
-                port = 0;
-            email.Port = port;
-
-            bool useSSL = false;
-            if ( !bool.TryParse( globalAttributes.GetValue( "SMTPUseSSL" ), out useSSL ) )
-                useSSL = false;
-            email.UseSSL = useSSL;
-
-            email.UserName = globalAttributes.GetValue( "SMTPUserName" );
-            email.Password = globalAttributes.GetValue( "SMTPPassword" );
-        }
-
 
         #endregion
 
