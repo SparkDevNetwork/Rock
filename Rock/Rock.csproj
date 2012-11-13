@@ -671,6 +671,7 @@
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
+    <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
     <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />

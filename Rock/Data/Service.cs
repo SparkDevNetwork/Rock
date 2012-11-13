@@ -322,16 +322,35 @@ namespace Rock.Data
             var triggerService = new EntityTypeWorkflowTriggerService();
             foreach ( var trigger in triggerService.Get( entity.TypeName, triggerType ) )
             {
-                var workflow = Rock.Util.Workflow.Activate( trigger.WorkflowType, trigger.WorkflowName );
-
-                List<string> workflowErrors;
-                if ( !workflow.Process( entity.Dto, out workflowErrors ) )
+                if ( triggerType == EntityTriggerType.PreSave || triggerType == EntityTriggerType.PreDelete )
                 {
-                    ErrorMessages.AddRange( workflowErrors );
-                    return false;
+                    var workflow = Rock.Util.Workflow.Activate( trigger.WorkflowType, trigger.WorkflowName );
+
+                    List<string> workflowErrors;
+                    if ( !workflow.Process( entity.Dto, out workflowErrors ) )
+                    {
+                        ErrorMessages.AddRange( workflowErrors );
+                        return false;
+                    }
+                    else
+                    {
+                        if ( trigger.WorkflowType.IsPersisted )
+                        {
+                            var workflowService = new Rock.Util.WorkflowService();
+                            workflowService.Add( workflow, personId );
+                            workflowService.Save( workflow, personId );
+                        }
+                    }
+                }
+                else
+                {
+                    var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
+                    transaction.Trigger = trigger;
+                    transaction.Dto = entity.Dto;
+                    transaction.PersonId = personId;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
             }
-
             return true;
         }
 
