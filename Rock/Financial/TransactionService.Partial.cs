@@ -17,22 +17,14 @@ namespace Rock.Financial
     public partial class TransactionService : Service<Transaction, TransactionDto>
     {
         /// <summary>
-        /// Gets all transactions.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<Transaction> GetAllTransactions()
-        {
-           return Repository.GetAll();
-        }
-
-        /// <summary>
         /// Gets the transaction by search.
         /// </summary>
         /// <param name="searchValue">The search value.</param>
         /// <returns></returns>
-        public IEnumerable<Transaction> GetTransactionBySearch(TransactionSearchValue searchValue)
+        public IQueryable<Transaction> Get(TransactionSearchValue searchValue)
         {
-            var transactions = Repository.GetAll();
+            var transactions = Repository.AsQueryable();
+
             if (searchValue.AmountRange.From.HasValue)
             {
                 transactions = transactions.Where(transaction => transaction.Amount >= searchValue.AmountRange.From); 
@@ -41,13 +33,13 @@ namespace Rock.Financial
             {
                 transactions = transactions.Where(transaction => transaction.Amount <= searchValue.AmountRange.To); 
             }
-            if (searchValue.CreditCardType != null)
+            if (searchValue.CreditCardTypeId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.CreditCardType.Id == searchValue.CreditCardType.Id);
+                transactions = transactions.Where(transaction => transaction.CreditCardType.Id == searchValue.CreditCardTypeId.Value);
             }
-            if (searchValue.CurrencyType != null)
+            if (searchValue.CurrencyTypeId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.CurrencyType.Id == searchValue.CurrencyType.Id);
+                transactions = transactions.Where(transaction => transaction.CurrencyType.Id == searchValue.CurrencyTypeId.Value);
             }
             if (searchValue.DateRange.From.HasValue)
             {
@@ -57,13 +49,13 @@ namespace Rock.Financial
             {
                 transactions = transactions.Where(transaction => transaction.TransactionDate <= searchValue.DateRange.To.Value);
             }
-            if (searchValue.Fund != null)
+            if (searchValue.FundId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.TransactionFunds.Any(transactionFund => transactionFund.Fund.Id == searchValue.Fund.Id));
+                transactions = transactions.Where(transaction => transaction.TransactionFunds.Any(transactionFund => transactionFund.Fund.Id == searchValue.FundId.Value));
             }
-            if (searchValue.SourceType != null)
+            if (searchValue.SourceTypeId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.SourceTypeId == searchValue.SourceType.Id);
+                transactions = transactions.Where(transaction => transaction.SourceTypeId == searchValue.SourceTypeId.Value);
             }
             if (!String.IsNullOrEmpty(searchValue.TransactionCode))
             {

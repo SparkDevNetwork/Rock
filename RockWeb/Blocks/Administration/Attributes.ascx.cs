@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SetUserValue( "Category", ddlCategoryFilter.SelectedValue );
+            rFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
 
             BindGrid();
         }
