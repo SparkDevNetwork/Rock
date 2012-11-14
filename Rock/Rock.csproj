@@ -724,7 +724,7 @@
     </Compile>
     <Compile Include="Web\Cache\EntityTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
-    <Compile Include="Web\Cache\DefinedValue.cs" />
+    <Compile Include="Web\Cache\DefinedValueCache.cs" />
     <Compile Include="Web\Cache\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\FieldTypeCache.cs" />
     <Compile Include="Web\Cache\SiteCache.cs" />

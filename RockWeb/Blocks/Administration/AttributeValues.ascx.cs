@@ -77,6 +77,7 @@ namespace RockWeb.Blocks.Administration
                 _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
                 BindFilter();
+                rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
                 if ( _canConfigure )
                 {
@@ -118,6 +119,12 @@ namespace RockWeb.Blocks.Administration
 
         protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
         {
+            BindGrid();
+        }
+
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
             BindGrid();
         }
 
@@ -212,7 +219,9 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( var item in items )
             {
-                ddlCategoryFilter.Items.Add( item );
+                ListItem li = new ListItem( item );
+                li.Selected = ( !Page.IsPostBack && rFilter.GetUserValue( "Category" ) == item );
+                ddlCategoryFilter.Items.Add( li );
             }
         }
 

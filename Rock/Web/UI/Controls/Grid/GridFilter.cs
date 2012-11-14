@@ -5,6 +5,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -107,7 +108,8 @@ Sys.Application.add_load(function () {
             writer.AddAttribute( "class", "grid-filter-overview" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( _userValues.Count > 0 )
+            var nonEmptyValues = _userValues.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
+            if ( nonEmptyValues.Count > 0 )
             {
                 writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
@@ -115,14 +117,16 @@ Sys.Application.add_load(function () {
                 writer.Write( "Existing Filter Options" );
                 writer.RenderEndTag();
 
-                foreach ( var userValue in _userValues )
+                foreach ( var userValue in nonEmptyValues )
                 {
                     DisplayFilterValueArgs args = new DisplayFilterValueArgs( userValue.Key, userValue.Value );
                     if ( DisplayFilterValue != null )
                     {
                         DisplayFilterValue( this, args );
                     }
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( string.Format( "{0}: {1}", args.Key, args.Value ) );
+                    writer.RenderEndTag();
                 }
 
                 writer.RenderEndTag();
@@ -191,7 +195,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public void SetUserValue( string key, string value )
+        public void SaveUserValue( string key, string value )
         {
             if ( _userValues.ContainsKey( key ) )
             {
