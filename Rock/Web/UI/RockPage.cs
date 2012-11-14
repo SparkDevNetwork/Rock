@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -1264,6 +1265,31 @@ namespace Rock.Web.UI
                 foreach ( string value in SessionUserValues()[key] )
                     return value;
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the values for the current user that start with a given key.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        /// <returns></returns>
+        public Dictionary<string, string> GetUserValues( string keyPrefix )
+        {
+            var selectedValues = new Dictionary<string,string>();
+
+            var values = SessionUserValues();
+            foreach(var key in values.Where ( v => v.Key.StartsWith(keyPrefix) ) )
+            {
+                string firstValue = string.Empty;
+                foreach( string value in key.Value)
+                {
+                    firstValue = value;
+                    break;
+                }
+
+                selectedValues.Add(key.Key, firstValue);
+            }
+
+            return selectedValues;
         }
 
         /// <summary>

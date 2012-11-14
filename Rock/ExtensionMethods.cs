@@ -14,7 +14,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock.Cms;
 
 namespace Rock
@@ -417,6 +419,25 @@ namespace Rock
             return ctl;
         }
 
+        /// <summary>
+        /// Gets the parent RockBlock.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockBlock RockBlock( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockBlock )
+                {
+                    return (Rock.Web.UI.RockBlock)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions
@@ -520,6 +541,26 @@ namespace Rock
             listControl.DataSource = dictionary;
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
+            listControl.DataBind();
+        }
+
+        /// <summary>
+        /// Binds to the values of a definedType
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType )
+        {
+            var ds = definedType.DefinedValues
+                .Select( v => new
+                {
+                    v.Name,
+                    v.Id
+                } );
+
+            listControl.DataSource = ds;
+            listControl.DataTextField = "Name";
+            listControl.DataValueField = "Id";
             listControl.DataBind();
         }
 

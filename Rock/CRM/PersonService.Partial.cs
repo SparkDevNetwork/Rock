@@ -240,12 +240,15 @@ namespace Rock.Crm
 
             foreach ( var value in values )
             {
-                var attributeValue = new Core.AttributeValue();
-                attributeValue.AttributeId = attribute.Id;
-                attributeValue.EntityId = person.Id;
-                attributeValue.Value = value;
-                attributeValueService.Add( attributeValue, personId );
-                attributeValueService.Save( attributeValue, personId );
+                if ( !string.IsNullOrWhiteSpace( value ) )
+                {
+                    var attributeValue = new Core.AttributeValue();
+                    attributeValue.AttributeId = attribute.Id;
+                    attributeValue.EntityId = person.Id;
+                    attributeValue.Value = value;
+                    attributeValueService.Add( attributeValue, personId );
+                    attributeValueService.Save( attributeValue, personId );
+                }
             }
         }
 

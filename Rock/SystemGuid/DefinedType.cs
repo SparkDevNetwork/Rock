@@ -14,6 +14,31 @@ namespace Rock.SystemGuid
     public static class DefinedType
     {
         /// <summary>
+        /// Guid for Financial Currency Type
+        /// </summary>
+        public static Guid FINANCIAL_CURRENCY_TYPE { get { return new Guid( "1D1304DE-E83A-44AF-B11D-0C66DD600B81" ); } }
+
+        /// <summary>
+        /// Guid for Financial Credit Card Type
+        /// </summary>
+        public static Guid FINANCIAL_CREDIT_CARD_TYPE { get { return new Guid( "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9" ); } }
+
+        /// <summary>
+        /// Guid for Financial Source Type
+        /// </summary>
+        public static Guid FINANCIAL_SOURCE_TYPE { get { return new Guid( "4F02B41E-AB7D-4345-8A97-3904DDD89B01" ); } }
+
+        /// <summary>
+        /// Guid for the types of Locations (such as Home, Main Office, etc)
+        /// </summary>
+        public static Guid LOCATION_LOCATION_TYPE { get { return new Guid( "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" ); } }
+
+        /// <summary>
+        /// Guid for Marketing Campaign Audience Type
+        /// </summary>
+        public static Guid MARKETING_CAMPAIGN_AUDIENCE_TYPE { get { return new Guid( "799301A3-2026-4977-994E-45DC68502559" ); } }
+
+        /// <summary>
         /// Metric Collection Frequency
         /// </summary>
         public static Guid METRIC_COLLECTION_FREQUENCY { get { return new Guid( "526CB333-2C64-4486-8469-7F7EA9366254" ); } }
@@ -58,14 +83,5 @@ namespace Rock.SystemGuid
         /// </summary>
         public static Guid PERSON_PHONE_TYPE { get { return new Guid( "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD" ); } }
 
-        /// <summary>
-        /// Guid for the types of Locations (such as Home, Main Office, etc)
-        /// </summary>
-        public static Guid LOCATION_LOCATION_TYPE { get { return new Guid( "2e68d37c-fb7b-4aa5-9e09-3785d52156cb" ); } }
-
-        /// <summary>
-        /// Guid for Marketing Campaign Audience Type
-        /// </summary>
-        public static Guid MARKETING_CAMPAIGN_AUDIENCE_TYPE { get { return new Guid( "799301A3-2026-4977-994E-45DC68502559" ); } }
     }
 }
