@@ -91,6 +91,7 @@ namespace RockWeb.Blocks.Administration
             _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
             BindFilter();
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             if ( _canConfigure )
             {
@@ -209,12 +210,14 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCategoryFilter control.
+        /// Handles the ApplyFilterClick event of the rFilter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
+            rFilter.SetUserValue( "Category", ddlCategoryFilter.SelectedValue );
+
             BindGrid();
         }
 
@@ -459,7 +462,9 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( var item in items )
             {
-                ddlCategoryFilter.Items.Add( item );
+                ListItem li = new ListItem( item );
+                li.Selected = ( !Page.IsPostBack && rFilter.GetUserValue( "Category" ) == item );
+                ddlCategoryFilter.Items.Add( li );
             }
         }
 
