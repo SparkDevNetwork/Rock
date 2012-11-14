@@ -31,6 +31,25 @@ namespace Rock.Constants
         {
             return string.Format( "You are not authorized to edit {0}.", itemFieldName.Pluralize().ToLower() );
         }
+
+        /// <summary>
+        /// Dates the time format invalid.
+        /// </summary>
+        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <returns></returns>
+        public static string DateTimeFormatInvalid( string itemFieldName )
+        {
+            return string.Format( "Invalid format for {0}.", itemFieldName.SplitCase().ToLower() );
+        }
+
+        /// <summary>
+        /// Dates the range end date before start date.
+        /// </summary>
+        /// <returns></returns>
+        public static string DateRangeEndDateBeforeStartDate()
+        {
+            return string.Format( "End Date cannot be earlier than Start Date" );
+        }
     }
 
     /// <summary>

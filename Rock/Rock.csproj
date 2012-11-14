@@ -53,6 +53,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\AjaxControlToolkit.dll</HintPath>
     </Reference>
+    <Reference Include="CKEditor.NET">
+      <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
+    </Reference>
     <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
@@ -186,9 +189,14 @@
     <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
+    <Compile Include="Field\Types\HtmlField.cs" />
     <Compile Include="Migrations\201211132237208_Workflow.cs" />
     <Compile Include="Migrations\201211132237208_Workflow.Designer.cs">
       <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201211132333209_MarketingCampaignAdAttributes.cs" />
+    <Compile Include="Migrations\201211132333209_MarketingCampaignAdAttributes.Designer.cs">
+      <DependentUpon>201211132333209_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
     <Compile Include="Util\CodeGenerated\WorkflowTriggerService.cs" />
@@ -732,6 +740,9 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
@@ -1110,6 +1121,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201211132237208_Workflow.resx">
       <DependentUpon>201211132237208_Workflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201211132333209_MarketingCampaignAdAttributes.resx">
+      <DependentUpon>201211132333209_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

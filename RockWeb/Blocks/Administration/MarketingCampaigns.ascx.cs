@@ -254,18 +254,20 @@ public partial class MarketingCampaigns : RockBlock
             tbPriority.Text = marketingCampaignAd.Priority.ToString();
             ddlMarketingCampaignAdStatus.SelectedValue = Convert.ToInt32( marketingCampaignAd.MarketingCampaignAdStatus ).ToString();
             ddlMarketingCampaignAdStatusPerson.SelectedValue = marketingCampaignAd.MarketingCampaignStatusPersonId.ToString();
-            tbStartDate.Text = marketingCampaignAd.StartDate.ToShortDateString();
-            tbEndDate.Text = marketingCampaignAd.EndDate.ToShortDateString();
+            tbAdDateRangeStartDate.Text = marketingCampaignAd.StartDate.ToShortDateString();
+            tbAdDateRangeEndDate.Text = marketingCampaignAd.EndDate.ToShortDateString();
             tbUrl.Text = marketingCampaignAd.Url;
-            //tbSummaryText.Text = this.AttributeValue( "SummaryText" );
-            //tbDetailEditor.Text = this.AttributeValue( "
-            //imgDetailImage
-            //imgSummaryImage
         }
         else
         {
             lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + tbTitle.Text );
-            // TODO
+            ddlMarketingCampaignAdType.SetValue( string.Empty );
+            tbPriority.Text = string.Empty;
+            ddlMarketingCampaignAdStatus.SetValue( string.Empty );
+            ddlMarketingCampaignAdStatusPerson.SetValue( string.Empty );
+            tbAdDateRangeStartDate.Text = string.Empty;
+            tbAdDateRangeEndDate.Text = string.Empty;
+            tbUrl.Text = string.Empty;
         }
 
         ddlMarketingCampaignAdType_SelectedIndexChanged( null, null );
@@ -311,6 +313,10 @@ public partial class MarketingCampaigns : RockBlock
         }
 
         int marketingAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
+
+        MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
+        tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+        
         List<Rock.Core.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
         marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
@@ -347,11 +353,20 @@ public partial class MarketingCampaigns : RockBlock
     /// <returns></returns>
     private static List<Rock.Core.Attribute> GetAttributesForAdType( int marketingAdTypeId )
     {
-        AttributeService attributeService = new AttributeService();
-        var attributesForAdType = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( marketingAdTypeId.ToString() ) );
-        return attributesForAdType.ToList();
+        MarketingCampaignAd temp = new MarketingCampaignAd();
+        temp.MarketingCampaignAdTypeId = marketingAdTypeId;
+
+        Rock.Attribute.Helper.LoadAttributes( temp );
+        List<Rock.Web.Cache.AttributeCache> attribs = temp.Attributes.Values.ToList();
+
+        List<Rock.Core.Attribute> result = new List<Rock.Core.Attribute>();
+        foreach ( var item in attribs )
+        {
+            var attrib = item.ToModel();
+            result.Add( attrib );
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -362,6 +377,7 @@ public partial class MarketingCampaigns : RockBlock
     protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
     {
         //todo
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -409,15 +425,43 @@ public partial class MarketingCampaigns : RockBlock
         currentAd.MarketingCampaignStatusPersonId = int.Parse( ddlMarketingCampaignAdStatusPerson.SelectedValue );
 
         DateTime startDate;
-        if ( DateTime.TryParse( tbStartDate.Text, out startDate ) )
+        if ( DateTime.TryParse( tbAdDateRangeStartDate.Text, out startDate ) )
         {
             currentAd.StartDate = startDate;
         }
+        else
+        {
+            if ( string.IsNullOrWhiteSpace( tbAdDateRangeStartDate.Text ) )
+            {
+                currentAd.StartDate = DateTime.MinValue;
+            }
+            else
+            {
+                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "StartDate" ) );
+            }
+        }
 
         DateTime endDate;
-        if ( DateTime.TryParse( tbEndDate.Text, out endDate ) )
+        if ( DateTime.TryParse( tbAdDateRangeEndDate.Text, out endDate ) )
         {
             currentAd.EndDate = endDate;
+        }
+        else
+        {
+            if ( string.IsNullOrWhiteSpace( tbAdDateRangeEndDate.Text ) )
+            {
+                currentAd.EndDate = tbAdDateRangeEndDate.Visible ? DateTime.MaxValue : currentAd.StartDate;
+            }
+            else
+            {
+                tbAdDateRangeEndDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "EndDate" ) );
+            }
+
+        }
+
+        if ( currentAd.EndDate < currentAd.StartDate )
+        {
+            tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
         }
 
         currentAd.Url = tbUrl.Text;
@@ -578,11 +622,12 @@ public partial class MarketingCampaigns : RockBlock
     protected void gCampus_Add( object sender, EventArgs e )
     {
         CampusService campusService = new CampusService();
+        List<Campus> campusesUI = CampusesState.ToModel();
 
         // populate dropdown with all db Campuses that aren't already CampusesState
         var qry = from campusInDB in campusService.Queryable()
-                  where !( from campusStateItem in CampusesState
-                           select campusStateItem.Id ).Contains( campusInDB.Id )
+                  where !( from campusUI in campusesUI
+                           select campusUI.Id ).Contains( campusInDB.Id )
                   select campusInDB;
 
         List<Campus> list = qry.ToList();
@@ -843,31 +888,18 @@ public partial class MarketingCampaigns : RockBlock
                     mca = new MarketingCampaignAd();
                     marketingCampaign.MarketingCampaignAds.Add( mca );
                 }
-                
+
                 marketingCampaignAdState.CopyToModel( mca );
-
-                // add/update each attrib associated with ad
-                var attribsForAdtype = GetAttributesForAdType( mca.MarketingCampaignAdTypeId );
-                foreach ( var attribValueValues in marketingCampaignAdState.AttributeValues )
+                mca.AttributeCategories = marketingCampaignAdState.AttributeCategories;
+                mca.Attributes = marketingCampaignAdState.Attributes;
+                mca.AttributeValues.Clear();
+                foreach ( var item in marketingCampaignAdState.AttributeValues )
                 {
-                    var attribValueUI = attribValueValues.Value.First();
-                    attribValueUI.EntityId = mca.Id;
-                    attribValueUI.AttributeId = attribsForAdtype.First( a => a.Key.Equals( attribValueValues.Key, StringComparison.OrdinalIgnoreCase ) ).Id;
-                    var attributeValueDB = attributeValueService.GetByAttributeIdAndEntityId( attribValueUI.AttributeId, mca.Id ).FirstOrDefault();
-                    if ( attributeValueDB != null )
-                    {
-                        attributeValueService.Delete( attributeValueDB, CurrentPersonId );
-                        attribValueUI.Guid = attributeValueDB.Guid;
-                    }
-                    else
-                    {
-                        attribValueUI.Guid = Guid.NewGuid();
-                    }
-
-                    var attribValue = attribValueUI.ToModel();
-                    attributeValueService.Add( attribValueUI.ToModel(), CurrentPersonId );
-                    attributeValueService.Save( attribValue, CurrentPersonId );
+                    mca.AttributeValues.Add( item.Key, item.Value );
                 }
+
+                Rock.Attribute.Helper.SaveAttributeValues( mca, CurrentPersonId );
+                marketingCampaignAdService.Save( mca, CurrentPersonId );
             }
 
             marketingCampaignService.Save( marketingCampaign, CurrentPersonId );
@@ -976,7 +1008,10 @@ public partial class MarketingCampaigns : RockBlock
                 MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
             }
 
-            marketingCampaign.MarketingCampaignCampuses.ToList().ForEach( a => CampusesState.Add( new CampusDto( a.Campus ) ) );
+            foreach ( var campus in marketingCampaign.MarketingCampaignCampuses )
+            {
+                CampusesState.Add( campus.Campus.ToDto() );
+            }
 
             lActionTitle.Text = ActionTitle.Edit( MarketingCampaign.FriendlyTypeName );
             btnCancel.Text = "Cancel";
