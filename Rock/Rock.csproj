@@ -732,7 +732,7 @@
     </Compile>
     <Compile Include="Web\Cache\EntityTypeCache.cs" />
     <Compile Include="Web\Cache\DefinedTypeCache.cs" />
-    <Compile Include="Web\Cache\DefinedValue.cs" />
+    <Compile Include="Web\Cache\DefinedValueCache.cs" />
     <Compile Include="Web\Cache\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\FieldTypeCache.cs" />
     <Compile Include="Web\Cache\SiteCache.cs" />
@@ -744,6 +744,7 @@
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />

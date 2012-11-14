@@ -5,13 +5,9 @@
 
         <asp:Panel ID="pnlList" runat="server">
 
-            <div class="grid-filter">
-                <fieldset>
-                    <legend>Filter Options</legend>
-                    <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
-                </fieldset>
-            </div>
-
+            <Rock:GridFilter ID="rFilter" runat="server">
+                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+            </Rock:GridFilter>
             <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />

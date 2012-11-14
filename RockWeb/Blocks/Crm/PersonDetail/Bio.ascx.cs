@@ -24,18 +24,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var workflowTypeService = new Rock.Util.WorkflowTypeService();
-                var workflowType = workflowTypeService.Get( 1 );
-
-                var workflowService = new Rock.Util.WorkflowService();
-                var workflow = workflowService.Activate( workflowType, "Test", CurrentPersonId );
-                //var workflow = workflowService.Get( 1 );
-                workflowService.Process( workflow, CurrentPersonId );
-                workflowService.Save( workflow, CurrentPersonId );
-            }
-
             // Name
             var page = Page as RockPage;
             if ( page != null )
