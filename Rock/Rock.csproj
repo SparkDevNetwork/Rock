@@ -733,6 +733,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />

@@ -417,6 +417,25 @@ namespace Rock
             return ctl;
         }
 
+        /// <summary>
+        /// Gets the parent RockBlock.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockBlock RockBlock( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockBlock )
+                {
+                    return (Rock.Web.UI.RockBlock)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions
