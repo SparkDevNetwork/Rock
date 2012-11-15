@@ -7,14 +7,9 @@
 
         <asp:Panel ID="pnlMetricList" runat="server">
 
-            <div class="grid-filter">
-                <fieldset>
-                    <legend>Filter Options
-            <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
-                    </legend>
-                </fieldset>
-            </div>
-
+            <Rock:GridFilter ID="rFilter" runat="server">
+                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+            </Rock:GridFilter>
             <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
@@ -60,8 +55,7 @@
                     <fieldset>
                         <legend>&nbsp;</legend>
                         <Rock:LabeledDropDownList ID="ddlCollectionFrequency" runat="server"
-                            LabelText="Collection Frequency" AutoPostBack="true"
-                            OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
+                            LabelText="Collection Frequency"  />
                         <Rock:DataTextBox ID="tbMinValue" runat="server" LabelText="Minimum Value"
                             SourceTypeName="Rock.Core.Metric, Rock" PropertyName="MinValue" />
                         <Rock:DataTextBox ID="tbMaxValue" runat="server" LabelText="Maximum Value"

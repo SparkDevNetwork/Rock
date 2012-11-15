@@ -7,13 +7,9 @@
 
     <asp:Panel ID="pnlList" runat="server">
 
-        <div class="grid-filter">
-        <fieldset>
-            <legend>Filter Options</legend>
-            <Rock:LabeledTextBox ID="tbNameFilter" runat="server" LabelText="Role Name" AutoPostBack="true" OnTextChanged="tbNameFilter_TextChanged"></Rock:LabeledTextBox>
-        </fieldset>
-        </div>
-
+        <Rock:GridFilter ID="rFilter" runat="server">
+            <Rock:LabeledTextBox ID="tbNameFilter" runat="server" LabelText="Role Name"></Rock:LabeledTextBox>
+        </Rock:GridFilter>
         <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="role" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
