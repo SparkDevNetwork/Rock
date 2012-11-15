@@ -30,6 +30,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _canConfigure )
                 {
+                    tbNameFilter.Text = rFilter.GetUserValue( "Name" );
+                    rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+
                     rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.IsAddEnabled = true;
 
@@ -49,6 +52,12 @@ namespace RockWeb.Blocks.Administration
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )
         {
+            BindGrid();
+        }
+
+        void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserValue( "Name", tbNameFilter.Text );
             BindGrid();
         }
 

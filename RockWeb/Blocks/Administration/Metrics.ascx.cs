@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Administration
             {
                 _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 
+                rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                 BindCategoryFilter();                
 
                 if ( _canConfigure )
@@ -81,9 +82,9 @@ namespace RockWeb.Blocks.Administration
 
         #region Events
 
-        protected void ddlCategoryFilter_SelectedIndexChanged( object sender, EventArgs e )
+        void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            BindCategoryFilter();
+            rFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
             BindGridMetric();
         }
 
@@ -271,7 +272,11 @@ namespace RockWeb.Blocks.Administration
                 Distinct().ToList();
 
             foreach ( var item in items )
-                ddlCategoryFilter.Items.Add( item );
+            {
+                ListItem li = new ListItem( item );
+                li.Selected = ( !Page.IsPostBack && rFilter.GetUserValue( "Category" ) == item );
+                ddlCategoryFilter.Items.Add( li );
+            }
         }
 
         private void BindGridMetric()
