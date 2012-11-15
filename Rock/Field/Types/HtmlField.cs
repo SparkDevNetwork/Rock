@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Web.UI;
+using CKEditor.NET;
 
 namespace Rock.Field.Types
 {
@@ -14,9 +16,11 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new CKEditor.NET.CKEditorControl();
+            CKEditorControl editor = new CKEditorControl();
+            editor.Toolbar = "RockCustomConfig";
+            return editor;
         }
     }
 }
