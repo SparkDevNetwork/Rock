@@ -37,6 +37,12 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the defined values.
+        /// </summary>
+        /// <value>
+        /// The defined values.
+        /// </value>
         public List<DefinedValueCache> DefinedValues
         {
             get
@@ -112,6 +118,11 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
         public static DefinedTypeCache Read( Guid guid )
         {
             ObjectCache cache = MemoryCache.Default;
