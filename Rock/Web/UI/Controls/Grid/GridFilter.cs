@@ -13,6 +13,9 @@ using Rock;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [ToolboxData( "<{0}:GridFilter runat=server></{0}:GridFilter>" )]
     public class GridFilter : PlaceHolder, INamingContainer
     {
@@ -237,20 +240,37 @@ Sys.Application.add_load(function () {
         /// </summary>
         public class DisplayFilterValueArgs : EventArgs
         {
-            private string _key = string.Empty;
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
             public string Key
             {
                 get { return _key; }
                 set { _key = value; }
             }
-
-            private string _value = string.Empty;
+            private string _key = string.Empty;
+            
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
             public string Value
             {
                 get { return _value; }
                 set { _value = value; }
             }
+            private string _value = string.Empty;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs" /> class.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="value">The value.</param>
             public DisplayFilterValueArgs( string key, string value )
             {
                 _key = key;
