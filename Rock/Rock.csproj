@@ -156,6 +156,7 @@
     <Compile Include="Cms\MarketingCampaignAd.cs" />
     <Compile Include="Cms\MarketingCampaignAdDto.partial.cs" />
     <Compile Include="Cms\MarketingCampaignAdType.cs" />
+    <Compile Include="Cms\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Cms\MarketingCampaignAudience.cs" />
     <Compile Include="Cms\MarketingCampaignAudienceDto.partial.cs" />
     <Compile Include="Cms\MarketingCampaignCampus.cs" />

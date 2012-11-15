@@ -96,6 +96,14 @@ public partial class Groups : RockBlock
         Group group = groupService.Get( (int)e.RowKeyValue );
         if ( CurrentBlock != null )
         {
+            string errorMessage;
+            if ( !groupService.CanDelete( group.Id, out errorMessage ) )
+            {
+                nbGridWarning.Text = errorMessage;
+                nbGridWarning.Visible = true;
+                return;
+            }
+            
             groupService.Delete( group, CurrentPersonId );
             groupService.Save( group, CurrentPersonId );
         }
