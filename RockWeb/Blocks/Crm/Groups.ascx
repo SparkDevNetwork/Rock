@@ -3,6 +3,7 @@
 <asp:UpdatePanel ID="upGroups" runat="server" >
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
+            <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
             <Rock:Grid ID="gGroups" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />

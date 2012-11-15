@@ -126,18 +126,17 @@ public partial class MarketingCampaignAdTypes : RockBlock
     {
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
         int marketingCampaignAdTypeId = (int)e.RowKeyValue;
-
-        /* todo
+        MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
+        
         string errorMessage;
-        if ( !MarketingCampaignAdTypeService.CanDelete( MarketingCampaignAdTypeId, out errorMessage ) )
+        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType.Id, out errorMessage ) )
         {
             nbGridWarning.Text = errorMessage;
             nbGridWarning.Visible = true;
             return;
         }
-        */
-
-        MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
+        
+        
         if ( CurrentBlock != null )
         {
             marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonId );

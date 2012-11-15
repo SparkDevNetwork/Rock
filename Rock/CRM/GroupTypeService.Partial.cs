@@ -29,30 +29,33 @@ namespace Rock.Crm
         /// <summary>
         /// Determines whether this instance can delete the specified group type id.
         /// </summary>
-        /// <param name="groupTypeId">The group type id.</param>
+        /// <param name="id">The id.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified group type id; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( int groupTypeId, out string errorMessage )
+        public bool CanDelete( int id, out string errorMessage )
         {
+            // partially code generated from Dev Tools/Sql/CodeGen_CanDelete.sql
+            
             RockContext context = new RockContext();
             context.Database.Connection.Open();
-            var cmd = context.Database.Connection.CreateCommand();
-            cmd.CommandText = string.Format( "select count(*) from crmGroupTypeAssociation where ChildGroupTypeId = {0} ", groupTypeId );
-            var result = cmd.ExecuteScalar();
-            int? count = result as int?;
-            bool canDelete = ( count > 0 );
-            if ( canDelete )
-            {
-                errorMessage = string.Empty;
-            }
-            else
-            {
-                errorMessage = "This group type is assigned as a child group type.";
-            }
-            return canDelete;
+            bool canDelete = true;
+            errorMessage = string.Empty;
 
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroup where GroupTypeId = {0} ", id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    canDelete = false;
+                    errorMessage = "This group type is assigned to a group.";
+                }
+            }
+
+            return canDelete;
         }
 
         /// <summary>
@@ -72,7 +75,7 @@ namespace Rock.Crm
             RockContext context = new RockContext();
             context.Database.Connection.Open();
             var cmd = context.Database.Connection.CreateCommand();
-            cmd.CommandText = string.Format( "delete from crmGroupTypeAssociation where ParentGroupTypeId = {0}", item.Id );
+            cmd.CommandText = string.Format( "delete from crmGroupTypeAssociation where GroupTypeId = {0} or ChildGroupTypeId = {0}", item.Id );
             cmd.ExecuteNonQuery();
             item.ChildGroupTypes.Clear();
             return base.Delete( item, personId );
