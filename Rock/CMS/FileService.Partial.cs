@@ -21,10 +21,11 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="personId">The person id.</param>
-        public override void Save( File item, int? personId )
+        /// <returns></returns>
+        public override bool Save( File item, int? personId )
         {
             item.LastModifiedTime = DateTime.Now;
-            base.Save( item, personId );
+            return base.Save( item, personId );
         }
     }
 }

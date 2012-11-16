@@ -23,7 +23,7 @@ namespace Rock.Core
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class DefinedValueDto : IDto
+    public partial class DefinedValueDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -140,6 +140,16 @@ namespace Rock.Core
                 definedValue.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -179,8 +189,19 @@ namespace Rock.Core
         public static List<DefinedValueDto> ToDto( this List<DefinedValue> value )
         {
             List<DefinedValueDto> result = new List<DefinedValueDto>();
-            value.ForEach( a => result.Add( new DefinedValueDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static DefinedValueDto ToDto( this DefinedValue value )
+        {
+            return new DefinedValueDto( value );
+        }
+
     }
 }

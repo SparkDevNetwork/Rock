@@ -71,7 +71,7 @@ namespace Rock.Web.Cache
             Rock.Cms.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( siteModel );
+                siteModel.LoadAttributes();
 
                 if ( siteModel.Attributes != null )
                     foreach ( var attribute in siteModel.Attributes )
@@ -109,7 +109,7 @@ namespace Rock.Web.Cache
                 {
                     site = new SiteCache( siteModel );
 
-                    Rock.Attribute.Helper.LoadAttributes( siteModel );
+                    siteModel.LoadAttributes();
 
                     foreach ( var attribute in siteModel.Attributes )
                         site.AttributeIds.Add( attribute.Value.Id );

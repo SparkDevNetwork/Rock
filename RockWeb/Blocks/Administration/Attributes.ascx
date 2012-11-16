@@ -4,13 +4,9 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <div class="grid-filter">
-                <fieldset>
-                    <legend>Filter Options</legend>
-                    <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
-                </fieldset>
-            </div>
-
+            <Rock:GridFilter ID="rFilter" runat="server">
+                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category"  />
+            </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />

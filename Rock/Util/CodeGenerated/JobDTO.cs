@@ -23,7 +23,7 @@ namespace Rock.Util
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class JobDto : IDto
+    public partial class JobDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -220,6 +220,16 @@ namespace Rock.Util
                 job.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -259,8 +269,19 @@ namespace Rock.Util
         public static List<JobDto> ToDto( this List<Job> value )
         {
             List<JobDto> result = new List<JobDto>();
-            value.ForEach( a => result.Add( new JobDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static JobDto ToDto( this Job value )
+        {
+            return new JobDto( value );
+        }
+
     }
 }

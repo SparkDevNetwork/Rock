@@ -23,7 +23,7 @@ namespace Rock.Financial
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PersonAccountLookupDto : IDto
+    public partial class PersonAccountLookupDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -116,6 +116,16 @@ namespace Rock.Financial
                 personAccountLookup.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -155,8 +165,19 @@ namespace Rock.Financial
         public static List<PersonAccountLookupDto> ToDto( this List<PersonAccountLookup> value )
         {
             List<PersonAccountLookupDto> result = new List<PersonAccountLookupDto>();
-            value.ForEach( a => result.Add( new PersonAccountLookupDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonAccountLookupDto ToDto( this PersonAccountLookup value )
+        {
+            return new PersonAccountLookupDto( value );
+        }
+
     }
 }

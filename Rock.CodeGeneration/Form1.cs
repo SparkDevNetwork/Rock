@@ -294,7 +294,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// </summary>" );
             sb.AppendLine( "    [Serializable]" );
             sb.AppendLine( "    [DataContract]" );
-            sb.AppendFormat( "    public partial class {0}Dto : IDto" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0}Dto : IDto, DotLiquid.ILiquidizable" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
             foreach ( var property in properties )
@@ -359,7 +359,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// <summary>" );
             sb.AppendLine( "        /// Copies the model property values to the DTO properties" );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>");
+            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
             sb.AppendLine( "        public void CopyFromModel( IEntity model )" );
             sb.AppendLine( "        {" );
             sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
@@ -376,7 +376,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// <summary>" );
             sb.AppendLine( "        /// Copies the DTO property values to the entity properties" );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>");
+            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
             sb.AppendLine( "        public void CopyToModel ( IEntity model )" );
             sb.AppendLine( "        {" );
             sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
@@ -388,6 +388,18 @@ namespace Rock.CodeGeneration
             }
             sb.AppendLine( "            }" );
             sb.AppendLine( "        }" );
+            sb.AppendLine( "" );
+
+            sb.AppendLine( "        /// <summary>" );
+            sb.AppendLine( "        /// Converts to liquidizable object for dotLiquid templating" );
+            sb.AppendLine( "        /// </summary>" );
+            sb.AppendLine( "        /// <returns></returns>" );
+            sb.AppendLine( "        public object ToLiquid()" );
+            sb.AppendLine( "        {" );
+            sb.AppendLine( "            return this.ToDictionary();" );
+            sb.AppendLine( "        }" );
+            sb.AppendLine( "" );
+            
             sb.AppendLine( "    }" );
 
             string extensionSection = @"
@@ -428,9 +440,20 @@ namespace Rock.CodeGeneration
         public static List<{0}Dto> ToDto( this List<{0}> value )
         {{
             List<{0}Dto> result = new List<{0}Dto>();
-            value.ForEach( a => result.Add( new {0}Dto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }}
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static {0}Dto ToDto( this {0} value )
+        {{
+            return new {0}Dto( value );
+        }}
+
     }}
 }}";
 

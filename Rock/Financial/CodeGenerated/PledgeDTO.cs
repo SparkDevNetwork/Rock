@@ -23,7 +23,7 @@ namespace Rock.Financial
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PledgeDto : IDto
+    public partial class PledgeDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -156,6 +156,16 @@ namespace Rock.Financial
                 pledge.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -195,8 +205,19 @@ namespace Rock.Financial
         public static List<PledgeDto> ToDto( this List<Pledge> value )
         {
             List<PledgeDto> result = new List<PledgeDto>();
-            value.ForEach( a => result.Add( new PledgeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PledgeDto ToDto( this Pledge value )
+        {
+            return new PledgeDto( value );
+        }
+
     }
 }

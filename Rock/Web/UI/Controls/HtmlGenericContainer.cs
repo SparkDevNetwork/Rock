@@ -18,6 +18,7 @@ namespace Rock.Web.UI.Controls
         /// Initializes a new instance of the <see cref="HtmlGenericContainer"/> class.
         /// </summary>
         public HtmlGenericContainer()
+            : base( "div" )
         {
         }
 

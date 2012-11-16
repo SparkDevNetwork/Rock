@@ -128,9 +128,13 @@ namespace Rock.Tests.Fakes
             db.ToList().Remove( entity );
         }
 
-        public virtual List<EntityChange> Save( int? personId, List<AuditDto> audits )
+        public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
         {
-            return null;
+            changes = new List<EntityChange>();
+            audits = new List<AuditDto>();
+            errorMessages = new List<string>();
+
+            return true;
         }
     }
 }

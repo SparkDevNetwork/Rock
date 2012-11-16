@@ -4,135 +4,211 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Constants;
 using Rock.Core;
 using Rock.Financial;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
-
-public partial class Blocks_Administration_Financials : Rock.Web.UI.RockBlock
+namespace RockWeb.Blocks.Administration
 {
-    private TransactionService transactionService = new TransactionService();
-    private FundService fundService = new FundService();
-    private DefinedValueService definedValueService = new DefinedValueService();
-    private bool _canConfigure = false;
-
-    protected override void OnInit(EventArgs e)
+    public partial class Financials : Rock.Web.UI.RockBlock
     {
-        base.OnInit(e);
-        _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
-        if (!_canConfigure)
+        #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            DisplayError("You are not authorized to configure this page");
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
         }
-    }
 
-    protected void Page_Load(object sender, EventArgs e)
-    {
-        if (!Page.IsPostBack && _canConfigure)
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
-            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            LoadDropDowns();
+            if ( !Page.IsPostBack )
+            {
+                BindFilter();
+                BindGrid();
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the filter display for each saved user value
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void rFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Fund":
+
+                    int fundId = 0;
+                    if ( int.TryParse( e.Value, out fundId ) )
+                    {
+                        var service = new FundService();
+                        var fund = service.Get( fundId );
+                        if ( fund != null )
+                        {
+                            e.Value = fund.Name;
+                        }
+                    }
+
+                    break;
+
+                case "Currency Type":
+                case "Credit Card Type":
+                case "Source":
+
+                    int definedValueId = 0;
+                    if ( int.TryParse( e.Value, out definedValueId ) )
+                    {
+                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        if ( definedValue != null )
+                        {
+                            e.Value = definedValue.Name;
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserValue( "From Date", txtFromDate.Text );
+            rFilter.SaveUserValue( "To Date", txtToDate.Text );
+            rFilter.SaveUserValue( "From Amount", txtFromAmount.Text );
+            rFilter.SaveUserValue( "To Amount", txtToAmount.Text );
+            rFilter.SaveUserValue( "Transaction Code", txtTransactionCode.Text );
+            rFilter.SaveUserValue( "Fund", ddlFundType.SelectedValue != All.Id.ToString() ? ddlFundType.SelectedValue : string.Empty);
+            rFilter.SaveUserValue( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
+            rFilter.SaveUserValue( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
+            rFilter.SaveUserValue( "Source", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
+
             BindGrid();
         }
 
-        btnSearch.Click += delegate
+        #endregion
+
+        #region Internal Methods
+
+        private void BindFilter()
+        {
+            DateTime fromDate;
+            if ( !DateTime.TryParse( rFilter.GetUserValue( "From Date" ), out fromDate ) )
+            {
+                fromDate = DateTime.Today;
+            }
+            txtFromDate.Text = fromDate.ToShortDateString();
+
+            txtToDate.Text = rFilter.GetUserValue( "To Date" );
+            txtFromAmount.Text = rFilter.GetUserValue( "From Amount" );
+            txtToAmount.Text = rFilter.GetUserValue( "To Amount" );
+            txtTransactionCode.Text = rFilter.GetUserValue( "Transaction Code" );
+
+            ddlFundType.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
+
+            var fundService = new FundService();
+            foreach ( Fund fund in fundService.Queryable() )
+            {
+                ListItem li = new ListItem( fund.Name, fund.Id.ToString() );
+                li.Selected = fund.Id.ToString() == rFilter.GetUserValue( "Fund" );
+                ddlFundType.Items.Add( li );
+            }
+
+            BindDefinedTypeDropdown( ddlCurrencyType, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Currency Type" );
+            BindDefinedTypeDropdown( ddlCreditCardType, Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE, "Credit Card Type" );
+            BindDefinedTypeDropdown( ddlSourceType, Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source" );
+        }
+
+        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userValueKey )
+        {
+            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+            ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
+
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserValue( userValueKey ) ) )
+            {
+                ListControl.SelectedValue = rFilter.GetUserValue( userValueKey );
+            }
+        }
+
+        private void BindGrid()
         {
             TransactionSearchValue searchValue = GetSearchValue();
-            var searchResults = transactionService.GetTransactionBySearch(searchValue);
-            grdTransactions.DataSource = searchResults.ToList();
+
+            var transactionService = new TransactionService();
+            grdTransactions.DataSource = transactionService.Get( searchValue ).ToList();
             grdTransactions.DataBind();
-        };
-    }
+        }
 
-    private void LoadDropDowns()
-    {
-        ddlFundType.Items.Add(new ListItem("[All]", "-1"));
-        foreach (Fund fund in fundService.Queryable())
+        private TransactionSearchValue GetSearchValue()
         {
-            ddlFundType.Items.Add(new ListItem(fund.Name, fund.Id.ToString()));
-        }
-        ddlCurrencyType.Items.Add(new ListItem("[All]", "-1"));
-        foreach (DefinedValue definedValue in GetDefinedValues("Currency Type"))
-        {
-            ddlCurrencyType.Items.Add(new ListItem(definedValue.Name, definedValue.Id.ToString()));
-        }
-        ddlCreditCardType.Items.Add(new ListItem("[All]", "-1"));
-        foreach (DefinedValue definedValue in GetDefinedValues("Credit Card Type"))
-        {
-            ddlCreditCardType.Items.Add(new ListItem(definedValue.Name, definedValue.Id.ToString()));
-        }
-        ddlSourceType.Items.Add(new ListItem("[All]", "-1"));
-        foreach (DefinedValue definedValue in GetDefinedValues("Source Type"))
-        {
-            ddlSourceType.Items.Add(new ListItem(definedValue.Name, definedValue.Id.ToString()));
-        }
-    }
+            TransactionSearchValue searchValue = new TransactionSearchValue();
 
-    private void BindGrid()
-    {
-        grdTransactions.DataSource = transactionService.GetAllTransactions();
-        grdTransactions.DataBind();
-    }
+            decimal? fromAmountRange = null;
+            if ( !String.IsNullOrEmpty( txtFromAmount.Text ) )
+            {
+                fromAmountRange = Decimal.Parse( txtFromAmount.Text );
+            }
+            decimal? toAmountRange = null;
+            if ( !String.IsNullOrEmpty( txtToAmount.Text ) )
+            {
+                toAmountRange = Decimal.Parse( txtToAmount.Text );
+            }
+            searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
+            if ( ddlCreditCardType.SelectedValue != All.Id.ToString() )
+            {
+                searchValue.CreditCardTypeId = int.Parse( ddlCreditCardType.SelectedValue );
+            }
+            if ( ddlCurrencyType.SelectedValue != All.Id.ToString() )
+            {
+                searchValue.CurrencyTypeId = int.Parse( ddlCurrencyType.SelectedValue );
+            }
+            DateTime? fromTransactionDate = null;
+            if ( !String.IsNullOrEmpty( txtFromDate.Text ) )
+            {
+                fromTransactionDate = DateTime.Parse( txtFromDate.Text );
+            }
+            DateTime? toTransactionDate = null;
+            if ( !String.IsNullOrEmpty( txtToDate.Text ) )
+            {
+                toTransactionDate = DateTime.Parse( txtToDate.Text );
+            }
+            searchValue.DateRange = new RangeValue<DateTime?>( fromTransactionDate, toTransactionDate );
+            if ( ddlFundType.SelectedValue != "-1" )
+            {
+                searchValue.FundId = int.Parse( ddlFundType.SelectedValue );
+            }
+            searchValue.TransactionCode = txtTransactionCode.Text;
+            searchValue.SourceTypeId = int.Parse( ddlSourceType.SelectedValue );
 
-    private List<DefinedValue> GetDefinedValues(string definedTypeName)
-    {
-        List<DefinedValue> definedValues = new List<DefinedValue>();
-        using (new Rock.Data.UnitOfWorkScope())     
-        {
-            definedValues = definedValueService
-                .Queryable()
-                .Where(definedValue => definedValue.DefinedType.Name == definedTypeName)
-                .ToList();
+            return searchValue;
         }
-        return definedValues;
-    }
 
-    private TransactionSearchValue GetSearchValue()
-    {
-        TransactionSearchValue searchValue = new TransactionSearchValue();
-        decimal? fromAmountRange = null;
-        if (!String.IsNullOrEmpty(txtFromAmount.Text))
-        {
-            fromAmountRange = Decimal.Parse(txtFromAmount.Text);
-        }
-        decimal? toAmountRange = null;
-        if (!String.IsNullOrEmpty(txtToAmount.Text))
-        {
-            toAmountRange = Decimal.Parse(txtToAmount.Text);
-        }
-        searchValue.AmountRange = new RangeValue<decimal?>(fromAmountRange, toAmountRange);
-        if (ddlCreditCardType.SelectedValue != "-1")
-        {
-            searchValue.CreditCardType = definedValueService.Get(int.Parse(ddlCreditCardType.SelectedValue));            
-        }
-        if (ddlCurrencyType.SelectedValue != "-1")
-        {
-            searchValue.CurrencyType = definedValueService.Get(int.Parse(ddlCurrencyType.SelectedValue));
-        }
-        DateTime? fromTransactionDate = null;
-        if (!String.IsNullOrEmpty(txtFromDate.Text))
-        {
-            fromTransactionDate = DateTime.Parse(txtFromDate.Text);
-        }
-        DateTime? toTransactionDate = null;
-        if (!String.IsNullOrEmpty(txtToDate.Text))
-        {
-            toTransactionDate = DateTime.Parse(txtToDate.Text);
-        }
-        searchValue.DateRange = new RangeValue<DateTime?>(fromTransactionDate, toTransactionDate);
-        if (ddlFundType.SelectedValue != "-1")
-        {
-            searchValue.Fund = fundService.Get(int.Parse(ddlFundType.SelectedValue));
-        }
-        searchValue.TransactionCode = txtTransactionCode.Text;
-        searchValue.SourceType = definedValueService.Get(int.Parse(ddlSourceType.SelectedValue));
-        return searchValue;
-    }
-
-    private void DisplayError(string message)
-    {
-        pnlCanConfigure.Controls.Clear();
-        pnlCanConfigure.Controls.Add(new LiteralControl(message));
-        pnlCanConfigure.Visible = true;
-        pnlFinancialContent.Visible = false;
+        #endregion
     }
 }

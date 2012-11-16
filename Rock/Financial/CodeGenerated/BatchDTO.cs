@@ -23,7 +23,7 @@ namespace Rock.Financial
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class BatchDto : IDto
+    public partial class BatchDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -156,6 +156,16 @@ namespace Rock.Financial
                 batch.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -195,8 +205,19 @@ namespace Rock.Financial
         public static List<BatchDto> ToDto( this List<Batch> value )
         {
             List<BatchDto> result = new List<BatchDto>();
-            value.ForEach( a => result.Add( new BatchDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BatchDto ToDto( this Batch value )
+        {
+            return new BatchDto( value );
+        }
+
     }
 }

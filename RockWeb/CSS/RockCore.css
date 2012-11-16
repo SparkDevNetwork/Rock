@@ -7,6 +7,10 @@
   font-style: normal;
 }
 
+.btn [class^="icon-"], .btn [class*=" icon-"] {
+	line-height: 14px;
+}
+
 /* group class */
 .group:after {
     content: ".";
@@ -731,16 +735,22 @@ div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete
 .page-list-as-blocks li 
 {
     background-color: #D6D6D6;
-    border-radius: 4px 4px 4px 4px;
+    border-radius: 6px 6px 6px 6px;
+    border: 1px solid #bbb;
     float: left;
-    height: 80px;
     margin: 0 12px 12px 0;
-    padding: 12px;
     width: 330px;
 }
 
 .page-list-as-blocks li a 
 {
     display: block;
-    --margin-bottom: 4px;
+    color: inherit;
+    height: 80px;
+    padding: 12px;
+}
+
+.page-list-as-blocks h4
+{
+    margin-top: 0;
 }

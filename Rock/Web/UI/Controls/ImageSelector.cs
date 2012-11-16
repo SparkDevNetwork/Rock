@@ -64,6 +64,9 @@ namespace Rock.Web.UI.Controls
             Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
             Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
+            EnsureChildControls();
+            this.ID = this.ID ?? "ImageSelector_";
+
             string script = string.Format( @"
     $(document).ready(function() {{
 

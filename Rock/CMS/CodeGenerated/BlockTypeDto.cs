@@ -23,7 +23,7 @@ namespace Rock.Cms
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class BlockTypeDto : IDto
+    public partial class BlockTypeDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -132,6 +132,16 @@ namespace Rock.Cms
                 blockType.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -171,8 +181,19 @@ namespace Rock.Cms
         public static List<BlockTypeDto> ToDto( this List<BlockType> value )
         {
             List<BlockTypeDto> result = new List<BlockTypeDto>();
-            value.ForEach( a => result.Add( new BlockTypeDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BlockTypeDto ToDto( this BlockType value )
+        {
+            return new BlockTypeDto( value );
+        }
+
     }
 }
