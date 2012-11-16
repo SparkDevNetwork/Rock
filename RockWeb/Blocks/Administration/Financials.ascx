@@ -2,17 +2,16 @@
 <script type="text/javascript">
     $(document).ready(function () {
 
-        // create DatePicker from input HTML element on initial page load
-        $("#<%=txtFromDate.ClientID%>").kendoDatePicker();
-        $("#<%=txtToDate.ClientID%>").kendoDatePicker();
-
-        // create DatePicker from input HTML element on Ajax Request
-        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestHandler);
-
-        function EndRequestHandler(sender, args) {
+        function ConfigureDatePickers(sender, args) {
             $("#<%=txtFromDate.ClientID%>").kendoDatePicker();
             $("#<%=txtToDate.ClientID%>").kendoDatePicker();
         }
+
+        // create DatePicker from input HTML element on initial page load
+        ConfigureDatePickers(null, null);
+
+        // create DatePicker from input HTML element on Ajax Request
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(ConfigureDatePickers);
     });
 </script>
 
