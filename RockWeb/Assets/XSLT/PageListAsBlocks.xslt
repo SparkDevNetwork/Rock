@@ -38,7 +38,7 @@
 				<xsl:attribute name="href">
 					<xsl:value-of select="@id"/>
 				</xsl:attribute>
-        <h3><xsl:value-of select="@title"/></h3>
+        <h4><xsl:value-of select="@title"/></h4>
       
         <xsl:if test="@display-description = 'true'">
           <span>

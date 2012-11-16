@@ -23,7 +23,7 @@ namespace Rock.Cms
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class SiteDomainDto : IDto
+    public partial class SiteDomainDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -124,6 +124,16 @@ namespace Rock.Cms
                 siteDomain.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -163,8 +173,19 @@ namespace Rock.Cms
         public static List<SiteDomainDto> ToDto( this List<SiteDomain> value )
         {
             List<SiteDomainDto> result = new List<SiteDomainDto>();
-            value.ForEach( a => result.Add( new SiteDomainDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static SiteDomainDto ToDto( this SiteDomain value )
+        {
+            return new SiteDomainDto( value );
+        }
+
     }
 }

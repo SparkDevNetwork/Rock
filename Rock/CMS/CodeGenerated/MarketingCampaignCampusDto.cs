@@ -23,7 +23,7 @@ namespace Rock.Cms
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MarketingCampaignCampusDto : IDto
+    public partial class MarketingCampaignCampusDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -116,6 +116,16 @@ namespace Rock.Cms
                 marketingCampaignCampus.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -155,8 +165,19 @@ namespace Rock.Cms
         public static List<MarketingCampaignCampusDto> ToDto( this List<MarketingCampaignCampus> value )
         {
             List<MarketingCampaignCampusDto> result = new List<MarketingCampaignCampusDto>();
-            value.ForEach( a => result.Add( new MarketingCampaignCampusDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaignCampusDto ToDto( this MarketingCampaignCampus value )
+        {
+            return new MarketingCampaignCampusDto( value );
+        }
+
     }
 }

@@ -23,7 +23,7 @@ namespace Rock.Cms
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class FileDto : IDto
+    public partial class FileDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -164,6 +164,16 @@ namespace Rock.Cms
                 file.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -203,8 +213,19 @@ namespace Rock.Cms
         public static List<FileDto> ToDto( this List<File> value )
         {
             List<FileDto> result = new List<FileDto>();
-            value.ForEach( a => result.Add( new FileDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static FileDto ToDto( this File value )
+        {
+            return new FileDto( value );
+        }
+
     }
 }

@@ -13,7 +13,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
+using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock.Cms;
 
 namespace Rock
@@ -416,6 +419,25 @@ namespace Rock
             return ctl;
         }
 
+        /// <summary>
+        /// Gets the parent RockBlock.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockBlock RockBlock( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockBlock )
+                {
+                    return (Rock.Web.UI.RockBlock)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions
@@ -482,14 +504,14 @@ namespace Rock
 
         #endregion
 
-        #region DropDownList Extensions
+        #region DropDownList/ListControl Extensions
 
         /// <summary>
         /// Try's to set the selected value, if the value does not exist, wills et the first item in the list
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this System.Web.UI.WebControls.DropDownList ddl, string value )
+        public static void SetValue( this DropDownList ddl, string value )
         {
             try
             {
@@ -501,6 +523,45 @@ namespace Rock
                     ddl.SelectedIndex = 0;
             }
 
+        }
+
+        /// <summary>
+        /// Binds to enum.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="enumType">Type of the enum.</param>
+        public static void BindToEnum( this ListControl listControl, Type enumType )
+        {
+            var dictionary = new Dictionary<int, string>();
+            foreach ( var value in Enum.GetValues( enumType ) )
+            {
+                dictionary.Add(Convert.ToInt32(value), Enum.GetName( enumType, value ).SplitCase() );
+            }
+
+            listControl.DataSource = dictionary;
+            listControl.DataTextField = "Value";
+            listControl.DataValueField = "Key";
+            listControl.DataBind();
+        }
+
+        /// <summary>
+        /// Binds to the values of a definedType
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <param name="definedType">Type of the defined.</param>
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType )
+        {
+            var ds = definedType.DefinedValues
+                .Select( v => new
+                {
+                    v.Name,
+                    v.Id
+                } );
+
+            listControl.DataSource = ds;
+            listControl.DataTextField = "Name";
+            listControl.DataValueField = "Id";
+            listControl.DataBind();
         }
 
         #endregion
@@ -657,6 +718,19 @@ namespace Rock
 
         #endregion
 
+        #region IHasAttributes extensions
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        {
+            Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        #endregion
+
         #region Route Extensions
 
         /// <summary>
@@ -703,6 +777,72 @@ namespace Rock
             routes.Add( route );
         }
 
+        #endregion
+
+        #region IEntity, IDto extensions
+        
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="id">The id.</param>
+        public static void RemoveEntity<T>( this List<T> list, int id ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+        }
+
+        /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="guid">The GUID.</param>
+        public static void RemoveEntity<T>( this List<T> list, Guid guid ) where T : Rock.Data.IEntity
+        {
+            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+
+        }
+
+        /// <summary>
+        /// Removes the dto.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="id">The id.</param>
+        public static void RemoveDto<T>( this List<T> list, int id ) where T : Rock.Data.IDto
+        {
+            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+
+        }
+
+        /// <summary>
+        /// Removes the dto.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">The list.</param>
+        /// <param name="guid">The GUID.</param>
+        public static void RemoveDto<T>( this List<T> list, Guid guid ) where T : Rock.Data.IDto
+        {
+            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
+            if ( item != null )
+            {
+                list.Remove( item );
+            }
+        }
+        
         #endregion
     }
 }

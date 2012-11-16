@@ -233,7 +233,7 @@ namespace Rock.Web.Cache
                     foreach ( Rock.Cms.Block block in blockService.GetByLayout( this.Layout ) )
                     {
                         blockIds.Add( block.Id );
-                        Rock.Attribute.Helper.LoadAttributes( block );
+                        block.LoadAttributes();
                         blocks.Add( BlockCache.Read( block ) );
                     }
 
@@ -241,7 +241,7 @@ namespace Rock.Web.Cache
                     foreach ( Rock.Cms.Block block in blockService.GetByPageId( this.Id ) )
                     {
                         blockIds.Add( block.Id );
-                        Rock.Attribute.Helper.LoadAttributes( block );
+                        block.LoadAttributes();
                         blocks.Add( BlockCache.Read( block ) );
                     }
 
@@ -283,7 +283,7 @@ namespace Rock.Web.Cache
             Rock.Cms.Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
-                Rock.Attribute.Helper.LoadAttributes( pageModel );
+                pageModel.LoadAttributes();
                 foreach ( var attribute in pageModel.Attributes )
                     Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
@@ -566,7 +566,7 @@ namespace Rock.Web.Cache
                 Rock.Cms.Page pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
-                    Rock.Attribute.Helper.LoadAttributes( pageModel );
+                    pageModel.LoadAttributes();
 
                     page = PageCache.CopyModel( pageModel );
  

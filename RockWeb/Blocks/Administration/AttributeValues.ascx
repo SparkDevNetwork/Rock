@@ -5,13 +5,9 @@
 
     <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
 
-    <div class="grid-filter">
-        <fieldset>
-            <legend>Filter</legend>
-            <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" OnSelectedIndexChanged="ddlCategoryFilter_SelectedIndexChanged" />
-        </fieldset>
-    </div>
-
+    <Rock:GridFilter ID="rFilter" runat="server">
+        <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+    </Rock:GridFilter>
     <Rock:Grid ID="rGrid" runat="server">
         <Columns>
             <asp:BoundField DataField="Category" HeaderText="Category" />

@@ -23,7 +23,7 @@ namespace Rock.Crm
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class EmailTemplateDto : IDto
+    public partial class EmailTemplateDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -180,6 +180,16 @@ namespace Rock.Crm
                 emailTemplate.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -219,8 +229,19 @@ namespace Rock.Crm
         public static List<EmailTemplateDto> ToDto( this List<EmailTemplate> value )
         {
             List<EmailTemplateDto> result = new List<EmailTemplateDto>();
-            value.ForEach( a => result.Add( new EmailTemplateDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EmailTemplateDto ToDto( this EmailTemplate value )
+        {
+            return new EmailTemplateDto( value );
+        }
+
     }
 }

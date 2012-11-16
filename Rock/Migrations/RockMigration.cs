@@ -354,6 +354,81 @@ namespace Rock.Migrations
             );
         }
 
+        /// <summary>
+        /// Adds the entity attribute.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid )
+        {
+            Sql ( string.Format( @"
+                if not exists (
+                select id from coreEntityType where name = '{0}')
+                begin
+                INSERT INTO [coreEntityType]
+                           ([Name]
+                           ,[FriendlyName]
+                           ,[Guid])
+                     VALUES
+                           ('{0}'
+                           ,null
+                           ,newid()
+                           )
+                end"
+                , entityTypeName)
+            );
+            
+            Sql( string.Format( @"
+                
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [coreEntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [coreFieldType] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [coreAttribute] 
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [Key] = '{2}'
+
+                INSERT INTO [coreAttribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Category],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId,@EntityTypeid,'','',
+                    '{2}','{3}','{4}','{5}',
+                    {6},0,'{7}',0,0,
+                    '{8}')
+",
+                    entityTypeName,
+                    fieldTypeGuid,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    category,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue,
+                    guid )
+            );
+        }
+
+        public void DeleteAttribute( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [coreAttribute] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
         public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Core.AttributeDto attribute )
         {
 

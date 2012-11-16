@@ -17,7 +17,7 @@ namespace Rock.Security
     /// <summary>
     /// MEF Container class for Authentication Componenets
     /// </summary>
-    public class AuthenticationContainer : Container<AuthenticationComponent, IComponentData>
+    public class AuthenticationContainer : ContainerManaged<AuthenticationComponent, IComponentData>
     {
         private static AuthenticationContainer instance;
 

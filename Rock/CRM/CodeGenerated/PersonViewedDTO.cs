@@ -23,7 +23,7 @@ namespace Rock.Crm
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PersonViewedDto : IDto
+    public partial class PersonViewedDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -140,6 +140,16 @@ namespace Rock.Crm
                 personViewed.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -179,8 +189,19 @@ namespace Rock.Crm
         public static List<PersonViewedDto> ToDto( this List<PersonViewed> value )
         {
             List<PersonViewedDto> result = new List<PersonViewedDto>();
-            value.ForEach( a => result.Add( new PersonViewedDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonViewedDto ToDto( this PersonViewed value )
+        {
+            return new PersonViewedDto( value );
+        }
+
     }
 }

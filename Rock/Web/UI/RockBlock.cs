@@ -410,6 +410,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the values for the current user that start with a given key.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        /// <returns></returns>
+        public Dictionary<string, string> GetUserValues( string keyPrefix )
+        {
+            return ( (RockPage)this.Page ).GetUserValues( keyPrefix );
+        }
+
+        /// <summary>
         /// Sets a value for the current user for a given key
         /// </summary>
         /// <param name="key"></param>
@@ -531,10 +541,13 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read("Rock.Cms.Block").Id;
 
-            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", 
-                this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                this.CurrentBlock.ReloadAttributeValues();
+                if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
+                    this.CurrentBlock.BlockTypeId.ToString(), CurrentPersonId ) )
+                {
+                    this.CurrentBlock.ReloadAttributeValues();
+                }
             }
         }
 

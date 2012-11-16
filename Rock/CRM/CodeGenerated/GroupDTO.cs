@@ -23,7 +23,7 @@ namespace Rock.Crm
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GroupDto : IDto
+    public partial class GroupDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
@@ -164,6 +164,16 @@ namespace Rock.Crm
                 group.Guid = this.Guid;
             }
         }
+
+        /// <summary>
+        /// Converts to liquidizable object for dotLiquid templating
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this.ToDictionary();
+        }
+
     }
 
     /// <summary>
@@ -203,8 +213,19 @@ namespace Rock.Crm
         public static List<GroupDto> ToDto( this List<Group> value )
         {
             List<GroupDto> result = new List<GroupDto>();
-            value.ForEach( a => result.Add( new GroupDto( a ) ) );
+            value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
+
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupDto ToDto( this Group value )
+        {
+            return new GroupDto( value );
+        }
+
     }
 }

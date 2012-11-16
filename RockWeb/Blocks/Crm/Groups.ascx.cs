@@ -11,6 +11,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Constants;
 using Rock.Crm;
+using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,7 +82,7 @@ public partial class Groups : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gGroups_Edit( object sender, RowEventArgs e )
     {
-        ShowEdit( (int)gGroups.DataKeys[e.RowIndex]["id"] );
+        ShowEdit( (int)e.RowKeyValue );
     }
 
     /// <summary>
@@ -92,9 +93,17 @@ public partial class Groups : RockBlock
     protected void gGroups_Delete( object sender, RowEventArgs e )
     {
         GroupService groupService = new GroupService();
-        Group group = groupService.Get( (int)gGroups.DataKeys[e.RowIndex]["id"] );
+        Group group = groupService.Get( (int)e.RowKeyValue );
         if ( CurrentBlock != null )
         {
+            string errorMessage;
+            if ( !groupService.CanDelete( group.Id, out errorMessage ) )
+            {
+                nbGridWarning.Text = errorMessage;
+                nbGridWarning.Visible = true;
+                return;
+            }
+            
             groupService.Delete( group, CurrentPersonId );
             groupService.Save( group, CurrentPersonId );
         }
@@ -170,7 +179,10 @@ public partial class Groups : RockBlock
             return;
         }
 
-        groupService.Save( group, CurrentPersonId );
+        RockTransactionScope.WrapTransaction( () =>
+            {
+                groupService.Save( group, CurrentPersonId );
+            } );
 
         BindGrid();
         pnlDetails.Visible = false;

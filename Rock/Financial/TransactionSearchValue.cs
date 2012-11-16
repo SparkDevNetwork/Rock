@@ -33,7 +33,7 @@ namespace Rock.Financial
         /// <value>
         /// The fund.
         /// </value>
-        public Fund Fund { get; set; }
+        public int? FundId { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the currency.
@@ -41,7 +41,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the currency.
         /// </value>
-        public DefinedValue CurrencyType { get; set; }
+        public int? CurrencyTypeId { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the credit card.
@@ -49,7 +49,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the credit card.
         /// </value>
-        public DefinedValue CreditCardType { get; set; }
+        public int? CreditCardTypeId { get; set; }
     
         /// <summary>
         /// Gets or sets the type of the source.
@@ -57,7 +57,7 @@ namespace Rock.Financial
         /// <value>
         /// The type of the source.
         /// </value>
-        public DefinedValue SourceType { get; set; }
+        public int? SourceTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.
