@@ -622,6 +622,9 @@ namespace RockWeb.Blocks.Administration
                 var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
 
                 Control editControl = fieldType.Field.EditControl( attribute.QualifierValues );
+                editControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
+                editControl.ClientIDMode = ClientIDMode.AutoID;
+
                 if ( setValues && attributeValue != null )
                 {
                     fieldType.Field.SetEditValue( editControl, attribute.QualifierValues, attributeValue.Value );

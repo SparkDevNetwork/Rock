@@ -147,7 +147,10 @@ public partial class MarketingCampaigns : RockBlock
             nbWarning.Visible = true;
         }
 
-        LoadAdAttributes( new MarketingCampaignAdDto(), true, false );
+        if ( pnlMarketingCampaignAdEditor.Visible )
+        {
+            LoadAdAttributes( new MarketingCampaignAdDto(), true, false );
+        }
 
         base.OnLoad( e );
     }
