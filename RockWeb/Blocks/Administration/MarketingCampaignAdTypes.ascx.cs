@@ -136,7 +136,6 @@ public partial class MarketingCampaignAdTypes : RockBlock
             return;
         }
         
-        
         if ( CurrentBlock != null )
         {
             marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonId );
