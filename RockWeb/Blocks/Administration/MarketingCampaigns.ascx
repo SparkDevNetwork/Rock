@@ -49,7 +49,7 @@
                         <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" LabelText="Event Group" />
                     </div>
                     <div class="span6">
-                        <Rock:Grid ID="gMarketingCampaignAds" runat="server" AllowPaging="false" ShowActionExcelExport="false">
+                        <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Light">
                             <Columns>
                                 <asp:BoundField DataField="Name" HeaderText="Ad Type" />
                                 <Rock:DateField DataField="StartDate" HeaderText="Date" />
@@ -59,14 +59,14 @@
                                 <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
                             </Columns>
                         </Rock:Grid>
-                        <Rock:Grid ID="gMarketingCampaignAudiences" runat="server" AllowPaging="false" ShowActionExcelExport="false">
+                        <Rock:Grid ID="gMarketingCampaignAudiences" runat="server" DisplayType="Light">
                             <Columns>
                                 <asp:BoundField DataField="Name" HeaderText="Audience" />
                                 <Rock:BoolField DataField="IsPrimary" HeaderText="Primary" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                             </Columns>
                         </Rock:Grid>
-                        <Rock:Grid ID="gCampuses" runat="server" AllowPaging="false" ShowActionExcelExport="false">
+                        <Rock:Grid ID="gCampuses" runat="server" DisplayType="Light">
                             <Columns>
                                 <asp:BoundField DataField="Name" HeaderText="Campus" />
                                 <Rock:DeleteField OnClick="gCampus_Delete" />
