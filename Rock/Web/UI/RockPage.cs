@@ -726,6 +726,12 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
 
+            // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
+            AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
+            AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
+
             AddBlockMove();
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
