@@ -219,6 +219,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the display type.
+        /// </summary>
+        /// <value>
+        /// The display type.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( GridDisplayType.Full ),
+        Description( "Display Type" )
+        ]
+        public virtual GridDisplayType DisplayType
+        {
+            get
+            {
+                object displayType = this.ViewState["DisplayType"];
+                return displayType != null ? (GridDisplayType)displayType : GridDisplayType.Full;
+            }
+
+            set
+            {
+                this.ViewState["DisplayType"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the sort property.
         /// </summary>
         public SortProperty SortProperty
@@ -249,7 +274,7 @@ namespace Rock.Web.UI.Controls
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
-            base.AllowPaging = true;
+            base.AllowPaging = false;
             base.PageSize = 25;
             base.PageIndex = 0;
         }
@@ -522,6 +547,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                //this.AllowPaging = false;
+                this.AllowSorting = false;
+                this.Actions.IsExcelExportEnabled = false;
+                this.RemoveCssClass( "full" );
+                this.AddCssClass( "light" );
+            }
+            else
+            {
+                this.RemoveCssClass( "light" );
+                this.AddCssClass( "full" );
+            }
+
             base.OnDataBound( e );
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
@@ -1233,6 +1272,23 @@ namespace Rock.Web.UI.Controls
         }
 
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GridDisplayType
+    {
+        /// <summary>
+        /// The full
+        /// </summary>
+        Full,
+
+        /// <summary>
+        /// The light
+        /// </summary>
+        Light
+    }
+
 
     #endregion
 }
