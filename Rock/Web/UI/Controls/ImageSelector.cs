@@ -135,11 +135,8 @@ namespace Rock.Web.UI.Controls
 
         }}
 
-        // configure image uploaders on full postback        
+        // configure image uploaders         
         ConfigureImageUploaders(null, null);
-
-        // create image uploaders on Ajax Request
-        //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(ConfigureImageUploaders);
     }});
         ",
                 fileUpload.ClientID,

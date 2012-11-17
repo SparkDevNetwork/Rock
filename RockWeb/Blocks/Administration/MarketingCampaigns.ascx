@@ -1,20 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaigns.ascx.cs" Inherits="MarketingCampaigns" %>
 
-<script type="text/javascript">
-    $(document).ready(function () {
-        // 
-        function ConfigureDatePickers(sender, args) {
-            $("#<%=tbAdDateRangeStartDate.ClientID%>").kendoDatePicker();
-            $("#<%=tbAdDateRangeEndDate.ClientID%>").kendoDatePicker();
-        }
-
-        // create DatePicker from input HTML element on initial page load
-        ConfigureDatePickers(null, null);
-
-        // create DatePicker from input HTML element on Ajax Request
-        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(ConfigureDatePickers);
-    });
-</script>
 <asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
     <ContentTemplate>
 
@@ -127,8 +112,8 @@
                     </div>
 
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" />
-                        <Rock:DataTextBox ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" />
+                        <Rock:DateTimePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" DatePickerType="Date"/>
+                        <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date"/>
                         <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Url" LabelText="Url" />
                         <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
                     </div>

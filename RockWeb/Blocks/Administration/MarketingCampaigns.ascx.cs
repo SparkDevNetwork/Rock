@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Cms;
 using Rock.Constants;
@@ -319,7 +318,7 @@ public partial class MarketingCampaigns : RockBlock
 
         MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
         tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
-        
+
         List<Rock.Core.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
         marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
@@ -426,40 +425,14 @@ public partial class MarketingCampaigns : RockBlock
         currentAd.Priority = tbPriority.TextAsInteger() ?? 0;
         currentAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( ddlMarketingCampaignAdStatus.SelectedValue );
         currentAd.MarketingCampaignStatusPersonId = int.Parse( ddlMarketingCampaignAdStatusPerson.SelectedValue );
-
-        DateTime startDate;
-        if ( DateTime.TryParse( tbAdDateRangeStartDate.Text, out startDate ) )
+        currentAd.StartDate = tbAdDateRangeStartDate.SelectedDate ?? DateTime.MinValue;
+        if ( tbAdDateRangeEndDate.Visible )
         {
-            currentAd.StartDate = startDate;
+            currentAd.EndDate = tbAdDateRangeEndDate.SelectedDate ?? DateTime.MaxValue;
         }
         else
         {
-            if ( string.IsNullOrWhiteSpace( tbAdDateRangeStartDate.Text ) )
-            {
-                currentAd.StartDate = DateTime.MinValue;
-            }
-            else
-            {
-                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "StartDate" ) );
-            }
-        }
-
-        DateTime endDate;
-        if ( DateTime.TryParse( tbAdDateRangeEndDate.Text, out endDate ) )
-        {
-            currentAd.EndDate = endDate;
-        }
-        else
-        {
-            if ( string.IsNullOrWhiteSpace( tbAdDateRangeEndDate.Text ) )
-            {
-                currentAd.EndDate = tbAdDateRangeEndDate.Visible ? DateTime.MaxValue : currentAd.StartDate;
-            }
-            else
-            {
-                tbAdDateRangeEndDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "EndDate" ) );
-            }
-
+            currentAd.EndDate = currentAd.StartDate;
         }
 
         if ( currentAd.EndDate < currentAd.StartDate )
