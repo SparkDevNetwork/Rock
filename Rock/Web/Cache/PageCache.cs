@@ -363,6 +363,15 @@ namespace Rock.Web.Cache
             pageIds = null;
         }
 
+        /// <summary>
+        /// Fires the block content updated event.
+        /// </summary>
+        public void BlockContentUpdated(object sender)
+        {
+            if ( OnBlockContentUpdated != null )
+                OnBlockContentUpdated( sender, new EventArgs() );
+        }
+
         #endregion
 
         #region SharedItemCaching
@@ -786,5 +795,13 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Event Handlers
+
+        /// <summary>
+        /// Occurs when a block on the page updates content.
+        /// </summary>
+        public event EventHandler OnBlockContentUpdated;
+
+        #endregion
     }
 }

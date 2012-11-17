@@ -12,7 +12,7 @@ using System.Web.UI.WebControls;
 using Rock;
 
 namespace Rock.Web.UI.Controls
-{   
+{
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
@@ -43,6 +43,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return hiddenField.Value;
             }
+
             set
             {
                 EnsureChildControls();
@@ -50,7 +51,6 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
         /// </summary>
@@ -59,66 +59,14 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.upload.min.js" );
-            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
-
             EnsureChildControls();
-            this.ID = this.ID ?? "ImageSelector_";
-
-            string script = string.Format( @"
-    $(document).ready(function() {{
-
-        $('#{0}').kendoUpload({{
-            multiple: false,
-            showFileList: false,
-            async: {{
-                saveUrl: rock.baseUrl + 'ImageUploader.ashx'
-            }},
-
-            success: function(e) {{
-
-                if (e.operation == 'upload' && e.response != '0') {{
-                    $('#{1}').val(e.response);
-                    $('#{2}').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
-                    $('#{2}').show('fast', function() {{ 
-                        if ($('#modal-scroll-container').length) {{
-                            $('#modal-scroll-container').tinyscrollbar_update('relative');
-                        }}
-                    }});
-                    $('#{3}').show('fast');
-                }}
-
-            }}
-        }});
-
-        $('#{3}').click( function(){{
-            $(this).hide('fast');
-            $('#{1}').val('0');
-            $('#{2}').attr('src','')
-            $('#{2}').hide('fast', function() {{ 
-                if ($('#modal-scroll-container').length) {{
-                    $('#modal-scroll-container').tinyscrollbar_update('relative');
-                }}
-            }});
-        }});
-
-    }});
-        ", 
-                fileUpload.ClientID, 
-                hiddenField.ClientID, 
-                image.ClientID,
-                htmlAnchor.ClientID);
-         
-            this.Page.ClientScript.RegisterStartupScript( this.GetType(), "image-selector-kendo-" + this.ID.ToString(), script, true );
         }
 
         /// <summary>
         /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        public override void  RenderControl(HtmlTextWriter writer)
+        public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "rock-image" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -144,6 +92,59 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
+            string script = string.Format( @"
+    $(document).ready(function() {{
+
+        function ConfigureImageUploaders(sender, args) {{
+            $('#{0}').kendoUpload({{
+                multiple: false,
+                showFileList: false,
+                async: {{
+                    saveUrl: rock.baseUrl + 'ImageUploader.ashx'
+                }},
+
+                success: function(e) {{
+
+                    if (e.operation == 'upload' && e.response != '0') {{
+                        $('#{1}').val(e.response);
+                        $('#{2}').attr('src','')
+                        $('#{2}').hide();             
+                        $('#{2}').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
+                        $('#{2}').show('fast', function() {{ 
+                            if ($('#modal-scroll-container').length) {{
+                                $('#modal-scroll-container').tinyscrollbar_update('relative');
+                            }}
+                        }});
+                        $('#{3}').show('fast');
+                    }}
+
+                }}
+            }});
+
+            $('#{3}').click( function(){{
+                $(this).hide('fast');
+                $('#{1}').val('0');
+                $('#{2}').attr('src','')
+                $('#{2}').hide('fast', function() {{ 
+                    if ($('#modal-scroll-container').length) {{
+                        $('#modal-scroll-container').tinyscrollbar_update('relative');
+                    }}
+                }});
+            }});
+
+        }}
+
+        // configure image uploaders         
+        ConfigureImageUploaders(null, null);
+    }});
+        ",
+                fileUpload.ClientID,
+                hiddenField.ClientID,
+                image.ClientID,
+                htmlAnchor.ClientID );
+
+            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoImageScript_" + this.ID, script, true );
         }
 
         /// <summary>
