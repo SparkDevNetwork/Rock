@@ -60,38 +60,6 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             EnsureChildControls();
-        }
-
-        /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            writer.AddAttribute( "class", "rock-image" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( !string.IsNullOrEmpty( ImageId ) && ImageId != "0" )
-            {
-                image.Style["display"] = "inline";
-                image.ImageUrl = "~/image.ashx?" + ImageId + "&width=50&height=50";
-            }
-            else
-            {
-                image.Style["display"] = "none";
-                image.ImageUrl = string.Empty;
-            }
-
-            image.RenderControl( writer );
-            hiddenField.RenderControl( writer );
-            htmlAnchor.RenderControl( writer );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
-            fileUpload.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
 
             string script = string.Format( @"
     $(document).ready(function() {{
@@ -139,12 +107,44 @@ namespace Rock.Web.UI.Controls
         ConfigureImageUploaders(null, null);
     }});
         ",
-                fileUpload.ClientID,
-                hiddenField.ClientID,
-                image.ClientID,
-                htmlAnchor.ClientID );
+                            fileUpload.ClientID,
+                            hiddenField.ClientID,
+                            image.ClientID,
+                            htmlAnchor.ClientID );
 
             ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoImageScript_" + this.ID, script, true );
+        }
+
+        /// <summary>
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "class", "rock-image" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( !string.IsNullOrEmpty( ImageId ) && ImageId != "0" )
+            {
+                image.Style["display"] = "inline";
+                image.ImageUrl = "~/image.ashx?" + ImageId + "&width=50&height=50";
+            }
+            else
+            {
+                image.Style["display"] = "none";
+                image.ImageUrl = string.Empty;
+            }
+
+            image.RenderControl( writer );
+            hiddenField.RenderControl( writer );
+            htmlAnchor.RenderControl( writer );
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
+            fileUpload.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
