@@ -1,4 +1,9 @@
-﻿namespace Rock.Data
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+namespace Rock.Data
 {
     /// <summary>
     /// Interface to compose ability to Export an object's data
