@@ -150,16 +150,16 @@ public partial class GroupTypes : RockBlock
     protected void gGroupType_Delete( object sender, RowEventArgs e )
     {
         GroupTypeService groupTypeService = new GroupTypeService();
-        int groupTypeId = (int)e.RowKeyValue;
+        GroupType groupType = groupTypeService.Get( (int)e.RowKeyValue );
+        
         string errorMessage;
-        if ( !groupTypeService.CanDelete( groupTypeId, out errorMessage ) )
+        if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
         {
             nbGridWarning.Text = errorMessage;
             nbGridWarning.Visible = true;
             return;
         }
-
-        GroupType groupType = groupTypeService.Get( groupTypeId );
+        
         if ( CurrentBlock != null )
         {
             groupTypeService.Delete( groupType, CurrentPersonId );
