@@ -85,9 +85,9 @@ namespace Rock.Crm
         /// </returns>
         public bool CanDelete( Group item, out string errorMessage )
         {
+            errorMessage = string.Empty;
             RockContext context = new RockContext();
             context.Database.Connection.Open();
-            errorMessage = string.Empty;
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {

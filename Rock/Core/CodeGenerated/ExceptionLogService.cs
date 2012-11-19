@@ -82,5 +82,19 @@ namespace Rock.Core
                     Guid = m.Guid,
                 });
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( ExceptionLog item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
     }
 }
