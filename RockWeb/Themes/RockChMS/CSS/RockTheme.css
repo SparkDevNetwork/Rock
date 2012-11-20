@@ -435,3 +435,27 @@ aside.contact-info header
     font-weight: normal;
     font-family: 'OpenSansBold','Helvetica Neue',Helvetica,Arial,sans-serif; 
 }
+
+/* full page update progress indicator */
+#updateProgress
+{
+    color: #fff;
+    position: fixed;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 9999999;
+    background-color: #343434;
+    opacity: 0.97;
+}
+
+    #updateProgress > img
+    {
+        padding: 10px;
+        position: fixed;
+        top: 45%;
+        left: 50%;
+    }
