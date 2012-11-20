@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Cms;
 using Rock.Constants;
@@ -697,7 +698,52 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void btnCancel_Click( object sender, EventArgs e )
     {
+        SetEditMode( false );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
+    }
+
+    /// <summary>
+    /// Handles the Click event of the btnEdit control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnEdit_Click( object sender, EventArgs e )
+    {
+        SetEditMode( true );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
+    }
+
+    /// <summary>
+    /// Sets the edit mode.
+    /// </summary>
+    /// <param name="editable">if set to <c>true</c> [editable].</param>
+    private void SetEditMode( bool editable )
+    {
+        foreach ( var editControl in divEditView.Controls )
+        {
+            if ( editControl is IEditableTextControl )
+            {
+                ( editControl as WebControl ).Enabled = editable;
+            }
+        }
+
+        btnCancel.Visible = editable;
+        btnSave.Visible = editable;
+        btnEdit.Visible = !editable;
+        btnClose.Visible = !editable;
+    }
+
+    /// <summary>
+    /// Handles the Click event of the btnClose control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnClose_Click( object sender, EventArgs e )
+    {
         pnlDetails.Visible = false;
+        BindGrid();
         pnlList.Visible = true;
     }
 
@@ -881,9 +927,9 @@ public partial class MarketingCampaigns : RockBlock
             marketingCampaignService.Save( marketingCampaign, CurrentPersonId );
         } );
 
-        BindGrid();
-        pnlDetails.Visible = false;
-        pnlList.Visible = true;
+        SetEditMode( false );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
     }
 
     #endregion
@@ -946,6 +992,8 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="marketingCampaignId">The marketing campaign id.</param>
     protected void ShowEdit( int marketingCampaignId )
     {
+        SetEditMode( false );
+
         pnlList.Visible = false;
         pnlDetails.Visible = true;
 
