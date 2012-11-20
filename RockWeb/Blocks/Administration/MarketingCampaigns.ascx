@@ -26,7 +26,7 @@
                 <legend>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
-                <div class="row-fluid">
+                <div class="row-fluid" id="divEditView" runat="server">
                     <div class="span6">
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="Title" />
                         <!-- ToDo: Better Person picker -->
@@ -65,7 +65,9 @@
             </fieldset>
 
             <div class="actions">
+                <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn primary" OnClick="btnEdit_Click" />
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnClose" runat="server" Text="Close" CssClass="btn primary" OnClick="btnClose_Click" />
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 

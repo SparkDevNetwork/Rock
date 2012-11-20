@@ -3,8 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using System.Reflection;
 
 namespace Rock.Data
 {
@@ -514,6 +518,28 @@ namespace Rock.Data
         {
             ContextHelper.AddConfigurations( modelBuilder );
         }
+
+        /// <summary>
+        /// Gets the name of the entity from table.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns></returns>
+        public static Type GetEntityFromTableName( string tableName )
+        {
+            var thisType = typeof( RockContext );
+            var props = thisType.GetProperties();
+            foreach ( PropertyInfo pi in props )
+            {
+                Type modelType = pi.PropertyType.GetGenericArguments()[0];
+                TableAttribute tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
+                if ( tableAttribute.Name.Equals( tableName, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return modelType;
+                }
+            }
+
+            return null;
+        }
     }
 
     /// <summary>
@@ -593,4 +619,3 @@ namespace Rock.Data
         }
     }
 }
-

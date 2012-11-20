@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Web.UI;
 
 namespace Rock.Web.UI.Controls
@@ -34,14 +39,14 @@ namespace Rock.Web.UI.Controls
                 ViewState["DatePickerType"] = value;
             }
         }
-        
+
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            base.RenderControl( writer );
+            base.OnInit( e );
 
             string kendoFunction;
             if (DatePickerType.Equals(DateTimePickerType.Date))
@@ -53,8 +58,8 @@ namespace Rock.Web.UI.Controls
                 kendoFunction = "kendoDateTimePicker";
             }
 
-            string script = string.Format( @"
-                $(document).ready(function() {{
+            string script = string.Format( 
+                @"$(document).ready(function() {{
                     $('#{0}').{1}();
                 }});",
                 this.ClientID,
@@ -85,6 +90,7 @@ namespace Rock.Web.UI.Controls
                         ShowErrorMessage( Rock.Constants.WarningMessage.DateTimeFormatInvalid( this.PropertyName ) );
                     }
                 }
+
                 return null;
             }
 
@@ -120,6 +126,7 @@ namespace Rock.Web.UI.Controls
                     return null;
                 }
             }
+            
             set
             {
                 SelectedDateTime = value;
