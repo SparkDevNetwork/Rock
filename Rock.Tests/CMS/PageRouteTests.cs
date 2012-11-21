@@ -6,31 +6,51 @@
 
 using System;
 using Rock.Cms;
-using Xunit;
+using NUnit.Framework;
 
 namespace Rock.Tests.Cms
 {
+    [TestFixture]
     public class PageRouteTests
     {
         public class TheExportObjectMethod
         {
-            [Fact]
+            [Test]
             public void ShouldCopyEntity()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
                 dynamic result = pageRoute.ExportObject();
-                Assert.Equal( result.Guid, pageRoute.Guid );
+                Assert.AreEqual( result.Guid, pageRoute.Guid );
             }
         }
 
         public class TheExportJsonMethod
         {
-            [Fact]
+            [Test]
             public void ShouldNotBeEmpty()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
                 dynamic result = pageRoute.ExportJson();
-                Assert.NotEmpty( result );
+                Assert.IsNotEmpty( result );
+            }
+        }
+
+        public class TheImportJsonMethod
+        {
+            [Test]
+            public void ShouldCopyPropertiesToEntity()
+            {
+                var obj = new
+                {
+                    Route = "/some/path",
+                    IsSystem = true
+                };
+
+                var json = obj.ToJSON();
+                var pageRoute = new PageRoute();
+                pageRoute.ImportJson( json );
+                Assert.AreEqual( obj.Route, pageRoute.Route );
+                Assert.AreEqual( obj.IsSystem, pageRoute.IsSystem );
             }
         }
     }

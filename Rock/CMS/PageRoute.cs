@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.Cms
 {
@@ -109,7 +110,7 @@ namespace Rock.Cms
         /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
         {
-            throw new NotImplementedException();
+            JsonConvert.PopulateObject( data, this );
         }
 
     }

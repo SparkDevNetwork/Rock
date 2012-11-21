@@ -4,32 +4,73 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Cms;
-using Xunit;
+using NUnit.Framework;
 
 namespace Rock.Tests.Cms
 {
+    [TestFixture]
     public class BlockTypeTests
     {
         public class TheExportObjectMethod
         {
-            [Fact]
+            [Test]
             public void ShouldCopyEntity()
             {
                 var blockType = new BlockType() {Name = "some block type"};
                 dynamic result = blockType.ExportObject();
-                Assert.Equal( result.Name, blockType.Name );
+                Assert.AreEqual( result.Name, blockType.Name );
             }
         }
 
         public class TheExportJsonMethod
         {
-            [Fact]
+            [Test]
             public void ShouldNotBeEmpty()
             {
                 var blockType = new BlockType() { Name = "some block type" };
                 var result = blockType.ExportJson();
-                Assert.NotEmpty( result );
+                Assert.IsNotEmpty( result );
+            }
+        }
+
+        public class TheImportJsonMethod
+        {
+            [Test]
+            public void ShouldCopyPropertiesToEntity()
+            {
+                var obj = new
+                {
+                    Description = "Test desc",
+                    IsSystem = false
+                };
+
+                var json = obj.ToJSON();
+                var blockType = new BlockType();
+                blockType.ImportJson( json );
+                Assert.AreEqual( obj.Description, blockType.Description );
+                Assert.AreEqual( obj.IsSystem, blockType.IsSystem );
+            }
+
+            [Test]
+            public void ShouldImportBlocks()
+            {
+                var obj = new
+                {
+                    Description = "Test desc",
+                    IsSystem = true,
+                    Blocks = new List<dynamic> { new { Name = "Test block instance" } }
+                };
+
+                var json = obj.ToJSON();
+                var blockType = new BlockType();
+                blockType.ImportJson( json );
+                var blocks = blockType.Blocks;
+                Assert.IsNotNull( blocks );
+                Assert.IsNotEmpty( blocks );
+                Assert.AreEqual( blocks.First().Name, obj.Blocks[ 0 ].Name );
             }
         }
     }

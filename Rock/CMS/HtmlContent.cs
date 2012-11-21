@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.Cms
 {
@@ -163,9 +164,9 @@ namespace Rock.Cms
         /// Imports the data.
         /// </summary>
         /// <param name="data">The data.</param>
-        public void ImportJson(string data)
+        public void ImportJson( string data )
         {
-            throw new NotImplementedException();
+            JsonConvert.PopulateObject( data, this );
         }
     }
 
