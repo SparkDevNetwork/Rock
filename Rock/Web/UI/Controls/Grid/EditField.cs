@@ -32,6 +32,7 @@ namespace Rock.Web.UI.Controls
             EditFieldTemplate editFieldTemplate = new EditFieldTemplate();
             editFieldTemplate.LinkButtonClick += editFieldTemplate_LinkButtonClick;
             this.ItemTemplate = editFieldTemplate;
+            ParentGrid = control as Grid;
 
             return base.Initialize( sortingEnabled, control );
         }
@@ -45,6 +46,14 @@ namespace Rock.Web.UI.Controls
         {
             OnClick( e );
         }
+
+        /// <summary>
+        /// Gets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        public Grid ParentGrid { get; internal set; }
 
         /// <summary>
         /// Occurs when [click].
@@ -76,13 +85,24 @@ namespace Rock.Web.UI.Controls
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
             {
+                EditField editField = cell.ContainingField as EditField;
+                ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.ToolTip = "Edit";
                 lbEdit.Click += lbEdit_Click;
+                lbEdit.Visible = !ParentGrid.ReadOnly;
 
                 cell.Controls.Add( lbEdit );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        private Grid ParentGrid { get; set; }
 
         /// <summary>
         /// Handles the Click event of the lbEdit control.

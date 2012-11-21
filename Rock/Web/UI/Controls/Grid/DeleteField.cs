@@ -110,6 +110,7 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.ToolTip = "Delete";
                 lbDelete.Click += lbDelete_Click;
+                lbDelete.Visible = !ParentGrid.ReadOnly;
                 lbDelete.DataBinding += lbDelete_DataBinding;
 
                 cell.Controls.Add( lbDelete );

@@ -190,6 +190,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [read only].  
+        /// NOTE: Rebind the grid after changing this for the edit/delete buttons to show up correctly
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool ReadOnly
+        {
+            get
+            {
+                object readOnly = this.ViewState["ReadOnly"];
+                if ( readOnly != null )
+                {
+                    return (bool)readOnly;
+                }
+                else
+                {
+                    // default to false
+                    return false;
+                }
+            }
+
+            set
+            {
+                this.ViewState["ReadOnly"] = value;
+                Actions.IsAddEnabled = !value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the export to excel action should be displayed.
         /// </summary>
         /// <value>

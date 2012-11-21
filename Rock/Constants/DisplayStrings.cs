@@ -50,6 +50,16 @@ namespace Rock.Constants
         {
             return string.Format( "End Date cannot be earlier than Start Date" );
         }
+
+        /// <summary>
+        /// Cannots the be blank.
+        /// </summary>
+        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <returns></returns>
+        public static string CannotBeBlank( string itemFieldName )
+        {
+            return string.Format( "Value required for {0}.", itemFieldName.SplitCase().ToLower() );
+        }
     }
 
     /// <summary>
