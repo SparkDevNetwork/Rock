@@ -5,31 +5,51 @@
 //
 
 using Rock.Cms;
-using Xunit;
+using NUnit.Framework;
 
 namespace Rock.Tests.Cms
 {
+    [TestFixture]
     public class HtmlContentTests
     {
         public class TheExportObjectMethod
         {
-            [Fact]
+            [Test]
             public void ShouldCopyEntity()
             {
                 var html = new HtmlContent() { Content = "Foo" };
                 dynamic result = html.ExportObject();
-                Assert.Equal( result.Content, html.Content );
+                Assert.AreEqual( result.Content, html.Content );
             }
         }
 
         public class TheExportJsonMethod
         {
-            [Fact]
+            [Test]
             public void ShouldNotBeEmpty()
             {
                 var html = new HtmlContent() { Content = "Foo" };
                 var result = html.ExportJson();
-                Assert.NotEmpty( result );
+                Assert.IsNotEmpty( result );
+            }
+        }
+
+        public class TheImportJsonMethod
+        {
+            [Test]
+            public void ShouldCopyPropertiesToEntity()
+            {
+                var obj = new
+                {
+                    EntityValue = "Some Value",
+                    IsApproved = true
+                };
+
+                var json = obj.ToJSON();
+                var htmlContent = new HtmlContent();
+                htmlContent.ImportJson( json );
+                Assert.AreEqual( obj.EntityValue, htmlContent.EntityValue );
+                Assert.AreEqual( obj.IsApproved, htmlContent.IsApproved );
             }
         }
     }

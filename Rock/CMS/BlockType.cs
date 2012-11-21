@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Dynamic;
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Cms
@@ -115,9 +117,24 @@ namespace Rock.Cms
         /// Imports the object from JSON.
         /// </summary>
         /// <param name="data">The data.</param>
-        public void ImportJson(string data)
+        public void ImportJson( string data )
         {
-            throw new NotImplementedException();
+            JsonConvert.PopulateObject( data, this );
+            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
+            var dict = obj as IDictionary<string, object> ?? new Dictionary<string, object>();
+
+            if ( !dict.ContainsKey( "Blocks" ) )
+            {
+                return;
+            }
+
+            var blocks = dict[ "Blocks" ] as IEnumerable<dynamic> ?? new List<dynamic>();
+            this.Blocks = new List<Block>();
+
+            foreach ( var block in blocks )
+            {
+                this.Blocks.Add( ( (object) block ).ToModel<Block>() );
+            }
         }
 
     }

@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Dynamic;
 using System.Linq;
 using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.Cms
 {
@@ -421,14 +423,62 @@ namespace Rock.Cms
             }
         }
 
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
         {
-            throw new NotImplementedException();
+            JsonConvert.PopulateObject( data, this );
+            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
+            var dict = obj as IDictionary<string, object> ?? new Dictionary<string, object>();
+            ImportPages( dict );
+            ImportBlocks( dict );
+            ImportPageRoutes( dict );
+        }
+
+        private void ImportPages( IDictionary<string, object> dict )
+        {
+            if ( !dict.ContainsKey( "Pages" ) )
+            {
+                return;
+            }
+
+            var pages = dict[ "Pages" ] as IEnumerable<dynamic> ?? new List<dynamic>();
+            this.Pages = new List<Page>();
+
+            foreach ( var page in pages )
+            {
+                this.Pages.Add( ( (object) page ).ToModel<Page>() );
+            }
+        }
+
+        private void ImportBlocks( IDictionary<string, object> dict )
+        {
+            if ( !dict.ContainsKey( "Blocks" ) )
+            {
+                return;
+            }
+
+            var blocks = dict[ "Blocks" ] as IEnumerable<dynamic> ?? new List<dynamic>();
+            this.Blocks = new List<Block>();
+
+            foreach ( var block in blocks )
+            {
+                this.Blocks.Add( ( (object) block ).ToModel<Block>() );
+            }
+        }
+
+        private void ImportPageRoutes( IDictionary<string, object> dict )
+        {
+            if ( !dict.ContainsKey( "PageRoutes" ) )
+            {
+                return;
+            }
+
+            var pageRoutes = dict[ "PageRoutes" ] as IEnumerable<dynamic> ?? new List<dynamic>();
+            this.PageRoutes = new List<PageRoute>();
+
+            foreach ( var pageRoute in pageRoutes )
+            {
+                this.PageRoutes.Add( ( (object) pageRoute ).ToModel<PageRoute>() );
+            }
         }
     }
 
