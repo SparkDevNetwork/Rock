@@ -23,6 +23,7 @@
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/RockThemeScripts.js") %>" ></script>
 

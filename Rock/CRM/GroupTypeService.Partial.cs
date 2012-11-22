@@ -22,5 +22,29 @@ namespace Rock.Crm
         {
             return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
         }
+
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        public override bool Delete( GroupType item, int? personId )
+        {
+            string message;
+            if ( !CanDelete( item, out message ) )
+            {
+                return false;
+            }
+
+            RockContext context = new RockContext();
+
+            context.Database.Connection.Open();
+            var cmd = context.Database.Connection.CreateCommand();
+            cmd.CommandText = string.Format( "delete from crmGroupTypeAssociation where GroupTypeId = {0} or ChildGroupTypeId = {0}", item.Id );
+            cmd.ExecuteNonQuery();
+            item.ChildGroupTypes.Clear();
+            return base.Delete( item, personId );
+        }
     }
 }

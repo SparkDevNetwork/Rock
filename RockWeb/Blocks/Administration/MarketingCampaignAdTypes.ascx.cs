@@ -73,7 +73,6 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbGridWarning.Visible = false;
         nbWarning.Visible = false;
 
         if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
@@ -131,8 +130,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
         string errorMessage;
         if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType.Id, out errorMessage ) )
         {
-            nbGridWarning.Text = errorMessage;
-            nbGridWarning.Visible = true;
+            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
         

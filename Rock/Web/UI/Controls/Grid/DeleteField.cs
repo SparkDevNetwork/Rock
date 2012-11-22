@@ -39,8 +39,15 @@ namespace Rock.Web.UI.Controls
             // Add Javascript Confirm to grids that use the DeleteField
             string script = string.Format( @"
         Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this {1}?');
+            $('#{0} td.grid-icon-cell.delete a').click(function(e){{
+                e.preventDefault();
+                bootbox.confirm('Are you sure you want to delete this {1}?', function(result) {{
+                        if (result)
+                        {{
+                            eval(e.target.href);
+                        }}
+                    }}
+                );
                 }});
         }});
             ", control.ClientID, rowItemText );
