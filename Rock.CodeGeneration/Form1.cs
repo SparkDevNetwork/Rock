@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Design.PluralizationServices;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace Rock.CodeGeneration
 {
@@ -51,11 +55,19 @@ namespace Rock.CodeGeneration
                 {
                     var assembly = Assembly.LoadFrom( file );
 
-					foreach ( Type type in assembly.GetTypes() )
-						if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
-							foreach ( Type interfaceType in type.GetInterfaces() )
-								if ( interfaceType == entityInterface )
-									cblModels.Items.Add( type );
+                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName))
+                    {
+                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
+                        {
+                            foreach ( Type interfaceType in type.GetInterfaces() )
+                            {
+                                if ( interfaceType == entityInterface )
+                                {
+                                    cblModels.Items.Add( type );
+                                }
+                            }
+                        }
+                    }
 				}
 
                 CheckAllItems( true );
@@ -248,11 +260,131 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "                });" );
             sb.AppendLine( "        }" );
 
+            sb.Append( GetCanDeleteCode( rootFolder, type ) );
+
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
-            
+
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );
             WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Gets the can delete code.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        private string GetCanDeleteCode( string rootFolder, Type type )
+        {
+            
+
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load( @"C:\Projects\Rock-ChMS\RockWeb\web.ConnectionStrings.config" );
+            XmlNode root = xmlDoc.DocumentElement;
+            XmlNode node = root.SelectNodes( "add[@name = \"RockContext\"]" )[0];
+            SqlConnection sqlconn = new SqlConnection( node.Attributes["connectionString"].Value );
+            sqlconn.Open();
+
+            string sql = @"
+select * from
+(
+select 
+  OBJECT_NAME([fk].[parent_object_id]) [parentTable], 
+  OBJECT_NAME([fk].[referenced_object_id]) [refTable], 
+  [cc].[name] [columnName],
+  [fk].[delete_referential_action] [CascadeAction]
+from 
+sys.foreign_key_columns [fkc]
+join sys.foreign_keys [fk]
+on fkc.constraint_object_id = fk.object_id
+join sys.columns cc
+on fkc.parent_column_id = cc.column_id
+where cc.object_id = fk.parent_object_id
+and [fk].[delete_referential_action_desc] != 'CASCADE'
+) sub
+where [refTable] = '{0}'
+order by [parentTable]
+";
+
+            SqlCommand sqlCommand = sqlconn.CreateCommand();
+            TableAttribute tableAttribute = type.GetCustomAttribute<TableAttribute>();
+            sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
+
+            var reader = sqlCommand.ExecuteReader();
+
+            List<KeyValuePair<string, string>> parentTableColumnNameList = new List<KeyValuePair<string,string>>();
+            while ( reader.Read() )
+            {
+                string parentTable = reader["parentTable"] as string;
+                string columnName = reader["columnName"] as string;
+                parentTableColumnNameList.Add(new KeyValuePair<string,string>(parentTable, columnName));
+            }
+
+            // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
+            List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Key ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
+
+            string canDeleteBegin = string.Format( @"
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name=""item"">The item.</param>
+        /// <param name=""errorMessage"">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( {0} item, out string errorMessage )
+        {{
+            errorMessage = string.Empty;
+", type.Name );
+
+            string canDeleteMiddle = string.Empty;
+            
+            foreach ( var item in parentTableColumnNameList )
+            {
+                if ( parentTablesToIgnore.Contains( item.Key ) )
+                {
+                    continue;
+                }
+                
+                string parentTable = item.Key;
+                string columnName = item.Value;
+                
+                canDeleteMiddle += string.Format(
+@"            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {{
+                cmdCheckRef.CommandText = string.Format( ""select count(*) from {0} where {1} = {{0}} "", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {{
+                    Type entityType = RockContext.GetEntityFromTableName( ""{0}"" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : ""{0}"";
+
+                    errorMessage = string.Format(""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, friendlyName);
+                    return false;
+                }}
+            }}
+
+",
+               parentTable,
+               columnName,
+               type.Name);
+            }
+
+            string canDeleteEnd = @"            return true;
+        }
+";
+
+            if ( !string.IsNullOrWhiteSpace( canDeleteMiddle ) )
+            {
+                canDeleteBegin += @"            RockContext context = new RockContext();
+            context.Database.Connection.Open();
+
+";
+            };
+            
+            return canDeleteBegin + canDeleteMiddle + canDeleteEnd;
         }
 
         /// <summary>

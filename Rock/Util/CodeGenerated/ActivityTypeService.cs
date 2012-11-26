@@ -72,5 +72,37 @@ namespace Rock.Util
                     Guid = m.Guid,
                 });
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( ActivityType item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            RockContext context = new RockContext();
+            context.Database.Connection.Open();
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from utilActivity where ActivityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "utilActivity" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "utilActivity";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", ActivityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

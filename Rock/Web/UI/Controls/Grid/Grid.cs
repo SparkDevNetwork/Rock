@@ -190,6 +190,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [read only].  
+        /// NOTE: Rebind the grid after changing this for the edit/delete buttons to show up correctly
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool ReadOnly
+        {
+            get
+            {
+                object readOnly = this.ViewState["ReadOnly"];
+                if ( readOnly != null )
+                {
+                    return (bool)readOnly;
+                }
+                else
+                {
+                    // default to false
+                    return false;
+                }
+            }
+
+            set
+            {
+                this.ViewState["ReadOnly"] = value;
+                Actions.IsAddEnabled = !value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the export to excel action should be displayed.
         /// </summary>
         /// <value>
@@ -215,6 +245,31 @@ namespace Rock.Web.UI.Controls
                 {
                     this.ViewState["ShowActionExcelExport"] = value;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the display type.
+        /// </summary>
+        /// <value>
+        /// The display type.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( GridDisplayType.Full ),
+        Description( "Display Type" )
+        ]
+        public virtual GridDisplayType DisplayType
+        {
+            get
+            {
+                object displayType = this.ViewState["DisplayType"];
+                return displayType != null ? (GridDisplayType)displayType : GridDisplayType.Full;
+            }
+
+            set
+            {
+                this.ViewState["DisplayType"] = value;
             }
         }
 
@@ -249,7 +304,7 @@ namespace Rock.Web.UI.Controls
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
-            base.AllowPaging = true;
+            base.AllowPaging = false;
             base.PageSize = 25;
             base.PageIndex = 0;
         }
@@ -522,6 +577,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                //this.AllowPaging = false;
+                this.AllowSorting = false;
+                this.Actions.IsExcelExportEnabled = false;
+                this.RemoveCssClass( "full" );
+                this.AddCssClass( "light" );
+            }
+            else
+            {
+                this.RemoveCssClass( "light" );
+                this.AddCssClass( "full" );
+            }
+
             base.OnDataBound( e );
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
@@ -1233,6 +1302,23 @@ namespace Rock.Web.UI.Controls
         }
 
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GridDisplayType
+    {
+        /// <summary>
+        /// The full
+        /// </summary>
+        Full,
+
+        /// <summary>
+        /// The light
+        /// </summary>
+        Light
+    }
+
 
     #endregion
 }

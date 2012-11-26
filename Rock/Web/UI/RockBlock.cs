@@ -26,15 +26,6 @@ namespace Rock.Web.UI
     /// </summary>
     public abstract class RockBlock : UserControl
     {
-        #region Events
-
-        /// <summary>
-        /// Occurs when the block instance properties are updated.
-        /// </summary>
-        public event EventHandler<EventArgs> AttributesUpdated;
-
-        #endregion
-
         #region Public Properties
 
         /// <summary>
@@ -77,8 +68,8 @@ namespace Rock.Web.UI
         /// Relative path to the current theme and layout folder.  Useful for setting paths to
         /// theme resource files
         /// <example>
-        /// Client Side: <c><![CDATA[<img src='<%= ThemePath %>/Images/avatar.gif' />]]> </c>
-        /// Server Side: <c>myImg.ImageUrl = ThemePath + "/Images/avatar.gif";</c>
+        /// Client Side: <c><![CDATA[<img src='<%= CurrentTheme %>/Images/avatar.gif' />]]> </c>
+        /// Server Side: <c>myImg.ImageUrl = CurrentTheme + "/Images/avatar.gif";</c>
         /// </example>
         /// </summary>
         public string CurrentTheme
@@ -232,21 +223,6 @@ namespace Rock.Web.UI
                 this.CurrentPage.Id, CurrentBlock.Id, key );
         }
 
-        /// <summary>
-        /// Adds an update trigger for when the block instance properties are updated.
-        /// </summary>
-        /// <param name="updatePanel">The update panel.</param>
-        public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
-        {
-            if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
-            {
-                AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
-                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
-                trigger.EventName = "Click";
-                updatePanel.Triggers.Add( trigger );
-            }
-        }
-
         #endregion
 
         #region Overridden Methods
@@ -375,6 +351,21 @@ namespace Rock.Web.UI
                 return CurrentBlock.AttributeValues[key][0].Value;
 
             return null;
+        }
+
+        /// <summary>
+        /// Adds an update trigger for when the block instance properties are updated.
+        /// </summary>
+        /// <param name="updatePanel">The update panel.</param>
+        public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
+        {
+            if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
+            {
+                AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
+                trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
+                trigger.EventName = "Click";
+                updatePanel.Triggers.Add( trigger );
+            }
         }
 
         /// <summary>
@@ -513,21 +504,16 @@ namespace Rock.Web.UI
                 aDeleteBlock.Controls.Add( iDeleteBlock );
                 iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
             }
-
+            
             return configControls;
         }
 
         /// <summary>
-        /// Handles the Click event of the trigger control.
+        /// Contents the updated.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void trigger_Click( object sender, EventArgs e )
+        protected virtual void ContentUpdated()
         {
-            if ( AttributesUpdated != null )
-            {
-                AttributesUpdated( sender, e );
-            }
+            CurrentPage.BlockContentUpdated(this);
         }
 
         #endregion
@@ -568,6 +554,19 @@ namespace Rock.Web.UI
         #region Event Handlers
 
         /// <summary>
+        /// Handles the Click event of the trigger control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void trigger_Click( object sender, EventArgs e )
+        {
+            if ( AttributesUpdated != null )
+            {
+                AttributesUpdated( sender, e );
+            }
+        }
+
+        /// <summary>
         /// Handles the BlockAttributesUpdated event of the CmsBlock control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -577,6 +576,15 @@ namespace Rock.Web.UI
             if ( e.BlockID == CurrentBlock.Id && AttributesUpdated != null )
                 AttributesUpdated( sender, e );
         }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Occurs when the block instance properties are updated.
+        /// </summary>
+        public event EventHandler<EventArgs> AttributesUpdated;
 
         #endregion
 

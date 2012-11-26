@@ -741,6 +741,10 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\UI\Controls\ModalAlert.cs" />
+    <Compile Include="Web\UI\Controls\ModalDialog.cs" />
+    <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
+    <Compile Include="Web\UI\Controls\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
@@ -748,11 +752,10 @@
     <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
-    <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageSelector.cs" />
     <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
-    <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
+    <Compile Include="Web\UI\Controls\LabeledCheckBoxList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />

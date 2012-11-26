@@ -1,4 +1,4 @@
-﻿.grid-table
+﻿.grid-table.table-bordered
 {
     border-collapse: separate;
     border-color: #CCCCCC;
@@ -6,6 +6,7 @@
     border-width: 1px;
     margin-top: 24px;
     width: 100%;
+    border-top-width: 0;
 }
 
 .grid-table caption 
@@ -234,8 +235,32 @@
     border-width: 1px;
     border-color: #c4c4c4;
     border-style: solid;
-    padding: 24px 0;
     margin-top: 24px;
+    padding: 0 0 12px 6px;
+}
+
+.grid-filter header {
+    margin: 0 0 -4px -6px;
+    background-color: #c3c3c3;
+    border-radius: 4px 4px 0 0;
+    padding: 4px;
+    cursor: pointer;
+    height: 22px;
+}
+
+.grid-filter header div {
+    float: right;
+}
+
+.grid-filter header h3 {
+    font-size: 12px;
+    margin: 0 2px 0 2px;
+    line-height: 16px;
+    display: inline;
+}
+
+.grid-filter header i {
+    color: #7c7c7c;
 }
 
 .grid-filter fieldset 
@@ -246,10 +271,15 @@
 .grid-filter legend 
 {
     font-size: 16px;
-    font-weight: bold;
+    margin-bottom: 0;
 }
 
 .grid-filter +  div .grid-table 
 {
     margin-top: -12px;   
+}
+
+.grid-filter-entry
+{
+    margin-bottom: 12px;
 }
