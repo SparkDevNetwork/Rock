@@ -99,8 +99,7 @@ public partial class Groups : RockBlock
             string errorMessage;
             if ( !groupService.CanDelete( group.Id, out errorMessage ) )
             {
-                nbGridWarning.Text = errorMessage;
-                nbGridWarning.Visible = true;
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
             
