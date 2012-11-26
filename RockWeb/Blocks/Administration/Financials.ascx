@@ -1,31 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Financials.ascx.cs" Inherits="RockWeb.Blocks.Administration.Financials" %>
-<script type="text/javascript">
-    $(document).ready(function () {
-
-        // create DatePicker from input HTML element on initial page load
-        $("#<%=txtFromDate.ClientID%>").kendoDatePicker();
-        $("#<%=txtToDate.ClientID%>").kendoDatePicker();
-
-        // create DatePicker from input HTML element on Ajax Request
-        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestHandler);
-
-        function EndRequestHandler(sender, args) {
-            $("#<%=txtFromDate.ClientID%>").kendoDatePicker();
-            $("#<%=txtToDate.ClientID%>").kendoDatePicker();
-        }
-    });
-</script>
 
 <asp:UpdatePanel ID="upFinancial" runat="server">
     <ContentTemplate>
 
         <Rock:GridFilter ID="rFilter" runat="server">
             <asp:Panel ID="pnlDateRange" runat="server" Style="margin-bottom: 18px; margin-left: 20px;">
-                <label id="lblDateRange">
-                    Date Range</label>
-                <asp:TextBox ID="txtFromDate" runat="server" />
-                to
-            <asp:TextBox ID="txtToDate" runat="server" />
+                <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="StartDate" />
+                <Rock:DateTimePicker ID="dtEndDate" runat="server"  SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="to" />
             </asp:Panel>
             <asp:Panel ID="pnlAmountRange" runat="server" Style="margin-bottom: 18px;">
                 <label id="lblAmountRange">

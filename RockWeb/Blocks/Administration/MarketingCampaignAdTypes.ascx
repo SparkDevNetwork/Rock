@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upMarketingCampaignAdType" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gMarketingCampaignAdType" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />

@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PluginManager.ascx.cs" Inherits="RockWeb.Blocks.Administration.PluginManager" %>
 
+<asp:UpdateProgress id="updateProgress" runat="server">
+		<ProgressTemplate>
+		    <div id="updateProgress">
+                <img src="<%= CurrentTheme %>/Assets/Images/waiting.gif" alt="Loading ..." title="Loading ...">
+		    </div>
+		</ProgressTemplate>
+</asp:UpdateProgress>
 <asp:UpdatePanel ID="upRockPackages" runat="server">
 <ContentTemplate>
     <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />

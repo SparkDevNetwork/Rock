@@ -98,7 +98,7 @@ public partial class GroupTypes : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbGridWarning.Visible = false;
+        mdGridWarning.Hide();
         nbWarning.Visible = false;
 
         if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
@@ -150,16 +150,15 @@ public partial class GroupTypes : RockBlock
     protected void gGroupType_Delete( object sender, RowEventArgs e )
     {
         GroupTypeService groupTypeService = new GroupTypeService();
-        int groupTypeId = (int)e.RowKeyValue;
+        GroupType groupType = groupTypeService.Get( (int)e.RowKeyValue );
+
         string errorMessage;
-        if ( !groupTypeService.CanDelete( groupTypeId, out errorMessage ) )
+        if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
         {
-            nbGridWarning.Text = errorMessage;
-            nbGridWarning.Visible = true;
+            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
 
-        GroupType groupType = groupTypeService.Get( groupTypeId );
         if ( CurrentBlock != null )
         {
             groupTypeService.Delete( groupType, CurrentPersonId );
