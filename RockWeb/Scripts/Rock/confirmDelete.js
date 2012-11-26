@@ -1,4 +1,4 @@
-﻿function ConfirmDelete(e, nameText) {
+﻿function confirmDelete(e, nameText) {
     e.preventDefault();
     bootbox.confirm('Are you sure you want to delete this ' + nameText + '?', function (result) {
         {

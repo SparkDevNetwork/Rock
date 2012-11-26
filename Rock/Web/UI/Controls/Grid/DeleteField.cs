@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls
                 lbDelete.DataBinding += lbDelete_DataBinding;
                 if ( ParentGrid.ShowConfirmDeleteDialog )
                 {
-                    lbDelete.Attributes["onclick"] = string.Format( "javascript: return ConfirmDelete(event, '{0}');", ParentGrid.RowItemText );
+                    lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
                 }
 
                 cell.Controls.Add( lbDelete );
