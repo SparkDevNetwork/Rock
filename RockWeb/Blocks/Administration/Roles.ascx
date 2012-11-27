@@ -12,10 +12,9 @@
         </Rock:GridFilter>
         <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="role" >
             <Columns>
-                <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
+                <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
