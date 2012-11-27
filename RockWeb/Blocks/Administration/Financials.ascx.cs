@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -99,8 +104,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserValue( "From Date", txtFromDate.Text );
-            rFilter.SaveUserValue( "To Date", txtToDate.Text );
+            rFilter.SaveUserValue( "From Date", dtStartDate.Text );
+            rFilter.SaveUserValue( "To Date", dtEndDate.Text );
             rFilter.SaveUserValue( "From Amount", txtFromAmount.Text );
             rFilter.SaveUserValue( "To Amount", txtToAmount.Text );
             rFilter.SaveUserValue( "Transaction Code", txtTransactionCode.Text );
@@ -123,9 +128,8 @@ namespace RockWeb.Blocks.Administration
             {
                 fromDate = DateTime.Today;
             }
-            txtFromDate.Text = fromDate.ToShortDateString();
-
-            txtToDate.Text = rFilter.GetUserValue( "To Date" );
+            dtStartDate.Text = fromDate.ToShortDateString();
+            dtEndDate.Text = rFilter.GetUserValue( "To Date" );
             txtFromAmount.Text = rFilter.GetUserValue( "From Amount" );
             txtToAmount.Text = rFilter.GetUserValue( "To Amount" );
             txtTransactionCode.Text = rFilter.GetUserValue( "Transaction Code" );
@@ -188,16 +192,8 @@ namespace RockWeb.Blocks.Administration
             {
                 searchValue.CurrencyTypeId = int.Parse( ddlCurrencyType.SelectedValue );
             }
-            DateTime? fromTransactionDate = null;
-            if ( !String.IsNullOrEmpty( txtFromDate.Text ) )
-            {
-                fromTransactionDate = DateTime.Parse( txtFromDate.Text );
-            }
-            DateTime? toTransactionDate = null;
-            if ( !String.IsNullOrEmpty( txtToDate.Text ) )
-            {
-                toTransactionDate = DateTime.Parse( txtToDate.Text );
-            }
+            DateTime? fromTransactionDate = dtStartDate.SelectedDate;
+            DateTime? toTransactionDate = dtEndDate.SelectedDate;
             searchValue.DateRange = new RangeValue<DateTime?>( fromTransactionDate, toTransactionDate );
             if ( ddlFundType.SelectedValue != "-1" )
             {

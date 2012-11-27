@@ -65,6 +65,7 @@ namespace Rock.Rest
                 _service.Save( model, user.PersonId );
 
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+                // TODO set response.Headers.Location as per REST POST convention
                 //response.Headers.Location = new Uri( Request.RequestUri, "/api/pages/" + page.Id.ToString() );
                 return response;
             }

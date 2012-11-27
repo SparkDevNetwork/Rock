@@ -94,6 +94,40 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show confirm delete dialog].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show confirm delete dialog]; otherwise, <c>false</c>.
+        /// </value>
+        [
+       Category( "Appearance" ),
+       DefaultValue( true ),
+       Description( "Show Confirm Delete Dialog" )
+       ]
+        public virtual bool ShowConfirmDeleteDialog
+        {
+            get
+            {
+                object showConfirmDeleteDialog = this.ViewState["ShowConfirmDeleteDialog"];
+                if ( showConfirmDeleteDialog == null )
+                {
+                    return true;
+                }
+                else
+                {
+                    return (bool)showConfirmDeleteDialog;
+                }
+                
+            }
+
+            set
+            {
+                this.ViewState["ShowConfirmDeleteDialog"] = value;
+            }
+
+        }
+
+        /// <summary>
         /// Gets or sets the name of the row item.
         /// </summary>
         /// <value>
@@ -108,7 +142,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object rowItemText = this.ViewState["RowItemText"];
-                if ( string.IsNullOrWhiteSpace(rowItemText as string) && DataSource != null)
+                if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
                     Type itemType = dataSourceType.GetGenericArguments()[0];
@@ -186,6 +220,36 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["HideDeleteButtonForIsSystem"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [read only].  
+        /// NOTE: Rebind the grid after changing this for the edit/delete buttons to show up correctly
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool ReadOnly
+        {
+            get
+            {
+                object readOnly = this.ViewState["ReadOnly"];
+                if ( readOnly != null )
+                {
+                    return (bool)readOnly;
+                }
+                else
+                {
+                    // default to false
+                    return false;
+                }
+            }
+
+            set
+            {
+                this.ViewState["ReadOnly"] = value;
+                Actions.IsAddEnabled = !value;
             }
         }
 

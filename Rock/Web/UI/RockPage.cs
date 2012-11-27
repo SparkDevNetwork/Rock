@@ -1,9 +1,8 @@
-﻿
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -725,6 +724,9 @@ namespace Rock.Web.UI
         {
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
+            
+            // add the confirmDelete script for Grids
+            AddScriptLink( Page, "~/Scripts/Rock/confirmDelete.js" );
 
             // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
             AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );

@@ -68,5 +68,112 @@ namespace Rock.Core
                     Guid = m.Guid,
                 });
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( EntityType item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            RockContext context = new RockContext();
+            context.Database.Connection.Open();
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsAuth where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "cmsAuth" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "cmsAuth";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from coreAttribute where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "coreAttribute" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreAttribute";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from coreAudit where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "coreAudit" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreAudit";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from coreCategory where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "coreCategory" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreCategory";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from coreEntityChange where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "coreEntityChange" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreEntityChange";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from utilWorkflowTrigger where EntityTypeId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "utilWorkflowTrigger" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "utilWorkflowTrigger";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

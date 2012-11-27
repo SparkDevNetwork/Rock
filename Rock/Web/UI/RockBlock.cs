@@ -68,8 +68,8 @@ namespace Rock.Web.UI
         /// Relative path to the current theme and layout folder.  Useful for setting paths to
         /// theme resource files
         /// <example>
-        /// Client Side: <c><![CDATA[<img src='<%= ThemePath %>/Images/avatar.gif' />]]> </c>
-        /// Server Side: <c>myImg.ImageUrl = ThemePath + "/Images/avatar.gif";</c>
+        /// Client Side: <c><![CDATA[<img src='<%= CurrentTheme %>/Images/avatar.gif' />]]> </c>
+        /// Server Side: <c>myImg.ImageUrl = CurrentTheme + "/Images/avatar.gif";</c>
         /// </example>
         /// </summary>
         public string CurrentTheme

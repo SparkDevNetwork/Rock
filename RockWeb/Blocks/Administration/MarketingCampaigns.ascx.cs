@@ -26,25 +26,6 @@ public partial class MarketingCampaigns : RockBlock
     #region Child Grid States
 
     /// <summary>
-    /// Gets or sets the state of the marketing campaign ads.
-    /// </summary>
-    /// <value>
-    /// The state of the marketing campaign ads.
-    /// </value>
-    private List<MarketingCampaignAdDto> MarketingCampaignAdsState
-    {
-        get
-        {
-            return ViewState["MarketingCampaignAdsState"] as List<MarketingCampaignAdDto>;
-        }
-
-        set
-        {
-            ViewState["MarketingCampaignAdsState"] = value;
-        }
-    }
-
-    /// <summary>
     /// Gets or sets the state of the marketing campaign audiences.
     /// </summary>
     /// <value>
@@ -60,25 +41,6 @@ public partial class MarketingCampaigns : RockBlock
         set
         {
             ViewState["MarketingCampaignAudiencesState"] = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the state of the campuses.
-    /// </summary>
-    /// <value>
-    /// The state of the campuses.
-    /// </value>
-    private List<CampusDto> CampusesState
-    {
-        get
-        {
-            return ViewState["CampusesState"] as List<CampusDto>;
-        }
-
-        set
-        {
-            ViewState["CampusesState"] = value;
         }
     }
 
@@ -101,23 +63,23 @@ public partial class MarketingCampaigns : RockBlock
             gMarketingCampaigns.Actions.AddClick += gMarketingCampaigns_Add;
             gMarketingCampaigns.GridRebind += gMarketingCampaigns_GridRebind;
 
-            gMarketingCampaignAds.DataKeyNames = new string[] { "Guid" };
+            gMarketingCampaignAds.DataKeyNames = new string[] { "Id" };
             gMarketingCampaignAds.Actions.IsAddEnabled = true;
             gMarketingCampaignAds.Actions.AddClick += gMarketingCampaignAds_Add;
             gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            gMarketingCampaignAudiences.DataKeyNames = new string[] { "id" };
-            gMarketingCampaignAudiences.Actions.IsAddEnabled = true;
-            gMarketingCampaignAudiences.Actions.AddClick += gMarketingCampaignAudiences_Add;
-            gMarketingCampaignAudiences.GridRebind += gMarketingCampaignAudiences_GridRebind;
-            gMarketingCampaignAudiences.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
+            gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
+            gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+            gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            gCampuses.DataKeyNames = new string[] { "id" };
-            gCampuses.Actions.IsAddEnabled = true;
-            gCampuses.Actions.AddClick += gCampus_Add;
-            gCampuses.GridRebind += gCampus_GridRebind;
-            gCampuses.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = true;
+            gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
+            gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+            gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
         }
@@ -129,7 +91,6 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbGridWarning.Visible = false;
         nbWarning.Visible = false;
 
         if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
@@ -187,18 +148,15 @@ public partial class MarketingCampaigns : RockBlock
     {
         MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
         int marketingCampaignId = (int)e.RowKeyValue;
+        MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
 
-        /* TODO
         string errorMessage;
-        if ( !marketingCampaignService.CanDelete( marketingCampaignId, out errorMessage ) )
+        if ( !marketingCampaignService.CanDelete( marketingCampaign, out errorMessage ) )
         {
-            nbGridWarning.Text = errorMessage;
-            nbGridWarning.Visible = true;
+            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
-         */
 
-        MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
         if ( CurrentBlock != null )
         {
             marketingCampaignService.Delete( marketingCampaign, CurrentPersonId );
@@ -229,7 +187,7 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void gMarketingCampaignAds_Add( object sender, EventArgs e )
     {
-        gMarketingCampaignAds_ShowEdit( Guid.Empty );
+        gMarketingCampaignAds_ShowEdit( 0 );
     }
 
     /// <summary>
@@ -239,41 +197,55 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gMarketingCampaignAds_Edit( object sender, RowEventArgs e )
     {
-        gMarketingCampaignAds_ShowEdit( (Guid)e.RowKeyValue );
+        gMarketingCampaignAds_ShowEdit( (int)e.RowKeyValue );
     }
 
     /// <summary>
     /// Gs the marketing campaign ads_ show edit.
     /// </summary>
-    /// <param name="marketingCampaignAdGuid">The marketing campaign ad GUID.</param>
-    protected void gMarketingCampaignAds_ShowEdit( Guid marketingCampaignAdGuid )
+    /// <param name="marketingCampaignAdId">The marketing campaign ad id.</param>
+    protected void gMarketingCampaignAds_ShowEdit( int marketingCampaignAdId )
     {
-        hfMarketingCampaignAdGuid.Value = marketingCampaignAdGuid.ToString();
-        if ( !marketingCampaignAdGuid.Equals( Guid.Empty ) )
+        hfMarketingCampaignAdId.Value = marketingCampaignAdId.ToString();
+
+        MarketingCampaignAd marketingCampaignAd = null;
+
+        if ( !marketingCampaignAdId.Equals( 0 ) )
+        {
+            marketingCampaignAd = MarketingCampaignAd.Read( marketingCampaignAdId );
+        }
+        else
+        {
+            marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
+        }
+
+        if ( !marketingCampaignAd.Id.Equals( 0 ) )
         {
             lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text );
-            MarketingCampaignAdDto marketingCampaignAd = MarketingCampaignAdsState.First( a => a.Guid.Equals( marketingCampaignAdGuid ) );
-            ddlMarketingCampaignAdType.SelectedValue = marketingCampaignAd.MarketingCampaignAdTypeId.ToString();
-            tbPriority.Text = marketingCampaignAd.Priority.ToString();
-            ddlMarketingCampaignAdStatus.SelectedValue = Convert.ToInt32( marketingCampaignAd.MarketingCampaignAdStatus ).ToString();
-            ddlMarketingCampaignAdStatusPerson.SelectedValue = marketingCampaignAd.MarketingCampaignStatusPersonId.ToString();
-            tbAdDateRangeStartDate.Text = marketingCampaignAd.StartDate.ToShortDateString();
-            tbAdDateRangeEndDate.Text = marketingCampaignAd.EndDate.ToShortDateString();
-            tbUrl.Text = marketingCampaignAd.Url;
         }
         else
         {
             lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + tbTitle.Text );
-            ddlMarketingCampaignAdType.SetValue( string.Empty );
-            tbPriority.Text = string.Empty;
-            ddlMarketingCampaignAdStatus.SetValue( string.Empty );
-            ddlMarketingCampaignAdStatusPerson.SetValue( string.Empty );
-            tbAdDateRangeStartDate.Text = string.Empty;
-            tbAdDateRangeEndDate.Text = string.Empty;
-            tbUrl.Text = string.Empty;
         }
 
-        ddlMarketingCampaignAdType_SelectedIndexChanged( null, null );
+        ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId.ToString() );
+        tbPriority.Text = marketingCampaignAd.Priority.ToString();
+        ddlMarketingCampaignAdStatus.SetValue( Convert.ToInt32( marketingCampaignAd.MarketingCampaignAdStatus ).ToString() );
+        ddlMarketingCampaignAdStatusPerson.SetValue( marketingCampaignAd.MarketingCampaignStatusPersonId.ToString() );
+        if ( marketingCampaignAdId.Equals( 0 ) )
+        {
+            tbAdDateRangeStartDate.SelectedDate = null;
+            tbAdDateRangeEndDate.SelectedDate = null;
+        }
+        else
+        {
+            tbAdDateRangeStartDate.SelectedDate = marketingCampaignAd.StartDate;
+            tbAdDateRangeEndDate.SelectedDate = marketingCampaignAd.EndDate;
+        }
+
+        tbUrl.Text = marketingCampaignAd.Url;
+
+        LoadAdAttributes( marketingCampaignAd, true, true );
 
         pnlMarketingCampaignAdEditor.Visible = true;
         pnlDetails.Visible = false;
@@ -287,17 +259,10 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void ddlMarketingCampaignAdType_SelectedIndexChanged( object sender, EventArgs e )
     {
-        Guid adGuid = new Guid( hfMarketingCampaignAdGuid.Value );
+        MarketingCampaignAdDto marketingCampaignAd = new MarketingCampaignAdDto();
 
-        MarketingCampaignAdDto marketingCampaignAd;
-        if ( !adGuid.Equals( Guid.Empty ) )
-        {
-            marketingCampaignAd = MarketingCampaignAdsState.First( a => a.Guid.Equals( adGuid ) );
-        }
-        else
-        {
-            marketingCampaignAd = new MarketingCampaignAdDto();
-        }
+        LoadAdAttributes( marketingCampaignAd, false, false );
+        Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
 
         LoadAdAttributes( marketingCampaignAd, true, true );
     }
@@ -319,7 +284,7 @@ public partial class MarketingCampaigns : RockBlock
 
         MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
         tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
-        
+
         List<Rock.Core.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
         marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
@@ -334,12 +299,13 @@ public partial class MarketingCampaigns : RockBlock
                 attributeValues.Add( new AttributeValueDto { Value = attribute.DefaultValue } );
                 marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
             }
-
-            if ( marketingCampaignAd.AttributeCategories.Count( c => c.Key.Equals( attribute.Category ) ) == 0 )
-            {
-                marketingCampaignAd.AttributeCategories.Add( attribute.Category, attributesForAdType.Where( a => a.Category.Equals( attribute.Category ) ).Select( a => a.Key ).ToList() );
-            }
         }
+
+        foreach ( var category in attributesForAdType.Select( a => a.Category ).Distinct() )
+        {
+            marketingCampaignAd.AttributeCategories[category] = attributesForAdType.Where( a => a.Category.Equals( category ) ).Select( a => a.Key ).ToList();
+        }
+
 
         //phAttributes.Controls.Clear();
         if ( createControls )
@@ -379,8 +345,12 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
     protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
     {
-        //todo
-        throw new NotImplementedException();
+        MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+        MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( (int)e.RowKeyValue );
+
+        marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
+        marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+        BindMarketingCampaignAdsGrid();
     }
 
     /// <summary>
@@ -398,7 +368,11 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     private void BindMarketingCampaignAdsGrid()
     {
-        gMarketingCampaignAds.DataSource = MarketingCampaignAdsState.OrderBy( a => a.StartDate ).ThenBy( a => a.Priority ).ThenBy( a => a.Name );
+        MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+        int marketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
+        var qry = marketingCampaignAdService.Queryable().Where( a => a.MarketingCampaignId.Equals( marketingCampaignId ) );
+
+        gMarketingCampaignAds.DataSource = qry.OrderBy( a => a.StartDate ).ThenBy( a => a.Priority ).ThenBy( a => a.MarketingCampaignAdType.Name ).ToList();
         gMarketingCampaignAds.DataBind();
     }
 
@@ -409,86 +383,79 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void btnSaveAd_Click( object sender, EventArgs e )
     {
-        Guid adGuid = new Guid( hfMarketingCampaignAdGuid.Value );
-        MarketingCampaignAd currentAd;
-        if ( adGuid.Equals( Guid.Empty ) )
+        int marketingCampaignAdId = int.Parse( hfMarketingCampaignAdId.Value );
+        MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+
+        MarketingCampaignAd marketingCampaignAd;
+        if ( marketingCampaignAdId.Equals( 0 ) )
         {
-            adGuid = Guid.NewGuid();
-            currentAd = new MarketingCampaignAd();
-            currentAd.Guid = adGuid;
+            marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
         }
         else
         {
-            currentAd = MarketingCampaignAdsState.First( a => a.Guid.Equals( adGuid ) ).ToModel();
+            marketingCampaignAd = marketingCampaignAdService.Get( marketingCampaignAdId );
         }
 
-        currentAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
-        currentAd.Priority = tbPriority.TextAsInteger() ?? 0;
-        currentAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( ddlMarketingCampaignAdStatus.SelectedValue );
-        currentAd.MarketingCampaignStatusPersonId = int.Parse( ddlMarketingCampaignAdStatusPerson.SelectedValue );
+        marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
+        marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
+        marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
+        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( ddlMarketingCampaignAdStatus.SelectedValue );
+        marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( ddlMarketingCampaignAdStatusPerson.SelectedValue );
 
-        DateTime startDate;
-        if ( DateTime.TryParse( tbAdDateRangeStartDate.Text, out startDate ) )
+        if ( tbAdDateRangeStartDate.SelectedDate == null )
         {
-            currentAd.StartDate = startDate;
+            tbAdDateRangeStartDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "StartDate" ) );
+            return;
+        }
+
+        marketingCampaignAd.StartDate = tbAdDateRangeStartDate.SelectedDate ?? DateTime.MinValue;
+
+        if ( tbAdDateRangeEndDate.Visible )
+        {
+            if ( tbAdDateRangeEndDate.SelectedDate == null )
+            {
+                tbAdDateRangeEndDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "EndDate" ) );
+                return;
+            }
+
+            marketingCampaignAd.EndDate = tbAdDateRangeEndDate.SelectedDate ?? DateTime.MaxValue;
         }
         else
         {
-            if ( string.IsNullOrWhiteSpace( tbAdDateRangeStartDate.Text ) )
-            {
-                currentAd.StartDate = DateTime.MinValue;
-            }
-            else
-            {
-                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "StartDate" ) );
-            }
+            marketingCampaignAd.EndDate = marketingCampaignAd.StartDate;
         }
 
-        DateTime endDate;
-        if ( DateTime.TryParse( tbAdDateRangeEndDate.Text, out endDate ) )
-        {
-            currentAd.EndDate = endDate;
-        }
-        else
-        {
-            if ( string.IsNullOrWhiteSpace( tbAdDateRangeEndDate.Text ) )
-            {
-                currentAd.EndDate = tbAdDateRangeEndDate.Visible ? DateTime.MaxValue : currentAd.StartDate;
-            }
-            else
-            {
-                tbAdDateRangeEndDate.ShowErrorMessage( WarningMessage.DateTimeFormatInvalid( "EndDate" ) );
-            }
-
-        }
-
-        if ( currentAd.EndDate < currentAd.StartDate )
+        if ( marketingCampaignAd.EndDate < marketingCampaignAd.StartDate )
         {
             tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
         }
 
-        currentAd.Url = tbUrl.Text;
+        marketingCampaignAd.Url = tbUrl.Text;
 
-        //TODO save attribute values and test
-        LoadAdAttributes( currentAd, false, false );
-        Rock.Attribute.Helper.GetEditValues( phAttributes, currentAd );
-        Rock.Attribute.Helper.SetErrorIndicators( phAttributes, currentAd );
+        LoadAdAttributes( marketingCampaignAd, false, false );
+        Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
+        Rock.Attribute.Helper.SetErrorIndicators( phAttributes, marketingCampaignAd );
 
         if ( !Page.IsValid )
         {
             return;
         }
 
-        if ( !currentAd.IsValid )
+        if ( !marketingCampaignAd.IsValid )
         {
             return;
         }
 
-        //Save to MarketingCampaignAdsState
-        MarketingCampaignAdsState.RemoveDto<MarketingCampaignAdDto>( adGuid );
-        MarketingCampaignAdDto currentAdDto = currentAd.ToDto();
-        currentAdDto.AttributeValues = currentAd.AttributeValues;
-        MarketingCampaignAdsState.Add( currentAdDto );
+        RockTransactionScope.WrapTransaction( () =>
+            {
+                if ( marketingCampaignAd.Id.Equals( 0 ) )
+                {
+                    marketingCampaignAdService.Add( marketingCampaignAd, CurrentPersonId );
+                }
+
+                marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+                Rock.Attribute.Helper.SaveAttributeValues( marketingCampaignAd, CurrentPersonId );
+            } );
 
         pnlMarketingCampaignAdEditor.Visible = false;
         pnlDetails.Visible = true;
@@ -514,11 +481,30 @@ public partial class MarketingCampaigns : RockBlock
     #region MarketingCampaignAudience Grid and Picker
 
     /// <summary>
-    /// Handles the Add event of the gMarketingCampaignAudiences control.
+    /// Handles the Add event of the gMarketingCampaignAudiencesPrimary control.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void gMarketingCampaignAudiences_Add( object sender, EventArgs e )
+    protected void gMarketingCampaignAudiencesPrimary_Add( object sender, EventArgs e )
+    {
+        gMarketingCampaignAudiencesAdd( true );
+    }
+
+    /// <summary>
+    /// Handles the Add event of the gMarketingCampaignAudiencesSecondary control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void gMarketingCampaignAudiencesSecondary_Add( object sender, EventArgs e )
+    {
+        gMarketingCampaignAudiencesAdd( false );
+    }
+
+    /// <summary>
+    /// Gs the marketing campaign audiences add.
+    /// </summary>
+    /// <param name="isPrimary">if set to <c>true</c> [is primary].</param>
+    private void gMarketingCampaignAudiencesAdd( bool isPrimary )
     {
         DefinedValueService definedValueService = new DefinedValueService();
 
@@ -543,6 +529,7 @@ public partial class MarketingCampaigns : RockBlock
 
         ddlMarketingCampaignAudiences.DataSource = list;
         ddlMarketingCampaignAudiences.DataBind();
+        hfMarketingCampaignAudienceIsPrimary.Value = isPrimary.ToTrueFalse();
         pnlMarketingCampaignAudiencePicker.Visible = true;
         pnlDetails.Visible = false;
         pnlList.Visible = false;
@@ -575,8 +562,12 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     private void BindMarketingCampaignAudiencesGrid()
     {
-        gMarketingCampaignAudiences.DataSource = MarketingCampaignAudiencesState.OrderBy( a => a.Name );
-        gMarketingCampaignAudiences.DataBind();
+        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesPrimary.DataBind();
+
+        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesSecondary.DataBind();
+
     }
 
     /// <summary>
@@ -590,7 +581,7 @@ public partial class MarketingCampaigns : RockBlock
         MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
         marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
         marketingCampaignAudience.AudienceTypeValue = DefinedValue.Read( audienceTypeValueId );
-        marketingCampaignAudience.IsPrimary = ckMarketingCampaignAudienceIsPrimary.Checked;
+        marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
 
         MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( marketingCampaignAudience ) );
 
@@ -615,106 +606,6 @@ public partial class MarketingCampaigns : RockBlock
 
     #endregion
 
-    #region Campus Grid and Picker
-
-    /// <summary>
-    /// Handles the Add event of the gCampuss control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void gCampus_Add( object sender, EventArgs e )
-    {
-        CampusService campusService = new CampusService();
-        List<Campus> campusesUI = CampusesState.ToModel();
-
-        // populate dropdown with all db Campuses that aren't already CampusesState
-        var qry = from campusInDB in campusService.Queryable()
-                  where !( from campusUI in campusesUI
-                           select campusUI.Id ).Contains( campusInDB.Id )
-                  select campusInDB;
-
-        List<Campus> list = qry.ToList();
-        if ( list.Count == 0 )
-        {
-            list.Add( new Campus { Id = None.Id, Name = None.Text } );
-            btnAddCampus.Enabled = false;
-            btnAddCampus.CssClass = "btn primary disabled";
-        }
-        else
-        {
-            btnAddCampus.Enabled = true;
-            btnAddCampus.CssClass = "btn primary";
-        }
-
-        ddlCampus.DataSource = list;
-        ddlCampus.DataBind();
-        pnlCampusPicker.Visible = true;
-        pnlDetails.Visible = false;
-        pnlList.Visible = false;
-    }
-
-    /// <summary>
-    /// Handles the Delete event of the gCampus control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-    protected void gCampus_Delete( object sender, RowEventArgs e )
-    {
-        int campusId = (int)e.RowKeyValue;
-        CampusesState.RemoveDto( campusId );
-        BindCampusGrid();
-    }
-
-    /// <summary>
-    /// Handles the GridRebind event of the gCampus control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void gCampus_GridRebind( object sender, EventArgs e )
-    {
-        BindCampusGrid();
-    }
-
-    /// <summary>
-    /// Binds the campus grid.
-    /// </summary>
-    private void BindCampusGrid()
-    {
-        gCampuses.DataSource = CampusesState.OrderBy( a => a.Name );
-        gCampuses.DataBind();
-    }
-
-    /// <summary>
-    /// Handles the Click event of the btnAddCampus control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void btnAddCampus_Click( object sender, EventArgs e )
-    {
-        int campusId = int.Parse( ddlCampus.SelectedValue );
-        CampusesState.Add( new CampusDto( Campus.Read( campusId ) ) );
-
-        pnlCampusPicker.Visible = false;
-        pnlDetails.Visible = true;
-        pnlList.Visible = false;
-
-        BindCampusGrid();
-    }
-
-    /// <summary>
-    /// Handles the Click event of the btnCancelAddCampus control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void btnCancelAddCampus_Click( object sender, EventArgs e )
-    {
-        pnlCampusPicker.Visible = false;
-        pnlDetails.Visible = true;
-        pnlList.Visible = false;
-    }
-
-    #endregion
-
     #region Edit Events
 
     /// <summary>
@@ -724,7 +615,49 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void btnCancel_Click( object sender, EventArgs e )
     {
+        SetEditMode( false );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
+    }
+
+    /// <summary>
+    /// Handles the Click event of the btnEdit control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnEdit_Click( object sender, EventArgs e )
+    {
+        SetEditMode( true );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
+    }
+
+    /// <summary>
+    /// Sets the edit mode.
+    /// </summary>
+    /// <param name="editable">if set to <c>true</c> [editable].</param>
+    private void SetEditMode( bool editable )
+    {
+        fieldsetEditDetails.Visible = editable;
+        pnlEditDetailsActions.Visible = editable;
+        fieldsetViewDetails.Visible = !editable;
+        pnlViewActions.Visible = !editable;
+
+        btnCancel.Visible = editable;
+        btnSave.Visible = editable;
+        btnEdit.Visible = !editable;
+        btnClose.Visible = !editable;
+    }
+
+    /// <summary>
+    /// Handles the Click event of the btnClose control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnClose_Click( object sender, EventArgs e )
+    {
         pnlDetails.Visible = false;
+        BindGrid();
         pnlList.Visible = true;
     }
 
@@ -788,6 +721,8 @@ public partial class MarketingCampaigns : RockBlock
 
         RockTransactionScope.WrapTransaction( () =>
         {
+            #region Save MarketingCampaignAudiences to db
+
             // Update MarketingCampaignAudiences with UI values
             if ( marketingCampaign.MarketingCampaignAudiences == null )
             {
@@ -821,6 +756,10 @@ public partial class MarketingCampaigns : RockBlock
                 marketingCampaignAudience.IsPrimary = item.IsPrimary;
             }
 
+            #endregion
+
+            #region Save MarketingCampaignCampuses to db
+
             // Update MarketingCampaignCampuses with UI values
             if ( marketingCampaign.MarketingCampaignCampuses == null )
             {
@@ -830,8 +769,8 @@ public partial class MarketingCampaigns : RockBlock
             // take care of deleted Campuses
             MarketingCampaignCampusService marketingCampaignCampusService = new MarketingCampaignCampusService();
             var deletedCampuses = from mcc in marketingCampaign.MarketingCampaignCampuses.AsQueryable()
-                                  where !( from cs in CampusesState
-                                           select cs.Id ).Contains( mcc.CampusId )
+                                  where !( from cs in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected )
+                                           select int.Parse( cs.Value ) ).Contains( mcc.CampusId )
                                   select mcc;
 
             deletedCampuses.ToList().ForEach( a =>
@@ -842,75 +781,32 @@ public partial class MarketingCampaigns : RockBlock
             } );
 
             // add or update the Campuses that are assigned in the UI
-            foreach ( var campus in CampusesState )
+            foreach ( int campusId in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => int.Parse( a.Value ) ) )
             {
-                MarketingCampaignCampus marketingCampaignCampus = marketingCampaign.MarketingCampaignCampuses.FirstOrDefault( a => a.CampusId.Equals( campus.Id ) );
+                MarketingCampaignCampus marketingCampaignCampus = marketingCampaign.MarketingCampaignCampuses.FirstOrDefault( a => a.CampusId.Equals( campusId ) );
                 if ( marketingCampaignCampus == null )
                 {
                     marketingCampaignCampus = new MarketingCampaignCampus();
                     marketingCampaign.MarketingCampaignCampuses.Add( marketingCampaignCampus );
                 }
 
-                marketingCampaignCampus.CampusId = campus.Id;
+                marketingCampaignCampus.CampusId = campusId;
             }
 
-            // Update MarketingCampaignAds with UI Values
-            if ( marketingCampaign.MarketingCampaignAds == null )
-            {
-                marketingCampaign.MarketingCampaignAds = new List<MarketingCampaignAd>();
-            }
-
-            // take care of deleted Ads
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
-            AttributeValueService attributeValueService = new AttributeValueService();
-            var deletedAds = from mca in marketingCampaign.MarketingCampaignAds.AsQueryable()
-                             where !( from adState in MarketingCampaignAdsState
-                                      select adState.Id ).Contains( mca.Id )
-                             select mca;
-            deletedAds.ToList().ForEach( a =>
-                {
-                    var ad = marketingCampaignAdService.Get( a.Id );
-                    marketingCampaignAdService.Delete( ad, CurrentPersonId );
-                    marketingCampaignAdService.Save( ad, CurrentPersonId );
-
-                    //delete attrib values associated with deleted ad
-                    var attribsForAdtype = GetAttributesForAdType( a.MarketingCampaignAdTypeId );
-                    foreach ( var attrib in attribsForAdtype )
-                    {
-                        var value = attributeValueService.GetByAttributeIdAndEntityId( attrib.Id, ad.Id ).FirstOrDefault();
-                        attributeValueService.Delete( value, CurrentPersonId );
-                    }
-                } );
-
-            // add or update the Ads that are assigned in the UI
-            foreach ( var marketingCampaignAdState in MarketingCampaignAdsState )
-            {
-                MarketingCampaignAd mca = marketingCampaign.MarketingCampaignAds.FirstOrDefault( a => a.Id.Equals( marketingCampaignAdState.Id ) );
-                if ( mca == null )
-                {
-                    mca = new MarketingCampaignAd();
-                    marketingCampaign.MarketingCampaignAds.Add( mca );
-                }
-
-                marketingCampaignAdState.CopyToModel( mca );
-                mca.AttributeCategories = marketingCampaignAdState.AttributeCategories;
-                mca.Attributes = marketingCampaignAdState.Attributes;
-                mca.AttributeValues.Clear();
-                foreach ( var item in marketingCampaignAdState.AttributeValues )
-                {
-                    mca.AttributeValues.Add( item.Key, item.Value );
-                }
-
-                Rock.Attribute.Helper.SaveAttributeValues( mca, CurrentPersonId );
-                marketingCampaignAdService.Save( mca, CurrentPersonId );
-            }
+            #endregion
 
             marketingCampaignService.Save( marketingCampaign, CurrentPersonId );
         } );
 
-        BindGrid();
-        pnlDetails.Visible = false;
-        pnlList.Visible = true;
+        hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
+
+        // refresh from db using new service context since the above child items were saved outside of the marketingCampaign object
+        marketingCampaign = MarketingCampaign.Read( marketingCampaign.Id );
+        UpdateReadonlyDetails( marketingCampaign );
+        
+        SetEditMode( false );
+        pnlDetails.Visible = true;
+        pnlList.Visible = false;
     }
 
     #endregion
@@ -955,6 +851,18 @@ public partial class MarketingCampaigns : RockBlock
         ddlContactPerson.DataSource = persons;
         ddlContactPerson.DataBind();
 
+        CampusService campusService = new CampusService();
+        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+
+        cblCampuses.Items.Clear();
+        foreach ( Campus campus in allCampuses )
+        {
+            ListItem campusItem = new ListItem();
+            campusItem.Value = campus.Id.ToString();
+            campusItem.Text = campus.Name;
+            cblCampuses.Items.Add( campusItem );
+        }
+
         // Controls on Ad Child Panel
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
         var adtypes = marketingCampaignAdTypeService.Queryable().OrderBy( a => a.Name ).ToList();
@@ -973,66 +881,89 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="marketingCampaignId">The marketing campaign id.</param>
     protected void ShowEdit( int marketingCampaignId )
     {
-        pnlList.Visible = false;
-        pnlDetails.Visible = true;
-
         MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
         MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
         MarketingCampaignAudiencesState = new List<MarketingCampaignAudienceDto>();
-        CampusesState = new List<CampusDto>();
-        MarketingCampaignAdsState = new List<MarketingCampaignAdDto>();
 
-        if ( marketingCampaign != null )
+        if ( marketingCampaign == null )
         {
-            hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
-            tbTitle.Text = marketingCampaign.Title;
-            tbContactEmail.Text = marketingCampaign.ContactEmail;
-            tbContactFullName.Text = marketingCampaign.ContactFullName;
-            tbContactPhoneNumber.Text = marketingCampaign.ContactPhoneNumber;
+            marketingCampaign = new MarketingCampaign { Id = 0 };
+            marketingCampaign.MarketingCampaignAds = new List<MarketingCampaignAd>();
+            marketingCampaign.MarketingCampaignAudiences = new List<MarketingCampaignAudience>();
+            marketingCampaign.MarketingCampaignCampuses = new List<MarketingCampaignCampus>();
+        }
 
-            ddlContactPerson.SelectedValue = ( marketingCampaign.ContactPersonId ?? None.Id ).ToString();
-            ddlEventGroup.SelectedValue = ( marketingCampaign.EventGroupId ?? None.Id ).ToString();
+        hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
+        tbTitle.Text = marketingCampaign.Title;
+        tbContactEmail.Text = marketingCampaign.ContactEmail;
+        tbContactFullName.Text = marketingCampaign.ContactFullName;
+        tbContactPhoneNumber.Text = marketingCampaign.ContactPhoneNumber;
 
-            // Load the ads and each ad's attributes
-            AttributeService attributeService = new AttributeService();
-            AttributeValueService attributeValueService = new AttributeValueService();
-            foreach ( var ad in marketingCampaign.MarketingCampaignAds )
-            {
-                MarketingCampaignAdDto marketingCampaignAdDto = new MarketingCampaignAdDto( ad );
+        ddlContactPerson.SelectedValue = ( marketingCampaign.ContactPersonId ?? None.Id ).ToString();
+        ddlEventGroup.SelectedValue = ( marketingCampaign.EventGroupId ?? None.Id ).ToString();
 
-                marketingCampaignAdDto.AttributeValues = ad.AttributeValues;
-                marketingCampaignAdDto.Attributes = ad.Attributes;
-                marketingCampaignAdDto.AttributeCategories = ad.AttributeCategories;
-                MarketingCampaignAdsState.Add( marketingCampaignAdDto );
-            }
+        foreach ( var audience in marketingCampaign.MarketingCampaignAudiences )
+        {
+            MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
+        }
 
-            foreach ( var audience in marketingCampaign.MarketingCampaignAudiences )
-            {
-                MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
-            }
+        CampusService campusService = new CampusService();
+        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
 
-            foreach ( var campus in marketingCampaign.MarketingCampaignCampuses )
-            {
-                CampusesState.Add( campus.Campus.ToDto() );
-            }
+        foreach ( ListItem campusItem in cblCampuses.Items )
+        {
+            campusItem.Selected = marketingCampaign.MarketingCampaignCampuses.ToList().Exists( a => a.CampusId.Equals( int.Parse( campusItem.Value ) ) );
+        }
 
+        UpdateReadonlyDetails( marketingCampaign );
+
+        if ( marketingCampaign.Id > 0 )
+        {
             lActionTitle.Text = ActionTitle.Edit( MarketingCampaign.FriendlyTypeName );
-            btnCancel.Text = "Cancel";
+            SetEditMode( false );
         }
         else
         {
             lActionTitle.Text = ActionTitle.Add( MarketingCampaign.FriendlyTypeName );
-
-            hfMarketingCampaignId.Value = 0.ToString();
-            tbTitle.Text = string.Empty;
-            tbContactEmail.Text = string.Empty;
-            tbContactFullName.Text = string.Empty;
-            tbContactPhoneNumber.Text = string.Empty;
+            SetEditMode( true );
         }
+
+        pnlList.Visible = false;
+        pnlDetails.Visible = true;
 
         BindMarketingCampaignAdsGrid();
         BindMarketingCampaignAudiencesGrid();
-        BindCampusGrid();
+    }
+
+    /// <summary>
+    /// Updates the readonly details.
+    /// </summary>
+    /// <param name="marketingCampaign">The marketing campaign.</param>
+    private void UpdateReadonlyDetails( MarketingCampaign marketingCampaign )
+    {
+        // make a Description section for nonEdit mode
+        string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+        lblMainDetails.Text = "<dl>";
+        lblMainDetails.Text += string.Format( descriptionFormat, "Title", marketingCampaign.Title );
+        lblMainDetails.Text += string.Format( descriptionFormat, "Event", marketingCampaign.EventGroup == null ? None.TextHtml : marketingCampaign.EventGroup.Name );
+
+        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).ToList().AsDelimited( "<br>" );
+        campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
+
+        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audiences", primaryAudiences );
+
+        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audiences", secondaryAudiences );
+
+        string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
+        contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", "" ) ) ? None.TextHtml : contactInfo;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Contact", contactInfo );
+
+        lblMainDetails.Text += "</dl>";
     }
 
     /// <summary>
