@@ -69,6 +69,11 @@ namespace Rock.Cms
         {
             get
             {
+                if ( AudienceTypeValue == null )
+                {
+                    AudienceTypeValue = Core.DefinedValue.Read( AudienceTypeValueId );
+                }
+                
                 return AudienceTypeValue.Name;
             }
         }

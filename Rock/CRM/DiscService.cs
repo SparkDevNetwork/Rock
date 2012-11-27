@@ -1,4 +1,10 @@
-﻿//********************************************************************************************
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+//********************************************************************************************
 // DISC Personality Profile Assessment - This is basically a javascript to C# port 
 //  with a few changes to make it more readable.
 //
