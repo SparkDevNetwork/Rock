@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+                    rGrid.RowCommand += rGrid_RowCommand;
+                    
                 }
                 else
                 {
@@ -48,6 +50,11 @@ namespace RockWeb.Blocks.Administration
             {
                 DisplayError( ex.Message );
             }
+        }
+
+        void rGrid_RowCommand( object sender, GridViewCommandEventArgs e )
+        {
+            string cn = e.CommandName;
         }
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )

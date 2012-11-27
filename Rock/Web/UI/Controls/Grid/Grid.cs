@@ -617,6 +617,16 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        protected override void OnRowCreated( GridViewRowEventArgs e )
+        {
+            base.OnRowCreated( e );
+
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                e.Row.Attributes["onclick"] = Page.ClientScript.GetPostBackClientHyperlink( this, "Command$" + e.Row.RowIndex );
+            }
+        }
+
         /// <summary>
         /// Creates a new child table.
         /// </summary>
