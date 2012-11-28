@@ -33,31 +33,7 @@ namespace Rock.Web.UI.Controls
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
-            ParentGrid = control as Grid;
-            string rowItemText = ParentGrid.RowItemText;
-
-            // Add Javascript Confirm to grids that use the DeleteField
-            string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(e){{
-                e.preventDefault();
-                bootbox.confirm('Are you sure you want to delete this {1}?', function(result) {{
-                        if (result)
-                        {{
-                            eval(e.target.href);
-                        }}
-                    }}
-                );
-                }});
-        }});
-            ", control.ClientID, rowItemText );
-
-            string scriptKey = string.Format( "grid-confirm-delete-{0}", control.ClientID );
-
-            if ( !control.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
-            {
-                control.Page.ClientScript.RegisterStartupScript( control.Page.GetType(), scriptKey, script, true );
-            }
+            this.ParentGrid = control as Grid;
 
             return base.Initialize( sortingEnabled, control );
         }
@@ -119,6 +95,10 @@ namespace Rock.Web.UI.Controls
                 lbDelete.Click += lbDelete_Click;
                 lbDelete.Visible = !ParentGrid.ReadOnly;
                 lbDelete.DataBinding += lbDelete_DataBinding;
+                if ( ParentGrid.ShowConfirmDeleteDialog )
+                {
+                    lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
+                }
 
                 cell.Controls.Add( lbDelete );
             }

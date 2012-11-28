@@ -83,7 +83,16 @@ namespace Rock
             }
             else
             {
-                return SplitCase( type.Name );
+                string result = SplitCase( type.Name );
+                Type idtoInterface = type.GetInterface(typeof(Rock.Data.IDto).Name);
+                if ( idtoInterface != null)
+                {
+                    if ( result.EndsWith( " dto", StringComparison.InvariantCultureIgnoreCase ) )
+                    {
+                        return result.Substring( 0, result.Length - 4 );
+                    }
+                }
+                return result;
             }
         }
 
@@ -256,6 +265,16 @@ namespace Rock
         public static string ToTrueFalse( this bool value )
         {
             return value ? "True" : "False";
+        }
+
+        /// <summary>
+        /// Froms the true false.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static bool FromTrueFalse( this string value )
+        {
+            return value.Equals( "True" );
         }
 
         #endregion
