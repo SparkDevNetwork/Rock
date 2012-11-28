@@ -38,8 +38,7 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
-                    rGrid.RowCommand += rGrid_RowCommand;
-                    
+                    rGrid.EditRow += rGrid_EditRow;
                 }
                 else
                 {
@@ -52,9 +51,9 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        void rGrid_RowCommand( object sender, GridViewCommandEventArgs e )
+        protected void rGrid_EditRow( object sender, RowEventArgs e )
         {
-            string cn = e.CommandName;
+            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )

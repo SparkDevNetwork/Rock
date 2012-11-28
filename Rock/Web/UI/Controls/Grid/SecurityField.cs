@@ -18,6 +18,16 @@ namespace Rock.Web.UI.Controls
     public class SecurityField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="SecurityField" /> class.
+        /// </summary>
+        public SecurityField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell security";
+        }
+
+        /// <summary>
         /// Gets or sets the type of the entity being secured
         /// </summary>
         /// <value>
@@ -48,9 +58,6 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell security";
-
             SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityType.AssemblyQualifiedName, Title);
             this.ItemTemplate = editFieldTemplate;
 
