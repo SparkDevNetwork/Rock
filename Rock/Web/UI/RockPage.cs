@@ -1007,42 +1007,47 @@ namespace Rock.Web.UI
         public static void AddHtmlLink( Page page, HtmlLink htmlLink )
         {
             if ( page != null && page.Header != null )
-                if ( !HtmlLinkExists( page, htmlLink ) )
+            {
+                var header = page.Header;
+                if ( !HtmlLinkExists( header, htmlLink ) )
                 {
-                    // Find last Link element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                        if ( page.Header.Controls[i] is HtmlLink )
-                        {
-                            index = i;
-                            break;
-                        }
+                    //// Find last Link element
+                    //int index = 0;
+                    //for ( int i = header.Controls.Count - 1; i >= 0; i-- )
+                    //    if ( header.Controls[i] is HtmlLink )
+                    //    {
+                    //        index = i;
+                    //        break;
+                    //    }
 
-                    if ( index == page.Header.Controls.Count )
-                    {
-                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.Add( htmlLink );
-                    }
-                    else
-                    {
-                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.AddAt( ++index, htmlLink );
-                    }
+                    //if ( index == header.Controls.Count )
+                    //{
+                            header.Controls.Add( new LiteralControl( "\n\t" ) );
+                            header.Controls.Add( htmlLink );
+                    //}
+                    //else
+                    //{
+                    //    header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                    //    header.Controls.AddAt( ++index, htmlLink );
+                    //}
                 }
+            }
         }
 
         /// <summary>
         /// HTMLs the link exists.
         /// </summary>
-        /// <param name="page">The page.</param>
+        /// <param name="header">The header.</param>
         /// <param name="newLink">The new link.</param>
         /// <returns></returns>
-        private static bool HtmlLinkExists( Page page, HtmlLink newLink )
+        private static bool HtmlLinkExists( HtmlHead header, HtmlLink newLink )
         {
             bool existsAlready = false;
 
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
+            if ( header != null )
+            {
+                foreach ( Control control in header.Controls )
+                {
                     if ( control is HtmlLink )
                     {
                         HtmlLink existingLink = (HtmlLink)control;
@@ -1063,6 +1068,9 @@ namespace Rock.Web.UI
                             break;
                         }
                     }
+                }
+            }
+
             return existsAlready;
         }
 

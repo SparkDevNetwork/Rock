@@ -18,6 +18,16 @@ namespace Rock.Web.UI.Controls
     public class DeleteField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="DeleteField" /> class.
+        /// </summary>
+        public DeleteField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell delete";
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -27,9 +37,6 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell delete";
-
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;

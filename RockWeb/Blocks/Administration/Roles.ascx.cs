@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+                    rGrid.EditRow += rGrid_EditRow;
                 }
                 else
                 {
@@ -48,6 +49,11 @@ namespace RockWeb.Blocks.Administration
             {
                 DisplayError( ex.Message );
             }
+        }
+
+        protected void rGrid_EditRow( object sender, RowEventArgs e )
+        {
+            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )
