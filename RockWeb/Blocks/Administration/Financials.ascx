@@ -4,22 +4,11 @@
     <ContentTemplate>
 
         <Rock:GridFilter ID="rFilter" runat="server">
-            <asp:Panel ID="pnlDateRange" runat="server" Style="margin-bottom: 18px; margin-left: 20px;">
-                <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="StartDate" />
-                <Rock:DateTimePicker ID="dtEndDate" runat="server"  SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="to" />
-            </asp:Panel>
-            <asp:Panel ID="pnlAmountRange" runat="server" Style="margin-bottom: 18px;">
-                <label id="lblAmountRange">
-                    Amount Range</label>
-                <asp:TextBox ID="txtFromAmount" runat="server" Columns="10" Style="width: auto; margin-left: 20px;" />
-                to
-            <asp:TextBox ID="txtToAmount" runat="server" Columns="10" Style="width: auto;" />
-            </asp:Panel>
-            <asp:Panel ID="pnlTransactionCode" runat="server" Style="margin-bottom: 18px;">
-                <label id="lblTransactionCode">
-                    Transaction Code</label>
-                <asp:TextBox ID="txtTransactionCode" runat="server" Style="margin-left: 20px;" />
-            </asp:Panel>
+            <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="From Date" />
+            <Rock:DateTimePicker ID="dtEndDate" runat="server"  SourceTypeName=" Rock.Financial.Transaction, Rock" PropertyName="TransactionDate" LabelText="To Date" />
+            <Rock:LabeledTextBox ID="txtFromAmount" runat="server" LabelText="From Amount"></Rock:LabeledTextBox>
+            <Rock:LabeledTextBox ID="txtToAmount" runat="server" LabelText="To Amount"></Rock:LabeledTextBox>
+            <Rock:LabeledTextBox ID="txtTransactionCode" runat="server" LabelText="Transaction Code"></Rock:LabeledTextBox>
             <Rock:LabeledDropDownList ID="ddlFundType" runat="server" LabelText="Fund Type" />
             <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" LabelText="Currency Type" />
             <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" LabelText="Credit Card Type" />
