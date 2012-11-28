@@ -37,10 +37,15 @@
                     </div>
                     <div class="span6">
                         <Rock:LabeledCheckBoxList ID="cblCampuses" runat="server" LabelText="Campuses" />
-                        <Rock:Grid ID="gMarketingCampaignAudiences" runat="server" DisplayType="Light">
+                        <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
                             <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Audience" />
-                                <Rock:BoolField DataField="IsPrimary" HeaderText="Primary" />
+                                <asp:BoundField DataField="Name" HeaderText="Primary Audiences" />
+                                <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                        <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light">
+                            <Columns>
+                                <asp:BoundField DataField="Name" HeaderText="Secondary Audiences" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                             </Columns>
                         </Rock:Grid>
@@ -91,8 +96,7 @@
         <asp:Panel ID="pnlMarketingCampaignAudiencePicker" runat="server" Visible="false">
             <Rock:DataDropDownList ID="ddlMarketingCampaignAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAudienceDto, Rock"
                 PropertyName="Name" LabelText="Select Audiences" />
-            <Rock:LabeledCheckBox ID="ckMarketingCampaignAudienceIsPrimary" runat="server" LabelText="Primary Audience" />
-
+            <asp:HiddenField ID="hfMarketingCampaignAudienceIsPrimary" runat="server" />
             <div class="actions">
                 <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
                 <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>

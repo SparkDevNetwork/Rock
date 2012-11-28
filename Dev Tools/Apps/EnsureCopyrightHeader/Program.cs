@@ -62,7 +62,7 @@ namespace EnsureCopyrightHeader
                     continue;
                 }
 
-
+                // get rid of any incorrect header by finding keyword using or namespace
                 int positionUsing = origFileContents.IndexOf( "using ", 0 );
                 if ( positionUsing < 0 )
                 {
@@ -70,7 +70,13 @@ namespace EnsureCopyrightHeader
                 }
 
                 string newFileContents = origFileContents.Substring( positionUsing );
+                
+                // try to clean up cases where the badge is after some of the using statements
+                newFileContents = newFileContents.Replace( copyrightBadge, string.Empty );
+                
                 newFileContents = copyrightBadge + newFileContents;
+
+                
 
                 if ( !origFileContents.Equals( newFileContents ) )
                 {
