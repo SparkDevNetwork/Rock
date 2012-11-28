@@ -1,4 +1,12 @@
-﻿.grid-table.table-bordered
+﻿/* bootstrap override */
+.table-bordered th, 
+.table-bordered td 
+{
+    border-left: 0;
+}
+
+/* custom grid items */
+.grid-table.table-bordered
 {
     border-collapse: separate;
     border-color: #CCCCCC;
@@ -72,12 +80,8 @@
 
 .grid-table tbody tr:hover 
 {
-    background-color: #d9ecf2;
-    /*-webkit-transition: all 200ms ease-in-out;
-	-moz-transition: all 200ms ease-in-out;
-	-o-transition: all 200ms ease-in-out;
-	-ms-transition: all 200ms ease-in-out;
-	transition: all 200ms ease-in-out;*/
+    background-color: #d9ecf2; /* is this still being used now that we added bst table-hover */
+
 }
 
 .grid-icon-cell
@@ -280,6 +284,22 @@
 }
 
 .grid-filter-entry
+{
+    margin-bottom: 12px;
+}
+
+.grid-filter-entry .control-group
+{
+    width: 350px;
+    float: left;
+}
+
+ .grid-filter-entry legend + .control-group
+ {
+     margin-top: 0;
+ }
+
+.grid-filter-overview fieldset
 {
     margin-bottom: 12px;
 }
