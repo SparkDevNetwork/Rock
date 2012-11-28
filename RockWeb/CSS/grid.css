@@ -75,13 +75,7 @@
 
 .grid-table tbody tr:nth-child(even) 
 {
-	background: #d2d2d2;
-}
-
-.grid-table tbody tr:hover 
-{
-    background-color: #d9ecf2; /* is this still being used now that we added bst table-hover */
-
+	/* background: #d2d2d2; do we need this with bs table-stripped ? */
 }
 
 .grid-icon-cell
@@ -302,4 +296,26 @@
 .grid-filter-overview fieldset
 {
     margin-bottom: 12px;
+}
+
+/* grid light style */
+.table-light thead th
+{
+    background-color: inherit;
+    color: #515151;
+    font-weight: bold;
+}
+
+.table-light tfoot td 
+{
+    background-color: inherit;
+}
+
+.table-light tfoot td .grid-actions a
+{
+    border-radius: 0;
+    border-style: none;
+    border-width: 0;
+    box-shadow: none;
+    border-color: none;
 }
