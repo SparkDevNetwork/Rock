@@ -26,7 +26,8 @@
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/RockThemeScripts.js") %>" ></script>
-
+    <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
