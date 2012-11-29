@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
                 multiple: false,
                 showFileList: false,
                 async: {{
-                    saveUrl: rock.baseUrl + 'ImageUploader.ashx'
+                    saveUrl: '{4}ImageUploader.ashx'
                 }},
 
                 success: function(e) {{
@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
                         $('#{1}').val(e.response);
                         $('#{2}').attr('src','')
                         $('#{2}').hide();             
-                        $('#{2}').attr('src',rock.baseUrl + 'Image.ashx?id=' + e.response + '&width=50&height=50');
+                        $('#{2}').attr('src','{4}Image.ashx?id=' + e.response + '&width=50&height=50');
                         $('#{2}').show('fast', function() {{ 
                             if ($('#modal-scroll-container').length) {{
                                 $('#modal-scroll-container').tinyscrollbar_update('relative');
@@ -110,9 +110,10 @@ namespace Rock.Web.UI.Controls
                             fileUpload.ClientID,
                             hiddenField.ClientID,
                             image.ClientID,
-                            htmlAnchor.ClientID );
+                            htmlAnchor.ClientID,
+                            ResolveUrl("~"));
 
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoImageScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
 
         /// <summary>

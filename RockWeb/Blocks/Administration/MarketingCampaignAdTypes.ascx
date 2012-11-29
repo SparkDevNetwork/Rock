@@ -2,6 +2,17 @@
 
 <asp:UpdatePanel ID="upMarketingCampaignAdType" runat="server">
     <ContentTemplate>
+        <script type="text/javascript">
+            function populateAttributeKey() {
+                // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+                var keyValue = $('#<%=tbAttributeKey.ClientID%>').val();
+                if (keyValue == '') {
+                    var nameValue = $('#<%=tbAttributeName.ClientID%>').val();
+                    nameValue = nameValue.replace(/\s+/g, '');
+                    $('#<%=tbAttributeKey.ClientID%>').val(nameValue);
+                }
+            }
+        </script>
         <asp:Panel ID="pnlList" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gMarketingCampaignAdType" runat="server" AllowSorting="true">
@@ -58,7 +69,7 @@
                 <div class="row-fluid">
 
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" onblur="populateAttributeKey()" />
                         <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
                         <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
                         <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
