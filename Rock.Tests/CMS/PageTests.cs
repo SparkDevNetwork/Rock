@@ -123,6 +123,12 @@ namespace Rock.Tests.Cms
 
         public class TheImportJsonMethod
         {
+            [SetUp]
+            public void SetUp()
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
+
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
@@ -154,6 +160,32 @@ namespace Rock.Tests.Cms
                 Assert.IsNotNull( page.Pages );
                 Assert.IsNotEmpty( page.Pages );
                 Assert.AreEqual( page.Pages.First().Name, obj.Pages[ 0 ].Name );
+            }
+
+            [Test]
+            public void ShouldImportPagesRecursively()
+            {
+                const string PAGE_NAME = "Child Page";
+                var obj = new
+                {
+                    Name = "Grandparent Page",
+                    Pages = new List<dynamic>
+                    {
+                        new
+                        {
+                            Name = "Parent Page",
+                            Pages = new List<dynamic> { new { Name = PAGE_NAME } }
+                        }
+                    }
+                };
+
+                var json = obj.ToJSON();
+                var page = new Page();
+                page.ImportJson( json );
+                var childPages = page.Pages.First().Pages;
+                Assert.IsNotNull( childPages );
+                Assert.IsNotEmpty( childPages );
+                Assert.AreEqual( childPages.First().Name, PAGE_NAME );
             }
 
             [Test]

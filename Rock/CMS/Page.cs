@@ -423,61 +423,95 @@ namespace Rock.Cms
             }
         }
 
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
         public void ImportJson( string data )
         {
             JsonConvert.PopulateObject( data, this );
             var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
-            var dict = obj as IDictionary<string, object> ?? new Dictionary<string, object>();
-            ImportPages( dict );
-            ImportBlocks( dict );
-            ImportPageRoutes( dict );
+            //var dict = obj as IDictionary<string, object> ?? new Dictionary<string, object>();
+            //ImportPages( obj );
+            ImportPagesRecursive( obj, this );
+            ImportBlocks( obj, this );
+            ImportPageRoutes( obj, this );
         }
 
-        private void ImportPages( IDictionary<string, object> dict )
+        //private void ImportPages( dynamic data )
+        //{
+            //var pages = dict[ "Pages" ] as IEnumerable<dynamic> ?? new List<dynamic>();
+            //this.Pages = new List<Page>();
+            //ImportPagesRecursive( data, this );
+
+            //foreach ( var page in pages )
+            //{
+            //    this.Pages.Add( ( (object) page ).ToModel<Page>() );
+            //}
+        //}
+
+        private static void ImportPagesRecursive(dynamic data, Page page)
         {
+            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
+            page.Pages = new List<Page>();
+
             if ( !dict.ContainsKey( "Pages" ) )
             {
                 return;
             }
 
-            var pages = dict[ "Pages" ] as IEnumerable<dynamic> ?? new List<dynamic>();
-            this.Pages = new List<Page>();
-
-            foreach ( var page in pages )
+            foreach ( var p in data.Pages )
             {
-                this.Pages.Add( ( (object) page ).ToModel<Page>() );
+                var newPage = ( (object) p ).ToModel<Page>();
+                var newDict = p as IDictionary<string, object>;
+                page.Pages.Add( newPage );
+
+                if ( newDict.ContainsKey("Blocks") )
+                {
+                    ImportBlocks( p, newPage );
+                }
+
+                if ( newDict.ContainsKey("PageRoutes") )
+                {
+                    ImportPageRoutes( p, newPage );
+                }
+
+                if ( newDict.ContainsKey("Pages") )
+                {
+                    ImportPagesRecursive( p, newPage );
+                }
             }
         }
 
-        private void ImportBlocks( IDictionary<string, object> dict )
+        private static void ImportBlocks( dynamic data, Page page )
         {
+            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
+            page.Blocks = new List<Block>();
+
             if ( !dict.ContainsKey( "Blocks" ) )
             {
                 return;
             }
-
-            var blocks = dict[ "Blocks" ] as IEnumerable<dynamic> ?? new List<dynamic>();
-            this.Blocks = new List<Block>();
-
-            foreach ( var block in blocks )
+            
+            foreach ( var block in data.Blocks )
             {
-                this.Blocks.Add( ( (object) block ).ToModel<Block>() );
+                page.Blocks.Add( ( (object) block ).ToModel<Block>() );
             }
         }
 
-        private void ImportPageRoutes( IDictionary<string, object> dict )
+        private static void ImportPageRoutes( dynamic data, Page page )
         {
+            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
+            page.PageRoutes = new List<PageRoute>();
+
             if ( !dict.ContainsKey( "PageRoutes" ) )
             {
                 return;
             }
 
-            var pageRoutes = dict[ "PageRoutes" ] as IEnumerable<dynamic> ?? new List<dynamic>();
-            this.PageRoutes = new List<PageRoute>();
-
-            foreach ( var pageRoute in pageRoutes )
+            foreach ( var pageRoute in data.PageRoutes )
             {
-                this.PageRoutes.Add( ( (object) pageRoute ).ToModel<PageRoute>() );
+                page.PageRoutes.Add( ( (object) pageRoute ).ToModel<PageRoute>() );
             }
         }
     }
