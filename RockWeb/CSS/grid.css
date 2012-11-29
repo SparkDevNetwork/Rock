@@ -5,6 +5,12 @@
     border-left: 0;
 }
 
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th
+{
+    cursor: pointer;
+}
+
 /* custom grid items */
 .grid-table.table-bordered
 {
