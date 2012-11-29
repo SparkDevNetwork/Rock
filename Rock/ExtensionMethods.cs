@@ -526,7 +526,7 @@ namespace Rock
         #region DropDownList/ListControl Extensions
 
         /// <summary>
-        /// Try's to set the selected value, if the value does not exist, wills et the first item in the list
+        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
@@ -542,6 +542,16 @@ namespace Rock
                     ddl.SelectedIndex = 0;
             }
 
+        }
+
+        /// <summary>
+        /// Try's to set the selected value, if the value does not exist, will set the first item in the list
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this DropDownList ddl, int value )
+        {
+            ddl.SetValue( value.ToString() );
         }
 
         /// <summary>
@@ -595,6 +605,16 @@ namespace Rock
         public static String ConvertToString( this Enum eff )
         {
             return Enum.GetName( eff.GetType(), eff ).SplitCase();
+        }
+
+        /// <summary>
+        /// Converts to int.
+        /// </summary>
+        /// <param name="eff">The eff.</param>
+        /// <returns></returns>
+        public static int ConvertToInt( this Enum eff )
+        {
+            return Convert.ToInt32( eff );
         }
 
         /// <summary>
