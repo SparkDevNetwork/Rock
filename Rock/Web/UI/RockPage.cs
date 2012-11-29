@@ -725,8 +725,8 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
             
-            // add the confirmDelete script for Grids
-            AddScriptLink( Page, "~/Scripts/Rock/confirmDelete.js" );
+            // add the scripts for RockGrid
+            AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
 
             // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
             AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
