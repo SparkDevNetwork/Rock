@@ -1,6 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaigns.ascx.cs" Inherits="MarketingCampaigns" %>
 
 <asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="gMarketingCampaigns" />
+    </Triggers>
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
@@ -39,13 +42,13 @@
                         <Rock:LabeledCheckBoxList ID="cblCampuses" runat="server" LabelText="Campuses" />
                         <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
                             <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Primary Audiences" />
+                                <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                             </Columns>
                         </Rock:Grid>
                         <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light">
                             <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Secondary Audiences" />
+                                <asp:BoundField DataField="Name" HeaderText="Secondary Audience" />
                                 <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                             </Columns>
                         </Rock:Grid>
@@ -61,32 +64,28 @@
             <fieldset id="fieldsetViewDetails" runat="server">
                 <legend>Marketing Campaign - Ads
                 </legend>
-                <div class="row-fluid">
-
-                    <div class="span4 well">
+                <div class="well">
+                    <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
-                        <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn primary btn-mini" OnClick="btnEdit_Click" />
-                        </div>
                     </div>
-
-                    <div class="span8">
-                        <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
-                                <Rock:DateField DataField="StartDate" HeaderText="Date" />
-                                <Rock:EnumField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" />
-                                <asp:BoundField DataField="Priority" HeaderText="Priority" />
-                                <Rock:EditField OnClick="gMarketingCampaignAds_Edit" />
-                                <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
-                            </Columns>
-                        </Rock:Grid>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn primary btn-mini" OnClick="btnEdit_Click" />
                     </div>
                 </div>
+
             </fieldset>
 
-            <div class="actions" id="pnlViewActions" runat="server">
-                <asp:LinkButton ID="btnClose" runat="server" Text="Close" CssClass="btn primary" OnClick="btnClose_Click" />
+            <div id="pnlMarketingCampaignAds" runat="server" class="">
+                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full">
+                    <Columns>
+                        <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
+                        <Rock:DateField DataField="StartDate" HeaderText="Date" />
+                        <Rock:EnumField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" />
+                        <asp:BoundField DataField="Priority" HeaderText="Priority" />
+                        <Rock:EditField OnClick="gMarketingCampaignAds_Edit" />
+                        <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
+                    </Columns>
+                </Rock:Grid>
             </div>
 
         </asp:Panel>
@@ -114,15 +113,21 @@
                     <div class="span6">
                         <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAdTypeDto, Rock" PropertyName="Name"
                             LabelText="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlMarketingCampaignAdType_SelectedIndexChanged" />
-                        <Rock:LabeledDropDownList ID="ddlMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
-                        <!-- ToDo: Better Person picker -->
-                        <Rock:DataDropDownList ID="ddlMarketingCampaignAdStatusPerson" runat="server" DataTextField="Fullname"
-                            DataValueField="Id" SourceTypeName="Rock.Crm.Person, Rock" PropertyName="FullName" LabelText="Approver" />
+                        <asp:UpdatePanel ID="upAdApproval" runat="server">
+                            <ContentTemplate>
+                                <Rock:LabeledText ID="ltMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
+                                <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
+                                <Rock:LabeledText ID="ltMarketingCampaignAdStatusPerson" runat="server" LabelText="by" />
+                                <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
+                                <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn primary btn-mini" Text="Approve" />
+                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn secondary btn-mini" Text="Deny" />
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
                     </div>
 
                     <div class="span6">
                         <Rock:DateTimePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" DatePickerType="Date" Required="true" />
-                        <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date" Required="true"/>
+                        <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date" Required="true" />
                         <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Url" LabelText="Url" />
                         <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
                     </div>
