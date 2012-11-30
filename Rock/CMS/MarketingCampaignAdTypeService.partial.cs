@@ -32,7 +32,7 @@ namespace Rock.Cms
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsMarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
