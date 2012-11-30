@@ -221,7 +221,7 @@ public partial class MarketingCampaigns : RockBlock
         }
         else
         {
-            marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
+            marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
         }
 
         if ( !marketingCampaignAd.Id.Equals( 0 ) )
@@ -403,8 +403,15 @@ public partial class MarketingCampaigns : RockBlock
         marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
         marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
         marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
-        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
-        marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
+        if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+        }
+        else
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = null;
+        }
 
         if ( tbAdDateRangeStartDate.SelectedDate == null )
         {
@@ -656,8 +663,20 @@ public partial class MarketingCampaigns : RockBlock
     protected void btnCancel_Click( object sender, EventArgs e )
     {
         SetEditMode( false );
-        pnlDetails.Visible = true;
-        pnlList.Visible = false;
+
+        if ( hfMarketingCampaignId.Value.Equals( "0" ) )
+        {
+            // Cancelling on Add. Return to Grid
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+        else
+        {
+            // Cancelling on Edit.  Return to Details
+            pnlDetails.Visible = true;
+            pnlList.Visible = false;
+        }
+        
     }
 
     /// <summary>
