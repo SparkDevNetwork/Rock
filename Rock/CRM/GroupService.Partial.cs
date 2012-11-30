@@ -86,7 +86,7 @@ namespace Rock.Crm
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroup where ParentGroupId = {0} ", id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where ParentGroupId = {0} ", id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
@@ -98,7 +98,7 @@ namespace Rock.Crm
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsMarketingCampaign where EventGroupId = {0} ", id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaign where EventGroupId = {0} ", id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
