@@ -97,7 +97,7 @@ public partial class Groups : RockBlock
         if ( CurrentBlock != null )
         {
             string errorMessage;
-            if ( !groupService.CanDelete( group.Id, out errorMessage ) )
+            if ( !groupService.CanDelete( group, out errorMessage ) )
             {
                 mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;

@@ -68,50 +68,6 @@ namespace Rock.Crm
         }
 
         /// <summary>
-        /// Determines whether this instance can delete the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can delete the specified id; otherwise, <c>false</c>.
-        /// </returns>
-        public bool CanDelete( int id, out string errorMessage )
-        {
-            // partially code generated from Dev Tools/Sql/CodeGen_CanDelete.sql
-            
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-            bool canDelete = true;
-            errorMessage = string.Empty;
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where ParentGroupId = {0} ", id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    canDelete = false;
-                    errorMessage = "This Group is assigned as a Parent Group.";
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaign where EventGroupId = {0} ", id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    canDelete = false;
-                    errorMessage = "This Group is assigned to a Marketing Campaign.";
-                }
-            }
-
-            return canDelete;
-        }
-
-        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -120,7 +76,7 @@ namespace Rock.Crm
         public override bool Delete( Group item, int? personId )
         {
             string message;
-            if ( !CanDelete( item.Id, out message ) )
+            if ( !CanDelete( item, out message ) )
             {
                 return false;
             }

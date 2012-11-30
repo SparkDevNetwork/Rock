@@ -128,7 +128,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
         MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
         
         string errorMessage;
-        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType.Id, out errorMessage ) )
+        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
         {
             mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
