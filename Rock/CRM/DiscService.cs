@@ -3,6 +3,19 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
+//********************************************************************************************
+// DISC Personality Profile Assessment - This is basically a javascript to C# port 
+//  with a few changes to make it more readable.
+//
+// Source Material from http://www.gregwiens.com/scid/
+// Used By Permission
+//
+// Written By: Derek Mangrum
+//       Date: 2012-04-25
+//
+//********************************************************************************************
+
 using System;
 using System.Collections.Generic;
 

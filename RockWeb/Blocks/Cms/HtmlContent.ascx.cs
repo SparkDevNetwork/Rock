@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Cms
 
         bool _supportVersioning = false;
         bool _requireApproval = false;
+        public bool HtmlContentModified = false;
 
         #endregion
 
@@ -39,11 +40,8 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
-
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            base.OnInit(e);
+            
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
@@ -107,11 +105,26 @@ namespace RockWeb.Blocks.Cms
                 cbOverwriteVersion.Visible = false;
             }
 
-            txtHtmlContentEditor.Text = content.Content;
+            edtHtmlContent.Toolbar = "RockCustomConfigFull";
+            edtHtmlContent.Text = content.Content;
+            mpeContent.Show();
+            edtHtmlContent.Visible = true;
+            HtmlContentModified = false;
+            edtHtmlContent.TextChanged += edtHtmlContent_TextChanged;
 
             BindGrid();
 
             hfAction.Value = "Edit";
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the edtHtmlContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void edtHtmlContent_TextChanged( object sender, EventArgs e )
+        {
+            HtmlContentModified = true;
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -147,7 +160,7 @@ namespace RockWeb.Blocks.Cms
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
                     _supportVersioning &&
-                    content.Content != txtHtmlContentEditor.Text &&
+                    content.Content != edtHtmlContent.Text &&
                     !cbOverwriteVersion.Checked )
                     content = null;
 
@@ -203,7 +216,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                content.Content = txtHtmlContentEditor.Text;
+                content.Content = edtHtmlContent.Text;
 
                 if ( service.Save( content, CurrentPersonId ) )
                 {

@@ -17,8 +17,8 @@ namespace Rock.Financial
     /// <summary>
     /// Transaction POCO class.
     /// </summary>
-    [Table("financialTransaction")]
-    public partial class Transaction : Model<Transaction>
+    [Table("FinancialTransaction")]
+    public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         /// <summary>
         /// Gets or sets the description.
@@ -150,9 +150,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Transaction Read( int id )
+        public static FinancialTransaction Read( int id )
         {
-            return Read<Transaction>( id );
+            return Read<FinancialTransaction>( id );
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Rock.Financial
         /// <value>
         /// The batch.
         /// </value>
-        public virtual Batch Batch { get; set; }
+        public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the currency.
@@ -185,7 +185,7 @@ namespace Rock.Financial
         /// <value>
         /// The gateway.
         /// </value>
-        public virtual Gateway Gateway { get; set; }
+        public virtual PaymentGateway Gateway { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the source.
@@ -201,7 +201,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction details.
         /// </value>
-        public virtual ICollection<TransactionDetail> TransactionDetails { get; set; }
+        public virtual ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -209,7 +209,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction funds.
         /// </value>
-        public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
+        public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Fund> Funds { get; set; }
 
         /// <summary>
@@ -227,7 +227,7 @@ namespace Rock.Financial
     /// <summary>
     /// Transaction Configuration class.
     /// </summary>
-    public partial class TransactionConfiguration : EntityTypeConfiguration<Transaction>
+    public partial class TransactionConfiguration : EntityTypeConfiguration<FinancialTransaction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionConfiguration"/> class.

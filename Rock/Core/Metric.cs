@@ -22,7 +22,7 @@ namespace Rock.Core
     /// <summary>
     /// Metric POCO Entity.
     /// </summary>
-    [Table( "coreMetric" )]
+    [Table( "Metric" )]
     public partial class Metric : Model<Metric>, IOrdered
     {
         /// <summary>

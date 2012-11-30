@@ -19,7 +19,7 @@ namespace Rock.Util
     /// <summary>
     /// WorkflowType POCO Entity.
     /// </summary>
-    [Table( "utilWorkflowType" )]
+    [Table( "WorkflowType" )]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered
     {
 
@@ -136,7 +136,7 @@ namespace Rock.Util
         /// <value>
         /// The file.
         /// </value>
-        public virtual File File { get; set; }
+        public virtual BinaryFile File { get; set; }
 
         /// <summary>
         /// Gets or sets the activity types.

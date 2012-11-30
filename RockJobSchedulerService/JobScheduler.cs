@@ -40,7 +40,7 @@ namespace RockJobSchedulerService
 
             // get list of active jobs
             JobService jobService = new JobService();
-            foreach ( Job job in jobService.GetActiveJobs().ToList() )
+            foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
             {
                 try
                 {

@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Service Log POCO Entity.
     /// </summary>
-    [Table( "coreServiceLog" )]
+    [Table( "ServiceLog" )]
     public partial class ServiceLog : Model<ServiceLog>
     {
         /// <summary>

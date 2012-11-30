@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Security
         protected void btnChange_Click( object sender, EventArgs e )
         {
             UserService userService = new UserService();
-            User user = userService.GetByUserName( tbUserName.Text );
+            UserLogin user = userService.GetByUserName( tbUserName.Text );
             if ( user != null )
             {
                 if ( userService.ChangePassword( user, tbOldPassword.Text, tbPassword.Text ) )

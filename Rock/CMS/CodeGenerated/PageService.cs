@@ -100,13 +100,13 @@ namespace Rock.Cms
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsPage where ParentPageId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Page where ParentPageId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "cmsPage" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "cmsPage";
+                    Type entityType = RockContext.GetEntityFromTableName( "Page" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Page";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", Page.FriendlyTypeName, friendlyName);
                     return false;
@@ -115,13 +115,13 @@ namespace Rock.Cms
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsSite where DefaultPageId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Site where DefaultPageId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "cmsSite" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "cmsSite";
+                    Type entityType = RockContext.GetEntityFromTableName( "Site" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Site";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", Page.FriendlyTypeName, friendlyName);
                     return false;

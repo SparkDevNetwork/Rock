@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// <summary>
     /// Block POCO Entity.
     /// </summary>
-    [Table( "cmsBlock" )]
+    [Table( "Block" )]
     public partial class Block : Model<Block>, IOrdered, IExportable
     {
         /// <summary>

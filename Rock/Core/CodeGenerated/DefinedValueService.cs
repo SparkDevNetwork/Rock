@@ -88,13 +88,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from coreMetric where CollectionFrequencyId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where FundTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "coreMetric" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreMetric";
+                    Type entityType = RockContext.GetEntityFromTableName( "Fund" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Fund";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
                     return false;
@@ -103,13 +103,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroupLocation where LocationTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupLocation where LocationTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "crmGroupLocation" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "crmGroupLocation";
+                    Type entityType = RockContext.GetEntityFromTableName( "GroupLocation" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupLocation";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
                     return false;
@@ -118,13 +118,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmPhoneNumber where NumberTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Metric where CollectionFrequencyId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "crmPhoneNumber" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "crmPhoneNumber";
+                    Type entityType = RockContext.GetEntityFromTableName( "Metric" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Metric";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
                     return false;
@@ -133,13 +133,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from financialFund where FundTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from PhoneNumber where NumberTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "financialFund" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "financialFund";
+                    Type entityType = RockContext.GetEntityFromTableName( "PhoneNumber" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "PhoneNumber";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
                     return false;
@@ -148,13 +148,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from financialPledge where FrequencyTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FrequencyTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "financialPledge" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "financialPledge";
+                    Type entityType = RockContext.GetEntityFromTableName( "Pledge" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Pledge";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
                     return false;

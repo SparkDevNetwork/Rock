@@ -19,8 +19,8 @@ namespace Rock.Cms
     /// <summary>
     /// User POCO Entity.
     /// </summary>
-    [Table( "cmsUser" )]
-    public partial class User : Model<User>
+    [Table( "UserLogin" )]
+    public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>
         /// Gets or sets the type of the service.
@@ -188,10 +188,10 @@ namespace Rock.Cms
         }
 
         /// <summary>
-        /// Gets or sets the Person.
+        /// Gets or sets the person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// The person.
         /// </value>
         public virtual Crm.Person Person { get; set; }
         
@@ -200,9 +200,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static User Read( int id )
+        public static UserLogin Read( int id )
         {
-            return Read<User>( id );
+            return Read<UserLogin>( id );
         }
 
 
@@ -280,7 +280,7 @@ namespace Rock.Cms
     /// <summary>
     /// User Configuration class.
     /// </summary>
-    public partial class UserConfiguration : EntityTypeConfiguration<User>
+    public partial class UserConfiguration : EntityTypeConfiguration<UserLogin>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration"/> class.

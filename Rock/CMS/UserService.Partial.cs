@@ -18,14 +18,14 @@ namespace Rock.Cms
     /// <summary>
     /// User POCO Service class
     /// </summary>
-    public partial class UserService : Service<User, UserDto>
+    public partial class UserService : Service<UserLogin, UserLoginDto>
     {
         /// <summary>
         /// Gets Users by Api Key
         /// </summary>
         /// <param name="apiKey">Api Key.</param>
         /// <returns>An enumerable list of User objects.</returns>
-        public IEnumerable<User> GetByApiKey( string apiKey )
+        public IEnumerable<UserLogin> GetByApiKey( string apiKey )
         {
             return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
@@ -35,7 +35,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="personId">Person Id.</param>
         /// <returns>An enumerable list of User objects.</returns>
-        public IEnumerable<User> GetByPersonId( int? personId )
+        public IEnumerable<UserLogin> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
@@ -45,7 +45,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="userName">User Name.</param>
         /// <returns>User object.</returns>
-        public User GetByUserName( string userName )
+        public UserLogin GetByUserName( string userName )
         {
             return Repository
                 .AsQueryable( "Person" )
@@ -66,7 +66,7 @@ namespace Rock.Cms
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
         /// <exception cref="System.ArgumentException">serviceName</exception>
-        public User Create( Rock.Crm.Person person,
+        public UserLogin Create( Rock.Crm.Person person,
             AuthenticationServiceType serviceType,
             string serviceName,
             string username,
@@ -74,13 +74,13 @@ namespace Rock.Cms
             bool isConfirmed,
             int? currentPersonId )
         {
-            User user = this.GetByUserName( username );
+            UserLogin user = this.GetByUserName( username );
             if ( user != null )
                 throw new ArgumentOutOfRangeException( "username", "Username already exists" );
 
             DateTime createDate = DateTime.Now;
 
-            user = new User();
+            user = new UserLogin();
             user.ServiceType = serviceType;
             user.ServiceName = serviceName;
             user.UserName = username;
@@ -112,7 +112,7 @@ namespace Rock.Cms
         /// <param name="oldPassword">The old password.</param>
         /// <param name="newPassword">The new password.</param>
         /// <returns></returns>
-        public bool ChangePassword( User user, string oldPassword, string newPassword )
+        public bool ChangePassword( UserLogin user, string oldPassword, string newPassword )
         {
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
@@ -135,7 +135,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
-        public void ChangePassword( User user, string password )
+        public void ChangePassword( UserLogin user, string password )
         {
             if ( user.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
@@ -152,13 +152,13 @@ namespace Rock.Cms
         /// Unlocks the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        public void Unlock( User user )
+        public void Unlock( UserLogin user )
         {
             user.IsLockedOut = false;
             this.Save( user, null );
         }
 
-        private void UpdateFailureCount( User user )
+        private void UpdateFailureCount( UserLogin user )
         {
             int passwordAttemptWindow = 0;
             int maxInvalidPasswordAttempts = int.MaxValue;
@@ -196,7 +196,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="code">The encrypted confirmation code.</param>
         /// <returns></returns>
-        public User GetByConfirmationCode( string code )
+        public UserLogin GetByConfirmationCode( string code )
         {
             if ( !string.IsNullOrEmpty( code ) )
             {
@@ -220,7 +220,7 @@ namespace Rock.Cms
                         if ( DateTime.Now.Subtract( dateTime ).Hours > 1 )
                             return null;
 
-                        User user = this.GetByEncryptedKey( publicKey );
+                        UserLogin user = this.GetByEncryptedKey( publicKey );
                         if ( user.UserName == username )
                             return user;
                     }
@@ -272,7 +272,7 @@ namespace Rock.Cms
         /// Gets the current user.
         /// </summary>
         /// <returns></returns>
-        public static User GetCurrentUser()
+        public static UserLogin GetCurrentUser()
         {
             return GetCurrentUser( true );
         }
@@ -282,9 +282,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="userIsOnline">if set to <c>true</c> [user is online].</param>
         /// <returns></returns>
-        public static User GetCurrentUser( bool userIsOnline )
+        public static UserLogin GetCurrentUser( bool userIsOnline )
         {
-            string userName = User.GetCurrentUserName();
+            string userName = UserLogin.GetCurrentUserName();
             if ( userName != string.Empty )
             {
                 if ( userName.StartsWith( "rckipid=" ) )
@@ -297,7 +297,7 @@ namespace Rock.Cms
                 else
                 {
                     UserService userService = new UserService();
-                    User user = userService.GetByUserName( userName );
+                    UserLogin user = userService.GetByUserName( userName );
 
                     if ( user != null && userIsOnline )
                     {

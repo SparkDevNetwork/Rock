@@ -13,7 +13,7 @@ namespace Rock.Cms
     /// <summary>
     /// MarketingCampaignAudience POCO Entity
     /// </summary>
-    [Table( "cmsMarketingCampaignAudience" )]
+    [Table( "MarketingCampaignAudience" )]
     public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>
     {
         /// <summary>
@@ -69,6 +69,11 @@ namespace Rock.Cms
         {
             get
             {
+                if ( AudienceTypeValue == null )
+                {
+                    AudienceTypeValue = Core.DefinedValue.Read( AudienceTypeValueId );
+                }
+                
                 return AudienceTypeValue.Name;
             }
         }

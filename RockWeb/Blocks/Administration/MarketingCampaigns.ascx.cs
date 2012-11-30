@@ -15,12 +15,14 @@ using Rock.Constants;
 using Rock.Core;
 using Rock.Crm;
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /// <summary>
 /// 
 /// </summary>
+[AdditionalActions( new string[] { "Approve" } )]
 public partial class MarketingCampaigns : RockBlock
 {
     #region Child Grid States
@@ -69,11 +71,17 @@ public partial class MarketingCampaigns : RockBlock
             gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            gMarketingCampaignAudiences.DataKeyNames = new string[] { "id" };
-            gMarketingCampaignAudiences.Actions.IsAddEnabled = true;
-            gMarketingCampaignAudiences.Actions.AddClick += gMarketingCampaignAudiences_Add;
-            gMarketingCampaignAudiences.GridRebind += gMarketingCampaignAudiences_GridRebind;
-            gMarketingCampaignAudiences.EmptyDataText = Server.HtmlEncode( None.Text );
+            gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
+            gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
+            gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+            gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = true;
+            gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
+            gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+            gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
         }
@@ -143,14 +151,14 @@ public partial class MarketingCampaigns : RockBlock
         MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
         int marketingCampaignId = (int)e.RowKeyValue;
         MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
-        
+
         string errorMessage;
         if ( !marketingCampaignService.CanDelete( marketingCampaign, out errorMessage ) )
         {
             mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
-        
+
         if ( CurrentBlock != null )
         {
             marketingCampaignService.Delete( marketingCampaign, CurrentPersonId );
@@ -202,6 +210,9 @@ public partial class MarketingCampaigns : RockBlock
     {
         hfMarketingCampaignAdId.Value = marketingCampaignAdId.ToString();
 
+        btnApproveAd.Visible = IsUserAuthorized( "Approve" );
+        btnDenyAd.Visible = IsUserAuthorized("Approve");
+
         MarketingCampaignAd marketingCampaignAd = null;
 
         if ( !marketingCampaignAdId.Equals( 0 ) )
@@ -210,7 +221,7 @@ public partial class MarketingCampaigns : RockBlock
         }
         else
         {
-            marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
+            marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
         }
 
         if ( !marketingCampaignAd.Id.Equals( 0 ) )
@@ -222,10 +233,11 @@ public partial class MarketingCampaigns : RockBlock
             lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + tbTitle.Text );
         }
 
-        ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId.ToString() );
+        ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId );
         tbPriority.Text = marketingCampaignAd.Priority.ToString();
-        ddlMarketingCampaignAdStatus.SetValue( Convert.ToInt32( marketingCampaignAd.MarketingCampaignAdStatus ).ToString() );
-        ddlMarketingCampaignAdStatusPerson.SetValue( marketingCampaignAd.MarketingCampaignStatusPersonId.ToString() );
+
+        SetApprovalValues(marketingCampaignAd.MarketingCampaignAdStatus, Person.Read( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ));
+
         if ( marketingCampaignAdId.Equals( 0 ) )
         {
             tbAdDateRangeStartDate.SelectedDate = null;
@@ -293,14 +305,13 @@ public partial class MarketingCampaigns : RockBlock
                 attributeValues.Add( new AttributeValueDto { Value = attribute.DefaultValue } );
                 marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
             }
-
-            if ( marketingCampaignAd.AttributeCategories.Count( c => c.Key.Equals( attribute.Category ) ) == 0 )
-            {
-                marketingCampaignAd.AttributeCategories.Add( attribute.Category, attributesForAdType.Where( a => a.Category.Equals( attribute.Category ) ).Select( a => a.Key ).ToList() );
-            }
         }
 
-        //phAttributes.Controls.Clear();
+        foreach ( var category in attributesForAdType.Select( a => a.Category ).Distinct() )
+        {
+            marketingCampaignAd.AttributeCategories[category] = attributesForAdType.Where( a => a.Category.Equals( category ) ).Select( a => a.Key ).ToList();
+        }
+
         if ( createControls )
         {
             phAttributes.Controls.Clear();
@@ -339,11 +350,11 @@ public partial class MarketingCampaigns : RockBlock
     protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
     {
         MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
-        MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get((int)e.RowKeyValue);
+        MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( (int)e.RowKeyValue );
 
         marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
         marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
-        BindMarketingCampaignAdsGrid();    
+        BindMarketingCampaignAdsGrid();
     }
 
     /// <summary>
@@ -392,8 +403,15 @@ public partial class MarketingCampaigns : RockBlock
         marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
         marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
         marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
-        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( ddlMarketingCampaignAdStatus.SelectedValue );
-        marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( ddlMarketingCampaignAdStatusPerson.SelectedValue );
+        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
+        if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+        }
+        else
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = null;
+        }
 
         if ( tbAdDateRangeStartDate.SelectedDate == null )
         {
@@ -469,16 +487,72 @@ public partial class MarketingCampaigns : RockBlock
         pnlList.Visible = false;
     }
 
+    /// <summary>
+    /// Handles the Click event of the btnApproveAd control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnApproveAd_Click( object sender, EventArgs e )
+    {
+        SetApprovalValues( MarketingCampaignAdStatus.Approved, CurrentPerson );
+    }
+
+    /// <summary>
+    /// Handles the Click event of the btnDenyAd control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void btnDenyAd_Click( object sender, EventArgs e )
+    {
+        SetApprovalValues( MarketingCampaignAdStatus.Denied, CurrentPerson );
+    }
+
+    /// <summary>
+    /// Sets the approval values.
+    /// </summary>
+    /// <param name="status">The status.</param>
+    /// <param name="person">The person.</param>
+    private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
+    {
+        ltMarketingCampaignAdStatus.Text = status.ConvertToString();
+        hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
+        ltMarketingCampaignAdStatusPerson.Visible = person != null;
+        if ( person != null )
+        {
+            ltMarketingCampaignAdStatusPerson.Text = person.FullName;
+            hfMarketingCampaignAdStatusPersonId.Value = person.Id.ToString();
+        }
+    }
+
     #endregion
 
     #region MarketingCampaignAudience Grid and Picker
 
     /// <summary>
-    /// Handles the Add event of the gMarketingCampaignAudiences control.
+    /// Handles the Add event of the gMarketingCampaignAudiencesPrimary control.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void gMarketingCampaignAudiences_Add( object sender, EventArgs e )
+    protected void gMarketingCampaignAudiencesPrimary_Add( object sender, EventArgs e )
+    {
+        gMarketingCampaignAudiencesAdd( true );
+    }
+
+    /// <summary>
+    /// Handles the Add event of the gMarketingCampaignAudiencesSecondary control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+    protected void gMarketingCampaignAudiencesSecondary_Add( object sender, EventArgs e )
+    {
+        gMarketingCampaignAudiencesAdd( false );
+    }
+
+    /// <summary>
+    /// Gs the marketing campaign audiences add.
+    /// </summary>
+    /// <param name="isPrimary">if set to <c>true</c> [is primary].</param>
+    private void gMarketingCampaignAudiencesAdd( bool isPrimary )
     {
         DefinedValueService definedValueService = new DefinedValueService();
 
@@ -503,6 +577,7 @@ public partial class MarketingCampaigns : RockBlock
 
         ddlMarketingCampaignAudiences.DataSource = list;
         ddlMarketingCampaignAudiences.DataBind();
+        hfMarketingCampaignAudienceIsPrimary.Value = isPrimary.ToTrueFalse();
         pnlMarketingCampaignAudiencePicker.Visible = true;
         pnlDetails.Visible = false;
         pnlList.Visible = false;
@@ -535,8 +610,11 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     private void BindMarketingCampaignAudiencesGrid()
     {
-        gMarketingCampaignAudiences.DataSource = MarketingCampaignAudiencesState.OrderBy( a => a.Name );
-        gMarketingCampaignAudiences.DataBind();
+        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesPrimary.DataBind();
+
+        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesSecondary.DataBind();
     }
 
     /// <summary>
@@ -550,7 +628,7 @@ public partial class MarketingCampaigns : RockBlock
         MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
         marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
         marketingCampaignAudience.AudienceTypeValue = DefinedValue.Read( audienceTypeValueId );
-        marketingCampaignAudience.IsPrimary = ckMarketingCampaignAudienceIsPrimary.Checked;
+        marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
 
         MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( marketingCampaignAudience ) );
 
@@ -575,7 +653,6 @@ public partial class MarketingCampaigns : RockBlock
 
     #endregion
 
-
     #region Edit Events
 
     /// <summary>
@@ -586,8 +663,20 @@ public partial class MarketingCampaigns : RockBlock
     protected void btnCancel_Click( object sender, EventArgs e )
     {
         SetEditMode( false );
-        pnlDetails.Visible = true;
-        pnlList.Visible = false;
+
+        if ( hfMarketingCampaignId.Value.Equals( "0" ) )
+        {
+            // Cancelling on Add. Return to Grid
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+        else
+        {
+            // Cancelling on Edit.  Return to Details
+            pnlDetails.Visible = true;
+            pnlList.Visible = false;
+        }
+        
     }
 
     /// <summary>
@@ -611,26 +700,14 @@ public partial class MarketingCampaigns : RockBlock
         fieldsetEditDetails.Visible = editable;
         pnlEditDetailsActions.Visible = editable;
         fieldsetViewDetails.Visible = !editable;
-        pnlViewActions.Visible = !editable;
+        pnlMarketingCampaignAds.Disabled = editable;
+        gMarketingCampaignAds.ReadOnly = editable;
 
         btnCancel.Visible = editable;
         btnSave.Visible = editable;
         btnEdit.Visible = !editable;
-        btnClose.Visible = !editable;
     }
-
-    /// <summary>
-    /// Handles the Click event of the btnClose control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void btnClose_Click( object sender, EventArgs e )
-    {
-        pnlDetails.Visible = false;
-        BindGrid();
-        pnlList.Visible = true;
-    }
-
+    
     /// <summary>
     /// Handles the Click event of the btnSave control.
     /// </summary>
@@ -769,6 +846,11 @@ public partial class MarketingCampaigns : RockBlock
         } );
 
         hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
+
+        // refresh from db using new service context since the above child items were saved outside of the marketingCampaign object
+        marketingCampaign = MarketingCampaign.Read( marketingCampaign.Id );
+        UpdateReadonlyDetails( marketingCampaign );
+        
         SetEditMode( false );
         pnlDetails.Visible = true;
         pnlList.Visible = false;
@@ -833,11 +915,6 @@ public partial class MarketingCampaigns : RockBlock
         var adtypes = marketingCampaignAdTypeService.Queryable().OrderBy( a => a.Name ).ToList();
         ddlMarketingCampaignAdType.DataSource = adtypes;
         ddlMarketingCampaignAdType.DataBind();
-
-        ddlMarketingCampaignAdStatus.BindToEnum( typeof( MarketingCampaignAdStatus ) );
-
-        ddlMarketingCampaignAdStatusPerson.DataSource = persons;
-        ddlMarketingCampaignAdStatusPerson.DataBind();
     }
 
     /// <summary>
@@ -880,16 +957,7 @@ public partial class MarketingCampaigns : RockBlock
             campusItem.Selected = marketingCampaign.MarketingCampaignCampuses.ToList().Exists( a => a.CampusId.Equals( int.Parse( campusItem.Value ) ) );
         }
 
-        // make a Description section for nonEdit mode
-        string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-        lblMainDetails.Text = "<dl>";
-        lblMainDetails.Text += string.Format( descriptionFormat, "Title", marketingCampaign.Title );
-        lblMainDetails.Text += string.Format( descriptionFormat, "Event", marketingCampaign.EventGroup == null ? "-" : marketingCampaign.EventGroup.Name );
-        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).ToList().AsDelimited( "<br>" );
-        lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
-        string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
-        lblMainDetails.Text += string.Format( descriptionFormat, "Contact", contactInfo );
-        lblMainDetails.Text += "</dl>";
+        UpdateReadonlyDetails( marketingCampaign );
 
         if ( marketingCampaign.Id > 0 )
         {
@@ -907,6 +975,49 @@ public partial class MarketingCampaigns : RockBlock
 
         BindMarketingCampaignAdsGrid();
         BindMarketingCampaignAudiencesGrid();
+    }
+
+    /// <summary>
+    /// Updates the readonly details.
+    /// </summary>
+    /// <param name="marketingCampaign">The marketing campaign.</param>
+    private void UpdateReadonlyDetails( MarketingCampaign marketingCampaign )
+    {
+        // make a Description section for nonEdit mode
+        string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+        lblMainDetails.Text = @"
+<div class='span6'>
+    <dl>";
+
+        lblMainDetails.Text += string.Format( descriptionFormat, "Title", marketingCampaign.Title );
+
+        string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
+        contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", string.Empty ) ) ? None.TextHtml : contactInfo;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Contact", contactInfo );
+        
+        lblMainDetails.Text += string.Format( descriptionFormat, "Event", marketingCampaign.EventGroup == null ? None.TextHtml : marketingCampaign.EventGroup.Name );
+
+        lblMainDetails.Text += @"
+    </dl>
+</div>
+<div class='span6'>
+    <dl>";
+
+        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).ToList().AsDelimited( "<br>" );
+        campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList ); 
+        
+        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audience", primaryAudiences );
+
+        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
+        lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audience", secondaryAudiences );
+
+        lblMainDetails.Text += @"
+    </dl>
+</div>";
     }
 
     /// <summary>

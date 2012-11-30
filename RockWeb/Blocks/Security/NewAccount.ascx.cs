@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Security
             if ( Page.IsValid )
             {
                 Rock.Cms.UserService userService = new Rock.Cms.UserService();
-                Rock.Cms.User user = userService.GetByUserName( tbUserName.Text );
+                Rock.Cms.UserLogin user = userService.GetByUserName( tbUserName.Text );
                 if ( user == null )
                     DisplayDuplicates( Direction.Forward );
                 else
@@ -275,11 +275,11 @@ namespace RockWeb.Blocks.Security
 
                     var users = new List<IDictionary<string, object>>();
                     UserService userService = new UserService();
-                    foreach ( User user in userService.GetByPersonId( person.Id ) )
+                    foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
                     {
                         if ( user.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            var userDictionary = new UserDto( user ).ToDictionary();
+                            var userDictionary = new UserLoginDto( user ).ToDictionary();
                             userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
                             users.Add( userDictionary );
                         }
@@ -315,7 +315,7 @@ namespace RockWeb.Blocks.Security
 
             if (person != null)
             {
-                Rock.Cms.User user = CreateUser( person, false );
+                Rock.Cms.UserLogin user = CreateUser( person, false );
 
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
@@ -324,7 +324,7 @@ namespace RockWeb.Blocks.Security
                 personDictionary.Add( "FirstName", person.FirstName );
                 mergeObjects.Add( "Person", personDictionary );
 
-                mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+                mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
 
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
@@ -338,7 +338,7 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage("Invalid Person");
         }
 
-        private void DisplaySuccess( Rock.Cms.User user )
+        private void DisplaySuccess( Rock.Cms.UserLogin user )
         {
             FormsAuthentication.SignOut();
             Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Security
                     personDictionary.Add("FirstName", person.FirstName);
                     mergeObjects.Add( "Person", personDictionary );
 
-                    mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+                    mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
 
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Security
             return person;
         }
 
-        private Rock.Cms.User CreateUser( Person person, bool confirmed )
+        private Rock.Cms.UserLogin CreateUser( Person person, bool confirmed )
         {
             Rock.Cms.UserService userService = new Rock.Cms.UserService();
             return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );

@@ -16,7 +16,7 @@ namespace Rock.Core
     /// Entity Change POCO Entity.
     /// </summary>
     [NotAudited]
-    [Table( "coreEntityChange" )]
+    [Table( "EntityChange" )]
     public partial class EntityChange : Model<EntityChange>
     {
         /// <summary>

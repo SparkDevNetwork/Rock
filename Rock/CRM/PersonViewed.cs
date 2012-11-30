@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Person Viewed POCO Entity.
     /// </summary>
-    [Table( "crmPersonViewed" )]
+    [Table( "PersonViewed" )]
     public partial class PersonViewed : Model<PersonViewed>
     {
         /// <summary>

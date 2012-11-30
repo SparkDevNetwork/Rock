@@ -25,29 +25,5 @@ namespace Rock.Crm
         {
             return Repository.Find( t => ( t.SortOrder == sortOrder || ( sortOrder == null && t.SortOrder == null ) ) );
         }
-
-        /// <summary>
-        /// Determines whether this instance can delete the specified group role id.
-        /// </summary>
-        /// <param name="groupRoleId">The group role id.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can delete the specified group role id; otherwise, <c>false</c>.
-        /// </returns>
-        public bool CanDelete( int groupRoleId, out string errorMessage )
-        {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            var groupType = groupTypeService.Queryable().FirstOrDefault(a => (a.DefaultGroupRoleId ?? 0) == groupRoleId);
-            if ( groupType != null )
-            {
-                errorMessage = "This group role is assigned as a default group role for a group type.";
-                return false;
-            }
-            else
-            {
-                errorMessage = string.Empty;
-                return true;
-            }
-        }
     }
 }

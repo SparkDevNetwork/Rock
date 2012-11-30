@@ -15,8 +15,9 @@ namespace Rock.Migrations
     /// </summary>
     public abstract class RockMigration : DbMigration
     {
+        
         #region Block Type Methods
-
+        
         public void AddBlockType( string name, string description, string path, string guid )
         {
             Sql( string.Format( @"

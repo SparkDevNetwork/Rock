@@ -83,10 +83,10 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="Cms\AuthsController.cs" />
+    <Compile Include="Cms\BinaryFilesController.cs" />
     <Compile Include="Cms\BlocksController.cs" />
     <Compile Include="Cms\BlocksController.Partial.cs" />
     <Compile Include="Cms\BlockTypesController.cs" />
-    <Compile Include="Cms\FilesController.cs" />
     <Compile Include="Cms\HtmlContentsController.cs" />
     <Compile Include="Cms\MarketingCampaignAdsController.cs" />
     <Compile Include="Cms\MarketingCampaignAdTypesController.cs" />
@@ -98,7 +98,7 @@
     <Compile Include="Cms\PagesController.cs" />
     <Compile Include="Cms\SiteDomainsController.cs" />
     <Compile Include="Cms\SitesController.cs" />
-    <Compile Include="Cms\UsersController.cs" />
+    <Compile Include="Cms\UserLoginsController.cs" />
     <Compile Include="Cms\UsersController.Partial.cs" />
     <Compile Include="Core\AttributeQualifiersController.cs" />
     <Compile Include="Core\AttributesController.cs" />
@@ -107,6 +107,12 @@
     <Compile Include="Core\AuditsController.cs" />
     <Compile Include="Core\CategoriesController.cs" />
     <Compile Include="Core\EntityTypesController.cs" />
+    <Compile Include="Financial\FinancialBatchesController.cs" />
+    <Compile Include="Financial\FinancialTransactionDetailsController.cs" />
+    <Compile Include="Financial\FinancialTransactionsController.cs" />
+    <Compile Include="Financial\PaymentGatewaysController.cs" />
+    <Compile Include="Financial\PersonAccountsController.cs" />
+    <Compile Include="Util\ServiceJobsController.cs" />
     <Compile Include="Util\WorkflowTriggersController.cs" />
     <Compile Include="Core\TaggedItemsController.cs" />
     <Compile Include="Core\TagsController.Partial.cs" />
@@ -131,13 +137,8 @@
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
-    <Compile Include="Financial\BatchesController.cs" />
     <Compile Include="Financial\FundsController.cs" />
-    <Compile Include="Financial\GatewaysController.cs" />
-    <Compile Include="Financial\PersonAccountLookupsController.cs" />
     <Compile Include="Financial\PledgesController.cs" />
-    <Compile Include="Financial\TransactionDetailsController.cs" />
-    <Compile Include="Financial\TransactionsController.cs" />
     <Compile Include="Crm\GroupRolesController.cs" />
     <Compile Include="Crm\GroupsController.cs" />
     <Compile Include="Crm\GroupTypesController.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="Util\ActivitiesController.cs" />
     <Compile Include="Util\ActivityTypesController.cs" />
     <Compile Include="Util\SearchController.cs" />
-    <Compile Include="Util\JobsController.cs" />
     <Compile Include="Util\WorkflowLogsController.cs" />
     <Compile Include="Util\WorkflowsController.cs" />
     <Compile Include="Util\WorkflowTypesController.cs" />

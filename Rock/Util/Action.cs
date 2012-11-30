@@ -16,7 +16,7 @@ namespace Rock.Util
     /// <summary>
     /// Action POCO Entity.
     /// </summary>
-    [Table( "utilAction" )]
+    [Table( "WorkflowAction" )]
     public partial class Action : Model<Action>
     {
 
