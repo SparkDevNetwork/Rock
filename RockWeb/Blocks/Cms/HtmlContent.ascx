@@ -109,7 +109,7 @@
                 </Rock:Grid>
             </div>
             <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn">Cancel</button>
+                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn btn-secondary">Cancel</button>
             </div>
         </div>
 
@@ -127,8 +127,8 @@
                 <span class="inline-form">
                     <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
                 </span>
-                <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn" Text="Cancel" />
-                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-primary" Text="Save" />
+                <asp:LinkButton ID="lbCancel" runat="server" cssclass="btn btn-secondary" Text="Cancel" />
+                <asp:LinkButton ID="lbOk" runat="server" cssclass="btn btn-primary" Text="Save" />
             </div>
         </div>
 
