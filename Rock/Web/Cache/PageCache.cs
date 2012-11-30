@@ -765,6 +765,16 @@ namespace Rock.Web.Cache
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
+                string iconUrl = this.IconUrl ?? "";
+                if ( iconUrl.StartsWith( @"~/" ) )
+                {
+                    iconUrl = HttpContext.Current.Request.ApplicationPath + iconUrl.Substring( 1 );
+                }
+                else if ( iconUrl.StartsWith( @"/" ) )
+                {
+                    iconUrl = HttpContext.Current.Request.ApplicationPath + iconUrl;
+                }
+                                
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
@@ -773,7 +783,7 @@ namespace Rock.Web.Cache
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
                     new XElement( "description", this.Description ?? "" ),
-                    new XElement( "icon-url", this.IconUrl ?? "" ) );
+                    new XElement( "icon-url", iconUrl ) );
 
                 XElement childPagesElement = new XElement( "pages" );
 
