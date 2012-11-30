@@ -1,13 +1,14 @@
 ﻿function confirmDelete(e, nameText) {
     e.preventDefault();
-    bootbox.confirm('Are you sure you want to delete this ' + nameText + '?', function (result) {
-        {
-            if (result) {
-                {
-                    eval(e.target.href);
+    bootbox.dialog('Are you sure you want to delete this ' + nameText + '?',
+        [
+            {
+                "label": "OK", "class": "btn-primary", "callback": function () {
+                    eval(e.target.href)
                 }
+            },
+            {
+                "label": "Cancel", "class": "btn-secondary"
             }
-        }
-    }
-    );
+        ]);
 }
