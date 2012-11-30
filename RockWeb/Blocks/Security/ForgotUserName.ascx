@@ -17,7 +17,7 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:Button ID="btnSend" runat="server" Text="Send Username" CssClass="btn primary" OnClick="btnSend_Click" />
+            <asp:Button ID="btnSend" runat="server" Text="Send Username" CssClass="btn btn-primary" OnClick="btnSend_Click" />
         </div>
 
     </asp:Panel>

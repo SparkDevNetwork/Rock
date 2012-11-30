@@ -68,8 +68,8 @@
             </Rock:Grid>
 
             <asp:panel id="pnlActions" runat="server" CssClass="actions">
-                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn primary" onclick="lbShowRole_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn primary" onclick="lbShowUser_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbShowRole" runat="server" Text="Add Role" CssClass="btn btn-primary" onclick="lbShowRole_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn btn-primary" onclick="lbShowUser_Click"></asp:LinkButton>
             </asp:panel>
 
             <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" >
@@ -103,8 +103,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="lbAddRole" runat="server" Text="Add" CssClass="btn primary" onclick="lbAddRole_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbCancelAddRole" runat="server" Text="Cancel" CssClass="btn secondary" onclick="lbCancelAdd_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbAddRole" runat="server" Text="Add" CssClass="btn btn-primary" onclick="lbAddRole_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbCancelAddRole" runat="server" Text="Cancel" CssClass="btn" onclick="lbCancelAdd_Click"></asp:LinkButton>
             </div>
 
         </asp:Panel>
@@ -124,8 +124,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="lbAddUser" runat="server" Text="Add" CssClass="btn primary" OnClientClick="showAddUser(false);" onclick="lbAddUser_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbCancelAddUser" runat="server" Text="Cancel" CssClass="btn secondary" onclick="lbCancelAdd_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbAddUser" runat="server" Text="Add" CssClass="btn btn-primary" OnClientClick="showAddUser(false);" onclick="lbAddUser_Click"></asp:LinkButton>
+                <asp:LinkButton ID="lbCancelAddUser" runat="server" Text="Cancel" CssClass="btn" onclick="lbCancelAdd_Click"></asp:LinkButton>
             </div>
 
         </asp:Panel>
