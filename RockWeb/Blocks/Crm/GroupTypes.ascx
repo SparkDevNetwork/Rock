@@ -52,7 +52,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>
@@ -62,7 +62,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -71,7 +71,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 

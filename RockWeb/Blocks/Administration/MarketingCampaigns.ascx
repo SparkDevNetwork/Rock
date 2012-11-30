@@ -57,7 +57,7 @@
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
@@ -96,7 +96,7 @@
             <asp:HiddenField ID="hfMarketingCampaignAudienceIsPrimary" runat="server" />
             <div class="actions">
                 <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -118,7 +118,7 @@
                                 <Rock:LabeledText ID="ltMarketingCampaignAdStatusPerson" runat="server" LabelText="by" />
                                 <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
                                 <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn btn-primary btn-mini" Text="Approve" />
-                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-secondary btn-mini" Text="Deny" />
+                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-mini" Text="Deny" />
                             </ContentTemplate>
                         </asp:UpdatePanel>
                     </div>
@@ -136,7 +136,7 @@
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="btnSaveAd" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAd_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAd_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAd_Click"></asp:LinkButton>
                 </div>
             </fieldset>
         </asp:Panel>
