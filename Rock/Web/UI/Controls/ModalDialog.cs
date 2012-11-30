@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn primary" );
+            _saveLink.Attributes.Add( "class", "btn-primary" );
             _saveLink.InnerText = "Save";
             _saveLink.ServerClick += SaveLink_ServerClick;
 

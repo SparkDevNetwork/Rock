@@ -361,7 +361,7 @@
         </div>
         <div class="modal-footer">
             <a href="#" class="btn secondary">Cancel</a>
-            <a href="#" class="btn primary">Save</a>
+            <a href="#" class="btn btn-primary">Save</a>
         </div>
     </div>
 
@@ -387,7 +387,7 @@
         </div>
         <div class="modal-footer">
             <a href="#" class="btn secondary">Cancel</a>
-            <a href="#" class="btn primary">Save</a>
+            <a href="#" class="btn btn-primary">Save</a>
         </div>
     </div>
 
@@ -417,7 +417,7 @@
         </div>
         <div class="modal-footer">
             <a href="#" class="btn secondary">Cancel</a>
-            <a href="#" class="btn primary">Save</a>
+            <a href="#" class="btn btn-primary">Save</a>
         </div>
     </div>
 

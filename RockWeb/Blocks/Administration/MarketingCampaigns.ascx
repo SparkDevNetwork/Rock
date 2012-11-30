@@ -49,8 +49,8 @@
             </fieldset>
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
@@ -61,7 +61,7 @@
                     <div class="span4 well">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn primary btn-mini" OnClick="btnEdit_Click" />
+                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
                         </div>
                     </div>
 
@@ -81,7 +81,7 @@
             </fieldset>
 
             <div class="actions" id="pnlViewActions" runat="server">
-                <asp:LinkButton ID="btnClose" runat="server" Text="Close" CssClass="btn primary" OnClick="btnClose_Click" />
+                <asp:LinkButton ID="btnClose" runat="server" Text="Close" CssClass="btn btn-primary" OnClick="btnClose_Click" />
             </div>
 
         </asp:Panel>
@@ -94,8 +94,8 @@
             <Rock:LabeledCheckBox ID="ckMarketingCampaignAudienceIsPrimary" runat="server" LabelText="Primary Audience" />
 
             <div class="actions">
-                <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -128,8 +128,8 @@
                     <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnSaveAd" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveAd_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAd_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnSaveAd" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAd_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAd_Click"></asp:LinkButton>
                 </div>
             </fieldset>
         </asp:Panel>

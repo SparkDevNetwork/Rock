@@ -14,9 +14,9 @@
         </fieldset>
 
         <div class="actions">
-            <asp:Button ID="btnCodeConfirm" runat="server" Text="Confirm Account" CssClass="btn primary" OnClick="btnCodeConfirm_Click" />
-            <asp:Button ID="btnCodeReset" runat="server" Text="Change Password" CssClass="btn secondary" OnClick="btnCodeReset_Click" />
-            <asp:Button ID="btnCodeDelete" runat="server" Text="Delete Account" CssClass="btn secondary" OnClick="btnCodeDelete_Click" />
+            <asp:Button ID="btnCodeConfirm" runat="server" Text="Confirm Account" CssClass="btn btn-primary" OnClick="btnCodeConfirm_Click" />
+            <asp:Button ID="btnCodeReset" runat="server" Text="Change Password" CssClass="btn" OnClick="btnCodeReset_Click" />
+            <asp:Button ID="btnCodeDelete" runat="server" Text="Delete Account" CssClass="btn" OnClick="btnCodeDelete_Click" />
         </div>
 
     </asp:Panel>
@@ -37,7 +37,7 @@
         </fieldset>
 
         <div class="actions">
-            <asp:Button ID="btnResetPassword" runat="server" Text="Change Password" CssClass="btn primary" OnClick="btnResetPassword_Click" />
+            <asp:Button ID="btnResetPassword" runat="server" Text="Change Password" CssClass="btn btn-primary" OnClick="btnResetPassword_Click" />
         </div>
 
     </asp:Panel>
@@ -51,7 +51,7 @@
         <asp:Literal ID="lDelete" runat="server"></asp:Literal>
 
         <div class="actions">
-            <asp:Button ID="btnDelete" runat="server" Text="Yes, Delete the Account" CssClass="btn primary" OnClick="btnDelete_Click" />
+            <asp:Button ID="btnDelete" runat="server" Text="Yes, Delete the Account" CssClass="btn btn-primary" OnClick="btnDelete_Click" />
         </div>
 
     </asp:Panel>

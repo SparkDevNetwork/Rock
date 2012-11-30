@@ -43,8 +43,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>
@@ -76,8 +76,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSaveAttribute" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveAttribute_Click" />
-                <asp:LinkButton ID="btnCancelAttribute" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelAttribute_Click" />
+                <asp:LinkButton ID="btnSaveAttribute" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAttribute_Click" />
+                <asp:LinkButton ID="btnCancelAttribute" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancelAttribute_Click" />
             </div>
 
         </asp:Panel>
