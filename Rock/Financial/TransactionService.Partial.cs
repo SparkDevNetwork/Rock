@@ -14,14 +14,14 @@ namespace Rock.Financial
     /// <summary>
     /// Service class for Transaction objects.
     /// </summary>
-    public partial class TransactionService : Service<Transaction, TransactionDto>
+    public partial class TransactionService : Service<FinancialTransaction, FinancialTransactionDto>
     {
         /// <summary>
         /// Gets the transaction by search.
         /// </summary>
         /// <param name="searchValue">The search value.</param>
         /// <returns></returns>
-        public IQueryable<Transaction> Get(TransactionSearchValue searchValue)
+        public IQueryable<FinancialTransaction> Get(TransactionSearchValue searchValue)
         {
             var transactions = Repository.AsQueryable();
 

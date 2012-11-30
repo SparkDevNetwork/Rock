@@ -17,6 +17,16 @@ namespace Rock.Web.UI.Controls
     public class EditValueField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="EditValueField" /> class.
+        /// </summary>
+        public EditValueField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell edit-value";
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -26,9 +36,6 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell edit-value";
-
             EditValueFieldTemplate editValueFieldTemplate = new EditValueFieldTemplate();
             editValueFieldTemplate.LinkButtonClick += editValueFieldTemplate_LinkButtonClick;
             this.ItemTemplate = editValueFieldTemplate;

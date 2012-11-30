@@ -29,7 +29,7 @@ namespace Rock.Security.Authentication
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public override bool Authenticate( User user, string password )
+        public override bool Authenticate( UserLogin user, string password )
         {
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( AttributeValue( "Domain" ) ) )
@@ -48,7 +48,7 @@ namespace Rock.Security.Authentication
         /// <param name="user">The user.</param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public override string EncodePassword( User user, string password )
+        public override string EncodePassword( UserLogin user, string password )
         {
             return null;
         }

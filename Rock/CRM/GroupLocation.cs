@@ -13,7 +13,7 @@ namespace Rock.Crm
     /// <summary>
     /// GroupLocation POCO class.
     /// </summary>
-    [Table( "crmGroupLocation" )]
+    [Table( "GroupLocation" )]
     public partial class GroupLocation
     {
         /// <summary>

@@ -16,8 +16,8 @@ namespace Rock.Financial
     /// <summary>
     /// Payment Gateway POCO class.
     /// </summary>
-    [Table("financialGateway")]
-    public partial class Gateway : Model<Gateway>
+    [Table( "PaymentGateway" )]
+    public partial class PaymentGateway : Model<PaymentGateway>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -70,7 +70,7 @@ namespace Rock.Financial
         /// <value>
         /// The transactions.
         /// </value>
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<FinancialTransaction> Transactions { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -86,9 +86,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Gateway Read( int id )
+        public static PaymentGateway Read( int id )
         {
-            return Read<Gateway>( id );
+            return Read<PaymentGateway>( id );
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Rock.Financial
     /// <summary>
     /// Payment Gateway Configuration class.
     /// </summary>
-    public partial class GatewayConfiguration : EntityTypeConfiguration<Gateway>
+    public partial class GatewayConfiguration : EntityTypeConfiguration<PaymentGateway>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GatewayConfiguration"/> class.

@@ -90,13 +90,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from coreCategory where ParentCategoryId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Category where ParentCategoryId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "coreCategory" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreCategory";
+                    Type entityType = RockContext.GetEntityFromTableName( "Category" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Category";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", Category.FriendlyTypeName, friendlyName);
                     return false;
@@ -105,13 +105,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from utilWorkflowType where CategoryId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowType where CategoryId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "utilWorkflowType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "utilWorkflowType";
+                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowType" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowType";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", Category.FriendlyTypeName, friendlyName);
                     return false;

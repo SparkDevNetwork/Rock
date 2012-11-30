@@ -16,18 +16,13 @@ namespace Rock.Web.UI.Controls
     public class DateTimeField : BoundField
     {
         /// <summary>
-        /// Initializes the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
+        /// Initializes a new instance of the <see cref="DateTimeField" /> class.
         /// </summary>
-        /// <param name="enableSorting">true if sorting is supported; otherwise, false.</param>
-        /// <param name="control">The data control that owns the <see cref="T:System.Web.UI.WebControls.BoundField" />.</param>
-        /// <returns>
-        /// false in all cases.
-        /// </returns>
-        public override bool Initialize( bool enableSorting, System.Web.UI.Control control )
+        public DateTimeField()
+            : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
             this.DataFormatString = "{0:g}";
-            return base.Initialize( enableSorting, control );
         }
     }
 }

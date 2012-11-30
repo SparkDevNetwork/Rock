@@ -16,7 +16,7 @@ namespace Rock.Cms
     /// <summary>
     /// Page POCO Entity.
     /// </summary>
-    [Table( "cmsPage" )]
+    [Table( "Page" )]
     public partial class Page : Model<Page>, IOrdered, IExportable
     {
         /// <summary>

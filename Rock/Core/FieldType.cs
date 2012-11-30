@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Field Type POCO Entity.
     /// </summary>
-    [Table( "coreFieldType" )]
+    [Table( "FieldType" )]
     public partial class FieldType : Model<FieldType>
     {
         /// <summary>

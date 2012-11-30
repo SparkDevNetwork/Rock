@@ -30,7 +30,7 @@ public partial class error : System.Web.UI.Page
         if ( errorLevel == 1 )
         {
             // check to see if the user is an admin, if so allow them to view the error details
-            Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
+            Rock.Cms.UserLogin user = Rock.Cms.UserService.GetCurrentUser();
 
             GroupService service = new GroupService();
             Group adminGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS );

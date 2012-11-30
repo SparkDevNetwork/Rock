@@ -16,7 +16,7 @@ namespace Rock.Util
     /// <summary>
     /// ActionType POCO Entity.
     /// </summary>
-    [Table( "utilActionType" )]
+    [Table( "WorkflowActionType" )]
     public partial class ActionType : Model<ActionType>, IOrdered
     {
 

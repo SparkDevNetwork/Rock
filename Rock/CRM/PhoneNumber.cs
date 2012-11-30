@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Phone Number POCO Entity.
     /// </summary>
-    [Table( "crmPhoneNumber" )]
+    [Table( "PhoneNumber" )]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         /// <summary>

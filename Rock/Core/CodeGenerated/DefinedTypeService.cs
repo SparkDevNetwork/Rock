@@ -89,13 +89,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from coreDefinedValue where DefinedTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from DefinedValue where DefinedTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "coreDefinedValue" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreDefinedValue";
+                    Type entityType = RockContext.GetEntityFromTableName( "DefinedValue" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "DefinedValue";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, friendlyName);
                     return false;

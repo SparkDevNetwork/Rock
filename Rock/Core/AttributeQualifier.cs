@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Attribute Qualifier POCO Entity.
     /// </summary>
-    [Table( "coreAttributeQualifier" )]
+    [Table( "AttributeQualifier" )]
     public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
         /// <summary>

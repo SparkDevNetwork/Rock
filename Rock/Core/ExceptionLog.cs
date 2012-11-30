@@ -16,7 +16,7 @@ namespace Rock.Core
     /// Exception Log POCO Entity.
     /// </summary>
     [NotAudited]
-    [Table( "coreExceptionLog" )]
+    [Table( "ExceptionLog" )]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
         /// <summary>

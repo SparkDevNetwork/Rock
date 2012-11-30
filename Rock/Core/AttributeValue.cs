@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Attribute Value POCO Entity.
     /// </summary>
-    [Table( "coreAttributeValue" )]
+    [Table( "AttributeValue" )]
     public partial class AttributeValue : Model<AttributeValue>
     {
         /// <summary>

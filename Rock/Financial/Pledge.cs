@@ -16,7 +16,7 @@ namespace Rock.Financial
     /// <summary>
     /// Pledge POCO class.
     /// </summary>
-    [Table("financialPledge")]
+    [Table("Pledge")]
     public partial class Pledge : Model<Pledge>
     {
         /// <summary>
