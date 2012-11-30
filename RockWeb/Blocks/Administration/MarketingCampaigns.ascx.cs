@@ -567,12 +567,12 @@ public partial class MarketingCampaigns : RockBlock
         {
             list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
             btnAddMarketingCampaignAudience.Enabled = false;
-            btnAddMarketingCampaignAudience.CssClass = "btn primary disabled";
+            btnAddMarketingCampaignAudience.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddMarketingCampaignAudience.Enabled = true;
-            btnAddMarketingCampaignAudience.CssClass = "btn primary";
+            btnAddMarketingCampaignAudience.CssClass = "btn btn-primary";
         }
 
         ddlMarketingCampaignAudiences.DataSource = list;

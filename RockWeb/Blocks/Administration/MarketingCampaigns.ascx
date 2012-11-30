@@ -8,12 +8,11 @@
 
         <asp:Panel ID="pnlList" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnEditRow="gMarketingCampaigns_Edit">
                 <Columns>
                     <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                     <asp:BoundField DataField="EventGroup.Name" HeaderText="Event Group" SortExpression="EventGroup.Name" />
                     <asp:BoundField DataField="ContactFullName" HeaderText="Contact" SortExpression="ContactFullName" />
-                    <Rock:EditField OnClick="gMarketingCampaigns_Edit" />
                     <Rock:DeleteField OnClick="gMarketingCampaigns_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -57,8 +56,8 @@
             </fieldset>
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
@@ -69,20 +68,19 @@
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn primary btn-mini" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
                     </div>
                 </div>
 
             </fieldset>
 
             <div id="pnlMarketingCampaignAds" runat="server" class="">
-                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full">
+                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnEditRow="gMarketingCampaignAds_Edit">
                     <Columns>
                         <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
                         <Rock:DateField DataField="StartDate" HeaderText="Date" />
                         <Rock:EnumField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" />
                         <asp:BoundField DataField="Priority" HeaderText="Priority" />
-                        <Rock:EditField OnClick="gMarketingCampaignAds_Edit" />
                         <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
                     </Columns>
                 </Rock:Grid>
@@ -97,8 +95,8 @@
                 PropertyName="Name" LabelText="Select Audiences" />
             <asp:HiddenField ID="hfMarketingCampaignAudienceIsPrimary" runat="server" />
             <div class="actions">
-                <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddMarketingCampaignAudience" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddMarketingCampaignAudience_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddMarketingCampaignAudience" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddMarketingCampaignAudience_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -119,8 +117,8 @@
                                 <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
                                 <Rock:LabeledText ID="ltMarketingCampaignAdStatusPerson" runat="server" LabelText="by" />
                                 <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
-                                <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn primary btn-mini" Text="Approve" />
-                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn secondary btn-mini" Text="Deny" />
+                                <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn btn-primary btn-mini" Text="Approve" />
+                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-secondary btn-mini" Text="Deny" />
                             </ContentTemplate>
                         </asp:UpdatePanel>
                     </div>
@@ -137,8 +135,8 @@
                     <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnSaveAd" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveAd_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAd_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnSaveAd" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAd_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelAd" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAd_Click"></asp:LinkButton>
                 </div>
             </fieldset>
         </asp:Panel>
