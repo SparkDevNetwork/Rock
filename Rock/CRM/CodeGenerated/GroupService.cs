@@ -99,7 +99,7 @@ namespace Rock.Crm
                     Type entityType = RockContext.GetEntityFromTableName( "Group" );
                     string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Group";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Group.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned as a parent {1}.", Group.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }
