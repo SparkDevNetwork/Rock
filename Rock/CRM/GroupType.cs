@@ -14,7 +14,7 @@ namespace Rock.Crm
     /// <summary>
     /// Group Type POCO Entity.
     /// </summary>
-    [Table( "crmGroupType" )]
+    [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
     public partial class GroupType : Model<GroupType>
     {
@@ -142,7 +142,7 @@ namespace Rock.Crm
         /// </summary>
         public GroupTypeConfiguration()
         {
-            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "crmGroupTypeAssociation" ); } );
+            this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
         }
     }

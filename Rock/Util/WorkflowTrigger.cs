@@ -16,7 +16,7 @@ namespace Rock.Util
     /// <summary>
     /// 
     /// </summary>
-    [Table( "utilWorkflowTrigger" )]
+    [Table( "WorkflowTrigger" )]
     public partial class WorkflowTrigger : Entity<WorkflowTrigger>
     {
         #region Entity Properties

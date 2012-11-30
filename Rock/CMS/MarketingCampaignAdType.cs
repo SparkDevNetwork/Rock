@@ -13,7 +13,7 @@ namespace Rock.Cms
     /// <summary>
     /// 
     /// </summary>
-    [Table( "cmsMarketingCampaignAdType" )]
+    [Table( "MarketingCampaignAdType" )]
     public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
         /// <summary>

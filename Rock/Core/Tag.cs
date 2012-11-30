@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Tag POCO Entity.
     /// </summary>
-    [Table( "coreTag" )]
+    [Table( "Tag" )]
     public partial class Tag : Model<Tag>, IOrdered
     {
         /// <summary>
@@ -82,10 +82,10 @@ namespace Rock.Core
         public int? OwnerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Owner Person.
+        /// Gets or sets the owner.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// The owner.
         /// </value>
         public virtual Crm.Person Owner { get; set; }
 

@@ -17,7 +17,7 @@ namespace Rock.Core
     /// <summary>
     /// Category POCO Entity.
     /// </summary>
-    [Table( "coreCategory" )]
+    [Table( "Category" )]
     public partial class Category : Entity<Category>
     {
         /// <summary>
@@ -111,7 +111,7 @@ namespace Rock.Core
         /// <value>
         /// The file.
         /// </value>
-        public virtual File File { get; set; }
+        public virtual BinaryFile File { get; set; }
 
         /// <summary>
         /// Gets the dto.

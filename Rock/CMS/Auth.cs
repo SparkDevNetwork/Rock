@@ -18,7 +18,7 @@ namespace Rock.Cms
     /// <summary>
     /// Auth POCO Entity.
     /// </summary>
-    [Table( "cmsAuth" )]
+    [Table( "Auth" )]
     public partial class Auth : Model<Auth>, IOrdered
     {
         /// <summary>

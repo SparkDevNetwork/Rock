@@ -14,8 +14,8 @@ namespace Rock.Financial
     /// <summary>
     /// PersonAccountLookup POCO class.
     /// </summary>
-    [Table("financialPersonAccountLookup")]
-    public partial class PersonAccountLookup : Model<PersonAccountLookup>
+    [Table("PersonAccount")]
+    public partial class PersonAccount : Model<PersonAccount>
     {
         /// <summary>
         /// Gets or sets the person id.
@@ -56,9 +56,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static PersonAccountLookup Read( int id )
+        public static PersonAccount Read( int id )
         {
-            return Read<PersonAccountLookup>( id );
+            return Read<PersonAccount>( id );
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Rock.Financial
     /// <summary>
     /// PersonAccountLookup Configuration class.
     /// </summary>
-    public partial class PersonAccountLookupConfiguration : EntityTypeConfiguration<PersonAccountLookup>
+    public partial class PersonAccountLookupConfiguration : EntityTypeConfiguration<PersonAccount>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAccountLookupConfiguration"/> class.

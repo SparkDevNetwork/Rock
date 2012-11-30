@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// 
     /// </summary>
-    [Table( "coreEntityType" )]
+    [Table( "EntityType" )]
     public partial class EntityType : Entity<EntityType>
     {
 

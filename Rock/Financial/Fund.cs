@@ -17,7 +17,7 @@ namespace Rock.Financial
     /// <summary>
     /// Fund POCO class.
     /// </summary>
-    [Table("financialFund")]
+    [Table("Fund")]
     public partial class Fund : Model<Fund>
     {
         /// <summary>
@@ -175,7 +175,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction funds.
         /// </value>
-        public virtual ICollection<TransactionFund> TransactionFunds { get; set; }
+        public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>

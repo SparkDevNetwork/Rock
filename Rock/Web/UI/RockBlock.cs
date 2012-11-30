@@ -51,7 +51,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in user.  If user is not logged in, returns null
         /// </summary>
-        public User CurrentUser
+        public UserLogin CurrentUser
         {
             get { return ( (RockPage)this.Page ).CurrentUser; }
         }

@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Person Trail POCO Entity.
     /// </summary>
-    [Table( "crmPersonMerged" )]
+    [Table( "PersonMerged" )]
     public partial class PersonMerged : Model<PersonMerged>
     {
         /// <summary>

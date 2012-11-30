@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// <summary>
     /// Page Route POCO Entity.
     /// </summary>
-    [Table( "cmsPageContext" )]
+    [Table( "PageContext" )]
     public partial class PageContext : Model<PageContext>
     {
         /// <summary>

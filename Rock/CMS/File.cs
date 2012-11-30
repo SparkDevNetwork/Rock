@@ -15,8 +15,8 @@ namespace Rock.Cms
     /// <summary>
     /// File POCO Entity.
     /// </summary>
-    [Table( "cmsFile" )]
-    public partial class File : Model<File>
+    [Table( "BinaryFile" )]
+    public partial class BinaryFile : Model<BinaryFile>
     {
         /// <summary>
         /// Gets or sets the Temporary.
@@ -103,9 +103,9 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static File Read( int id )
+        public static BinaryFile Read( int id )
         {
-            return Read<File>( id );
+            return Read<BinaryFile>( id );
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Rock.Cms
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class FileConfiguration : EntityTypeConfiguration<File>
+    public partial class FileConfiguration : EntityTypeConfiguration<BinaryFile>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FileConfiguration"/> class.

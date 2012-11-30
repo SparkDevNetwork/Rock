@@ -17,7 +17,7 @@ namespace Rock.Crm
     /// <summary>
     /// Campus POCO Entity.
     /// </summary>
-    [Table( "crmCampus" )]
+    [Table( "Campus" )]
     public partial class Campus : Model<Campus>
     {
         /// <summary>

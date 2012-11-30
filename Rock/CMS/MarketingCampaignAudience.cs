@@ -13,7 +13,7 @@ namespace Rock.Cms
     /// <summary>
     /// MarketingCampaignAudience POCO Entity
     /// </summary>
-    [Table( "cmsMarketingCampaignAudience" )]
+    [Table( "MarketingCampaignAudience" )]
     public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>
     {
         /// <summary>

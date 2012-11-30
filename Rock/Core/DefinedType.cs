@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Defined Type POCO Entity.
     /// </summary>
-    [Table( "coreDefinedType" )]
+    [Table( "DefinedType" )]
     public partial class DefinedType : Model<DefinedType>, IOrdered
     {
         /// <summary>

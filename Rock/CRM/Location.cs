@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Location POCO Entity.
     /// </summary>
-    [Table( "crmLocation" )]
+    [Table( "Location" )]
     public partial class Location : Model<Location>
     {
         /// <summary>

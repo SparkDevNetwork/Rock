@@ -14,7 +14,7 @@ namespace Rock.Cms
     /// <summary>
     /// 
     /// </summary>
-    [Table( "cmsMarketingCampaignCampus")]
+    [Table( "MarketingCampaignCampus")]
     public partial class MarketingCampaignCampus : Model<MarketingCampaignCampus>
     {
         /// <summary>

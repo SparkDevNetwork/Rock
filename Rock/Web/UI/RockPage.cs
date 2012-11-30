@@ -82,7 +82,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The currently logged in user
         /// </summary>
-        public Rock.Cms.User CurrentUser
+        public Rock.Cms.UserLogin CurrentUser
         {
             get
             {
@@ -90,7 +90,7 @@ namespace Rock.Web.UI
                     return _CurrentUser;
 
                 if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.UserLogin;
 
                 if ( _CurrentUser == null )
                 {
@@ -116,7 +116,7 @@ namespace Rock.Web.UI
                 CurrentPerson = _CurrentUser.Person;
             }
         }
-        private Rock.Cms.User _CurrentUser;
+        private Rock.Cms.UserLogin _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -302,7 +302,7 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            Rock.Cms.User user = CurrentUser;
+            Rock.Cms.UserLogin user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)

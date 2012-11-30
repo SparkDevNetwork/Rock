@@ -88,13 +88,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from coreAttribute where FieldTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Attribute where FieldTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "coreAttribute" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreAttribute";
+                    Type entityType = RockContext.GetEntityFromTableName( "Attribute" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Attribute";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
                     return false;
@@ -103,13 +103,13 @@ namespace Rock.Core
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from coreDefinedType where FieldTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from DefinedType where FieldTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "coreDefinedType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "coreDefinedType";
+                    Type entityType = RockContext.GetEntityFromTableName( "DefinedType" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "DefinedType";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
                     return false;

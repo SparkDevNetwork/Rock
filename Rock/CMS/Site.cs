@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// <summary>
     /// Site POCO Entity.
     /// </summary>
-    [Table( "cmsSite" )]
+    [Table( "Site" )]
     public partial class Site : Model<Site>
     {
         /// <summary>

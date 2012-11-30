@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Security
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserService userService = null;
-        private User user = null;
+        private UserLogin user = null;
 
         #region Properties
 

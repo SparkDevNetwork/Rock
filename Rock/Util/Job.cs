@@ -15,8 +15,8 @@ namespace Rock.Util
     /// <summary>
     /// Job POCO Entity.
     /// </summary>
-    [Table( "utilJob" )]
-    public partial class Job : Model<Job>
+    [Table( "ServiceJob" )]
+    public partial class ServiceJob : Model<ServiceJob>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -164,9 +164,9 @@ namespace Rock.Util
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Job Read( int id )
+        public static ServiceJob Read( int id )
         {
-            return Read<Job>( id );
+            return Read<ServiceJob>( id );
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Rock.Util
     /// <summary>
     /// Job Configuration class.
     /// </summary>
-    public partial class JobConfiguration : EntityTypeConfiguration<Job>
+    public partial class JobConfiguration : EntityTypeConfiguration<ServiceJob>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JobConfiguration"/> class.

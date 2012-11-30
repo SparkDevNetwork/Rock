@@ -13,8 +13,8 @@ namespace Rock.Financial
     /// <summary>
     /// TransactionFund POCO class.
     /// </summary>
-    [Table("financialTransactionFund")]
-    public partial class TransactionFund
+    [Table("FinancialTransactionFund")]
+    public partial class FinancialTransactionFund
     {
         /// <summary>
         /// Gets or sets the transaction id.
@@ -50,7 +50,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction.
         /// </value>
-        public virtual Transaction Transaction { get; set; }
+        public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -64,7 +64,7 @@ namespace Rock.Financial
     /// <summary>
     /// TransactionFund Configuration class
     /// </summary>
-    public partial class TransactionFundConfiguration : EntityTypeConfiguration<TransactionFund>
+    public partial class TransactionFundConfiguration : EntityTypeConfiguration<FinancialTransactionFund>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionFundConfiguration"/> class.
