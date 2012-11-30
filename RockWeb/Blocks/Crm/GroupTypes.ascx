@@ -51,8 +51,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>
@@ -61,8 +61,8 @@
             <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
 
             <div class="actions">
-                <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 
@@ -70,8 +70,8 @@
             <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
 
             <div class="actions">
-                <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn secondary" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn btn-secondary" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
 

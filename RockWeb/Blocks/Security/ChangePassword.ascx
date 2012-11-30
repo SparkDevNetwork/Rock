@@ -19,7 +19,7 @@
             </fieldset>
 
             <div class="actions">
-                <asp:Button ID="btnChange" runat="server" Text="Change Password" CssClass="btn primary" OnClick="btnChange_Click" />
+                <asp:Button ID="btnChange" runat="server" Text="Change Password" CssClass="btn btn-primary" OnClick="btnChange_Click" />
             </div>
 
         </asp:Panel>
