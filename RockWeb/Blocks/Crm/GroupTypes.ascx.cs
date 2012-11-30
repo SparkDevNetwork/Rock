@@ -204,12 +204,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new GroupType { Id = None.Id, Name = None.Text } );
             btnAddChildGroupType.Enabled = false;
-            btnAddChildGroupType.CssClass = "btn primary disabled";
+            btnAddChildGroupType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddChildGroupType.Enabled = true;
-            btnAddChildGroupType.CssClass = "btn primary";
+            btnAddChildGroupType.CssClass = "btn btn-primary";
         }
 
         ddlChildGroupType.DataSource = list;
@@ -302,12 +302,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
             btnAddLocationType.Enabled = false;
-            btnAddLocationType.CssClass = "btn primary disabled";
+            btnAddLocationType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddLocationType.Enabled = true;
-            btnAddLocationType.CssClass = "btn primary";
+            btnAddLocationType.CssClass = "btn btn-primary";
         }
 
         ddlLocationType.DataSource = list;

@@ -71,8 +71,8 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSaveMetric" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveMetric_Click" />
-                <asp:LinkButton ID="btnCancelMetric" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelMetric_Click" />
+                <asp:LinkButton ID="btnSaveMetric" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveMetric_Click" />
+                <asp:LinkButton ID="btnCancelMetric" runat="server" Text="Cancel" CssClass="btn btn-secondary" CausesValidation="false" OnClick="btnCancelMetric_Click" />
             </div>
 
         </asp:Panel>

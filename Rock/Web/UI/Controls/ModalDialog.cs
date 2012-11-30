@@ -163,13 +163,13 @@ namespace Rock.Web.UI.Controls
             _cancelLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _cancelLink );
             _cancelLink.ID = "cancelLink";
-            _cancelLink.Attributes.Add( "class", "btn secondary" );
+            _cancelLink.Attributes.Add( "class", "btn btn-secondary" );
             _cancelLink.InnerText = "Cancel";
 
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn primary" );
+            _saveLink.Attributes.Add( "class", "btn btn-primary" );
             _saveLink.InnerText = "Save";
             _saveLink.ServerClick += SaveLink_ServerClick;
 
