@@ -16,7 +16,7 @@ namespace Rock.Core
     /// <summary>
     /// MetricValue POCO Entity.
     /// </summary>
-    [Table( "coreMetricValue" )]
+    [Table( "MetricValue" )]
     public partial class MetricValue : Model<MetricValue>, IOrdered
     {
         /// <summary>

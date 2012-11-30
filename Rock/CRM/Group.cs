@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Group POCO Entity.
     /// </summary>
-    [Table( "crmGroup" )]
+    [Table( "Group" )]
     public partial class Group : Model<Group>
     {
         /// <summary>

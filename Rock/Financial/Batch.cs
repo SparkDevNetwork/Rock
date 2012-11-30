@@ -16,8 +16,8 @@ namespace Rock.Financial
     /// <summary>
     /// Batch POCO class.
     /// </summary>
-    [Table("financialBatch")]
-    public partial class Batch : Model<Batch>
+    [Table("FinancialBatch")]
+    public partial class FinancialBatch : Model<FinancialBatch>
     {
         /// <summary>
         /// Gets or sets the name.
@@ -37,7 +37,7 @@ namespace Rock.Financial
         public DateTime? BatchDate { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="Batch"/> is closed.
+        /// Gets or sets a value indicating whether this <see cref="FinancialBatch"/> is closed.
         /// </summary>
         /// <value>
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
@@ -86,7 +86,7 @@ namespace Rock.Financial
         /// <value>
         /// The transactions.
         /// </value>
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<FinancialTransaction> Transactions { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -102,9 +102,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Batch Read( int id )
+        public static FinancialBatch Read( int id )
         {
-            return Read<Batch>( id );
+            return Read<FinancialBatch>( id );
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Rock.Financial
     /// <summary>
     /// Batch Configuration class.
     /// </summary>
-    public partial class BatchConfiguration : EntityTypeConfiguration<Batch>
+    public partial class BatchConfiguration : EntityTypeConfiguration<FinancialBatch>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchConfiguration"/> class.

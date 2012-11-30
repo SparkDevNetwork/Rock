@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// <summary>
     /// Html Content POCO Entity.
     /// </summary>
-    [Table( "cmsHtmlContent" )]
+    [Table( "HtmlContent" )]
     public partial class HtmlContent : Model<HtmlContent>, IExportable
     {
         /// <summary>

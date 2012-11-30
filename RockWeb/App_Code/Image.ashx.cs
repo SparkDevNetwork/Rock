@@ -51,8 +51,8 @@ namespace RockWeb
 
             try
             {
-                FileService fileService = new FileService();
-                Rock.Cms.File file = null;
+                BinaryFileService fileService = new BinaryFileService();
+                Rock.Cms.BinaryFile file = null;
 
                 string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
                 string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
@@ -71,7 +71,7 @@ namespace RockWeb
                         } )
                         .FirstOrDefault();
 
-                    file = new Rock.Cms.File();
+                    file = new Rock.Cms.BinaryFile();
                     file.MimeType = fileInfo.MimeType;
                     file.LastModifiedTime = fileInfo.LastModifiedTime;
 
@@ -113,7 +113,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="file">The file.</param>
-        private static void Resize( HttpContext context, Rock.Cms.File file )
+        private static void Resize( HttpContext context, Rock.Cms.BinaryFile file )
         {
             ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
             MemoryStream resizedStream = new MemoryStream();
@@ -126,7 +126,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="physFilePath">The phys file path.</param>
-        private static void Cache( Rock.Cms.File file, string physFilePath )
+        private static void Cache( Rock.Cms.BinaryFile file, string physFilePath )
         {
             try
             {
@@ -174,7 +174,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="file">The file.</param>
-        private static void SendFile( HttpContext context, Rock.Cms.File file )
+        private static void SendFile( HttpContext context, Rock.Cms.BinaryFile file )
         {
             context.Response.ContentType = file.MimeType;
             context.Response.AddHeader( "content-disposition", "inline;filename=" + file.FileName );

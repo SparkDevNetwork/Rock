@@ -15,7 +15,7 @@ namespace Rock.Crm
     /// <summary>
     /// Email Template POCO Entity.
     /// </summary>
-    [Table( "crmEmailTemplate" )]
+    [Table( "EmailTemplate" )]
     public partial class EmailTemplate : Model<EmailTemplate>
     {
         /// <summary>

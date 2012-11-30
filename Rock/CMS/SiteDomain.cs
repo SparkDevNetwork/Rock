@@ -15,7 +15,7 @@ namespace Rock.Cms
     /// <summary>
     /// Site Domain POCO Entity.
     /// </summary>
-    [Table( "cmsSiteDomain" )]
+    [Table( "SiteDomain" )]
     public partial class SiteDomain : Model<SiteDomain>
     {
         /// <summary>

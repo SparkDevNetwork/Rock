@@ -14,7 +14,7 @@ namespace Rock.Cms
     /// <summary>
     /// Page Route POCO Entity.
     /// </summary>
-    [Table( "cmsPageRoute" )]
+    [Table( "PageRoute" )]
     public partial class PageRoute : Model<PageRoute>, IExportable
     {
         /// <summary>

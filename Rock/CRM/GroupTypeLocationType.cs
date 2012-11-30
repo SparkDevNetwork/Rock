@@ -11,7 +11,7 @@ namespace Rock.Crm
     /// <summary>
     /// 
     /// </summary>
-    [Table( "crmGroupTypeLocationType" )]
+    [Table( "GroupTypeLocationType" )]
     public class GroupTypeLocationType
     {
         /// <summary>

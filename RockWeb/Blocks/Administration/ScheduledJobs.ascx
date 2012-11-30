@@ -28,16 +28,16 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="Description" />
                         <Rock:LabeledCheckBox ID="cbActive" runat="server" LabelText="Active" />
-                        <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="Assemby" />
-                        <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="Class" />
-                        <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="NotificationEmails" />
                         <Rock:LabeledDropDownList ID="drpNotificationStatus" runat="server" LabelText="Notification Status" />
                     </fieldset>
@@ -45,7 +45,7 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Util.ServiceJob, Rock"
                             PropertyName="CronExpression" />
                     </fieldset>
                 </div>

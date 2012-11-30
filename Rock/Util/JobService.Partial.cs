@@ -17,13 +17,13 @@ namespace Rock.Util
     /// <summary>
     /// Job POCO Service class
     /// </summary>
-    public partial class JobService : Service<Job, JobDto>
+    public partial class JobService : Service<ServiceJob, ServiceJobDto>
     {
         /// <summary>
         /// Gets the active jobs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Job> GetActiveJobs()
+        public IEnumerable<ServiceJob> GetActiveJobs()
         {
             return Repository.Find( t => t.IsActive == true );
         }
@@ -33,7 +33,7 @@ namespace Rock.Util
         /// </summary>
         /// <param name="job">The job.</param>
         /// <returns></returns>
-        public IJobDetail BuildQuartzJob( Job job )
+        public IJobDetail BuildQuartzJob( ServiceJob job )
         {
             // build the type object, will depend if the class is in an assembly or the App_Code folder
             Type type = null;
@@ -80,7 +80,7 @@ namespace Rock.Util
         /// </summary>
         /// <param name="job">The job.</param>
         /// <returns></returns>
-        public ITrigger BuildQuartzTrigger( Job job )
+        public ITrigger BuildQuartzTrigger( ServiceJob job )
         {
             // create quartz trigger
             ITrigger trigger = ( ICronTrigger )TriggerBuilder.Create()

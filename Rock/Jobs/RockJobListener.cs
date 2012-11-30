@@ -81,7 +81,7 @@ namespace Rock.Jobs
 
             // load job
             JobService jobService = new JobService();
-            Job job = jobService.Get(jobId);
+            ServiceJob job = jobService.Get(jobId);
             
             // format the message
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );

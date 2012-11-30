@@ -17,7 +17,7 @@ namespace Rock.Util
     /// <summary>
     /// Activity POCO Entity.
     /// </summary>
-    [Table( "utilActivity" )]
+    [Table( "WorkflowActivity" )]
     public partial class Activity : Model<Activity>
     {
 

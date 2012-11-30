@@ -49,7 +49,7 @@ namespace Rock.Data
         /// <value>
         /// the Files.
         /// </value>
-        public DbSet<Rock.Cms.File> Files { get; set; }
+        public DbSet<Rock.Cms.BinaryFile> Files { get; set; }
 
         /// <summary>
         /// Gets or sets the Html Contents.
@@ -97,7 +97,7 @@ namespace Rock.Data
         /// <value>
         /// the Users.
         /// </value>
-        public DbSet<Rock.Cms.User> Users { get; set; }
+        public DbSet<Rock.Cms.UserLogin> Users { get; set; }
 
         /// <summary>
         /// Gets or sets the marketing campaigns.
@@ -413,7 +413,7 @@ namespace Rock.Data
         /// <value>
         /// the Jobs.
         /// </value>
-        public DbSet<Rock.Util.Job> Jobs { get; set; }
+        public DbSet<Rock.Util.ServiceJob> Jobs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.
@@ -457,7 +457,7 @@ namespace Rock.Data
         /// <value>
         /// The batches.
         /// </value>
-        public DbSet<Rock.Financial.Batch> Batches { get; set; }
+        public DbSet<Rock.Financial.FinancialBatch> Batches { get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -481,7 +481,7 @@ namespace Rock.Data
         /// <value>
         /// The transactions.
         /// </value>
-        public DbSet<Rock.Financial.Transaction> Transactions { get; set; }
+        public DbSet<Rock.Financial.FinancialTransaction> Transactions { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -489,7 +489,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
-        public DbSet<Rock.Financial.TransactionDetail> TransactionDetails { get; set; }
+        public DbSet<Rock.Financial.FinancialTransactionDetail> TransactionDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the person account lookups.
@@ -497,7 +497,7 @@ namespace Rock.Data
         /// <value>
         /// The person account lookups.
         /// </value>
-        public DbSet<Rock.Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+        public DbSet<Rock.Financial.PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -505,7 +505,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction funds.
         /// </value>
-        public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
+        public DbSet<Rock.Financial.FinancialTransactionFund> TransactionFunds { get; set; }
 
         #endregion
 

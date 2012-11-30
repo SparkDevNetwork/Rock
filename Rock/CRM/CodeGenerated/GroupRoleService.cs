@@ -90,13 +90,13 @@ namespace Rock.Crm
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroupMember where GroupRoleId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupMember where GroupRoleId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "crmGroupMember" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "crmGroupMember";
+                    Type entityType = RockContext.GetEntityFromTableName( "GroupMember" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupMember";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
                     return false;
@@ -105,13 +105,13 @@ namespace Rock.Crm
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroupType where DefaultGroupRoleId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupType where DefaultGroupRoleId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "crmGroupType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "crmGroupType";
+                    Type entityType = RockContext.GetEntityFromTableName( "GroupType" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupType";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
                     return false;

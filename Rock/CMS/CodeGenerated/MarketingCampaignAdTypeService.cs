@@ -86,13 +86,13 @@ namespace Rock.Cms
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from cmsMarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "cmsMarketingCampaignAd" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "cmsMarketingCampaignAd";
+                    Type entityType = RockContext.GetEntityFromTableName( "MarketingCampaignAd" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "MarketingCampaignAd";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", MarketingCampaignAdType.FriendlyTypeName, friendlyName);
                     return false;

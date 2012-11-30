@@ -15,8 +15,8 @@ namespace Rock.Financial
     /// <summary>
     /// TransactionDetail POCO class.
     /// </summary>
-    [Table("financialTransactionDetail")]
-    public partial class TransactionDetail : Model<TransactionDetail>
+    [Table("FinancialTransactionDetail")]
+    public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>
     {
         /// <summary>
         /// Gets or sets the transaction id.
@@ -66,7 +66,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction.
         /// </value>
-        public virtual Transaction Transaction { get; set; }
+        public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -82,9 +82,9 @@ namespace Rock.Financial
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static TransactionDetail Read( int id )
+        public static FinancialTransactionDetail Read( int id )
         {
-            return Read<TransactionDetail>( id );
+            return Read<FinancialTransactionDetail>( id );
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Rock.Financial
     /// <summary>
     /// TransactionDetail Configuration class
     /// </summary>
-    public partial class TransactionDetailConfiguration : EntityTypeConfiguration<TransactionDetail>
+    public partial class TransactionDetailConfiguration : EntityTypeConfiguration<FinancialTransactionDetail>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransactionDetailConfiguration"/> class.

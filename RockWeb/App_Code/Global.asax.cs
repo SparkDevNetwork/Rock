@@ -89,7 +89,7 @@ namespace RockWeb
 
                 // get list of active jobs
                 JobService jobService = new JobService();
-                foreach ( Job job in jobService.GetActiveJobs().ToList() )
+                foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                 {
                     try
                     {
@@ -384,7 +384,7 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
+                Rock.Cms.UserLogin user = Rock.Cms.UserService.GetCurrentUser();
 
                 // save the exception info to the db
                 ExceptionLogService service = new ExceptionLogService();

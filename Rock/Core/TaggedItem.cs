@@ -15,7 +15,7 @@ namespace Rock.Core
     /// <summary>
     /// Tagged Ited POCO Entity.
     /// </summary>
-    [Table( "coreTaggedItem" )]
+    [Table( "TaggedItem" )]
     public partial class TaggedItem : Model<TaggedItem>
     {
         /// <summary>

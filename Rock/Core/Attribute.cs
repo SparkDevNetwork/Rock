@@ -16,7 +16,7 @@ namespace Rock.Core
     /// <summary>
     /// Attribute POCO Entity.
     /// </summary>
-    [Table( "coreAttribute" )]
+    [Table( "Attribute" )]
     public partial class Attribute : Model<Attribute>, IOrdered
     {
         /// <summary>

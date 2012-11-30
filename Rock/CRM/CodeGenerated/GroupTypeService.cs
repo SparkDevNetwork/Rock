@@ -87,13 +87,13 @@ namespace Rock.Crm
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from crmGroup where GroupTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where GroupTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "crmGroup" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "crmGroup";
+                    Type entityType = RockContext.GetEntityFromTableName( "Group" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Group";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, friendlyName);
                     return false;

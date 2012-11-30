@@ -16,7 +16,7 @@ namespace Rock.Util
     /// <summary>
     /// WorkflowLog POCO Entity.
     /// </summary>
-    [Table( "utilWorkflowLog" )]
+    [Table( "WorkflowLog" )]
     public partial class WorkflowLog : Entity<WorkflowLog>
     {
 

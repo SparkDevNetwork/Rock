@@ -17,7 +17,7 @@ namespace Rock.Crm
     /// <summary>
     /// Person POCO Entity.
     /// </summary>
-    [Table( "crmPerson" )]
+    [Table( "Person" )]
     public partial class Person : Model<Person>
     {
         /// <summary>
@@ -253,7 +253,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Users.
         /// </value>
-        public virtual ICollection<Cms.User> Users { get; set; }
+        public virtual ICollection<Cms.UserLogin> Users { get; set; }
         
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -293,7 +293,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of PersonAccountLookups.
         /// </value>
-        public virtual ICollection<Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+        public virtual ICollection<Financial.PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the Marital Status.
@@ -354,7 +354,7 @@ namespace Rock.Crm
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
-        public virtual Cms.File Photo { get; set; }
+        public virtual Cms.BinaryFile Photo { get; set; }
 
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
@@ -448,11 +448,11 @@ namespace Rock.Crm
         /// <value>
         /// The impersonated user.
         /// </value>
-        public virtual Rock.Cms.User ImpersonatedUser
+        public virtual Rock.Cms.UserLogin ImpersonatedUser
         {
             get
             {
-                Rock.Cms.User user = new Cms.User();
+                Rock.Cms.UserLogin user = new Cms.UserLogin();
                 user.UserName = this.FullName;
                 user.PersonId = this.Id;
                 user.Person = this;

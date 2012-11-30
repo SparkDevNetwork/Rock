@@ -48,10 +48,10 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 				context.Response.Write( "0" );
 				return;
 			}
-			
-			FileService fileService = new FileService();
 
-            Rock.Cms.File cmsFile;
+            BinaryFileService fileService = new BinaryFileService();
+
+            Rock.Cms.BinaryFile cmsFile;
                         
 			// was an ID given? if so, fetch that file and replace it with the new one
             if ( context.Request.QueryString.Count > 0)
@@ -63,7 +63,7 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			else
 			{
 				// ...otherwise create a new Cms File
-				cmsFile = new Rock.Cms.File();
+				cmsFile = new Rock.Cms.BinaryFile();
                 cmsFile.IsTemporary = true;
                 fileService.Add( cmsFile, null );
 			}

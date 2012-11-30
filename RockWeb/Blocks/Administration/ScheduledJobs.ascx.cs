@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                 id = (int)grdScheduledJobs.DataKeys[grdScheduledJobs.SelectedIndex].Value;
             }
 
-            Job job = id > 0 ? jobService.Get(id) : new Job();
+            ServiceJob job = id > 0 ? jobService.Get(id) : new ServiceJob();
             if (job.Id <= 0)
             {
                 jobService.Add(job, CurrentPersonId);
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Administration
         protected void grdScheduledJobs_Delete(object sender, RowEventArgs e)
         {
             int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
-            Job job = jobService.Get(id);
+            ServiceJob job = jobService.Get(id);
             jobService.Delete(job, CurrentPersonId);
             jobService.Save(job, CurrentPersonId);
             BindScheduledJobs();
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Administration
 
             grdScheduledJobs.SelectedIndex = e.RowIndex;
             int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
-            Job job = jobService.Get(id);
+            ServiceJob job = jobService.Get(id);
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
