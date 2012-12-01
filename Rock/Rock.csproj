@@ -489,6 +489,7 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\UI\Controls\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
