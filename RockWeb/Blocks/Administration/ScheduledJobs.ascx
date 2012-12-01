@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlGrid" runat="server">
-            <Rock:Grid ID="grdScheduledJobs" runat="server" EmptyDataText="No Scheduled Jobs Found">
+            <Rock:Grid ID="grdScheduledJobs" runat="server" OnEditRow="grdScheduledJobs_Edit">
                 <Columns>                  
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
@@ -15,7 +15,6 @@
                     <asp:BoundField DataField="LastStatus" HeaderText="Last Status" />
                     <asp:BoundField DataField="NotificationEmails" HeaderText="Notification Emails" />
                     <asp:BoundField DataField="NotificationStatus" HeaderText="Notification Status" />
-                    <Rock:EditField OnClick="grdScheduledJobs_Edit" />
                     <Rock:DeleteField OnClick="grdScheduledJobs_Delete" />
                 </Columns>
             </Rock:Grid>
