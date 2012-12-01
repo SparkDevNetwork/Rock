@@ -38,7 +38,7 @@
                         <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" LabelText="Event Group" />
                     </div>
                     <div class="span6">
-                        <Rock:LabeledCheckBoxList ID="cblCampuses" runat="server" LabelText="Campuses" />
+                        <Rock:CampusPicker ID="cpCampuses" runat="server" />
                         <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
                             <Columns>
                                 <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
