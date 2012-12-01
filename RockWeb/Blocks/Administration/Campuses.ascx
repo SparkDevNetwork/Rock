@@ -4,10 +4,9 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true" OnEditRow="gCampuses_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <Rock:EditField OnClick="gCampuses_Edit" />
                     <Rock:DeleteField OnClick="gCampuses_Delete" />
                 </Columns>
             </Rock:Grid>

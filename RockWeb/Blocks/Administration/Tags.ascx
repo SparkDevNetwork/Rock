@@ -7,12 +7,11 @@
 
     <asp:Panel ID="pnlList" runat="server">
 
-        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag">
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag" OnEditRow="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
-                <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>

@@ -13,7 +13,7 @@
     <asp:Panel ID="pnlLists" runat="server" CssClass="pill-content">
 
         <div id="divPage" runat="server" class="pill-pane" >
-            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block">
+            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnEditRow="gPageBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -22,14 +22,13 @@
                             <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:EditField OnClick="gPageBlocks_Edit" />
                     <Rock:DeleteField OnClick="gPageBlocks_Delete" />
                 </Columns>
             </Rock:Grid>
         </div>
 
         <div id="divLayout" runat="server" class="pill-pane" >
-            <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found">
+            <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnEditRow="gLayoutBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -38,7 +37,6 @@
                             <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:EditField OnClick="gLayoutBlocks_Edit" />
                     <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
                 </Columns>
             </Rock:Grid>

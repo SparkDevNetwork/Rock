@@ -8,13 +8,12 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" EmptyDataText="No Child Pages Exist" RowItemText="page" >
+        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnEditRow="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="Name" HeaderText="Name" Target="_parent" />
                 <asp:BoundField DataField="Layout" HeaderText="Layout"  />
-                <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>
