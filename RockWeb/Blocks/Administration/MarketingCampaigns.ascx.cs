@@ -701,7 +701,7 @@ public partial class MarketingCampaigns : RockBlock
         pnlEditDetailsActions.Visible = editable;
         fieldsetViewDetails.Visible = !editable;
         pnlMarketingCampaignAds.Disabled = editable;
-        gMarketingCampaignAds.ReadOnly = editable;
+        gMarketingCampaignAds.Enabled = !editable;
 
         btnCancel.Visible = editable;
         btnSave.Visible = editable;

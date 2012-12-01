@@ -5,20 +5,17 @@
 //
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.IO;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Drawing;
-
-using Rock;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
@@ -33,7 +30,7 @@ namespace Rock.Web.UI.Controls
 
         private Table _table;
         private GridViewRow _actionRow;
-        private GridActions _gridActions = new GridActions();
+        private GridActions _gridActions;
         private const string DefaultEmptyDataText = "No Results Found";
         private Dictionary<int, string> DataBoundColumns = new Dictionary<int, string>();
 
@@ -225,36 +222,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [read only].  
-        /// NOTE: Rebind the grid after changing this for the edit/delete buttons to show up correctly
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool ReadOnly
-        {
-            get
-            {
-                object readOnly = this.ViewState["ReadOnly"];
-                if ( readOnly != null )
-                {
-                    return (bool)readOnly;
-                }
-                else
-                {
-                    // default to false
-                    return false;
-                }
-            }
-
-            set
-            {
-                this.ViewState["ReadOnly"] = value;
-                Actions.IsAddEnabled = !value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [row click enabled].
         /// </summary>
         /// <value>
@@ -370,6 +337,8 @@ namespace Rock.Web.UI.Controls
             base.AllowPaging = false;
             base.PageSize = 25;
             base.PageIndex = 0;
+
+            _gridActions = new GridActions( this );
         }
 
         #endregion
