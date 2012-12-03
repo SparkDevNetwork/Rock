@@ -697,8 +697,7 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="editable">if set to <c>true</c> [editable].</param>
     private void SetEditMode( bool editable )
     {
-        fieldsetEditDetails.Visible = editable;
-        pnlEditDetailsActions.Visible = editable;
+        pnlEditDetails.Visible = editable;
         fieldsetViewDetails.Visible = !editable;
         pnlMarketingCampaignAds.Disabled = editable;
         gMarketingCampaignAds.Enabled = !editable;
