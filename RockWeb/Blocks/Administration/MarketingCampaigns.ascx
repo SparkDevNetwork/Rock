@@ -24,40 +24,43 @@
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
 
-            <fieldset id="fieldsetEditDetails" runat="server">
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" /></legend>
-                <div class="row-fluid">
-                    <div class="span6">
-                        <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="Title" />
-                        <!-- ToDo: Better Person picker -->
-                        <Rock:DataDropDownList ID="ddlContactPerson" runat="server" DataTextField="Fullname" DataValueField="Id" SourceTypeName="Rock.Crm.Person, Rock" PropertyName="FullName" LabelText="Contact" AutoPostBack="true" OnSelectedIndexChanged="ddlContactPerson_SelectedIndexChanged" />
-                        <Rock:DataTextBox ID="tbContactEmail" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactEmail" LabelText="Contact Email" />
-                        <Rock:DataTextBox ID="tbContactPhoneNumber" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactPhoneNumber" LabelText="Contact Phone" />
-                        <Rock:DataTextBox ID="tbContactFullName" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactFullName" LabelText="Contact Name" />
-                        <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" LabelText="Event Group" />
+            <div id="pnlEditDetails" runat="server" class="well">
+                <fieldset>
+                    <legend>
+                        <asp:Literal ID="lActionTitle" runat="server" /></legend>
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="Title" />
+                            <!-- ToDo: Better Person picker -->
+                            <Rock:DataDropDownList ID="ddlContactPerson" runat="server" DataTextField="Fullname" DataValueField="Id" SourceTypeName="Rock.Crm.Person, Rock" PropertyName="FullName" LabelText="Contact" AutoPostBack="true" OnSelectedIndexChanged="ddlContactPerson_SelectedIndexChanged" />
+                            <Rock:DataTextBox ID="tbContactEmail" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactEmail" LabelText="Contact Email" />
+                            <Rock:DataTextBox ID="tbContactPhoneNumber" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactPhoneNumber" LabelText="Contact Phone" />
+                            <Rock:DataTextBox ID="tbContactFullName" runat="server" SourceTypeName="Rock.Cms.MarketingCampaign, Rock" PropertyName="ContactFullName" LabelText="Contact Name" />
+                            <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" LabelText="Event Group" />
+                        </div>
+                        <div class="span6">
+                            <Rock:CampusPicker ID="cpCampuses" runat="server" />
+                            <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
+                                    <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                            <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" HeaderText="Secondary Audience" />
+                                    <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </div>
-                    <div class="span6">
-                        <Rock:LabeledCheckBoxList ID="cblCampuses" runat="server" LabelText="Campuses" />
-                        <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
-                                <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
-                            </Columns>
-                        </Rock:Grid>
-                        <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Secondary Audience" />
-                                <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
-                            </Columns>
-                        </Rock:Grid>
-                    </div>
-                </div>
-            </fieldset>
+                </fieldset>
 
-            <div class="actions" id="pnlEditDetailsActions" runat="server">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">

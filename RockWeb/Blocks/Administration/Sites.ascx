@@ -5,13 +5,12 @@
 
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:Grid ID="gSites" runat="server" EmptyDataText="No Sites Found" RowItemText="site">
+            <Rock:Grid ID="gSites" runat="server" OnEditRow="gSites_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField HeaderText="Description" DataField="Description" />
                     <asp:BoundField HeaderText="Theme" DataField="Theme" />
                     <Rock:SecurityField />
-                    <Rock:EditField OnClick="gSites_Edit" />
                     <Rock:DeleteField OnClick="gSites_Delete" />
                 </Columns>
             </Rock:Grid>

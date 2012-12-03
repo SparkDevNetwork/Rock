@@ -1,7 +1,7 @@
 /* Helps code gen a **Service.partial.cs CanDelete method based on an entity's fk relationships */
 /* NOTE: change the CHANGEME!!! param to the table of interest :) */
 
-declare @tableName sysname = 'crmGroupType';  /* <-- CHANGEME!!! */
+declare @tableName sysname = 'GroupType';  /* <-- CHANGEME!!! */
 
 select '
 public bool CanDelete( int id, out string errorMessage )

@@ -697,11 +697,10 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="editable">if set to <c>true</c> [editable].</param>
     private void SetEditMode( bool editable )
     {
-        fieldsetEditDetails.Visible = editable;
-        pnlEditDetailsActions.Visible = editable;
+        pnlEditDetails.Visible = editable;
         fieldsetViewDetails.Visible = !editable;
         pnlMarketingCampaignAds.Disabled = editable;
-        gMarketingCampaignAds.ReadOnly = editable;
+        gMarketingCampaignAds.Enabled = !editable;
 
         btnCancel.Visible = editable;
         btnSave.Visible = editable;
@@ -816,8 +815,7 @@ public partial class MarketingCampaigns : RockBlock
             // take care of deleted Campuses
             MarketingCampaignCampusService marketingCampaignCampusService = new MarketingCampaignCampusService();
             var deletedCampuses = from mcc in marketingCampaign.MarketingCampaignCampuses.AsQueryable()
-                                  where !( from cs in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected )
-                                           select int.Parse( cs.Value ) ).Contains( mcc.CampusId )
+                                  where !( cpCampuses.SelectedCampusIds ).Contains( mcc.CampusId )
                                   select mcc;
 
             deletedCampuses.ToList().ForEach( a =>
@@ -828,7 +826,7 @@ public partial class MarketingCampaigns : RockBlock
             } );
 
             // add or update the Campuses that are assigned in the UI
-            foreach ( int campusId in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => int.Parse( a.Value ) ) )
+            foreach ( int campusId in cpCampuses.SelectedCampusIds )
             {
                 MarketingCampaignCampus marketingCampaignCampus = marketingCampaign.MarketingCampaignCampuses.FirstOrDefault( a => a.CampusId.Equals( campusId ) );
                 if ( marketingCampaignCampus == null )
@@ -899,16 +897,8 @@ public partial class MarketingCampaigns : RockBlock
         ddlContactPerson.DataBind();
 
         CampusService campusService = new CampusService();
-        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
 
-        cblCampuses.Items.Clear();
-        foreach ( Campus campus in allCampuses )
-        {
-            ListItem campusItem = new ListItem();
-            campusItem.Value = campus.Id.ToString();
-            campusItem.Text = campus.Name;
-            cblCampuses.Items.Add( campusItem );
-        }
+        cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList(); ;
 
         // Controls on Ad Child Panel
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
@@ -949,13 +939,7 @@ public partial class MarketingCampaigns : RockBlock
             MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
         }
 
-        CampusService campusService = new CampusService();
-        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-
-        foreach ( ListItem campusItem in cblCampuses.Items )
-        {
-            campusItem.Selected = marketingCampaign.MarketingCampaignCampuses.ToList().Exists( a => a.CampusId.Equals( int.Parse( campusItem.Value ) ) );
-        }
+        cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
 
         UpdateReadonlyDetails( marketingCampaign );
 
@@ -1003,15 +987,15 @@ public partial class MarketingCampaigns : RockBlock
 <div class='span6'>
     <dl>";
 
-        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).ToList().AsDelimited( "<br>" );
+        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
         lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList ); 
         
-        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audience", primaryAudiences );
 
-        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audience", secondaryAudiences );
 

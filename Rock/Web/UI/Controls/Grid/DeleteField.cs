@@ -100,14 +100,35 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.ToolTip = "Delete";
                 lbDelete.Click += lbDelete_Click;
-                lbDelete.Visible = !ParentGrid.ReadOnly;
                 lbDelete.DataBinding += lbDelete_DataBinding;
+                lbDelete.PreRender += lbDelete_PreRender;
+
                 if ( ParentGrid.ShowConfirmDeleteDialog )
                 {
                     lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
                 }
 
                 cell.Controls.Add( lbDelete );
+            }
+        }
+
+        /// <summary>
+        /// Handles the PreRender event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void lbDelete_PreRender( object sender, EventArgs e )
+        {
+            LinkButton lbDelete = sender as LinkButton;
+            lbDelete.Enabled = ParentGrid.Enabled;
+            if (lbDelete.Enabled)
+            {
+                lbDelete.Attributes.Remove( "disabled" );
+            }
+            else
+            {
+                lbDelete.Attributes["disabled"] = "disabled";
             }
         }
 

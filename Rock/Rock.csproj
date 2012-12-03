@@ -192,6 +192,7 @@
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Core\EntityTypeDto.Partial.cs" />
     <Compile Include="Field\Types\HtmlField.cs" />
+    <Compile Include="Field\Types\MemoField.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialBatchDto.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialBatchService.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialTransactionDetailDto.cs" />
@@ -209,6 +210,9 @@
     <Compile Include="Migrations\201212031816107_EntityType.cs" />
     <Compile Include="Migrations\201212031816107_EntityType.Designer.cs">
       <DependentUpon>201212031816107_EntityType.cs</DependentUpon>
+    <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
+    <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
+      <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
@@ -494,6 +498,7 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\UI\Controls\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
@@ -740,6 +745,8 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212031816107_EntityType.resx">
       <DependentUpon>201212031816107_EntityType.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
+      <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

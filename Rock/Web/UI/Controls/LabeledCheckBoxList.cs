@@ -7,6 +7,7 @@
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
@@ -17,6 +18,7 @@ namespace Rock.Web.UI.Controls
     public class LabeledCheckBoxList : CheckBoxList
     {
         private Label label;
+        private Label lblNoItemsText;
 
         /// <summary>
         /// Gets or sets the help tip.
@@ -104,6 +106,9 @@ namespace Rock.Web.UI.Controls
             label = new Label();
             label.AssociatedControlID = this.ID;
             Controls.Add( label );
+
+            lblNoItemsText = new Label { Text = None.TextHtml };
+            Controls.Add( lblNoItemsText );
         }
 
         /// <summary>
@@ -117,6 +122,13 @@ namespace Rock.Web.UI.Controls
 
             label.AddCssClass( "control-label" );
             label.RenderControl( writer );
+
+            if ( Items.Count == 0 )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                lblNoItemsText.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
