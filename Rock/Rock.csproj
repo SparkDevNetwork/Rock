@@ -191,6 +191,7 @@
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Field\Types\HtmlField.cs" />
+    <Compile Include="Field\Types\MemoField.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialBatchDto.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialBatchService.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialTransactionDetailDto.cs" />
@@ -204,6 +205,10 @@
     <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
+    <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
+      <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
@@ -733,6 +738,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201211292334047_CreateDatabase.resx">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
+      <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
