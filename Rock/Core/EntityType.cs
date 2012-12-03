@@ -32,6 +32,15 @@ namespace Rock.Core
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the assembly name.
+        /// </summary>
+        /// <value>
+        /// The assembly name.
+        /// </value>
+        [MaxLength( 200 )]
+        public string AssemblyName { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the friendly.
         /// </summary>
         /// <value>
@@ -40,7 +49,38 @@ namespace Rock.Core
         [MaxLength( 100 )]
         public string FriendlyName { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this entity type implements the
+        /// IEntity interface.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is an entity; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEntity { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this entity type implements the
+        /// ISecured interface.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is secured; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSecured { get; set; }
+
         #endregion
+
+        #region virtual Properties
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is system.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsSystem
+        {
+            get { return IsSecured || IsEntity; }
+        }
 
         /// <summary>
         /// Gets the dto.
@@ -50,6 +90,8 @@ namespace Rock.Core
         {
             get { return this.ToDto(); }
         }
+
+        #endregion
 
         #region Methods
 

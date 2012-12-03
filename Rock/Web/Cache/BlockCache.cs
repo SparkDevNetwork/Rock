@@ -280,9 +280,11 @@ namespace Rock.Web.Cache
         {
             get 
             {
+
                 if ( this.BlockLocation == Cache.BlockLocation.Page )
                     return this.Page;
-                return null;
+                else
+                    return null;
             }
         }
 
