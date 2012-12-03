@@ -84,6 +84,12 @@ public partial class MarketingCampaigns : RockBlock
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+
+
+
+
+
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "inputchanges", "", false);
         }
     }
 
@@ -269,6 +275,8 @@ public partial class MarketingCampaigns : RockBlock
 
         LoadAdAttributes( marketingCampaignAd, false, false );
         Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
+
+        SetApprovalValues( MarketingCampaignAdStatus.PendingApproval, null );
 
         LoadAdAttributes( marketingCampaignAd, true, true );
     }
@@ -515,11 +523,21 @@ public partial class MarketingCampaigns : RockBlock
     private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
     {
         ltMarketingCampaignAdStatus.Text = status.ConvertToString();
+        switch ( status )
+        {
+            case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-success";
+                break;
+            case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-error";
+                break;
+            default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
+                break;
+        }
+        
         hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
-        ltMarketingCampaignAdStatusPerson.Visible = person != null;
+        lblMarketingCampaignAdStatusPerson.Visible = person != null;
         if ( person != null )
         {
-            ltMarketingCampaignAdStatusPerson.Text = person.FullName;
+            lblMarketingCampaignAdStatusPerson.Text = "by " + person.FullName;
             hfMarketingCampaignAdStatusPersonId.Value = person.Id.ToString();
         }
     }
