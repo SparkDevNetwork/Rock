@@ -367,7 +367,7 @@ namespace Rock.Web.UI.Controls
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
-            base.AllowPaging = false;
+            base.AllowPaging = true;
             base.PageSize = 25;
             base.PageIndex = 0;
         }
@@ -642,7 +642,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( DisplayType == GridDisplayType.Light )
             {
-                //this.AllowPaging = false;
+                this.AllowPaging = false;
                 this.AllowSorting = false;
                 this.Actions.IsExcelExportEnabled = false;
 

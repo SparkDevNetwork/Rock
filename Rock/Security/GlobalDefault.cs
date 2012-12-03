@@ -13,19 +13,8 @@ namespace Rock.Security
     /// <summary>
     /// A generic ISecured entity
     /// </summary>
-    public class GenericEntity : ISecured
+    public class GlobalDefault : ISecured
     {
-        private string _authEntity = "";
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GenericEntity"/> class.
-        /// </summary>
-        /// <param name="authEntity">The auth entity.</param>
-        public GenericEntity( string authEntity )
-        {
-            _authEntity = authEntity;
-        }
-
         /// <summary>
         /// Gets the Entity Type ID for this entity.
         /// </summary>
@@ -37,7 +26,7 @@ namespace Rock.Security
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( _authEntity ).Id;
+                return Rock.Web.Cache.EntityTypeCache.Read( this.TypeName ).Id;
             }
         }
         /// <summary>
@@ -47,7 +36,7 @@ namespace Rock.Security
         /// </summary>
         public string TypeName
         {
-            get { return _authEntity; }
+            get { return this.GetType().FullName; }
         }
 
         /// <summary>
@@ -106,6 +95,16 @@ namespace Rock.Security
         public IQueryable<AuthRule> FindAuthRules()
         {
             return Authorization.FindAuthRules( this );
+        }
+
+        /// <summary>
+        /// Reads the specified id.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static GlobalDefault Read( int id )
+        {
+            return new GlobalDefault();
         }
     }
 }

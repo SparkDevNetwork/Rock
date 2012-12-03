@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -19,7 +20,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private Rock.Cms.AuthService authService = new Rock.Cms.AuthService();
-        private Rock.Security.ISecured iSecured;
+        private ISecured iSecured;
 
         protected string CurrentAction
         {
@@ -41,44 +42,63 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             // Read parameter values
-            string entityName = Rock.Security.Authorization.DecodeEntityTypeName( PageParameter( "EntityType" ) );
-            int entityId = Convert.ToInt32( PageParameter( "EntityId" ) );
+            string entityName = Authorization.DecodeEntityTypeName( PageParameter( "EntityType" ) );
+            
+            int entityId = 0;
+            if (!Int32.TryParse( PageParameter( "EntityId" ), out entityId ))
+            {
+                entityId = 0;
+            }
 
             // Get object type
-            Type entityType = Type.GetType( entityName );
-
-            // Instantiate object
-            iSecured = entityType.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, entityType, new object[] { entityId } ) as Rock.Security.ISecured;
-
-            if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
+            Type type = Type.GetType( entityName );
+            if ( type != null )
             {
-                rptActions.DataSource = iSecured.SupportedActions;
-                rptActions.DataBind();
+                if (entityId == 0)
+                {
+                     iSecured = (ISecured)Activator.CreateInstance(type);
+                }
+                else
+                {
+                     iSecured = type.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, type, new object[] { entityId } )as ISecured;
+                }
 
-                rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
-                rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
-                rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
-                rGrid.ShowHeaderWhenEmpty = false;
-                rGrid.EmptyDataText = string.Empty;
-                rGrid.ShowActionRow = false;
+                if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
+                {
+                    rptActions.DataSource = iSecured.SupportedActions;
+                    rptActions.DataBind();
 
-                rGridParentRules.DataKeyNames = new string[] { "id" };
-                rGridParentRules.ShowHeaderWhenEmpty = false;
-                rGridParentRules.EmptyDataText = string.Empty;
-                rGridParentRules.ShowActionRow = false;
+                    rGrid.DataKeyNames = new string[] { "id" };
+                    rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
+                    rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
+                    rGrid.RowDataBound += new GridViewRowEventHandler( rGrid_RowDataBound );
+                    rGrid.ShowHeaderWhenEmpty = false;
+                    rGrid.EmptyDataText = string.Empty;
+                    rGrid.ShowActionRow = false;
 
-                BindRoles();
-                
-                string script = string.Format( @"
+                    rGridParentRules.DataKeyNames = new string[] { "id" };
+                    rGridParentRules.ShowHeaderWhenEmpty = false;
+                    rGridParentRules.EmptyDataText = string.Empty;
+                    rGridParentRules.ShowActionRow = false;
+
+                    BindRoles();
+
+                    string script = string.Format( @"
                     Sys.Application.add_load(function () {{
                         $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
                     }});
                 ", iSecured.ToString() );
 
-                this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
+                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
+                }
             }
-
+            else
+            {
+                rGrid.Visible = false;
+                rGridParentRules.Visible = false;
+                nbMessage.Text = string.Format("Could not load the requested entity type ('{0}') to determine security attributes", entityName);
+                nbMessage.Visible = true;
+            }
             base.OnInit( e );
         }
 
@@ -116,7 +136,7 @@ namespace RockWeb.Blocks.Administration
             List<Rock.Cms.Auth> rules = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonId );
 
-            Rock.Security.Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+            Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             BindGrid();
         }
@@ -125,7 +145,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                Rock.Security.AuthRule authRule = (Rock.Security.AuthRule)e.Row.DataItem;
+                AuthRule authRule = (AuthRule)e.Row.DataItem;
                 RadioButtonList rbl = (RadioButtonList)e.Row.FindControl( "rblAllowDeny" );
                 rbl.SelectedValue = authRule.AllowOrDeny;
             }
@@ -139,7 +159,7 @@ namespace RockWeb.Blocks.Administration
                 authService.Delete( auth, CurrentPersonId );
                 authService.Save( auth, CurrentPersonId );
 
-                Rock.Security.Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
 
             BindGrid();
@@ -182,7 +202,7 @@ namespace RockWeb.Blocks.Administration
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
                     authService.Save( auth, CurrentPersonId );
 
-                    Rock.Security.Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                    Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
             }
 
@@ -216,8 +236,8 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbAddRole_Click( object sender, EventArgs e )
         {
-            List<Rock.Security.AuthRule> existingAuths =
-                Rock.Security.Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
+            List<AuthRule> existingAuths =
+                Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : -1;
 
@@ -242,8 +262,8 @@ namespace RockWeb.Blocks.Administration
                     if ( groupId < 0 )
                         groupId = null;
 
-                    foreach ( Rock.Security.AuthRule rule in
-                        Rock.Security.Authorization.AuthRules( iSecured.TypeId, iSecured.Id, li.Text ) )
+                    foreach ( AuthRule rule in
+                        Authorization.AuthRules( iSecured.TypeId, iSecured.Id, li.Text ) )
                     {
                         if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {
@@ -269,7 +289,7 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     if ( actionUpdated )
-                        Rock.Security.Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, li.Text );
+                        Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, li.Text );
                 }
             }
 
@@ -289,8 +309,8 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbAddUser_Click( object sender, EventArgs e )
         {
-            List<Rock.Security.AuthRule> existingAuths =
-                Rock.Security.Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
+            List<AuthRule> existingAuths =
+                Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             int maxOrder = existingAuths.Count > 0 ? existingAuths.Last().Order : -1;
 
@@ -304,7 +324,7 @@ namespace RockWeb.Blocks.Administration
 
                     int personId = Int32.Parse( li.Value );
 
-                    foreach ( Rock.Security.AuthRule auth in existingAuths )
+                    foreach ( AuthRule auth in existingAuths )
                         if ( auth.PersonId.HasValue && auth.PersonId.Value == personId )
                         {
                             alreadyExists = true;
@@ -331,7 +351,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             if ( actionUpdated )
-                Rock.Security.Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
+                Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
             pnlAddUser.Visible = false;
             phList.Visible = true;
@@ -345,20 +365,20 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            rGrid.DataSource = Rock.Security.Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction ); ;
+            rGrid.DataSource = Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction ); ;
             rGrid.DataBind();
 
-            List<Rock.Security.AuthRule> parentRules = new List<Rock.Security.AuthRule>();
+            List<AuthRule> parentRules = new List<AuthRule>();
             AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();
         }
 
-        private void AddParentRules( List<Rock.Security.AuthRule> rules, Rock.Security.ISecured parent, string action )
+        private void AddParentRules( List<AuthRule> rules, ISecured parent, string action )
         {
             if ( parent != null )
             {
-                foreach ( Rock.Security.AuthRule rule in Rock.Security.Authorization.AuthRules( parent.TypeId, parent.Id, action ) )
+                foreach ( AuthRule rule in Authorization.AuthRules( parent.TypeId, parent.Id, action ) )
                     if ( !rules.Exists( r =>
                         r.SpecialRole == rule.SpecialRole &&
                         r.PersonId == rule.PersonId &&
@@ -377,7 +397,7 @@ namespace RockWeb.Blocks.Administration
             ddlRoles.Items.Add( new ListItem( "[All Authenticated Users]", "-2" ) );
             ddlRoles.Items.Add( new ListItem( "[All Un-Authenticated Users]", "-3" ) );
 
-            foreach ( var role in Rock.Security.Role.AllRoles() )
+            foreach ( var role in Role.AllRoles() )
                 ddlRoles.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
         }
 
@@ -419,8 +439,7 @@ namespace RockWeb.Blocks.Administration
                     if ( groupId < 0 )
                         groupId = null;
 
-                    foreach ( Rock.Security.AuthRule rule in
-                        Rock.Security.Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action ) )
+                    foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action ) )
                     {
                         if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {

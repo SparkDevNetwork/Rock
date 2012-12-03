@@ -125,14 +125,6 @@ namespace Rock.Core
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
         /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get { return new Security.GenericEntity( "Global" ); }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

@@ -5,8 +5,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-
 using Rock;
 using Rock.Data;
 
@@ -51,6 +51,79 @@ namespace Rock.Core
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
+        /// as an entity type.
+        /// </summary>
+        /// <param name="physWebAppPath">the physical path of the web application</param>
+        public void RegisterEntityTypes( string physWebAppPath )
+        {
+            var entityTypes = new Dictionary<string, EntityTypeDto>();
+
+            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ),
+                new DirectoryInfo[] { 
+                    new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
+                    new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
+            {
+
+                entityTypes.Add( type.Value.FullName, new EntityTypeDto( type.Value.FullName, type.Value.Name.SplitCase(), type.Value.AssemblyQualifiedName, true, false ) );
+            }
+
+            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
+                new DirectoryInfo[] { 
+                    new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
+                    new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
+            {
+                if ( entityTypes.ContainsKey( type.Value.FullName ) )
+                {
+                    entityTypes[type.Value.FullName].IsSecured = true;
+                }
+                else
+                {
+                    entityTypes.Add( type.Value.FullName, new EntityTypeDto( type.Value.FullName, type.Value.Name.SplitCase(), type.Value.AssemblyQualifiedName, false, true ) );
+                }
+            }
+
+            // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
+            foreach ( var oldEntityType in Repository.AsQueryable()
+                .Where( e => !entityTypes.Keys.Contains( e.Name ) && ( e.IsEntity || e.IsSecured ) )
+                .ToList() )
+            {
+                oldEntityType.IsSecured = false;
+                oldEntityType.IsEntity = false;
+                oldEntityType.AssemblyName = null;
+                Save( oldEntityType, null );
+            }
+
+            // Update any existing entities
+            foreach ( var existingEntityType in Repository.AsQueryable()
+                .Where( e => entityTypes.Keys.Contains( e.Name ) )
+                .ToList() )
+            {
+                var entityType = entityTypes[existingEntityType.Name];
+
+                existingEntityType.IsEntity = entityType.IsEntity;
+                existingEntityType.IsSecured = entityType.IsSecured;
+                existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
+                existingEntityType.AssemblyName = entityType.AssemblyName;
+                Save( existingEntityType, null );
+                entityTypes.Remove( entityType.Name );
+            }
+
+            // Add the newly discovered entities
+            foreach ( var entityTypeInfo in entityTypes )
+            {
+                var entityType = entityTypeInfo.Value.ToModel();
+                this.Add( entityType, null );
+                this.Save( entityType, null );
+            }
+        }
+
+        private string physicalPath( string physWebAppPath, string folder )
+        {
+            return string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
         }
 
     }
