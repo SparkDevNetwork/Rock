@@ -4,13 +4,12 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
             <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
-            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true" OnEditRow="gGroupRoles_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                     <asp:BoundField DataField="GroupType.Name" HeaderText="Group Type" SortExpression="GroupType.Name" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:EditField OnClick="gGroupRoles_Edit" />
                     <Rock:DeleteField OnClick="gGroupRoles_Delete" />
                 </Columns>
             </Rock:Grid>

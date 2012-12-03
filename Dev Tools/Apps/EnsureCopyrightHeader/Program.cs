@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -15,16 +16,23 @@ namespace EnsureCopyrightHeader
             //C:\Projects\Rock-ChMS\Dev Tools\Apps\EnsureCopyrightHeader\Program.cs
             string currentDirectory = Directory.GetCurrentDirectory();
             string rockDirectory = currentDirectory.Replace( "Dev Tools\\Apps\\EnsureCopyrightHeader\\bin\\Debug", string.Empty );
-            FixupCopyrightHeaders( rockDirectory + "Rock\\" );
-            FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+
+            int updatedFileCount = 0;
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+
+            Console.WriteLine( "\n\nDone!  Files Updated: {0}\n\nPress any key to continue.", updatedFileCount );
+            Console.ReadLine();
         }
 
         /// <summary>
         /// Fixups the copyright headers.
         /// </summary>
         /// <param name="searchDirectory">The search directory.</param>
-        private static void FixupCopyrightHeaders( string searchDirectory )
+        private static int FixupCopyrightHeaders( string searchDirectory )
         {
+            int result = 0;
+
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
 
             const string copyrightBadge = @"//
@@ -80,9 +88,12 @@ namespace EnsureCopyrightHeader
 
                 if ( !origFileContents.Equals( newFileContents ) )
                 {
+                    Console.WriteLine("Updating header in {0}", fileName);
+                    result++;
                     File.WriteAllText( fileName, newFileContents );
                 }
             }
+            return result;
         }
     }
 }

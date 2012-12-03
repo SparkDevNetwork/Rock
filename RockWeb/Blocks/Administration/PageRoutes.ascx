@@ -4,12 +4,11 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" >
+            <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" OnEditRow="gPageRoutes_Edit">
                 <Columns>
                     <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
                     <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:EditField OnClick="gPageRoutes_Edit" />
                     <Rock:DeleteField OnClick="gPageRoutes_Delete" />
                 </Columns>
             </Rock:Grid>

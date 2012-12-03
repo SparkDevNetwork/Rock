@@ -257,7 +257,7 @@
             </fieldset>
         </div>
 
-        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found" RowItemText="setting">
+        <Rock:Grid ID="rGridType" runat="server" ShowHeader="true" EmptyDataText="No Types Found" RowItemText="setting" OnEditRow="typeAttributes_Edit">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:TemplateField HeaderText="Name" showHeader="true" ItemStyle-Width="35%">
@@ -266,7 +266,6 @@
                     </ItemTemplate>
                 </asp:TemplateField>
                 <asp:BoundField DataField="Category" HeaderText="Category"  />
-                <Rock:EditField OnClick="typeAttributes_Edit" />
                 <asp:TemplateField>
                     <ItemStyle HorizontalAlign="Center" CssClass="grid-icon-cell tick"/>
                     <ItemTemplate>

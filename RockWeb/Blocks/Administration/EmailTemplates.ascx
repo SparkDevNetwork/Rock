@@ -8,13 +8,12 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnEditRow="gEmailTemplates_Edit">
                 <Columns>
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                     <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                     <asp:BoundField DataField="From" HeaderText="From" SortExpression="From" />
                     <asp:BoundField DataField="Subject" HeaderText="Subject" SortExpression="Subject" />
-                    <Rock:EditField OnClick="gEmailTemplates_Edit" />
                     <Rock:DeleteField OnClick="gEmailTemplates_Delete" />
                 </Columns>
             </Rock:Grid>

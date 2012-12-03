@@ -97,8 +97,6 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.ToolTip = "Edit";
                 lbEdit.Click += lbEdit_Click;
-                lbEdit.Visible = !ParentGrid.ReadOnly;
-
                 cell.Controls.Add( lbEdit );
             }
         }
