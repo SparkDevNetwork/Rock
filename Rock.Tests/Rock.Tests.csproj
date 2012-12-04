@@ -61,6 +61,7 @@
     <Compile Include="Cms\BlockTests.cs" />
     <Compile Include="Cms\BlockTypeTests.cs" />
     <Compile Include="Cms\HtmlContentTests.cs" />
+    <Compile Include="Cms\PageContextTests.cs" />
     <Compile Include="Cms\PageRouteTests.cs" />
     <Compile Include="Cms\PageTests.cs" />
     <Compile Include="Fakes\FakeRepository.cs" />
