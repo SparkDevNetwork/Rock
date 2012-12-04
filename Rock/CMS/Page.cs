@@ -11,7 +11,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Page POCO Entity.

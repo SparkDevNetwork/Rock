@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// AttributeQualifiers REST API
     /// </summary>
-    public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Core.AttributeQualifier, Rock.Core.AttributeQualifierDto>
+    public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierDto>
     {
-        public AttributeQualifiersController() : base( new Rock.Core.AttributeQualifierService() ) { } 
+        public AttributeQualifiersController() : base( new Rock.Model.AttributeQualifierService() ) { } 
     }
 }

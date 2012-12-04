@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// ServiceLogs REST API
     /// </summary>
-    public partial class ServiceLogsController : Rock.Rest.ApiController<Rock.Core.ServiceLog, Rock.Core.ServiceLogDto>
+    public partial class ServiceLogsController : Rock.Rest.ApiController<Rock.Model.ServiceLog, Rock.Model.ServiceLogDto>
     {
-        public ServiceLogsController() : base( new Rock.Core.ServiceLogService() ) { } 
+        public ServiceLogsController() : base( new Rock.Model.ServiceLogService() ) { } 
     }
 }

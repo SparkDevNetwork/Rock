@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Defined Type POCO Service class
@@ -21,7 +21,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="fieldTypeId">Field Type Id.</param>
         /// <returns>An enumerable list of DefinedType objects.</returns>
-        public IEnumerable<Rock.Core.DefinedType> GetByFieldTypeId( int? fieldTypeId )
+        public IEnumerable<Rock.Model.DefinedType> GetByFieldTypeId( int? fieldTypeId )
         {
             return Repository.Find( t => ( t.FieldTypeId == fieldTypeId || ( fieldTypeId == null && t.FieldTypeId == null ) ) ).OrderBy( t => t.Order );
         }
@@ -31,7 +31,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="guid">Guid.</param>
         /// <returns>DefinedType object.</returns>
-        public Rock.Core.DefinedType GetByGuid( Guid guid )
+        public Rock.Model.DefinedType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }

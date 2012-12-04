@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
-    public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Core.ExceptionLog, Rock.Core.ExceptionLogDto>
+    public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogDto>
     {
-        public ExceptionLogsController() : base( new Rock.Core.ExceptionLogService() ) { } 
+        public ExceptionLogsController() : base( new Rock.Model.ExceptionLogService() ) { } 
     }
 }

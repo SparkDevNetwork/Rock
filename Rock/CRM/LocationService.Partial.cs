@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Location POCO Service class
@@ -62,7 +62,7 @@ namespace Rock.Crm
         /// <param name="personId">The person id.</param>
         public void Standardize( Location location, int? personId )
         {
-            Core.ServiceLogService logService = new Core.ServiceLogService();
+            Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
 
             // Try each of the standardization services that were found through MEF
@@ -73,7 +73,7 @@ namespace Rock.Crm
                     bool success = service.Value.Value.Standardize( location, out result );
 
                     // Log the results of the service
-                    Core.ServiceLog log = new Core.ServiceLog();
+                    Model.ServiceLog log = new Model.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Location Standardize";
                     log.Name = service.Value.Metadata.ComponentName;
@@ -118,7 +118,7 @@ namespace Rock.Crm
         /// <param name="personId">The person id.</param>
         public void Geocode( Location location, int? personId )
         {
-            Core.ServiceLogService logService = new Core.ServiceLogService();
+            Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
 
             // Try each of the geocoding services that were found through MEF
@@ -130,7 +130,7 @@ namespace Rock.Crm
                     bool success = service.Value.Value.Geocode( location, out result );
 
                     // Log the results of the service
-                    Core.ServiceLog log = new Core.ServiceLog();
+                    Model.ServiceLog log = new Model.ServiceLog();
                     log.Time = DateTime.Now;
                     log.Type = "Location Geocode";
                     log.Name = service.Value.Metadata.ComponentName;
@@ -173,7 +173,7 @@ namespace Rock.Crm
 
             if ( locationModel == null )
             {
-                locationModel = new Crm.Location();
+                locationModel = new Model.Location();
                 locationModel.Raw = raw;
                 locationModel.Street1 = location.Street1;
                 locationModel.Street2 = location.Street2;

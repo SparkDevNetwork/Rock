@@ -15,7 +15,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// MarketingCampaignAd Service class

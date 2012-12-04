@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Field Type POCO Service class
@@ -31,7 +31,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="guid">Guid.</param>
         /// <returns>FieldType object.</returns>
-        public Rock.Core.FieldType GetByGuid( Guid guid )
+        public Rock.Model.FieldType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }

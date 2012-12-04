@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// PageRoutes REST API
     /// </summary>
-    public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Cms.PageRoute, Rock.Cms.PageRouteDto>
+    public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute, Rock.Model.PageRouteDto>
     {
-        public PageRoutesController() : base( new Rock.Cms.PageRouteService() ) { } 
+        public PageRoutesController() : base( new Rock.Model.PageRouteService() ) { } 
     }
 }

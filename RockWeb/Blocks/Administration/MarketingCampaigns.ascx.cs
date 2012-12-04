@@ -8,13 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
 using Rock.Constants;
-using Rock.Core;
-using Rock.Crm;
 using Rock.Data;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -299,7 +296,7 @@ public partial class MarketingCampaigns : RockBlock
         MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
         tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
 
-        List<Rock.Core.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+        List<Rock.Model.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
         marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
         marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
@@ -332,7 +329,7 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     /// <param name="marketingAdTypeId">The marketing ad type id.</param>
     /// <returns></returns>
-    private static List<Rock.Core.Attribute> GetAttributesForAdType( int marketingAdTypeId )
+    private static List<Rock.Model.Attribute> GetAttributesForAdType( int marketingAdTypeId )
     {
         MarketingCampaignAd temp = new MarketingCampaignAd();
         temp.MarketingCampaignAdTypeId = marketingAdTypeId;
@@ -340,7 +337,7 @@ public partial class MarketingCampaigns : RockBlock
         Rock.Attribute.Helper.LoadAttributes( temp );
         List<Rock.Web.Cache.AttributeCache> attribs = temp.Attributes.Values.ToList();
 
-        List<Rock.Core.Attribute> result = new List<Rock.Core.Attribute>();
+        List<Rock.Model.Attribute> result = new List<Rock.Model.Attribute>();
         foreach ( var item in attribs )
         {
             var attrib = item.ToModel();

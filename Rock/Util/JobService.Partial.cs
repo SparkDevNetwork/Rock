@@ -60,7 +60,7 @@ namespace Rock.Util
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, List<Rock.Core.AttributeValueDto>> attrib in job.AttributeValues )
+            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValueDto>> attrib in job.AttributeValues )
             {
                 map.Add( attrib.Key, attrib.Value[0].Value );
             }

@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// FieldTypes REST API
     /// </summary>
-    public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Core.FieldType, Rock.Core.FieldTypeDto>
+    public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Model.FieldType, Rock.Model.FieldTypeDto>
     {
-        public FieldTypesController() : base( new Rock.Core.FieldTypeService() ) { } 
+        public FieldTypesController() : base( new Rock.Model.FieldTypeService() ) { } 
     }
 }

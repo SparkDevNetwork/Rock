@@ -12,7 +12,7 @@ using System.Text;
 using System.Web;
 using System.Web.Configuration;
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Security.Authentication
 {

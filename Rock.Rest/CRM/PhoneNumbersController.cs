@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Rest.Crm
 {
     /// <summary>
     /// PhoneNumbers REST API
     /// </summary>
-    public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Crm.PhoneNumber, Rock.Crm.PhoneNumberDto>
+    public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Model.PhoneNumber, Rock.Model.PhoneNumberDto>
     {
-        public PhoneNumbersController() : base( new Rock.Crm.PhoneNumberService() ) { } 
+        public PhoneNumbersController() : base( new Rock.Model.PhoneNumberService() ) { } 
     }
 }

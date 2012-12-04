@@ -11,7 +11,7 @@ using System.Linq;
 using System.Web;
 
 using Rock;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Search.Person

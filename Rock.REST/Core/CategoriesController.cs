@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// Categories REST API
     /// </summary>
-    public partial class CategoriesController : Rock.Rest.ApiController<Rock.Core.Category, Rock.Core.CategoryDto>
+    public partial class CategoriesController : Rock.Rest.ApiController<Rock.Model.Category, Rock.Model.CategoryDto>
     {
-        public CategoriesController() : base( new Rock.Core.CategoryService() ) { } 
+        public CategoriesController() : base( new Rock.Model.CategoryService() ) { } 
     }
 }

@@ -18,7 +18,7 @@ namespace Rock.Transactions
         /// <value>
         /// The changes.
         /// </value>
-        public List<Rock.Core.EntityChange> Changes { get; set; }
+        public List<Rock.Model.EntityChange> Changes { get; set; }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -35,7 +35,7 @@ namespace Rock.Transactions
         {
             if ( Changes != null && Changes.Count > 0 )
             {
-                Core.EntityChangeService entityChangeService = new Core.EntityChangeService();
+                Model.EntityChangeService entityChangeService = new Model.EntityChangeService();
 
                 foreach ( var entityChange in Changes )
                 {

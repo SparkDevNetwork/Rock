@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Tag POCO Entity.
@@ -87,7 +87,7 @@ namespace Rock.Core
         /// <value>
         /// The owner.
         /// </value>
-        public virtual Crm.Person Owner { get; set; }
+        public virtual Model.Person Owner { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -95,7 +95,7 @@ namespace Rock.Core
         /// <value>
         /// The type of the entity.
         /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets the dto.

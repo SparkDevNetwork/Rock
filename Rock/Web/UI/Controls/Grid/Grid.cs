@@ -395,7 +395,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // add author info
-            Rock.Cms.UserLogin user = Rock.Cms.UserService.GetCurrentUser();
+            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
             if ( user != null )
             {
                 excel.Workbook.Properties.Author = user.Person.FullName;

@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Member POCO Entity.
@@ -68,9 +68,9 @@ namespace Rock.Crm
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// A <see cref="Model.Person"/> object.
         /// </value>
-        public virtual Crm.Person Person { get; set; }
+        public virtual Model.Person Person { get; set; }
         
         /// <summary>
         /// Gets or sets the Group.

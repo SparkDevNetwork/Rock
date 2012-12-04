@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Site Domain POCO Entity.

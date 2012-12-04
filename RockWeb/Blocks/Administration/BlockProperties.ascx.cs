@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    var blockService = new Rock.Cms.BlockService();
+                    var blockService = new Rock.Model.BlockService();
                     var block = blockService.Get( _block.Id );
 
                     block.LoadAttributes();

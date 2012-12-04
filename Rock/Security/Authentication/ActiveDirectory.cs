@@ -8,7 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.DirectoryServices.AccountManagement;
 
-using Rock.Cms;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Security.Authentication

@@ -10,7 +10,7 @@ using System.Linq;
 using Rock;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// EntityType POCO Service class

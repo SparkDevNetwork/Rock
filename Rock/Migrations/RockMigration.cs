@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 
 
 namespace Rock.Migrations
@@ -15,9 +15,9 @@ namespace Rock.Migrations
     /// </summary>
     public abstract class RockMigration : DbMigration
     {
-        
+
         #region Block Type Methods
-        
+
         public void AddBlockType( string name, string description, string path, string guid )
         {
             Sql( string.Format( @"
@@ -74,8 +74,8 @@ namespace Rock.Migrations
             return blockType;
         }
 
-        #endregion        
-        
+        #endregion
+
         #region Page Methods
 
         public void AddPage( string parentPageGuid, string name, string description, string guid )
@@ -147,6 +147,17 @@ namespace Rock.Migrations
                     page.Guid ) );
         }
 
+        public void MovePage( string pageGuid, string parentPageGuid )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @parentPageId int
+                SET @parentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                UPDATE [Page] SET [ParentPageId]=@parentPageId WHERE [Guid] = '{1}'
+                ", parentPageGuid, pageGuid ) );
+        }
+
         public void DeletePage( string guid )
         {
             Sql( string.Format( @"
@@ -184,17 +195,17 @@ namespace Rock.Migrations
         {
             var sb = new StringBuilder();
 
-            sb.Append(@"
+            sb.Append( @"
                 DECLARE @PageId int
-");
-            if (string.IsNullOrWhiteSpace(pageGuid))
+" );
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
                 SET @PageId = NULL
-");
+" );
             else
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-",                     pageGuid);
+", pageGuid );
 
             sb.AppendFormat( @"
                 
@@ -228,24 +239,24 @@ namespace Rock.Migrations
                 INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
                     VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
 " );
-            Sql(sb.ToString());
+            Sql( sb.ToString() );
         }
 
         public void AddBlock( string pageGuid, string blockTypeGuid, BlockDto block )
         {
             var sb = new StringBuilder();
 
-            sb.Append(@"
+            sb.Append( @"
                 DECLARE @PageId int
-");
-            if (string.IsNullOrWhiteSpace(pageGuid))
+" );
+            if ( string.IsNullOrWhiteSpace( pageGuid ) )
                 sb.Append( @"
                 SET @PageId = NULL
-");
+" );
             else
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-",                     pageGuid);
+", pageGuid );
 
             sb.AppendFormat( @"
 
@@ -315,7 +326,7 @@ namespace Rock.Migrations
 
         #region Attribute Methods
 
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid)
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, string name, string category, string description, int order, string defaultValue, string guid )
         {
             Sql( string.Format( @"
                 
@@ -351,7 +362,7 @@ namespace Rock.Migrations
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue,
-                    guid)
+                    guid )
             );
         }
 
@@ -370,23 +381,8 @@ namespace Rock.Migrations
         /// <param name="guid">The GUID.</param>
         public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid )
         {
-            Sql ( string.Format( @"
-                if not exists (
-                select id from EntityType where name = '{0}')
-                begin
-                INSERT INTO [EntityType]
-                           ([Name]
-                           ,[FriendlyName]
-                           ,[Guid])
-                     VALUES
-                           ('{0}'
-                           ,null
-                           ,newid()
-                           )
-                end"
-                , entityTypeName)
-            );
-            
+            EnsureEntityTypeExists( entityTypeName );
+
             Sql( string.Format( @"
                 
                 DECLARE @EntityTypeId int
@@ -423,7 +419,31 @@ namespace Rock.Migrations
                     defaultValue,
                     guid,
                     entityTypeQualifierColumn,
-                    entityTypeQualifierValue)
+                    entityTypeQualifierValue )
+            );
+        }
+
+        /// <summary>
+        /// Ensures the entity type exists.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        private void EnsureEntityTypeExists( string entityTypeName )
+        {
+            Sql( string.Format( @"
+                if not exists (
+                select id from EntityType where name = '{0}')
+                begin
+                INSERT INTO [EntityType]
+                           ([Name]
+                           ,[FriendlyName]
+                           ,[Guid])
+                     VALUES
+                           ('{0}'
+                           ,null
+                           ,newid()
+                           )
+                end"
+                , entityTypeName )
             );
         }
 
@@ -436,7 +456,7 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Core.AttributeDto attribute )
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.AttributeDto attribute )
         {
 
             Sql( string.Format( @"
@@ -470,7 +490,7 @@ namespace Rock.Migrations
                     attribute.Key,
                     attribute.Name,
                     attribute.Category,
-                    attribute.Description.Replace("'","''"),
+                    attribute.Description.Replace( "'", "''" ),
                     attribute.Order,
                     attribute.IsGridColumn.Bit(),
                     attribute.DefaultValue,
@@ -489,9 +509,9 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public Rock.Core.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
+        public Rock.Model.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
         {
-            var attribute = new Rock.Core.AttributeDto();
+            var attribute = new Rock.Model.AttributeDto();
 
             attribute.IsSystem = true;
             attribute.Key = name.Replace( " ", string.Empty );
@@ -534,7 +554,7 @@ namespace Rock.Migrations
 ",
                     blockGuid,
                     attributeGuid,
-                    value)
+                    value )
             );
         }
 
@@ -551,7 +571,7 @@ namespace Rock.Migrations
                 DELETE [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId
 ",
                     blockGuid,
-                    attributeGuid)
+                    attributeGuid )
             );
         }
 
@@ -632,6 +652,107 @@ namespace Rock.Migrations
 ",
                     guid
                     ) );
+        }
+
+        #endregion
+
+        #region Security/Auth
+
+        /// <summary>
+        /// Adds the security role group.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddSecurityRoleGroup(string name, string description, string guid)
+        {
+            string sql = @"
+
+DECLARE @groupTypeId int
+SET @groupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = 'AECE949F-704C-483E-A4FB-93D5E4720C4C')
+
+INSERT INTO [dbo].[Group]
+           ([IsSystem]
+           ,[ParentGroupId]
+           ,[GroupTypeId]
+           ,[CampusId]
+           ,[Name]
+           ,[Description]
+           ,[IsSecurityRole]
+           ,[IsActive]
+           ,[Guid])
+     VALUES
+           (1
+           ,null
+           ,@groupTypeId
+           ,null
+           ,'{0}'
+           ,'{1}'
+           ,1
+           ,1
+           ,'{2}')
+";
+            Sql(string.Format(sql, name, description, guid));
+        }
+
+        /// <summary>
+        /// Deletes the security role group.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSecurityRoleGroup( string guid )
+        {
+            Sql( string.Format( "DELETE FROM [dbo].[Group] where [Guid] = '{0}'", guid ) );
+        }
+
+        /// <summary>
+        /// Adds the security auth.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="groupGuid">The group GUID.</param>
+        /// <param name="authGuid">The auth GUID.</param>
+        public void AddSecurityAuth( string entityTypeName, string action, string groupGuid, string authGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+            
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{2}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{0}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,0
+           ,0
+           ,'{1}'
+           ,'A'
+           ,0
+           ,null
+           ,@groupId
+           ,'{3}')
+";
+            @Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
+        }
+
+        /// <summary>
+        /// Deletes the security auth.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSecurityAuth( string guid )
+        {
+            Sql(string.Format("DELETE FROM [dbo].[Auth] where [Guid] = '{0}'", guid));
         }
 
         #endregion

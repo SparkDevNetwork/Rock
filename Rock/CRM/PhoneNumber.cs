@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Phone Number POCO Entity.
@@ -66,7 +66,7 @@ namespace Rock.Crm
         /// <summary>
         /// The phone number type
         /// </summary>
-        public virtual Core.DefinedValue NumberType { get; set; }
+        public virtual Model.DefinedValue NumberType { get; set; }
 
         /// <summary>
         /// Gets or sets the whether the number is unlisted or not.

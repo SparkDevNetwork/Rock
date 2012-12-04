@@ -29,7 +29,7 @@ namespace Rock.Field.Types
         {
             ListControl editControl = new DropDownList();
 
-            Rock.Core.DefinedTypeService definedTypeService = new Core.DefinedTypeService();
+            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
                 editControl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
 

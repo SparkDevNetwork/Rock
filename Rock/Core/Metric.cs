@@ -17,7 +17,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Metric POCO Entity.
@@ -167,9 +167,9 @@ namespace Rock.Core
         /// Gets or sets the CollectionFrequency.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue CollectionFrequency { get; set; }
+        public virtual Model.DefinedValue CollectionFrequency { get; set; }
 
         /// <summary>
         /// Gets the parent authority.

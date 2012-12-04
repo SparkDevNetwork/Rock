@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// MarketingCampaigns REST API
     /// </summary>
-    public partial class MarketingCampaignsController : Rock.Rest.ApiController<Rock.Cms.MarketingCampaign, Rock.Cms.MarketingCampaignDto>
+    public partial class MarketingCampaignsController : Rock.Rest.ApiController<Rock.Model.MarketingCampaign, Rock.Model.MarketingCampaignDto>
     {
-        public MarketingCampaignsController() : base( new Rock.Cms.MarketingCampaignService() ) { } 
+        public MarketingCampaignsController() : base( new Rock.Model.MarketingCampaignService() ) { } 
     }
 }

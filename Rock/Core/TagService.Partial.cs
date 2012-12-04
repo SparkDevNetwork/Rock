@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// MetricValue POCO Service class

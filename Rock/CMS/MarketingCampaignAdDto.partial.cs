@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     public partial class MarketingCampaignAdDto : IDto, IHasAttributes
     {
@@ -63,6 +63,6 @@ namespace Rock.Cms
         /// The attribute values.
         /// </value>
         /// <exception cref="System.NotImplementedException"></exception>
-        public Dictionary<string, List<Core.AttributeValueDto>> AttributeValues { get; set; }
+        public Dictionary<string, List<Model.AttributeValueDto>> AttributeValues { get; set; }
     }
 }

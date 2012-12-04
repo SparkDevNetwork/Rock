@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// BinaryFiles REST API
     /// </summary>
-    public partial class BinaryFilesController : Rock.Rest.ApiController<Rock.Cms.BinaryFile, Rock.Cms.BinaryFileDto>
+    public partial class BinaryFilesController : Rock.Rest.ApiController<Rock.Model.BinaryFile, Rock.Model.BinaryFileDto>
     {
-        public BinaryFilesController() : base( new Rock.Cms.BinaryFileService() ) { } 
+        public BinaryFilesController() : base( new Rock.Model.BinaryFileService() ) { } 
     }
 }

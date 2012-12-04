@@ -7,7 +7,7 @@ using System;
 using System.Net;
 using System.Web.Http;
 
-using Rock.Cms;
+using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Cms

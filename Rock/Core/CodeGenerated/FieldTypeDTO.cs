@@ -16,7 +16,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Data Transfer Object for FieldType object

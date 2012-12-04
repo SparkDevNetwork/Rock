@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// Pages REST API
     /// </summary>
-    public partial class PagesController : Rock.Rest.ApiController<Rock.Cms.Page, Rock.Cms.PageDto>
+    public partial class PagesController : Rock.Rest.ApiController<Rock.Model.Page, Rock.Model.PageDto>
     {
-        public PagesController() : base( new Rock.Cms.PageService() ) { } 
+        public PagesController() : base( new Rock.Model.PageService() ) { } 
     }
 }

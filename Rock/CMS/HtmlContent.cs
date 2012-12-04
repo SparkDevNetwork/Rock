@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Html Content POCO Entity.
@@ -107,9 +107,9 @@ namespace Rock.Cms
         /// Gets or sets the Approved By Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// A <see cref="Model.Person"/> object.
         /// </value>
-        public virtual Crm.Person ApprovedByPerson { get; set; }
+        public virtual Model.Person ApprovedByPerson { get; set; }
 
         /// <summary>
         /// Gets the dto.

@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Person POCO Service class
@@ -206,15 +206,15 @@ namespace Rock.Crm
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var attributeService = new Core.AttributeService();
+            var attributeService = new Model.AttributeService();
             var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if ( attribute == null )
             {
-                var fieldTypeService = new Core.FieldTypeService();
+                var fieldTypeService = new Model.FieldTypeService();
                 var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
 
-                attribute = new Core.Attribute();
+                attribute = new Model.Attribute();
                 attribute.IsSystem = false;
                 attribute.EntityTypeId = PersonEntityTypeId;
                 attribute.EntityTypeQualifierColumn = string.Empty;
@@ -233,7 +233,7 @@ namespace Rock.Crm
                 attributeService.Save( attribute, personId );
             }
 
-            var attributeValueService = new Core.AttributeValueService();
+            var attributeValueService = new Model.AttributeValueService();
             var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
             foreach ( var attributeValue in attributeValues )
                 attributeValueService.Delete( attributeValue, personId );
@@ -242,7 +242,7 @@ namespace Rock.Crm
             {
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
-                    var attributeValue = new Core.AttributeValue();
+                    var attributeValue = new Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
                     attributeValue.EntityId = person.Id;
                     attributeValue.Value = value;
@@ -262,12 +262,12 @@ namespace Rock.Crm
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var attributeService = new Core.AttributeService();
+            var attributeService = new Model.AttributeService();
             var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if (attribute != null)
             {
-                var attributeValueService = new Core.AttributeValueService();
+                var attributeValueService = new Model.AttributeValueService();
                 var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
                 if (attributeValues != null && attributeValues.Count() > 0)
                     return attributeValues.Select( v => v.Value).ToList();
@@ -287,7 +287,7 @@ namespace Rock.Crm
 
             var values = new Dictionary<string, List<string>>();
 
-            foreach ( var attributeValue in new Core.AttributeValueService().Queryable()
+            foreach ( var attributeValue in new Model.AttributeValueService().Queryable()
                 .Where( v =>
                     v.Attribute.EntityTypeId == PersonEntityTypeId &&
                     v.Attribute.EntityTypeQualifierColumn == string.Empty &&

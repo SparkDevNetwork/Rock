@@ -11,7 +11,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 

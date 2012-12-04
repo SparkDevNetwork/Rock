@@ -12,7 +12,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Constants;
-using Rock.Core;
+using Rock.Model;
 using Rock.Financial;
 using Rock.Web.Cache;
 using Rock.Web.UI;

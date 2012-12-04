@@ -9,7 +9,7 @@ using System.Linq;
 using System.Web;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType, MarketingCampaignAdTypeDto>
     {

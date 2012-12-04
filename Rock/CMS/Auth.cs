@@ -13,7 +13,7 @@ using System.Text;
 using Rock;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Auth POCO Entity.
@@ -96,17 +96,17 @@ namespace Rock.Cms
         /// Gets or sets the Group.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Group"/> object.
+        /// A <see cref="Model.Group"/> object.
         /// </value>
-        public virtual Crm.Group Group { get; set; }
+        public virtual Model.Group Group { get; set; }
         
         /// <summary>
         /// Gets or sets the Person.
         /// </summary>
         /// <value>
-        /// A <see cref="Crm.Person"/> object.
+        /// A <see cref="Model.Person"/> object.
         /// </value>
-        public virtual Crm.Person Person { get; set; }
+        public virtual Model.Person Person { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -114,7 +114,7 @@ namespace Rock.Cms
         /// <value>
         /// The type of the entity.
         /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -156,7 +156,7 @@ namespace Rock.Cms
             var sb = new StringBuilder();
             sb.AppendFormat("{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny");
 
-            if (SpecialRole != Cms.SpecialRole.None)
+            if (SpecialRole != Model.SpecialRole.None)
                 sb.AppendFormat("{0} ", SpecialRole.ToString().SplitCase());
             else if(PersonId.HasValue)
                 sb.AppendFormat("{0} ", Person.ToString());

@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// GroupLocation POCO class.
@@ -58,15 +58,15 @@ namespace Rock.Crm
         /// <value>
         /// The location.
         /// </value>
-        public virtual Rock.Crm.Location Location { get; set; }
+        public virtual Rock.Model.Location Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Location Type.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue LocationType { get; set; }
+        public virtual Model.DefinedValue LocationType { get; set; }
     }
 
     /// <summary>

@@ -16,7 +16,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Data Transfer Object for Group object

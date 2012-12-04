@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// DefinedValues REST API
     /// </summary>
-    public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Core.DefinedValue, Rock.Core.DefinedValueDto>
+    public partial class DefinedValuesController : Rock.Rest.ApiController<Rock.Model.DefinedValue, Rock.Model.DefinedValueDto>
     {
-        public DefinedValuesController() : base( new Rock.Core.DefinedValueService() ) { } 
+        public DefinedValuesController() : base( new Rock.Model.DefinedValueService() ) { } 
     }
 }

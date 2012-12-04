@@ -9,7 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -59,10 +59,10 @@ namespace Rock.Web.Cache
                 globalAttributes = new GlobalAttributesCache();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
-                var attributeService = new Rock.Core.AttributeService();
-                var attributeValueService = new Rock.Core.AttributeValueService();
+                var attributeService = new Rock.Model.AttributeService();
+                var attributeValueService = new Rock.Model.AttributeValueService();
 
-                foreach ( Rock.Core.Attribute attribute in attributeService.GetGlobalAttributes())
+                foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes())
                 {
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();

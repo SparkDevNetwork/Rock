@@ -12,7 +12,7 @@ using System.Web;
 
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Person POCO Entity.
@@ -253,7 +253,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Users.
         /// </value>
-        public virtual ICollection<Cms.UserLogin> Users { get; set; }
+        public virtual ICollection<Model.UserLogin> Users { get; set; }
         
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -277,7 +277,7 @@ namespace Rock.Crm
         /// <value>
         /// Collection of Members.
         /// </value>
-        public virtual ICollection<Crm.GroupMember> Members { get; set; }
+        public virtual ICollection<Model.GroupMember> Members { get; set; }
 
         /// <summary>
         /// Gets or sets the Pledges.
@@ -299,62 +299,62 @@ namespace Rock.Crm
         /// Gets or sets the Marital Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue MaritalStatus { get; set; }
+        public virtual Model.DefinedValue MaritalStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue PersonStatus { get; set; }
+        public virtual Model.DefinedValue PersonStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordStatus { get; set; }
+        public virtual Model.DefinedValue RecordStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordStatusReason { get; set; }
+        public virtual Model.DefinedValue RecordStatusReason { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue RecordType { get; set; }
+        public virtual Model.DefinedValue RecordType { get; set; }
         
         /// <summary>
         /// Gets or sets the Suffix.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue Suffix { get; set; }
+        public virtual Model.DefinedValue Suffix { get; set; }
         
         /// <summary>
         /// Gets or sets the Title.
         /// </summary>
         /// <value>
-        /// A <see cref="Core.DefinedValue"/> object.
+        /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Core.DefinedValue Title { get; set; }
+        public virtual Model.DefinedValue Title { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
-        public virtual Cms.BinaryFile Photo { get; set; }
+        public virtual Model.BinaryFile Photo { get; set; }
 
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
@@ -448,11 +448,11 @@ namespace Rock.Crm
         /// <value>
         /// The impersonated user.
         /// </value>
-        public virtual Rock.Cms.UserLogin ImpersonatedUser
+        public virtual Rock.Model.UserLogin ImpersonatedUser
         {
             get
             {
-                Rock.Cms.UserLogin user = new Cms.UserLogin();
+                Rock.Model.UserLogin user = new Model.UserLogin();
                 user.UserName = this.FullName;
                 user.PersonId = this.Id;
                 user.Person = this;

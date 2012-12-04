@@ -6,7 +6,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// 
@@ -48,7 +48,7 @@ namespace Rock.Crm
         /// <value>
         /// The type of the location.
         /// </value>
-        public virtual Core.DefinedValue LocationType { get; set; }
+        public virtual Model.DefinedValue LocationType { get; set; }
     }
 
     /// <summary>

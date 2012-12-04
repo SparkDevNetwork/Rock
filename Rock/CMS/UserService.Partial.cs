@@ -13,7 +13,7 @@ using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// User POCO Service class
@@ -66,7 +66,7 @@ namespace Rock.Cms
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
         /// <exception cref="System.ArgumentException">serviceName</exception>
-        public UserLogin Create( Rock.Crm.Person person,
+        public UserLogin Create( Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             string serviceName,
             string username,
@@ -289,8 +289,8 @@ namespace Rock.Cms
             {
                 if ( userName.StartsWith( "rckipid=" ) )
                 {
-                    Rock.Crm.PersonService personService = new Crm.PersonService();
-                    Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
+                    Rock.Model.PersonService personService = new Model.PersonService();
+                    Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
                         return impersonatedPerson.ImpersonatedUser;
                 }
