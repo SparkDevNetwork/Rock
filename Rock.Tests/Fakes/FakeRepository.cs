@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Rock.Core;
+using Rock.Model;
 using Rock.Data;
 
 

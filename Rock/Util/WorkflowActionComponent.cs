@@ -10,7 +10,7 @@ using Rock.Data;
 using Rock.Extension;
 using Rock.Web.Cache;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Base class for components that perform actions for a workflow
@@ -32,7 +32,7 @@ namespace Rock.Util
         {
             Type type = this.GetType();
 
-            var ActionTypeEntityType = EntityTypeCache.Read( typeof( Rock.Util.ActionType ).FullName );
+            var ActionTypeEntityType = EntityTypeCache.Read( typeof( Rock.Model.ActionType ).FullName );
             this.EntityType = EntityTypeCache.Read( type.FullName );
             Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
         }

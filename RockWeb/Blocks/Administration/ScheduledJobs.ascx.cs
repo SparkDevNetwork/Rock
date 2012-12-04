@@ -4,16 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml;
 
-using Rock;
-using Rock.Core;
-using Rock.Util;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -21,7 +16,7 @@ namespace RockWeb.Blocks.Administration
 {
     public partial class ScheduledJobs : RockBlock
     {
-        private JobService jobService = new JobService();
+        private ServiceJobService jobService = new ServiceJobService();
 
 
         #region Control Methods

@@ -5,7 +5,7 @@
 //
 using System.Collections.Generic;
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Transactions
 {

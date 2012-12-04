@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using System.Xml.Xsl;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core

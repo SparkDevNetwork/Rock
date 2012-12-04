@@ -14,10 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedValueCache : Rock.Core.DefinedValueDto
+    public class DefinedValueCache : Rock.Model.DefinedValueDto
     {
         private DefinedValueCache() : base() { }
-        private DefinedValueCache( Rock.Core.DefinedValue model ) : base( model ) { }
+        private DefinedValueCache( Rock.Model.DefinedValue model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -54,8 +54,8 @@ namespace Rock.Web.Cache
                 return definedValue;
             else
             {
-                Rock.Core.DefinedValueService definedValueService = new Rock.Core.DefinedValueService();
-                Rock.Core.DefinedValue definedValueModel = definedValueService.Get( id );
+                Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService();
+                Rock.Model.DefinedValue definedValueModel = definedValueService.Get( id );
                 if ( definedValueModel != null )
                 {
                     definedValue = CopyModel( definedValueModel );
@@ -74,7 +74,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( Rock.Core.DefinedValue definedValueModel )
+        public static DefinedValueCache Read( Rock.Model.DefinedValue definedValueModel )
         {
             string cacheKey = DefinedValueCache.CacheKey( definedValueModel.Id );
 
@@ -97,7 +97,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
         /// <returns></returns>
-        public static DefinedValueCache CopyModel( Rock.Core.DefinedValue definedValueModel )
+        public static DefinedValueCache CopyModel( Rock.Model.DefinedValue definedValueModel )
         {
             DefinedValueCache definedValue = new DefinedValueCache( definedValueModel );
             return definedValue;

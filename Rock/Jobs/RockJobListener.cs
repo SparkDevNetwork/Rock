@@ -9,7 +9,7 @@ using System.Text;
 
 using Quartz;
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -80,7 +80,7 @@ namespace Rock.Jobs
             int jobId = Convert.ToInt16(context.JobDetail.Description);
 
             // load job
-            JobService jobService = new JobService();
+            ServiceJobService jobService = new ServiceJobService();
             ServiceJob job = jobService.Get(jobId);
             
             // format the message

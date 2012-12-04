@@ -37,7 +37,7 @@
                 </legend>
                 <div class="row-fluid">
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAdType, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAdType, Rock" PropertyName="Name" />
                         <Rock:LabeledDropDownList ID="ddlDateRangeType" runat="server" LabelText="Date Range Type" />
                     </div>
                     <div class="span6">
@@ -68,16 +68,16 @@
                 <div class="row-fluid">
 
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" onblur="populateAttributeKey()" />
-                        <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
-                        <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
-                        <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" onblur="populateAttributeKey()" />
+                        <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
+                        <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Category" />
+                        <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                     </div>
 
                     <div class="span6">
-                        <Rock:DataDropDownList ID="ddlAttributeFieldType" runat="server" LabelText="Field Type" SourceTypeName="Rock.Core.FieldType, Rock" PropertyName="Name" DataValueField="Id" DataTextField="Name" />
+                        <Rock:DataDropDownList ID="ddlAttributeFieldType" runat="server" LabelText="Field Type" SourceTypeName="Rock.Model.FieldType, Rock" PropertyName="Name" DataValueField="Id" DataTextField="Name" />
                         <asp:PlaceHolder ID="phAttributeFieldTypeQualifiers" runat="server"></asp:PlaceHolder>
-                        <Rock:DataTextBox ID="tbAttributeDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
+                        <Rock:DataTextBox ID="tbAttributeDefaultValue" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="DefaultValue" />
                         <Rock:LabeledCheckBox ID="cbAttributeMultiValue" runat="server" LabelText="Allow Multiple Values" />
                         <Rock:LabeledCheckBox ID="cbAttributeRequired" runat="server" LabelText="Required" />
                     </div>

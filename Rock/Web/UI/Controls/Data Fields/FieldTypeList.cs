@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            Rock.Core.FieldTypeService fieldTypeService = new Core.FieldTypeService();
+            Rock.Model.FieldTypeService fieldTypeService = new Model.FieldTypeService();
             var items = fieldTypeService.
                 Queryable().
                 Select( f => new { f.Id, f.Name } ).

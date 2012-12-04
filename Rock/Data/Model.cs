@@ -64,7 +64,7 @@ namespace Rock.Data
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }
@@ -153,7 +153,7 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues
         {
             get 
             {
@@ -166,7 +166,7 @@ namespace Rock.Data
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, List<Rock.Core.AttributeValueDto>> _attributeValues;
+        private Dictionary<string, List<Rock.Model.AttributeValueDto>> _attributeValues;
 
         #endregion
     }

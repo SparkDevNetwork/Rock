@@ -26,7 +26,7 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Tag</legend>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
         </fieldset>
 
         <div class="actions">

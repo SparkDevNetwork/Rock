@@ -68,7 +68,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the first value for an Attributes

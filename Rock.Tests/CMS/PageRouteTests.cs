@@ -5,7 +5,7 @@
 //
 
 using System;
-using Rock.Cms;
+using Rock.Model;
 using Xunit;
 
 namespace Rock.Tests.Cms

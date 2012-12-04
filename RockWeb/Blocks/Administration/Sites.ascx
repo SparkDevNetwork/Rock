@@ -31,10 +31,10 @@
                         <legend>
                             <asp:Literal ID="lAction" runat="server"></asp:Literal>
                             Site</legend>
-                        <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="Theme" />
-                        <Rock:DataDropDownList ID="ddlDefaultPage" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="DefaultPageId" LabelText="Default Page" />
+                        <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" />
+                        <Rock:DataDropDownList ID="ddlDefaultPage" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Model.Site, Rock" PropertyName="DefaultPageId" LabelText="Default Page" />
                     </fieldset>
 
                 </div>
@@ -43,11 +43,11 @@
 
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" />
-                        <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FaviconUrl" />
-                        <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="AppleTouchIconUrl" />
-                        <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FacebookAppId" />
-                        <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.Cms.Site, Rock" PropertyName="FacebookAppSecret" />
+                        <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" />
+                        <Rock:DataTextBox ID="tbFaviconUrl" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FaviconUrl" />
+                        <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AppleTouchIconUrl" />
+                        <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppId" />
+                        <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppSecret" />
                     </fieldset>
 
                 </div>

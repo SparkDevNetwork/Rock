@@ -4,23 +4,16 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Dynamic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Web;
-using System.Web.Configuration;
 using System.Web.Security;
 
 using Facebook;
 
-using Rock.Core;
-using Rock.Cms;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Security.ExternalAuthentication

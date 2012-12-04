@@ -17,20 +17,15 @@ using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Routing;
-
 using DotLiquid;
-
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock;
-using Rock.Cms;
 using Rock.Communication;
-using Rock.Core;
 using Rock.Jobs;
+using Rock.Model;
 using Rock.Transactions;
-using Rock.Util;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -88,7 +83,7 @@ namespace RockWeb
                 sched = sf.GetScheduler();
 
                 // get list of active jobs
-                JobService jobService = new JobService();
+                ServiceJobService jobService = new ServiceJobService();
                 foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                 {
                     try
@@ -384,7 +379,7 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.Cms.UserLogin user = Rock.Cms.UserService.GetCurrentUser();
+                Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
 
                 // save the exception info to the db
                 ExceptionLogService service = new ExceptionLogService();
@@ -567,10 +562,10 @@ namespace RockWeb
         /// </summary>
         private void AddEventHandlers()
         {
-            Rock.Cms.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
-            Rock.Cms.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
-            Rock.Cms.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
-            Rock.Cms.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting );
+            Rock.Model.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
+            Rock.Model.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
+            Rock.Model.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
+            Rock.Model.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting );
         }
 
         /// <summary>
@@ -581,23 +576,23 @@ namespace RockWeb
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 // Cache all the Field Types
-                var fieldTypeService = new Rock.Core.FieldTypeService();
+                var fieldTypeService = new Rock.Model.FieldTypeService();
                 foreach ( var fieldType in fieldTypeService.Queryable() )
                     Rock.Web.Cache.FieldTypeCache.Read( fieldType );
 
                 // Cache all tha Defined Types
-                var definedTypeService = new Rock.Core.DefinedTypeService();
+                var definedTypeService = new Rock.Model.DefinedTypeService();
                 foreach ( var definedType in definedTypeService.Queryable() )
                     Rock.Web.Cache.DefinedTypeCache.Read( definedType );
 
                 // Cache all the Defined Values
-                var definedValueService = new Rock.Core.DefinedValueService();
+                var definedValueService = new Rock.Model.DefinedValueService();
                 foreach ( var definedValue in definedValueService.Queryable() )
                     Rock.Web.Cache.DefinedValueCache.Read( definedValue );
 
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
                 var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-                foreach ( var attributeQualifier in new Rock.Core.AttributeQualifierService().Queryable() )
+                foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService().Queryable() )
                 {
                     if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
                         qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
@@ -605,7 +600,7 @@ namespace RockWeb
                 }
 
                 // Cache all the attributes.
-                foreach ( var attribute in new Rock.Core.AttributeService().Queryable() )
+                foreach ( var attribute in new Rock.Model.AttributeService().Queryable() )
                 {
                     if ( qualifiers.ContainsKey( attribute.Id ) )
                         Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
@@ -627,7 +622,7 @@ namespace RockWeb
         void Page_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the updated page
-            Rock.Cms.Page page = e.Model as Rock.Cms.Page;
+            Rock.Model.Page page = e.Model as Rock.Model.Page;
             if ( page != null )
             {
                 // Check to see if the page being updated is cached
@@ -663,7 +658,7 @@ namespace RockWeb
         void Page_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted page
-            Rock.Cms.Page page = e.Model as Rock.Cms.Page;
+            Rock.Model.Page page = e.Model as Rock.Model.Page;
             if ( page != null )
             {
                 // Check to see if the page being updated is cached
@@ -691,7 +686,7 @@ namespace RockWeb
         void Block_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
         {
             // Get a reference to the update block instance
-            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            Rock.Model.Block block = e.Model as Rock.Model.Block;
             if ( block != null )
             {
                 // Flush the block instance from cache
@@ -711,7 +706,7 @@ namespace RockWeb
         void Block_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
         {
             // Get a reference to the deleted block instance
-            Rock.Cms.Block block = e.Model as Rock.Cms.Block;
+            Rock.Model.Block block = e.Model as Rock.Model.Block;
             if ( block != null )
             {
                 // Flush the block instance from cache

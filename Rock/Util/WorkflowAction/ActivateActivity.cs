@@ -12,7 +12,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Web.UI;
 
-namespace Rock.Util.WorkflowAction
+namespace Rock.Model.WorkflowAction
 {
     /// <summary>
     /// Activates a new activity for a given activity type
