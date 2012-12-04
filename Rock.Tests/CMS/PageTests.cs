@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -65,6 +66,16 @@ namespace Rock.Tests.Cms
                 Assert.NotNull( result.PageRoutes );
                 Assert.IsNotEmpty( result.PageRoutes );
             }
+
+            [Test]
+            public void ShouldCopyPageContexts()
+            {
+                var page = new Page() { PageContexts = new List<PageContext>() };
+                page.PageContexts.Add( new PageContext() );
+                dynamic result = page.ExportObject();
+                Assert.NotNull( result.PageContexts );
+                Assert.IsNotEmpty( result.PageContexts );
+            }
         }
 
         public class TheExportJsonMethod
@@ -123,20 +134,14 @@ namespace Rock.Tests.Cms
 
         public class TheImportJsonMethod
         {
-            [SetUp]
-            public void SetUp()
-            {
-                System.Diagnostics.Debugger.Launch();
-            }
-
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
                 var obj = new
-                {
-                    Name = "Foo Page",
-                    IsSystem = true
-                };
+                    {
+                        Name = "Foo Page",
+                        IsSystem = true
+                    };
 
                 var json = obj.ToJSON();
                 var page = new Page();
@@ -149,17 +154,17 @@ namespace Rock.Tests.Cms
             public void ShouldImportChildPages()
             {
                 var obj = new
-                {
-                    Name = "Parent",
-                    Pages = new List<dynamic> { new { Name = "Child" } }
-                };
+                    {
+                        Name = "Parent",
+                        Pages = new List<dynamic> { new { Name = "Child" } }
+                    };
 
                 var json = obj.ToJSON();
                 var page = new Page();
                 page.ImportJson( json );
                 Assert.IsNotNull( page.Pages );
                 Assert.IsNotEmpty( page.Pages );
-                Assert.AreEqual( page.Pages.First().Name, obj.Pages[ 0 ].Name );
+                Assert.AreEqual( page.Pages.First().Name, obj.Pages[0].Name );
             }
 
             [Test]
@@ -167,17 +172,17 @@ namespace Rock.Tests.Cms
             {
                 const string PAGE_NAME = "Child Page";
                 var obj = new
-                {
-                    Name = "Grandparent Page",
-                    Pages = new List<dynamic>
                     {
-                        new
-                        {
-                            Name = "Parent Page",
-                            Pages = new List<dynamic> { new { Name = PAGE_NAME } }
-                        }
-                    }
-                };
+                        Name = "Grandparent Page",
+                        Pages = new List<dynamic>
+                            {
+                                new
+                                    {
+                                        Name = "Parent Page",
+                                        Pages = new List<dynamic> { new { Name = PAGE_NAME } }
+                                    }
+                            }
+                    };
 
                 var json = obj.ToJSON();
                 var page = new Page();
@@ -192,34 +197,88 @@ namespace Rock.Tests.Cms
             public void ShouldImportBlocks()
             {
                 var obj = new
-                {
-                    Name = "Some Page",
-                    Blocks = new List<dynamic> { new { Name = "Some Block" } }
-                };
+                    {
+                        Name = "Some Page",
+                        Blocks = new List<dynamic> { new { Name = "Some Block" } }
+                    };
 
                 var json = obj.ToJSON();
                 var page = new Page();
                 page.ImportJson( json );
                 Assert.IsNotNull( page.Blocks );
                 Assert.IsNotEmpty( page.Blocks );
-                Assert.AreEqual( page.Blocks.First().Name, obj.Blocks[ 0 ].Name );
+                Assert.AreEqual( page.Blocks.First().Name, obj.Blocks[0].Name );
             }
 
             [Test]
             public void ShouldImportPageRoutes()
             {
                 var obj = new
-                {
-                    Name = "Some Page",
-                    PageRoutes = new List<dynamic> { new { Route = "/some/route" } }
-                };
+                    {
+                        Name = "Some Page",
+                        PageRoutes = new List<dynamic> { new { Route = "/some/route" } }
+                    };
 
                 var json = obj.ToJSON();
                 var page = new Page();
                 page.ImportJson( json );
                 Assert.IsNotNull( page.PageRoutes );
                 Assert.IsNotEmpty( page.PageRoutes );
-                Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes[ 0 ].Route );
+                Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes[0].Route );
+            }
+
+            [Test]
+            public void ShouldImportPageContexts()
+            {
+                Random random = new Random();
+                var id = random.Next();
+                var obj = new
+                    {
+                        Name = "Some Page",
+                        PageContexts = new List<dynamic> { new { PageId = id } }
+                    };
+
+                var json = obj.ToJSON();
+                var page = new Page();
+                page.ImportJson( json );
+                Assert.IsNotNull( page.PageContexts );
+                Assert.IsNotEmpty( page.PageContexts );
+                Assert.AreEqual( page.PageContexts.First().PageId, id );
+            }
+
+            [Test]
+            public void ShouldImportAttributes()
+            {
+                var obj = new
+                    {
+                        Name = "Some Page",
+                        Attributes = new Dictionary<string, dynamic> { { "foobar", null } }
+                    };
+
+                var json = obj.ToJSON();
+                var page = new Page();
+                page.ImportJson( json );
+                Assert.IsNotNull( page.Attributes );
+                Assert.IsNotEmpty( page.Attributes );
+                Assert.IsNull( page.Attributes.First().Value );
+            }
+
+            [Test]
+            public void ShouldImportAttributeValues()
+            {
+                var obj = new
+                    {
+                        Name = "Some Page",
+                        AttributeValues =
+                            new Dictionary<string, List<dynamic>> { { "foobar", new List<dynamic> { new { Value = "baz" } } } }
+                    };
+
+                var json = obj.ToJSON();
+                var page = new Page();
+                page.ImportJson( json );
+                Assert.IsNotNull( page.AttributeValues );
+                Assert.IsNotEmpty( page.AttributeValues );
+                Assert.AreEqual( page.AttributeValues.First().Value.First().Value, "baz" );
             }
         }
     }

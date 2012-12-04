@@ -351,7 +351,7 @@ namespace Rock.Cms
         /// <returns></returns>
         public object ExportObject()
         {
-            return MapPagesRecursive( this );
+            return ExportPagesRecursive( this );
         }
 
         /// <summary>
@@ -359,14 +359,15 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        public static dynamic MapPagesRecursive( Page page )
+        public static dynamic ExportPagesRecursive( Page page )
         {
             dynamic exportPage = new PageDto( page ).ToDynamic();
             exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
-            MapBlocks( page, exportPage );
-            MapPageRoutes( page, exportPage );
+            ExportBlocks( page, exportPage );
+            ExportPageRoutes( page, exportPage );
+            ExportPageContexts( page, exportPage );
 
             if ( page.Pages == null )
             {
@@ -377,7 +378,7 @@ namespace Rock.Cms
 
             foreach ( var childPage in page.Pages )
             {
-                exportPage.Pages.Add( MapPagesRecursive( childPage ) );
+                exportPage.Pages.Add( ExportPagesRecursive( childPage ) );
             }
 
             return exportPage;
@@ -388,7 +389,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
-        private static void MapBlocks( Page page, dynamic exportPage )
+        private static void ExportBlocks( Page page, dynamic exportPage )
         {
             if ( page.Blocks == null )
             {
@@ -408,7 +409,7 @@ namespace Rock.Cms
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
-        private static void MapPageRoutes( Page page, dynamic exportPage )
+        private static void ExportPageRoutes( Page page, dynamic exportPage )
         {
             if ( page.PageRoutes == null )
             {
@@ -423,6 +424,21 @@ namespace Rock.Cms
             }
         }
 
+        private static void ExportPageContexts( Page page, dynamic exportPage )
+        {
+            if ( page.PageContexts == null )
+            {
+                return;
+            }
+
+            exportPage.PageContexts = new List<dynamic>();
+
+            foreach ( var pageContext in page.PageContexts )
+            {
+                exportPage.PageContexts.Add( pageContext.ExportObject() );
+            }
+        }
+
         /// <summary>
         /// Imports the object from JSON.
         /// </summary>
@@ -431,24 +447,8 @@ namespace Rock.Cms
         {
             JsonConvert.PopulateObject( data, this );
             var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
-            //var dict = obj as IDictionary<string, object> ?? new Dictionary<string, object>();
-            //ImportPages( obj );
             ImportPagesRecursive( obj, this );
-            ImportBlocks( obj, this );
-            ImportPageRoutes( obj, this );
         }
-
-        //private void ImportPages( dynamic data )
-        //{
-            //var pages = dict[ "Pages" ] as IEnumerable<dynamic> ?? new List<dynamic>();
-            //this.Pages = new List<Page>();
-            //ImportPagesRecursive( data, this );
-
-            //foreach ( var page in pages )
-            //{
-            //    this.Pages.Add( ( (object) page ).ToModel<Page>() );
-            //}
-        //}
 
         private static void ImportPagesRecursive(dynamic data, Page page)
         {
@@ -466,52 +466,10 @@ namespace Rock.Cms
                 var newDict = p as IDictionary<string, object>;
                 page.Pages.Add( newPage );
 
-                if ( newDict.ContainsKey("Blocks") )
-                {
-                    ImportBlocks( p, newPage );
-                }
-
-                if ( newDict.ContainsKey("PageRoutes") )
-                {
-                    ImportPageRoutes( p, newPage );
-                }
-
                 if ( newDict.ContainsKey("Pages") )
                 {
                     ImportPagesRecursive( p, newPage );
                 }
-            }
-        }
-
-        private static void ImportBlocks( dynamic data, Page page )
-        {
-            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
-            page.Blocks = new List<Block>();
-
-            if ( !dict.ContainsKey( "Blocks" ) )
-            {
-                return;
-            }
-            
-            foreach ( var block in data.Blocks )
-            {
-                page.Blocks.Add( ( (object) block ).ToModel<Block>() );
-            }
-        }
-
-        private static void ImportPageRoutes( dynamic data, Page page )
-        {
-            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
-            page.PageRoutes = new List<PageRoute>();
-
-            if ( !dict.ContainsKey( "PageRoutes" ) )
-            {
-                return;
-            }
-
-            foreach ( var pageRoute in data.PageRoutes )
-            {
-                page.PageRoutes.Add( ( (object) pageRoute ).ToModel<PageRoute>() );
             }
         }
     }
