@@ -10,7 +10,7 @@ using System.Web.Compilation;
 
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Workflow POCO Service class

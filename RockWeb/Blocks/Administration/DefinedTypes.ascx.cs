@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( typeId ) )
                     typeId = PageParameter( "typeId" );
 
-                entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Core.DefinedValue" );
+                entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Model.DefinedValue" );
                 entityQualifierColumn = "DefinedTypeId";
                 canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
 

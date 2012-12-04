@@ -9,7 +9,7 @@ using System.Data.Entity.ModelConfiguration;
 using Rock.Model;
 using Rock.Data;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// PersonAccountLookup POCO class.

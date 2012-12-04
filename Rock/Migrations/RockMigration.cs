@@ -338,7 +338,7 @@ namespace Rock.Migrations
 
                 -- Delete existing attribute first (might have been created by Rock system)
                 DELETE [Attribute] 
-                WHERE [Entity] = 'Rock.Cms.Block'
+                WHERE [Entity] = 'Rock.Model.Block'
                 AND [EntityQualifierColumn] = 'BlockTypeId'
                 AND [EntityQualifierValue] = CAST(@BlockTypeId as varchar)
                 AND [Key] = '{2}'
@@ -349,7 +349,7 @@ namespace Rock.Migrations
                     [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
                     [Guid])
                 VALUES(
-                    1,@FieldTypeId,'Rock.Cms.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
+                    1,@FieldTypeId,'Rock.Model.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
                     '{2}','{3}','{4}','{5}',
                     {6},0,'{7}',0,0,
                     '{8}')
@@ -469,7 +469,7 @@ namespace Rock.Migrations
 
                 -- Delete existing attribute first (might have been created by Rock system)
                 DELETE [Attribute] 
-                WHERE [Entity] = 'Rock.Cms.Block'
+                WHERE [Entity] = 'Rock.Model.Block'
                 AND [EntityQualifierColumn] = 'BlockTypeId'
                 AND [EntityQualifierValue] = CAST(@BlockTypeId as varchar)
                 AND [Key] = '{2}'
@@ -480,7 +480,7 @@ namespace Rock.Migrations
                     [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
                     [Guid])
                 VALUES(
-                    1,@FieldTypeId,'Rock.Cms.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
+                    1,@FieldTypeId,'Rock.Model.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
                     '{2}','{3}','{4}','{5}',
                     {6},{7},'{8}',{9},{10},
                     '{11}')

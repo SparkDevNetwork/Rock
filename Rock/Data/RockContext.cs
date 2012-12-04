@@ -381,7 +381,7 @@ namespace Rock.Data
         /// <value>
         /// The actions.
         /// </value>
-        public DbSet<Rock.Util.Action> Actions { get; set; }
+        public DbSet<Rock.Model.Action> Actions { get; set; }
 
         /// <summary>
         /// Gets or sets the action types.
@@ -389,7 +389,7 @@ namespace Rock.Data
         /// <value>
         /// The action types.
         /// </value>
-        public DbSet<Rock.Util.ActionType> ActionTypes { get; set; }
+        public DbSet<Rock.Model.ActionType> ActionTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the activities.
@@ -397,7 +397,7 @@ namespace Rock.Data
         /// <value>
         /// The activities.
         /// </value>
-        public DbSet<Rock.Util.Activity> Activities { get; set; }
+        public DbSet<Rock.Model.Activity> Activities { get; set; }
 
         /// <summary>
         /// Gets or sets the activity types.
@@ -405,7 +405,7 @@ namespace Rock.Data
         /// <value>
         /// The activity types.
         /// </value>
-        public DbSet<Rock.Util.ActivityType> ActivityTypes { get; set; }
+        public DbSet<Rock.Model.ActivityType> ActivityTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.
@@ -413,7 +413,7 @@ namespace Rock.Data
         /// <value>
         /// the Jobs.
         /// </value>
-        public DbSet<Rock.Util.ServiceJob> Jobs { get; set; }
+        public DbSet<Rock.Model.ServiceJob> Jobs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.
@@ -421,7 +421,7 @@ namespace Rock.Data
         /// <value>
         /// The workflows.
         /// </value>
-        public DbSet<Rock.Util.Workflow> Workflows { get; set; }
+        public DbSet<Rock.Model.Workflow> Workflows { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow logs.
@@ -429,7 +429,7 @@ namespace Rock.Data
         /// <value>
         /// The workflow logs.
         /// </value>
-        public DbSet<Rock.Util.WorkflowLog> WorkflowLogs { get; set; }
+        public DbSet<Rock.Model.WorkflowLog> WorkflowLogs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow triggers.
@@ -437,7 +437,7 @@ namespace Rock.Data
         /// <value>
         /// The entity type workflow triggers.
         /// </value>
-        public DbSet<Rock.Util.WorkflowTrigger> WorkflowTriggers { get; set; }
+        public DbSet<Rock.Model.WorkflowTrigger> WorkflowTriggers { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow types.
@@ -445,7 +445,7 @@ namespace Rock.Data
         /// <value>
         /// The workflow types.
         /// </value>
-        public DbSet<Rock.Util.WorkflowType> WorkflowTypes { get; set; }
+        public DbSet<Rock.Model.WorkflowType> WorkflowTypes { get; set; }
 
         #endregion
 
@@ -457,7 +457,7 @@ namespace Rock.Data
         /// <value>
         /// The batches.
         /// </value>
-        public DbSet<Rock.Financial.FinancialBatch> Batches { get; set; }
+        public DbSet<Rock.Model.FinancialBatch> Batches { get; set; }
 
         /// <summary>
         /// Gets or sets the fund.
@@ -465,7 +465,7 @@ namespace Rock.Data
         /// <value>
         /// The fund.
         /// </value>
-        public DbSet<Rock.Financial.Fund> Fund { get; set; }
+        public DbSet<Rock.Model.Fund> Fund { get; set; }
 
         /// <summary>
         /// Gets or sets the pledges.
@@ -473,7 +473,7 @@ namespace Rock.Data
         /// <value>
         /// The pledges.
         /// </value>
-        public DbSet<Rock.Financial.Pledge> Pledges { get; set; }
+        public DbSet<Rock.Model.Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -481,7 +481,7 @@ namespace Rock.Data
         /// <value>
         /// The transactions.
         /// </value>
-        public DbSet<Rock.Financial.FinancialTransaction> Transactions { get; set; }
+        public DbSet<Rock.Model.FinancialTransaction> Transactions { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -489,7 +489,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
-        public DbSet<Rock.Financial.FinancialTransactionDetail> TransactionDetails { get; set; }
+        public DbSet<Rock.Model.FinancialTransactionDetail> TransactionDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the person account lookups.
@@ -497,7 +497,7 @@ namespace Rock.Data
         /// <value>
         /// The person account lookups.
         /// </value>
-        public DbSet<Rock.Financial.PersonAccount> PersonAccountLookups { get; set; }
+        public DbSet<Rock.Model.PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -505,7 +505,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction funds.
         /// </value>
-        public DbSet<Rock.Financial.FinancialTransactionFund> TransactionFunds { get; set; }
+        public DbSet<Rock.Model.FinancialTransactionFund> TransactionFunds { get; set; }
 
         #endregion
 
@@ -599,23 +599,23 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new Rock.Model.PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new Rock.Model.PhoneNumberConfiguration() );
 
-            modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.BatchConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.FundConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.TransactionConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.TransactionDetailConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.PersonAccountLookupConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.TransactionFundConfiguration() );
 
-            modelBuilder.Configurations.Add( new Rock.Util.ActionConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActivityConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActivityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTriggerConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.ActionConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.ActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.ActivityConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.ActivityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.JobConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.WorkflowConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.WorkflowLogConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.WorkflowTriggerConfiguration() );
+            modelBuilder.Configurations.Add( new Rock.Model.WorkflowTypeConfiguration() );
         }
     }
 }

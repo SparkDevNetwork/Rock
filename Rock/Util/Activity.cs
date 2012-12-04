@@ -12,7 +12,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Activity POCO Entity.
@@ -116,7 +116,7 @@ namespace Rock.Util
         /// <value>
         /// The active actions.
         /// </value>
-        public virtual IEnumerable<Rock.Util.Action> ActiveActions
+        public virtual IEnumerable<Rock.Model.Action> ActiveActions
         {
             get
             {

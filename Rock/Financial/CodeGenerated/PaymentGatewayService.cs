@@ -15,7 +15,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// PaymentGateway Service class

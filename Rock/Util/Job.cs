@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Job POCO Entity.

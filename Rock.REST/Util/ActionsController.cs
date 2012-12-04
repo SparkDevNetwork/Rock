@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Rest.Util
 {
     /// <summary>
     /// Actions REST API
     /// </summary>
-    public partial class ActionsController : Rock.Rest.ApiController<Rock.Util.Action, Rock.Util.ActionDto>
+    public partial class ActionsController : Rock.Rest.ApiController<Rock.Model.Action, Rock.Model.ActionDto>
     {
-        public ActionsController() : base( new Rock.Util.ActionService() ) { } 
+        public ActionsController() : base( new Rock.Model.ActionService() ) { } 
     }
 }

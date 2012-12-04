@@ -12,7 +12,7 @@ using Quartz;
 
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Job POCO Service class
@@ -49,7 +49,7 @@ namespace Rock.Util
 
             // create attributes if needed 
             // TODO: next line should be moved to Job creation UI, when it's created
-            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Util.Job" ).Id;
+            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Job" ).Id;
             using ( new UnitOfWorkScope() )
             {
                 Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", job.Class, null );

@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Financial;
+using Rock.Model;
 
 namespace Rock.Rest.Financial
 {
     /// <summary>
     /// Funds REST API
     /// </summary>
-    public partial class FundsController : Rock.Rest.ApiController<Rock.Financial.Fund, Rock.Financial.FundDto>
+    public partial class FundsController : Rock.Rest.ApiController<Rock.Model.Fund, Rock.Model.FundDto>
     {
-        public FundsController() : base( new Rock.Financial.FundService() ) { } 
+        public FundsController() : base( new Rock.Model.FundService() ) { } 
     }
 }

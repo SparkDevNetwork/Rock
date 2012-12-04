@@ -11,7 +11,7 @@ using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// Transaction POCO class.

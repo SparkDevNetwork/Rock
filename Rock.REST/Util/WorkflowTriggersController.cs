@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Rest.Util
 {
     /// <summary>
     /// WorkflowTriggers REST API
     /// </summary>
-    public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Util.WorkflowTrigger, Rock.Util.WorkflowTriggerDto>
+    public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Model.WorkflowTrigger, Rock.Model.WorkflowTriggerDto>
     {
-        public WorkflowTriggersController() : base( new Rock.Util.WorkflowTriggerService() ) { } 
+        public WorkflowTriggersController() : base( new Rock.Model.WorkflowTriggerService() ) { } 
     }
 }

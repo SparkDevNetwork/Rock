@@ -10,8 +10,8 @@
 
         <fieldset>
             <legend>Settings</legend>
-            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="Name" />
-            <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.Cms.Block, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
+            <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
         </fieldset>
 
         <asp:placeholder id="phAttributes" runat="server"></asp:placeholder>
