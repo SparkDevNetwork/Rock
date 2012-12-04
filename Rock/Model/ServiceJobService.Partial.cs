@@ -17,7 +17,7 @@ namespace Rock.Model
     /// <summary>
     /// Job POCO Service class
     /// </summary>
-    public partial class JobService : Service<ServiceJob, ServiceJobDto>
+    public partial class ServiceJobService : Service<ServiceJob, ServiceJobDto>
     {
         /// <summary>
         /// Gets the active jobs.

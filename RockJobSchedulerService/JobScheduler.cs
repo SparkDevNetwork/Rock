@@ -39,7 +39,7 @@ namespace RockJobSchedulerService
             sched = sf.GetScheduler();
 
             // get list of active jobs
-            JobService jobService = new JobService();
+            ServiceJobService jobService = new ServiceJobService();
             foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
             {
                 try
