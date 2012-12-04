@@ -613,15 +613,7 @@ order by [parentTable]
                 baseName = baseName.Substring( 0, baseName.Length - 5 );
             }
 
-            string restNamespace = type.Namespace;
-            if ( restNamespace.StartsWith( baseName + ".", true, null ) )
-            {
-                restNamespace = baseName + ".Rest" + restNamespace.Substring( baseName.Length );
-            }
-            else
-            {
-                restNamespace = ".Rest." + restNamespace;
-            }
+            string restControllersNamespace = ".Rest.Controllers";
 
             var properties = GetEntityProperties( type );
 
@@ -643,7 +635,7 @@ order by [parentTable]
             sb.AppendFormat( "using {0};" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restNamespace );
+            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restControllersNamespace );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
@@ -655,7 +647,7 @@ order by [parentTable]
             sb.AppendLine( "}" );
 
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restNamespace ).FullName, pluralizedName + "Controller.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restControllersNamespace ).FullName, "CodeGenerated", pluralizedName + "Controller.cs" ) );
             WriteFile( file, sb );
         }
 
@@ -814,5 +806,6 @@ order by [parentTable]
 
             return properties;
         }
+        
     }
 }
