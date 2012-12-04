@@ -16,7 +16,7 @@ namespace RockWeb.Blocks.Administration
 {
     public partial class ScheduledJobs : RockBlock
     {
-        private JobService jobService = new JobService();
+        private ServiceJobService jobService = new ServiceJobService();
 
 
         #region Control Methods
