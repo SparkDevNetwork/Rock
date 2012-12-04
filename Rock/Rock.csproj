@@ -207,12 +207,13 @@
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201212031816107_EntityType.cs" />
-    <Compile Include="Migrations\201212031816107_EntityType.Designer.cs">
-      <DependentUpon>201212031816107_EntityType.cs</DependentUpon>
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212041249372_EntityTypesAdmin.cs" />
+    <Compile Include="Migrations\201212041249372_EntityTypesAdmin.Designer.cs">
+      <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
@@ -743,10 +744,11 @@
     <EmbeddedResource Include="Migrations\201211292334047_CreateDatabase.resx">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201212031816107_EntityType.resx">
-      <DependentUpon>201212031816107_EntityType.cs</DependentUpon>
     <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212041249372_EntityTypesAdmin.resx">
+      <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

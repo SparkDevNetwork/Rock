@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class EntityType : IMigrationMetadata
+    public sealed partial class EntityTypesAdmin : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(EntityType));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(EntityTypesAdmin));
         
         string IMigrationMetadata.Id
         {
-            get { return "201212031816107_EntityType"; }
+            get { return "201212041249372_EntityTypesAdmin"; }
         }
         
         string IMigrationMetadata.Source
