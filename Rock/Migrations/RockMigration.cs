@@ -360,6 +360,8 @@ namespace Rock.Migrations
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
         /// <param name="name">The name.</param>
         /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>

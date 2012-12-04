@@ -106,6 +106,20 @@
         <!-- Ad Details Controls -->
         <asp:Panel ID="pnlMarketingCampaignAdEditor" runat="server" Visible="false">
             <asp:HiddenField ID="hfMarketingCampaignAdId" runat="server" />
+            <asp:UpdatePanel ID="upAdApproval" runat="server">
+                <ContentTemplate>
+                    <div class="well pull-right">
+                        <Rock:LabeledText ID="ltMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
+                        <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
+                        <div class="controls">
+                            <asp:Label ID="lblMarketingCampaignAdStatusPerson" runat="server" />
+                        </div>
+                        <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
+                        <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn btn-primary btn-mini" Text="Approve" />
+                        <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-mini" Text="Deny" />
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
             <fieldset>
                 <legend>
                     <asp:Literal ID="lActionTitleAd" runat="server" />
@@ -114,21 +128,11 @@
                     <div class="span6">
                         <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Cms.MarketingCampaignAdTypeDto, Rock" PropertyName="Name"
                             LabelText="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlMarketingCampaignAdType_SelectedIndexChanged" />
-                        <asp:UpdatePanel ID="upAdApproval" runat="server">
-                            <ContentTemplate>
-                                <Rock:LabeledText ID="ltMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
-                                <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
-                                <Rock:LabeledText ID="ltMarketingCampaignAdStatusPerson" runat="server" LabelText="by" />
-                                <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
-                                <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn btn-primary btn-mini" Text="Approve" />
-                                <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-mini" Text="Deny" />
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
+                        <Rock:DateTimePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" DatePickerType="Date" Required="true" />
+                        <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date" Required="true" />
                     </div>
 
                     <div class="span6">
-                        <Rock:DateTimePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" DatePickerType="Date" Required="true" />
-                        <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date" Required="true" />
                         <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Url" LabelText="Url" />
                         <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Cms.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
                     </div>
@@ -143,6 +147,18 @@
                 </div>
             </fieldset>
         </asp:Panel>
+        <script type="text/javascript">
+            // change approval status to pending if any values are changed
+            Sys.Application.add_load(function () {
+                $("#<%=upMarketingCampaigns.ClientID%> :input").change(function () {
+                    $(".MarketingCampaignAdStatus").removeClass('alert-success alert-error').addClass('alert-info');
+                    $(".MarketingCampaignAdStatus").text('Pending Approval');
 
+                    $('#<%=hfMarketingCampaignAdStatus.ClientID%>').val("1");
+                    $('#<%=hfMarketingCampaignAdStatusPersonId.ClientID%>').val("");
+                    $("#<%=lblMarketingCampaignAdStatusPerson.ClientID %>").hide();
+                });
+            })
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
