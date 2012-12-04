@@ -12,7 +12,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
@@ -74,9 +74,9 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
+            Rock.Model.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
             if ( content == null )
-                content = new Rock.Cms.HtmlContent();
+                content = new Rock.Model.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
             {
-                Rock.Cms.HtmlContent content = null;
+                Rock.Model.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Cms
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.Cms.HtmlContent();
+                    content = new Rock.Model.HtmlContent();
                     content.BlockId = CurrentBlock.Id;
                     content.EntityValue = entityValue;
 
@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
+                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
                     html = content.Content;
@@ -301,15 +301,15 @@ namespace RockWeb.Blocks.Cms
             var HtmlService = new HtmlContentService();
             var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-            var personService = new Rock.Crm.PersonService();
-            var versionAudits = new Dictionary<int, Rock.Core.Audit>();
+            var personService = new Rock.Model.PersonService();
+            var versionAudits = new Dictionary<int, Rock.Model.Audit>();
             var modifiedPersons = new Dictionary<int, string>();
 
             foreach ( var version in content )
             {
                 var lastAudit = HtmlService.Audits( version )
-                    .Where( a => a.AuditType == Rock.Core.AuditType.Add ||
-                        a.AuditType == Rock.Core.AuditType.Modify )
+                    .Where( a => a.AuditType == Rock.Model.AuditType.Add ||
+                        a.AuditType == Rock.Model.AuditType.Modify )
                     .OrderByDescending( h => h.DateTime )
                     .FirstOrDefault();
                 if ( lastAudit != null )

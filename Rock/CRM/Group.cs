@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Crm    
+namespace Rock.Model    
 {
     /// <summary>
     /// Group POCO Entity.
@@ -151,9 +151,9 @@ namespace Rock.Crm
         /// Gets or sets the Campus.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Crm.Campus"/> object.
+        /// A <see cref="Rock.Model.Campus"/> object.
         /// </value>
-        public virtual Rock.Crm.Campus Campus { get; set; }
+        public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

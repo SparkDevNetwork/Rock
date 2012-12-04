@@ -12,7 +12,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Web.Services;
 
-using Rock.Core;
+using Rock.Model;
 using Rock.Field;
 using Rock.Web.UI.Controls;
 
@@ -27,9 +27,9 @@ namespace RockWeb.Blocks.Administration
         protected string entityQualifierColumn = string.Empty;
                         
         private bool canConfigure = false;
-        private Rock.Core.DefinedTypeService typeService = new Rock.Core.DefinedTypeService();
-        private Rock.Core.DefinedValueService valueService = new Rock.Core.DefinedValueService();
-        private Rock.Core.AttributeService attributeService = new Rock.Core.AttributeService();
+        private Rock.Model.DefinedTypeService typeService = new Rock.Model.DefinedTypeService();
+        private Rock.Model.DefinedValueService valueService = new Rock.Model.DefinedValueService();
+        private Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
 
         #endregion
 
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGridType_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.DefinedType type = typeService.Get( (int)rGridType.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.DefinedType type = typeService.Get( (int)rGridType.DataKeys[e.RowIndex]["id"] );
             
             if ( type != null )
             {
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGridValue_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
 
             if ( value != null)
             {
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Administration
         
         protected void rGridAttribute_Delete( object sender, RowEventArgs e )
         {
-            Rock.Core.Attribute attribute = attributeService.Get( (int)rGridAttribute.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Attribute attribute = attributeService.Get( (int)rGridAttribute.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );

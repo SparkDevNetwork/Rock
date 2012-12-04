@@ -4,15 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Web;
-using System.IO;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-
 using Quartz;
-using Rock.Cms;
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Jobs

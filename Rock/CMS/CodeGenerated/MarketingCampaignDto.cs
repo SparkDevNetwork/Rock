@@ -16,7 +16,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Data Transfer Object for MarketingCampaign object

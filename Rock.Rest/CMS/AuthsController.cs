@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// Auths REST API
     /// </summary>
-    public partial class AuthsController : Rock.Rest.ApiController<Rock.Cms.Auth, Rock.Cms.AuthDto>
+    public partial class AuthsController : Rock.Rest.ApiController<Rock.Model.Auth, Rock.Model.AuthDto>
     {
-        public AuthsController() : base( new Rock.Cms.AuthService() ) { } 
+        public AuthsController() : base( new Rock.Model.AuthService() ) { } 
     }
 }

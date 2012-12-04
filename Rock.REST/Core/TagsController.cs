@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// Tags REST API
     /// </summary>
-    public partial class TagsController : Rock.Rest.ApiController<Rock.Core.Tag, Rock.Core.TagDto>
+    public partial class TagsController : Rock.Rest.ApiController<Rock.Model.Tag, Rock.Model.TagDto>
     {
-        public TagsController() : base( new Rock.Core.TagService() ) { } 
+        public TagsController() : base( new Rock.Model.TagService() ) { } 
     }
 }

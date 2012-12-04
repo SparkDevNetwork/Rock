@@ -95,7 +95,7 @@ namespace Rock.Util
         /// <value>
         /// The type of the entity.
         /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the workflow.

@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Group Type POCO Service class

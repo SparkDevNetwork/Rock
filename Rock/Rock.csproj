@@ -210,6 +210,10 @@
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212032258539_ToolsMenu.cs" />
+    <Compile Include="Migrations\201212032258539_ToolsMenu.Designer.cs">
+      <DependentUpon>201212032258539_ToolsMenu.cs</DependentUpon>
+    </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
@@ -741,6 +745,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212032258539_ToolsMenu.resx">
+      <DependentUpon>201212032258539_ToolsMenu.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

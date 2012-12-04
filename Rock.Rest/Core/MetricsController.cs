@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// Metrics REST API
     /// </summary>
-    public partial class MetricsController : Rock.Rest.ApiController<Rock.Core.Metric, Rock.Core.MetricDto>
+    public partial class MetricsController : Rock.Rest.ApiController<Rock.Model.Metric, Rock.Model.MetricDto>
     {
-        public MetricsController() : base( new Rock.Core.MetricService() ) { } 
+        public MetricsController() : base( new Rock.Model.MetricService() ) { } 
     }
 }

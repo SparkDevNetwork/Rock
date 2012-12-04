@@ -11,7 +11,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// MetricValue POCO Entity.

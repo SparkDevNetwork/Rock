@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace RockWeb.Blocks
 {
@@ -26,7 +26,7 @@ namespace RockWeb.Blocks
 
         protected void Page_Load( object sender, EventArgs e )
         {
-            person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+            person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Model.Person;
             if (person == null)
             {
                 PersonService personService = new PersonService();

@@ -11,7 +11,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Attribute POCO Entity.
@@ -51,7 +51,7 @@ namespace Rock.Core
         /// <value>
         /// The type of the entity.
         /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.

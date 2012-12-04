@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// DISC Class for administering and scoring a DISC Assessment

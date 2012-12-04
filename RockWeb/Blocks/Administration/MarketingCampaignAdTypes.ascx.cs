@@ -7,15 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
 using Rock.Constants;
-using Rock.Core;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Core.Attribute;
+using Attribute = Rock.Model.Attribute;
 
 public partial class MarketingCampaignAdTypes : RockBlock
 {

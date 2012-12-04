@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Rest.Crm
 {
     /// <summary>
     /// Locations REST API
     /// </summary>
-    public partial class LocationsController : Rock.Rest.ApiController<Rock.Crm.Location, Rock.Crm.LocationDto>
+    public partial class LocationsController : Rock.Rest.ApiController<Rock.Model.Location, Rock.Model.LocationDto>
     {
-        public LocationsController() : base( new Rock.Crm.LocationService() ) { } 
+        public LocationsController() : base( new Rock.Model.LocationService() ) { } 
     }
 }

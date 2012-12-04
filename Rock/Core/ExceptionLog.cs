@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Exception Log POCO Entity.
@@ -66,7 +66,7 @@ namespace Rock.Core
         /// <value>
         /// The created by person.
         /// </value>
-        public virtual Rock.Crm.Person CreatedByPerson { get; set; }
+        public virtual Rock.Model.Person CreatedByPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the Has Inner Exception.

@@ -10,7 +10,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// Block Type POCO Service class

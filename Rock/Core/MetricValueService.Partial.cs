@@ -9,7 +9,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// MetricValue POCO Service class
@@ -21,7 +21,7 @@ namespace Rock.Core
         /// </summary>
         /// <param name="metricId">metricId.</param>
         /// <returns>An enumerable list of MetricValue objects.</returns>
-        public IEnumerable<Rock.Core.MetricValue> GetByMetricId( int? metricId )
+        public IEnumerable<Rock.Model.MetricValue> GetByMetricId( int? metricId )
         {
             return Repository.Find( t => ( t.MetricId == metricId || ( metricId == null && t.MetricId == null ) ) ).OrderBy( t => t.Order );
         }

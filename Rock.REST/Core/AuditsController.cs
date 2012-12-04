@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// Audits REST API
     /// </summary>
-    public partial class AuditsController : Rock.Rest.ApiController<Rock.Core.Audit, Rock.Core.AuditDto>
+    public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit, Rock.Model.AuditDto>
     {
-        public AuditsController() : base( new Rock.Core.AuditService() ) { } 
+        public AuditsController() : base( new Rock.Model.AuditService() ) { } 
     }
 }

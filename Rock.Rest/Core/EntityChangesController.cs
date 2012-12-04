@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// EntityChanges REST API
     /// </summary>
-    public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Core.EntityChange, Rock.Core.EntityChangeDto>
+    public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Model.EntityChange, Rock.Model.EntityChangeDto>
     {
-        public EntityChangesController() : base( new Rock.Core.EntityChangeService() ) { } 
+        public EntityChangesController() : base( new Rock.Model.EntityChangeService() ) { } 
     }
 }

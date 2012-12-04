@@ -8,9 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Crm;
-using Rock.Core;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Financial
 {

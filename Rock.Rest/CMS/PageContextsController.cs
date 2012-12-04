@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// PageContexts REST API
     /// </summary>
-    public partial class PageContextsController : Rock.Rest.ApiController<Rock.Cms.PageContext, Rock.Cms.PageContextDto>
+    public partial class PageContextsController : Rock.Rest.ApiController<Rock.Model.PageContext, Rock.Model.PageContextDto>
     {
-        public PageContextsController() : base( new Rock.Cms.PageContextService() ) { } 
+        public PageContextsController() : base( new Rock.Model.PageContextService() ) { } 
     }
 }

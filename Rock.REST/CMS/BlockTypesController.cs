@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// BlockTypes REST API
     /// </summary>
-    public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Cms.BlockType, Rock.Cms.BlockTypeDto>
+    public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType, Rock.Model.BlockTypeDto>
     {
-        public BlockTypesController() : base( new Rock.Cms.BlockTypeService() ) { } 
+        public BlockTypesController() : base( new Rock.Model.BlockTypeService() ) { } 
     }
 }

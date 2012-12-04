@@ -12,7 +12,7 @@ using System.Web.UI.WebControls;
 using System.Xml;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Util;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;

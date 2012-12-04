@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// AttributeValues REST API
     /// </summary>
-    public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Core.AttributeValue, Rock.Core.AttributeValueDto>
+    public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Model.AttributeValue, Rock.Model.AttributeValueDto>
     {
-        public AttributeValuesController() : base( new Rock.Core.AttributeValueService() ) { } 
+        public AttributeValuesController() : base( new Rock.Model.AttributeValueService() ) { } 
     }
 }

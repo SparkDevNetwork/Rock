@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Core
+namespace Rock.Model
 {
     /// <summary>
     /// Entity Change POCO Entity.
@@ -86,7 +86,7 @@ namespace Rock.Core
         /// <value>
         /// The type of the entity.
         /// </value>
-        public virtual Core.EntityType EntityType { get; set; }
+        public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the Person.
@@ -94,7 +94,7 @@ namespace Rock.Core
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
-        public virtual Rock.Crm.Person Person { get; set; }
+        public virtual Rock.Model.Person Person { get; set; }
 
         /// <summary>
         /// Gets the dto.

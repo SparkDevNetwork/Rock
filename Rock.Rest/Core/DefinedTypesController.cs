@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// DefinedTypes REST API
     /// </summary>
-    public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Core.DefinedType, Rock.Core.DefinedTypeDto>
+    public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType, Rock.Model.DefinedTypeDto>
     {
-        public DefinedTypesController() : base( new Rock.Core.DefinedTypeService() ) { } 
+        public DefinedTypesController() : base( new Rock.Model.DefinedTypeService() ) { } 
     }
 }

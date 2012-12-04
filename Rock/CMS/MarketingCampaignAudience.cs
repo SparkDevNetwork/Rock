@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// MarketingCampaignAudience POCO Entity
@@ -71,7 +71,7 @@ namespace Rock.Cms
             {
                 if ( AudienceTypeValue == null )
                 {
-                    AudienceTypeValue = Core.DefinedValue.Read( AudienceTypeValueId );
+                    AudienceTypeValue = Model.DefinedValue.Read( AudienceTypeValueId );
                 }
                 
                 return AudienceTypeValue.Name;
@@ -92,7 +92,7 @@ namespace Rock.Cms
         /// <value>
         /// The audience type value.
         /// </value>
-        public virtual Core.DefinedValue AudienceTypeValue { get; set; }
+        public virtual Model.DefinedValue AudienceTypeValue { get; set; }
     }
 
     /// <summary>

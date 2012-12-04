@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Rest.Core
 {
     /// <summary>
     /// EntityTypes REST API
     /// </summary>
-    public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Core.EntityType, Rock.Core.EntityTypeDto>
+    public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Model.EntityType, Rock.Model.EntityTypeDto>
     {
-        public EntityTypesController() : base( new Rock.Core.EntityTypeService() ) { } 
+        public EntityTypesController() : base( new Rock.Model.EntityTypeService() ) { } 
     }
 }

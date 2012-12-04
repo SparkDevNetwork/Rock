@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Cms
 {
     /// <summary>
     /// UserLogins REST API
     /// </summary>
-    public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Cms.UserLogin, Rock.Cms.UserLoginDto>
+    public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Model.UserLogin, Rock.Model.UserLoginDto>
     {
-        public UserLoginsController() : base( new Rock.Cms.UserLoginService() ) { } 
+        public UserLoginsController() : base( new Rock.Model.UserLoginService() ) { } 
     }
 }

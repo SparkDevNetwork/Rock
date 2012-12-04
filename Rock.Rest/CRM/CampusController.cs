@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Rest.Crm
 {
     /// <summary>
     /// Campus REST API
     /// </summary>
-    public partial class CampusController : Rock.Rest.ApiController<Rock.Crm.Campus, Rock.Crm.CampusDto>
+    public partial class CampusController : Rock.Rest.ApiController<Rock.Model.Campus, Rock.Model.CampusDto>
     {
-        public CampusController() : base( new Rock.Crm.CampusService() ) { } 
+        public CampusController() : base( new Rock.Model.CampusService() ) { } 
     }
 }

@@ -115,12 +115,12 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
         }
 
-        protected virtual Rock.Cms.UserLogin CurrentUser()
+        protected virtual Rock.Model.UserLogin CurrentUser()
         {
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userService = new Rock.Cms.UserService();
+                var userService = new Rock.Model.UserService();
                 var user = userService.GetByUserName( principal.Identity.Name );
 
                 if ( user != null )

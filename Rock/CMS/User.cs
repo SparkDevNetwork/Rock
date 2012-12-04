@@ -14,7 +14,7 @@ using System.Web.Hosting;
 
 using Rock.Data;
 
-namespace Rock.Cms
+namespace Rock.Model
 {
     /// <summary>
     /// User POCO Entity.
@@ -193,7 +193,7 @@ namespace Rock.Cms
         /// <value>
         /// The person.
         /// </value>
-        public virtual Crm.Person Person { get; set; }
+        public virtual Model.Person Person { get; set; }
         
         /// <summary>
         /// Static Method to return an object based on the id

@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
 
         private bool canConfigure = false;
         private Rock.Web.Cache.PageCache _page = null;
-        private Rock.Cms.PageService pageService = new Rock.Cms.PageService();
+        private Rock.Model.PageService pageService = new Rock.Model.PageService();
 
         #endregion
 
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            Rock.Cms.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Page page = pageService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
             if ( page != null )
             {
                 Rock.Web.Cache.PageCache.Flush( page.Id );
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Rock.Cms.Page page;
+            Rock.Model.Page page;
 
             int pageId = 0;
             if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pageId == 0 )
             {
-                page = new Rock.Cms.Page();
+                page = new Rock.Model.Page();
 
                 if ( _page != null )
                 {
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administration
                 page.EnableViewState = true;
                 page.IncludeAdminFooter = true;
 
-                Rock.Cms.Page lastPage =
+                Rock.Model.Page lastPage =
                     pageService.GetByParentPageId( _page.Id ).
                         OrderByDescending( b => b.Order ).FirstOrDefault();
 
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            Rock.Cms.Page page = pageService.Get( pageId );
+            Rock.Model.Page page = pageService.Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

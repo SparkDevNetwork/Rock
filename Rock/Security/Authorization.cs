@@ -8,8 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Rock.Cms;
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Security
 {
@@ -183,7 +182,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public static bool Authorized( ISecured entity, string action, Rock.Crm.Person person )
+        public static bool Authorized( ISecured entity, string action, Rock.Model.Person person )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -479,13 +478,13 @@ namespace Rock.Security
                 // All Users
                 switch ( SpecialRole )
                 {
-                    case Cms.SpecialRole.AllUsers:
+                    case Model.SpecialRole.AllUsers:
                         return "All Users";
 
-                    case Cms.SpecialRole.AllAuthenticatedUsers:
+                    case Model.SpecialRole.AllAuthenticatedUsers:
                         return "All Authenticated Users";
 
-                    case Cms.SpecialRole.AllUnAuthenticatedUsers:
+                    case Model.SpecialRole.AllUnAuthenticatedUsers:
                         return "All Un-Authenticated Users";
 
                     default:

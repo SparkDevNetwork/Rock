@@ -12,7 +12,7 @@ using System.Web;
 
 using Rock.Data;
 
-namespace Rock.Crm
+namespace Rock.Model
 {
     /// <summary>
     /// Campus POCO Entity.

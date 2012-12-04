@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Web.UI
 {

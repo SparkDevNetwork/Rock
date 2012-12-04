@@ -8,7 +8,7 @@ using System.Web.Http.Filters;
 using System.ServiceModel.Channels;
 using System.Security.Principal;
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Rest.Filters
 {

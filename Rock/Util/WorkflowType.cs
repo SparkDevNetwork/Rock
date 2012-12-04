@@ -9,10 +9,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using Rock.Cms;
-using Rock.Core;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Util
 {
