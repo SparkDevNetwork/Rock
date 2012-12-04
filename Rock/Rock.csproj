@@ -215,6 +215,9 @@
     <Compile Include="Migrations\201212041249372_EntityTypesAdmin.Designer.cs">
       <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\Attendance.cs" />
+    <Compile Include="Model\Schedule.cs" />
+    <Compile Include="Model\Device.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
