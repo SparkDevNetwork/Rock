@@ -23,7 +23,7 @@ namespace Rock.Migrations
             AddColumn("dbo.EntityType", "IsSecured", c => c.Boolean(nullable: false));
 
             AddBlockType( "Entity Types", "Administer the IEntity entity types", "~/Blocks/Administration/EntityTypes.ascx", "8098DF5D-4B87-4FAF-BA65-E017C5A93353" );
-            AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "Entity Types", "Edit the friendly name and default security for each entity type (model)", "F7F41856-F7EA-49A8-9D9B-917AC1964602" );
+            AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "Business Object Administration", "Edit the name and default security for each of the business objects in Rock", "F7F41856-F7EA-49A8-9D9B-917AC1964602" );
             AddBlock( "F7F41856-F7EA-49A8-9D9B-917AC1964602", "8098DF5D-4B87-4FAF-BA65-E017C5A93353", "Entity Types", "Content", "8139E294-EAD2-48C2-9061-91EFDFD18836" );
 
             Sql( @"UPDATE [EntityType] SET [Name] = 'Rock.Security.GlobalDefault' WHERE [Name] = 'Global'" );
