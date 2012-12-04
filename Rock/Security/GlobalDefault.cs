@@ -106,5 +106,14 @@ namespace Rock.Security
         {
             return new GlobalDefault();
         }
+
+        /// <summary>
+        /// Just return empty string
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Empty;
+        }
     }
 }

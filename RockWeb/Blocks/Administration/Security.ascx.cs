@@ -368,22 +368,27 @@ namespace RockWeb.Blocks.Administration
             rGrid.DataSource = Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction ); ;
             rGrid.DataBind();
 
-            List<AuthRule> parentRules = new List<AuthRule>();
+            var parentRules = new List<MyAuthRule>();
             AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();
         }
 
-        private void AddParentRules( List<AuthRule> rules, ISecured parent, string action )
+        private void AddParentRules( List<MyAuthRule> rules, ISecured parent, string action )
         {
             if ( parent != null )
             {
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( parent.TypeId );
                 foreach ( AuthRule rule in Authorization.AuthRules( parent.TypeId, parent.Id, action ) )
                     if ( !rules.Exists( r =>
                         r.SpecialRole == rule.SpecialRole &&
                         r.PersonId == rule.PersonId &&
                         r.GroupId == rule.GroupId ) )
-                        rules.Add( rule );
+                    {
+                        var myRule = new MyAuthRule( rule );
+                        myRule.EntityTitle = string.Format( "{0} ({1})", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
+                        rules.Add( myRule );
+                    }
 
                 AddParentRules( rules, parent.ParentAuthority, action );
             }
@@ -456,5 +461,15 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
+    }
+
+    class MyAuthRule : AuthRule
+    {
+        public string EntityTitle { get; set; }
+
+        public MyAuthRule( AuthRule rule )
+            : base( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order )
+        {
+        }
     }
 }
