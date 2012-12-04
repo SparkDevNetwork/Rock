@@ -190,6 +190,7 @@
     <Compile Include="Core\CodeGenerated\CategoryService.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Core\CodeGenerated\EntityTypeService.cs" />
+    <Compile Include="Core\EntityTypeDto.Partial.cs" />
     <Compile Include="Field\Types\HtmlField.cs" />
     <Compile Include="Field\Types\MemoField.cs" />
     <Compile Include="Financial\CodeGenerated\FinancialBatchDto.cs" />
@@ -210,9 +211,9 @@
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201212032258539_ToolsMenu.cs" />
-    <Compile Include="Migrations\201212032258539_ToolsMenu.Designer.cs">
-      <DependentUpon>201212032258539_ToolsMenu.cs</DependentUpon>
+    <Compile Include="Migrations\201212041249372_EntityTypesAdmin.cs" />
+    <Compile Include="Migrations\201212041249372_EntityTypesAdmin.Designer.cs">
+      <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
@@ -424,7 +425,7 @@
     <Compile Include="Security\ExternalAuthentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Security\GenericEntity.cs" />
+    <Compile Include="Security\GlobalDefault.cs" />
     <Compile Include="Security\AuthenticationComponent.cs" />
     <Compile Include="Security\AuthenticationContainer.cs" />
     <Compile Include="Services\NuGet\RockPackagePathResolver.cs" />
@@ -746,8 +747,8 @@
     <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201212032258539_ToolsMenu.resx">
-      <DependentUpon>201212032258539_ToolsMenu.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201212041249372_EntityTypesAdmin.resx">
+      <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

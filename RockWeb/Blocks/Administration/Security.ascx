@@ -83,6 +83,7 @@
                             <%# Eval("AllowOrDeny").ToString() == "A" ? "Allow" : "Deny" %>
                         </ItemTemplate>
                     </asp:TemplateField>
+                    <asp:BoundField DataField="EntityTitle" HeaderText="From" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                 </Columns>
             </Rock:Grid>
 

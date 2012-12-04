@@ -31,7 +31,19 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
+        public string AssemblyName { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string FriendlyName { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool IsEntity { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool IsSecured { get; set; }
 
         /// <summary />
         [DataMember]
@@ -65,7 +77,10 @@ namespace Rock.Model
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Name", this.Name );
+            dictionary.Add( "AssemblyName", this.AssemblyName );
             dictionary.Add( "FriendlyName", this.FriendlyName );
+            dictionary.Add( "IsEntity", this.IsEntity );
+            dictionary.Add( "IsSecured", this.IsSecured );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -79,7 +94,10 @@ namespace Rock.Model
         {
             dynamic expando = new ExpandoObject();
             expando.Name = this.Name;
+            expando.AssemblyName = this.AssemblyName;
             expando.FriendlyName = this.FriendlyName;
+            expando.IsEntity = this.IsEntity;
+            expando.IsSecured = this.IsSecured;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -95,7 +113,10 @@ namespace Rock.Model
             {
                 var entityType = (EntityType)model;
                 this.Name = entityType.Name;
+                this.AssemblyName = entityType.AssemblyName;
                 this.FriendlyName = entityType.FriendlyName;
+                this.IsEntity = entityType.IsEntity;
+                this.IsSecured = entityType.IsSecured;
                 this.Id = entityType.Id;
                 this.Guid = entityType.Guid;
             }
@@ -111,7 +132,10 @@ namespace Rock.Model
             {
                 var entityType = (EntityType)model;
                 entityType.Name = this.Name;
+                entityType.AssemblyName = this.AssemblyName;
                 entityType.FriendlyName = this.FriendlyName;
+                entityType.IsEntity = this.IsEntity;
+                entityType.IsSecured = this.IsSecured;
                 entityType.Id = this.Id;
                 entityType.Guid = this.Guid;
             }

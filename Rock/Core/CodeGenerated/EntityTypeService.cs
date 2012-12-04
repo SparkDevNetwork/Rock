@@ -63,7 +63,10 @@ namespace Rock.Model
             return items.Select( m => new EntityTypeDto()
                 {
                     Name = m.Name,
+                    AssemblyName = m.AssemblyName,
                     FriendlyName = m.FriendlyName,
+                    IsEntity = m.IsEntity,
+                    IsSecured = m.IsSecured,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
