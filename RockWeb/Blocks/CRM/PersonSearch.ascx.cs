@@ -11,7 +11,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm

@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Constants;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Administration
         private void ScanForUnregisteredBlocks()
         {
             BlockTypeService blockTypeService = new BlockTypeService();
-            foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {

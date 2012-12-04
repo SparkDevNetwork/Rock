@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Web.UI;
 
 public partial class SiteMap : RockBlock
@@ -21,7 +21,7 @@ public partial class SiteMap : RockBlock
 
         PageService pageService = new PageService();
 
-        List<Rock.Cms.Page> pageList = pageService.Queryable().ToList();
+        List<Rock.Model.Page> pageList = pageService.Queryable().ToList();
         string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
         foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
@@ -39,7 +39,7 @@ public partial class SiteMap : RockBlock
     /// <param name="nodeHtml">The node HTML.</param>
     /// <param name="parentPage">The parent page.</param>
     /// <param name="pageList">The page list.</param>
-    protected void AddChildNodes( ref string nodeHtml, Rock.Cms.Page parentPage, List<Rock.Cms.Page> pageList )
+    protected void AddChildNodes( ref string nodeHtml, Rock.Model.Page parentPage, List<Rock.Model.Page> pageList )
     {
         var childPages = pageList.Where( a => a.ParentPageId.Equals( parentPage.Id ) );
         if ( childPages.Count() > 0 )

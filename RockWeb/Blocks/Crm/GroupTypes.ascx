@@ -28,9 +28,9 @@
                 </legend>
                 <div class="row-fluid">
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Description" />
-                        <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
+                        <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
                     </div>
                     <div class="span6">
                         <Rock:Grid ID="gChildGroupTypes" runat="server" AllowPaging="false" ShowActionExcelExport="false">
@@ -57,7 +57,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlChildGroupTypePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
+            <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
@@ -66,7 +66,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlLocationTypePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
+            <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>

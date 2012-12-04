@@ -17,10 +17,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockCache : Rock.Cms.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class BlockCache : Rock.Model.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
     {
         private BlockCache() : base() { }
-        private BlockCache( Rock.Cms.Block model ) : base( model ) { }
+        private BlockCache( Rock.Model.Block model ) : base( model ) { }
 
         /// <summary>
         /// Gets the location of the block (Layout or Page)
@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their values.
         /// </summary>
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; set; }
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the page.
@@ -118,7 +118,7 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            var blockService = new Cms.BlockService();
+            var blockService = new Model.BlockService();
             var blockModel = blockService.Get( this.Id );
 
             if ( blockModel != null )
@@ -134,7 +134,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public void ReloadAttributeValues()
         {
-            var blockService = new Cms.BlockService();
+            var blockService = new Model.BlockService();
             var blockModel = blockService.Get( this.Id );
 
             if ( blockModel != null )
@@ -173,7 +173,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="blockModel"></param>
         /// <returns></returns>
-        public static BlockCache Read( Rock.Cms.Block blockModel )
+        public static BlockCache Read( Rock.Model.Block blockModel )
         {
             string cacheKey = BlockCache.CacheKey( blockModel.Id );
 
@@ -208,7 +208,7 @@ namespace Rock.Web.Cache
                 return block;
             else
             {
-                var blockService = new Cms.BlockService();
+                var blockService = new Model.BlockService();
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
@@ -225,7 +225,7 @@ namespace Rock.Web.Cache
             }
         }
 
-        private static BlockCache CopyModel ( Rock.Cms.Block blockModel )
+        private static BlockCache CopyModel ( Rock.Model.Block blockModel )
         {
             BlockCache block = new BlockCache(blockModel);
 
@@ -318,7 +318,7 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }

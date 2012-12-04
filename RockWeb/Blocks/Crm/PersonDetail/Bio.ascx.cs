@@ -11,7 +11,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail

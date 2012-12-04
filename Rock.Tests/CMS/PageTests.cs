@@ -7,7 +7,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Tests.Cms
 {

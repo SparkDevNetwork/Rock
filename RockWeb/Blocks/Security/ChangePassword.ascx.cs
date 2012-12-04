@@ -7,7 +7,7 @@
 using System;
 using System.Web.UI;
 
-using Rock.Cms;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security

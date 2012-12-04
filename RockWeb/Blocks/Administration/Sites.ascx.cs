@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             SecurityField securityField = gSites.Columns[3] as SecurityField;
-            securityField.EntityType = typeof( Rock.Cms.Site );
+            securityField.EntityType = typeof( Rock.Model.Site );
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Administration
                 if ( siteId == 0 )
                 {
                     newSite = true;
-                    site = new Rock.Cms.Site();
+                    site = new Rock.Model.Site();
                     siteService.Add( site, CurrentPersonId );
                 }
                 else
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             PageService pageService = new PageService();
-            List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
+            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
             ddlDefaultPage.DataSource = allPages.OrderBy( a => a.PageSortHash );
             ddlDefaultPage.DataBind();
 

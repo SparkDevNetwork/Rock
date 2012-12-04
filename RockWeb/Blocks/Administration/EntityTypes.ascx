@@ -27,8 +27,8 @@
 
             <fieldset id="fieldsetEditDetails" runat="server">
                 <legend><asp:Literal ID="lActionTitle" runat="server" /></legend>
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.EntityType, Rock" PropertyName="Name" LabelText="Entity Type Name" />
-                <Rock:DataTextBox ID="tbFriendlyName" runat="server" SourceTypeName="Rock.Core.EntityType, Rock" PropertyName="FriendlyName" LabelText="Friendly Name" />
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="Name" LabelText="Entity Type Name" />
+                <Rock:DataTextBox ID="tbFriendlyName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="FriendlyName" LabelText="Friendly Name" />
             </fieldset>
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">

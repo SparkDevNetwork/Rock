@@ -13,7 +13,7 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Jobs;
-using Rock.Util;
+using Rock.Model;
 
 namespace RockJobSchedulerService
 {
@@ -39,7 +39,7 @@ namespace RockJobSchedulerService
             sched = sf.GetScheduler();
 
             // get list of active jobs
-            JobService jobService = new JobService();
+            ServiceJobService jobService = new ServiceJobService();
             foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
             {
                 try

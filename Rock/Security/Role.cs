@@ -77,8 +77,8 @@ namespace Rock.Security
                 return role;
             else
             {
-                Rock.Crm.GroupService groupService = new Rock.Crm.GroupService();
-                Rock.Crm.Group groupModel = groupService.Get( id );
+                Rock.Model.GroupService groupService = new Rock.Model.GroupService();
+                Rock.Model.Group groupModel = groupService.Get( id );
 
                 if ( groupModel != null && groupModel.IsSecurityRole == true )
                 {
@@ -87,7 +87,7 @@ namespace Rock.Security
                     role.Name = groupModel.Name;
                     role.Users = new List<string>();
 
-                    foreach ( Rock.Crm.GroupMember member in groupModel.Members )
+                    foreach ( Rock.Model.GroupMember member in groupModel.Members )
                     {
                         role.Users.Add( member.Person.Guid.ToString() );
                     }
@@ -110,7 +110,7 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
-            Rock.Crm.GroupService groupService = new Rock.Crm.GroupService();
+            Rock.Model.GroupService groupService = new Rock.Model.GroupService();
             foreach ( int id in groupService.Queryable()
                 .Where( g => g.IsSecurityRole == true )
                 .OrderBy( g => g.Name )

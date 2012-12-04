@@ -72,7 +72,7 @@ namespace Rock.Security
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsAuthorized( string action, Rock.Crm.Person person )
+        public bool IsAuthorized( string action, Rock.Model.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }

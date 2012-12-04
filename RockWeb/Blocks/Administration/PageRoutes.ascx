@@ -25,8 +25,8 @@
                     <asp:Literal ID="lActionTitle" runat="server" />
                     <i id="iconIsSystem" runat="server" class="icon-eye-open"></i>
                 </legend>
-                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Title" LabelText="Page Title" />
-                <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Cms.PageRoute, Rock" PropertyName="Route" />
+                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" LabelText="Page Title" />
+                <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Model.PageRoute, Rock" PropertyName="Route" />
             </fieldset>
 
             <div class="actions">

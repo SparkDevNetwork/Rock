@@ -4,7 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
+using Rock.Model;
 using Xunit;
 
 namespace Rock.Tests.Cms
