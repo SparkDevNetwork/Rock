@@ -116,6 +116,10 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
+    <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
+      <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -756,6 +760,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041823461_RockModel.resx">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212042327447_ToolsMenuAdCampaigns.resx">
+      <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
