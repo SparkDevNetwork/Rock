@@ -16,7 +16,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// Data Transfer Object for PaymentGateway object

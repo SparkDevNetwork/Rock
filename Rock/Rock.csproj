@@ -215,6 +215,10 @@
     <Compile Include="Migrations\201212041249372_EntityTypesAdmin.Designer.cs">
       <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212041823461_RockModel.cs" />
+    <Compile Include="Migrations\201212041823461_RockModel.Designer.cs">
+      <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Util\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Util\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Util\CodeGenerated\WorkflowTriggerDto.cs" />
@@ -749,6 +753,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041249372_EntityTypesAdmin.resx">
       <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212041823461_RockModel.resx">
+      <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Model;
-using Rock.Util;
 
 namespace Rock.Data
 {
@@ -329,7 +328,7 @@ namespace Rock.Data
 
                     if ( workflowType != null )
                     {
-                        var workflow = Rock.Util.Workflow.Activate( workflowType, trigger.WorkflowName );
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                         List<string> workflowErrors;
                         if ( !workflow.Process( entity.Dto, out workflowErrors ) )
@@ -341,7 +340,7 @@ namespace Rock.Data
                         {
                             if ( workflowType.IsPersisted )
                             {
-                                var workflowService = new Rock.Util.WorkflowService();
+                                var workflowService = new Rock.Model.WorkflowService();
                                 workflowService.Add( workflow, personId );
                                 workflowService.Save( workflow, personId );
                             }

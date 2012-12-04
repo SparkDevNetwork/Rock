@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Rest.Util
 {
     /// <summary>
     /// Activities REST API
     /// </summary>
-    public partial class ActivitiesController : Rock.Rest.ApiController<Rock.Util.Activity, Rock.Util.ActivityDto>
+    public partial class ActivitiesController : Rock.Rest.ApiController<Rock.Model.Activity, Rock.Model.ActivityDto>
     {
-        public ActivitiesController() : base( new Rock.Util.ActivityService() ) { } 
+        public ActivitiesController() : base( new Rock.Model.ActivityService() ) { } 
     }
 }

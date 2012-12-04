@@ -4,8 +4,8 @@
     <ContentTemplate>
 
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName="Rock.Financial.FinancialTransaction, Rock" PropertyName="TransactionDate" LabelText="From Date" />
-            <Rock:DateTimePicker ID="dtEndDate" runat="server"  SourceTypeName="Rock.Financial.FinancialTransaction, Rock" PropertyName="TransactionDate" LabelText="To Date" />
+            <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDate" LabelText="From Date" />
+            <Rock:DateTimePicker ID="dtEndDate" runat="server"  SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDate" LabelText="To Date" />
             <Rock:LabeledTextBox ID="txtFromAmount" runat="server" LabelText="From Amount"></Rock:LabeledTextBox>
             <Rock:LabeledTextBox ID="txtToAmount" runat="server" LabelText="To Amount"></Rock:LabeledTextBox>
             <Rock:LabeledTextBox ID="txtTransactionCode" runat="server" LabelText="Transaction Code"></Rock:LabeledTextBox>

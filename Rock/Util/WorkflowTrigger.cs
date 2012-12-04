@@ -11,7 +11,7 @@ using System.Data.Entity.ModelConfiguration;
 
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// 

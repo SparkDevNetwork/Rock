@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// TransactionFund POCO class.

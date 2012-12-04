@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Rest.Util
 {
     /// <summary>
     /// ActivityTypes REST API
     /// </summary>
-    public partial class ActivityTypesController : Rock.Rest.ApiController<Rock.Util.ActivityType, Rock.Util.ActivityTypeDto>
+    public partial class ActivityTypesController : Rock.Rest.ApiController<Rock.Model.ActivityType, Rock.Model.ActivityTypeDto>
     {
-        public ActivityTypesController() : base( new Rock.Util.ActivityTypeService() ) { } 
+        public ActivityTypesController() : base( new Rock.Model.ActivityTypeService() ) { } 
     }
 }

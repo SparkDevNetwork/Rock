@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Financial;
+using Rock.Model;
 
 namespace Rock.Rest.Financial
 {
     /// <summary>
     /// Pledges REST API
     /// </summary>
-    public partial class PledgesController : Rock.Rest.ApiController<Rock.Financial.Pledge, Rock.Financial.PledgeDto>
+    public partial class PledgesController : Rock.Rest.ApiController<Rock.Model.Pledge, Rock.Model.PledgeDto>
     {
-        public PledgesController() : base( new Rock.Financial.PledgeService() ) { } 
+        public PledgesController() : base( new Rock.Model.PledgeService() ) { } 
     }
 }

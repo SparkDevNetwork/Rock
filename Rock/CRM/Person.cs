@@ -23,7 +23,7 @@ namespace Rock.Model
         /// <summary>
         /// The Entity Type used for saving user values
         /// </summary>
-        public const string USER_VALUE_ENTITY = "Rock.Crm.Person.Value";
+        public const string USER_VALUE_ENTITY = "Rock.Model.Person.Value";
 
         /// <summary>
         /// Gets or sets the System.
@@ -285,7 +285,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Pledges.
         /// </value>
-        public virtual ICollection<Financial.Pledge> Pledges { get; set; }
+        public virtual ICollection<Model.Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the PersonAccountLookups.
@@ -293,7 +293,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of PersonAccountLookups.
         /// </value>
-        public virtual ICollection<Financial.PersonAccount> PersonAccountLookups { get; set; }
+        public virtual ICollection<Model.PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the Marital Status.

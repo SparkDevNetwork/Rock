@@ -12,7 +12,7 @@ using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// WorkflowType POCO Entity.

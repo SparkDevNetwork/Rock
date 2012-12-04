@@ -352,10 +352,10 @@
         <div class="modal-body">
             <asp:ValidationSummary ID="valTypeSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>   
             <fieldset>
-               <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Core.DefinedType, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Core.DefinedType, Rock" PropertyName="Category" />
-                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Core.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Core.DefinedType, Rock" PropertyName="FieldType" />
+               <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
+                <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
             </fieldset>
         </div>
         <div class="modal-footer">
@@ -378,10 +378,10 @@
         <div class="modal-body">
             <asp:ValidationSummary ID="valValueSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
             <fieldset>
-                <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                 <h4>Attribute Category</h4>
-                <Rock:DataTextBox ID="tbValueGridColumn" runat="server" ReadOnly="true" SourceTypeName="Rock.Core.DefinedValue, Rock" PropertyName="Attributes" LabelText="Grid Attributes"/>
+                <Rock:DataTextBox ID="tbValueGridColumn" runat="server" ReadOnly="true" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Attributes" LabelText="Grid Attributes"/>
             </fieldset>
         </div>
         <div class="modal-footer">
@@ -404,12 +404,12 @@
         <div class="modal-body">
             <asp:ValidationSummary ID="valAttributeSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
             <fieldset>
-                <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
-                <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
-                <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                <Rock:FieldTypeList ID="ddlAttributeFieldType" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="FieldTypeId" LabelText="Field Type" />
-                <Rock:DataTextBox ID="tbAttributeDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
+                <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
+                <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbAttributeCategory" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Category" />
+                <Rock:DataTextBox ID="tbAttributeDescription" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                <Rock:FieldTypeList ID="ddlAttributeFieldType" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="FieldTypeId" LabelText="Field Type" />
+                <Rock:DataTextBox ID="tbAttributeDefaultValue" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="DefaultValue" />
                 <Rock:LabeledCheckBox ID="cbAttributeGridColumn" runat="server" LabelText="Grid Column" />
                 <Rock:LabeledCheckBox ID="cbAttributeRequired" runat="server" LabelText="Required" />
             </fieldset>

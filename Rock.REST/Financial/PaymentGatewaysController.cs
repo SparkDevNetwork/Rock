@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Financial;
+using Rock.Model;
 
 namespace Rock.Rest.Financial
 {
     /// <summary>
     /// PaymentGateways REST API
     /// </summary>
-    public partial class PaymentGatewaysController : Rock.Rest.ApiController<Rock.Financial.PaymentGateway, Rock.Financial.PaymentGatewayDto>
+    public partial class PaymentGatewaysController : Rock.Rest.ApiController<Rock.Model.PaymentGateway, Rock.Model.PaymentGatewayDto>
     {
-        public PaymentGatewaysController() : base( new Rock.Financial.PaymentGatewayService() ) { } 
+        public PaymentGatewaysController() : base( new Rock.Model.PaymentGatewayService() ) { } 
     }
 }

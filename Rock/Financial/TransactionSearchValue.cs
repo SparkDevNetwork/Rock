@@ -9,7 +9,7 @@ using System.Linq;
 using System.Web;
 using Rock.Model;
 
-namespace Rock.Financial
+namespace Rock.Model
 {
     /// <summary>
     /// 

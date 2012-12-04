@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Financial;
+using Rock.Model;
 
 namespace Rock.Rest.Financial
 {
     /// <summary>
     /// FinancialBatches REST API
     /// </summary>
-    public partial class FinancialBatchesController : Rock.Rest.ApiController<Rock.Financial.FinancialBatch, Rock.Financial.FinancialBatchDto>
+    public partial class FinancialBatchesController : Rock.Rest.ApiController<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchDto>
     {
-        public FinancialBatchesController() : base( new Rock.Financial.FinancialBatchService() ) { } 
+        public FinancialBatchesController() : base( new Rock.Model.FinancialBatchService() ) { } 
     }
 }

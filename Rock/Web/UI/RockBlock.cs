@@ -523,7 +523,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Cms.Block").Id;
+            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Model.Block").Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

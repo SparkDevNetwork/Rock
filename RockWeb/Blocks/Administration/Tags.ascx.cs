@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
                 var requiredContext = base.ContextTypesRequired;
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
-                    requiredContext.Add( "Rock.Crm.Person" );
+                    requiredContext.Add( "Rock.Model.Person" );
 
                 return requiredContext;
             }
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
                 {
-                    Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
+                    Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Model.Person" );
                     if ( model != null )
                         _ownerId = model.Id;
                     else

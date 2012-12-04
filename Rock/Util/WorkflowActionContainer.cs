@@ -9,7 +9,7 @@ using System.ComponentModel.Composition;
 
 using Rock.Extension;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// MEF Container class for WorkflowAction Componenets

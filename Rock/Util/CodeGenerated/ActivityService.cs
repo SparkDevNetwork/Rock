@@ -15,7 +15,7 @@ using System.Linq;
 
 using Rock.Data;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// Activity Service class

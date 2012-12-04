@@ -9,7 +9,7 @@ using System.ComponentModel.Composition;
 
 using Rock.Data;
 
-namespace Rock.Util.WorkflowAction
+namespace Rock.Model.WorkflowAction
 {
     /// <summary>
     /// Marks a workflow as complete

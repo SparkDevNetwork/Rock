@@ -10,7 +10,7 @@ using System.ComponentModel.Composition;
 using Rock.Data;
 using Rock.Web.UI;
 
-namespace Rock.Util.WorkflowAction
+namespace Rock.Model.WorkflowAction
 {
     /// <summary>
     /// Sets a workflow status

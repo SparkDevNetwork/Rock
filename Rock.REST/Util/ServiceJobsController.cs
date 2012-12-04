@@ -10,15 +10,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Rest.Util
 {
     /// <summary>
     /// ServiceJobs REST API
     /// </summary>
-    public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Util.ServiceJob, Rock.Util.ServiceJobDto>
+    public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Model.ServiceJob, Rock.Model.ServiceJobDto>
     {
-        public ServiceJobsController() : base( new Rock.Util.ServiceJobService() ) { } 
+        public ServiceJobsController() : base( new Rock.Model.ServiceJobService() ) { } 
     }
 }

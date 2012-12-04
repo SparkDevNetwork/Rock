@@ -10,7 +10,7 @@ using System.Web;
 using System.IO;
 
 using Rock.Data;
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Transactions
 {
@@ -55,14 +55,14 @@ namespace Rock.Transactions
 
                 if ( workflowType != null )
                 {
-                    var workflow = Rock.Util.Workflow.Activate( workflowType, Trigger.WorkflowName );
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );
 
                     List<string> workflowErrors;
                     if ( workflow.Process( Dto, out workflowErrors ) )
                     {
                         if ( workflowType.IsPersisted )
                         {
-                            var workflowService = new Rock.Util.WorkflowService();
+                            var workflowService = new Rock.Model.WorkflowService();
                             workflowService.Add( workflow, PersonId );
                             workflowService.Save( workflow, PersonId );
                         }
