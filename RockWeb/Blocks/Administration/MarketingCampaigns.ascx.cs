@@ -625,10 +625,10 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     private void BindMarketingCampaignAudiencesGrid()
     {
-        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name ).ToList();
         gMarketingCampaignAudiencesPrimary.DataBind();
 
-        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name ).ToList();
         gMarketingCampaignAudiencesSecondary.DataBind();
     }
 
