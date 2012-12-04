@@ -93,9 +93,12 @@ namespace Rock.Model
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
         public override Security.ISecured ParentAuthority
         {
-            get { return new Security.GenericEntity( "Global" ); }
+            get { return this.DefinedType; }
         }
 
         /// <summary>

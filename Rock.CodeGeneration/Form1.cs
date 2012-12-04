@@ -277,10 +277,13 @@ namespace Rock.CodeGeneration
         /// <returns></returns>
         private string GetCanDeleteCode( string rootFolder, Type type )
         {
-            
+            var di = new DirectoryInfo( rootFolder );
+            var file = new FileInfo( Path.Combine( di.Parent.FullName, @"RockWeb\web.ConnectionStrings.config" ) );
+            if ( !file.Exists )
+                return string.Empty;
 
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load( @"C:\Projects\Rock-ChMS\RockWeb\web.ConnectionStrings.config" );
+            xmlDoc.Load( file.FullName );
             XmlNode root = xmlDoc.DocumentElement;
             XmlNode node = root.SelectNodes( "add[@name = \"RockContext\"]" )[0];
             SqlConnection sqlconn = new SqlConnection( node.Attributes["connectionString"].Value );
@@ -313,12 +316,12 @@ order by [parentTable]
 
             var reader = sqlCommand.ExecuteReader();
 
-            List<KeyValuePair<string, string>> parentTableColumnNameList = new List<KeyValuePair<string,string>>();
+            List<KeyValuePair<string, string>> parentTableColumnNameList = new List<KeyValuePair<string, string>>();
             while ( reader.Read() )
             {
                 string parentTable = reader["parentTable"] as string;
                 string columnName = reader["columnName"] as string;
-                parentTableColumnNameList.Add(new KeyValuePair<string,string>(parentTable, columnName));
+                parentTableColumnNameList.Add( new KeyValuePair<string, string>( parentTable, columnName ) );
             }
 
             // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
@@ -339,17 +342,17 @@ order by [parentTable]
 ", type.Name );
 
             string canDeleteMiddle = string.Empty;
-            
+
             foreach ( var item in parentTableColumnNameList )
             {
                 if ( parentTablesToIgnore.Contains( item.Key ) )
                 {
                     continue;
                 }
-                
+
                 string parentTable = item.Key;
                 string columnName = item.Value;
-                
+
                 canDeleteMiddle += string.Format(
 @"            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {{
@@ -369,7 +372,7 @@ order by [parentTable]
 ",
                parentTable,
                columnName,
-               type.Name);
+               type.Name );
             }
 
             string canDeleteEnd = @"            return true;
@@ -383,8 +386,9 @@ order by [parentTable]
 
 ";
             };
-            
+
             return canDeleteBegin + canDeleteMiddle + canDeleteEnd;
+
         }
 
         /// <summary>

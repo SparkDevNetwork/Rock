@@ -67,7 +67,7 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get { return new Security.GenericEntity( "Global" ); }
+            get { return this.Tag; }
         }
 
         /// <summary>

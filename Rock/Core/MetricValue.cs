@@ -91,6 +91,14 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the metric.
+        /// </summary>
+        /// <value>
+        /// The metric.
+        /// </value>
+        public virtual Metric Metric { get; set; }
+
+        /// <summary>
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
@@ -114,7 +122,7 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get { return new Security.GenericEntity( "Global" ); }
+            get { return this.Metric; }
         }
 
         /// <summary>
@@ -147,6 +155,7 @@ namespace Rock.Model
         /// </summary>
         public MetricValueConfiguration()
         {
+            this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
         }
     }
 }
