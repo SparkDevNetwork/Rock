@@ -35,7 +35,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId )
         {
-            return Repository.Find( t => ( t.MaritalStatusId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusId == null ) ) );
+            return Repository.Find( t => ( t.MaritalStatusValueId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusValueId == null ) ) );
         }
         
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByPersonStatusId( int? personStatusId )
         {
-            return Repository.Find( t => ( t.PersonStatusId == personStatusId || ( personStatusId == null && t.PersonStatusId == null ) ) );
+            return Repository.Find( t => ( t.PersonStatusValueId == personStatusId || ( personStatusId == null && t.PersonStatusValueId == null ) ) );
         }
         
         /// <summary>
@@ -55,7 +55,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId )
         {
-            return Repository.Find( t => ( t.RecordStatusId == recordStatusId || ( recordStatusId == null && t.RecordStatusId == null ) ) );
+            return Repository.Find( t => ( t.RecordStatusValueId == recordStatusId || ( recordStatusId == null && t.RecordStatusValueId == null ) ) );
         }
         
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId )
         {
-            return Repository.Find( t => ( t.RecordStatusReasonId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonId == null ) ) );
+            return Repository.Find( t => ( t.RecordStatusReasonValueId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonValueId == null ) ) );
         }
         
         /// <summary>
@@ -75,7 +75,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId )
         {
-            return Repository.Find( t => ( t.RecordTypeId == recordTypeId || ( recordTypeId == null && t.RecordTypeId == null ) ) );
+            return Repository.Find( t => ( t.RecordTypeValueId == recordTypeId || ( recordTypeId == null && t.RecordTypeValueId == null ) ) );
         }
         
         /// <summary>
@@ -85,7 +85,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetBySuffixId( int? suffixId )
         {
-            return Repository.Find( t => ( t.SuffixId == suffixId || ( suffixId == null && t.SuffixId == null ) ) );
+            return Repository.Find( t => ( t.SuffixValueId == suffixId || ( suffixId == null && t.SuffixValueId == null ) ) );
         }
         
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// <returns>An enumerable list of Person objects.</returns>
         public IEnumerable<Person> GetByTitleId( int? titleId )
         {
-            return Repository.Find( t => ( t.TitleId == titleId || ( titleId == null && t.TitleId == null ) ) );
+            return Repository.Find( t => ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) ) );
         }
 
         /// <summary>

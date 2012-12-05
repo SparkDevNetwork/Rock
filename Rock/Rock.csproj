@@ -132,6 +132,10 @@
     <Compile Include="Migrations\201212052022346_ClassRename.Designer.cs">
       <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212052126507_DefinedValueNaming.cs" />
+    <Compile Include="Migrations\201212052126507_DefinedValueNaming.Designer.cs">
+      <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -784,6 +788,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052022346_ClassRename.resx">
       <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212052126507_DefinedValueNaming.resx">
+      <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
