@@ -68,7 +68,7 @@ namespace Rock.Model
         /// Instantiates a new DTO object from the entity
         /// </summary>
         /// <param name="activityType"></param>
-        public ActivityTypeDto ( ActivityType activityType )
+        public ActivityTypeDto ( WorkflowActivityType activityType )
         {
             CopyFromModel( activityType );
         }
@@ -115,9 +115,9 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is ActivityType )
+            if ( model is WorkflowActivityType )
             {
-                var activityType = (ActivityType)model;
+                var activityType = (WorkflowActivityType)model;
                 this.IsActive = activityType.IsActive;
                 this.WorkflowTypeId = activityType.WorkflowTypeId;
                 this.Name = activityType.Name;
@@ -135,9 +135,9 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is ActivityType )
+            if ( model is WorkflowActivityType )
             {
-                var activityType = (ActivityType)model;
+                var activityType = (WorkflowActivityType)model;
                 activityType.IsActive = this.IsActive;
                 activityType.WorkflowTypeId = this.WorkflowTypeId;
                 activityType.Name = this.Name;
@@ -170,9 +170,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static ActivityType ToModel( this ActivityTypeDto value )
+        public static WorkflowActivityType ToModel( this ActivityTypeDto value )
         {
-            ActivityType result = new ActivityType();
+            WorkflowActivityType result = new WorkflowActivityType();
             value.CopyToModel( result );
             return result;
         }
@@ -182,9 +182,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<ActivityType> ToModel( this List<ActivityTypeDto> value )
+        public static List<WorkflowActivityType> ToModel( this List<ActivityTypeDto> value )
         {
-            List<ActivityType> result = new List<ActivityType>();
+            List<WorkflowActivityType> result = new List<WorkflowActivityType>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -194,7 +194,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<ActivityTypeDto> ToDto( this List<ActivityType> value )
+        public static List<ActivityTypeDto> ToDto( this List<WorkflowActivityType> value )
         {
             List<ActivityTypeDto> result = new List<ActivityTypeDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
@@ -206,7 +206,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static ActivityTypeDto ToDto( this ActivityType value )
+        public static ActivityTypeDto ToDto( this WorkflowActivityType value )
         {
             return new ActivityTypeDto( value );
         }

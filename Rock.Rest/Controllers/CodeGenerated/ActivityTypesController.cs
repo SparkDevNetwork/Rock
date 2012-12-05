@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ActivityTypes REST API
     /// </summary>
-    public partial class ActivityTypesController : Rock.Rest.ApiController<Rock.Model.ActivityType, Rock.Model.ActivityTypeDto>
+    public partial class ActivityTypesController : Rock.Rest.ApiController<Rock.Model.WorkflowActivityType, Rock.Model.ActivityTypeDto>
     {
         public ActivityTypesController() : base( new Rock.Model.ActivityTypeService() ) { } 
     }

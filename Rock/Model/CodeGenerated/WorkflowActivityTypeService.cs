@@ -18,38 +18,38 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Location Service class
+    /// WorkflowActivityType Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class WorkflowActivityTypeService : Service<WorkflowActivityType, WorkflowActivityTypeDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeService"/> class
         /// </summary>
-        public LocationService()
+        public WorkflowActivityTypeService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeService"/> class
         /// </summary>
-        public LocationService(IRepository<Location> repository) : base(repository)
+        public WorkflowActivityTypeService(IRepository<WorkflowActivityType> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override Location CreateNew()
+        public override WorkflowActivityType CreateNew()
         {
-            return new Location();
+            return new WorkflowActivityType();
         }
 
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<LocationDto> QueryableDto( )
+        public override IQueryable<WorkflowActivityTypeDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,28 +58,16 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
+        public IQueryable<WorkflowActivityTypeDto> QueryableDto( IQueryable<WorkflowActivityType> items )
         {
-            return items.Select( m => new LocationDto()
+            return items.Select( m => new WorkflowActivityTypeDto()
                 {
-                    Raw = m.Raw,
-                    Street1 = m.Street1,
-                    Street2 = m.Street2,
-                    City = m.City,
-                    State = m.State,
-                    Country = m.Country,
-                    Zip = m.Zip,
-                    Latitude = m.Latitude,
-                    Longitude = m.Longitude,
-                    ParcelId = m.ParcelId,
-                    StandardizeAttempt = m.StandardizeAttempt,
-                    StandardizeService = m.StandardizeService,
-                    StandardizeResult = m.StandardizeResult,
-                    StandardizeDate = m.StandardizeDate,
-                    GeocodeAttempt = m.GeocodeAttempt,
-                    GeocodeService = m.GeocodeService,
-                    GeocodeResult = m.GeocodeResult,
-                    GeocodeDate = m.GeocodeDate,
+                    IsActive = m.IsActive,
+                    WorkflowTypeId = m.WorkflowTypeId,
+                    Name = m.Name,
+                    Description = m.Description,
+                    IsActivatedWithWorkflow = m.IsActivatedWithWorkflow,
+                    Order = m.Order,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
@@ -93,7 +81,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Location item, out string errorMessage )
+        public bool CanDelete( WorkflowActivityType item, out string errorMessage )
         {
             errorMessage = string.Empty;
             RockContext context = new RockContext();
@@ -101,15 +89,15 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where ParentLocationId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowActivity where ActivityTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
+                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowActivity" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowActivity";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Location.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", WorkflowActivityType.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }

@@ -60,7 +60,7 @@ namespace Rock.Model
         /// Instantiates a new DTO object from the entity
         /// </summary>
         /// <param name="action"></param>
-        public ActionDto ( Action action )
+        public ActionDto ( WorkflowAction action )
         {
             CopyFromModel( action );
         }
@@ -103,9 +103,9 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is Action )
+            if ( model is WorkflowAction )
             {
-                var action = (Action)model;
+                var action = (WorkflowAction)model;
                 this.ActivityId = action.ActivityId;
                 this.ActionTypeId = action.ActionTypeId;
                 this.LastProcessedDateTime = action.LastProcessedDateTime;
@@ -121,9 +121,9 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is Action )
+            if ( model is WorkflowAction )
             {
-                var action = (Action)model;
+                var action = (WorkflowAction)model;
                 action.ActivityId = this.ActivityId;
                 action.ActionTypeId = this.ActionTypeId;
                 action.LastProcessedDateTime = this.LastProcessedDateTime;
@@ -154,9 +154,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static Action ToModel( this ActionDto value )
+        public static WorkflowAction ToModel( this ActionDto value )
         {
-            Action result = new Action();
+            WorkflowAction result = new WorkflowAction();
             value.CopyToModel( result );
             return result;
         }
@@ -166,9 +166,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<Action> ToModel( this List<ActionDto> value )
+        public static List<WorkflowAction> ToModel( this List<ActionDto> value )
         {
-            List<Action> result = new List<Action>();
+            List<WorkflowAction> result = new List<WorkflowAction>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -178,7 +178,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<ActionDto> ToDto( this List<Action> value )
+        public static List<ActionDto> ToDto( this List<WorkflowAction> value )
         {
             List<ActionDto> result = new List<ActionDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
@@ -190,7 +190,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static ActionDto ToDto( this Action value )
+        public static ActionDto ToDto( this WorkflowAction value )
         {
             return new ActionDto( value );
         }

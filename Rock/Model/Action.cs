@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
 using Rock.Data;
+using Rock.Workflow;
 
 namespace Rock.Model
 {
@@ -17,7 +18,7 @@ namespace Rock.Model
     /// Action POCO Entity.
     /// </summary>
     [Table( "WorkflowAction" )]
-    public partial class Action : Model<Action>
+    public partial class WorkflowAction : Model<WorkflowAction>
     {
 
         #region Entity Properties
@@ -64,7 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The activity.
         /// </value>
-        public virtual Activity Activity { get; set; }
+        public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the activity.
@@ -72,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the activity.
         /// </value>
-        public virtual ActionType ActionType { get; set; }
+        public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
@@ -126,7 +127,7 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            WorkflowActionComponent workflowAction = this.ActionType.WorkflowAction;
+            ActionComponent workflowAction = this.ActionType.WorkflowAction;
             if ( workflowAction == null )
             {
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
@@ -216,9 +217,9 @@ namespace Rock.Model
         /// <param name="actionType">Type of the action.</param>
         /// <param name="activity">The activity.</param>
         /// <returns></returns>
-        internal static Action Activate( ActionType actionType, Activity activity)
+        internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity)
         {
-            var action = new Action();
+            var action = new WorkflowAction();
             action.Activity = activity;
             action.ActionType = actionType;
 
@@ -232,9 +233,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Action Read( int id )
+        public static WorkflowAction Read( int id )
         {
-            return Read<Action>( id );
+            return Read<WorkflowAction>( id );
         }
 
         /// <summary>
@@ -242,9 +243,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static Action Read( Guid guid )
+        public static WorkflowAction Read( Guid guid )
         {
-            return Read<Action>( guid );
+            return Read<WorkflowAction>( guid );
         }
 
         #endregion
@@ -256,12 +257,12 @@ namespace Rock.Model
     /// <summary>
     /// Action Configuration class.
     /// </summary>
-    public partial class ActionConfiguration : EntityTypeConfiguration<Action>
+    public partial class WorkflowActionConfiguration : EntityTypeConfiguration<WorkflowAction>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowActionConfiguration"/> class.
         /// </summary>
-        public ActionConfiguration()
+        public WorkflowActionConfiguration()
         {
             this.HasRequired( m => m.Activity ).WithMany( m => m.Actions ).HasForeignKey( m => m.ActivityId ).WillCascadeOnDelete( true );
             this.HasRequired( m => m.ActionType ).WithMany().HasForeignKey( m => m.ActionTypeId).WillCascadeOnDelete( false );

@@ -238,7 +238,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
-    <Compile Include="Util\WorkflowTriggerCache.cs" />
+    <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
     <Compile Include="Model\EntityType.cs" />
@@ -379,7 +379,7 @@
     <Compile Include="Model\PaymentGateway.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\PersonAccountLookup.cs">
+    <Compile Include="Model\PersonAccount.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Pledge.cs">
@@ -466,14 +466,14 @@
     <Compile Include="Model\Activity.cs" />
     <Compile Include="Model\Action.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
-    <Compile Include="Util\WorkflowAction\CompleteWorkflow.cs" />
-    <Compile Include="Util\WorkflowAction\ActivateActivity.cs" />
-    <Compile Include="Util\WorkflowAction\SendEmail.cs" />
-    <Compile Include="Util\WorkflowAction\SetStatus.cs" />
+    <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
+    <Compile Include="Workflow\Action\ActivateActivity.cs" />
+    <Compile Include="Workflow\Action\SendEmail.cs" />
+    <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
-    <Compile Include="Util\WorkflowActionComponent.cs" />
-    <Compile Include="Util\WorkflowActionContainer.cs" />
+    <Compile Include="Workflow\ActionComponent.cs" />
+    <Compile Include="Workflow\ActionContainer.cs" />
     <Compile Include="Model\CodeGenerated\ActionDto.cs" />
     <Compile Include="Model\CodeGenerated\ActionService.cs" />
     <Compile Include="Model\CodeGenerated\ActionTypeDto.cs" />
@@ -771,6 +771,9 @@
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Util\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

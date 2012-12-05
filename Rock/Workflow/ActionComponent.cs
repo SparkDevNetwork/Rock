@@ -8,14 +8,15 @@ using System.Collections.Generic;
 
 using Rock.Data;
 using Rock.Extension;
+using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Model
+namespace Rock.Workflow
 {
     /// <summary>
     /// Base class for components that perform actions for a workflow
     /// </summary>
-    public abstract class WorkflowActionComponent : IComponent
+    public abstract class ActionComponent : IComponent
     {
         /// <summary>
         /// Gets the type of the entity.
@@ -26,13 +27,13 @@ namespace Rock.Model
         public EntityTypeCache EntityType { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActionComponent" /> class.
+        /// Initializes a new instance of the <see cref="ActionComponent" /> class.
         /// </summary>
-        public WorkflowActionComponent()
+        public ActionComponent()
         {
             Type type = this.GetType();
 
-            var ActionTypeEntityType = EntityTypeCache.Read( typeof( Rock.Model.ActionType ).FullName );
+            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ).FullName );
             this.EntityType = EntityTypeCache.Read( type.FullName );
             Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
         }
@@ -44,7 +45,7 @@ namespace Rock.Model
         /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( Action action, IDto dto, out List<string> errorMessages );
+        public abstract Boolean Execute( WorkflowAction action, IDto dto, out List<string> errorMessages );
 
         /// <summary>
         /// Gets the attribute value for the action
@@ -52,7 +53,7 @@ namespace Rock.Model
         /// <param name="action">The action.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( Action action, string key )
+        protected string GetAttributeValue( WorkflowAction action, string key )
         {
             var values = action.ActionType.AttributeValues;
             if ( values.ContainsKey( key ) )

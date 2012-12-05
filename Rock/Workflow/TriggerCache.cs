@@ -7,31 +7,33 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
-namespace Rock.Model
+using Rock.Model;
+
+namespace Rock.Workflow
 {
     /// <summary>
     /// MEF Container class for WorkflowAction Componenets
     /// </summary>
-    public class WorkflowTriggerCache
+    public class TriggerCache
     {
-        private static WorkflowTriggerCache instance;
+        private static TriggerCache instance;
 
         private Dictionary<string, List<WorkflowTriggerDto>> EntityTriggers { get; set; }
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
-        public static WorkflowTriggerCache Instance
+        public static TriggerCache Instance
         {
             get
             {
                 if ( instance == null )
-                    instance = new WorkflowTriggerCache();
+                    instance = new TriggerCache();
                 return instance;
             }
         }
 
-        private WorkflowTriggerCache()
+        private TriggerCache()
         {
             Refresh();
         }
