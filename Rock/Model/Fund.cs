@@ -117,7 +117,7 @@ namespace Rock.Model
         /// <value>
         /// The fund type id.
         /// </value>
-        public int? FundTypeId { get; set; }
+        public int? FundTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -150,7 +150,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the fund.
         /// </value>
-        public virtual DefinedValue FundType { get; set; }
+        public virtual DefinedValue FundTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the child funds.
@@ -219,7 +219,7 @@ namespace Rock.Model
         public FundConfiguration()
         {
             this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
-            this.HasOptional(f => f.FundType).WithMany().HasForeignKey(f => f.FundTypeId).WillCascadeOnDelete(false);
+            this.HasOptional(f => f.FundTypeValue).WithMany().HasForeignKey(f => f.FundTypeValueId).WillCascadeOnDelete(false);
         }
     }
 }

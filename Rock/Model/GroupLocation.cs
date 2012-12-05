@@ -42,7 +42,7 @@ namespace Rock.Model
         /// <value>
         /// The location type.
         /// </value>
-        public int? LocationTypeId { get; set; }
+        public int? LocationTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the group.
@@ -66,7 +66,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue LocationType { get; set; }
+        public virtual Model.DefinedValue LocationTypeValue { get; set; }
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ namespace Rock.Model
         {
             this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
-            this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 }

@@ -1026,7 +1026,7 @@ public partial class MarketingCampaigns : RockBlock
         {
             tbContactEmail.Text = contactPerson.Email;
             tbContactFullName.Text = contactPerson.FullName;
-            PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberType.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY );
+            PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY );
             tbContactPhoneNumber.Text = phoneNumber == null ? string.Empty : phoneNumber.Number;
         }
     }

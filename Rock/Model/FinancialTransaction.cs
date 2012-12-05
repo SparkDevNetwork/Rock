@@ -29,12 +29,12 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction date.
+        /// Gets or sets the transaction date time.
         /// </summary>
         /// <value>
-        /// The transaction date.
+        /// The transaction date time.
         /// </value>
-        public DateTime? TransactionDate { get; set; }
+        public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the entity.
@@ -62,20 +62,20 @@ namespace Rock.Model
         public int? BatchId { get; set; }
 
         /// <summary>
-        /// Gets or sets the currency type id.
+        /// Gets or sets the currency type value id.
         /// </summary>
         /// <value>
-        /// The currency type id.
+        /// The currency type value id.
         /// </value>
-        public int? CurrencyTypeId { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the credit card type id.
+        /// Gets or sets the credit card type value id.
         /// </summary>
         /// <value>
-        /// The credit card type id.
+        /// The credit card type value id.
         /// </value>
-        public int? CreditCardTypeId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -111,20 +111,20 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway id.
+        /// Gets or sets the payment gateway id.
         /// </summary>
         /// <value>
-        /// The gateway id.
+        /// The payment gateway id.
         /// </value>
-        public int? GatewayId { get; set; }
+        public int? PaymentGatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the source type id.
+        /// Gets or sets the source type value id.
         /// </summary>
         /// <value>
-        /// The source type id.
+        /// The source type value id.
         /// </value>
-        public int? SourceTypeId { get; set; }
+        public int? SourceTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the summary.
@@ -163,36 +163,36 @@ namespace Rock.Model
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the currency.
+        /// Gets or sets the currency type value.
         /// </summary>
         /// <value>
-        /// The type of the currency.
+        /// The currency type value.
         /// </value>
-        public virtual DefinedValue CurrencyType { get; set; }
+        public virtual DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the credit card.
+        /// Gets or sets the credit card type value.
         /// </summary>
         /// <value>
-        /// The type of the credit card.
+        /// The credit card type value.
         /// </value>
-        public virtual DefinedValue CreditCardType { get; set; }
+        public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway.
+        /// Gets or sets the payment gateway.
         /// </summary>
         /// <value>
-        /// The gateway.
+        /// The payment gateway.
         /// </value>
-        public virtual PaymentGateway Gateway { get; set; }
+        public virtual PaymentGateway PaymentGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the source.
+        /// Gets or sets the source type value.
         /// </summary>
         /// <value>
-        /// The type of the source.
+        /// The source type value.
         /// </value>
-        public virtual DefinedValue SourceType { get; set; }
+        public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -235,10 +235,10 @@ namespace Rock.Model
         {
             //this.HasMany(p => p.Funds).WithMany(c => c.Transactions).Map(m => { m.MapLeftKey("TransactionId"); m.MapRightKey("FundId"); m.ToTable("financialTransactionFund"); });
             this.HasOptional(b => b.Batch).WithMany(t => t.Transactions).HasForeignKey(t => t.BatchId).WillCascadeOnDelete(false);
-            this.HasOptional(t => t.CurrencyType).WithMany().HasForeignKey(t => t.CurrencyTypeId).WillCascadeOnDelete(false);
-            this.HasOptional(t => t.CreditCardType).WithMany().HasForeignKey(t => t.CreditCardTypeId).WillCascadeOnDelete(false);
-            this.HasOptional(t => t.Gateway).WithMany(g => g.Transactions).HasForeignKey(t => t.GatewayId).WillCascadeOnDelete(false);
-            this.HasOptional(t => t.SourceType).WithMany().HasForeignKey(t => t.SourceTypeId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.CurrencyTypeValue).WithMany().HasForeignKey(t => t.CurrencyTypeValueId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.CreditCardTypeValue).WithMany().HasForeignKey(t => t.CreditCardTypeValueId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.PaymentGateway).WithMany(g => g.Transactions).HasForeignKey(t => t.PaymentGatewayId).WillCascadeOnDelete(false);
+            this.HasOptional(t => t.SourceTypeValue).WithMany().HasForeignKey(t => t.SourceTypeValueId).WillCascadeOnDelete(false);
         }
     }
 }
