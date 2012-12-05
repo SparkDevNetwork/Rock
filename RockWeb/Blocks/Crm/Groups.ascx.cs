@@ -10,7 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -97,10 +97,9 @@ public partial class Groups : RockBlock
         if ( CurrentBlock != null )
         {
             string errorMessage;
-            if ( !groupService.CanDelete( group.Id, out errorMessage ) )
+            if ( !groupService.CanDelete( group, out errorMessage ) )
             {
-                nbGridWarning.Text = errorMessage;
-                nbGridWarning.Visible = true;
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
             

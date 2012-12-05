@@ -48,8 +48,8 @@ namespace Rock.Web.UI.Controls
             string script = @"
 Sys.Application.add_load(function () {
 
-    $('div.grid-filter i.toggle-filter').click(function () {
-        $(this).toggleClass('icon-chevron-down icon-chevron-up');
+    $('div.grid-filter header').click(function () {
+        $('i.toggle-filter', this).toggleClass('icon-chevron-down icon-chevron-up');
         $(this).siblings('div').slideToggle();
     });
 
@@ -99,13 +99,24 @@ Sys.Application.add_load(function () {
             writer.AddAttribute( "class", "grid-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            writer.Write( "<header>" );
+            
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "icon-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
+            
+            writer.RenderEndTag();
+
+            writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+            writer.Write( "Filter Options" );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "icon-chevron-down toggle-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
+
+            writer.RenderEndTag();
+            writer.Write( "</header>" );
 
             // Filter Overview
             writer.AddAttribute( "class", "grid-filter-overview" );
@@ -117,7 +128,7 @@ Sys.Application.add_load(function () {
                 writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-                writer.Write( "Existing Filter Options" );
+                writer.Write( "<h4>Enabled Filters</h4>" );
                 writer.RenderEndTag();
 
                 foreach ( var userValue in nonEmptyValues )
@@ -145,7 +156,7 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-            writer.Write( "Filter Options" );
+            writer.Write( "<h4>Filter Options</h4>" );
             writer.RenderEndTag();
 
             base.Render( writer );

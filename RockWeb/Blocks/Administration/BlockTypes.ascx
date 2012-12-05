@@ -10,7 +10,6 @@
                     <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                     <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:EditField OnClick="gBlockTypes_Edit" />
                     <Rock:DeleteField OnClick="gBlockTypes_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -26,14 +25,14 @@
                 <legend>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Cms.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>

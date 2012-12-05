@@ -17,6 +17,17 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridActions" /> class.
+        /// </summary>
+        /// <param name="parentGrid">The parent grid.</param>
+        public GridActions( Grid parentGrid )
+        {
+            ParentGrid = parentGrid;
+        }
+
+        Grid ParentGrid;
+
         HtmlGenericControl aAdd;
         LinkButton lbAdd;
 
@@ -179,6 +190,7 @@ namespace Rock.Web.UI.Controls
             lbAdd.ToolTip = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
+            lbAdd.PreRender += lbAdd_PreRender;
             Controls.Add( lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add( "class", "icon-plus-sign" );
@@ -205,12 +217,40 @@ namespace Rock.Web.UI.Controls
             lbExcelExport.Controls.Add( iExcelExport );
         }
 
+        /// <summary>
+        /// Handles the PreRender event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void lbAdd_PreRender( object sender, EventArgs e )
+        {
+            lbAdd.Enabled = ParentGrid.Enabled;
+            if ( lbAdd.Enabled )
+            {
+                lbAdd.Attributes.Remove( "disabled" );
+            }
+            else
+            {
+                lbAdd.Attributes["disabled"] = "disabled";
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void lbAdd_Click( object sender, EventArgs e )
         {
             if ( AddClick != null )
                 AddClick( sender, e );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbExcelExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void lbExcelExport_Click( object sender, EventArgs e )
         {
             if ( ExcelExportClick != null )

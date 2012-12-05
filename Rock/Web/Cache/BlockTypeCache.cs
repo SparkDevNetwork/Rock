@@ -15,10 +15,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockTypeCache : Rock.Cms.BlockTypeDto
+    public class BlockTypeCache : Rock.Model.BlockTypeDto
     {
         private BlockTypeCache() : base() { }
-        private BlockTypeCache( Rock.Cms.BlockType blockType ) : base( blockType ) { }
+        private BlockTypeCache( Rock.Model.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Web.UI.BlockPropertyAttribute"/> attributes have been 
@@ -50,7 +50,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; private set; }
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Saves the attribute values.
@@ -58,8 +58,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
-            Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( this.Id );
+            Rock.Model.BlockTypeService blockTypeService = new Model.BlockTypeService();
+            Rock.Model.BlockType blockTypeModel = blockTypeService.Get( this.Id );
 
             if ( blockTypeModel != null )
             {
@@ -93,8 +93,8 @@ namespace Rock.Web.Cache
                 return blockType;
             else
             {
-                Rock.Cms.BlockTypeService blockTypeService = new Cms.BlockTypeService();
-                Rock.Cms.BlockType blockTypeModel = blockTypeService.Get( id );
+                Rock.Model.BlockTypeService blockTypeService = new Model.BlockTypeService();
+                Rock.Model.BlockType blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
                     blockType = new BlockTypeCache(blockTypeModel);

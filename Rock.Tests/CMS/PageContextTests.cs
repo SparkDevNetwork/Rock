@@ -6,7 +6,7 @@
 
 using System;
 using NUnit.Framework;
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Tests.Cms
 {

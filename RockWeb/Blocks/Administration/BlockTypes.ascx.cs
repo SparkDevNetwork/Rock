@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Constants;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
                 gBlockTypes.DataKeyNames = new string[] { "id" };
                 gBlockTypes.Actions.IsAddEnabled = true;
                 gBlockTypes.Actions.AddClick += gBlockTypes_Add;
+                gBlockTypes.EditRow += gBlockTypes_EditRow;
                 gBlockTypes.GridRebind += gBlockTypes_GridRebind;
             }
         }
@@ -81,11 +82,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the Edit event of the gBlockTypes control.
+        /// Handles the EditRow event of the gBlockTypes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gBlockTypes_Edit( object sender, RowEventArgs e )
+        protected void gBlockTypes_EditRow( object sender, RowEventArgs e )
         {
             ShowEdit( (int)gBlockTypes.DataKeys[e.RowIndex]["id"] );
         }
@@ -186,7 +187,7 @@ namespace RockWeb.Blocks.Administration
         private void ScanForUnregisteredBlocks()
         {
             BlockTypeService blockTypeService = new BlockTypeService();
-            foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Administration
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                 if ( attributeValue == null )
                 {
-                    attributeValue = new Rock.Core.AttributeValue();
+                    attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attributeId;
                     attributeValue.EntityId = _entityId;
                     attributeValueService.Add( attributeValue, CurrentPersonId );

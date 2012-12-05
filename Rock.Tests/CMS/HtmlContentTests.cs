@@ -4,8 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using Rock.Cms;
 using NUnit.Framework;
+using Rock.Model;
 
 namespace Rock.Tests.Cms
 {

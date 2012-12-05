@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace RockWeb.Blocks
 {
@@ -21,12 +21,12 @@ namespace RockWeb.Blocks
         /// </summary>
         public override List<string> ContextTypesRequired
         {
-            get { return new List<string>() { "Rock.Crm.Person" }; }
+            get { return new List<string>() { "Rock.Model.Person" }; }
         }
 
         protected void Page_Load( object sender, EventArgs e )
         {
-            person = CurrentPage.GetCurrentContext( "Rock.Crm.Person" ) as Rock.Crm.Person;
+            person = CurrentPage.GetCurrentContext( "Rock.Model.Person" ) as Rock.Model.Person;
             if (person == null)
             {
                 PersonService personService = new PersonService();

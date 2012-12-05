@@ -18,6 +18,16 @@ namespace Rock.Web.UI.Controls
     public class DeleteField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="DeleteField" /> class.
+        /// </summary>
+        public DeleteField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell delete";
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -27,30 +37,10 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell delete";
-
             DeleteFieldTemplate deleteFieldTemplate = new DeleteFieldTemplate();
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
-            ParentGrid = control as Grid;
-            string rowItemText = ParentGrid.RowItemText;
-
-            // Add Javascript Confirm to grids that use the DeleteField
-            string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('#{0} td.grid-icon-cell.delete a').click(function(){{
-                return confirm('Are you sure you want to delete this {1}?');
-                }});
-        }});
-            ", control.ClientID, rowItemText );
-
-            string scriptKey = string.Format( "grid-confirm-delete-{0}", control.ClientID );
-
-            if ( !control.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
-            {
-                control.Page.ClientScript.RegisterStartupScript( control.Page.GetType(), scriptKey, script, true );
-            }
+            this.ParentGrid = control as Grid;
 
             return base.Initialize( sortingEnabled, control );
         }
@@ -110,10 +100,35 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbDelete = new LinkButton();
                 lbDelete.ToolTip = "Delete";
                 lbDelete.Click += lbDelete_Click;
-                lbDelete.Visible = !ParentGrid.ReadOnly;
                 lbDelete.DataBinding += lbDelete_DataBinding;
+                lbDelete.PreRender += lbDelete_PreRender;
+
+                if ( ParentGrid.ShowConfirmDeleteDialog )
+                {
+                    lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
+                }
 
                 cell.Controls.Add( lbDelete );
+            }
+        }
+
+        /// <summary>
+        /// Handles the PreRender event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void lbDelete_PreRender( object sender, EventArgs e )
+        {
+            LinkButton lbDelete = sender as LinkButton;
+            lbDelete.Enabled = ParentGrid.Enabled;
+            if (lbDelete.Enabled)
+            {
+                lbDelete.Attributes.Remove( "disabled" );
+            }
+            else
+            {
+                lbDelete.Attributes["disabled"] = "disabled";
             }
         }
 

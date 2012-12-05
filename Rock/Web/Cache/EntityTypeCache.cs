@@ -15,10 +15,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class EntityTypeCache : Rock.Core.EntityTypeDto
+    public class EntityTypeCache : Rock.Model.EntityTypeDto
     {
         private EntityTypeCache() : base() { }
-        private EntityTypeCache( Rock.Core.EntityType model ) : base( model ) { }
+        private EntityTypeCache( Rock.Model.EntityType model ) : base( model ) { }
 
         private static Dictionary<string, int> entityTypes = new Dictionary<string, int>();
 
@@ -39,7 +39,7 @@ namespace Rock.Web.Cache
             if ( entityTypes.ContainsKey( name ) )
                 return Read( entityTypes[name] );
 
-            var entityTypeService = new Rock.Core.EntityTypeService();
+            var entityTypeService = new Rock.Model.EntityTypeService();
             var entityTypeModel = entityTypeService.Get( name, true, null );
             return Read( entityTypeModel );
         }
@@ -74,8 +74,8 @@ namespace Rock.Web.Cache
                 return entityType;
             else
             {
-                Rock.Core.EntityTypeService entityTypeService = new Rock.Core.EntityTypeService();
-                Rock.Core.EntityType entityTypeModel = entityTypeService.Get( id );
+                Rock.Model.EntityTypeService entityTypeService = new Rock.Model.EntityTypeService();
+                Rock.Model.EntityType entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
                     entityType = CopyModel( entityTypeModel );
@@ -94,7 +94,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( Rock.Core.EntityType entityTypeModel )
+        public static EntityTypeCache Read( Rock.Model.EntityType entityTypeModel )
         {
             string cacheKey = EntityTypeCache.CacheKey( entityTypeModel.Id );
 
@@ -117,7 +117,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static EntityTypeCache CopyModel( Rock.Core.EntityType entityTypeModel )
+        public static EntityTypeCache CopyModel( Rock.Model.EntityType entityTypeModel )
         {
             EntityTypeCache entityType = new EntityTypeCache( entityTypeModel );
 

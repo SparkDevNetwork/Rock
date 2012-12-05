@@ -5,20 +5,17 @@
 //
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.IO;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Drawing;
-
-using Rock;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
@@ -33,8 +30,9 @@ namespace Rock.Web.UI.Controls
 
         private Table _table;
         private GridViewRow _actionRow;
-        private GridActions _gridActions = new GridActions();
+        private GridActions _gridActions;
         private const string DefaultEmptyDataText = "No Results Found";
+        private Dictionary<int, string> DataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -94,6 +92,40 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show confirm delete dialog].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show confirm delete dialog]; otherwise, <c>false</c>.
+        /// </value>
+        [
+       Category( "Appearance" ),
+       DefaultValue( true ),
+       Description( "Show Confirm Delete Dialog" )
+       ]
+        public virtual bool ShowConfirmDeleteDialog
+        {
+            get
+            {
+                object showConfirmDeleteDialog = this.ViewState["ShowConfirmDeleteDialog"];
+                if ( showConfirmDeleteDialog == null )
+                {
+                    return true;
+                }
+                else
+                {
+                    return (bool)showConfirmDeleteDialog;
+                }
+                
+            }
+
+            set
+            {
+                this.ViewState["ShowConfirmDeleteDialog"] = value;
+            }
+
+        }
+
+        /// <summary>
         /// Gets or sets the name of the row item.
         /// </summary>
         /// <value>
@@ -108,7 +140,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 object rowItemText = this.ViewState["RowItemText"];
-                if ( string.IsNullOrWhiteSpace(rowItemText as string) && DataSource != null)
+                if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
                     Type itemType = dataSourceType.GetGenericArguments()[0];
@@ -190,35 +222,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [read only].  
-        /// NOTE: Rebind the grid after changing this for the edit/delete buttons to show up correctly
+        /// Gets or sets a value indicating whether [row click enabled].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [row click enabled]; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool ReadOnly
+        public virtual bool RowClickEnabled
         {
             get
             {
-                object readOnly = this.ViewState["ReadOnly"];
-                if ( readOnly != null )
+                object rowClickEnabled = this.ViewState["RowClickEnabled"];
+                if ( rowClickEnabled != null )
                 {
-                    return (bool)readOnly;
+                    return (bool)rowClickEnabled;
                 }
                 else
                 {
-                    // default to false
-                    return false;
+                    // default to true
+                    return true;
                 }
             }
 
             set
             {
-                this.ViewState["ReadOnly"] = value;
-                Actions.IsAddEnabled = !value;
+                this.ViewState["RowClickEnabled"] = value;
             }
         }
-
+        
         /// <summary>
         /// Gets or sets a value indicating whether the export to excel action should be displayed.
         /// </summary>
@@ -291,7 +321,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table table-bordered table-stripped";
+            base.CssClass = "grid-table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -304,9 +334,11 @@ namespace Rock.Web.UI.Controls
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
-            base.AllowPaging = false;
+            base.AllowPaging = true;
             base.PageSize = 25;
             base.PageIndex = 0;
+
+            _gridActions = new GridActions( this );
         }
 
         #endregion
@@ -319,8 +351,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> that contains event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
-
             PagerTemplate pagerTemplate = new PagerTemplate();
             pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
             pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
@@ -365,7 +395,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // add author info
-            Rock.Cms.User user = Rock.Cms.UserService.GetCurrentUser();
+            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
             if ( user != null )
             {
                 excel.Workbook.Properties.Author = user.Person.FullName;
@@ -543,6 +573,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
+            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
+
             UseAccessibleHeader = true;
 
             if ( HeaderRow != null )
@@ -579,16 +611,25 @@ namespace Rock.Web.UI.Controls
         {
             if ( DisplayType == GridDisplayType.Light )
             {
-                //this.AllowPaging = false;
+                this.AllowPaging = false;
                 this.AllowSorting = false;
                 this.Actions.IsExcelExportEnabled = false;
-                this.RemoveCssClass( "full" );
-                this.AddCssClass( "light" );
+
+                this.RemoveCssClass( "table-bordered" );
+                this.RemoveCssClass( "table-stripped" );
+                this.RemoveCssClass( "table-hover" );
+                this.RemoveCssClass( "table-full" );
+                this.AddCssClass( "table-condensed" );
+                this.AddCssClass( "table-light" );
             }
             else
             {
-                this.RemoveCssClass( "light" );
-                this.AddCssClass( "full" );
+                this.RemoveCssClass( "table-condensed" );
+                this.RemoveCssClass( "table-light" );
+                this.AddCssClass( "table-bordered" );
+                this.AddCssClass( "table-stripped" );
+                this.AddCssClass( "table-hover" );
+                this.AddCssClass( "table-full" );
             }
 
             base.OnDataBound( e );
@@ -648,6 +689,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCreated" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewRowEventArgs" /> that contains event data.</param>
+        protected override void OnRowCreated( GridViewRowEventArgs e )
+        {
+            base.OnRowCreated( e );
+
+            if (EditRow != null && e.Row.RowType == DataControlRowType.DataRow )
+            {
+                string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "EditRow$" + e.Row.RowIndex );
+
+                for(int i = 0; i < e.Row.Cells.Count; i++)
+                {
+                    if (DataBoundColumns.ContainsKey(i))
+                    {
+                        var cell = e.Row.Cells[i];
+                        cell.AddCssClass(DataBoundColumns[i]);
+                        cell.AddCssClass( "grid-edit-cell" );
+                        cell.Attributes["onclick"] = clickUrl;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Creates a new child table.
         /// </summary>
         /// <returns>
@@ -656,6 +722,17 @@ namespace Rock.Web.UI.Controls
         protected override Table CreateChildTable()
         {
             _table = base.CreateChildTable();
+
+            DataBoundColumns = new Dictionary<int, string>();
+            for ( int i = 0; i < this.Columns.Count; i++ )
+            {
+                BoundField column = this.Columns[i] as BoundField;
+                if ( column != null)
+                {
+                    DataBoundColumns.Add( i, column.ItemStyle.CssClass );
+                }
+            }
+
             return _table;
         }
 
@@ -725,6 +802,20 @@ namespace Rock.Web.UI.Controls
             }
 
             OnGridRebind( e );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.WebControls.GridView.RowCommand" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
+        protected override void OnRowCommand( GridViewCommandEventArgs e )
+        {
+            if ( e.CommandName == "EditRow" )
+            {
+                int rowIndex = Int32.Parse(e.CommandArgument.ToString());
+                RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
+                OnEditRowClick( a );
+            }
         }
 
         #endregion
@@ -832,6 +923,23 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when [row click].
+        /// </summary>
+        public event EventHandler<RowEventArgs> EditRow;
+
+        /// <summary>
+        /// Raises the <see cref="E:EditRowClick" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected virtual void OnEditRowClick( RowEventArgs e )
+        {
+            if ( EditRow != null )
+            {
+                EditRow( this, e );
+            }
+        }
+
         #endregion
     }
 
@@ -860,7 +968,7 @@ namespace Rock.Web.UI.Controls
 
     #endregion
 
-    #region Event Handlers
+    #region Event Arguments
 
     /// <summary>
     /// Items Per RockPage Event Argument

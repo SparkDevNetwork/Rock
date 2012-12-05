@@ -17,6 +17,16 @@ namespace Rock.Web.UI.Controls
     public class EditField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="EditField" /> class.
+        /// </summary>
+        public EditField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell edit";
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -26,9 +36,6 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell edit";
-
             EditFieldTemplate editFieldTemplate = new EditFieldTemplate();
             editFieldTemplate.LinkButtonClick += editFieldTemplate_LinkButtonClick;
             this.ItemTemplate = editFieldTemplate;
@@ -90,8 +97,6 @@ namespace Rock.Web.UI.Controls
                 LinkButton lbEdit = new LinkButton();
                 lbEdit.ToolTip = "Edit";
                 lbEdit.Click += lbEdit_Click;
-                lbEdit.Visible = !ParentGrid.ReadOnly;
-
                 cell.Controls.Add( lbEdit );
             }
         }

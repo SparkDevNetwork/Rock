@@ -8,13 +8,12 @@
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" EmptyDataText="No Child Pages Exist" RowItemText="page" >
+        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnEditRow="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="Name" HeaderText="Name" Target="_parent" />
                 <asp:BoundField DataField="Layout" HeaderText="Layout"  />
-                <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>
@@ -25,13 +24,13 @@
 
             <fieldset>
                 <legend><asp:Literal ID="lEditAction" runat="server"/> Child Page</legend>
-                <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Cms.Page, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
                 <Rock:LabeledDropDownList ID="ddlLayout" runat="server" LabelText="Layout"></Rock:LabeledDropDownList>
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Add" CssClass="btn primary" onclick="btnSave_Click" />
-                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn Secondary" OnClick="btnCancel_Click" CausesValidation="false" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Add" CssClass="btn btn-primary" onclick="btnSave_Click" />
+                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click" CausesValidation="false" />
             </div>
 
         </asp:Panel>

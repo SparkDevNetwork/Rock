@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Data;
 using Rock.Web.UI;
 
-namespace Rock.Util.WorkflowAction
+namespace Rock.Model.WorkflowAction
 {
     /// <summary>
     /// Sets a workflow status

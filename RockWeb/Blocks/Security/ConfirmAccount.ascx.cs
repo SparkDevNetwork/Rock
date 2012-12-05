@@ -8,7 +8,7 @@ using System;
 using System.Web.Security;
 using System.Web.UI;
 
-using Rock.Cms;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Security
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserService userService = null;
-        private User user = null;
+        private UserLogin user = null;
 
         #region Properties
 

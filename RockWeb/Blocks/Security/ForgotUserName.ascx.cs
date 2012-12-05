@@ -7,11 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-
-using Rock.Cms;
 using Rock.Communication;
-using Rock.Crm;
-using Rock.Web.Cache;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
@@ -56,11 +53,11 @@ namespace RockWeb.Blocks.Security
             foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
             {
                 var users = new List<IDictionary<string,object>>();
-                foreach ( User user in userService.GetByPersonId( person.Id ) )
+                foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
                 {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
                     {
-                        var userDictionary = new UserDto(user).ToDictionary();
+                        var userDictionary = new UserLoginDto( user ).ToDictionary();
                         userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
                         users.Add(userDictionary);
                     }

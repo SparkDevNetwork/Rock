@@ -24,7 +24,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             CKEditorControl editor = new CKEditorControl();
-            editor.Toolbar = "RockCustomConfig";
+            editor.Toolbar = "RockCustomConfigLight";
             return editor;
         }
     }

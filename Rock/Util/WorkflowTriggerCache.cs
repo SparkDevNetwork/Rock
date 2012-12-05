@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
-namespace Rock.Util
+namespace Rock.Model
 {
     /// <summary>
     /// MEF Container class for WorkflowAction Componenets

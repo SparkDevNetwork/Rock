@@ -7,15 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
 using Rock.Constants;
-using Rock.Core;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Core.Attribute;
+using Attribute = Rock.Model.Attribute;
 
 public partial class MarketingCampaignAdTypes : RockBlock
 {
@@ -73,7 +71,6 @@ public partial class MarketingCampaignAdTypes : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbGridWarning.Visible = false;
         nbWarning.Visible = false;
 
         if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
@@ -129,10 +126,9 @@ public partial class MarketingCampaignAdTypes : RockBlock
         MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
         
         string errorMessage;
-        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType.Id, out errorMessage ) )
+        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
         {
-            nbGridWarning.Text = errorMessage;
-            nbGridWarning.Visible = true;
+            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
         

@@ -50,7 +50,7 @@ namespace RockWeb
                 SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString ) );
                 conn.Open();
                 SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "cmsFile_sp_getByID";
+                cmd.CommandText = "BinaryFile_sp_getByID";
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add( new SqlParameter( "@Id", id ) );
                 cmd.Parameters.Add( new SqlParameter( "@Guid", guid ) );

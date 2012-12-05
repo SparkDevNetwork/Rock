@@ -9,7 +9,7 @@ using System.IO;
 
 using Quartz;
 
-using Rock.Util;
+using Rock.Model;
 
 namespace Rock.Jobs
 {

@@ -12,7 +12,7 @@ using System.Text;
 using System.Web;
 using System.Web.Configuration;
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock.Security.Authentication
 {
@@ -47,7 +47,7 @@ namespace Rock.Security.Authentication
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public override Boolean Authenticate( User user, string password )
+        public override Boolean Authenticate( UserLogin user, string password )
         {
             return EncodePassword( user, password ) == user.Password;
         }
@@ -58,7 +58,7 @@ namespace Rock.Security.Authentication
         /// <param name="user">The user.</param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public override String EncodePassword( User user, string password )
+        public override String EncodePassword( UserLogin user, string password )
         {
             HMACSHA1 hash = new HMACSHA1();
             hash.Key = encryptionKey;
