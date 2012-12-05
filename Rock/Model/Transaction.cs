@@ -226,12 +226,12 @@ namespace Rock.Model
     /// <summary>
     /// Transaction Configuration class.
     /// </summary>
-    public partial class TransactionConfiguration : EntityTypeConfiguration<FinancialTransaction>
+    public partial class FinancialTransactionConfiguration : EntityTypeConfiguration<FinancialTransaction>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialTransactionConfiguration"/> class.
         /// </summary>
-        public TransactionConfiguration()
+        public FinancialTransactionConfiguration()
         {
             //this.HasMany(p => p.Funds).WithMany(c => c.Transactions).Map(m => { m.MapLeftKey("TransactionId"); m.MapRightKey("FundId"); m.ToTable("financialTransactionFund"); });
             this.HasOptional(b => b.Batch).WithMany(t => t.Transactions).HasForeignKey(t => t.BatchId).WillCascadeOnDelete(false);
