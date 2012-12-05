@@ -19,19 +19,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data Transfer Object for ActivityType object
+    /// Data Transfer Object for WorkflowActionType object
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class ActivityTypeDto : IDto, DotLiquid.ILiquidizable
+    public partial class WorkflowActionTypeDto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary />
         [DataMember]
-        public bool? IsActive { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int WorkflowTypeId { get; set; }
+        public int ActivityTypeId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -39,15 +35,19 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public string Description { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public bool IsActivatedWithWorkflow { get; set; }
-
-        /// <summary />
-        [DataMember]
         public int Order { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public int EntityTypeId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool IsActionCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool IsActivityCompletedOnSuccess { get; set; }
 
         /// <summary />
         [DataMember]
@@ -60,17 +60,17 @@ namespace Rock.Model
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
-        public ActivityTypeDto ()
+        public WorkflowActionTypeDto ()
         {
         }
 
         /// <summary>
         /// Instantiates a new DTO object from the entity
         /// </summary>
-        /// <param name="activityType"></param>
-        public ActivityTypeDto ( ActivityType activityType )
+        /// <param name="workflowActionType"></param>
+        public WorkflowActionTypeDto ( WorkflowActionType workflowActionType )
         {
-            CopyFromModel( activityType );
+            CopyFromModel( workflowActionType );
         }
 
         /// <summary>
@@ -80,12 +80,12 @@ namespace Rock.Model
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "IsActive", this.IsActive );
-            dictionary.Add( "WorkflowTypeId", this.WorkflowTypeId );
+            dictionary.Add( "ActivityTypeId", this.ActivityTypeId );
             dictionary.Add( "Name", this.Name );
-            dictionary.Add( "Description", this.Description );
-            dictionary.Add( "IsActivatedWithWorkflow", this.IsActivatedWithWorkflow );
             dictionary.Add( "Order", this.Order );
+            dictionary.Add( "EntityTypeId", this.EntityTypeId );
+            dictionary.Add( "IsActionCompletedOnSuccess", this.IsActionCompletedOnSuccess );
+            dictionary.Add( "IsActivityCompletedOnSuccess", this.IsActivityCompletedOnSuccess );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -98,12 +98,12 @@ namespace Rock.Model
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.IsActive = this.IsActive;
-            expando.WorkflowTypeId = this.WorkflowTypeId;
+            expando.ActivityTypeId = this.ActivityTypeId;
             expando.Name = this.Name;
-            expando.Description = this.Description;
-            expando.IsActivatedWithWorkflow = this.IsActivatedWithWorkflow;
             expando.Order = this.Order;
+            expando.EntityTypeId = this.EntityTypeId;
+            expando.IsActionCompletedOnSuccess = this.IsActionCompletedOnSuccess;
+            expando.IsActivityCompletedOnSuccess = this.IsActivityCompletedOnSuccess;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -115,17 +115,17 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is ActivityType )
+            if ( model is WorkflowActionType )
             {
-                var activityType = (ActivityType)model;
-                this.IsActive = activityType.IsActive;
-                this.WorkflowTypeId = activityType.WorkflowTypeId;
-                this.Name = activityType.Name;
-                this.Description = activityType.Description;
-                this.IsActivatedWithWorkflow = activityType.IsActivatedWithWorkflow;
-                this.Order = activityType.Order;
-                this.Id = activityType.Id;
-                this.Guid = activityType.Guid;
+                var workflowActionType = (WorkflowActionType)model;
+                this.ActivityTypeId = workflowActionType.ActivityTypeId;
+                this.Name = workflowActionType.Name;
+                this.Order = workflowActionType.Order;
+                this.EntityTypeId = workflowActionType.EntityTypeId;
+                this.IsActionCompletedOnSuccess = workflowActionType.IsActionCompletedOnSuccess;
+                this.IsActivityCompletedOnSuccess = workflowActionType.IsActivityCompletedOnSuccess;
+                this.Id = workflowActionType.Id;
+                this.Guid = workflowActionType.Guid;
             }
         }
 
@@ -135,17 +135,17 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is ActivityType )
+            if ( model is WorkflowActionType )
             {
-                var activityType = (ActivityType)model;
-                activityType.IsActive = this.IsActive;
-                activityType.WorkflowTypeId = this.WorkflowTypeId;
-                activityType.Name = this.Name;
-                activityType.Description = this.Description;
-                activityType.IsActivatedWithWorkflow = this.IsActivatedWithWorkflow;
-                activityType.Order = this.Order;
-                activityType.Id = this.Id;
-                activityType.Guid = this.Guid;
+                var workflowActionType = (WorkflowActionType)model;
+                workflowActionType.ActivityTypeId = this.ActivityTypeId;
+                workflowActionType.Name = this.Name;
+                workflowActionType.Order = this.Order;
+                workflowActionType.EntityTypeId = this.EntityTypeId;
+                workflowActionType.IsActionCompletedOnSuccess = this.IsActionCompletedOnSuccess;
+                workflowActionType.IsActivityCompletedOnSuccess = this.IsActivityCompletedOnSuccess;
+                workflowActionType.Id = this.Id;
+                workflowActionType.Guid = this.Guid;
             }
         }
 
@@ -163,16 +163,16 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public static class ActivityTypeDtoExtension
+    public static class WorkflowActionTypeDtoExtension
     {
         /// <summary>
         /// To the model.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static ActivityType ToModel( this ActivityTypeDto value )
+        public static WorkflowActionType ToModel( this WorkflowActionTypeDto value )
         {
-            ActivityType result = new ActivityType();
+            WorkflowActionType result = new WorkflowActionType();
             value.CopyToModel( result );
             return result;
         }
@@ -182,9 +182,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<ActivityType> ToModel( this List<ActivityTypeDto> value )
+        public static List<WorkflowActionType> ToModel( this List<WorkflowActionTypeDto> value )
         {
-            List<ActivityType> result = new List<ActivityType>();
+            List<WorkflowActionType> result = new List<WorkflowActionType>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -194,9 +194,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<ActivityTypeDto> ToDto( this List<ActivityType> value )
+        public static List<WorkflowActionTypeDto> ToDto( this List<WorkflowActionType> value )
         {
-            List<ActivityTypeDto> result = new List<ActivityTypeDto>();
+            List<WorkflowActionTypeDto> result = new List<WorkflowActionTypeDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
@@ -206,9 +206,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static ActivityTypeDto ToDto( this ActivityType value )
+        public static WorkflowActionTypeDto ToDto( this WorkflowActionType value )
         {
-            return new ActivityTypeDto( value );
+            return new WorkflowActionTypeDto( value );
         }
 
     }

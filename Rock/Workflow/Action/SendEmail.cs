@@ -9,19 +9,20 @@ using System.ComponentModel.Composition;
 
 using Rock.Communication;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 
-namespace Rock.Model.WorkflowAction
+namespace Rock.Workflow.Action
 {
     /// <summary>
     /// Sets a workflow status
     /// </summary>
     [Description( "Set the workflow status" )]
-    [Export(typeof(WorkflowActionComponent))]
+    [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Set Status")]
     [BlockProperty( 0, "EmailTemplate", "The email template to send", true )]
     [BlockProperty( 1, "Recipient", "The email address to send to", true )]
-    public class SendEmail : WorkflowActionComponent
+    public class SendEmail : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -30,7 +31,7 @@ namespace Rock.Model.WorkflowAction
         /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( Action action, IDto dto, out List<string> errorMessages )
+        public override bool Execute( WorkflowAction action, IDto dto, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 

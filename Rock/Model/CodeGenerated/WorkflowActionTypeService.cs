@@ -18,38 +18,38 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ActivityType Service class
+    /// WorkflowActionType Service class
     /// </summary>
-    public partial class ActivityTypeService : Service<ActivityType, ActivityTypeDto>
+    public partial class WorkflowActionTypeService : Service<WorkflowActionType, WorkflowActionTypeDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityTypeService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionTypeService"/> class
         /// </summary>
-        public ActivityTypeService()
+        public WorkflowActionTypeService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityTypeService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionTypeService"/> class
         /// </summary>
-        public ActivityTypeService(IRepository<ActivityType> repository) : base(repository)
+        public WorkflowActionTypeService(IRepository<WorkflowActionType> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override ActivityType CreateNew()
+        public override WorkflowActionType CreateNew()
         {
-            return new ActivityType();
+            return new WorkflowActionType();
         }
 
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ActivityTypeDto> QueryableDto( )
+        public override IQueryable<WorkflowActionTypeDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,16 +58,16 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActivityTypeDto> QueryableDto( IQueryable<ActivityType> items )
+        public IQueryable<WorkflowActionTypeDto> QueryableDto( IQueryable<WorkflowActionType> items )
         {
-            return items.Select( m => new ActivityTypeDto()
+            return items.Select( m => new WorkflowActionTypeDto()
                 {
-                    IsActive = m.IsActive,
-                    WorkflowTypeId = m.WorkflowTypeId,
+                    ActivityTypeId = m.ActivityTypeId,
                     Name = m.Name,
-                    Description = m.Description,
-                    IsActivatedWithWorkflow = m.IsActivatedWithWorkflow,
                     Order = m.Order,
+                    EntityTypeId = m.EntityTypeId,
+                    IsActionCompletedOnSuccess = m.IsActionCompletedOnSuccess,
+                    IsActivityCompletedOnSuccess = m.IsActivityCompletedOnSuccess,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
@@ -81,7 +81,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ActivityType item, out string errorMessage )
+        public bool CanDelete( WorkflowActionType item, out string errorMessage )
         {
             errorMessage = string.Empty;
             RockContext context = new RockContext();
@@ -89,15 +89,15 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowActivity where ActivityTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowAction where ActionTypeId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowActivity" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowActivity";
+                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowAction" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowAction";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", ActivityType.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", WorkflowActionType.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }
