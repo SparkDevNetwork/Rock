@@ -84,8 +84,7 @@ namespace Rock.Address.Standardize
                                 location.GeocodeAttemptedResult = "200";
                                 location.GeocodedDateTime = DateTime.Now;
 
-                                location.Latitude = usAddress.GeoCode.Latitude;
-                                location.Longitude = usAddress.GeoCode.Longitude;
+                                location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
                             }
 
                             return true;

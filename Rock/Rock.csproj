@@ -124,9 +124,15 @@
     <Compile Include="Migrations\201212051230308_AddMissingTagConfiguration.Designer.cs">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212051624202_CheckIn.cs" />
+    <Compile Include="Migrations\201212051624202_CheckIn.Designer.cs">
+      <DependentUpon>201212051624202_CheckIn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceDto.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthDTO.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDto.cs" />
@@ -135,6 +141,10 @@
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\DeviceDto.cs" />
+    <Compile Include="Model\CodeGenerated\DeviceService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationDto.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentDto.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdDto.cs" />
@@ -153,6 +163,8 @@
     <Compile Include="Model\CodeGenerated\PageRouteDto.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
+    <Compile Include="Model\CodeGenerated\ScheduleDto.cs" />
+    <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainDto.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDTO.cs" />
@@ -773,6 +785,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212051624202_CheckIn.resx">
+      <DependentUpon>201212051624202_CheckIn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

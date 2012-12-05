@@ -19,43 +19,47 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data Transfer Object for GroupRole object
+    /// Data Transfer Object for Schedule object
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GroupRoleDto : IDto, DotLiquid.ILiquidizable
+    public partial class ScheduleDto : IDto, DotLiquid.ILiquidizable
     {
-        /// <summary />
-        [DataMember]
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int? GroupTypeId { get; set; }
-
         /// <summary />
         [DataMember]
         public string Name { get; set; }
 
         /// <summary />
         [DataMember]
-        public string Description { get; set; }
+        public ScheduleFrequency Frequency { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? SortOrder { get; set; }
+        public string FrequencyQualifier { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? MaxCount { get; set; }
+        public DateTime StartTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? MinCount { get; set; }
+        public DateTime EndTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public bool IsLeader { get; set; }
+        public DateTime? CheckInStartTime { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public DateTime? CheckInEndTime { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public DateTimeOffset? EffectiveStartDate { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public DateTimeOffset? EffectiveEndDate { get; set; }
 
         /// <summary />
         [DataMember]
@@ -68,17 +72,17 @@ namespace Rock.Model
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
-        public GroupRoleDto ()
+        public ScheduleDto ()
         {
         }
 
         /// <summary>
         /// Instantiates a new DTO object from the entity
         /// </summary>
-        /// <param name="groupRole"></param>
-        public GroupRoleDto ( GroupRole groupRole )
+        /// <param name="schedule"></param>
+        public ScheduleDto ( Schedule schedule )
         {
-            CopyFromModel( groupRole );
+            CopyFromModel( schedule );
         }
 
         /// <summary>
@@ -88,14 +92,15 @@ namespace Rock.Model
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "GroupTypeId", this.GroupTypeId );
             dictionary.Add( "Name", this.Name );
-            dictionary.Add( "Description", this.Description );
-            dictionary.Add( "SortOrder", this.SortOrder );
-            dictionary.Add( "MaxCount", this.MaxCount );
-            dictionary.Add( "MinCount", this.MinCount );
-            dictionary.Add( "IsLeader", this.IsLeader );
+            dictionary.Add( "Frequency", this.Frequency );
+            dictionary.Add( "FrequencyQualifier", this.FrequencyQualifier );
+            dictionary.Add( "StartTime", this.StartTime );
+            dictionary.Add( "EndTime", this.EndTime );
+            dictionary.Add( "CheckInStartTime", this.CheckInStartTime );
+            dictionary.Add( "CheckInEndTime", this.CheckInEndTime );
+            dictionary.Add( "EffectiveStartDate", this.EffectiveStartDate );
+            dictionary.Add( "EffectiveEndDate", this.EffectiveEndDate );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -108,14 +113,15 @@ namespace Rock.Model
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.IsSystem = this.IsSystem;
-            expando.GroupTypeId = this.GroupTypeId;
             expando.Name = this.Name;
-            expando.Description = this.Description;
-            expando.SortOrder = this.SortOrder;
-            expando.MaxCount = this.MaxCount;
-            expando.MinCount = this.MinCount;
-            expando.IsLeader = this.IsLeader;
+            expando.Frequency = this.Frequency;
+            expando.FrequencyQualifier = this.FrequencyQualifier;
+            expando.StartTime = this.StartTime;
+            expando.EndTime = this.EndTime;
+            expando.CheckInStartTime = this.CheckInStartTime;
+            expando.CheckInEndTime = this.CheckInEndTime;
+            expando.EffectiveStartDate = this.EffectiveStartDate;
+            expando.EffectiveEndDate = this.EffectiveEndDate;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -127,19 +133,20 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is GroupRole )
+            if ( model is Schedule )
             {
-                var groupRole = (GroupRole)model;
-                this.IsSystem = groupRole.IsSystem;
-                this.GroupTypeId = groupRole.GroupTypeId;
-                this.Name = groupRole.Name;
-                this.Description = groupRole.Description;
-                this.SortOrder = groupRole.SortOrder;
-                this.MaxCount = groupRole.MaxCount;
-                this.MinCount = groupRole.MinCount;
-                this.IsLeader = groupRole.IsLeader;
-                this.Id = groupRole.Id;
-                this.Guid = groupRole.Guid;
+                var schedule = (Schedule)model;
+                this.Name = schedule.Name;
+                this.Frequency = schedule.Frequency;
+                this.FrequencyQualifier = schedule.FrequencyQualifier;
+                this.StartTime = schedule.StartTime;
+                this.EndTime = schedule.EndTime;
+                this.CheckInStartTime = schedule.CheckInStartTime;
+                this.CheckInEndTime = schedule.CheckInEndTime;
+                this.EffectiveStartDate = schedule.EffectiveStartDate;
+                this.EffectiveEndDate = schedule.EffectiveEndDate;
+                this.Id = schedule.Id;
+                this.Guid = schedule.Guid;
             }
         }
 
@@ -149,19 +156,20 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is GroupRole )
+            if ( model is Schedule )
             {
-                var groupRole = (GroupRole)model;
-                groupRole.IsSystem = this.IsSystem;
-                groupRole.GroupTypeId = this.GroupTypeId;
-                groupRole.Name = this.Name;
-                groupRole.Description = this.Description;
-                groupRole.SortOrder = this.SortOrder;
-                groupRole.MaxCount = this.MaxCount;
-                groupRole.MinCount = this.MinCount;
-                groupRole.IsLeader = this.IsLeader;
-                groupRole.Id = this.Id;
-                groupRole.Guid = this.Guid;
+                var schedule = (Schedule)model;
+                schedule.Name = this.Name;
+                schedule.Frequency = this.Frequency;
+                schedule.FrequencyQualifier = this.FrequencyQualifier;
+                schedule.StartTime = this.StartTime;
+                schedule.EndTime = this.EndTime;
+                schedule.CheckInStartTime = this.CheckInStartTime;
+                schedule.CheckInEndTime = this.CheckInEndTime;
+                schedule.EffectiveStartDate = this.EffectiveStartDate;
+                schedule.EffectiveEndDate = this.EffectiveEndDate;
+                schedule.Id = this.Id;
+                schedule.Guid = this.Guid;
             }
         }
 
@@ -179,16 +187,16 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public static class GroupRoleDtoExtension
+    public static class ScheduleDtoExtension
     {
         /// <summary>
         /// To the model.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static GroupRole ToModel( this GroupRoleDto value )
+        public static Schedule ToModel( this ScheduleDto value )
         {
-            GroupRole result = new GroupRole();
+            Schedule result = new Schedule();
             value.CopyToModel( result );
             return result;
         }
@@ -198,9 +206,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<GroupRole> ToModel( this List<GroupRoleDto> value )
+        public static List<Schedule> ToModel( this List<ScheduleDto> value )
         {
-            List<GroupRole> result = new List<GroupRole>();
+            List<Schedule> result = new List<Schedule>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -210,9 +218,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<GroupRoleDto> ToDto( this List<GroupRole> value )
+        public static List<ScheduleDto> ToDto( this List<Schedule> value )
         {
-            List<GroupRoleDto> result = new List<GroupRoleDto>();
+            List<ScheduleDto> result = new List<ScheduleDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
@@ -222,9 +230,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static GroupRoleDto ToDto( this GroupRole value )
+        public static ScheduleDto ToDto( this Schedule value )
         {
-            return new GroupRoleDto( value );
+            return new ScheduleDto( value );
         }
 
     }

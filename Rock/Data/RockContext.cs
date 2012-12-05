@@ -55,6 +55,14 @@ namespace Rock.Data
         public DbSet<ActivityType> ActivityTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendances.
+        /// </summary>
+        /// <value>
+        /// The attendances.
+        /// </value>
+        public DbSet<Attendance> Attendances { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -149,6 +157,14 @@ namespace Rock.Data
         /// the Defined Values.
         /// </value>
         public DbSet<DefinedValue> DefinedValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the devices.
+        /// </summary>
+        /// <value>
+        /// The devices.
+        /// </value>
+        public DbSet<Device> Devices { get; set; }
 
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -423,6 +439,14 @@ namespace Rock.Data
         public DbSet<Pledge> Pledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the schedules.
+        /// </summary>
+        /// <value>
+        /// The schedules.
+        /// </value>
+        public DbSet<Schedule> Schedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the Jobs.
         /// </summary>
         /// <value>
@@ -562,6 +586,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new ActionTypeConfiguration() );
             modelBuilder.Configurations.Add( new ActivityConfiguration() );
             modelBuilder.Configurations.Add( new ActivityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new AttendanceConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
@@ -574,6 +599,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
+            modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
             modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
@@ -608,6 +634,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new SiteConfiguration() );

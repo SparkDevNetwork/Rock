@@ -13,26 +13,19 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.Serialization;
+using System.Data.Spatial;
 
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Data Transfer Object for GroupRole object
+    /// Data Transfer Object for Device object
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GroupRoleDto : IDto, DotLiquid.ILiquidizable
+    public partial class DeviceDto : IDto, DotLiquid.ILiquidizable
     {
-        /// <summary />
-        [DataMember]
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int? GroupTypeId { get; set; }
-
         /// <summary />
         [DataMember]
         public string Name { get; set; }
@@ -43,19 +36,31 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? SortOrder { get; set; }
+        public DbGeography GeoPoint { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? MaxCount { get; set; }
+        public DbGeography GeoFence { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? MinCount { get; set; }
+        public int DeviceTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public bool IsLeader { get; set; }
+        public string IPAddress { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public int? PrinterId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public PrintFrom PrintFrom { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public PrintTo PrintToOverride { get; set; }
 
         /// <summary />
         [DataMember]
@@ -68,17 +73,17 @@ namespace Rock.Model
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
-        public GroupRoleDto ()
+        public DeviceDto ()
         {
         }
 
         /// <summary>
         /// Instantiates a new DTO object from the entity
         /// </summary>
-        /// <param name="groupRole"></param>
-        public GroupRoleDto ( GroupRole groupRole )
+        /// <param name="device"></param>
+        public DeviceDto ( Device device )
         {
-            CopyFromModel( groupRole );
+            CopyFromModel( device );
         }
 
         /// <summary>
@@ -88,14 +93,15 @@ namespace Rock.Model
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "GroupTypeId", this.GroupTypeId );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "SortOrder", this.SortOrder );
-            dictionary.Add( "MaxCount", this.MaxCount );
-            dictionary.Add( "MinCount", this.MinCount );
-            dictionary.Add( "IsLeader", this.IsLeader );
+            dictionary.Add( "GeoPoint", this.GeoPoint );
+            dictionary.Add( "GeoFence", this.GeoFence );
+            dictionary.Add( "DeviceTypeValueId", this.DeviceTypeValueId );
+            dictionary.Add( "IPAddress", this.IPAddress );
+            dictionary.Add( "PrinterId", this.PrinterId );
+            dictionary.Add( "PrintFrom", this.PrintFrom );
+            dictionary.Add( "PrintToOverride", this.PrintToOverride );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -108,14 +114,15 @@ namespace Rock.Model
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.IsSystem = this.IsSystem;
-            expando.GroupTypeId = this.GroupTypeId;
             expando.Name = this.Name;
             expando.Description = this.Description;
-            expando.SortOrder = this.SortOrder;
-            expando.MaxCount = this.MaxCount;
-            expando.MinCount = this.MinCount;
-            expando.IsLeader = this.IsLeader;
+            expando.GeoPoint = this.GeoPoint;
+            expando.GeoFence = this.GeoFence;
+            expando.DeviceTypeValueId = this.DeviceTypeValueId;
+            expando.IPAddress = this.IPAddress;
+            expando.PrinterId = this.PrinterId;
+            expando.PrintFrom = this.PrintFrom;
+            expando.PrintToOverride = this.PrintToOverride;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -127,19 +134,20 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyFromModel( IEntity model )
         {
-            if ( model is GroupRole )
+            if ( model is Device )
             {
-                var groupRole = (GroupRole)model;
-                this.IsSystem = groupRole.IsSystem;
-                this.GroupTypeId = groupRole.GroupTypeId;
-                this.Name = groupRole.Name;
-                this.Description = groupRole.Description;
-                this.SortOrder = groupRole.SortOrder;
-                this.MaxCount = groupRole.MaxCount;
-                this.MinCount = groupRole.MinCount;
-                this.IsLeader = groupRole.IsLeader;
-                this.Id = groupRole.Id;
-                this.Guid = groupRole.Guid;
+                var device = (Device)model;
+                this.Name = device.Name;
+                this.Description = device.Description;
+                this.GeoPoint = device.GeoPoint;
+                this.GeoFence = device.GeoFence;
+                this.DeviceTypeValueId = device.DeviceTypeValueId;
+                this.IPAddress = device.IPAddress;
+                this.PrinterId = device.PrinterId;
+                this.PrintFrom = device.PrintFrom;
+                this.PrintToOverride = device.PrintToOverride;
+                this.Id = device.Id;
+                this.Guid = device.Guid;
             }
         }
 
@@ -149,19 +157,20 @@ namespace Rock.Model
         /// <param name="model">The model.</param>
         public void CopyToModel ( IEntity model )
         {
-            if ( model is GroupRole )
+            if ( model is Device )
             {
-                var groupRole = (GroupRole)model;
-                groupRole.IsSystem = this.IsSystem;
-                groupRole.GroupTypeId = this.GroupTypeId;
-                groupRole.Name = this.Name;
-                groupRole.Description = this.Description;
-                groupRole.SortOrder = this.SortOrder;
-                groupRole.MaxCount = this.MaxCount;
-                groupRole.MinCount = this.MinCount;
-                groupRole.IsLeader = this.IsLeader;
-                groupRole.Id = this.Id;
-                groupRole.Guid = this.Guid;
+                var device = (Device)model;
+                device.Name = this.Name;
+                device.Description = this.Description;
+                device.GeoPoint = this.GeoPoint;
+                device.GeoFence = this.GeoFence;
+                device.DeviceTypeValueId = this.DeviceTypeValueId;
+                device.IPAddress = this.IPAddress;
+                device.PrinterId = this.PrinterId;
+                device.PrintFrom = this.PrintFrom;
+                device.PrintToOverride = this.PrintToOverride;
+                device.Id = this.Id;
+                device.Guid = this.Guid;
             }
         }
 
@@ -179,16 +188,16 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public static class GroupRoleDtoExtension
+    public static class DeviceDtoExtension
     {
         /// <summary>
         /// To the model.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static GroupRole ToModel( this GroupRoleDto value )
+        public static Device ToModel( this DeviceDto value )
         {
-            GroupRole result = new GroupRole();
+            Device result = new Device();
             value.CopyToModel( result );
             return result;
         }
@@ -198,9 +207,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<GroupRole> ToModel( this List<GroupRoleDto> value )
+        public static List<Device> ToModel( this List<DeviceDto> value )
         {
-            List<GroupRole> result = new List<GroupRole>();
+            List<Device> result = new List<Device>();
             value.ForEach( a => result.Add( a.ToModel() ) );
             return result;
         }
@@ -210,9 +219,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static List<GroupRoleDto> ToDto( this List<GroupRole> value )
+        public static List<DeviceDto> ToDto( this List<Device> value )
         {
-            List<GroupRoleDto> result = new List<GroupRoleDto>();
+            List<DeviceDto> result = new List<DeviceDto>();
             value.ForEach( a => result.Add( a.ToDto() ) );
             return result;
         }
@@ -222,9 +231,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static GroupRoleDto ToDto( this GroupRole value )
+        public static DeviceDto ToDto( this Device value )
         {
-            return new GroupRoleDto( value );
+            return new DeviceDto( value );
         }
 
     }

@@ -18,38 +18,38 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupType Service class
+    /// Device Service class
     /// </summary>
-    public partial class GroupTypeService : Service<GroupType, GroupTypeDto>
+    public partial class DeviceService : Service<Device, DeviceDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeService"/> class
+        /// Initializes a new instance of the <see cref="DeviceService"/> class
         /// </summary>
-        public GroupTypeService()
+        public DeviceService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeService"/> class
+        /// Initializes a new instance of the <see cref="DeviceService"/> class
         /// </summary>
-        public GroupTypeService(IRepository<GroupType> repository) : base(repository)
+        public DeviceService(IRepository<Device> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override GroupType CreateNew()
+        public override Device CreateNew()
         {
-            return new GroupType();
+            return new Device();
         }
 
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupTypeDto> QueryableDto( )
+        public override IQueryable<DeviceDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,22 +58,19 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupTypeDto> QueryableDto( IQueryable<GroupType> items )
+        public IQueryable<DeviceDto> QueryableDto( IQueryable<Device> items )
         {
-            return items.Select( m => new GroupTypeDto()
+            return items.Select( m => new DeviceDto()
                 {
-                    IsSystem = m.IsSystem,
                     Name = m.Name,
                     Description = m.Description,
-                    GroupTerm = m.GroupTerm,
-                    GroupMemberTerm = m.GroupMemberTerm,
-                    DefaultGroupRoleId = m.DefaultGroupRoleId,
-                    AllowMultipleLocations = m.AllowMultipleLocations,
-                    SmallIconFileId = m.SmallIconFileId,
-                    LargeIconFileId = m.LargeIconFileId,
-                    TakesAttendance = m.TakesAttendance,
-                    AttendanceRule = m.AttendanceRule,
-                    AttendancePrintTo = m.AttendancePrintTo,
+                    GeoPoint = m.GeoPoint,
+                    GeoFence = m.GeoFence,
+                    DeviceTypeValueId = m.DeviceTypeValueId,
+                    IPAddress = m.IPAddress,
+                    PrinterId = m.PrinterId,
+                    PrintFrom = m.PrintFrom,
+                    PrintToOverride = m.PrintToOverride,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
@@ -87,7 +84,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( GroupType item, out string errorMessage )
+        public bool CanDelete( Device item, out string errorMessage )
         {
             errorMessage = string.Empty;
             RockContext context = new RockContext();
@@ -95,15 +92,15 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where GroupTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Device where PrinterId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
-                    Type entityType = RockContext.GetEntityFromTableName( "Group" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Group";
+                    Type entityType = RockContext.GetEntityFromTableName( "Device" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Device";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", Device.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }

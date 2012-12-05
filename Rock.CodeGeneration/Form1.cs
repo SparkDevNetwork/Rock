@@ -419,6 +419,12 @@ order by [parentTable]
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "using System.Dynamic;" );
             sb.AppendLine( "using System.Runtime.Serialization;" );
+
+            if ( properties.Values.Any( v => v == "DbGeography" ) )
+            {
+                sb.AppendLine( "using System.Data.Spatial;" );
+            }
+
             sb.AppendLine( "" );
             sb.AppendLine( "using Rock.Data;" );
             sb.AppendLine( "" );

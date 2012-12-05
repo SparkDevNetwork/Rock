@@ -39,7 +39,39 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
+        public string GroupTerm { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public string GroupMemberTerm { get; set; }
+
+        /// <summary />
+        [DataMember]
         public int? DefaultGroupRoleId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool AllowMultipleLocations { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public int? SmallIconFileId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public int? LargeIconFileId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool TakesAttendance { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public PrintTo AttendancePrintTo { get; set; }
 
         /// <summary />
         [DataMember]
@@ -75,7 +107,15 @@ namespace Rock.Model
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
+            dictionary.Add( "GroupTerm", this.GroupTerm );
+            dictionary.Add( "GroupMemberTerm", this.GroupMemberTerm );
             dictionary.Add( "DefaultGroupRoleId", this.DefaultGroupRoleId );
+            dictionary.Add( "AllowMultipleLocations", this.AllowMultipleLocations );
+            dictionary.Add( "SmallIconFileId", this.SmallIconFileId );
+            dictionary.Add( "LargeIconFileId", this.LargeIconFileId );
+            dictionary.Add( "TakesAttendance", this.TakesAttendance );
+            dictionary.Add( "AttendanceRule", this.AttendanceRule );
+            dictionary.Add( "AttendancePrintTo", this.AttendancePrintTo );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -91,7 +131,15 @@ namespace Rock.Model
             expando.IsSystem = this.IsSystem;
             expando.Name = this.Name;
             expando.Description = this.Description;
+            expando.GroupTerm = this.GroupTerm;
+            expando.GroupMemberTerm = this.GroupMemberTerm;
             expando.DefaultGroupRoleId = this.DefaultGroupRoleId;
+            expando.AllowMultipleLocations = this.AllowMultipleLocations;
+            expando.SmallIconFileId = this.SmallIconFileId;
+            expando.LargeIconFileId = this.LargeIconFileId;
+            expando.TakesAttendance = this.TakesAttendance;
+            expando.AttendanceRule = this.AttendanceRule;
+            expando.AttendancePrintTo = this.AttendancePrintTo;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -109,7 +157,15 @@ namespace Rock.Model
                 this.IsSystem = groupType.IsSystem;
                 this.Name = groupType.Name;
                 this.Description = groupType.Description;
+                this.GroupTerm = groupType.GroupTerm;
+                this.GroupMemberTerm = groupType.GroupMemberTerm;
                 this.DefaultGroupRoleId = groupType.DefaultGroupRoleId;
+                this.AllowMultipleLocations = groupType.AllowMultipleLocations;
+                this.SmallIconFileId = groupType.SmallIconFileId;
+                this.LargeIconFileId = groupType.LargeIconFileId;
+                this.TakesAttendance = groupType.TakesAttendance;
+                this.AttendanceRule = groupType.AttendanceRule;
+                this.AttendancePrintTo = groupType.AttendancePrintTo;
                 this.Id = groupType.Id;
                 this.Guid = groupType.Guid;
             }
@@ -127,7 +183,15 @@ namespace Rock.Model
                 groupType.IsSystem = this.IsSystem;
                 groupType.Name = this.Name;
                 groupType.Description = this.Description;
+                groupType.GroupTerm = this.GroupTerm;
+                groupType.GroupMemberTerm = this.GroupMemberTerm;
                 groupType.DefaultGroupRoleId = this.DefaultGroupRoleId;
+                groupType.AllowMultipleLocations = this.AllowMultipleLocations;
+                groupType.SmallIconFileId = this.SmallIconFileId;
+                groupType.LargeIconFileId = this.LargeIconFileId;
+                groupType.TakesAttendance = this.TakesAttendance;
+                groupType.AttendanceRule = this.AttendanceRule;
+                groupType.AttendancePrintTo = this.AttendancePrintTo;
                 groupType.Id = this.Id;
                 groupType.Guid = this.Guid;
             }

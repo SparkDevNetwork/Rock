@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.Serialization;
+using System.Data.Spatial;
 
 using Rock.Data;
 
@@ -27,7 +28,27 @@ namespace Rock.Model
     {
         /// <summary />
         [DataMember]
-        public string Raw { get; set; }
+        public int? ParentLocationId { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public DbGeography LocationPoint { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public DbGeography Perimeter { get; set; }
+
+        /// <summary />
+        [DataMember]
+        public int? LocationTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -55,47 +76,43 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public double? Latitude { get; set; }
+        public string FullAddress { get; set; }
 
         /// <summary />
         [DataMember]
-        public double? Longitude { get; set; }
+        public string AssessorParcelId { get; set; }
 
         /// <summary />
         [DataMember]
-        public string ParcelId { get; set; }
+        public DateTime? StandardizeAttemptedDateTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public DateTime? StandardizeAttempt { get; set; }
+        public string StandardizeAttemptedServiceType { get; set; }
 
         /// <summary />
         [DataMember]
-        public string StandardizeService { get; set; }
+        public string StandardizeAttemptedResult { get; set; }
 
         /// <summary />
         [DataMember]
-        public string StandardizeResult { get; set; }
+        public DateTime? StandardizedDateTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public DateTime? StandardizeDate { get; set; }
+        public DateTime? GeocodeAttemptedDateTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public DateTime? GeocodeAttempt { get; set; }
+        public string GeocodeAttemptedServiceType { get; set; }
 
         /// <summary />
         [DataMember]
-        public string GeocodeService { get; set; }
+        public string GeocodeAttemptedResult { get; set; }
 
         /// <summary />
         [DataMember]
-        public string GeocodeResult { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public DateTime? GeocodeDate { get; set; }
+        public DateTime? GeocodedDateTime { get; set; }
 
         /// <summary />
         [DataMember]
@@ -128,24 +145,28 @@ namespace Rock.Model
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Raw", this.Raw );
+            dictionary.Add( "ParentLocationId", this.ParentLocationId );
+            dictionary.Add( "Name", this.Name );
+            dictionary.Add( "IsActive", this.IsActive );
+            dictionary.Add( "LocationPoint", this.LocationPoint );
+            dictionary.Add( "Perimeter", this.Perimeter );
+            dictionary.Add( "LocationTypeValueId", this.LocationTypeValueId );
             dictionary.Add( "Street1", this.Street1 );
             dictionary.Add( "Street2", this.Street2 );
             dictionary.Add( "City", this.City );
             dictionary.Add( "State", this.State );
             dictionary.Add( "Country", this.Country );
             dictionary.Add( "Zip", this.Zip );
-            dictionary.Add( "Latitude", this.Latitude );
-            dictionary.Add( "Longitude", this.Longitude );
-            dictionary.Add( "ParcelId", this.ParcelId );
-            dictionary.Add( "StandardizeAttempt", this.StandardizeAttempt );
-            dictionary.Add( "StandardizeService", this.StandardizeService );
-            dictionary.Add( "StandardizeResult", this.StandardizeResult );
-            dictionary.Add( "StandardizeDate", this.StandardizeDate );
-            dictionary.Add( "GeocodeAttempt", this.GeocodeAttempt );
-            dictionary.Add( "GeocodeService", this.GeocodeService );
-            dictionary.Add( "GeocodeResult", this.GeocodeResult );
-            dictionary.Add( "GeocodeDate", this.GeocodeDate );
+            dictionary.Add( "FullAddress", this.FullAddress );
+            dictionary.Add( "AssessorParcelId", this.AssessorParcelId );
+            dictionary.Add( "StandardizeAttemptedDateTime", this.StandardizeAttemptedDateTime );
+            dictionary.Add( "StandardizeAttemptedServiceType", this.StandardizeAttemptedServiceType );
+            dictionary.Add( "StandardizeAttemptedResult", this.StandardizeAttemptedResult );
+            dictionary.Add( "StandardizedDateTime", this.StandardizedDateTime );
+            dictionary.Add( "GeocodeAttemptedDateTime", this.GeocodeAttemptedDateTime );
+            dictionary.Add( "GeocodeAttemptedServiceType", this.GeocodeAttemptedServiceType );
+            dictionary.Add( "GeocodeAttemptedResult", this.GeocodeAttemptedResult );
+            dictionary.Add( "GeocodedDateTime", this.GeocodedDateTime );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
             return dictionary;
@@ -158,24 +179,28 @@ namespace Rock.Model
         public virtual dynamic ToDynamic()
         {
             dynamic expando = new ExpandoObject();
-            expando.Raw = this.Raw;
+            expando.ParentLocationId = this.ParentLocationId;
+            expando.Name = this.Name;
+            expando.IsActive = this.IsActive;
+            expando.LocationPoint = this.LocationPoint;
+            expando.Perimeter = this.Perimeter;
+            expando.LocationTypeValueId = this.LocationTypeValueId;
             expando.Street1 = this.Street1;
             expando.Street2 = this.Street2;
             expando.City = this.City;
             expando.State = this.State;
             expando.Country = this.Country;
             expando.Zip = this.Zip;
-            expando.Latitude = this.Latitude;
-            expando.Longitude = this.Longitude;
-            expando.ParcelId = this.ParcelId;
-            expando.StandardizeAttempt = this.StandardizeAttempt;
-            expando.StandardizeService = this.StandardizeService;
-            expando.StandardizeResult = this.StandardizeResult;
-            expando.StandardizeDate = this.StandardizeDate;
-            expando.GeocodeAttempt = this.GeocodeAttempt;
-            expando.GeocodeService = this.GeocodeService;
-            expando.GeocodeResult = this.GeocodeResult;
-            expando.GeocodeDate = this.GeocodeDate;
+            expando.FullAddress = this.FullAddress;
+            expando.AssessorParcelId = this.AssessorParcelId;
+            expando.StandardizeAttemptedDateTime = this.StandardizeAttemptedDateTime;
+            expando.StandardizeAttemptedServiceType = this.StandardizeAttemptedServiceType;
+            expando.StandardizeAttemptedResult = this.StandardizeAttemptedResult;
+            expando.StandardizedDateTime = this.StandardizedDateTime;
+            expando.GeocodeAttemptedDateTime = this.GeocodeAttemptedDateTime;
+            expando.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
+            expando.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
+            expando.GeocodedDateTime = this.GeocodedDateTime;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
@@ -190,24 +215,28 @@ namespace Rock.Model
             if ( model is Location )
             {
                 var location = (Location)model;
-                this.Raw = location.FullAddress;
+                this.ParentLocationId = location.ParentLocationId;
+                this.Name = location.Name;
+                this.IsActive = location.IsActive;
+                this.LocationPoint = location.LocationPoint;
+                this.Perimeter = location.Perimeter;
+                this.LocationTypeValueId = location.LocationTypeValueId;
                 this.Street1 = location.Street1;
                 this.Street2 = location.Street2;
                 this.City = location.City;
                 this.State = location.State;
                 this.Country = location.Country;
                 this.Zip = location.Zip;
-                this.Latitude = location.Latitude;
-                this.Longitude = location.Longitude;
-                this.ParcelId = location.AssessorParcelId;
-                this.StandardizeAttempt = location.StandardizeAttemptedDateTime;
-                this.StandardizeService = location.StandardizeAttemptedServiceType;
-                this.StandardizeResult = location.StandardizeAttemptedResult;
-                this.StandardizeDate = location.StandardizedDateTime;
-                this.GeocodeAttempt = location.GeocodeAttemptedDateTime;
-                this.GeocodeService = location.GeocodeAttemptedServiceType;
-                this.GeocodeResult = location.GeocodeAttemptedResult;
-                this.GeocodeDate = location.GeocodedDateTime;
+                this.FullAddress = location.FullAddress;
+                this.AssessorParcelId = location.AssessorParcelId;
+                this.StandardizeAttemptedDateTime = location.StandardizeAttemptedDateTime;
+                this.StandardizeAttemptedServiceType = location.StandardizeAttemptedServiceType;
+                this.StandardizeAttemptedResult = location.StandardizeAttemptedResult;
+                this.StandardizedDateTime = location.StandardizedDateTime;
+                this.GeocodeAttemptedDateTime = location.GeocodeAttemptedDateTime;
+                this.GeocodeAttemptedServiceType = location.GeocodeAttemptedServiceType;
+                this.GeocodeAttemptedResult = location.GeocodeAttemptedResult;
+                this.GeocodedDateTime = location.GeocodedDateTime;
                 this.Id = location.Id;
                 this.Guid = location.Guid;
             }
@@ -222,24 +251,28 @@ namespace Rock.Model
             if ( model is Location )
             {
                 var location = (Location)model;
-                location.FullAddress = this.Raw;
+                location.ParentLocationId = this.ParentLocationId;
+                location.Name = this.Name;
+                location.IsActive = this.IsActive;
+                location.LocationPoint = this.LocationPoint;
+                location.Perimeter = this.Perimeter;
+                location.LocationTypeValueId = this.LocationTypeValueId;
                 location.Street1 = this.Street1;
                 location.Street2 = this.Street2;
                 location.City = this.City;
                 location.State = this.State;
                 location.Country = this.Country;
                 location.Zip = this.Zip;
-                location.Latitude = this.Latitude;
-                location.Longitude = this.Longitude;
-                location.AssessorParcelId = this.ParcelId;
-                location.StandardizeAttemptedDateTime = this.StandardizeAttempt;
-                location.StandardizeAttemptedServiceType = this.StandardizeService;
-                location.StandardizeAttemptedResult = this.StandardizeResult;
-                location.StandardizedDateTime = this.StandardizeDate;
-                location.GeocodeAttemptedDateTime = this.GeocodeAttempt;
-                location.GeocodeAttemptedServiceType = this.GeocodeService;
-                location.GeocodeAttemptedResult = this.GeocodeResult;
-                location.GeocodedDateTime = this.GeocodeDate;
+                location.FullAddress = this.FullAddress;
+                location.AssessorParcelId = this.AssessorParcelId;
+                location.StandardizeAttemptedDateTime = this.StandardizeAttemptedDateTime;
+                location.StandardizeAttemptedServiceType = this.StandardizeAttemptedServiceType;
+                location.StandardizeAttemptedResult = this.StandardizeAttemptedResult;
+                location.StandardizedDateTime = this.StandardizedDateTime;
+                location.GeocodeAttemptedDateTime = this.GeocodeAttemptedDateTime;
+                location.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
+                location.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
+                location.GeocodedDateTime = this.GeocodedDateTime;
                 location.Id = this.Id;
                 location.Guid = this.Guid;
             }

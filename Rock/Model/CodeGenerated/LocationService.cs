@@ -62,24 +62,28 @@ namespace Rock.Model
         {
             return items.Select( m => new LocationDto()
                 {
-                    Raw = m.FullAddress,
+                    ParentLocationId = m.ParentLocationId,
+                    Name = m.Name,
+                    IsActive = m.IsActive,
+                    LocationPoint = m.LocationPoint,
+                    Perimeter = m.Perimeter,
+                    LocationTypeValueId = m.LocationTypeValueId,
                     Street1 = m.Street1,
                     Street2 = m.Street2,
                     City = m.City,
                     State = m.State,
                     Country = m.Country,
                     Zip = m.Zip,
-                    Latitude = m.Latitude,
-                    Longitude = m.Longitude,
-                    ParcelId = m.AssessorParcelId,
-                    StandardizeAttempt = m.StandardizeAttemptedDateTime,
-                    StandardizeService = m.StandardizeAttemptedServiceType,
-                    StandardizeResult = m.StandardizeAttemptedResult,
-                    StandardizeDate = m.StandardizedDateTime,
-                    GeocodeAttempt = m.GeocodeAttemptedDateTime,
-                    GeocodeService = m.GeocodeAttemptedServiceType,
-                    GeocodeResult = m.GeocodeAttemptedResult,
-                    GeocodeDate = m.GeocodedDateTime,
+                    FullAddress = m.FullAddress,
+                    AssessorParcelId = m.AssessorParcelId,
+                    StandardizeAttemptedDateTime = m.StandardizeAttemptedDateTime,
+                    StandardizeAttemptedServiceType = m.StandardizeAttemptedServiceType,
+                    StandardizeAttemptedResult = m.StandardizeAttemptedResult,
+                    StandardizedDateTime = m.StandardizedDateTime,
+                    GeocodeAttemptedDateTime = m.GeocodeAttemptedDateTime,
+                    GeocodeAttemptedServiceType = m.GeocodeAttemptedServiceType,
+                    GeocodeAttemptedResult = m.GeocodeAttemptedResult,
+                    GeocodedDateTime = m.GeocodedDateTime,
                     Id = m.Id,
                     Guid = m.Guid,
                 });
@@ -96,6 +100,24 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            RockContext context = new RockContext();
+            context.Database.Connection.Open();
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where ParentLocationId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", Location.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
             return true;
         }
     }

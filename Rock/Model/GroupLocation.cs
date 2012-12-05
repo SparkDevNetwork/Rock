@@ -92,7 +92,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override IDto Dto
         {
-            get { return null; } // this.ToDto(); }
+            get { return this.ToDto(); }
         }
 
         #endregion
