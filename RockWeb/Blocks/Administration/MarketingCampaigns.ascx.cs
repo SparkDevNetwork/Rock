@@ -79,14 +79,6 @@ public partial class MarketingCampaigns : RockBlock
             gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
             gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
-
-            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-
-
-
-
-
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "inputchanges", "", false);
         }
     }
 
