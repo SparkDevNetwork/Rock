@@ -18,7 +18,7 @@ namespace Rock.Model
     /// ActivityType POCO Entity.
     /// </summary>
     [Table( "WorkflowActivityType" )]
-    public partial class ActivityType : Model<ActivityType>, IOrdered
+    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered
     {
 
         #region Entity Properties
@@ -92,12 +92,12 @@ namespace Rock.Model
         /// <value>
         /// The action types.
         /// </value>
-        public virtual ICollection<ActionType> ActionTypes
+        public virtual ICollection<WorkflowActionType> ActionTypes
         {
-            get { return _actionTypes ?? ( _actionTypes = new Collection<ActionType>() ); }
+            get { return _actionTypes ?? ( _actionTypes = new Collection<WorkflowActionType>() ); }
             set { _actionTypes = value; }
         }
-        private ICollection<ActionType> _actionTypes;
+        private ICollection<WorkflowActionType> _actionTypes;
 
         /// <summary>
         /// Gets the parent authority.
@@ -146,9 +146,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static ActivityType Read( int id )
+        public static WorkflowActivityType Read( int id )
         {
-            return Read<ActivityType>( id );
+            return Read<WorkflowActivityType>( id );
         }
 
         /// <summary>
@@ -156,9 +156,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static ActivityType Read( Guid guid )
+        public static WorkflowActivityType Read( Guid guid )
         {
-            return Read<ActivityType>( guid );
+            return Read<WorkflowActivityType>( guid );
         }
 
         #endregion
@@ -170,12 +170,12 @@ namespace Rock.Model
     /// <summary>
     /// ActivityType Configuration class.
     /// </summary>
-    public partial class ActivityTypeConfiguration : EntityTypeConfiguration<ActivityType>
+    public partial class WorkflowActivityTypeConfiguration : EntityTypeConfiguration<WorkflowActivityType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityTypeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeConfiguration"/> class.
         /// </summary>
-        public ActivityTypeConfiguration()
+        public WorkflowActivityTypeConfiguration()
         {
             this.HasRequired( m => m.WorkflowType ).WithMany( m => m.ActivityTypes ).HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
         }

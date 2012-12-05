@@ -96,6 +96,24 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            RockContext context = new RockContext();
+            context.Database.Connection.Open();
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where ParentLocationId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", Location.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
             return true;
         }
     }

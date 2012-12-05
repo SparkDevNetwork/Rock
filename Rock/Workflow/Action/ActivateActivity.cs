@@ -10,18 +10,19 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 
-namespace Rock.Model.WorkflowAction
+namespace Rock.Workflow.Action
 {
     /// <summary>
     /// Activates a new activity for a given activity type
     /// </summary>
     [Description( "Activates a new activity for a given activity type" )]
-    [Export( typeof( WorkflowActionComponent ) )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
     [BlockProperty( 0, "Activity Type", "The activity type to activate", true )]
-    public class ActivateActivity : WorkflowActionComponent
+    public class ActivateActivity : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -30,7 +31,7 @@ namespace Rock.Model.WorkflowAction
         /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( Action action, IDto dto, out List<string> errorMessages )
+        public override bool Execute( WorkflowAction action, IDto dto, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -48,7 +49,7 @@ namespace Rock.Model.WorkflowAction
 
             if (activityType != null)
             {
-                workflow.Activities.Add( Activity.Activate( activityType, workflow ) );
+                workflow.Activities.Add( WorkflowActivity.Activate( activityType, workflow ) );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
                 return true;
             }

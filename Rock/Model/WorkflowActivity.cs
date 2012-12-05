@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Activity POCO Entity.
     /// </summary>
     [Table( "WorkflowActivity" )]
-    public partial class Activity : Model<Activity>
+    public partial class WorkflowActivity : Model<WorkflowActivity>
     {
 
         #region Entity Properties
@@ -81,7 +81,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the activity.
         /// </value>
-        public virtual ActivityType ActivityType { get; set; }
+        public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active.
@@ -103,12 +103,12 @@ namespace Rock.Model
         /// <value>
         /// The activities.
         /// </value>
-        public virtual ICollection<Action> Actions
+        public virtual ICollection<WorkflowAction> Actions
         {
-            get { return _actions ?? ( _actions = new Collection<Action>() ); }
+            get { return _actions ?? ( _actions = new Collection<WorkflowAction>() ); }
             set { _actions = value; }
         }
-        private ICollection<Action> _actions;
+        private ICollection<WorkflowAction> _actions;
 
         /// <summary>
         /// Gets the active actions.
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The active actions.
         /// </value>
-        public virtual IEnumerable<Rock.Model.Action> ActiveActions
+        public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
             get
             {
@@ -261,9 +261,9 @@ namespace Rock.Model
         /// <param name="activityType">Type of the activity.</param>
         /// <param name="workflow">The workflow.</param>
         /// <returns></returns>
-        internal static Activity Activate( ActivityType activityType, Workflow workflow )
+        internal static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
-            var activity = new Activity();
+            var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityType = activityType;
             activity.ActivatedDateTime = DateTime.Now;
@@ -272,7 +272,7 @@ namespace Rock.Model
 
             foreach ( var actionType in activityType.ActionTypes )
             {
-                activity.Actions.Add( Action.Activate(actionType, activity) );
+                activity.Actions.Add( WorkflowAction.Activate(actionType, activity) );
             }
 
             return activity;
@@ -283,9 +283,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static Activity Read( int id )
+        public static WorkflowActivity Read( int id )
         {
-            return Read<Activity>( id );
+            return Read<WorkflowActivity>( id );
         }
 
         /// <summary>
@@ -293,9 +293,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static Activity Read( Guid guid )
+        public static WorkflowActivity Read( Guid guid )
         {
-            return Read<Activity>( guid );
+            return Read<WorkflowActivity>( guid );
         }
 
         #endregion
@@ -307,12 +307,12 @@ namespace Rock.Model
     /// <summary>
     /// Activity Configuration class.
     /// </summary>
-    public partial class ActivityConfiguration : EntityTypeConfiguration<Activity>
+    public partial class WorkflowActivityConfiguration : EntityTypeConfiguration<WorkflowActivity>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowActivityConfiguration"/> class.
         /// </summary>
-        public ActivityConfiguration()
+        public WorkflowActivityConfiguration()
         {
             this.HasRequired( m => m.Workflow ).WithMany( m => m.Activities).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
             this.HasRequired( m => m.ActivityType ).WithMany().HasForeignKey( m => m.ActivityTypeId).WillCascadeOnDelete( false );

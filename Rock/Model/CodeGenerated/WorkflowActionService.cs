@@ -18,38 +18,38 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Action Service class
+    /// WorkflowAction Service class
     /// </summary>
-    public partial class ActionService : Service<Action, ActionDto>
+    public partial class WorkflowActionService : Service<WorkflowAction, WorkflowActionDto>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionService"/> class
         /// </summary>
-        public ActionService()
+        public WorkflowActionService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionService"/> class
         /// </summary>
-        public ActionService(IRepository<Action> repository) : base(repository)
+        public WorkflowActionService(IRepository<WorkflowAction> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override Action CreateNew()
+        public override WorkflowAction CreateNew()
         {
-            return new Action();
+            return new WorkflowAction();
         }
 
         /// <summary>
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ActionDto> QueryableDto( )
+        public override IQueryable<WorkflowActionDto> QueryableDto( )
         {
             return QueryableDto( this.Queryable() );
         }
@@ -58,9 +58,9 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActionDto> QueryableDto( IQueryable<Action> items )
+        public IQueryable<WorkflowActionDto> QueryableDto( IQueryable<WorkflowAction> items )
         {
-            return items.Select( m => new ActionDto()
+            return items.Select( m => new WorkflowActionDto()
                 {
                     ActivityId = m.ActivityId,
                     ActionTypeId = m.ActionTypeId,
@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Action item, out string errorMessage )
+        public bool CanDelete( WorkflowAction item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;

@@ -23,38 +23,6 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
-        /// Gets or sets the actions.
-        /// </summary>
-        /// <value>
-        /// The actions.
-        /// </value>
-        public DbSet<Rock.Model.Action> Actions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the action types.
-        /// </summary>
-        /// <value>
-        /// The action types.
-        /// </value>
-        public DbSet<ActionType> ActionTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the activities.
-        /// </summary>
-        /// <value>
-        /// The activities.
-        /// </value>
-        public DbSet<Activity> Activities { get; set; }
-
-        /// <summary>
-        /// Gets or sets the activity types.
-        /// </summary>
-        /// <value>
-        /// The activity types.
-        /// </value>
-        public DbSet<ActivityType> ActivityTypes { get; set; }
-
-        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -484,7 +452,39 @@ namespace Rock.Data
         /// <value>
         /// The workflows.
         /// </value>
-        public DbSet<Workflow> Workflows { get; set; }
+        public DbSet<Rock.Model.Workflow> Workflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow actions.
+        /// </summary>
+        /// <value>
+        /// The workflow actions.
+        /// </value>
+        public DbSet<WorkflowAction> WorkflowActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow action types.
+        /// </summary>
+        /// <value>
+        /// The workflow action types.
+        /// </value>
+        public DbSet<WorkflowActionType> WorkflowActionTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow activities.
+        /// </summary>
+        /// <value>
+        /// The workflow activities.
+        /// </value>
+        public DbSet<WorkflowActivity> WorkflowActivities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow activity types.
+        /// </summary>
+        /// <value>
+        /// The workflow activity types.
+        /// </value>
+        public DbSet<WorkflowActivityType> WorkflowActivityTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the workflow logs.
@@ -558,10 +558,10 @@ namespace Rock.Data
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Configurations.Add( new ActionConfiguration() );
-            modelBuilder.Configurations.Add( new ActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new ActivityConfiguration() );
-            modelBuilder.Configurations.Add( new ActivityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
