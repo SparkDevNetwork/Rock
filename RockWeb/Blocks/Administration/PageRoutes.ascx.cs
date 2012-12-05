@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Administration
             if ( pageRoute != null )
             {
                 hfPageRouteId.Value = pageRoute.Id.ToString();
-                ddlPageName.SelectedValue = pageRoute.PageId.ToString();
+                ddlPageName.SetValue( pageRoute.PageId );
                 tbRoute.Text = pageRoute.Route;
                 readOnly = pageRoute.IsSystem;
 
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Administration
             {
                 lActionTitle.Text = ActionTitle.Add( PageRoute.FriendlyTypeName );
                 hfPageRouteId.Value = 0.ToString();
-                ddlPageName.SelectedValue = string.Empty;
+                ddlPageName.SetValue( string.Empty );
                 tbRoute.Text = string.Empty;
                 readOnly = false;
             }
