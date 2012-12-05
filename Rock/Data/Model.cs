@@ -53,7 +53,7 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
+            get { return new List<string>() { "View", "Edit", "Administrate" }; }
         }
 
         /// <summary>

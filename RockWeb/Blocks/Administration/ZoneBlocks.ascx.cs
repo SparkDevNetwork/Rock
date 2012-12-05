@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
             lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", CurrentPage.Layout );
 
             // TODO: Managing layout block instances should probably be controlled by site security
-            if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.Actions.IsAddEnabled = true;
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Administration
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
             }
 
-            if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
                 gPageBlocks.Actions.IsAddEnabled = true;
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

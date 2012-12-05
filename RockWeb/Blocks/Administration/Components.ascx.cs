@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+            _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
             Type containerType = Type.GetType( AttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
