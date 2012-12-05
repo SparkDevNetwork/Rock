@@ -623,7 +623,7 @@ order by [parentTable]
                 restNamespace = ".Rest." + restNamespace;
             }
 
-            restNamespace = restNamespace.Replace( ".Model.", ".Controllers." );
+            restNamespace = restNamespace.Replace( ".Model", ".Controllers" );
 
             var properties = GetEntityProperties( type );
 
