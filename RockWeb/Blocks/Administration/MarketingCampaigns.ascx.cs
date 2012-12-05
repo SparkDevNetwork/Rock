@@ -55,31 +55,42 @@ public partial class MarketingCampaigns : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
-        {
-            gMarketingCampaigns.DataKeyNames = new string[] { "id" };
-            gMarketingCampaigns.Actions.IsAddEnabled = true;
-            gMarketingCampaigns.Actions.AddClick += gMarketingCampaigns_Add;
-            gMarketingCampaigns.GridRebind += gMarketingCampaigns_GridRebind;
+        gMarketingCampaigns.DataKeyNames = new string[] { "id" };
 
-            gMarketingCampaignAds.DataKeyNames = new string[] { "Id" };
-            gMarketingCampaignAds.Actions.IsAddEnabled = true;
-            gMarketingCampaignAds.Actions.AddClick += gMarketingCampaignAds_Add;
-            gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
-            gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
+        gMarketingCampaigns.Actions.AddClick += gMarketingCampaigns_Add;
+        gMarketingCampaigns.GridRebind += gMarketingCampaigns_GridRebind;
 
-            gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
-            gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
-            gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
-            gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
-            gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
+        gMarketingCampaignAds.DataKeyNames = new string[] { "Id" };
+        gMarketingCampaignAds.Actions.AddClick += gMarketingCampaignAds_Add;
+        gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
+        gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
-            gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = true;
-            gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
-            gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
-            gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
-        }
+        gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
+        gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
+        gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+        gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
+
+        gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
+        gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
+        gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
+        gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
+
+        // Block Security (RockPage takes care of "View")
+        bool canAddEditDelete = IsUserAuthorized( "Edit" );
+        gMarketingCampaigns.Actions.IsAddEnabled = canAddEditDelete;
+        gMarketingCampaigns.IsDeleteEnabled = canAddEditDelete;
+        gMarketingCampaignAds.Actions.IsAddEnabled = canAddEditDelete;
+        gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
+        gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = canAddEditDelete;
+        gMarketingCampaignAudiencesPrimary.IsDeleteEnabled = canAddEditDelete;
+        gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = canAddEditDelete;
+        gMarketingCampaignAudiencesSecondary.IsDeleteEnabled = canAddEditDelete;
+        btnSave.Enabled = canAddEditDelete;
+        btnSave.ToolTip = canAddEditDelete ? "" : "Not authorized";
+        btnEdit.Enabled = canAddEditDelete;
+        btnEdit.ToolTip = canAddEditDelete ? "" : "Not authorized";
+        btnSaveAd.Enabled = canAddEditDelete;
+        btnSaveAd.ToolTip = canAddEditDelete ? "" : "Not authorized";
     }
 
     /// <summary>
@@ -90,19 +101,10 @@ public partial class MarketingCampaigns : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+        if ( !Page.IsPostBack )
         {
-            if ( !Page.IsPostBack )
-            {
-                BindGrid();
-                LoadDropDowns();
-            }
-        }
-        else
-        {
-            gMarketingCampaigns.Visible = false;
-            nbWarning.Text = WarningMessage.NotAuthorizedToEdit( MarketingCampaign.FriendlyTypeName );
-            nbWarning.Visible = true;
+            BindGrid();
+            LoadDropDowns();
         }
 
         if ( pnlMarketingCampaignAdEditor.Visible )
@@ -206,7 +208,7 @@ public partial class MarketingCampaigns : RockBlock
         hfMarketingCampaignAdId.Value = marketingCampaignAdId.ToString();
 
         btnApproveAd.Visible = IsUserAuthorized( "Approve" );
-        btnDenyAd.Visible = IsUserAuthorized("Approve");
+        btnDenyAd.Visible = IsUserAuthorized( "Approve" );
 
         MarketingCampaignAd marketingCampaignAd = null;
 
@@ -231,7 +233,7 @@ public partial class MarketingCampaigns : RockBlock
         ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId );
         tbPriority.Text = marketingCampaignAd.Priority.ToString();
 
-        SetApprovalValues(marketingCampaignAd.MarketingCampaignAdStatus, Person.Read( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ));
+        SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, Person.Read( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
 
         if ( marketingCampaignAdId.Equals( 0 ) )
         {
@@ -521,7 +523,7 @@ public partial class MarketingCampaigns : RockBlock
             default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
                 break;
         }
-        
+
         hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
         lblMarketingCampaignAdStatusPerson.Visible = person != null;
         if ( person != null )
@@ -683,7 +685,7 @@ public partial class MarketingCampaigns : RockBlock
             pnlDetails.Visible = true;
             pnlList.Visible = false;
         }
-        
+
     }
 
     /// <summary>
@@ -713,7 +715,7 @@ public partial class MarketingCampaigns : RockBlock
         btnSave.Visible = editable;
         btnEdit.Visible = !editable;
     }
-    
+
     /// <summary>
     /// Handles the Click event of the btnSave control.
     /// </summary>
@@ -855,7 +857,7 @@ public partial class MarketingCampaigns : RockBlock
         // refresh from db using new service context since the above child items were saved outside of the marketingCampaign object
         marketingCampaign = MarketingCampaign.Read( marketingCampaign.Id );
         UpdateReadonlyDetails( marketingCampaign );
-        
+
         SetEditMode( false );
         pnlDetails.Visible = true;
         pnlList.Visible = false;
@@ -985,7 +987,7 @@ public partial class MarketingCampaigns : RockBlock
         string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
         contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", string.Empty ) ) ? None.TextHtml : contactInfo;
         lblMainDetails.Text += string.Format( descriptionFormat, "Contact", contactInfo );
-        
+
         lblMainDetails.Text += string.Format( descriptionFormat, "Event", marketingCampaign.EventGroup == null ? None.TextHtml : marketingCampaign.EventGroup.Name );
 
         lblMainDetails.Text += @"
@@ -994,15 +996,15 @@ public partial class MarketingCampaigns : RockBlock
 <div class='span6'>
     <dl>";
 
-        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
+        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
         campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
-        lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList ); 
-        
-        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
+        lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
+
+        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
         primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audience", primaryAudiences );
 
-        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
+        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
         secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audience", secondaryAudiences );
 
