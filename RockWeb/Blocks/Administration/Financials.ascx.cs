@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Administration
         {
             TransactionSearchValue searchValue = GetSearchValue();
 
-            var transactionService = new TransactionService();
+            var transactionService = new FinancialTransactionService();
             grdTransactions.DataSource = transactionService.Get( searchValue ).ToList();
             grdTransactions.DataBind();
         }

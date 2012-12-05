@@ -106,12 +106,12 @@ namespace Rock.Model
     /// <summary>
     /// Payment Gateway Configuration class.
     /// </summary>
-    public partial class GatewayConfiguration : EntityTypeConfiguration<PaymentGateway>
+    public partial class PaymentGatewayConfiguration : EntityTypeConfiguration<PaymentGateway>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GatewayConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="PaymentGatewayConfiguration"/> class.
         /// </summary>
-        public GatewayConfiguration()
+        public PaymentGatewayConfiguration()
         {
         }
     }
