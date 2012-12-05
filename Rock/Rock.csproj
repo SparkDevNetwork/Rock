@@ -124,9 +124,9 @@
     <Compile Include="Migrations\201212051230308_AddMissingTagConfiguration.Designer.cs">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201212051624202_CheckIn.cs" />
-    <Compile Include="Migrations\201212051624202_CheckIn.Designer.cs">
-      <DependentUpon>201212051624202_CheckIn.cs</DependentUpon>
+    <Compile Include="Migrations\201212051636262_CheckIn.cs" />
+    <Compile Include="Migrations\201212051636262_CheckIn.Designer.cs">
+      <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
@@ -786,8 +786,8 @@
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201212051624202_CheckIn.resx">
-      <DependentUpon>201212051624202_CheckIn.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201212051636262_CheckIn.resx">
+      <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
