@@ -124,12 +124,12 @@ namespace Rock.Model
     /// <summary>
     /// File Configuration class.
     /// </summary>
-    public partial class FileConfiguration : EntityTypeConfiguration<BinaryFile>
+    public partial class BinaryFileConfiguration : EntityTypeConfiguration<BinaryFile>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BinaryFileConfiguration"/> class.
         /// </summary>
-        public FileConfiguration()
+        public BinaryFileConfiguration()
         {
         }
     }

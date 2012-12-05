@@ -357,7 +357,7 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentBlock.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
@@ -425,7 +425,7 @@ namespace Rock.Web.UI
         /// <param name="canConfig"></param>
         /// <param name="canEdit"></param>
         /// <returns></returns>
-        public virtual List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        public virtual List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
 

@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Administration
                 int pageId = Convert.ToInt32( PageParameter( "Page" ) );
                 _page = Rock.Web.Cache.PageCache.Read( pageId );
 
-                if ( _page.IsAuthorized( "Configure", CurrentPerson ) )
+                if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if (!Page.IsPostBack && _page.IsAuthorized( "Configure", CurrentPerson ) )
+            if (!Page.IsPostBack && _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 Rock.Model.PageService pageService = new Rock.Model.PageService();
                 Rock.Model.Page page = pageService.Get( _page.Id );

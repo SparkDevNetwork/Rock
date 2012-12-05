@@ -19,6 +19,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             @Sql( @"
+delete from EntityType where Name like 'Rock.Group%' and id not in (select EntityTypeId from Attribute)
+
 update EntityType set Name = Replace(Name, 'Rock.Cms', 'Rock.Model')
 update EntityType set Name = Replace(Name, 'Rock.Core', 'Rock.Model')
 update EntityType set Name = Replace(Name, 'Rock.Crm', 'Rock.Model')

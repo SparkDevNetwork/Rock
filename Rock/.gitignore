@@ -1,8 +1,0 @@
-/bin/
-/obj/
-/*.csproj.user
-/Rock.Framework.XML
-/*.Framework.XML
-/*.user
-/Rock.XML
-/StyleCop.Cache
