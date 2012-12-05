@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Service class for Transaction objects.
     /// </summary>
-    public partial class TransactionService : Service<FinancialTransaction, FinancialTransactionDto>
+    public partial class FinancialTransactionService : Service<FinancialTransaction, FinancialTransactionDto>
     {
         /// <summary>
         /// Gets the transaction by search.
