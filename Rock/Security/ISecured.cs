@@ -54,7 +54,7 @@ namespace Rock.Security
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        bool IsAuthorized( string action, Rock.Crm.Person person );
+        bool IsAuthorized( string action, Rock.Model.Person person );
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,

@@ -10,11 +10,8 @@ using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock.Cms;
 using Rock.Communication;
-using Rock.Crm;
-using Rock.Web.Cache;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
@@ -131,8 +128,8 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                Rock.Cms.UserService userService = new Rock.Cms.UserService();
-                Rock.Cms.User user = userService.GetByUserName( tbUserName.Text );
+                Rock.Model.UserService userService = new Rock.Model.UserService();
+                Rock.Model.UserLogin user = userService.GetByUserName( tbUserName.Text );
                 if ( user == null )
                     DisplayDuplicates( Direction.Forward );
                 else
@@ -154,7 +151,7 @@ namespace RockWeb.Blocks.Security
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
             {
-                Rock.Cms.UserService userService = new Rock.Cms.UserService();
+                Rock.Model.UserService userService = new Rock.Model.UserService();
                 var users = userService.GetByPersonId(personId).ToList();
                 if (users.Count > 0)
                     DisplaySendLogin( personId, Direction.Forward );
@@ -275,11 +272,11 @@ namespace RockWeb.Blocks.Security
 
                     var users = new List<IDictionary<string, object>>();
                     UserService userService = new UserService();
-                    foreach ( User user in userService.GetByPersonId( person.Id ) )
+                    foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
                     {
                         if ( user.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            var userDictionary = new UserDto( user ).ToDictionary();
+                            var userDictionary = new UserLoginDto( user ).ToDictionary();
                             userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
                             users.Add( userDictionary );
                         }
@@ -315,7 +312,7 @@ namespace RockWeb.Blocks.Security
 
             if (person != null)
             {
-                Rock.Cms.User user = CreateUser( person, false );
+                Rock.Model.UserLogin user = CreateUser( person, false );
 
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
@@ -324,7 +321,7 @@ namespace RockWeb.Blocks.Security
                 personDictionary.Add( "FirstName", person.FirstName );
                 mergeObjects.Add( "Person", personDictionary );
 
-                mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+                mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
 
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
@@ -338,7 +335,7 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage("Invalid Person");
         }
 
-        private void DisplaySuccess( Rock.Cms.User user )
+        private void DisplaySuccess( Rock.Model.UserLogin user )
         {
             FormsAuthentication.SignOut();
             Rock.Security.Authorization.SetAuthCookie( tbUserName.Text, false, false );
@@ -357,7 +354,7 @@ namespace RockWeb.Blocks.Security
                     personDictionary.Add("FirstName", person.FirstName);
                     mergeObjects.Add( "Person", personDictionary );
 
-                    mergeObjects.Add( "User", new UserDto( user ).ToDictionary() );
+                    mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
 
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
@@ -407,7 +404,7 @@ namespace RockWeb.Blocks.Security
 
         private Person CreatePerson()
         {
-            Rock.Crm.PersonService personService = new PersonService();
+            Rock.Model.PersonService personService = new PersonService();
 
             Person person = new Person();
             person.GivenName = tbFirstName.Text;
@@ -441,10 +438,10 @@ namespace RockWeb.Blocks.Security
             return person;
         }
 
-        private Rock.Cms.User CreateUser( Person person, bool confirmed )
+        private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
-            Rock.Cms.UserService userService = new Rock.Cms.UserService();
-            return userService.Create( person, Rock.Cms.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
+            Rock.Model.UserService userService = new Rock.Model.UserService();
+            return userService.Create( person, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         #endregion

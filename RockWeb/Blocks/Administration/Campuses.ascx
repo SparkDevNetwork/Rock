@@ -4,10 +4,9 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true" OnEditRow="gCampuses_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <Rock:EditField OnClick="gCampuses_Edit" />
                     <Rock:DeleteField OnClick="gCampuses_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -23,12 +22,12 @@
                 <legend>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
-                <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Crm.Campus, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>

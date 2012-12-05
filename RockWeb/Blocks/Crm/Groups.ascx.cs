@@ -10,7 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -27,7 +27,7 @@ public partial class Groups : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroups.DataKeyNames = new string[] { "id" };
             gGroups.Actions.IsAddEnabled = true;
@@ -44,7 +44,7 @@ public partial class Groups : RockBlock
     {
         nbMessage.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
@@ -97,7 +97,7 @@ public partial class Groups : RockBlock
         if ( CurrentBlock != null )
         {
             string errorMessage;
-            if ( !groupService.CanDelete( group.Id, out errorMessage ) )
+            if ( !groupService.CanDelete( group, out errorMessage ) )
             {
                 mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;

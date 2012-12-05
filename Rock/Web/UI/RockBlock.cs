@@ -7,15 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Cms;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -51,7 +49,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Returns the currently logged in user.  If user is not logged in, returns null
         /// </summary>
-        public User CurrentUser
+        public UserLogin CurrentUser
         {
             get { return ( (RockPage)this.Page ).CurrentUser; }
         }
@@ -359,7 +357,7 @@ namespace Rock.Web.UI
         /// <param name="updatePanel">The update panel.</param>
         public void AddAttributeUpdateTrigger( UpdatePanel updatePanel )
         {
-            if ( CurrentBlock.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentBlock.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 AsyncPostBackTrigger trigger = new AsyncPostBackTrigger();
                 trigger.ControlID = string.Format( "blck-cnfg-trggr-{0}", CurrentBlock.Id );
@@ -427,7 +425,7 @@ namespace Rock.Web.UI
         /// <param name="canConfig"></param>
         /// <param name="canEdit"></param>
         /// <returns></returns>
-        public virtual List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        public virtual List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
 
@@ -525,7 +523,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Cms.Block").Id;
+            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Model.Block").Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

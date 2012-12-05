@@ -76,7 +76,16 @@ namespace Rock.Migrations
         {
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
-            var tableType = tableNameLookup[tableName];
+            Type tableType = null;
+            try
+            {
+                tableType = tableNameLookup[tableName];
+            }
+            catch (Exception ex)
+            {
+                writer.WriteLine( "// TableName: " + tableName );
+                writer.WriteLine( "// " + ex.Message );
+            }
             if ( tableType != null )
             {
                 MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();

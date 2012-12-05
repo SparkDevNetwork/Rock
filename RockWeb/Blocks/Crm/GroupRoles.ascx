@@ -4,13 +4,12 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
             <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
-            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true">
+            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true" OnEditRow="gGroupRoles_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                     <asp:BoundField DataField="GroupType.Name" HeaderText="Group Type" SortExpression="GroupType.Name" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:EditField OnClick="gGroupRoles_Edit" />
                     <Rock:DeleteField OnClick="gGroupRoles_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -29,21 +28,21 @@
                 </legend>
                 <div class="row-fluid">
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Crm.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
                     </div>
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbSortOrder" runat="server" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="SortOrder" LabelText="Sort Order" Required="true" />
-                        <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="MinCount" LabelText="Min Group Members with this Role" />
-                        <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Crm.GroupRole, Rock" PropertyName="MaxCount" LabelText="Max Group Members with this Role" />
+                        <Rock:DataTextBox ID="tbSortOrder" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="SortOrder" LabelText="Sort Order" Required="true" />
+                        <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MinCount" LabelText="Min Group Members with this Role" />
+                        <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MaxCount" LabelText="Max Group Members with this Role" />
                     </div>
                 </div>
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>

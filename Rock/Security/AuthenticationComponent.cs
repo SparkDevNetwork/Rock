@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Extension;
 
 namespace Rock.Security
@@ -23,7 +23,7 @@ namespace Rock.Security
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public abstract Boolean Authenticate( User user, string password );
+        public abstract Boolean Authenticate( UserLogin user, string password );
 
         /// <summary>
         /// Encodes the password.
@@ -31,7 +31,7 @@ namespace Rock.Security
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public abstract String EncodePassword( User user, string password );
+        public abstract String EncodePassword( UserLogin user, string password );
 
     }
 }

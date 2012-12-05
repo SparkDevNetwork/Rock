@@ -8,7 +8,7 @@
     <Rock:GridFilter ID="rFilter" runat="server">
         <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
     </Rock:GridFilter>
-    <Rock:Grid ID="rGrid" runat="server">
+    <Rock:Grid ID="rGrid" runat="server" OnEditRow="rGrid_Edit">
         <Columns>
             <asp:BoundField DataField="Category" HeaderText="Category" />
             <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -18,7 +18,6 @@
                 <HeaderTemplate>Value</HeaderTemplate>
                 <ItemTemplate><asp:Literal ID="lValue" runat="server"></asp:Literal></ItemTemplate>
             </asp:TemplateField>
-            <Rock:EditField OnClick="rGrid_Edit" />
         </Columns>
     </Rock:Grid>
 

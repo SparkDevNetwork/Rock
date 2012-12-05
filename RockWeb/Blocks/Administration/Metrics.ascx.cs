@@ -12,7 +12,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                 BindCategoryFilter();                
@@ -111,9 +111,9 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGridMetric_Delete( object sender, RowEventArgs e )
         {
-            var metricService = new Rock.Core.MetricService();
+            var metricService = new Rock.Model.MetricService();
 
-            Rock.Core.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
             if ( metric != null )
             {
                 metricService.Delete( metric, CurrentPersonId );
@@ -127,13 +127,13 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var metricService = new Rock.Core.MetricService();
-                Rock.Core.Metric metric;                
+                var metricService = new Rock.Model.MetricService();
+                Rock.Model.Metric metric;                
                 int metricId = ( hfIdMetric.Value ) != null ? Int32.Parse( hfIdMetric.Value ) : 0;
 
                 if ( metricId == 0 )
                 {
-                    metric = new Rock.Core.Metric();
+                    metric = new Rock.Model.Metric();
                     metric.IsSystem = false;
                     metricService.Add( metric, CurrentPersonId );
                 }
@@ -189,9 +189,9 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGridValue_Delete( object sender, RowEventArgs e )
         {
-            var metricValueService = new Rock.Core.MetricValueService();
+            var metricValueService = new Rock.Model.MetricValueService();
 
-            Rock.Core.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
             if ( metricValue != null )
             {
                 metricValueService.Delete( metricValue, CurrentPersonId );
@@ -214,12 +214,12 @@ namespace RockWeb.Blocks.Administration
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 int metricValueId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
-                var metricValueService = new Rock.Core.MetricValueService();
-                Rock.Core.MetricValue metricValue;                                
+                var metricValueService = new Rock.Model.MetricValueService();
+                Rock.Model.MetricValue metricValue;                                
 
                 if ( metricValueId == 0 )
                 {
-                    metricValue = new Rock.Core.MetricValue();
+                    metricValue = new Rock.Model.MetricValue();
                     metricValue.IsSystem = false;
                     metricValue.MetricId = Int32.Parse( hfIdMetric.Value );
                     metricValueService.Add( metricValue, CurrentPersonId );
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGridMetric()
         {
-            var queryable = new Rock.Core.MetricService().Queryable();
+            var queryable = new Rock.Model.MetricService().Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != "[All]" )
                 queryable = queryable.
@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Administration
         {
             hfIdMetric.Value = metricId.ToString();
 
-            var metric = new Rock.Core.MetricService().Get( metricId );
+            var metric = new Rock.Model.MetricService().Get( metricId );
 
             if ( metric != null )
             {
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Administration
         private void BindGridValue( )
         {
             int metricId = ( hfIdMetric.Value != null ) ? Int32.Parse( hfIdMetric.Value ) : 0;
-            var queryable = new Rock.Core.MetricValueService().Queryable();
+            var queryable = new Rock.Model.MetricValueService().Queryable();
             
             queryable = queryable.
                 Where( a => a.MetricId == metricId );
@@ -401,7 +401,7 @@ namespace RockWeb.Blocks.Administration
         {
             hfIdValue.Value = metricValueId.ToString();
 
-            var metricValue = new Rock.Core.MetricValueService().Get( metricValueId );
+            var metricValue = new Rock.Model.MetricValueService().Get( metricValueId );
 
             if ( metricValue != null )
             {

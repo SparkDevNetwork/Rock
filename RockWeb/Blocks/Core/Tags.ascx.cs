@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core

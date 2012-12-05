@@ -8,7 +8,7 @@ using System.Linq;
 
 using Quartz;
 
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs

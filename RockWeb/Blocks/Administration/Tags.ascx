@@ -7,12 +7,11 @@
 
     <asp:Panel ID="pnlList" runat="server">
 
-        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag">
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="tag" OnEditRow="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
-                <Rock:EditField OnClick="rGrid_Edit" />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>
@@ -27,12 +26,12 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Tag</legend>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
         </fieldset>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </asp:Panel>

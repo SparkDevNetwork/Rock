@@ -28,13 +28,13 @@
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Role</legend>
-            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Name" />
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Crm.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
         </fieldset>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" onclick="btnSave_Click" />
-            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" />
+            <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
     </asp:Panel>

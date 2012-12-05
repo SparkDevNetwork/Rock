@@ -7,14 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Web.UI
 {
     /// <summary>
     /// A Block used on the person detail page
     /// </summary>
-    [ContextAware( "Rock.Crm.Person" )]
+    [ContextAware( "Rock.Model.Person" )]
     public class PersonBlock : RockBlock
     {
         /// <summary>
@@ -30,9 +30,9 @@ namespace Rock.Web.UI
         {
             base.OnInit( e );
 
-            if ( ContextEntities.ContainsKey( "Rock.Crm.Person" ) )
+            if ( ContextEntities.ContainsKey( "Rock.Model.Person" ) )
             {
-                Person = ContextEntities["Rock.Crm.Person"] as Person;
+                Person = ContextEntities["Rock.Model.Person"] as Person;
                 if ( Person == null )
                     Person = new Person();
             }

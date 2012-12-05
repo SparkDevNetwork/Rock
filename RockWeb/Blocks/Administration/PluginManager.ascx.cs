@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Administration
 
             this.viewing = ( hfViewing.Value == "available" ) ? ViewMode.Available : ViewMode.Installed;
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

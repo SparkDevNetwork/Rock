@@ -5,7 +5,7 @@
 //
 
 using System.Collections.Generic;
-using Rock.Cms;
+using Rock.Model;
 using Xunit;
 
 namespace Rock.Tests.Cms

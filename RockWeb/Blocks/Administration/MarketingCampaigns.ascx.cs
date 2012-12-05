@@ -8,13 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
 using Rock.Constants;
-using Rock.Core;
-using Rock.Crm;
 using Rock.Data;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -58,7 +55,7 @@ public partial class MarketingCampaigns : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gMarketingCampaigns.DataKeyNames = new string[] { "id" };
             gMarketingCampaigns.Actions.IsAddEnabled = true;
@@ -84,6 +81,12 @@ public partial class MarketingCampaigns : RockBlock
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
+
+
+
+
+
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "inputchanges", "", false);
         }
     }
 
@@ -95,7 +98,7 @@ public partial class MarketingCampaigns : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
@@ -221,7 +224,7 @@ public partial class MarketingCampaigns : RockBlock
         }
         else
         {
-            marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
+            marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
         }
 
         if ( !marketingCampaignAd.Id.Equals( 0 ) )
@@ -270,6 +273,8 @@ public partial class MarketingCampaigns : RockBlock
         LoadAdAttributes( marketingCampaignAd, false, false );
         Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
 
+        SetApprovalValues( MarketingCampaignAdStatus.PendingApproval, null );
+
         LoadAdAttributes( marketingCampaignAd, true, true );
     }
 
@@ -291,7 +296,7 @@ public partial class MarketingCampaigns : RockBlock
         MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
         tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
 
-        List<Rock.Core.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+        List<Rock.Model.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
         marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
         marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
@@ -324,7 +329,7 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     /// <param name="marketingAdTypeId">The marketing ad type id.</param>
     /// <returns></returns>
-    private static List<Rock.Core.Attribute> GetAttributesForAdType( int marketingAdTypeId )
+    private static List<Rock.Model.Attribute> GetAttributesForAdType( int marketingAdTypeId )
     {
         MarketingCampaignAd temp = new MarketingCampaignAd();
         temp.MarketingCampaignAdTypeId = marketingAdTypeId;
@@ -332,7 +337,7 @@ public partial class MarketingCampaigns : RockBlock
         Rock.Attribute.Helper.LoadAttributes( temp );
         List<Rock.Web.Cache.AttributeCache> attribs = temp.Attributes.Values.ToList();
 
-        List<Rock.Core.Attribute> result = new List<Rock.Core.Attribute>();
+        List<Rock.Model.Attribute> result = new List<Rock.Model.Attribute>();
         foreach ( var item in attribs )
         {
             var attrib = item.ToModel();
@@ -403,8 +408,15 @@ public partial class MarketingCampaigns : RockBlock
         marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
         marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
         marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
-        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
-        marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+        marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
+        if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+        }
+        else
+        {
+            marketingCampaignAd.MarketingCampaignStatusPersonId = null;
+        }
 
         if ( tbAdDateRangeStartDate.SelectedDate == null )
         {
@@ -508,11 +520,21 @@ public partial class MarketingCampaigns : RockBlock
     private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
     {
         ltMarketingCampaignAdStatus.Text = status.ConvertToString();
+        switch ( status )
+        {
+            case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-success";
+                break;
+            case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-error";
+                break;
+            default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
+                break;
+        }
+        
         hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
-        ltMarketingCampaignAdStatusPerson.Visible = person != null;
+        lblMarketingCampaignAdStatusPerson.Visible = person != null;
         if ( person != null )
         {
-            ltMarketingCampaignAdStatusPerson.Text = person.FullName;
+            lblMarketingCampaignAdStatusPerson.Text = "by " + person.FullName;
             hfMarketingCampaignAdStatusPersonId.Value = person.Id.ToString();
         }
     }
@@ -560,12 +582,12 @@ public partial class MarketingCampaigns : RockBlock
         {
             list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
             btnAddMarketingCampaignAudience.Enabled = false;
-            btnAddMarketingCampaignAudience.CssClass = "btn primary disabled";
+            btnAddMarketingCampaignAudience.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddMarketingCampaignAudience.Enabled = true;
-            btnAddMarketingCampaignAudience.CssClass = "btn primary";
+            btnAddMarketingCampaignAudience.CssClass = "btn btn-primary";
         }
 
         ddlMarketingCampaignAudiences.DataSource = list;
@@ -603,10 +625,10 @@ public partial class MarketingCampaigns : RockBlock
     /// </summary>
     private void BindMarketingCampaignAudiencesGrid()
     {
-        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name ).ToList();
         gMarketingCampaignAudiencesPrimary.DataBind();
 
-        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name );
+        gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name ).ToList();
         gMarketingCampaignAudiencesSecondary.DataBind();
     }
 
@@ -656,8 +678,20 @@ public partial class MarketingCampaigns : RockBlock
     protected void btnCancel_Click( object sender, EventArgs e )
     {
         SetEditMode( false );
-        pnlDetails.Visible = true;
-        pnlList.Visible = false;
+
+        if ( hfMarketingCampaignId.Value.Equals( "0" ) )
+        {
+            // Cancelling on Add. Return to Grid
+            pnlDetails.Visible = false;
+            pnlList.Visible = true;
+        }
+        else
+        {
+            // Cancelling on Edit.  Return to Details
+            pnlDetails.Visible = true;
+            pnlList.Visible = false;
+        }
+        
     }
 
     /// <summary>
@@ -678,11 +712,10 @@ public partial class MarketingCampaigns : RockBlock
     /// <param name="editable">if set to <c>true</c> [editable].</param>
     private void SetEditMode( bool editable )
     {
-        fieldsetEditDetails.Visible = editable;
-        pnlEditDetailsActions.Visible = editable;
+        pnlEditDetails.Visible = editable;
         fieldsetViewDetails.Visible = !editable;
         pnlMarketingCampaignAds.Disabled = editable;
-        gMarketingCampaignAds.ReadOnly = editable;
+        gMarketingCampaignAds.Enabled = !editable;
 
         btnCancel.Visible = editable;
         btnSave.Visible = editable;
@@ -797,8 +830,7 @@ public partial class MarketingCampaigns : RockBlock
             // take care of deleted Campuses
             MarketingCampaignCampusService marketingCampaignCampusService = new MarketingCampaignCampusService();
             var deletedCampuses = from mcc in marketingCampaign.MarketingCampaignCampuses.AsQueryable()
-                                  where !( from cs in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected )
-                                           select int.Parse( cs.Value ) ).Contains( mcc.CampusId )
+                                  where !( cpCampuses.SelectedCampusIds ).Contains( mcc.CampusId )
                                   select mcc;
 
             deletedCampuses.ToList().ForEach( a =>
@@ -809,7 +841,7 @@ public partial class MarketingCampaigns : RockBlock
             } );
 
             // add or update the Campuses that are assigned in the UI
-            foreach ( int campusId in cblCampuses.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => int.Parse( a.Value ) ) )
+            foreach ( int campusId in cpCampuses.SelectedCampusIds )
             {
                 MarketingCampaignCampus marketingCampaignCampus = marketingCampaign.MarketingCampaignCampuses.FirstOrDefault( a => a.CampusId.Equals( campusId ) );
                 if ( marketingCampaignCampus == null )
@@ -880,16 +912,8 @@ public partial class MarketingCampaigns : RockBlock
         ddlContactPerson.DataBind();
 
         CampusService campusService = new CampusService();
-        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
 
-        cblCampuses.Items.Clear();
-        foreach ( Campus campus in allCampuses )
-        {
-            ListItem campusItem = new ListItem();
-            campusItem.Value = campus.Id.ToString();
-            campusItem.Text = campus.Name;
-            cblCampuses.Items.Add( campusItem );
-        }
+        cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList(); ;
 
         // Controls on Ad Child Panel
         MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
@@ -930,13 +954,7 @@ public partial class MarketingCampaigns : RockBlock
             MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
         }
 
-        CampusService campusService = new CampusService();
-        List<Campus> allCampuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-
-        foreach ( ListItem campusItem in cblCampuses.Items )
-        {
-            campusItem.Selected = marketingCampaign.MarketingCampaignCampuses.ToList().Exists( a => a.CampusId.Equals( int.Parse( campusItem.Value ) ) );
-        }
+        cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
 
         UpdateReadonlyDetails( marketingCampaign );
 
@@ -984,15 +1002,15 @@ public partial class MarketingCampaigns : RockBlock
 <div class='span6'>
     <dl>";
 
-        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).ToList().AsDelimited( "<br>" );
+        string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
         lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList ); 
         
-        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audience", primaryAudiences );
 
-        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).ToList().AsDelimited( "<br>" );
+        string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a).ToList().AsDelimited( "<br>" );
         secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
         lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audience", secondaryAudiences );
 

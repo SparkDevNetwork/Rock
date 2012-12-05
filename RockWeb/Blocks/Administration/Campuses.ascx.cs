@@ -10,7 +10,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gCampuses.DataKeyNames = new string[] { "id" };
                 gCampuses.Actions.IsAddEnabled = true;
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

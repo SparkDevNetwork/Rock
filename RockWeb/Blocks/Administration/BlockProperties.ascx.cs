@@ -28,7 +28,7 @@ namespace RockWeb.Blocks.Administration
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 _block = Rock.Web.Cache.BlockCache.Read( blockId );
 
-                if ( _block.IsAuthorized( "Configure", CurrentPerson ) )
+                if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _block, phAttributes, !Page.IsPostBack );
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _block.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 tbBlockName.Text = _block.Name;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    var blockService = new Rock.Cms.BlockService();
+                    var blockService = new Rock.Model.BlockService();
                     var block = blockService.Get( _block.Id );
 
                     block.LoadAttributes();

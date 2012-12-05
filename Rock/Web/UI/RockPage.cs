@@ -17,10 +17,11 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
 {
@@ -82,7 +83,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The currently logged in user
         /// </summary>
-        public Rock.Cms.User CurrentUser
+        public Rock.Model.UserLogin CurrentUser
         {
             get
             {
@@ -90,11 +91,11 @@ namespace Rock.Web.UI
                     return _CurrentUser;
 
                 if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
 
                 if ( _CurrentUser == null )
                 {
-                    _CurrentUser = Rock.Cms.UserService.GetCurrentUser();
+                    _CurrentUser = Rock.Model.UserService.GetCurrentUser();
                     if ( _CurrentUser != null )
                         Context.Items.Add( "CurrentUser", _CurrentUser );
                 }
@@ -116,7 +117,7 @@ namespace Rock.Web.UI
                 CurrentPerson = _CurrentUser.Person;
             }
         }
-        private Rock.Cms.User _CurrentUser;
+        private Rock.Model.UserLogin _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -292,8 +293,8 @@ namespace Rock.Web.UI
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.Crm.PersonService personService = new Crm.PersonService();
-                Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.PersonService personService = new Model.PersonService();
+                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
@@ -302,7 +303,7 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            Rock.Cms.User user = CurrentUser;
+            Rock.Model.UserLogin user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
@@ -320,8 +321,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.Crm.PersonService personService = new Crm.PersonService();
-                        Rock.Crm.Person person = personService.Get( personId.Value );
+                        Rock.Model.PersonService personService = new Model.PersonService();
+                        Rock.Model.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;
@@ -391,7 +392,7 @@ namespace Rock.Web.UI
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                    bool canAdministratePage = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -408,7 +409,7 @@ namespace Rock.Web.UI
                     if ( CurrentPage.IncludeAdminFooter )
                     {
                         AddPopupControls();
-                        if ( canConfigPage )
+                        if ( canAdministratePage )
                             AddConfigElements();
                     }
 
@@ -416,12 +417,12 @@ namespace Rock.Web.UI
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = block.IsAuthorized( "Configure", CurrentPerson );
+                        bool canAdministrate = block.IsAuthorized( "Administrate", CurrentPerson );
                         bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
                         bool canView = block.IsAuthorized( "View", CurrentPerson );
 
                         // Make sure user has access to view block instance
-                        if ( canConfig || canEdit || canView )
+                        if ( canAdministrate || canEdit || canView )
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
@@ -431,7 +432,7 @@ namespace Rock.Web.UI
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
-                                ( canConfig || canEdit ? "can-configure " : "" ) +
+                                ( canAdministrate || canEdit ? "can-configure " : "" ) +
                                 HtmlHelper.CssClassFormat( block.BlockType.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
@@ -489,7 +490,7 @@ namespace Rock.Web.UI
 
                                     // Add the block configuration scripts and icons if user is authorized
                                     if ( CurrentPage.IncludeAdminFooter )
-                                        AddBlockConfig( blockWrapper, blockControl, block, canConfig, canEdit );
+                                        AddBlockConfig( blockWrapper, blockControl, block, canAdministrate, canEdit );
                                 }
 
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
@@ -524,7 +525,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( CurrentPage.IncludeAdminFooter && canConfigPage )
+                    if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -725,8 +726,8 @@ namespace Rock.Web.UI
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
             
-            // add the confirmDelete script for Grids
-            AddScriptLink( Page, "~/Scripts/Rock/confirmDelete.js" );
+            // add the scripts for RockGrid
+            AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
 
             // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
             AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
@@ -797,12 +798,12 @@ namespace Rock.Web.UI
         /// <param name="blockWrapper">The block wrapper.</param>
         /// <param name="blockControl">The block control.</param>
         /// <param name="block">The block.</param>
-        /// <param name="canConfig">if set to <c>true</c> [can config].</param>
+        /// <param name="canAdministrate">if set to <c>true</c> [can config].</param>
         /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
         private void AddBlockConfig( HtmlGenericContainer blockWrapper, RockBlock blockControl,
-            Rock.Web.Cache.BlockCache block, bool canConfig, bool canEdit )
+            Rock.Web.Cache.BlockCache block, bool canAdministrate, bool canEdit )
         {
-            if ( canConfig || canEdit )
+            if ( canAdministrate || canEdit )
             {
                 // Add the config buttons
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
@@ -830,7 +831,7 @@ namespace Rock.Web.UI
                     blockConfigTitle.InnerText = block.Name;
                 blockConfigBar.Controls.Add( blockConfigTitle );
 
-                foreach ( Control configControl in blockControl.GetConfigurationControls( canConfig, canEdit ) )
+                foreach ( Control configControl in blockControl.GetAdministrateControls( canAdministrate, canEdit ) )
                 {
                     configControl.ClientIDMode = ClientIDMode.AutoID;
                     blockConfigBar.Controls.Add( configControl );

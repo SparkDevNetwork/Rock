@@ -11,7 +11,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Data;
 using Rock.Field;
 using Rock.Web.Cache;
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
             BindFilter();
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Administration
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                     if ( attributeValue == null )
                     {
-                        attributeValue = new Rock.Core.AttributeValue();
+                        attributeValue = new Rock.Model.AttributeValue();
                         attributeValue.AttributeId = attributeId;
                         attributeValue.EntityId = _entityId;
                         attributeValueService.Add( attributeValue, CurrentPersonId );
@@ -251,9 +251,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            var attributeService = new Rock.Core.AttributeService();
+            var attributeService = new Rock.Model.AttributeService();
 
-            Rock.Core.Attribute attribute = attributeService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            Rock.Model.Attribute attribute = attributeService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Administration
                 var attributeService = new AttributeService();
                 var attributeQualifierService = new AttributeQualifierService();
 
-                Rock.Core.Attribute attribute;
+                Rock.Model.Attribute attribute;
 
                 int attributeId = 0;
                 if ( hfId.Value != string.Empty && !int.TryParse( hfId.Value, out attributeId ) )
@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( attributeId == 0 )
                 {
-                    attribute = new Rock.Core.Attribute();
+                    attribute = new Rock.Model.Attribute();
                     attribute.IsSystem = false;
                     attribute.EntityTypeId = _entityTypeId;
                     attribute.EntityTypeQualifierColumn = _entityQualifierColumn;

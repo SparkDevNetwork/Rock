@@ -7,7 +7,7 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category"  />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting">
+            <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnEditRow="rGrid_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -28,7 +28,6 @@
                             <asp:Literal ID="lValue" runat="server"></asp:Literal>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <Rock:EditField OnClick="rGrid_Edit" />
                     <Rock:EditValueField OnClick="rGrid_EditValue" />
                     <Rock:DeleteField OnClick="rGrid_Delete" />
                 </Columns>
@@ -50,10 +49,10 @@
                         <legend>
                             <asp:Literal ID="lActionTitle" runat="server"></asp:Literal>
                         </legend>
-                        <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Key" />
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Category" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Category" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                     </fieldset>
 
                 </div>
@@ -64,7 +63,7 @@
                         <legend>&nbsp;</legend>
                         <Rock:LabeledDropDownList ID="ddlFieldType" runat="server" LabelText="Field Type"></Rock:LabeledDropDownList>
                         <asp:PlaceHolder ID="phFieldTypeQualifiers" runat="server"></asp:PlaceHolder>
-                        <Rock:DataTextBox ID="tbDefaultValue" runat="server" SourceTypeName="Rock.Core.Attribute, Rock" PropertyName="DefaultValue" />
+                        <Rock:DataTextBox ID="tbDefaultValue" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="DefaultValue" />
                         <Rock:LabeledCheckBox ID="cbMultiValue" runat="server" LabelText="Allow Multiple Values" />
                         <Rock:LabeledCheckBox ID="cbRequired" runat="server" LabelText="Required" />
                     </fieldset>
@@ -74,8 +73,8 @@
             </div>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>
