@@ -6,6 +6,7 @@ _ReSharper.*
 *.psess
 *.v11.suo
 *.user
+*.suo
 #*.Framework.XML
 
 #specific files
