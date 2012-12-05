@@ -461,10 +461,10 @@
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
-    <Compile Include="Model\ActivityType.cs" />
-    <Compile Include="Model\ActionType.cs" />
-    <Compile Include="Model\Activity.cs" />
-    <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\WorkflowActivityType.cs" />
+    <Compile Include="Model\WorkflowActionType.cs" />
+    <Compile Include="Model\WorkflowActivity.cs" />
+    <Compile Include="Model\WorkflowAction.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
@@ -772,9 +772,7 @@
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Util\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
