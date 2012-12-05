@@ -124,6 +124,10 @@
     <Compile Include="Migrations\201212051230308_AddMissingTagConfiguration.Designer.cs">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212051710292_AuthConfigureAdministrate.cs" />
+    <Compile Include="Migrations\201212051710292_AuthConfigureAdministrate.Designer.cs">
+      <DependentUpon>201212051710292_AuthConfigureAdministrate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -770,6 +774,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212051710292_AuthConfigureAdministrate.resx">
+      <DependentUpon>201212051710292_AuthConfigureAdministrate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
