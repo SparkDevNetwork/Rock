@@ -31,7 +31,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gCampuses.DataKeyNames = new string[] { "id" };
                 gCampuses.Actions.IsAddEnabled = true;
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

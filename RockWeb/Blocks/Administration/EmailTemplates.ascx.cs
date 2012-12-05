@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Administration
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             BindFilter();
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
                 gEmailTemplates.Actions.IsAddEnabled = true;
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

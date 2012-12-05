@@ -69,7 +69,7 @@ public partial class GroupTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroupType.DataKeyNames = new string[] { "id" };
             gGroupType.Actions.IsAddEnabled = true;
@@ -99,7 +99,7 @@ public partial class GroupTypes : RockBlock
         mdGridWarning.Hide();
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {

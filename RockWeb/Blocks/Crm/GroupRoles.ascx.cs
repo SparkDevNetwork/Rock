@@ -29,7 +29,7 @@ public partial class GroupRoles : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroupRoles.DataKeyNames = new string[] { "id" };
             gGroupRoles.Actions.IsAddEnabled = true;
@@ -46,7 +46,7 @@ public partial class GroupRoles : RockBlock
     {
         nbMessage.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {

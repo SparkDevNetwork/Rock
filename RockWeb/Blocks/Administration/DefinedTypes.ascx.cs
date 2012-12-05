@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
 
                 entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Model.DefinedValue" );
                 entityQualifierColumn = "DefinedTypeId";
-                canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 BindFilter();
 

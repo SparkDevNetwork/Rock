@@ -121,12 +121,12 @@ namespace Rock.Model
     /// <summary>
     /// Batch Configuration class.
     /// </summary>
-    public partial class BatchConfiguration : EntityTypeConfiguration<FinancialBatch>
+    public partial class FinancialBatchConfiguration : EntityTypeConfiguration<FinancialBatch>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BatchConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialBatchConfiguration"/> class.
         /// </summary>
-        public BatchConfiguration()
+        public FinancialBatchConfiguration()
         {
         }
     }

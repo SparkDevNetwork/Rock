@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Administration
                      iSecured = type.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, type, new object[] { entityId } )as ISecured;
                 }
 
-                if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
+                if ( iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                     BindGrid();

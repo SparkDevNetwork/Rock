@@ -55,7 +55,7 @@ public partial class MarketingCampaigns : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gMarketingCampaigns.DataKeyNames = new string[] { "id" };
             gMarketingCampaigns.Actions.IsAddEnabled = true;
@@ -98,7 +98,7 @@ public partial class MarketingCampaigns : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
