@@ -62,7 +62,7 @@ namespace Rock.Model
         {
             return items.Select( m => new LocationDto()
                 {
-                    Raw = m.Raw,
+                    Raw = m.FullAddress,
                     Street1 = m.Street1,
                     Street2 = m.Street2,
                     City = m.City,
@@ -71,15 +71,15 @@ namespace Rock.Model
                     Zip = m.Zip,
                     Latitude = m.Latitude,
                     Longitude = m.Longitude,
-                    ParcelId = m.ParcelId,
-                    StandardizeAttempt = m.StandardizeAttempt,
-                    StandardizeService = m.StandardizeService,
-                    StandardizeResult = m.StandardizeResult,
-                    StandardizeDate = m.StandardizeDate,
-                    GeocodeAttempt = m.GeocodeAttempt,
-                    GeocodeService = m.GeocodeService,
-                    GeocodeResult = m.GeocodeResult,
-                    GeocodeDate = m.GeocodeDate,
+                    ParcelId = m.AssessorParcelId,
+                    StandardizeAttempt = m.StandardizeAttemptedDateTime,
+                    StandardizeService = m.StandardizeAttemptedServiceType,
+                    StandardizeResult = m.StandardizeAttemptedResult,
+                    StandardizeDate = m.StandardizedDateTime,
+                    GeocodeAttempt = m.GeocodeAttemptedDateTime,
+                    GeocodeService = m.GeocodeAttemptedServiceType,
+                    GeocodeResult = m.GeocodeAttemptedResult,
+                    GeocodeDate = m.GeocodedDateTime,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

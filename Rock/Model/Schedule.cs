@@ -4,12 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Spatial;
 
 using Rock.Data;
 
@@ -33,17 +29,70 @@ namespace Rock.Model
         [AlternateKey]
         [MaxLength( 50 )]
         public string Name { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the frequency.
+        /// </summary>
+        /// <value>
+        /// The frequency.
+        /// </value>
         public ScheduleFrequency Frequency { get; set; }
 
+        /// <summary>
+        /// Gets or sets the frequency qualifier.
+        /// </summary>
+        /// <value>
+        /// The frequency qualifier.
+        /// </value>
         [MaxLength(100)]
         public string FrequencyQualifier { get; set; }
 
+        /// <summary>
+        /// Gets or sets the start time.
+        /// </summary>
+        /// <value>
+        /// The start time.
+        /// </value>
         public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time.
+        /// </summary>
+        /// <value>
+        /// The end time.
+        /// </value>
         public DateTime EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in start time.
+        /// </summary>
+        /// <value>
+        /// The check in start time.
+        /// </value>
         public DateTime CheckInStartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in end time.
+        /// </summary>
+        /// <value>
+        /// The check in end time.
+        /// </value>
         public DateTime CheckInEndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the effective start date.
+        /// </summary>
+        /// <value>
+        /// The effective start date.
+        /// </value>
         public DateTimeOffset EffectiveStartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the effective end date.
+        /// </summary>
+        /// <value>
+        /// The effective end date.
+        /// </value>
         public DateTimeOffset EffectiveEndDate { get; set; }
 
         #endregion

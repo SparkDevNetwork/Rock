@@ -3,9 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -14,16 +17,16 @@ namespace Rock.Model
     /// GroupLocation POCO class.
     /// </summary>
     [Table( "GroupLocation" )]
-    public partial class GroupLocation
+    public partial class GroupLocation : Model<GroupLocation>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the group id.
         /// </summary>
         /// <value>
         /// The group id.
         /// </value>
-        [Key]
-        [Column(Order = 0)]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -32,8 +35,6 @@ namespace Rock.Model
         /// <value>
         /// The location id.
         /// </value>
-        [Key]
-        [Column(Order = 1)]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -43,6 +44,10 @@ namespace Rock.Model
         /// The location type.
         /// </value>
         public int? LocationTypeId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the group.
@@ -58,7 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The location.
         /// </value>
-        public virtual Rock.Model.Location Location { get; set; }
+        public virtual Location Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Location Type.
@@ -66,8 +71,78 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue LocationType { get; set; }
+        public virtual DefinedValue LocationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedules.
+        /// </summary>
+        /// <value>
+        /// The schedules.
+        /// </value>
+        public virtual ICollection<Schedule> Schedules
+        {
+            get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }
+            set { _schedules = value; }
+        }
+        private ICollection<Schedule> _schedules;
+
+        /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return null; } // this.ToDto(); }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group.ToString() + " at " + Location.ToString();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static GroupLocation Read( int id )
+        {
+            return Read<GroupLocation>( id );
+        }
+
+        /// <summary>
+        /// Static method to return an object based on the GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static GroupLocation Read( Guid guid )
+        {
+            return Read<GroupLocation>( guid );
+        }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// GroupLocation Configuration class
@@ -82,6 +157,10 @@ namespace Rock.Model
             this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId ).WillCascadeOnDelete( false );
+            this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }
+
+    #endregion
+
 }

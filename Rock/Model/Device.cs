@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
 
@@ -20,7 +19,6 @@ namespace Rock.Model
     /// </summary>
     public partial class Device : Model<Device>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -64,7 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the device.
         /// </value>
-        public DeviceType DeviceType { get; set; }
+        public DefinedValue DeviceTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address.
@@ -82,6 +80,22 @@ namespace Rock.Model
         /// </value>
         public int? PrinterId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the print from.
+        /// </summary>
+        /// <value>
+        /// The print from.
+        /// </value>
+        public PrintFrom PrintFrom { get; set; }
+
+        /// <summary>
+        /// Gets or sets the print to override.
+        /// </summary>
+        /// <value>
+        /// The print to override.
+        /// </value>
+        public PrintTo PrintToOverride { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -92,12 +106,12 @@ namespace Rock.Model
         /// <value>
         /// The locations.
         /// </value>
-        public virtual ICollection<Crm.Location> Locations
+        public virtual ICollection<Location> Locations
         {
-            get { return _locations ?? ( _locations = new Collection<Crm.Location>() ); }
+            get { return _locations ?? ( _locations = new Collection<Location>() ); }
             set { _locations = value; }
         }
-        private ICollection<Crm.Location> _locations;
+        private ICollection<Location> _locations;
 
         /// <summary>
         /// Gets or sets the printer.
@@ -106,6 +120,14 @@ namespace Rock.Model
         /// The printer.
         /// </value>
         public virtual Device Printer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the device.
+        /// </summary>
+        /// <value>
+        /// The type of the device.
+        /// </value>
+        public virtual DefinedValue DeviceType { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -175,8 +197,9 @@ namespace Rock.Model
         /// </summary>
         public DeviceConfiguration()
         {
-            this.HasMany( m => m.Locations ).WithMany().Map( m => { m.MapLeftKey( "DeviceId" ); m.MapRightKey( "LocationId" ); m.ToTable( "DeviceLocation" ); } );
+            this.HasMany( d => d.Locations ).WithMany().Map( d => { d.MapLeftKey( "DeviceId" ); d.MapRightKey( "LocationId" ); d.ToTable( "DeviceLocation" ); } );
             this.HasOptional( d => d.Printer ).WithMany().HasForeignKey( d => d.PrinterId ).WillCascadeOnDelete( false );
+            this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -185,29 +208,40 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// The type of device
+    /// Where a label should be printed
     /// </summary>
-    public enum DeviceType
+    public enum PrintTo
     {
         /// <summary>
-        /// Check-in kiosk device
+        /// Print to the default printer
         /// </summary>
-        CheckInKiosk = 0,
+        Default = 0,
 
         /// <summary>
-        /// Giving kiosk device
+        /// Print to the printer associated with the selected kiosk
         /// </summary>
-        GivingKiosk = 1,
+        Kiosk = 1,
 
         /// <summary>
-        /// Printer device
+        /// Print to the printer associated with the selected location
         /// </summary>
-        Printer = 2,
+        Location = 2
+    }
+
+    /// <summary>
+    /// The application responsible for printing a label
+    /// </summary>
+    public enum PrintFrom
+    {
+        /// <summary>
+        /// The kiosk will print the label
+        /// </summary>
+        Client = 0,
 
         /// <summary>
-        /// Digital Signage device
+        /// The server 
         /// </summary>
-        DigitalSignage = 3
+        Server = 1
     }
 
     #endregion

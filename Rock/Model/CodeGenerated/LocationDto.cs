@@ -190,7 +190,7 @@ namespace Rock.Model
             if ( model is Location )
             {
                 var location = (Location)model;
-                this.Raw = location.Raw;
+                this.Raw = location.FullAddress;
                 this.Street1 = location.Street1;
                 this.Street2 = location.Street2;
                 this.City = location.City;
@@ -199,15 +199,15 @@ namespace Rock.Model
                 this.Zip = location.Zip;
                 this.Latitude = location.Latitude;
                 this.Longitude = location.Longitude;
-                this.ParcelId = location.ParcelId;
-                this.StandardizeAttempt = location.StandardizeAttempt;
-                this.StandardizeService = location.StandardizeService;
-                this.StandardizeResult = location.StandardizeResult;
-                this.StandardizeDate = location.StandardizeDate;
-                this.GeocodeAttempt = location.GeocodeAttempt;
-                this.GeocodeService = location.GeocodeService;
-                this.GeocodeResult = location.GeocodeResult;
-                this.GeocodeDate = location.GeocodeDate;
+                this.ParcelId = location.AssessorParcelId;
+                this.StandardizeAttempt = location.StandardizeAttemptedDateTime;
+                this.StandardizeService = location.StandardizeAttemptedServiceType;
+                this.StandardizeResult = location.StandardizeAttemptedResult;
+                this.StandardizeDate = location.StandardizedDateTime;
+                this.GeocodeAttempt = location.GeocodeAttemptedDateTime;
+                this.GeocodeService = location.GeocodeAttemptedServiceType;
+                this.GeocodeResult = location.GeocodeAttemptedResult;
+                this.GeocodeDate = location.GeocodedDateTime;
                 this.Id = location.Id;
                 this.Guid = location.Guid;
             }
@@ -222,7 +222,7 @@ namespace Rock.Model
             if ( model is Location )
             {
                 var location = (Location)model;
-                location.Raw = this.Raw;
+                location.FullAddress = this.Raw;
                 location.Street1 = this.Street1;
                 location.Street2 = this.Street2;
                 location.City = this.City;
@@ -231,15 +231,15 @@ namespace Rock.Model
                 location.Zip = this.Zip;
                 location.Latitude = this.Latitude;
                 location.Longitude = this.Longitude;
-                location.ParcelId = this.ParcelId;
-                location.StandardizeAttempt = this.StandardizeAttempt;
-                location.StandardizeService = this.StandardizeService;
-                location.StandardizeResult = this.StandardizeResult;
-                location.StandardizeDate = this.StandardizeDate;
-                location.GeocodeAttempt = this.GeocodeAttempt;
-                location.GeocodeService = this.GeocodeService;
-                location.GeocodeResult = this.GeocodeResult;
-                location.GeocodeDate = this.GeocodeDate;
+                location.AssessorParcelId = this.ParcelId;
+                location.StandardizeAttemptedDateTime = this.StandardizeAttempt;
+                location.StandardizeAttemptedServiceType = this.StandardizeService;
+                location.StandardizeAttemptedResult = this.StandardizeResult;
+                location.StandardizedDateTime = this.StandardizeDate;
+                location.GeocodeAttemptedDateTime = this.GeocodeAttempt;
+                location.GeocodeAttemptedServiceType = this.GeocodeService;
+                location.GeocodeAttemptedResult = this.GeocodeResult;
+                location.GeocodedDateTime = this.GeocodeDate;
                 location.Id = this.Id;
                 location.Guid = this.Guid;
             }
