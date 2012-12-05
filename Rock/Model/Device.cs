@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
 
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// <summary>
     /// CheckInDevice EF Model.
     /// </summary>
+    [Table("Device")]
     public partial class Device : Model<Device>
     {
         #region Entity Properties
@@ -62,7 +64,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the device.
         /// </value>
-        public DefinedValue DeviceTypeValueId { get; set; }
+        public int DeviceTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address.
@@ -70,6 +72,7 @@ namespace Rock.Model
         /// <value>
         /// The IP address.
         /// </value>
+        [MaxLength(45)]
         public string IPAddress { get; set; }
 
         /// <summary>
@@ -135,7 +138,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override IDto Dto
         {
-            get { return null; } // return this.ToDto(); }
+            get { return this.ToDto(); }
         }
 
         #endregion

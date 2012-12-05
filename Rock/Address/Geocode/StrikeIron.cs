@@ -67,8 +67,7 @@ namespace Rock.Address.Geocode
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            location.Latitude = usAddress.GeoCode.Latitude;
-                            location.Longitude = usAddress.GeoCode.Longitude;
+                            location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
 
                             return true;
                         }

@@ -5,6 +5,7 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Text;
 
@@ -15,6 +16,7 @@ namespace Rock.Model
     /// <summary>
     /// CheckInAttendance EF Model.
     /// </summary>
+    [Table( "Attendance" )]
     public partial class Attendance : Model<Attendance>
     {
 
@@ -151,7 +153,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override IDto Dto
         {
-            get { return null; } // return this.ToDto(); }
+            get { return this.ToDto(); }
         }
 
         #endregion

@@ -136,22 +136,6 @@ namespace Rock.Model
         public string FullAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the Latitude.
-        /// </summary>
-        /// <value>
-        /// Latitude.
-        /// </value>
-        public double? Latitude { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Longitude.
-        /// </summary>
-        /// <value>
-        /// Longitude.
-        /// </value>
-        public double? Longitude { get; set; }
-
-        /// <summary>
         /// Gets or sets the Parcel Id.
         /// </summary>
         /// <value>
@@ -228,6 +212,14 @@ namespace Rock.Model
         /// </value>
         public DateTime? GeocodedDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the attendance printer id.
+        /// </summary>
+        /// <value>
+        /// The attendance printer id.
+        /// </value>
+        public int? AttendancePrinterId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -253,7 +245,22 @@ namespace Rock.Model
         }
         private ICollection<Location> _childLocations;
 
+        /// <summary>
+        /// Gets or sets the type of the location
+        /// </summary>
+        /// <value>
+        /// The type of the location.
+        /// </value>
         public virtual DefinedValue LocationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance printer.
+        /// </summary>
+        /// <value>
+        /// The attendance printer.
+        /// </value>
+        public virtual Device AttendancePrinter { get; set; }
+
         /// <summary>
         /// Gets the dto.
         /// </summary>
@@ -266,6 +273,16 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Sets the location point from a latitude and longitude.
+        /// </summary>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        public void SetLocationPointFromLatLong( double latitude, double longitude )
+        {
+            this.LocationPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -325,6 +342,7 @@ namespace Rock.Model
         {
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.LocationType ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.AttendancePrinter ).WithMany().HasForeignKey( l => l.AttendancePrinterId ).WillCascadeOnDelete( false );
         }
     }
 

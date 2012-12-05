@@ -69,6 +69,7 @@ namespace Rock.Model
                     SortOrder = m.SortOrder,
                     MaxCount = m.MaxCount,
                     MinCount = m.MinCount,
+                    IsLeader = m.IsLeader,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

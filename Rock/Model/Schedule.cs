@@ -5,6 +5,7 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 
 using Rock.Data;
@@ -14,6 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// CheckInSchedule EF Model.
     /// </summary>
+    [Table("Schedule")]
     public partial class Schedule : Model<Schedule>
     {
 
@@ -69,7 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The check in start time.
         /// </value>
-        public DateTime CheckInStartTime { get; set; }
+        public DateTime? CheckInStartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the check in end time.
@@ -77,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The check in end time.
         /// </value>
-        public DateTime CheckInEndTime { get; set; }
+        public DateTime? CheckInEndTime { get; set; }
 
         /// <summary>
         /// Gets or sets the effective start date.
@@ -85,7 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The effective start date.
         /// </value>
-        public DateTimeOffset EffectiveStartDate { get; set; }
+        public DateTimeOffset? EffectiveStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the effective end date.
@@ -93,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The effective end date.
         /// </value>
-        public DateTimeOffset EffectiveEndDate { get; set; }
+        public DateTimeOffset? EffectiveEndDate { get; set; }
 
         #endregion
 
@@ -105,7 +107,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override IDto Dto
         {
-            get { return null; } // return this.ToDto(); }
+            get { return this.ToDto(); }
         }
 
         #endregion
