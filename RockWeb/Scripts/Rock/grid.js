@@ -4,7 +4,10 @@
         [
             {
                 "label": "OK", "class": "btn-primary", "callback": function () {
-                    eval(e.target.href)
+                    var postbackJs = e.target.href;
+                    // need to do unescape because firefox might put %20 instead of spaces
+                    postbackJs = unescape(postbackJs);
+                    eval(postbackJs)
                 }
             },
             {
