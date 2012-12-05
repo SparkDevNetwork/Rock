@@ -7,13 +7,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
-using Rock.Core;
-using Rock.Crm;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -71,7 +69,7 @@ public partial class GroupTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroupType.DataKeyNames = new string[] { "id" };
             gGroupType.Actions.IsAddEnabled = true;
@@ -101,7 +99,7 @@ public partial class GroupTypes : RockBlock
         mdGridWarning.Hide();
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
@@ -204,12 +202,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new GroupType { Id = None.Id, Name = None.Text } );
             btnAddChildGroupType.Enabled = false;
-            btnAddChildGroupType.CssClass = "btn primary disabled";
+            btnAddChildGroupType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddChildGroupType.Enabled = true;
-            btnAddChildGroupType.CssClass = "btn primary";
+            btnAddChildGroupType.CssClass = "btn btn-primary";
         }
 
         ddlChildGroupType.DataSource = list;
@@ -302,12 +300,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
             btnAddLocationType.Enabled = false;
-            btnAddLocationType.CssClass = "btn primary disabled";
+            btnAddLocationType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddLocationType.Enabled = true;
-            btnAddLocationType.CssClass = "btn primary";
+            btnAddLocationType.CssClass = "btn btn-primary";
         }
 
         ddlLocationType.DataSource = list;

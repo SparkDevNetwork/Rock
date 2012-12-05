@@ -22,6 +22,6 @@ namespace Rock.Address
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public abstract bool Standardize( Rock.Crm.Location location, out string result );
+        public abstract bool Standardize( Rock.Model.Location location, out string result );
     }
 }

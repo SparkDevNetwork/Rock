@@ -15,7 +15,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Field;
 using Rock.Web.UI.Controls;
 
@@ -83,7 +83,7 @@ namespace RockWeb.Blocks.Core
             if ( _model != null )
                 lvAttributeValues.DataSource = _model.AttributeValues[_attribute.Key];
             else
-                lvAttributeValues.DataSource = new List<Rock.Core.AttributeValueDto>();
+                lvAttributeValues.DataSource = new List<Rock.Model.AttributeValueDto>();
             lvAttributeValues.DataBind();
 
             if ( _attribute.IsMultiValue && lvAttributeValues.InsertItem != null )
@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                var attributeValue = e.Item.DataItem as Rock.Core.AttributeValueDto;
+                var attributeValue = e.Item.DataItem as Rock.Model.AttributeValueDto;
                 if ( attributeValue != null )
                 {
                     PlaceHolder phDisplayValue = e.Item.FindControl( "phDisplayValue" ) as PlaceHolder;

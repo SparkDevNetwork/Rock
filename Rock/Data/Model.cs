@@ -22,15 +22,30 @@ namespace Rock.Data
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
+        where T : ISecured, new()
     {
         #region ISecured implementation
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check access to the parent authority specified by this property.
+        /// this object, Rock will check the default authorization on the current type, and 
+        /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
         [NotMapped]
-        public virtual Security.ISecured ParentAuthority { get { return null; } }
+        public virtual Security.ISecured ParentAuthority
+        { 
+            get 
+            {
+                if ( this.Id == 0 )
+                {
+                    return new GlobalDefault();
+                }
+                else
+                {
+                    return new T() ;
+                }
+            }
+        }
 
         /// <summary>
         /// A list of actions that this class supports.
@@ -38,7 +53,7 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Configure" }; }
+            get { return new List<string>() { "View", "Edit", "Administrate" }; }
         }
 
         /// <summary>
@@ -49,7 +64,7 @@ namespace Rock.Data
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }
@@ -138,7 +153,7 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues
         {
             get 
             {
@@ -151,7 +166,7 @@ namespace Rock.Data
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, List<Rock.Core.AttributeValueDto>> _attributeValues;
+        private Dictionary<string, List<Rock.Model.AttributeValueDto>> _attributeValues;
 
         #endregion
     }

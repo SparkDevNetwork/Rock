@@ -14,10 +14,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class FieldTypeCache : Rock.Core.FieldTypeDto
+    public class FieldTypeCache : Rock.Model.FieldTypeDto
     {
         private FieldTypeCache() : base() { }
-        private FieldTypeCache( Rock.Core.FieldType model ) : base( model ) { }
+        private FieldTypeCache( Rock.Model.FieldType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the field 
@@ -48,8 +48,8 @@ namespace Rock.Web.Cache
                 return fieldType;
             else
             {
-                Rock.Core.FieldTypeService fieldTypeService = new Rock.Core.FieldTypeService();
-                Rock.Core.FieldType fieldTypeModel = fieldTypeService.Get( id );
+                Rock.Model.FieldTypeService fieldTypeService = new Rock.Model.FieldTypeService();
+                Rock.Model.FieldType fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
                     fieldType = CopyModel( fieldTypeModel );
@@ -68,7 +68,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="fieldTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( Rock.Core.FieldType fieldTypeModel )
+        public static FieldTypeCache Read( Rock.Model.FieldType fieldTypeModel )
         {
             string cacheKey = FieldTypeCache.CacheKey( fieldTypeModel.Id );
 
@@ -91,7 +91,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="fieldTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static FieldTypeCache CopyModel( Rock.Core.FieldType fieldTypeModel )
+        public static FieldTypeCache CopyModel( Rock.Model.FieldType fieldTypeModel )
         {
             FieldTypeCache fieldType = new FieldTypeCache( fieldTypeModel );
             fieldType.Field = Rock.Field.Helper.InstantiateFieldType( fieldType.Assembly, fieldType.Class );

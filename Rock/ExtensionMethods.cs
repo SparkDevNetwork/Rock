@@ -17,7 +17,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
-using Rock.Cms;
+using Rock.Model;
 
 namespace Rock
 {

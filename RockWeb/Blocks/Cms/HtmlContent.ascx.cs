@@ -12,7 +12,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
@@ -32,6 +32,7 @@ namespace RockWeb.Blocks.Cms
 
         bool _supportVersioning = false;
         bool _requireApproval = false;
+        public bool HtmlContentModified = false;
 
         #endregion
 
@@ -39,11 +40,8 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
-
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/ckeditor.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/ckeditor/adapters/jquery.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/Scripts/Rock/htmlContentOptions.js" );
+            base.OnInit(e);
+            
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
             CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
@@ -76,9 +74,9 @@ namespace RockWeb.Blocks.Cms
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             HtmlContentService service = new HtmlContentService();
-            Rock.Cms.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
+            Rock.Model.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
             if ( content == null )
-                content = new Rock.Cms.HtmlContent();
+                content = new Rock.Model.HtmlContent();
 
             if ( _supportVersioning )
             {
@@ -107,11 +105,26 @@ namespace RockWeb.Blocks.Cms
                 cbOverwriteVersion.Visible = false;
             }
 
-            txtHtmlContentEditor.Text = content.Content;
+            edtHtmlContent.Toolbar = "RockCustomConfigFull";
+            edtHtmlContent.Text = content.Content;
+            mpeContent.Show();
+            edtHtmlContent.Visible = true;
+            HtmlContentModified = false;
+            edtHtmlContent.TextChanged += edtHtmlContent_TextChanged;
 
             BindGrid();
 
             hfAction.Value = "Edit";
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the edtHtmlContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void edtHtmlContent_TextChanged( object sender, EventArgs e )
+        {
+            HtmlContentModified = true;
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -130,9 +143,9 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Administrate" ) )
             {
-                Rock.Cms.HtmlContent content = null;
+                Rock.Model.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
 
                 // get settings
@@ -147,14 +160,14 @@ namespace RockWeb.Blocks.Cms
                 // if the existing content changed, and the overwrite option was not checked, create a new version
                 if ( content != null &&
                     _supportVersioning &&
-                    content.Content != txtHtmlContentEditor.Text &&
+                    content.Content != edtHtmlContent.Text &&
                     !cbOverwriteVersion.Checked )
                     content = null;
 
                 // if a record doesn't exist then  create one
                 if ( content == null )
                 {
-                    content = new Rock.Cms.HtmlContent();
+                    content = new Rock.Model.HtmlContent();
                     content.BlockId = CurrentBlock.Id;
                     content.EntityValue = entityValue;
 
@@ -203,7 +216,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                content.Content = txtHtmlContentEditor.Text;
+                content.Content = edtHtmlContent.Text;
 
                 if ( service.Save( content, CurrentPersonId ) )
                 {
@@ -228,7 +241,7 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
-        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
 
@@ -247,7 +260,7 @@ namespace RockWeb.Blocks.Cms
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
 
-            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
+            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
 
             return configControls;
         }
@@ -262,7 +275,7 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                Rock.Cms.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
+                Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
                     html = content.Content;
@@ -288,15 +301,15 @@ namespace RockWeb.Blocks.Cms
             var HtmlService = new HtmlContentService();
             var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
 
-            var personService = new Rock.Crm.PersonService();
-            var versionAudits = new Dictionary<int, Rock.Core.Audit>();
+            var personService = new Rock.Model.PersonService();
+            var versionAudits = new Dictionary<int, Rock.Model.Audit>();
             var modifiedPersons = new Dictionary<int, string>();
 
             foreach ( var version in content )
             {
                 var lastAudit = HtmlService.Audits( version )
-                    .Where( a => a.AuditType == Rock.Core.AuditType.Add ||
-                        a.AuditType == Rock.Core.AuditType.Modify )
+                    .Where( a => a.AuditType == Rock.Model.AuditType.Add ||
+                        a.AuditType == Rock.Model.AuditType.Modify )
                     .OrderByDescending( h => h.DateTime )
                     .FirstOrDefault();
                 if ( lastAudit != null )

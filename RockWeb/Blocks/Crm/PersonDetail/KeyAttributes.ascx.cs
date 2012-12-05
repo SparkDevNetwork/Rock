@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using System.Xml.Xsl;
 
 using Rock;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail

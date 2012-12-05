@@ -10,7 +10,7 @@ using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Constants;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gPageRoutes.DataKeyNames = new string[] { "id" };
                 gPageRoutes.Actions.IsAddEnabled = true;
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Administration
             // check for duplicates
             if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
             {
-                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", Rock.Cms.Page.FriendlyTypeName );
+                nbMessage.Text = WarningMessage.DuplicateFoundMessage( "route", Rock.Model.Page.FriendlyTypeName );
                 nbMessage.Visible = true;
                 return;
             }
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             PageService pageService = new PageService();
-            List<Rock.Cms.Page> allPages = pageService.Queryable().ToList();
+            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
             ddlPageName.DataSource = allPages.OrderBy( a => a.PageSortHash );
             ddlPageName.DataBind();
         }

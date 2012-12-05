@@ -9,9 +9,9 @@ join
 	sys.foreign_key_columns c
 on c.constraint_object_id = k.object_id
 WHERE 
-	OBJECT_NAME(k.parent_object_id) like 'crmGroup%'
+	OBJECT_NAME(k.parent_object_id) like 'Group%'
 or	 
-	OBJECT_NAME(k.referenced_object_id)  like 'crmGroup%'
+	OBJECT_NAME(k.referenced_object_id)  like 'Group%'
 ORDER BY K.name
 
 /* Down */
@@ -23,9 +23,9 @@ join
 	sys.foreign_key_columns c
 on c.constraint_object_id = k.object_id
 WHERE 
-	OBJECT_NAME(k.parent_object_id) like 'crmGroup%'
+	OBJECT_NAME(k.parent_object_id) like 'Group%'
 or	 
-	OBJECT_NAME(k.referenced_object_id)  like 'crmGroup%'
+	OBJECT_NAME(k.referenced_object_id)  like 'Group%'
 ORDER BY K.name
 
 

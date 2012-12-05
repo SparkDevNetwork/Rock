@@ -1,18 +1,25 @@
-/*.suo
-/_ReSharper.Ignite/
-/*.5.1.ReSharper.user
-/Rock.sln.DotSettings.user
-/_ReSharper.Rock/
-/desktop.ini
-/*.6.0.ReSharper.user
-/*.shfbproj_dturner
+#file types
+_ReSharper.*
 *.DS_Store
 *.tlog
-/RockWeb/web.ConnectionStrings.config
+*.vsp
+*.psess
+*.v11.suo
+*.user
+#*.Framework.XML
 
-/Rock.Tests/obj
-/Rock.Tests/bin
-/*.vsp
-/*.psess
-/UpgradeLog2.htm
-/StyleCop.Cache
+#specific files
+RockJobSchedulerService.Xml
+web.[Cc]onnectionStrings.config
+desktop.ini
+Rock.XML
+pageviews.csv
+Quartz.xml
+StyleCop.Cache
+
+#specific folders
+[Oo]bj/
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/
+RockWeb/Cache/*

@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using Rock;
-using Rock.Cms;
+using Rock.Model;
 using Rock.Constants;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gBlockTypes.DataKeyNames = new string[] { "id" };
                 gBlockTypes.Actions.IsAddEnabled = true;
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Administration
         private void ScanForUnregisteredBlocks()
         {
             BlockTypeService blockTypeService = new BlockTypeService();
-            foreach ( Rock.Cms.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
+            foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
             {
                 try
                 {

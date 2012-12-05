@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 
-using Rock.Cms;
+using Rock.Model;
 using Rock.Security;
 
 namespace Rock.Web.Cache
@@ -22,12 +22,12 @@ namespace Rock.Web.Cache
     public class SiteCache : SiteDto, Security.ISecured
     {
         private SiteCache() : base() { }
-        private SiteCache( Rock.Cms.Site model ) : base( model ) { }
+        private SiteCache( Rock.Model.Site model ) : base( model ) { }
 
         /// <summary>
         /// Gets the attribute values.
         /// </summary>
-        public Dictionary<string, List<Rock.Core.AttributeValueDto>> AttributeValues { get; private set; }
+        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; private set; }
 
         /// <summary>
         /// Gets a list of attributes associated with the site.  This object will not include values.
@@ -67,8 +67,8 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.Cms.SiteService siteService = new Cms.SiteService();
-            Rock.Cms.Site siteModel = siteService.Get( this.Id );
+            Rock.Model.SiteService siteService = new Model.SiteService();
+            Rock.Model.Site siteModel = siteService.Get( this.Id );
             if ( siteModel != null )
             {
                 siteModel.LoadAttributes();
@@ -78,6 +78,18 @@ namespace Rock.Web.Cache
                         Rock.Attribute.Helper.SaveAttributeValues( siteModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
             }
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
 
         #region Static Methods
 
@@ -103,8 +115,8 @@ namespace Rock.Web.Cache
                 return site;
             else
             {
-                Rock.Cms.SiteService siteService = new Cms.SiteService();
-                Rock.Cms.Site siteModel = siteService.Get( id );
+                Rock.Model.SiteService siteService = new Model.SiteService();
+                Rock.Model.Site siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
                     site = new SiteCache( siteModel );
@@ -182,7 +194,7 @@ namespace Rock.Web.Cache
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Crm.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
             return Security.Authorization.Authorized( this, action, person );
         }

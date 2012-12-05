@@ -16,10 +16,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class DefinedTypeCache : Rock.Core.DefinedTypeDto
+    public class DefinedTypeCache : Rock.Model.DefinedTypeDto
     {
         private DefinedTypeCache() : base() { }
-        private DefinedTypeCache( Rock.Core.DefinedType model ) : base( model ) { }
+        private DefinedTypeCache( Rock.Model.DefinedType model ) : base( model ) { }
 
         /// <summary>
         /// Gets the type of the field.
@@ -60,7 +60,7 @@ namespace Rock.Web.Cache
                 {
                     definedValueIds = new List<int>();
 
-                    var definedValueService = new Core.DefinedValueService();
+                    var definedValueService = new Model.DefinedValueService();
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( this.Id ) )
                     {
                         definedValueIds.Add( definedValue.Id );
@@ -97,8 +97,8 @@ namespace Rock.Web.Cache
                 return definedType;
             else
             {
-                Rock.Core.DefinedTypeService definedTypeService = new Rock.Core.DefinedTypeService();
-                Rock.Core.DefinedType definedTypeModel = definedTypeService
+                Rock.Model.DefinedTypeService definedTypeService = new Rock.Model.DefinedTypeService();
+                Rock.Model.DefinedType definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Id == id )
                     .FirstOrDefault();
@@ -132,8 +132,8 @@ namespace Rock.Web.Cache
                 return Read((int)cacheObj);
             else
             {
-                Rock.Core.DefinedTypeService definedTypeService = new Rock.Core.DefinedTypeService();
-                Rock.Core.DefinedType definedTypeModel = definedTypeService
+                Rock.Model.DefinedTypeService definedTypeService = new Rock.Model.DefinedTypeService();
+                Rock.Model.DefinedType definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Guid == guid )
                     .FirstOrDefault();
@@ -158,7 +158,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-        public static DefinedTypeCache Read( Rock.Core.DefinedType definedTypeModel )
+        public static DefinedTypeCache Read( Rock.Model.DefinedType definedTypeModel )
         {
             string cacheKey = DefinedTypeCache.CacheKey( definedTypeModel.Id );
 
@@ -184,7 +184,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-        public static DefinedTypeCache CopyModel( Rock.Core.DefinedType definedTypeModel )
+        public static DefinedTypeCache CopyModel( Rock.Model.DefinedType definedTypeModel )
         {
             DefinedTypeCache definedType = new DefinedTypeCache(definedTypeModel);
 

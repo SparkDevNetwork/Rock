@@ -3,7 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using Rock.Crm;
+using Rock.Model;
 using System;
 using System.Collections.Generic;
 using System.Web.UI;

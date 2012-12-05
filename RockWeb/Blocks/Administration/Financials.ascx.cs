@@ -4,16 +4,13 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Constants;
-using Rock.Core;
-using Rock.Financial;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -164,7 +161,7 @@ namespace RockWeb.Blocks.Administration
         {
             TransactionSearchValue searchValue = GetSearchValue();
 
-            var transactionService = new TransactionService();
+            var transactionService = new FinancialTransactionService();
             grdTransactions.DataSource = transactionService.Get( searchValue ).ToList();
             grdTransactions.DataBind();
         }

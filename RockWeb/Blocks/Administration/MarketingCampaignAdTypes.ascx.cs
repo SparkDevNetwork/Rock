@@ -7,15 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Cms;
 using Rock.Constants;
-using Rock.Core;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Core.Attribute;
+using Attribute = Rock.Model.Attribute;
 
 public partial class MarketingCampaignAdTypes : RockBlock
 {
@@ -52,7 +50,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gMarketingCampaignAdType.DataKeyNames = new string[] { "id" };
             gMarketingCampaignAdType.Actions.IsAddEnabled = true;
@@ -75,7 +73,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
@@ -128,7 +126,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
         MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
         
         string errorMessage;
-        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType.Id, out errorMessage ) )
+        if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
         {
             mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;

@@ -10,6 +10,8 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
 
+using Rock.Model;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -17,363 +19,8 @@ namespace Rock.Data
     /// </summary>
     public partial class RockContext : DbContext
     {
-        #region Cms
 
-        /// <summary>
-        /// Gets or sets the Auths.
-        /// </summary>
-        /// <value>
-        /// the Auths.
-        /// </value>
-        public DbSet<Rock.Cms.Auth> Auths { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Block Types.
-        /// </summary>
-        /// <value>
-        /// the Block Types.
-        /// </value>
-        public DbSet<Rock.Cms.BlockType> BlockTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Blocks.
-        /// </summary>
-        /// <value>
-        /// the Blocks.
-        /// </value>
-        public DbSet<Rock.Cms.Block> Blocks { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Files.
-        /// </summary>
-        /// <value>
-        /// the Files.
-        /// </value>
-        public DbSet<Rock.Cms.File> Files { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Html Contents.
-        /// </summary>
-        /// <value>
-        /// the Html Contents.
-        /// </value>
-        public DbSet<Rock.Cms.HtmlContent> HtmlContents { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Pages.
-        /// </summary>
-        /// <value>
-        /// the Pages.
-        /// </value>
-        public DbSet<Rock.Cms.Page> Pages { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Page Routes.
-        /// </summary>
-        /// <value>
-        /// the Page Routes.
-        /// </value>
-        public DbSet<Rock.Cms.PageRoute> PageRoutes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Sites.
-        /// </summary>
-        /// <value>
-        /// the Sites.
-        /// </value>
-        public DbSet<Rock.Cms.Site> Sites { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Site Domains.
-        /// </summary>
-        /// <value>
-        /// the Site Domains.
-        /// </value>
-        public DbSet<Rock.Cms.SiteDomain> SiteDomains { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Users.
-        /// </summary>
-        /// <value>
-        /// the Users.
-        /// </value>
-        public DbSet<Rock.Cms.User> Users { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaigns.
-        /// </summary>
-        /// <value>
-        /// The marketing campaigns.
-        /// </value>
-        public DbSet<Rock.Cms.MarketingCampaign> MarketingCampaigns { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ads.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ads.
-        /// </value>
-        public DbSet<Rock.Cms.MarketingCampaignAd> MarketingCampaignAds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ad types.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ad types.
-        /// </value>
-        public DbSet<Rock.Cms.MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign audiences.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign audiences.
-        /// </value>
-        public DbSet<Rock.Cms.MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign campuses.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign campuses.
-        /// </value>
-        public DbSet<Rock.Cms.MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
-
-        #endregion
-
-        #region Core
-
-        /// <summary>
-        /// Gets or sets the Attributes.
-        /// </summary>
-        /// <value>
-        /// the Attributes.
-        /// </value>
-        public DbSet<Rock.Core.Attribute> Attributes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Attribute Qualifiers.
-        /// </summary>
-        /// <value>
-        /// the Attribute Qualifiers.
-        /// </value>
-        public DbSet<Rock.Core.AttributeQualifier> AttributeQualifiers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Attribute Values.
-        /// </summary>
-        /// <value>
-        /// the Attribute Values.
-        /// </value>
-        public DbSet<Rock.Core.AttributeValue> AttributeValues { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Attribute Values.
-        /// </summary>
-        /// <value>
-        /// the Attribute Values.
-        /// </value>
-        public DbSet<Rock.Core.Audit> Audits { get; set; }
-
-        /// <summary>
-        /// Gets or sets the categories.
-        /// </summary>
-        /// <value>
-        /// The categories.
-        /// </value>
-        public DbSet<Rock.Core.Category> Categories { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Defined Types.
-        /// </summary>
-        /// <value>
-        /// the Defined Types.
-        /// </value>
-        public DbSet<Rock.Core.DefinedType> DefinedTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Defined Values.
-        /// </summary>
-        /// <value>
-        /// the Defined Values.
-        /// </value>
-        public DbSet<Rock.Core.DefinedValue> DefinedValues { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Entity Changes.
-        /// </summary>
-        /// <value>
-        /// the Entity Changes.
-        /// </value>
-        public DbSet<Rock.Core.EntityChange> EntityChanges { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity types.
-        /// </summary>
-        /// <value>
-        /// The entity types.
-        /// </value>
-        public DbSet<Rock.Core.EntityType> EntityTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Exception Logs.
-        /// </summary>
-        /// <value>
-        /// the Exception Logs.
-        /// </value>
-        public DbSet<Rock.Core.ExceptionLog> ExceptionLogs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Field Types.
-        /// </summary>
-        /// <value>
-        /// the Field Types.
-        /// </value>
-        public DbSet<Rock.Core.FieldType> FieldTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Defined Types.
-        /// </summary>
-        /// <value>
-        /// the Defined Types.
-        /// </value>
-        public DbSet<Rock.Core.Metric> Metrics { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Defined Values.
-        /// </summary>
-        /// <value>
-        /// the Defined Values.
-        /// </value>
-        public DbSet<Rock.Core.MetricValue> MetricValues { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Service Logs.
-        /// </summary>
-        /// <value>
-        /// the Service Logs.
-        /// </value>
-        public DbSet<Rock.Core.ServiceLog> ServiceLogs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Tags.
-        /// </summary>
-        /// <value>
-        /// the Tags.
-        /// </value>
-        public DbSet<Rock.Core.Tag> Tags { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Tagged Items.
-        /// </summary>
-        /// <value>
-        /// the Tagged Items.
-        /// </value>
-        public DbSet<Rock.Core.TaggedItem> TaggedItems { get; set; }
-
-        #endregion
-
-        #region Crm
-
-        /// <summary>
-        /// Gets or sets the Location.
-        /// </summary>
-        /// <value>
-        /// the Location.
-        /// </value>
-        public DbSet<Rock.Crm.Location> Locations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Campuses.
-        /// </summary>
-        /// <value>
-        /// the Campuses.
-        /// </value>
-        public DbSet<Rock.Crm.Campus> Campuses { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Email Templates.
-        /// </summary>
-        /// <value>
-        /// the Email Templates.
-        /// </value>
-        public DbSet<Rock.Crm.EmailTemplate> EmailTemplates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the People.
-        /// </summary>
-        /// <value>
-        /// the People.
-        /// </value>
-        public DbSet<Rock.Crm.Person> People { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Person Trails.
-        /// </summary>
-        /// <value>
-        /// the Person Trails.
-        /// </value>
-        public DbSet<Rock.Crm.PersonMerged> PersonMerges { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Person Vieweds.
-        /// </summary>
-        /// <value>
-        /// the Person Vieweds.
-        /// </value>
-        public DbSet<Rock.Crm.PersonViewed> PersonVieweds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Phone Numbers.
-        /// </summary>
-        /// <value>
-        /// the Phone Numbers.
-        /// </value>
-        public DbSet<Rock.Crm.PhoneNumber> PhoneNumbers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Groups.
-        /// </summary>
-        /// <value>
-        /// the Groups.
-        /// </value>
-        public DbSet<Rock.Crm.Group> Groups { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Group Roles.
-        /// </summary>
-        /// <value>
-        /// the Group Roles.
-        /// </value>
-        public DbSet<Rock.Crm.GroupRole> GroupRoles { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Group Types.
-        /// </summary>
-        /// <value>
-        /// the Group Types.
-        /// </value>
-        public DbSet<Rock.Crm.GroupType> GroupTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Group Locations.
-        /// </summary>
-        /// <value>
-        /// the Group Locations.
-        /// </value>
-        public DbSet<Rock.Crm.GroupLocation> GroupLocations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Members.
-        /// </summary>
-        /// <value>
-        /// the Members.
-        /// </value>
-        public DbSet<Rock.Crm.GroupMember> Members { get; set; }
-
-        #endregion
-
-        #region Util
+        #region Models
 
         /// <summary>
         /// Gets or sets the actions.
@@ -381,7 +28,7 @@ namespace Rock.Data
         /// <value>
         /// The actions.
         /// </value>
-        public DbSet<Rock.Util.Action> Actions { get; set; }
+        public DbSet<Rock.Model.Action> Actions { get; set; }
 
         /// <summary>
         /// Gets or sets the action types.
@@ -389,7 +36,7 @@ namespace Rock.Data
         /// <value>
         /// The action types.
         /// </value>
-        public DbSet<Rock.Util.ActionType> ActionTypes { get; set; }
+        public DbSet<ActionType> ActionTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the activities.
@@ -397,7 +44,7 @@ namespace Rock.Data
         /// <value>
         /// The activities.
         /// </value>
-        public DbSet<Rock.Util.Activity> Activities { get; set; }
+        public DbSet<Activity> Activities { get; set; }
 
         /// <summary>
         /// Gets or sets the activity types.
@@ -405,51 +52,143 @@ namespace Rock.Data
         /// <value>
         /// The activity types.
         /// </value>
-        public DbSet<Rock.Util.ActivityType> ActivityTypes { get; set; }
+        public DbSet<ActivityType> ActivityTypes { get; set; }
 
         /// <summary>
-        /// Gets or sets the Jobs.
+        /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
-        /// the Jobs.
+        /// the Attributes.
         /// </value>
-        public DbSet<Rock.Util.Job> Jobs { get; set; }
+        public DbSet<Rock.Model.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflows.
+        /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>
-        /// The workflows.
+        /// the Attribute Qualifiers.
         /// </value>
-        public DbSet<Rock.Util.Workflow> Workflows { get; set; }
+        public DbSet<AttributeQualifier> AttributeQualifiers { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow logs.
+        /// Gets or sets the Attribute Values.
         /// </summary>
         /// <value>
-        /// The workflow logs.
+        /// the Attribute Values.
         /// </value>
-        public DbSet<Rock.Util.WorkflowLog> WorkflowLogs { get; set; }
+        public DbSet<AttributeValue> AttributeValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow triggers.
+        /// Gets or sets the Attribute Values.
         /// </summary>
         /// <value>
-        /// The entity type workflow triggers.
+        /// the Attribute Values.
         /// </value>
-        public DbSet<Rock.Util.WorkflowTrigger> WorkflowTriggers { get; set; }
+        public DbSet<Audit> Audits { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow types.
+        /// Gets or sets the Auths.
         /// </summary>
         /// <value>
-        /// The workflow types.
+        /// the Auths.
         /// </value>
-        public DbSet<Rock.Util.WorkflowType> WorkflowTypes { get; set; }
+        public DbSet<Auth> Auths { get; set; }
 
-        #endregion
+        /// <summary>
+        /// Gets or sets the Files.
+        /// </summary>
+        /// <value>
+        /// the Files.
+        /// </value>
+        public DbSet<BinaryFile> BinaryFiles { get; set; }
 
-        #region Financial
+        /// <summary>
+        /// Gets or sets the Blocks.
+        /// </summary>
+        /// <value>
+        /// the Blocks.
+        /// </value>
+        public DbSet<Block> Blocks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Block Types.
+        /// </summary>
+        /// <value>
+        /// the Block Types.
+        /// </value>
+        public DbSet<BlockType> BlockTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Campuses.
+        /// </summary>
+        /// <value>
+        /// the Campuses.
+        /// </value>
+        public DbSet<Campus> Campuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public DbSet<Category> Categories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
+        public DbSet<DefinedType> DefinedTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
+        public DbSet<DefinedValue> DefinedValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Email Templates.
+        /// </summary>
+        /// <value>
+        /// the Email Templates.
+        /// </value>
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Entity Changes.
+        /// </summary>
+        /// <value>
+        /// the Entity Changes.
+        /// </value>
+        public DbSet<EntityChange> EntityChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity types.
+        /// </summary>
+        /// <value>
+        /// The entity types.
+        /// </value>
+        public DbSet<EntityType> EntityTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Exception Logs.
+        /// </summary>
+        /// <value>
+        /// the Exception Logs.
+        /// </value>
+        public DbSet<ExceptionLog> ExceptionLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Field Types.
+        /// </summary>
+        /// <value>
+        /// the Field Types.
+        /// </value>
+        public DbSet<FieldType> FieldTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the batches.
@@ -457,23 +196,7 @@ namespace Rock.Data
         /// <value>
         /// The batches.
         /// </value>
-        public DbSet<Rock.Financial.Batch> Batches { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fund.
-        /// </summary>
-        /// <value>
-        /// The fund.
-        /// </value>
-        public DbSet<Rock.Financial.Fund> Fund { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledges.
-        /// </summary>
-        /// <value>
-        /// The pledges.
-        /// </value>
-        public DbSet<Rock.Financial.Pledge> Pledges { get; set; }
+        public DbSet<FinancialBatch> FinancialBatches { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -481,7 +204,7 @@ namespace Rock.Data
         /// <value>
         /// The transactions.
         /// </value>
-        public DbSet<Rock.Financial.Transaction> Transactions { get; set; }
+        public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -489,15 +212,7 @@ namespace Rock.Data
         /// <value>
         /// The transaction details.
         /// </value>
-        public DbSet<Rock.Financial.TransactionDetail> TransactionDetails { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person account lookups.
-        /// </summary>
-        /// <value>
-        /// The person account lookups.
-        /// </value>
-        public DbSet<Rock.Financial.PersonAccountLookup> PersonAccountLookups { get; set; }
+        public DbSet<FinancialTransactionDetail> FinancialTransactionDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction funds.
@@ -505,7 +220,295 @@ namespace Rock.Data
         /// <value>
         /// The transaction funds.
         /// </value>
-        public DbSet<Rock.Financial.TransactionFund> TransactionFunds { get; set; }
+        public DbSet<FinancialTransactionFund> FinancialTransactionFunds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fund.
+        /// </summary>
+        /// <value>
+        /// The fund.
+        /// </value>
+        public DbSet<Fund> Funds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Groups.
+        /// </summary>
+        /// <value>
+        /// the Groups.
+        /// </value>
+        public DbSet<Group> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Locations.
+        /// </summary>
+        /// <value>
+        /// the Group Locations.
+        /// </value>
+        public DbSet<GroupLocation> GroupLocations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Members.
+        /// </summary>
+        /// <value>
+        /// the Members.
+        /// </value>
+        public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Roles.
+        /// </summary>
+        /// <value>
+        /// the Group Roles.
+        /// </value>
+        public DbSet<GroupRole> GroupRoles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Group Types.
+        /// </summary>
+        /// <value>
+        /// the Group Types.
+        /// </value>
+        public DbSet<GroupType> GroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Html Contents.
+        /// </summary>
+        /// <value>
+        /// the Html Contents.
+        /// </value>
+        public DbSet<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Location.
+        /// </summary>
+        /// <value>
+        /// the Location.
+        /// </value>
+        public DbSet<Location> Locations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaigns.
+        /// </summary>
+        /// <value>
+        /// The marketing campaigns.
+        /// </value>
+        public DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ads.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ads.
+        /// </value>
+        public DbSet<MarketingCampaignAd> MarketingCampaignAds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign ad types.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign ad types.
+        /// </value>
+        public DbSet<MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign audiences.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign audiences.
+        /// </value>
+        public DbSet<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the marketing campaign campuses.
+        /// </summary>
+        /// <value>
+        /// The marketing campaign campuses.
+        /// </value>
+        public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Types.
+        /// </summary>
+        /// <value>
+        /// the Defined Types.
+        /// </value>
+        public DbSet<Metric> Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Defined Values.
+        /// </summary>
+        /// <value>
+        /// the Defined Values.
+        /// </value>
+        public DbSet<MetricValue> MetricValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Pages.
+        /// </summary>
+        /// <value>
+        /// the Pages.
+        /// </value>
+        public DbSet<Page> Pages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page contexts.
+        /// </summary>
+        /// <value>
+        /// The page contexts.
+        /// </value>
+        public DbSet<PageContext> PageContexts { get; set; } 
+
+        /// <summary>
+        /// Gets or sets the Page Routes.
+        /// </summary>
+        /// <value>
+        /// the Page Routes.
+        /// </value>
+        public DbSet<PageRoute> PageRoutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment gateways.
+        /// </summary>
+        /// <value>
+        /// The payment gateways.
+        /// </value>
+        public DbSet<PaymentGateway> PaymentGateways { get; set; }
+
+        /// <summary>
+        /// Gets or sets the People.
+        /// </summary>
+        /// <value>
+        /// the People.
+        /// </value>
+        public DbSet<Person> People { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person account lookups.
+        /// </summary>
+        /// <value>
+        /// The person account lookups.
+        /// </value>
+        public DbSet<PersonAccount> PersonAccountLookups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Trails.
+        /// </summary>
+        /// <value>
+        /// the Person Trails.
+        /// </value>
+        public DbSet<PersonMerged> PersonMerges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Vieweds.
+        /// </summary>
+        /// <value>
+        /// the Person Vieweds.
+        /// </value>
+        public DbSet<PersonViewed> PersonVieweds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Phone Numbers.
+        /// </summary>
+        /// <value>
+        /// the Phone Numbers.
+        /// </value>
+        public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pledges.
+        /// </summary>
+        /// <value>
+        /// The pledges.
+        /// </value>
+        public DbSet<Pledge> Pledges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Jobs.
+        /// </summary>
+        /// <value>
+        /// the Jobs.
+        /// </value>
+        public DbSet<ServiceJob> ServiceJobs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Service Logs.
+        /// </summary>
+        /// <value>
+        /// the Service Logs.
+        /// </value>
+        public DbSet<ServiceLog> ServiceLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Sites.
+        /// </summary>
+        /// <value>
+        /// the Sites.
+        /// </value>
+        public DbSet<Site> Sites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site Domains.
+        /// </summary>
+        /// <value>
+        /// the Site Domains.
+        /// </value>
+        public DbSet<SiteDomain> SiteDomains { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Tags.
+        /// </summary>
+        /// <value>
+        /// the Tags.
+        /// </value>
+        public DbSet<Tag> Tags { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Tagged Items.
+        /// </summary>
+        /// <value>
+        /// the Tagged Items.
+        /// </value>
+        public DbSet<TaggedItem> TaggedItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Users.
+        /// </summary>
+        /// <value>
+        /// the Users.
+        /// </value>
+        public DbSet<UserLogin> UserLogins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflows.
+        /// </summary>
+        /// <value>
+        /// The workflows.
+        /// </value>
+        public DbSet<Workflow> Workflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow logs.
+        /// </summary>
+        /// <value>
+        /// The workflow logs.
+        /// </value>
+        public DbSet<WorkflowLog> WorkflowLogs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The entity type workflow triggers.
+        /// </value>
+        public DbSet<WorkflowTrigger> WorkflowTriggers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow types.
+        /// </summary>
+        /// <value>
+        /// The workflow types.
+        /// </value>
+        public DbSet<WorkflowType> WorkflowTypes { get; set; }
 
         #endregion
 
@@ -555,67 +558,67 @@ namespace Rock.Data
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Configurations.Add( new Rock.Cms.AuthConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.BlockTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.BlockConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.FileConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.HtmlContentConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.PageConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.PageRouteConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.SiteConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.SiteDomainConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.UserConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAdTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignAudienceConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignCampusConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Cms.MarketingCampaignConfiguration() );
-
-            modelBuilder.Configurations.Add( new Rock.Core.AttributeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.AttributeQualifierConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.AttributeValueConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.AuditConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.CategoryConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.DefinedTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.DefinedValueConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.EntityChangeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.EntityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.ExceptionLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.FieldTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.MetricConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.MetricValueConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Core.ServiceLogConfiguration() );
-
-            modelBuilder.Configurations.Add( new Rock.Crm.CampusConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupRoleConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.GroupLocationConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.LocationConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.MemberConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PersonConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PersonMergedConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PersonViewedConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Crm.PhoneNumberConfiguration() );
-
-            modelBuilder.Configurations.Add( new Rock.Financial.BatchConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.FundConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.PledgeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionDetailConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.PersonAccountLookupConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Financial.TransactionFundConfiguration() );
-
-            modelBuilder.Configurations.Add( new Rock.Util.ActionConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActivityConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.ActivityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.JobConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowLogConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTriggerConfiguration() );
-            modelBuilder.Configurations.Add( new Rock.Util.WorkflowTypeConfiguration() );
+            modelBuilder.Configurations.Add( new ActionConfiguration() );
+            modelBuilder.Configurations.Add( new ActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new ActivityConfiguration() );
+            modelBuilder.Configurations.Add( new ActivityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new AttributeConfiguration() );
+            modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
+            modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
+            modelBuilder.Configurations.Add( new AuditConfiguration() );
+            modelBuilder.Configurations.Add( new AuthConfiguration() );
+            modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
+            modelBuilder.Configurations.Add( new BlockConfiguration() );
+            modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
+            modelBuilder.Configurations.Add( new CampusConfiguration() );
+            modelBuilder.Configurations.Add( new CategoryConfiguration() );
+            modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
+            modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
+            modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
+            modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
+            modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
+            modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialTransactionConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialTransactionFundConfiguration() );
+            modelBuilder.Configurations.Add( new FundConfiguration() );
+            modelBuilder.Configurations.Add( new GroupConfiguration() );
+            modelBuilder.Configurations.Add( new GroupLocationConfiguration() );
+            modelBuilder.Configurations.Add( new GroupMemberConfiguration() );
+            modelBuilder.Configurations.Add( new GroupRoleConfiguration() );
+            modelBuilder.Configurations.Add( new GroupTypeConfiguration() );
+            modelBuilder.Configurations.Add( new HtmlContentConfiguration() );
+            modelBuilder.Configurations.Add( new LocationConfiguration() );
+            modelBuilder.Configurations.Add( new MarketingCampaignConfiguration() );
+            modelBuilder.Configurations.Add( new MarketingCampaignAdConfiguration() );
+            modelBuilder.Configurations.Add( new MarketingCampaignAdTypeConfiguration() );
+            modelBuilder.Configurations.Add( new MarketingCampaignAudienceConfiguration() );
+            modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
+            modelBuilder.Configurations.Add( new MetricConfiguration() );
+            modelBuilder.Configurations.Add( new MetricValueConfiguration() );
+            modelBuilder.Configurations.Add( new PageConfiguration() );
+            modelBuilder.Configurations.Add( new PageContextConfiguration() );
+            modelBuilder.Configurations.Add( new PageRouteConfiguration() );
+            modelBuilder.Configurations.Add( new PaymentGatewayConfiguration() );
+            modelBuilder.Configurations.Add( new PersonConfiguration() );
+            modelBuilder.Configurations.Add( new PersonAccountLookupConfiguration() );
+            modelBuilder.Configurations.Add( new PersonMergedConfiguration() );
+            modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
+            modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
+            modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
+            modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
+            modelBuilder.Configurations.Add( new SiteConfiguration() );
+            modelBuilder.Configurations.Add( new SiteDomainConfiguration() );
+            modelBuilder.Configurations.Add( new TagConfiguration() );
+            modelBuilder.Configurations.Add( new TaggedItemConfiguration() );
+            modelBuilder.Configurations.Add( new UserLoginConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );
         }
     }
 }

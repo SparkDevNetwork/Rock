@@ -29,7 +29,7 @@ namespace Rock.Address.Standardize
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Standardize( Rock.Crm.Location location, out string result )
+        public override bool Standardize( Rock.Model.Location location, out string result )
         {
             if ( location != null )
             {

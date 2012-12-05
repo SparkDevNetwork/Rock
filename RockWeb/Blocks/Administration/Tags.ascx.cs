@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
                 var requiredContext = base.ContextTypesRequired;
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
-                    requiredContext.Add( "Rock.Crm.Person" );
+                    requiredContext.Add( "Rock.Model.Person" );
 
                 return requiredContext;
             }
@@ -80,11 +80,11 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
                 {
-                    Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Crm.Person" );
+                    Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Model.Person" );
                     if ( model != null )
                         _ownerId = model.Id;
                     else
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            var tagService = new Rock.Core.TagService();
+            var tagService = new Rock.Model.TagService();
             var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
 
             if ( tag != null )
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Administration
 
         void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var tagService = new Rock.Core.TagService();
+            var tagService = new Rock.Model.TagService();
             var queryable = tagService.Queryable().
                 Where( t => t.EntityTypeId == _entityTypeId &&
                     ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
@@ -178,9 +178,9 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var tagService = new Rock.Core.TagService();
+                var tagService = new Rock.Model.TagService();
 
-                Rock.Core.Tag tag;
+                Rock.Model.Tag tag;
 
                 int tagId = 0;
                 if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out tagId ) )
@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( tagId == 0 )
                 {
-                    tag = new Rock.Core.Tag();
+                    tag = new Rock.Model.Tag();
                     tag.IsSystem = false;
                     tag.EntityTypeId = _entityTypeId;
                     tag.EntityTypeQualifierColumn = _entityQualifierColumn;
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = new Rock.Core.TagService().Queryable().
+            var queryable = new Rock.Model.TagService().Queryable().
                 Where( t => t.EntityTypeId == _entityTypeId &&
                     ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
                     ( t.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int tagId )
         {
-            var tag =  new Rock.Core.TagService().Get( tagId );
+            var tag =  new Rock.Model.TagService().Get( tagId );
 
             if ( tag != null )
             {

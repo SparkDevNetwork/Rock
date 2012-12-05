@@ -65,7 +65,7 @@ namespace Rock.Field.Types
 
             DropDownList ddl = new DropDownList();
 
-            Rock.Core.DefinedTypeService definedTypeService = new Core.DefinedTypeService();
+            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
 
@@ -119,7 +119,7 @@ namespace Rock.Field.Types
                 int definedTypeId = 0;
                 if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
                 {
-                    Rock.Core.DefinedValueService definedValueService = new Core.DefinedValueService();
+                    Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService();
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( definedTypeId ) )
                         editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
                 }
