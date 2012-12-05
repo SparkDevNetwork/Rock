@@ -69,6 +69,35 @@ namespace Rock
         }
 
         /// <summary>
+        /// Creates an instance of a model and populates it based on the dynamic object's properties.
+        /// </summary>
+        /// <typeparam name="T">The destination model type</typeparam>
+        /// <param name="obj">The dynamic object to convert</param>
+        /// <returns>A populated instance of the model defined in the type arg</returns>
+        public static T ToModel<T>( this object obj )
+        {
+            var o = obj as ExpandoObject;
+            var instance = Activator.CreateInstance<T>();
+
+            if ( o == null )
+            {
+                return instance;
+            }
+
+            var dict = o as IDictionary<string, object>;
+            var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                .Where( prop => dict.ContainsKey( prop.Name ) );
+
+            foreach ( var prop in properties )
+            {
+                try { prop.SetValue( instance, dict[ prop.Name ] ); }
+                catch ( Exception ) { }
+            }
+
+            return instance;
+        }
+
+        /// <summary>
         /// Gets the name of the friendly type.
         /// </summary>
         /// <param name="type">The type.</param>
