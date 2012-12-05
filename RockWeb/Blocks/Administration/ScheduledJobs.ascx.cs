@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit(EventArgs e)
         {
-            if (CurrentPage.IsAuthorized("Configure", CurrentPerson))
+            if (CurrentPage.IsAuthorized("Administrate", CurrentPerson))
             {
                 grdScheduledJobs.DataKeyNames = new string[] { "id" };
                 grdScheduledJobs.Actions.IsAddEnabled = true;
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad(EventArgs e)
         {
             nbMessage.Visible = false;
-            if (CurrentPage.IsAuthorized("Configure", CurrentPerson))
+            if (CurrentPage.IsAuthorized("Administrate", CurrentPerson))
             {
                 if (!Page.IsPostBack)
                 {
