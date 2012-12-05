@@ -367,7 +367,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Evaluates if the user is authorized to perform the requested action 
+        /// Evaluates if the CurrentPerson is authorized to perform the requested action 
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>

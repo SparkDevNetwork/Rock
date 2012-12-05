@@ -103,11 +103,6 @@ namespace Rock.Web.UI.Controls
                 lbDelete.DataBinding += lbDelete_DataBinding;
                 lbDelete.PreRender += lbDelete_PreRender;
 
-                if ( ParentGrid.ShowConfirmDeleteDialog )
-                {
-                    lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
-                }
-
                 cell.Controls.Add( lbDelete );
             }
         }
@@ -121,14 +116,15 @@ namespace Rock.Web.UI.Controls
         void lbDelete_PreRender( object sender, EventArgs e )
         {
             LinkButton lbDelete = sender as LinkButton;
-            lbDelete.Enabled = ParentGrid.Enabled;
-            if (lbDelete.Enabled)
+            lbDelete.Enabled = ParentGrid.Enabled && ParentGrid.IsDeleteEnabled;
+
+            if ( ParentGrid.ShowConfirmDeleteDialog && ParentGrid.Enabled && ParentGrid.IsDeleteEnabled )
             {
-                lbDelete.Attributes.Remove( "disabled" );
+                lbDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", ParentGrid.RowItemText );
             }
             else
             {
-                lbDelete.Attributes["disabled"] = "disabled";
+                lbDelete.Attributes.Remove( "onclick" );
             }
         }
 
