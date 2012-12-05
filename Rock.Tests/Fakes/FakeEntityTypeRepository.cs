@@ -25,27 +25,21 @@ namespace Rock.Tests.Fakes
 
         public static void Reset()
         {
-            // TODO: Rip through Rock.Models, create a new EntityType object for each
-            // and add it to `db`.
-
             var assembly = Assembly.GetAssembly( typeof ( EntityType ) );
             var entities = new List<EntityType>();
             var i = 0;
 
-            foreach ( var type in assembly.GetTypes() )
+            foreach ( var type in assembly.GetTypes().Where( type => type.Namespace == "Rock.Model" ) )
             {
-                if ( type.Namespace == "Rock.Model" )
-                {
-                    i++;
-                    entities.Add( new EntityType()
-                        {
-                            Name = type.Name,
-                            AssemblyName = type.Assembly.FullName,
-                            FriendlyName = type.Name,
-                            Guid = Guid.NewGuid(),
-                            Id = i
-                        } );
-                }
+                i++;
+                entities.Add( new EntityType()
+                    {
+                        Name = type.Name,
+                        AssemblyName = type.Assembly.FullName,
+                        FriendlyName = type.Name,
+                        Guid = Guid.NewGuid(),
+                        Id = i
+                    } );
             }
 
             db = entities.AsQueryable();
