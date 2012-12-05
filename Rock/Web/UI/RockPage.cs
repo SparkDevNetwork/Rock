@@ -17,10 +17,11 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Crm;
+using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
 {
@@ -82,7 +83,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The currently logged in user
         /// </summary>
-        public Rock.Cms.User CurrentUser
+        public Rock.Model.UserLogin CurrentUser
         {
             get
             {
@@ -90,11 +91,11 @@ namespace Rock.Web.UI
                     return _CurrentUser;
 
                 if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Cms.User;
+                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
 
                 if ( _CurrentUser == null )
                 {
-                    _CurrentUser = Rock.Cms.UserService.GetCurrentUser();
+                    _CurrentUser = Rock.Model.UserService.GetCurrentUser();
                     if ( _CurrentUser != null )
                         Context.Items.Add( "CurrentUser", _CurrentUser );
                 }
@@ -116,7 +117,7 @@ namespace Rock.Web.UI
                 CurrentPerson = _CurrentUser.Person;
             }
         }
-        private Rock.Cms.User _CurrentUser;
+        private Rock.Model.UserLogin _CurrentUser;
 
         /// <summary>
         /// Returns the current person.  This is either the currently logged in user, or if the user
@@ -292,8 +293,8 @@ namespace Rock.Web.UI
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.Crm.PersonService personService = new Crm.PersonService();
-                Rock.Crm.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.PersonService personService = new Model.PersonService();
+                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
@@ -302,7 +303,7 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
-            Rock.Cms.User user = CurrentUser;
+            Rock.Model.UserLogin user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
@@ -320,8 +321,8 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.Crm.PersonService personService = new Crm.PersonService();
-                        Rock.Crm.Person person = personService.Get( personId.Value );
+                        Rock.Model.PersonService personService = new Model.PersonService();
+                        Rock.Model.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
                             UserName = person.FullName;
@@ -724,6 +725,9 @@ namespace Rock.Web.UI
         {
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
+            
+            // add the scripts for RockGrid
+            AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
 
             // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
             AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
@@ -1004,42 +1008,47 @@ namespace Rock.Web.UI
         public static void AddHtmlLink( Page page, HtmlLink htmlLink )
         {
             if ( page != null && page.Header != null )
-                if ( !HtmlLinkExists( page, htmlLink ) )
+            {
+                var header = page.Header;
+                if ( !HtmlLinkExists( header, htmlLink ) )
                 {
-                    // Find last Link element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                        if ( page.Header.Controls[i] is HtmlLink )
-                        {
-                            index = i;
-                            break;
-                        }
+                    //// Find last Link element
+                    //int index = 0;
+                    //for ( int i = header.Controls.Count - 1; i >= 0; i-- )
+                    //    if ( header.Controls[i] is HtmlLink )
+                    //    {
+                    //        index = i;
+                    //        break;
+                    //    }
 
-                    if ( index == page.Header.Controls.Count )
-                    {
-                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.Add( htmlLink );
-                    }
-                    else
-                    {
-                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.AddAt( ++index, htmlLink );
-                    }
+                    //if ( index == header.Controls.Count )
+                    //{
+                            header.Controls.Add( new LiteralControl( "\n\t" ) );
+                            header.Controls.Add( htmlLink );
+                    //}
+                    //else
+                    //{
+                    //    header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                    //    header.Controls.AddAt( ++index, htmlLink );
+                    //}
                 }
+            }
         }
 
         /// <summary>
         /// HTMLs the link exists.
         /// </summary>
-        /// <param name="page">The page.</param>
+        /// <param name="header">The header.</param>
         /// <param name="newLink">The new link.</param>
         /// <returns></returns>
-        private static bool HtmlLinkExists( Page page, HtmlLink newLink )
+        private static bool HtmlLinkExists( HtmlHead header, HtmlLink newLink )
         {
             bool existsAlready = false;
 
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
+            if ( header != null )
+            {
+                foreach ( Control control in header.Controls )
+                {
                     if ( control is HtmlLink )
                     {
                         HtmlLink existingLink = (HtmlLink)control;
@@ -1060,6 +1069,9 @@ namespace Rock.Web.UI
                             break;
                         }
                     }
+                }
+            }
+
             return existsAlready;
         }
 

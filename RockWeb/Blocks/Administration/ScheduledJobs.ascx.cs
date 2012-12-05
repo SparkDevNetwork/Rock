@@ -4,16 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml;
 
-using Rock;
-using Rock.Core;
-using Rock.Util;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -21,7 +16,7 @@ namespace RockWeb.Blocks.Administration
 {
     public partial class ScheduledJobs : RockBlock
     {
-        private JobService jobService = new JobService();
+        private ServiceJobService jobService = new ServiceJobService();
 
 
         #region Control Methods
@@ -97,7 +92,7 @@ namespace RockWeb.Blocks.Administration
                 id = (int)grdScheduledJobs.DataKeys[grdScheduledJobs.SelectedIndex].Value;
             }
 
-            Job job = id > 0 ? jobService.Get(id) : new Job();
+            ServiceJob job = id > 0 ? jobService.Get(id) : new ServiceJob();
             if (job.Id <= 0)
             {
                 jobService.Add(job, CurrentPersonId);
@@ -127,7 +122,7 @@ namespace RockWeb.Blocks.Administration
         protected void grdScheduledJobs_Delete(object sender, RowEventArgs e)
         {
             int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
-            Job job = jobService.Get(id);
+            ServiceJob job = jobService.Get(id);
             jobService.Delete(job, CurrentPersonId);
             jobService.Save(job, CurrentPersonId);
             BindScheduledJobs();
@@ -140,7 +135,7 @@ namespace RockWeb.Blocks.Administration
 
             grdScheduledJobs.SelectedIndex = e.RowIndex;
             int id = (int)grdScheduledJobs.DataKeys[e.RowIndex].Value;
-            Job job = jobService.Get(id);
+            ServiceJob job = jobService.Get(id);
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;

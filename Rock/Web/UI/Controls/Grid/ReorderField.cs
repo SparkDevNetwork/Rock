@@ -18,6 +18,16 @@ namespace Rock.Web.UI.Controls
     public class ReorderField : TemplateField
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="ReorderField" /> class.
+        /// </summary>
+        public ReorderField()
+            : base()
+        {
+            this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.ItemStyle.CssClass = "grid-icon-cell reorder";
+        }
+
+        /// <summary>
         /// Performs basic instance initialization for a data control field.
         /// </summary>
         /// <param name="sortingEnabled">A value that indicates whether the control supports the sorting of columns of data.</param>
@@ -62,8 +72,6 @@ namespace Rock.Web.UI.Controls
                 grid.Page.ClientScript.RegisterStartupScript( this.GetType(),
                     string.Format( "grid-sort-{0}-script", grid.ClientID ), script, true );
 
-                this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-                this.ItemStyle.CssClass = "grid-icon-cell reorder";
                 this.ItemTemplate = new ReorderFieldTemplate();
             }
 

@@ -4,9 +4,8 @@
 <script type="text/javascript">
 
     Sys.Application.add_load(function () {
-
         var modalPopup = $find('<%=mpeContent.BehaviorID%>');
-        modalPopup.add_hidden(modalHidden_<%=CurrentBlock.Id %>);
+        //modalPopup.add_hidden(modalHidden_<%=CurrentBlock.Id %>);
     
         $('#<%=tbStartDate.ClientID %>').kendoDatePicker({ open:function(e){
             window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
@@ -32,16 +31,8 @@
             return false;
         });
 
-        if ($('#<%=hfAction.ClientID %>').val() == 'Edit')
-        {
-            $('#html-content-edit-<%=CurrentBlock.Id %> textarea.html-content-editor').ckeditor(function() {
-                $find('<%=mpeContent.BehaviorID%>').show(); 
-            }, ckoptionsAdv).end();
-        }
-
         $('a.html-content-show-version-<%=CurrentBlock.Id %>').click(function () {
-
-            if (CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].checkDirty() == false ||
+            if ( ('<%=HtmlContentModified%>' == 'True')  ||
                 confirm('Loading a previous version will cause any changes you\'ve made to the existing text to be lost.  Are you sure you want to continue?'))
             {
                 $.ajax({
@@ -59,8 +50,8 @@
                         $('#<%=tbExpireDate.ClientID %>').val(htmlContent.ExpireDateTime);
                         $('#<%=cbApprove.ClientID %>').attr('checked', htmlContent.Approved);
 
-                        CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].setData(htmlContent.Content, function() {
-                            CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].resetDirty();
+                        CKEDITOR.instances['<%=edtHtmlContent.ClientID %>'].setData(htmlContent.Content, function() {
+                            CKEDITOR.instances['<%=edtHtmlContent.ClientID %>'].resetDirty();
                             $('#html-content-edit-<%=CurrentBlock.Id %>').show();
                             $('#html-content-version-<%=CurrentBlock.Id %>').show();
                             $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
@@ -76,10 +67,6 @@
         });
 
     });
-
-    function modalHidden_<%=CurrentBlock.Id %>(){
-        CKEDITOR.instances['<%=txtHtmlContentEditor.ClientID %>'].destroy();
-    }
 
     function saveHtmlContent_<%=CurrentBlock.Id %>(){
         $('#<%=btnSave.ClientID %>').click();
@@ -122,7 +109,7 @@
                 </Rock:Grid>
             </div>
             <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn secondary">Cancel</button>
+                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn">Cancel</button>
             </div>
         </div>
 
@@ -134,14 +121,14 @@
                 <div class="html-content-approve inline-form"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
             </asp:panel>
             <div class="modal-body">
-                <asp:TextBox ID="txtHtmlContentEditor" CssClass="html-content-editor" TextMode="MultiLine" runat="server"></asp:TextBox>
+                <Rock:CKEditorControl ID="edtHtmlContent" runat="server" Visible="false"/>
             </div>
             <div class="modal-footer">
                 <span class="inline-form">
                     <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
                 </span>
-                <asp:LinkButton ID="lbCancel" runat="server" cssclass="btn secondary" Text="Cancel" />
-                <asp:LinkButton ID="lbOk" runat="server" cssclass="btn primary" Text="Save" />
+                <asp:LinkButton ID="lbCancel" runat="server" cssclass="btn" Text="Cancel" />
+                <asp:LinkButton ID="lbOk" runat="server" cssclass="btn btn-primary" Text="Save" />
             </div>
         </div>
 

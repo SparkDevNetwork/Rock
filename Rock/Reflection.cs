@@ -88,26 +88,29 @@ namespace Rock
             {
                 foreach ( Type type in assembly.GetTypes() )
                 {
-                    if ( baseType.IsInterface )
+                    if ( !type.IsAbstract )
                     {
-                        foreach ( Type typeInterface in type.GetInterfaces() )
-                            if ( typeInterface == baseType )
-                            {
-                                types.Add( ClassName( type ), type );
-                                break;
-                            }
-                    }
-                    else
-                    {
-                        Type parentType = type.BaseType;
-                        while ( parentType != null )
+                        if ( baseType.IsInterface )
                         {
-                            if ( parentType == baseType )
+                            foreach ( Type typeInterface in type.GetInterfaces() )
+                                if ( typeInterface == baseType )
+                                {
+                                    types.Add( ClassName( type ), type );
+                                    break;
+                                }
+                        }
+                        else
+                        {
+                            Type parentType = type.BaseType;
+                            while ( parentType != null )
                             {
-                                types.Add( ClassName( type ), type );
-                                break;
+                                if ( parentType == baseType )
+                                {
+                                    types.Add( ClassName( type ), type );
+                                    break;
+                                }
+                                parentType = parentType.BaseType;
                             }
-                            parentType = parentType.BaseType;
                         }
                     }
                 }

@@ -14,7 +14,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 
 namespace Rock.Data
 {
@@ -363,7 +363,7 @@ namespace Rock.Data
                 System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
-                var audit = new Rock.Core.AuditDto();
+                var audit = new Rock.Model.AuditDto();
 
                 switch ( entry.State )
                 {
@@ -509,12 +509,12 @@ namespace Rock.Data
         /// <param name="baseType">Type of the base.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private List<Rock.Core.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
+        private List<Rock.Model.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
         {
-            List<Rock.Core.EntityChange> entityChanges = new List<Core.EntityChange>();
+            List<Rock.Model.EntityChange> entityChanges = new List<Model.EntityChange>();
 
             // Do not track changes on the 'EntityChange' entity type. 
-            if ( !( entity is Rock.Core.EntityChange ) )
+            if ( !( entity is Rock.Model.EntityChange ) )
             {
                 Guid changeSet = Guid.NewGuid();
 
@@ -535,10 +535,10 @@ namespace Rock.Data
                         {
                             if ( entityChanges == null )
                             {
-                                entityChanges = new List<Core.EntityChange>();
+                                entityChanges = new List<Model.EntityChange>();
                             }
 
-                            Rock.Core.EntityChange change = new Core.EntityChange();
+                            Rock.Model.EntityChange change = new Model.EntityChange();
                             change.ChangeSet = changeSet;
                             change.ChangeType = Context.Entry( entity ).State.ToString();
                             change.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( baseType.Name ).Id;

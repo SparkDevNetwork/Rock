@@ -6,8 +6,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Cms;
 using NUnit.Framework;
+using Rock.Model;
 
 namespace Rock.Tests.Cms
 {

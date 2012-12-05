@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlGrid" runat="server">
-            <Rock:Grid ID="grdScheduledJobs" runat="server" EmptyDataText="No Scheduled Jobs Found">
+            <Rock:Grid ID="grdScheduledJobs" runat="server" OnEditRow="grdScheduledJobs_Edit">
                 <Columns>                  
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
@@ -15,7 +15,6 @@
                     <asp:BoundField DataField="LastStatus" HeaderText="Last Status" />
                     <asp:BoundField DataField="NotificationEmails" HeaderText="Notification Emails" />
                     <asp:BoundField DataField="NotificationStatus" HeaderText="Notification Status" />
-                    <Rock:EditField OnClick="grdScheduledJobs_Edit" />
                     <Rock:DeleteField OnClick="grdScheduledJobs_Delete" />
                 </Columns>
             </Rock:Grid>
@@ -28,16 +27,16 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="Description" />
                         <Rock:LabeledCheckBox ID="cbActive" runat="server" LabelText="Active" />
-                        <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="Assemby" />
-                        <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="Class" />
-                        <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="NotificationEmails" />
                         <Rock:LabeledDropDownList ID="drpNotificationStatus" runat="server" LabelText="Notification Status" />
                     </fieldset>
@@ -45,14 +44,14 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Util.Job, Rock"
+                        <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="CronExpression" />
                     </fieldset>
                 </div>
             </div>
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn secondary"
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn"
                     CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
         </asp:Panel>

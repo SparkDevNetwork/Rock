@@ -5,7 +5,7 @@
 //
 using System;
 
-using Rock.Crm;
+using Rock.Model;
 
 namespace Rock.Transactions
 {

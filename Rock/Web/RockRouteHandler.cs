@@ -61,15 +61,15 @@ namespace Rock.Web
                 {
                     int siteId = 1;
 
-                    Rock.Cms.SiteDomainService siteDomainService = new Rock.Cms.SiteDomainService();
-                    Rock.Cms.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
+                    Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
+                    Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomainContained( requestContext.HttpContext.Request.Url.Host );
                     if ( siteDomain != null )
                     {
                         siteId = siteDomain.SiteId;
                     }
                     else
                     {
-                        var siteService = new Rock.Cms.SiteService();
+                        var siteService = new Rock.Model.SiteService();
                         var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
                         if ( rockSite != null )
                         {
@@ -130,7 +130,7 @@ namespace Rock.Web
                     page.LayoutPath = layoutPath;
                 }
                 else
-                    page = Cache.PageCache.Read( new Cms.Page() );
+                    page = Cache.PageCache.Read( new Model.Page() );
 
                 try
                 {

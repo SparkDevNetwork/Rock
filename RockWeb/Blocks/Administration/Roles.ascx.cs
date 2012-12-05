@@ -11,7 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Core;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Administration
 
                     rGrid.Actions.AddClick += rGrid_Add;
                     rGrid.GridRebind += rGrid_GridRebind;
+                    rGrid.EditRow += rGrid_EditRow;
                 }
                 else
                 {
@@ -48,6 +49,11 @@ namespace RockWeb.Blocks.Administration
             {
                 DisplayError( ex.Message );
             }
+        }
+
+        protected void rGrid_EditRow( object sender, RowEventArgs e )
+        {
+            ShowEdit( (int)rGrid.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void tbNameFilter_TextChanged( object sender, EventArgs e )
@@ -78,10 +84,10 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var authService = new Rock.Cms.AuthService();
-                var groupService = new Rock.Crm.GroupService();
+                var authService = new Rock.Model.AuthService();
+                var groupService = new Rock.Model.GroupService();
 
-                Rock.Crm.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
+                Rock.Model.Group group = groupService.Get( ( int )rGrid.DataKeys[e.RowIndex]["id"] );
                 if ( group != null )
                 {
                     foreach(var auth in authService.Queryable().Where( a => a.GroupId == group.Id).ToList())
@@ -115,9 +121,9 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var groupService = new Rock.Crm.GroupService();
+                var groupService = new Rock.Model.GroupService();
 
-                Rock.Crm.Group group;
+                Rock.Model.Group group;
 
                 int groupId = 0;
                 if ( hfId.Value != string.Empty && !Int32.TryParse( hfId.Value, out groupId ) )
@@ -125,7 +131,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( groupId == 0 )
                 {
-                    group = new Rock.Crm.Group();
+                    group = new Rock.Model.Group();
                     group.IsSystem = false;
                     group.IsSecurityRole = true;
                     // TODO: Need to figure out how to set/configure the "Role" group type
@@ -160,7 +166,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            var queryable = new Rock.Crm.GroupService().Queryable().
+            var queryable = new Rock.Model.GroupService().Queryable().
                 Where( r => r.IsSecurityRole == true);
 
             if ( !string.IsNullOrWhiteSpace( tbNameFilter.Text ) )
@@ -180,7 +186,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int groupId )
         {
-            var groupModel = new Rock.Crm.GroupService().Get( groupId );
+            var groupModel = new Rock.Model.GroupService().Get( groupId );
 
             if ( groupModel != null )
             {

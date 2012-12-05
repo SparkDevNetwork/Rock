@@ -7,13 +7,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
-using Rock.Core;
-using Rock.Crm;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -98,7 +96,7 @@ public partial class GroupTypes : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbGridWarning.Visible = false;
+        mdGridWarning.Hide();
         nbWarning.Visible = false;
 
         if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
@@ -151,15 +149,14 @@ public partial class GroupTypes : RockBlock
     {
         GroupTypeService groupTypeService = new GroupTypeService();
         GroupType groupType = groupTypeService.Get( (int)e.RowKeyValue );
-        
+
         string errorMessage;
         if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
         {
-            nbGridWarning.Text = errorMessage;
-            nbGridWarning.Visible = true;
+            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             return;
         }
-        
+
         if ( CurrentBlock != null )
         {
             groupTypeService.Delete( groupType, CurrentPersonId );
@@ -205,12 +202,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new GroupType { Id = None.Id, Name = None.Text } );
             btnAddChildGroupType.Enabled = false;
-            btnAddChildGroupType.CssClass = "btn primary disabled";
+            btnAddChildGroupType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddChildGroupType.Enabled = true;
-            btnAddChildGroupType.CssClass = "btn primary";
+            btnAddChildGroupType.CssClass = "btn btn-primary";
         }
 
         ddlChildGroupType.DataSource = list;
@@ -303,12 +300,12 @@ public partial class GroupTypes : RockBlock
         {
             list.Add( new DefinedValue { Id = None.Id, Name = None.Text } );
             btnAddLocationType.Enabled = false;
-            btnAddLocationType.CssClass = "btn primary disabled";
+            btnAddLocationType.CssClass = "btn btn-primary disabled";
         }
         else
         {
             btnAddLocationType.Enabled = true;
-            btnAddLocationType.CssClass = "btn primary";
+            btnAddLocationType.CssClass = "btn btn-primary";
         }
 
         ddlLocationType.DataSource = list;

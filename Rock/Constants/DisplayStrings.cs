@@ -81,6 +81,11 @@ namespace Rock.Constants
         /// 
         /// </summary>
         public const string Text = "<none>";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string TextHtml = "&lt;none&gt;";
     }
 
     /// <summary>
