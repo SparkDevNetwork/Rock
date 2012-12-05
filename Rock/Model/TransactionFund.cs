@@ -64,12 +64,12 @@ namespace Rock.Model
     /// <summary>
     /// TransactionFund Configuration class
     /// </summary>
-    public partial class TransactionFundConfiguration : EntityTypeConfiguration<FinancialTransactionFund>
+    public partial class FinancialTransactionFundConfiguration : EntityTypeConfiguration<FinancialTransactionFund>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionFundConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialTransactionFundConfiguration"/> class.
         /// </summary>
-        public TransactionFundConfiguration()
+        public FinancialTransactionFundConfiguration()
         {
             //this.HasKey(t => t.TransactionId);
             //this.HasKey(t => t.FundId);

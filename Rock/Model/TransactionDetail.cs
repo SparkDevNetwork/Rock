@@ -102,12 +102,12 @@ namespace Rock.Model
     /// <summary>
     /// TransactionDetail Configuration class
     /// </summary>
-    public partial class TransactionDetailConfiguration : EntityTypeConfiguration<FinancialTransactionDetail>
+    public partial class FinancialTransactionDetailConfiguration : EntityTypeConfiguration<FinancialTransactionDetail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TransactionDetailConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialTransactionDetailConfiguration"/> class.
         /// </summary>
-        public TransactionDetailConfiguration()
+        public FinancialTransactionDetailConfiguration()
         {
             this.HasOptional(d => d.Transaction).WithMany(t => t.TransactionDetails).HasForeignKey(t => t.TransactionId).WillCascadeOnDelete(false);
         }

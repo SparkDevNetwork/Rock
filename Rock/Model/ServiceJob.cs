@@ -185,12 +185,12 @@ namespace Rock.Model
     /// <summary>
     /// Job Configuration class.
     /// </summary>
-    public partial class JobConfiguration : EntityTypeConfiguration<ServiceJob>
+    public partial class ServiceJobConfiguration : EntityTypeConfiguration<ServiceJob>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JobConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="ServiceJobConfiguration"/> class.
         /// </summary>
-        public JobConfiguration()
+        public ServiceJobConfiguration()
         {
         }
     }
