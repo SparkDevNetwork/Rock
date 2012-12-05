@@ -5,9 +5,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Spatial;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,15 +21,57 @@ namespace Rock.Model
     [Table( "Location" )]
     public partial class Location : Model<Location>
     {
+        #region Entity Properties
+
         /// <summary>
-        /// Gets or sets the Raw.
+        /// Gets or sets the parent location id.
         /// </summary>
         /// <value>
-        /// Raw.
+        /// The parent location id.
         /// </value>
-        [MaxLength( 400 )]
-        public string Raw { get; set; }
-        
+        public int? ParentLocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location point.
+        /// </summary>
+        /// <value>
+        /// The location point.
+        /// </value>
+        public DbGeography LocationPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the perimeter.
+        /// </summary>
+        /// <value>
+        /// The perimeter.
+        /// </value>
+        public DbGeography Perimeter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location type value id.
+        /// </summary>
+        /// <value>
+        /// The location type value id.
+        /// </value>
+        public int? LocationTypeValueId { get; set; }
+
         /// <summary>
         /// Gets or sets the Street 1.
         /// </summary>
@@ -80,7 +125,16 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 10 )]
         public string Zip { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the Raw.
+        /// </summary>
+        /// <value>
+        /// Raw.
+        /// </value>
+        [MaxLength( 400 )]
+        public string FullAddress { get; set; }
+
         /// <summary>
         /// Gets or sets the Latitude.
         /// </summary>
@@ -104,7 +158,7 @@ namespace Rock.Model
         /// Parcel Id.
         /// </value>
         [MaxLength( 50 )]
-        public string ParcelId { get; set; }
+        public string AssessorParcelId { get; set; }
 
         /// <summary>
         /// Gets or sets the Standardize Attempt.
@@ -112,7 +166,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Attempt.
         /// </value>
-        public DateTime? StandardizeAttempt { get; set; }
+        public DateTime? StandardizeAttemptedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Service.
@@ -121,7 +175,7 @@ namespace Rock.Model
         /// Standardize Service.
         /// </value>
         [MaxLength( 50 )]
-        public string StandardizeService { get; set; }
+        public string StandardizeAttemptedServiceType { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Result.
@@ -130,7 +184,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
-        public string StandardizeResult { get; set; }
+        public string StandardizeAttemptedResult { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Date.
@@ -138,7 +192,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Date.
         /// </value>
-        public DateTime? StandardizeDate { get; set; }
+        public DateTime? StandardizedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Attempt.
@@ -146,7 +200,7 @@ namespace Rock.Model
         /// <value>
         /// Geocode Attempt.
         /// </value>
-        public DateTime? GeocodeAttempt { get; set; }
+        public DateTime? GeocodeAttemptedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Service.
@@ -155,7 +209,7 @@ namespace Rock.Model
         /// Geocode Service.
         /// </value>
         [MaxLength( 50 )]
-        public string GeocodeService { get; set; }
+        public string GeocodeAttemptedServiceType { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Result.
@@ -164,7 +218,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
-        public string GeocodeResult { get; set; }
+        public string GeocodeAttemptedResult { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Date.
@@ -172,8 +226,34 @@ namespace Rock.Model
         /// <value>
         /// Geocode Date.
         /// </value>
-        public DateTime? GeocodeDate { get; set; }
+        public DateTime? GeocodedDateTime { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the parent location.
+        /// </summary>
+        /// <value>
+        /// The parent location.
+        /// </value>
+        public virtual Location ParentLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the child locations.
+        /// </summary>
+        /// <value>
+        /// The child locations.
+        /// </value>
+        public virtual ICollection<Location> ChildLocations
+        {
+            get { return _childLocations ?? ( _childLocations = new Collection<Location>() ); }
+            set { _childLocations = value; }
+        }
+        private ICollection<Location> _childLocations;
+
+        public virtual DefinedValue LocationType { get; set; }
         /// <summary>
         /// Gets the dto.
         /// </summary>
@@ -183,15 +263,9 @@ namespace Rock.Model
             get { return this.ToDto(); }
         }
 
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Location Read( int id )
-        {
-            return Read<Location>( id );
-        }
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -204,7 +278,40 @@ namespace Rock.Model
             return string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
+
+        #endregion
+
+        #region Private Methods
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Location Read( int id )
+        {
+            return Read<Location>( id );
+        }
+
+        /// <summary>
+        /// Static method to return an object based on the GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static Location Read( Guid guid )
+        {
+            return Read<Location>( guid );
+        }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Location Configuration class.
@@ -216,6 +323,11 @@ namespace Rock.Model
         /// </summary>
         public LocationConfiguration()
         {
+            this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.LocationType ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

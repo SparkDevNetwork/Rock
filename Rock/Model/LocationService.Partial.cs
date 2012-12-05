@@ -23,7 +23,7 @@ namespace Rock.Model
         /// <returns>Location object.</returns>
         public Location GetByRaw( string raw )
         {
-            return Repository.FirstOrDefault( t => ( t.Raw == raw || ( raw == null && t.Raw == null ) ) );
+            return Repository.FirstOrDefault( t => ( t.FullAddress == raw || ( raw == null && t.FullAddress == null ) ) );
         }
         
         /// <summary>
@@ -86,14 +86,14 @@ namespace Rock.Model
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        location.StandardizeService = service.Value.Metadata.ComponentName;
-                        location.StandardizeResult = result;
-                        location.StandardizeDate = DateTime.Now;
+                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.StandardizeAttemptedResult = result;
+                        location.StandardizedDateTime = DateTime.Now;
                         break;
                     }
                 }
 
-            location.StandardizeAttempt = DateTime.Now;
+            location.StandardizeAttemptedDateTime = DateTime.Now;
         }
 
         /// <summary>
@@ -143,14 +143,14 @@ namespace Rock.Model
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        location.GeocodeService = service.Value.Metadata.ComponentName;
-                        location.GeocodeResult = result;
-                        location.GeocodeDate = DateTime.Now;
+                        location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.GeocodeAttemptedResult = result;
+                        location.GeocodedDateTime = DateTime.Now;
                         break;
                     }
                 }
 
-            location.GeocodeAttempt = DateTime.Now;
+            location.GeocodeAttemptedDateTime = DateTime.Now;
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Rock.Model
             if ( locationModel == null )
             {
                 locationModel = new Model.Location();
-                locationModel.Raw = raw;
+                locationModel.FullAddress = raw;
                 locationModel.Street1 = location.Street1;
                 locationModel.Street2 = location.Street2;
                 locationModel.City = location.City;

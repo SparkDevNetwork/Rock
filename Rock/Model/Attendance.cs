@@ -4,15 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Text;
-using Rock;
-using Rock.Core;
-using Rock.Crm;
+
 using Rock.Data;
 
 namespace Rock.Model

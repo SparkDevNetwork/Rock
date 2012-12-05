@@ -80,9 +80,9 @@ namespace Rock.Address.Standardize
 
                             if ( usAddress.GeoCode != null )
                             {
-                                location.GeocodeService = "StrikeIron";
-                                location.GeocodeResult = "200";
-                                location.GeocodeDate = DateTime.Now;
+                                location.GeocodeAttemptedServiceType = "StrikeIron";
+                                location.GeocodeAttemptedResult = "200";
+                                location.GeocodedDateTime = DateTime.Now;
 
                                 location.Latitude = usAddress.GeoCode.Latitude;
                                 location.Longitude = usAddress.GeoCode.Longitude;
