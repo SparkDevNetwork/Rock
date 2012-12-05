@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ActionType Service class
     /// </summary>
-    public partial class ActionTypeService : Service<ActionType, ActionTypeDto>
+    public partial class ActionTypeService : Service<WorkflowActionType, ActionTypeDto>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionTypeService"/> class
@@ -33,16 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionTypeService"/> class
         /// </summary>
-        public ActionTypeService(IRepository<ActionType> repository) : base(repository)
+        public ActionTypeService(IRepository<WorkflowActionType> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override ActionType CreateNew()
+        public override WorkflowActionType CreateNew()
         {
-            return new ActionType();
+            return new WorkflowActionType();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActionTypeDto> QueryableDto( IQueryable<ActionType> items )
+        public IQueryable<ActionTypeDto> QueryableDto( IQueryable<WorkflowActionType> items )
         {
             return items.Select( m => new ActionTypeDto()
                 {
@@ -81,7 +81,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ActionType item, out string errorMessage )
+        public bool CanDelete( WorkflowActionType item, out string errorMessage )
         {
             errorMessage = string.Empty;
             RockContext context = new RockContext();
@@ -97,7 +97,7 @@ namespace Rock.Model
                     Type entityType = RockContext.GetEntityFromTableName( "WorkflowAction" );
                     string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowAction";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", ActionType.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", WorkflowActionType.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }

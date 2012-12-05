@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Activity Service class
     /// </summary>
-    public partial class ActivityService : Service<Activity, ActivityDto>
+    public partial class ActivityService : Service<WorkflowActivity, ActivityDto>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityService"/> class
@@ -33,16 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityService"/> class
         /// </summary>
-        public ActivityService(IRepository<Activity> repository) : base(repository)
+        public ActivityService(IRepository<WorkflowActivity> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override Activity CreateNew()
+        public override WorkflowActivity CreateNew()
         {
-            return new Activity();
+            return new WorkflowActivity();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActivityDto> QueryableDto( IQueryable<Activity> items )
+        public IQueryable<ActivityDto> QueryableDto( IQueryable<WorkflowActivity> items )
         {
             return items.Select( m => new ActivityDto()
                 {
@@ -80,7 +80,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Activity item, out string errorMessage )
+        public bool CanDelete( WorkflowActivity item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;

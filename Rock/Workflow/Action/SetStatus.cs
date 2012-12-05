@@ -8,16 +8,19 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Data;
+using Rock.Model;
+using Rock.Web.UI;
 
-namespace Rock.Model.WorkflowAction
+namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Marks a workflow as complete
+    /// Sets a workflow status
     /// </summary>
-    [Description( "Marks the workflow as complete" )]
-    [Export(typeof(WorkflowActionComponent))]
-    [ExportMetadata( "ComponentName", "Complete Workflow" )]
-    public class CompleteWorkflow : WorkflowActionComponent
+    [Description( "Set the workflow status" )]
+    [Export(typeof(ActionComponent))]
+    [ExportMetadata("ComponentName", "Set Status")]
+    [BlockProperty( 0, "Status", "The status to set workflow to", true )]
+    public class SetStatus : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -26,13 +29,14 @@ namespace Rock.Model.WorkflowAction
         /// <param name="dto">The dto.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( Action action, IDto dto, out List<string> errorMessages )
+        public override bool Execute( WorkflowAction action, IDto dto, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
-            action.Activity.Workflow.MarkComplete();
-            action.AddLogEntry( "Marked workflow complete" );
-
+            string status = GetAttributeValue( action, "Status" );
+            action.Activity.Workflow.Status = status;
+            action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
+            
             return true;
         }
     }

@@ -9,12 +9,12 @@ using System.ComponentModel.Composition;
 
 using Rock.Extension;
 
-namespace Rock.Model
+namespace Rock.Workflow
 {
     /// <summary>
     /// MEF Container class for WorkflowAction Componenets
     /// </summary>
-    public class WorkflowActionContainer : Container<WorkflowActionComponent, IComponentData>
+    public class WorkflowActionContainer : Container<ActionComponent, IComponentData>
     {
         private static WorkflowActionContainer instance;
 
@@ -38,8 +38,8 @@ namespace Rock.Model
 
         // MEF Import Definition
 #pragma warning disable
-        [ImportMany( typeof( WorkflowActionComponent ) )]
-        protected override IEnumerable<Lazy<WorkflowActionComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( ActionComponent ) )]
+        protected override IEnumerable<Lazy<ActionComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
     }
 }

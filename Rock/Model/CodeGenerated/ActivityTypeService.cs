@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ActivityType Service class
     /// </summary>
-    public partial class ActivityTypeService : Service<ActivityType, ActivityTypeDto>
+    public partial class ActivityTypeService : Service<WorkflowActivityType, ActivityTypeDto>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityTypeService"/> class
@@ -33,16 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityTypeService"/> class
         /// </summary>
-        public ActivityTypeService(IRepository<ActivityType> repository) : base(repository)
+        public ActivityTypeService(IRepository<WorkflowActivityType> repository) : base(repository)
         {
         }
 
         /// <summary>
         /// Creates a new model
         /// </summary>
-        public override ActivityType CreateNew()
+        public override WorkflowActivityType CreateNew()
         {
-            return new ActivityType();
+            return new WorkflowActivityType();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// Query DTO objects
         /// </summary>
         /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ActivityTypeDto> QueryableDto( IQueryable<ActivityType> items )
+        public IQueryable<ActivityTypeDto> QueryableDto( IQueryable<WorkflowActivityType> items )
         {
             return items.Select( m => new ActivityTypeDto()
                 {
@@ -81,7 +81,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ActivityType item, out string errorMessage )
+        public bool CanDelete( WorkflowActivityType item, out string errorMessage )
         {
             errorMessage = string.Empty;
             RockContext context = new RockContext();
@@ -97,7 +97,7 @@ namespace Rock.Model
                     Type entityType = RockContext.GetEntityFromTableName( "WorkflowActivity" );
                     string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowActivity";
 
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", ActivityType.FriendlyTypeName, friendlyName);
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", WorkflowActivityType.FriendlyTypeName, friendlyName);
                     return false;
                 }
             }
