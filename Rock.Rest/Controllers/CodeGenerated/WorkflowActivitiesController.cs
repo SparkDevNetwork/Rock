@@ -15,10 +15,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// Activities REST API
+    /// WorkflowActivities REST API
     /// </summary>
-    public partial class ActivitiesController : Rock.Rest.ApiController<WorkflowActivity, ActivityDto>
+    public partial class WorkflowActivitiesController : Rock.Rest.ApiController<Rock.Model.WorkflowActivity, Rock.Model.WorkflowActivityDto>
     {
-        public ActivitiesController() : base( new Rock.Model.ActivityService() ) { } 
+        public WorkflowActivitiesController() : base( new Rock.Model.WorkflowActivityService() ) { } 
     }
 }
