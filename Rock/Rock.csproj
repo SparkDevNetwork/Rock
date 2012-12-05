@@ -136,6 +136,10 @@
     <Compile Include="Migrations\201212052126507_DefinedValueNaming.Designer.cs">
       <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.cs" />
+    <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.Designer.cs">
+      <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -791,6 +795,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052126507_DefinedValueNaming.resx">
       <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212052255598_ServiceJobColumnNames.resx">
+      <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

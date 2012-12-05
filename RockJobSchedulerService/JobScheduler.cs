@@ -58,7 +58,7 @@ namespace RockJobSchedulerService
                     path = System.IO.Path.GetDirectoryName(path);
 
                     // create a friendly error message
-                    string message = string.Format("Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the services directory ({2}) of your server.", job.Name, job.Assemby, path);
+                    string message = string.Format("Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the services directory ({2}) of your server.", job.Name, job.Assembly, path);
                     message = message + "\n\n\n\n" + ex.Message;
                     //throw new JobLoadFailedException( message );
                     job.LastStatusMessage = message;

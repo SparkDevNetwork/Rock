@@ -96,7 +96,7 @@ namespace RockWeb
                     catch ( Exception ex )
                     {
                         // create a friendly error message
-                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assemby, ex.Message );
+                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
                         job.LastStatusMessage = message;
                         job.LastStatus = "Error Loading Job";
 
@@ -577,7 +577,7 @@ namespace RockWeb
             {
                 // Cache all the Field Types
                 var fieldTypeService = new Rock.Model.FieldTypeService();
-                foreach ( var fieldType in fieldTypeService.Queryable() )
+                 foreach ( var fieldType in fieldTypeService.Queryable() )
                     Rock.Web.Cache.FieldTypeCache.Read( fieldType );
 
                 // Cache all tha Defined Types
