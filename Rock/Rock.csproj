@@ -339,7 +339,7 @@
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\BlockType.cs" />
     <Compile Include="Model\Block.cs" />
-    <Compile Include="Model\File.cs" />
+    <Compile Include="Model\BinaryFile.cs" />
     <Compile Include="Model\HtmlContent.cs" />
     <Compile Include="Model\Page.cs" />
     <Compile Include="Model\PageRoute.cs" />
@@ -371,7 +371,7 @@
     <Compile Include="Field\Types\Date.cs" />
     <Compile Include="Field\Types\Image.cs" />
     <Compile Include="Field\Types\Video.cs" />
-    <Compile Include="Model\Batch.cs">
+    <Compile Include="Model\FinancialBatch.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Fund.cs">
@@ -390,17 +390,17 @@
     </Compile>
     <Compile Include="Model\CodeGenerated\PledgeDto.cs" />
     <Compile Include="Model\CodeGenerated\PledgeService.cs" />
-    <Compile Include="Model\Transaction.cs">
+    <Compile Include="Model\FinancialTransaction.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionDetail.cs">
+    <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionFund.cs">
+    <Compile Include="Model\FinancialTransactionFund.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
-    <Compile Include="Model\TransactionService.Partial.cs" />
+    <Compile Include="Model\FinancialTransactionService.Partial.cs" />
     <Compile Include="Model\Group.cs" />
     <Compile Include="Model\CodeGenerated\GroupDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupRoleDto.cs" />

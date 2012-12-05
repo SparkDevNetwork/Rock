@@ -351,12 +351,28 @@ namespace Rock.Data
         public DbSet<Page> Pages { get; set; }
 
         /// <summary>
+        /// Gets or sets the page contexts.
+        /// </summary>
+        /// <value>
+        /// The page contexts.
+        /// </value>
+        public DbSet<PageContext> PageContexts { get; set; } 
+
+        /// <summary>
         /// Gets or sets the Page Routes.
         /// </summary>
         /// <value>
         /// the Page Routes.
         /// </value>
         public DbSet<PageRoute> PageRoutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment gateways.
+        /// </summary>
+        /// <value>
+        /// The payment gateways.
+        /// </value>
+        public DbSet<PaymentGateway> PaymentGateways { get; set; }
 
         /// <summary>
         /// Gets or sets the People.
@@ -583,7 +599,9 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new MetricConfiguration() );
             modelBuilder.Configurations.Add( new MetricValueConfiguration() );
             modelBuilder.Configurations.Add( new PageConfiguration() );
+            modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
+            modelBuilder.Configurations.Add( new PaymentGatewayConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
             modelBuilder.Configurations.Add( new PersonAccountLookupConfiguration() );
             modelBuilder.Configurations.Add( new PersonMergedConfiguration() );
