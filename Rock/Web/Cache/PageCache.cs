@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
@@ -24,7 +23,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class PageCache : PageDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class PageCache : PageDto, Rock.Attribute.IHasAttributes
     {
         #region Constructors
 
@@ -372,6 +371,23 @@ namespace Rock.Web.Cache
                 OnBlockContentUpdated( sender, new EventArgs() );
         }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.ParentPage != null )
+                    return this.ParentPage;
+                else
+                    return this.Site;
+            }
+        }
+
         #endregion
 
         #region SharedItemCaching
@@ -604,10 +620,6 @@ namespace Rock.Web.Cache
                 foreach ( var pageContext in pageModel.PageContexts )
                     page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
 
-            page.TypeId = pageModel.TypeId;
-            page.TypeName = pageModel.TypeName;
-            page.SupportedActions = pageModel.SupportedActions;
-
             return page;
         }
 
@@ -660,79 +672,6 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region ISecure Implementation
-
-        /// <summary>
-        /// Gets the Entity Type ID for this entity.
-        /// </summary>
-        /// <value>
-        /// The type id.
-        /// </value>
-        public int TypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the auth entity.
-        /// </summary>
-        /// <value>
-        /// The auth entity.
-        /// </value>
-        public string TypeName { get; set; }
-
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check access to the parent authority specified by this property.
-        /// </summary>
-        public Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.ParentPage != null )
-                    return this.ParentPage;
-                else
-                    return this.Site;
-            }
-        }
-
-        /// <summary>
-        /// A list of actions that this class supports.
-        /// </summary>
-        public List<string> SupportedActions { get; set; }
-
-        /// <summary>
-        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
-        {
-            return Security.Authorization.Authorized( this, action, person );
-        }
-
-        /// <summary>
-        /// If a user or role is not specifically allowed or denied to perform the selected action,
-        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
-        public bool IsAllowedByDefault( string action )
-        {
-            return action == "View";
-        }
-
-        /// <summary>
-        /// Finds the AuthRule records associated with the current object.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<AuthRule> FindAuthRules()
-        {
-            return Authorization.FindAuthRules( this );
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class WorkflowActivityDto : IDto, DotLiquid.ILiquidizable
+    public partial class WorkflowActivityDto : DtoSecured<WorkflowActivityDto>
     {
         /// <summary />
         [DataMember]
@@ -45,14 +45,6 @@ namespace Rock.Model
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -73,16 +65,14 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "WorkflowId", this.WorkflowId );
             dictionary.Add( "ActivityTypeId", this.ActivityTypeId );
             dictionary.Add( "ActivatedDateTime", this.ActivatedDateTime );
             dictionary.Add( "LastProcessedDateTime", this.LastProcessedDateTime );
             dictionary.Add( "CompletedDateTime", this.CompletedDateTime );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -90,16 +80,14 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.WorkflowId = this.WorkflowId;
             expando.ActivityTypeId = this.ActivityTypeId;
             expando.ActivatedDateTime = this.ActivatedDateTime;
             expando.LastProcessedDateTime = this.LastProcessedDateTime;
             expando.CompletedDateTime = this.CompletedDateTime;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -107,8 +95,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is WorkflowActivity )
             {
                 var workflowActivity = (WorkflowActivity)model;
@@ -117,8 +107,6 @@ namespace Rock.Model
                 this.ActivatedDateTime = workflowActivity.ActivatedDateTime;
                 this.LastProcessedDateTime = workflowActivity.LastProcessedDateTime;
                 this.CompletedDateTime = workflowActivity.CompletedDateTime;
-                this.Id = workflowActivity.Id;
-                this.Guid = workflowActivity.Guid;
             }
         }
 
@@ -126,8 +114,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is WorkflowActivity )
             {
                 var workflowActivity = (WorkflowActivity)model;
@@ -136,18 +126,7 @@ namespace Rock.Model
                 workflowActivity.ActivatedDateTime = this.ActivatedDateTime;
                 workflowActivity.LastProcessedDateTime = this.LastProcessedDateTime;
                 workflowActivity.CompletedDateTime = this.CompletedDateTime;
-                workflowActivity.Id = this.Id;
-                workflowActivity.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

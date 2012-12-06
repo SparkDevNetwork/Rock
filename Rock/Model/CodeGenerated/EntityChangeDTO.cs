@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class EntityChangeDto : IDto, DotLiquid.ILiquidizable
+    public partial class EntityChangeDto : DtoSecured<EntityChangeDto>
     {
         /// <summary />
         [DataMember]
@@ -61,14 +61,6 @@ namespace Rock.Model
         [DataMember]
         public int? CreatedByPersonId { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -89,9 +81,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "ChangeSet", this.ChangeSet );
             dictionary.Add( "ChangeType", this.ChangeType );
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
@@ -101,8 +93,6 @@ namespace Rock.Model
             dictionary.Add( "CurrentValue", this.CurrentValue );
             dictionary.Add( "CreatedDateTime", this.CreatedDateTime );
             dictionary.Add( "CreatedByPersonId", this.CreatedByPersonId );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -110,9 +100,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.ChangeSet = this.ChangeSet;
             expando.ChangeType = this.ChangeType;
             expando.EntityTypeId = this.EntityTypeId;
@@ -122,8 +112,6 @@ namespace Rock.Model
             expando.CurrentValue = this.CurrentValue;
             expando.CreatedDateTime = this.CreatedDateTime;
             expando.CreatedByPersonId = this.CreatedByPersonId;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -131,8 +119,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is EntityChange )
             {
                 var entityChange = (EntityChange)model;
@@ -145,8 +135,6 @@ namespace Rock.Model
                 this.CurrentValue = entityChange.CurrentValue;
                 this.CreatedDateTime = entityChange.CreatedDateTime;
                 this.CreatedByPersonId = entityChange.CreatedByPersonId;
-                this.Id = entityChange.Id;
-                this.Guid = entityChange.Guid;
             }
         }
 
@@ -154,8 +142,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is EntityChange )
             {
                 var entityChange = (EntityChange)model;
@@ -168,18 +158,7 @@ namespace Rock.Model
                 entityChange.CurrentValue = this.CurrentValue;
                 entityChange.CreatedDateTime = this.CreatedDateTime;
                 entityChange.CreatedByPersonId = this.CreatedByPersonId;
-                entityChange.Id = this.Id;
-                entityChange.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

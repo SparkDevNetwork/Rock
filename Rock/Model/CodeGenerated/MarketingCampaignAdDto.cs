@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MarketingCampaignAdDto : IDto, DotLiquid.ILiquidizable
+    public partial class MarketingCampaignAdDto : DtoSecured<MarketingCampaignAdDto>
     {
         /// <summary />
         [DataMember]
@@ -57,14 +57,6 @@ namespace Rock.Model
         [DataMember]
         public string Url { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -85,9 +77,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "MarketingCampaignId", this.MarketingCampaignId );
             dictionary.Add( "MarketingCampaignAdTypeId", this.MarketingCampaignAdTypeId );
             dictionary.Add( "Priority", this.Priority );
@@ -96,8 +88,6 @@ namespace Rock.Model
             dictionary.Add( "StartDate", this.StartDate );
             dictionary.Add( "EndDate", this.EndDate );
             dictionary.Add( "Url", this.Url );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,9 +95,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.MarketingCampaignId = this.MarketingCampaignId;
             expando.MarketingCampaignAdTypeId = this.MarketingCampaignAdTypeId;
             expando.Priority = this.Priority;
@@ -116,8 +106,6 @@ namespace Rock.Model
             expando.StartDate = this.StartDate;
             expando.EndDate = this.EndDate;
             expando.Url = this.Url;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is MarketingCampaignAd )
             {
                 var marketingCampaignAd = (MarketingCampaignAd)model;
@@ -138,8 +128,6 @@ namespace Rock.Model
                 this.StartDate = marketingCampaignAd.StartDate;
                 this.EndDate = marketingCampaignAd.EndDate;
                 this.Url = marketingCampaignAd.Url;
-                this.Id = marketingCampaignAd.Id;
-                this.Guid = marketingCampaignAd.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is MarketingCampaignAd )
             {
                 var marketingCampaignAd = (MarketingCampaignAd)model;
@@ -160,18 +150,7 @@ namespace Rock.Model
                 marketingCampaignAd.StartDate = this.StartDate;
                 marketingCampaignAd.EndDate = this.EndDate;
                 marketingCampaignAd.Url = this.Url;
-                marketingCampaignAd.Id = this.Id;
-                marketingCampaignAd.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

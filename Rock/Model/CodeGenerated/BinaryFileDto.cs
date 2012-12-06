@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class BinaryFileDto : IDto, DotLiquid.ILiquidizable
+    public partial class BinaryFileDto : DtoSecured<BinaryFileDto>
     {
         /// <summary />
         [DataMember]
@@ -57,14 +57,6 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -85,9 +77,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsTemporary", this.IsTemporary );
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "Data", this.Data );
@@ -96,8 +88,6 @@ namespace Rock.Model
             dictionary.Add( "MimeType", this.MimeType );
             dictionary.Add( "LastModifiedTime", this.LastModifiedTime );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,9 +95,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsTemporary = this.IsTemporary;
             expando.IsSystem = this.IsSystem;
             expando.Data = this.Data;
@@ -116,8 +106,6 @@ namespace Rock.Model
             expando.MimeType = this.MimeType;
             expando.LastModifiedTime = this.LastModifiedTime;
             expando.Description = this.Description;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is BinaryFile )
             {
                 var binaryFile = (BinaryFile)model;
@@ -138,8 +128,6 @@ namespace Rock.Model
                 this.MimeType = binaryFile.MimeType;
                 this.LastModifiedTime = binaryFile.LastModifiedTime;
                 this.Description = binaryFile.Description;
-                this.Id = binaryFile.Id;
-                this.Guid = binaryFile.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is BinaryFile )
             {
                 var binaryFile = (BinaryFile)model;
@@ -160,18 +150,7 @@ namespace Rock.Model
                 binaryFile.MimeType = this.MimeType;
                 binaryFile.LastModifiedTime = this.LastModifiedTime;
                 binaryFile.Description = this.Description;
-                binaryFile.Id = this.Id;
-                binaryFile.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

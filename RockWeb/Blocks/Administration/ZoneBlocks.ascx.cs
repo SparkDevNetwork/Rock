@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -124,7 +125,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gLayoutBlocks_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( Rock.Web.Cache.BlockLocation.Layout, ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( BlockLocation.Layout, ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
@@ -142,7 +143,7 @@ namespace RockWeb.Blocks.Administration
 
         void LayoutBlocks_Add( object sender, EventArgs e )
         {
-            ShowEdit( Rock.Web.Cache.BlockLocation.Layout, 0 );
+            ShowEdit( BlockLocation.Layout, 0 );
         }
 
         void gLayoutBlocks_GridRebind( object sender, EventArgs e )
@@ -161,7 +162,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void gPageBlocks_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( Rock.Web.Cache.BlockLocation.Page, ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( BlockLocation.Page, ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
@@ -179,7 +180,7 @@ namespace RockWeb.Blocks.Administration
 
         void gPageBlocks_GridAdd( object sender, EventArgs e )
         {
-            ShowEdit( Rock.Web.Cache.BlockLocation.Page, 0 );
+            ShowEdit( BlockLocation.Page, 0 );
         }
 
         void gPageBlocks_GridRebind( object sender, EventArgs e )
@@ -209,8 +210,8 @@ namespace RockWeb.Blocks.Administration
             {
                 block = new Rock.Model.Block();
 
-                Rock.Web.Cache.BlockLocation location = hfBlockLocation.Value.ConvertToEnum<Rock.Web.Cache.BlockLocation>();
-                if ( location == Rock.Web.Cache.BlockLocation.Layout )
+                BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
+                if ( location == BlockLocation.Layout )
                 {
                     block.Layout = _page.Layout;
                     block.PageId = null;
@@ -312,7 +313,7 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        protected void ShowEdit( Rock.Web.Cache.BlockLocation location, int blockId )
+        protected void ShowEdit( BlockLocation location, int blockId )
         {
             Rock.Model.Block block = blockService.Get( blockId );
             hfBlockLocation.Value = location.ConvertToString();
