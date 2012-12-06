@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class AuditDto : IDto, DotLiquid.ILiquidizable
+    public partial class AuditDto : Dto
     {
         /// <summary />
         [DataMember]
@@ -53,14 +53,6 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -81,9 +73,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "Title", this.Title );
@@ -91,8 +83,6 @@ namespace Rock.Model
             dictionary.Add( "Properties", this.Properties );
             dictionary.Add( "DateTime", this.DateTime );
             dictionary.Add( "PersonId", this.PersonId );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -100,9 +90,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.EntityTypeId = this.EntityTypeId;
             expando.EntityId = this.EntityId;
             expando.Title = this.Title;
@@ -110,8 +100,6 @@ namespace Rock.Model
             expando.Properties = this.Properties;
             expando.DateTime = this.DateTime;
             expando.PersonId = this.PersonId;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -119,8 +107,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Audit )
             {
                 var audit = (Audit)model;
@@ -131,8 +121,6 @@ namespace Rock.Model
                 this.Properties = audit.Properties;
                 this.DateTime = audit.DateTime;
                 this.PersonId = audit.PersonId;
-                this.Id = audit.Id;
-                this.Guid = audit.Guid;
             }
         }
 
@@ -140,8 +128,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Audit )
             {
                 var audit = (Audit)model;
@@ -152,18 +142,7 @@ namespace Rock.Model
                 audit.Properties = this.Properties;
                 audit.DateTime = this.DateTime;
                 audit.PersonId = this.PersonId;
-                audit.Id = this.Id;
-                audit.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

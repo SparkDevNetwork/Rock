@@ -116,6 +116,8 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Data\DtoSecured.cs" />
+    <Compile Include="Data\Dto.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -133,6 +135,7 @@
       <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
+    <Compile Include="Model\BlockDto.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AuthDTO.cs" />

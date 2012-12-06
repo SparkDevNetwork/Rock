@@ -164,6 +164,20 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Site;
+            }
+        }
+
+        /// <summary>
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
@@ -360,7 +374,7 @@ namespace Rock.Model
         public static dynamic MapPagesRecursive( Page page )
         {
             dynamic exportPage = new PageDto( page ).ToDynamic();
-            exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
+            exportPage.AuthRoles = Security.Authorization.FindAuthRules(page).Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
             MapBlocks( page, exportPage );

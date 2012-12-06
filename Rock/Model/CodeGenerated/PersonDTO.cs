@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PersonDto : IDto, DotLiquid.ILiquidizable
+    public partial class PersonDto : DtoSecured<PersonDto>
     {
         /// <summary />
         [DataMember]
@@ -121,14 +121,6 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -149,9 +141,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "RecordTypeId", this.RecordTypeId );
             dictionary.Add( "RecordStatusId", this.RecordStatusId );
@@ -176,8 +168,6 @@ namespace Rock.Model
             dictionary.Add( "DoNotEmail", this.DoNotEmail );
             dictionary.Add( "SystemNote", this.SystemNote );
             dictionary.Add( "ViewedCount", this.ViewedCount );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -185,9 +175,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.RecordTypeId = this.RecordTypeId;
             expando.RecordStatusId = this.RecordStatusId;
@@ -212,8 +202,6 @@ namespace Rock.Model
             expando.DoNotEmail = this.DoNotEmail;
             expando.SystemNote = this.SystemNote;
             expando.ViewedCount = this.ViewedCount;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -221,8 +209,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Person )
             {
                 var person = (Person)model;
@@ -250,8 +240,6 @@ namespace Rock.Model
                 this.DoNotEmail = person.DoNotEmail;
                 this.SystemNote = person.SystemNote;
                 this.ViewedCount = person.ViewedCount;
-                this.Id = person.Id;
-                this.Guid = person.Guid;
             }
         }
 
@@ -259,8 +247,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Person )
             {
                 var person = (Person)model;
@@ -288,18 +278,7 @@ namespace Rock.Model
                 person.DoNotEmail = this.DoNotEmail;
                 person.SystemNote = this.SystemNote;
                 person.ViewedCount = this.ViewedCount;
-                person.Id = this.Id;
-                person.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

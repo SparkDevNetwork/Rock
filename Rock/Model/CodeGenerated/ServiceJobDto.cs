@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class ServiceJobDto : IDto, DotLiquid.ILiquidizable
+    public partial class ServiceJobDto : DtoSecured<ServiceJobDto>
     {
         /// <summary />
         [DataMember]
@@ -85,14 +85,6 @@ namespace Rock.Model
         [DataMember]
         public JobNotificationStatus NotificationStatus { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -113,9 +105,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "IsActive", this.IsActive );
             dictionary.Add( "Name", this.Name );
@@ -131,8 +123,6 @@ namespace Rock.Model
             dictionary.Add( "LastRunSchedulerName", this.LastRunSchedulerName );
             dictionary.Add( "NotificationEmails", this.NotificationEmails );
             dictionary.Add( "NotificationStatus", this.NotificationStatus );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -140,9 +130,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.IsActive = this.IsActive;
             expando.Name = this.Name;
@@ -158,8 +148,6 @@ namespace Rock.Model
             expando.LastRunSchedulerName = this.LastRunSchedulerName;
             expando.NotificationEmails = this.NotificationEmails;
             expando.NotificationStatus = this.NotificationStatus;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -167,8 +155,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is ServiceJob )
             {
                 var serviceJob = (ServiceJob)model;
@@ -187,8 +177,6 @@ namespace Rock.Model
                 this.LastRunSchedulerName = serviceJob.LastRunSchedulerName;
                 this.NotificationEmails = serviceJob.NotificationEmails;
                 this.NotificationStatus = serviceJob.NotificationStatus;
-                this.Id = serviceJob.Id;
-                this.Guid = serviceJob.Guid;
             }
         }
 
@@ -196,8 +184,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is ServiceJob )
             {
                 var serviceJob = (ServiceJob)model;
@@ -216,18 +206,7 @@ namespace Rock.Model
                 serviceJob.LastRunSchedulerName = this.LastRunSchedulerName;
                 serviceJob.NotificationEmails = this.NotificationEmails;
                 serviceJob.NotificationStatus = this.NotificationStatus;
-                serviceJob.Id = this.Id;
-                serviceJob.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

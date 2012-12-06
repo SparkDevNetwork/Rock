@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MarketingCampaignAudienceDto : IDto, DotLiquid.ILiquidizable
+    public partial class MarketingCampaignAudienceDto : DtoSecured<MarketingCampaignAudienceDto>
     {
         /// <summary />
         [DataMember]
@@ -36,14 +36,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public bool IsPrimary { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -65,14 +57,12 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "MarketingCampaignId", this.MarketingCampaignId );
             dictionary.Add( "AudienceTypeValueId", this.AudienceTypeValueId );
             dictionary.Add( "IsPrimary", this.IsPrimary );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -80,14 +70,12 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.MarketingCampaignId = this.MarketingCampaignId;
             expando.AudienceTypeValueId = this.AudienceTypeValueId;
             expando.IsPrimary = this.IsPrimary;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -95,16 +83,16 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is MarketingCampaignAudience )
             {
                 var marketingCampaignAudience = (MarketingCampaignAudience)model;
                 this.MarketingCampaignId = marketingCampaignAudience.MarketingCampaignId;
                 this.AudienceTypeValueId = marketingCampaignAudience.AudienceTypeValueId;
                 this.IsPrimary = marketingCampaignAudience.IsPrimary;
-                this.Id = marketingCampaignAudience.Id;
-                this.Guid = marketingCampaignAudience.Guid;
             }
         }
 
@@ -112,26 +100,17 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is MarketingCampaignAudience )
             {
                 var marketingCampaignAudience = (MarketingCampaignAudience)model;
                 marketingCampaignAudience.MarketingCampaignId = this.MarketingCampaignId;
                 marketingCampaignAudience.AudienceTypeValueId = this.AudienceTypeValueId;
                 marketingCampaignAudience.IsPrimary = this.IsPrimary;
-                marketingCampaignAudience.Id = this.Id;
-                marketingCampaignAudience.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

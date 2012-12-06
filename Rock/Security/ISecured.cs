@@ -64,12 +64,6 @@ namespace Rock.Security
         /// <returns></returns>
 
         bool IsAllowedByDefault( string action );
-
-        /// <summary>
-        /// Finds the AuthRule records associated with the current object.
-        /// </summary>
-        /// <returns></returns>
-        IQueryable<AuthRule> FindAuthRules();
-
+        
     }
 }

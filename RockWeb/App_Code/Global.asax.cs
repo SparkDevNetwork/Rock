@@ -577,17 +577,17 @@ namespace RockWeb
             {
                 // Cache all the Field Types
                 var fieldTypeService = new Rock.Model.FieldTypeService();
-                foreach ( var fieldType in fieldTypeService.Queryable() )
+                foreach ( var fieldType in fieldTypeService.Queryable().ToList() )
                     Rock.Web.Cache.FieldTypeCache.Read( fieldType );
 
                 // Cache all tha Defined Types
                 var definedTypeService = new Rock.Model.DefinedTypeService();
-                foreach ( var definedType in definedTypeService.Queryable() )
+                foreach ( var definedType in definedTypeService.Queryable().ToList() )
                     Rock.Web.Cache.DefinedTypeCache.Read( definedType );
 
                 // Cache all the Defined Values
                 var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable() )
+                foreach ( var definedValue in definedValueService.Queryable().ToList() )
                     Rock.Web.Cache.DefinedValueCache.Read( definedValue );
 
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
@@ -600,7 +600,7 @@ namespace RockWeb
                 }
 
                 // Cache all the attributes.
-                foreach ( var attribute in new Rock.Model.AttributeService().Queryable() )
+                foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
                 {
                     if ( qualifiers.ContainsKey( attribute.Id ) )
                         Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
