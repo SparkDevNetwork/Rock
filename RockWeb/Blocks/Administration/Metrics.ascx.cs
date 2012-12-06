@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
                 BindCategoryFilter();                
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Administration
                 metric.MinValue = tbMinValue.Text != "" ? Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands ) : (int?)null;
                 metric.MaxValue = tbMinValue.Text != "" ? Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands ) : (int?)null;
                 metric.Type = cbType.Checked;
-                metric.CollectionFrequencyId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
+                metric.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
                 metric.Source = tbSource.Text;
                 metric.SourceSQL = tbSourceSQL.Text;
 
@@ -335,7 +335,7 @@ namespace RockWeb.Blocks.Administration
                 tbMinValue.Text = metric.MinValue.ToString();
                 tbMaxValue.Text = metric.MaxValue.ToString();
                 cbType.Checked = metric.Type;
-                ddlCollectionFrequency.SelectedValue = metric.CollectionFrequencyId.ToString();
+                ddlCollectionFrequency.SelectedValue = metric.CollectionFrequencyValueId.ToString();
                 tbSource.Text = metric.Source;
                 tbSourceSQL.Text = metric.SourceSQL;
             }

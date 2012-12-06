@@ -69,7 +69,7 @@ public partial class GroupTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroupType.DataKeyNames = new string[] { "id" };
             gGroupType.Actions.IsAddEnabled = true;
@@ -99,7 +99,7 @@ public partial class GroupTypes : RockBlock
         mdGridWarning.Hide();
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {
@@ -443,7 +443,7 @@ public partial class GroupTypes : RockBlock
             var locationType = definedValueService.Get( item.Key );
             if ( locationType != null )
             {
-                groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeId = locationType.Id } );
+                groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
             }
         }
 
@@ -528,7 +528,7 @@ public partial class GroupTypes : RockBlock
             tbDescription.Text = groupType.Description;
             ddlDefaultGroupRole.SelectedValue = ( groupType.DefaultGroupRoleId ?? None.Id ).ToString();
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
-            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeId, a.LocationType.Name ) );
+            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
             readOnly = groupType.IsSystem;
 
             if ( groupType.IsSystem )

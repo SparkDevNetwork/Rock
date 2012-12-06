@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Model;
+using Rock.Workflow;
 
 namespace Rock.Data
 {
@@ -319,7 +320,7 @@ namespace Rock.Data
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
         {
-            foreach ( var trigger in WorkflowTriggerCache.Instance.Triggers( entity.TypeName, triggerType ) )
+            foreach ( var trigger in TriggerCache.Instance.Triggers( entity.TypeName, triggerType ) )
             {
                 if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
                 {

@@ -27,7 +27,7 @@ public partial class Groups : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gGroups.DataKeyNames = new string[] { "id" };
             gGroups.Actions.IsAddEnabled = true;
@@ -44,7 +44,7 @@ public partial class Groups : RockBlock
     {
         nbMessage.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {

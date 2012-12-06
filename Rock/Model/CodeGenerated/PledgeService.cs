@@ -67,7 +67,7 @@ namespace Rock.Model
                     Amount = m.Amount,
                     StartDate = m.StartDate,
                     EndDate = m.EndDate,
-                    FrequencyTypeId = m.FrequencyTypeId,
+                    FrequencyTypeValueId = m.FrequencyTypeValueId,
                     FrequencyAmount = m.FrequencyAmount,
                     Id = m.Id,
                     Guid = m.Guid,

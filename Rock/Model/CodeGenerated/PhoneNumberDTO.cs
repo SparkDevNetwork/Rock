@@ -43,7 +43,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? NumberTypeId { get; set; }
+        public int? NumberTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -92,7 +92,7 @@ namespace Rock.Model
             dictionary.Add( "PersonId", this.PersonId );
             dictionary.Add( "Number", this.Number );
             dictionary.Add( "Extension", this.Extension );
-            dictionary.Add( "NumberTypeId", this.NumberTypeId );
+            dictionary.Add( "NumberTypeValueId", this.NumberTypeValueId );
             dictionary.Add( "IsMessagingEnabled", this.IsMessagingEnabled );
             dictionary.Add( "IsUnlisted", this.IsUnlisted );
             dictionary.Add( "Description", this.Description );
@@ -112,7 +112,7 @@ namespace Rock.Model
             expando.PersonId = this.PersonId;
             expando.Number = this.Number;
             expando.Extension = this.Extension;
-            expando.NumberTypeId = this.NumberTypeId;
+            expando.NumberTypeValueId = this.NumberTypeValueId;
             expando.IsMessagingEnabled = this.IsMessagingEnabled;
             expando.IsUnlisted = this.IsUnlisted;
             expando.Description = this.Description;
@@ -134,7 +134,7 @@ namespace Rock.Model
                 this.PersonId = phoneNumber.PersonId;
                 this.Number = phoneNumber.Number;
                 this.Extension = phoneNumber.Extension;
-                this.NumberTypeId = phoneNumber.NumberTypeId;
+                this.NumberTypeValueId = phoneNumber.NumberTypeValueId;
                 this.IsMessagingEnabled = phoneNumber.IsMessagingEnabled;
                 this.IsUnlisted = phoneNumber.IsUnlisted;
                 this.Description = phoneNumber.Description;
@@ -156,7 +156,7 @@ namespace Rock.Model
                 phoneNumber.PersonId = this.PersonId;
                 phoneNumber.Number = this.Number;
                 phoneNumber.Extension = this.Extension;
-                phoneNumber.NumberTypeId = this.NumberTypeId;
+                phoneNumber.NumberTypeValueId = this.NumberTypeValueId;
                 phoneNumber.IsMessagingEnabled = this.IsMessagingEnabled;
                 phoneNumber.IsUnlisted = this.IsUnlisted;
                 phoneNumber.Description = this.Description;
