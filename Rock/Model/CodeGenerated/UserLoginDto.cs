@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class UserLoginDto : IDto, DotLiquid.ILiquidizable
+    public partial class UserLoginDto : DtoSecured<UserLoginDto>
     {
         /// <summary />
         [DataMember]
@@ -89,14 +89,6 @@ namespace Rock.Model
         [DataMember]
         public int? PersonId { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -117,9 +109,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "ServiceType", this.ServiceType );
             dictionary.Add( "ServiceName", this.ServiceName );
             dictionary.Add( "UserName", this.UserName );
@@ -136,8 +128,6 @@ namespace Rock.Model
             dictionary.Add( "FailedPasswordAttemptWindowStart", this.FailedPasswordAttemptWindowStart );
             dictionary.Add( "ApiKey", this.ApiKey );
             dictionary.Add( "PersonId", this.PersonId );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -145,9 +135,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.ServiceType = this.ServiceType;
             expando.ServiceName = this.ServiceName;
             expando.UserName = this.UserName;
@@ -164,8 +154,6 @@ namespace Rock.Model
             expando.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
             expando.ApiKey = this.ApiKey;
             expando.PersonId = this.PersonId;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -173,8 +161,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is UserLogin )
             {
                 var userLogin = (UserLogin)model;
@@ -194,8 +184,6 @@ namespace Rock.Model
                 this.FailedPasswordAttemptWindowStart = userLogin.FailedPasswordAttemptWindowStart;
                 this.ApiKey = userLogin.ApiKey;
                 this.PersonId = userLogin.PersonId;
-                this.Id = userLogin.Id;
-                this.Guid = userLogin.Guid;
             }
         }
 
@@ -203,8 +191,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is UserLogin )
             {
                 var userLogin = (UserLogin)model;
@@ -224,18 +214,7 @@ namespace Rock.Model
                 userLogin.FailedPasswordAttemptWindowStart = this.FailedPasswordAttemptWindowStart;
                 userLogin.ApiKey = this.ApiKey;
                 userLogin.PersonId = this.PersonId;
-                userLogin.Id = this.Id;
-                userLogin.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

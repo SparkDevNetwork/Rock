@@ -40,7 +40,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? RecordTypeId { get; set; }
+        public int? RecordTypeValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Id.
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? RecordStatusId { get; set; }
+        public int? RecordStatusValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason Id.
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? RecordStatusReasonId { get; set; }
+        public int? RecordStatusReasonValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status Id.
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? PersonStatusId { get; set; }
+        public int? PersonStatusValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Title Id.
@@ -72,7 +72,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? TitleId { get; set; }
+        public int? TitleValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Given Name.
@@ -109,7 +109,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? SuffixId { get; set; }
+        public int? SuffixValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Photo Id.
@@ -158,7 +158,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
-        public int? MaritalStatusId { get; set; }
+        public int? MaritalStatusValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the Anniversary Date.
@@ -301,7 +301,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue MaritalStatus { get; set; }
+        public virtual Model.DefinedValue MaritalStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status.
@@ -309,7 +309,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue PersonStatus { get; set; }
+        public virtual Model.DefinedValue PersonStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status.
@@ -317,7 +317,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue RecordStatus { get; set; }
+        public virtual Model.DefinedValue RecordStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason.
@@ -325,7 +325,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue RecordStatusReason { get; set; }
+        public virtual Model.DefinedValue RecordStatusReasonValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type.
@@ -333,7 +333,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue RecordType { get; set; }
+        public virtual Model.DefinedValue RecordTypeValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Suffix.
@@ -341,7 +341,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue Suffix { get; set; }
+        public virtual Model.DefinedValue SuffixValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Title.
@@ -349,7 +349,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue Title { get; set; }
+        public virtual Model.DefinedValue TitleValue { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
@@ -482,13 +482,13 @@ namespace Rock.Model
         /// </summary>
         public PersonConfiguration()
         {
-            this.HasOptional( p => p.MaritalStatus ).WithMany().HasForeignKey( p => p.MaritalStatusId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.PersonStatus ).WithMany().HasForeignKey( p => p.PersonStatusId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordStatus ).WithMany().HasForeignKey( p => p.RecordStatusId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordStatusReason ).WithMany().HasForeignKey( p => p.RecordStatusReasonId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordType ).WithMany().HasForeignKey( p => p.RecordTypeId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Suffix ).WithMany().HasForeignKey( p => p.SuffixId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Title ).WithMany().HasForeignKey( p => p.TitleId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.MaritalStatusValue ).WithMany().HasForeignKey( p => p.MaritalStatusValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.PersonStatusValue ).WithMany().HasForeignKey( p => p.PersonStatusValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete(false);
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }
     }

@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class BlockDto : IDto, DotLiquid.ILiquidizable
+    public partial class BlockDto : DtoSecured<BlockDto>
     {
         /// <summary />
         [DataMember]
@@ -57,14 +57,6 @@ namespace Rock.Model
         [DataMember]
         public int OutputCacheDuration { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -85,9 +77,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "PageId", this.PageId );
             dictionary.Add( "Layout", this.Layout );
@@ -96,8 +88,6 @@ namespace Rock.Model
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "OutputCacheDuration", this.OutputCacheDuration );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,9 +95,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.PageId = this.PageId;
             expando.Layout = this.Layout;
@@ -116,8 +106,6 @@ namespace Rock.Model
             expando.Order = this.Order;
             expando.Name = this.Name;
             expando.OutputCacheDuration = this.OutputCacheDuration;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Block )
             {
                 var block = (Block)model;
@@ -138,8 +128,6 @@ namespace Rock.Model
                 this.Order = block.Order;
                 this.Name = block.Name;
                 this.OutputCacheDuration = block.OutputCacheDuration;
-                this.Id = block.Id;
-                this.Guid = block.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Block )
             {
                 var block = (Block)model;
@@ -160,18 +150,7 @@ namespace Rock.Model
                 block.Order = this.Order;
                 block.Name = this.Name;
                 block.OutputCacheDuration = this.OutputCacheDuration;
-                block.Id = this.Id;
-                block.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

@@ -24,7 +24,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class LocationDto : IDto, DotLiquid.ILiquidizable
+    public partial class LocationDto : DtoSecured<LocationDto>
     {
         /// <summary />
         [DataMember]
@@ -114,14 +114,6 @@ namespace Rock.Model
         [DataMember]
         public DateTime? GeocodedDateTime { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -142,9 +134,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "ParentLocationId", this.ParentLocationId );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "IsActive", this.IsActive );
@@ -167,8 +159,6 @@ namespace Rock.Model
             dictionary.Add( "GeocodeAttemptedServiceType", this.GeocodeAttemptedServiceType );
             dictionary.Add( "GeocodeAttemptedResult", this.GeocodeAttemptedResult );
             dictionary.Add( "GeocodedDateTime", this.GeocodedDateTime );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -176,9 +166,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.ParentLocationId = this.ParentLocationId;
             expando.Name = this.Name;
             expando.IsActive = this.IsActive;
@@ -201,8 +191,6 @@ namespace Rock.Model
             expando.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
             expando.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
             expando.GeocodedDateTime = this.GeocodedDateTime;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -210,8 +198,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Location )
             {
                 var location = (Location)model;
@@ -237,8 +227,6 @@ namespace Rock.Model
                 this.GeocodeAttemptedServiceType = location.GeocodeAttemptedServiceType;
                 this.GeocodeAttemptedResult = location.GeocodeAttemptedResult;
                 this.GeocodedDateTime = location.GeocodedDateTime;
-                this.Id = location.Id;
-                this.Guid = location.Guid;
             }
         }
 
@@ -246,8 +234,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Location )
             {
                 var location = (Location)model;
@@ -273,18 +263,7 @@ namespace Rock.Model
                 location.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
                 location.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
                 location.GeocodedDateTime = this.GeocodedDateTime;
-                location.Id = this.Id;
-                location.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

@@ -116,6 +116,8 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Data\DtoSecured.cs" />
+    <Compile Include="Data\Dto.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -124,11 +126,28 @@
     <Compile Include="Migrations\201212051230308_AddMissingTagConfiguration.Designer.cs">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201212051636262_CheckIn.cs" />
+    <Compile Include="Migrations\201212051710292_AuthConfigureAdministrate.cs" />
+    <Compile Include="Migrations\201212051710292_AuthConfigureAdministrate.Designer.cs">
+      <DependentUpon>201212051710292_AuthConfigureAdministrate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212052022346_ClassRename.cs" />
+    <Compile Include="Migrations\201212052022346_ClassRename.Designer.cs">
+      <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212052126507_DefinedValueNaming.cs" />
+    <Compile Include="Migrations\201212052126507_DefinedValueNaming.Designer.cs">
+      <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.cs" />
+    <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.Designer.cs">
+      <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
+    </Compile>
+        <Compile Include="Migrations\201212051636262_CheckIn.cs" />
     <Compile Include="Migrations\201212051636262_CheckIn.Designer.cs">
       <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
+    <Compile Include="Model\BlockDto.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceDto.cs" />
@@ -172,6 +191,14 @@
     <Compile Include="Model\CodeGenerated\UserLoginDto.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionDto.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionTypeDto.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActivityDto.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActivityTypeDto.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
     <Compile Include="Model\MarketingCampaignAdDto.partial.cs" />
@@ -253,7 +280,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
-    <Compile Include="Util\WorkflowTriggerCache.cs" />
+    <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
     <Compile Include="Model\EntityType.cs" />
@@ -394,7 +421,7 @@
     <Compile Include="Model\PaymentGateway.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\PersonAccountLookup.cs">
+    <Compile Include="Model\PersonAccount.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Pledge.cs">
@@ -476,27 +503,19 @@
     <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="SystemGuid\EmailTemplate.cs" />
-    <Compile Include="Model\ActivityType.cs" />
-    <Compile Include="Model\ActionType.cs" />
-    <Compile Include="Model\Activity.cs" />
-    <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\WorkflowActivityType.cs" />
+    <Compile Include="Model\WorkflowActionType.cs" />
+    <Compile Include="Model\WorkflowActivity.cs" />
+    <Compile Include="Model\WorkflowAction.cs" />
     <Compile Include="Jobs\ProcessWorkflows.cs" />
-    <Compile Include="Util\WorkflowAction\CompleteWorkflow.cs" />
-    <Compile Include="Util\WorkflowAction\ActivateActivity.cs" />
-    <Compile Include="Util\WorkflowAction\SendEmail.cs" />
-    <Compile Include="Util\WorkflowAction\SetStatus.cs" />
+    <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
+    <Compile Include="Workflow\Action\ActivateActivity.cs" />
+    <Compile Include="Workflow\Action\SendEmail.cs" />
+    <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
-    <Compile Include="Util\WorkflowActionComponent.cs" />
-    <Compile Include="Util\WorkflowActionContainer.cs" />
-    <Compile Include="Model\CodeGenerated\ActionDto.cs" />
-    <Compile Include="Model\CodeGenerated\ActionService.cs" />
-    <Compile Include="Model\CodeGenerated\ActionTypeDto.cs" />
-    <Compile Include="Model\CodeGenerated\ActionTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\ActivityDto.cs" />
-    <Compile Include="Model\CodeGenerated\ActivityService.cs" />
-    <Compile Include="Model\CodeGenerated\ActivityTypeDto.cs" />
-    <Compile Include="Model\CodeGenerated\ActivityTypeService.cs" />
+    <Compile Include="Workflow\ActionComponent.cs" />
+    <Compile Include="Workflow\ActionContainer.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowLogDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowLogService.cs" />
@@ -786,10 +805,23 @@
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212051710292_AuthConfigureAdministrate.resx">
+      <DependentUpon>201212051710292_AuthConfigureAdministrate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212052022346_ClassRename.resx">
+      <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212052126507_DefinedValueNaming.resx">
+      <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212052255598_ServiceJobColumnNames.resx">
+      <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051636262_CheckIn.resx">
       <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

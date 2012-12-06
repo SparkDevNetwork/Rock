@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GroupMemberDto : IDto, DotLiquid.ILiquidizable
+    public partial class GroupMemberDto : DtoSecured<GroupMemberDto>
     {
         /// <summary />
         [DataMember]
@@ -40,14 +40,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public int GroupRoleId { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -69,15 +61,13 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "GroupId", this.GroupId );
             dictionary.Add( "PersonId", this.PersonId );
             dictionary.Add( "GroupRoleId", this.GroupRoleId );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -85,15 +75,13 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.GroupId = this.GroupId;
             expando.PersonId = this.PersonId;
             expando.GroupRoleId = this.GroupRoleId;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -101,8 +89,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is GroupMember )
             {
                 var groupMember = (GroupMember)model;
@@ -110,8 +100,6 @@ namespace Rock.Model
                 this.GroupId = groupMember.GroupId;
                 this.PersonId = groupMember.PersonId;
                 this.GroupRoleId = groupMember.GroupRoleId;
-                this.Id = groupMember.Id;
-                this.Guid = groupMember.Guid;
             }
         }
 
@@ -119,8 +107,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is GroupMember )
             {
                 var groupMember = (GroupMember)model;
@@ -128,18 +118,7 @@ namespace Rock.Model
                 groupMember.GroupId = this.GroupId;
                 groupMember.PersonId = this.PersonId;
                 groupMember.GroupRoleId = this.GroupRoleId;
-                groupMember.Id = this.Id;
-                groupMember.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

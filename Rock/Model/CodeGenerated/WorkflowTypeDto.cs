@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class WorkflowTypeDto : IDto, DotLiquid.ILiquidizable
+    public partial class WorkflowTypeDto : DtoSecured<WorkflowTypeDto>
     {
         /// <summary />
         [DataMember]
@@ -69,14 +69,6 @@ namespace Rock.Model
         [DataMember]
         public WorkflowLoggingLevel LoggingLevel { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -97,9 +89,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "IsActive", this.IsActive );
             dictionary.Add( "Name", this.Name );
@@ -111,8 +103,6 @@ namespace Rock.Model
             dictionary.Add( "ProcessingIntervalSeconds", this.ProcessingIntervalSeconds );
             dictionary.Add( "IsPersisted", this.IsPersisted );
             dictionary.Add( "LoggingLevel", this.LoggingLevel );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -120,9 +110,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.IsActive = this.IsActive;
             expando.Name = this.Name;
@@ -134,8 +124,6 @@ namespace Rock.Model
             expando.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
             expando.IsPersisted = this.IsPersisted;
             expando.LoggingLevel = this.LoggingLevel;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -143,8 +131,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is WorkflowType )
             {
                 var workflowType = (WorkflowType)model;
@@ -159,8 +149,6 @@ namespace Rock.Model
                 this.ProcessingIntervalSeconds = workflowType.ProcessingIntervalSeconds;
                 this.IsPersisted = workflowType.IsPersisted;
                 this.LoggingLevel = workflowType.LoggingLevel;
-                this.Id = workflowType.Id;
-                this.Guid = workflowType.Guid;
             }
         }
 
@@ -168,8 +156,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is WorkflowType )
             {
                 var workflowType = (WorkflowType)model;
@@ -184,18 +174,7 @@ namespace Rock.Model
                 workflowType.ProcessingIntervalSeconds = this.ProcessingIntervalSeconds;
                 workflowType.IsPersisted = this.IsPersisted;
                 workflowType.LoggingLevel = this.LoggingLevel;
-                workflowType.Id = this.Id;
-                workflowType.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

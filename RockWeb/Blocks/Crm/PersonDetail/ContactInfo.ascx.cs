@@ -23,12 +23,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var service = new PhoneNumberService();
             foreach ( dynamic item in service.Queryable()
                 .Where( n => n.PersonId == Person.Id )
-                .OrderBy( n => n.NumberType.Order )
+                .OrderBy( n => n.NumberTypeValue.Order )
                 .Select( n => new
                 {
                     Number = n.Number,
                     Unlisted = n.IsUnlisted,
-                    Type = n.NumberType.Name
+                    Type = n.NumberTypeValue.Name
                 }
                 ) )
             {

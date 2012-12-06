@@ -63,7 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The frequency type id.
         /// </value>
-        public int? FrequencyTypeId { get; set; }
+        public int? FrequencyTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the frequency amount.
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the frequency.
         /// </value>
-        public virtual DefinedValue FrequencyType { get; set; }
+        public virtual DefinedValue FrequencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -140,7 +140,7 @@ namespace Rock.Model
         {
             this.HasOptional(p => p.Person).WithMany(p => p.Pledges).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
             this.HasOptional(p => p.Fund).WithMany(f => f.Pledges).HasForeignKey(p => p.FundId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.FrequencyType).WithMany().HasForeignKey(p => p.FrequencyTypeId).WillCascadeOnDelete(false);
+            this.HasOptional(p => p.FrequencyTypeValue).WithMany().HasForeignKey(p => p.FrequencyTypeValueId).WillCascadeOnDelete(false);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,7 +17,7 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageContext" )]
-    public partial class PageContext : Model<PageContext>
+    public partial class PageContext : Model<PageContext>, IExportable
     {
         /// <summary>
         /// Gets or sets the System.
@@ -100,6 +101,21 @@ namespace Rock.Model
         public override string ToString()
         {
             return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
+        }
+
+        public object ExportObject()
+        {
+            return this.ToDynamic();
+        }
+
+        public string ExportJson()
+        {
+            return ExportObject().ToJSON();
+        }
+
+        public void ImportJson( string data )
+        {
+            JsonConvert.PopulateObject( data, this );
         }
     }
 

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -144,6 +145,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Page;
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -197,7 +212,7 @@ namespace Rock.Model
         /// <param name="data">The data.</param>
         public void ImportJson( string data )
         {
-
+            JsonConvert.PopulateObject( data, this );
         }
     }
 

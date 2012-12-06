@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Administration
             job.Name = tbName.Text;
             job.Description = tbDescription.Text;
             job.IsActive = cbActive.Checked;
-            job.Assemby = tbAssembly.Text;
+            job.Assembly = tbAssembly.Text;
             job.Class = tbClass.Text;
             job.NotificationEmails = tbNotificationEmails.Text;
             job.NotificationStatus = (JobNotificationStatus)int.Parse(drpNotificationStatus.SelectedValue);
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = job.Name;
             tbDescription.Text = job.Description;
             cbActive.Checked = job.IsActive.HasValue ? job.IsActive.Value : false;
-            tbAssembly.Text = job.Assemby;
+            tbAssembly.Text = job.Assembly;
             tbClass.Text = job.Class;
             tbNotificationEmails.Text = job.NotificationEmails;
             drpNotificationStatus.SelectedValue = ((int)job.NotificationStatus).ToString();

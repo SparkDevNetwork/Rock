@@ -73,7 +73,7 @@ namespace Rock.Model
                     EndDate = m.EndDate,
                     IsPledgable = m.IsPledgable,
                     GlCode = m.GlCode,
-                    FundTypeId = m.FundTypeId,
+                    FundTypeValueId = m.FundTypeValueId,
                     Entity = m.Entity,
                     EntityId = m.EntityId,
                     Id = m.Id,

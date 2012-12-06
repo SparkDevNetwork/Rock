@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class ServiceJobDto : IDto, DotLiquid.ILiquidizable
+    public partial class ServiceJobDto : DtoSecured<ServiceJobDto>
     {
         /// <summary />
         [DataMember]
@@ -43,7 +43,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public string Assemby { get; set; }
+        public string Assembly { get; set; }
 
         /// <summary />
         [DataMember]
@@ -55,15 +55,15 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public DateTime? LastSuccessfulRun { get; set; }
+        public DateTime? LastSuccessfulRunDateTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public DateTime? LastRunDate { get; set; }
+        public DateTime? LastRunDateTime { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? LastRunDuration { get; set; }
+        public int? LastRunDurationSeconds { get; set; }
 
         /// <summary />
         [DataMember]
@@ -85,14 +85,6 @@ namespace Rock.Model
         [DataMember]
         public JobNotificationStatus NotificationStatus { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -113,26 +105,24 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "IsActive", this.IsActive );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "Assemby", this.Assemby );
+            dictionary.Add( "Assembly", this.Assembly );
             dictionary.Add( "Class", this.Class );
             dictionary.Add( "CronExpression", this.CronExpression );
-            dictionary.Add( "LastSuccessfulRun", this.LastSuccessfulRun );
-            dictionary.Add( "LastRunDate", this.LastRunDate );
-            dictionary.Add( "LastRunDuration", this.LastRunDuration );
+            dictionary.Add( "LastSuccessfulRunDateTime", this.LastSuccessfulRunDateTime );
+            dictionary.Add( "LastRunDateTime", this.LastRunDateTime );
+            dictionary.Add( "LastRunDurationSeconds", this.LastRunDurationSeconds );
             dictionary.Add( "LastStatus", this.LastStatus );
             dictionary.Add( "LastStatusMessage", this.LastStatusMessage );
             dictionary.Add( "LastRunSchedulerName", this.LastRunSchedulerName );
             dictionary.Add( "NotificationEmails", this.NotificationEmails );
             dictionary.Add( "NotificationStatus", this.NotificationStatus );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -140,26 +130,24 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.IsActive = this.IsActive;
             expando.Name = this.Name;
             expando.Description = this.Description;
-            expando.Assemby = this.Assemby;
+            expando.Assembly = this.Assembly;
             expando.Class = this.Class;
             expando.CronExpression = this.CronExpression;
-            expando.LastSuccessfulRun = this.LastSuccessfulRun;
-            expando.LastRunDate = this.LastRunDate;
-            expando.LastRunDuration = this.LastRunDuration;
+            expando.LastSuccessfulRunDateTime = this.LastSuccessfulRunDateTime;
+            expando.LastRunDateTime = this.LastRunDateTime;
+            expando.LastRunDurationSeconds = this.LastRunDurationSeconds;
             expando.LastStatus = this.LastStatus;
             expando.LastStatusMessage = this.LastStatusMessage;
             expando.LastRunSchedulerName = this.LastRunSchedulerName;
             expando.NotificationEmails = this.NotificationEmails;
             expando.NotificationStatus = this.NotificationStatus;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -167,8 +155,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is ServiceJob )
             {
                 var serviceJob = (ServiceJob)model;
@@ -176,19 +166,17 @@ namespace Rock.Model
                 this.IsActive = serviceJob.IsActive;
                 this.Name = serviceJob.Name;
                 this.Description = serviceJob.Description;
-                this.Assemby = serviceJob.Assemby;
+                this.Assembly = serviceJob.Assembly;
                 this.Class = serviceJob.Class;
                 this.CronExpression = serviceJob.CronExpression;
-                this.LastSuccessfulRun = serviceJob.LastSuccessfulRun;
-                this.LastRunDate = serviceJob.LastRunDate;
-                this.LastRunDuration = serviceJob.LastRunDuration;
+                this.LastSuccessfulRunDateTime = serviceJob.LastSuccessfulRunDateTime;
+                this.LastRunDateTime = serviceJob.LastRunDateTime;
+                this.LastRunDurationSeconds = serviceJob.LastRunDurationSeconds;
                 this.LastStatus = serviceJob.LastStatus;
                 this.LastStatusMessage = serviceJob.LastStatusMessage;
                 this.LastRunSchedulerName = serviceJob.LastRunSchedulerName;
                 this.NotificationEmails = serviceJob.NotificationEmails;
                 this.NotificationStatus = serviceJob.NotificationStatus;
-                this.Id = serviceJob.Id;
-                this.Guid = serviceJob.Guid;
             }
         }
 
@@ -196,8 +184,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is ServiceJob )
             {
                 var serviceJob = (ServiceJob)model;
@@ -205,29 +195,18 @@ namespace Rock.Model
                 serviceJob.IsActive = this.IsActive;
                 serviceJob.Name = this.Name;
                 serviceJob.Description = this.Description;
-                serviceJob.Assemby = this.Assemby;
+                serviceJob.Assembly = this.Assembly;
                 serviceJob.Class = this.Class;
                 serviceJob.CronExpression = this.CronExpression;
-                serviceJob.LastSuccessfulRun = this.LastSuccessfulRun;
-                serviceJob.LastRunDate = this.LastRunDate;
-                serviceJob.LastRunDuration = this.LastRunDuration;
+                serviceJob.LastSuccessfulRunDateTime = this.LastSuccessfulRunDateTime;
+                serviceJob.LastRunDateTime = this.LastRunDateTime;
+                serviceJob.LastRunDurationSeconds = this.LastRunDurationSeconds;
                 serviceJob.LastStatus = this.LastStatus;
                 serviceJob.LastStatusMessage = this.LastStatusMessage;
                 serviceJob.LastRunSchedulerName = this.LastRunSchedulerName;
                 serviceJob.NotificationEmails = this.NotificationEmails;
                 serviceJob.NotificationStatus = this.NotificationStatus;
-                serviceJob.Id = this.Id;
-                serviceJob.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

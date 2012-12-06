@@ -80,17 +80,6 @@ namespace Rock.Data
             return action == "View";
         }
 
-        /// <summary>
-        /// Finds the AuthRule records associated with the current object.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<AuthRule> FindAuthRules()
-        {
-            return ( from action in SupportedActions
-                     from rule in Authorization.AuthRules( this.TypeId, this.Id, action )
-                     select rule ).AsQueryable();
-        }
-
         #endregion
 
         #region IHasAttributes implementation

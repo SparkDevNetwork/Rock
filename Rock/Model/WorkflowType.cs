@@ -142,12 +142,12 @@ namespace Rock.Model
         /// <value>
         /// The activity types.
         /// </value>
-        public virtual ICollection<ActivityType> ActivityTypes
+        public virtual ICollection<WorkflowActivityType> ActivityTypes
         {
-            get { return _activityTypes ?? ( _activityTypes = new Collection<ActivityType>() ); }
+            get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
             set { _activityTypes = value; }
         }
-        private ICollection<ActivityType> _activityTypes;
+        private ICollection<WorkflowActivityType> _activityTypes;
 
         /// <summary>
         /// Gets the dto.

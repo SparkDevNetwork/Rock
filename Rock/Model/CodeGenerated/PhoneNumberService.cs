@@ -66,7 +66,7 @@ namespace Rock.Model
                     PersonId = m.PersonId,
                     Number = m.Number,
                     Extension = m.Extension,
-                    NumberTypeId = m.NumberTypeId,
+                    NumberTypeValueId = m.NumberTypeValueId,
                     IsMessagingEnabled = m.IsMessagingEnabled,
                     IsUnlisted = m.IsUnlisted,
                     Description = m.Description,

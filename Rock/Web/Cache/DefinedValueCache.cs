@@ -7,6 +7,8 @@
 using System;
 using System.Runtime.Caching;
 
+using Rock.Security;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -28,6 +30,20 @@ namespace Rock.Web.Cache
         public DefinedTypeCache DefinedType
         {
             get { return DefinedTypeCache.Read( DefinedTypeId ); }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return DefinedType;
+            }
         }
 
         #region Static Methods
@@ -100,6 +116,7 @@ namespace Rock.Web.Cache
         public static DefinedValueCache CopyModel( Rock.Model.DefinedValue definedValueModel )
         {
             DefinedValueCache definedValue = new DefinedValueCache( definedValueModel );
+
             return definedValue;
         }
 
@@ -114,5 +131,6 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
     }
 }

@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PhoneNumberDto : IDto, DotLiquid.ILiquidizable
+    public partial class PhoneNumberDto : DtoSecured<PhoneNumberDto>
     {
         /// <summary />
         [DataMember]
@@ -43,7 +43,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? NumberTypeId { get; set; }
+        public int? NumberTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -56,14 +56,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public string Description { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -85,19 +77,17 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "PersonId", this.PersonId );
             dictionary.Add( "Number", this.Number );
             dictionary.Add( "Extension", this.Extension );
-            dictionary.Add( "NumberTypeId", this.NumberTypeId );
+            dictionary.Add( "NumberTypeValueId", this.NumberTypeValueId );
             dictionary.Add( "IsMessagingEnabled", this.IsMessagingEnabled );
             dictionary.Add( "IsUnlisted", this.IsUnlisted );
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,19 +95,17 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.PersonId = this.PersonId;
             expando.Number = this.Number;
             expando.Extension = this.Extension;
-            expando.NumberTypeId = this.NumberTypeId;
+            expando.NumberTypeValueId = this.NumberTypeValueId;
             expando.IsMessagingEnabled = this.IsMessagingEnabled;
             expando.IsUnlisted = this.IsUnlisted;
             expando.Description = this.Description;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is PhoneNumber )
             {
                 var phoneNumber = (PhoneNumber)model;
@@ -134,12 +124,10 @@ namespace Rock.Model
                 this.PersonId = phoneNumber.PersonId;
                 this.Number = phoneNumber.Number;
                 this.Extension = phoneNumber.Extension;
-                this.NumberTypeId = phoneNumber.NumberTypeId;
+                this.NumberTypeValueId = phoneNumber.NumberTypeValueId;
                 this.IsMessagingEnabled = phoneNumber.IsMessagingEnabled;
                 this.IsUnlisted = phoneNumber.IsUnlisted;
                 this.Description = phoneNumber.Description;
-                this.Id = phoneNumber.Id;
-                this.Guid = phoneNumber.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is PhoneNumber )
             {
                 var phoneNumber = (PhoneNumber)model;
@@ -156,22 +146,11 @@ namespace Rock.Model
                 phoneNumber.PersonId = this.PersonId;
                 phoneNumber.Number = this.Number;
                 phoneNumber.Extension = this.Extension;
-                phoneNumber.NumberTypeId = this.NumberTypeId;
+                phoneNumber.NumberTypeValueId = this.NumberTypeValueId;
                 phoneNumber.IsMessagingEnabled = this.IsMessagingEnabled;
                 phoneNumber.IsUnlisted = this.IsUnlisted;
                 phoneNumber.Description = this.Description;
-                phoneNumber.Id = this.Id;
-                phoneNumber.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

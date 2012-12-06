@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Dynamic;
 using System.Linq;
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -162,6 +164,20 @@ namespace Rock.Model
         /// Description.
         /// </value>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Site;
+            }
+        }
 
         /// <summary>
         /// Gets the dto.
@@ -349,7 +365,7 @@ namespace Rock.Model
         /// <returns></returns>
         public object ExportObject()
         {
-            return MapPagesRecursive( this );
+            return ExportPagesRecursive( this );
         }
 
         /// <summary>
@@ -357,14 +373,15 @@ namespace Rock.Model
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        public static dynamic MapPagesRecursive( Page page )
+        public static dynamic ExportPagesRecursive( Page page )
         {
             dynamic exportPage = new PageDto( page ).ToDynamic();
-            exportPage.AuthRoles = page.FindAuthRules().Select( r => r.ToDynamic() );
+            exportPage.AuthRoles = Security.Authorization.FindAuthRules(page).Select( r => r.ToDynamic() );
             exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
             exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
-            MapBlocks( page, exportPage );
-            MapPageRoutes( page, exportPage );
+            ExportBlocks( page, exportPage );
+            ExportPageRoutes( page, exportPage );
+            ExportPageContexts( page, exportPage );
 
             if ( page.Pages == null )
             {
@@ -375,7 +392,7 @@ namespace Rock.Model
 
             foreach ( var childPage in page.Pages )
             {
-                exportPage.Pages.Add( MapPagesRecursive( childPage ) );
+                exportPage.Pages.Add( ExportPagesRecursive( childPage ) );
             }
 
             return exportPage;
@@ -386,7 +403,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
-        private static void MapBlocks( Page page, dynamic exportPage )
+        private static void ExportBlocks( Page page, dynamic exportPage )
         {
             if ( page.Blocks == null )
             {
@@ -406,7 +423,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="exportPage">The export page.</param>
-        private static void MapPageRoutes( Page page, dynamic exportPage )
+        private static void ExportPageRoutes( Page page, dynamic exportPage )
         {
             if ( page.PageRoutes == null )
             {
@@ -421,14 +438,53 @@ namespace Rock.Model
             }
         }
 
+        private static void ExportPageContexts( Page page, dynamic exportPage )
+        {
+            if ( page.PageContexts == null )
+            {
+                return;
+            }
+
+            exportPage.PageContexts = new List<dynamic>();
+
+            foreach ( var pageContext in page.PageContexts )
+            {
+                exportPage.PageContexts.Add( pageContext.ExportObject() );
+            }
+        }
+
         /// <summary>
         /// Imports the object from JSON.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         public void ImportJson( string data )
         {
-            throw new NotImplementedException();
+            JsonConvert.PopulateObject( data, this );
+            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
+            ImportPagesRecursive( obj, this );
+        }
+
+        private static void ImportPagesRecursive( dynamic data, Page page )
+        {
+            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
+            page.Pages = new List<Page>();
+
+            if ( !dict.ContainsKey( "Pages" ) )
+            {
+                return;
+            }
+
+            foreach ( var p in data.Pages )
+            {
+                var newPage = ( (object) p ).ToModel<Page>();
+                var newDict = p as IDictionary<string, object>;
+                page.Pages.Add( newPage );
+
+                if ( newDict.ContainsKey( "Pages" ) )
+                {
+                    ImportPagesRecursive( p, newPage );
+                }
+            }
         }
     }
 

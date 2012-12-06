@@ -400,7 +400,9 @@ order by [parentTable]
         {
             string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
 
-            var properties = GetEntityProperties( type );
+            var properties = GetEntityProperties( type ).Where( p => p.Key != "Id" && p.Key != "Guid" );
+
+            bool isSecured = typeof(Rock.Security.ISecured).IsAssignableFrom(type);
 
             var sb = new StringBuilder();
 
@@ -436,7 +438,16 @@ order by [parentTable]
             sb.AppendLine( "    /// </summary>" );
             sb.AppendLine( "    [Serializable]" );
             sb.AppendLine( "    [DataContract]" );
-            sb.AppendFormat( "    public partial class {0}Dto : IDto, DotLiquid.ILiquidizable" + Environment.NewLine, type.Name );
+
+            if (isSecured)
+            {
+                sb.AppendFormat( "    public partial class {0}Dto : DtoSecured<{0}Dto>" + Environment.NewLine, type.Name );
+            }
+            else
+            {
+                sb.AppendFormat( "    public partial class {0}Dto : Dto" + Environment.NewLine, type.Name);
+            }
+
             sb.AppendLine( "    {" );
 
             foreach ( var property in properties )
@@ -472,9 +483,9 @@ order by [parentTable]
             sb.AppendLine( "        /// Creates a dictionary object." );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public virtual Dictionary<string, object> ToDictionary()" );
+            sb.AppendLine( "        public override Dictionary<string, object> ToDictionary()" );
             sb.AppendLine( "        {" );
-            sb.AppendLine( "            var dictionary = new Dictionary<string, object>();" );
+            sb.AppendLine( "            var dictionary = base.ToDictionary();" );
             foreach ( var property in properties )
             {
                 sb.AppendFormat( "            dictionary.Add( \"{0}\", this.{0} );" + Environment.NewLine, property.Key );
@@ -487,9 +498,9 @@ order by [parentTable]
             sb.AppendLine( "        /// Creates a dynamic object." );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public virtual dynamic ToDynamic()" );
+            sb.AppendLine( "        public override dynamic ToDynamic()" );
             sb.AppendLine( "        {" );
-            sb.AppendLine( "            dynamic expando = new ExpandoObject();" );
+            sb.AppendLine( "            dynamic expando = base.ToDynamic();" );
             foreach ( var property in properties )
             {
                 sb.AppendFormat( "            expando.{0} = this.{0};" + Environment.NewLine, property.Key );
@@ -502,8 +513,10 @@ order by [parentTable]
             sb.AppendLine( "        /// Copies the model property values to the DTO properties" );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public void CopyFromModel( IEntity model )" );
+            sb.AppendLine( "        public override void CopyFromModel( IEntity model )" );
             sb.AppendLine( "        {" );
+            sb.AppendLine( "            base.CopyFromModel( model );" );
+            sb.AppendLine( "" );
             sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
             sb.AppendLine( "            {" );
             sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
@@ -519,8 +532,10 @@ order by [parentTable]
             sb.AppendLine( "        /// Copies the DTO property values to the entity properties" );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public void CopyToModel ( IEntity model )" );
+            sb.AppendLine( "        public override void CopyToModel ( IEntity model )" );
             sb.AppendLine( "        {" );
+            sb.AppendLine( "            base.CopyToModel( model );" );
+            sb.AppendLine( "" );
             sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
             sb.AppendLine( "            {" );
             sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
@@ -532,16 +547,6 @@ order by [parentTable]
             sb.AppendLine( "        }" );
             sb.AppendLine( "" );
 
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Converts to liquidizable object for dotLiquid templating" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public object ToLiquid()" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            return this.ToDictionary();" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-            
             sb.AppendLine( "    }" );
 
             string extensionSection = @"
@@ -619,7 +624,17 @@ order by [parentTable]
                 baseName = baseName.Substring( 0, baseName.Length - 5 );
             }
 
-            string restControllersNamespace = ".Rest.Controllers";
+            string restNamespace = type.Namespace;
+            if ( restNamespace.StartsWith( baseName + ".", true, null ) )
+            {
+                restNamespace = baseName + ".Rest" + restNamespace.Substring( baseName.Length );
+            }
+            else
+            {
+                restNamespace = ".Rest." + restNamespace;
+            }
+
+            restNamespace = restNamespace.Replace( ".Model", ".Controllers" );
 
             var properties = GetEntityProperties( type );
 
@@ -641,7 +656,7 @@ order by [parentTable]
             sb.AppendFormat( "using {0};" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "" );
 
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restControllersNamespace );
+            sb.AppendFormat( "namespace {0}" + Environment.NewLine, restNamespace );
             sb.AppendLine( "{" );
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
@@ -653,7 +668,7 @@ order by [parentTable]
             sb.AppendLine( "}" );
 
 
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restControllersNamespace ).FullName, "CodeGenerated", pluralizedName + "Controller.cs" ) );
+            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, restNamespace ).FullName, "CodeGenerated", pluralizedName + "Controller.cs" ) );
             WriteFile( file, sb );
         }
 

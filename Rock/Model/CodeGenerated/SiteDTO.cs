@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class SiteDto : IDto, DotLiquid.ILiquidizable
+    public partial class SiteDto : DtoSecured<SiteDto>
     {
         /// <summary />
         [DataMember]
@@ -73,14 +73,6 @@ namespace Rock.Model
         [DataMember]
         public string ErrorPage { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -101,9 +93,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
@@ -116,8 +108,6 @@ namespace Rock.Model
             dictionary.Add( "LoginPageReference", this.LoginPageReference );
             dictionary.Add( "RegistrationPageReference", this.RegistrationPageReference );
             dictionary.Add( "ErrorPage", this.ErrorPage );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -125,9 +115,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.Name = this.Name;
             expando.Description = this.Description;
@@ -140,8 +130,6 @@ namespace Rock.Model
             expando.LoginPageReference = this.LoginPageReference;
             expando.RegistrationPageReference = this.RegistrationPageReference;
             expando.ErrorPage = this.ErrorPage;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -149,8 +137,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Site )
             {
                 var site = (Site)model;
@@ -166,8 +156,6 @@ namespace Rock.Model
                 this.LoginPageReference = site.LoginPageReference;
                 this.RegistrationPageReference = site.RegistrationPageReference;
                 this.ErrorPage = site.ErrorPage;
-                this.Id = site.Id;
-                this.Guid = site.Guid;
             }
         }
 
@@ -175,8 +163,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Site )
             {
                 var site = (Site)model;
@@ -192,18 +182,7 @@ namespace Rock.Model
                 site.LoginPageReference = this.LoginPageReference;
                 site.RegistrationPageReference = this.RegistrationPageReference;
                 site.ErrorPage = this.ErrorPage;
-                site.Id = this.Id;
-                site.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }
