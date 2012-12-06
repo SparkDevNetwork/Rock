@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 img.Alt = Person.FullName;
             }
 
-            lPersonStatus.Text = Person.PersonStatusId.DefinedValue();
-            RecordStatus = Person.RecordStatusId.DefinedValue();
+            lPersonStatus.Text = Person.PersonStatusValueId.DefinedValue();
+            RecordStatus = Person.RecordStatusValueId.DefinedValue();
 
             var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             if ( families != null )
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     
             lGender.Text = Person.Gender.ToString();
 
-            lMaritalStatus.Text = Person.MaritalStatusId.DefinedValue();
+            lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
             if ( Person.AnniversaryDate.HasValue )
                 lAnniversary.Text = string.Format( "{0} yrs <em>{1}</em>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );
         }

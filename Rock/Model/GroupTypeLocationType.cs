@@ -32,7 +32,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column( Order = 1 )]
-        public int LocationTypeId { get; set; }
+        public int LocationTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the group.
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the location.
         /// </value>
-        public virtual Model.DefinedValue LocationType { get; set; }
+        public virtual Model.DefinedValue LocationTypeValue { get; set; }
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ namespace Rock.Model
         public GroupTypeLocationTypeConfiguration()
         {
             this.HasRequired( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId );
-            this.HasRequired( t => t.LocationType ).WithMany().HasForeignKey( t => t.LocationTypeId );
+            this.HasRequired( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId );
         }
     }
 

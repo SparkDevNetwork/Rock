@@ -8,10 +8,10 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
                     <asp:BoundField DataField="IsActive" HeaderText="Active" />
-                    <asp:BoundField DataField="Assemby" HeaderText="Assembly" />                
-                    <asp:BoundField DataField="LastSuccessfulRun" HeaderText="Last Successful Run" />
-                    <asp:BoundField DataField="LastRunDate" HeaderText="Last Run Date" />
-                    <asp:BoundField DataField="LastRunDuration" HeaderText="Last Run Duration" />
+                    <asp:BoundField DataField="Assembly" HeaderText="Assembly" />                
+                    <asp:BoundField DataField="LastSuccessfulRunDateTime" HeaderText="Last Successful Run" />
+                    <asp:BoundField DataField="LastRunDateTime" HeaderText="Last Run Date" />
+                    <asp:BoundField DataField="LastRunDurationSeconds" HeaderText="Last Run Duration" />
                     <asp:BoundField DataField="LastStatus" HeaderText="Last Status" />
                     <asp:BoundField DataField="NotificationEmails" HeaderText="Notification Emails" />
                     <asp:BoundField DataField="NotificationStatus" HeaderText="Notification Status" />
@@ -33,7 +33,7 @@
                             PropertyName="Description" />
                         <Rock:LabeledCheckBox ID="cbActive" runat="server" LabelText="Active" />
                         <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
-                            PropertyName="Assemby" />
+                            PropertyName="Assembly" />
                         <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
                             PropertyName="Class" />
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock"
