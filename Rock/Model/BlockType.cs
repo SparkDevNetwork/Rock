@@ -62,12 +62,14 @@ namespace Rock.Model
         /// <value>
         /// Collection of Blocks.
         /// </value>
+        [NotExportable]
         public virtual ICollection<Block> Blocks { get; set; }
 
         /// <summary>
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
