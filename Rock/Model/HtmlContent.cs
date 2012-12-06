@@ -102,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
+        [NotExportable]
         public virtual Block Block { get; set; }
         
         /// <summary>
@@ -116,6 +117,7 @@ namespace Rock.Model
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
