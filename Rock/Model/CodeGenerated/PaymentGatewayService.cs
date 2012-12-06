@@ -88,7 +88,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransaction where PaymentGatewayId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransaction where GatewayId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
