@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class FinancialBatchDto : IDto, DotLiquid.ILiquidizable
+    public partial class FinancialBatchDto : DtoSecured<FinancialBatchDto>
     {
         /// <summary />
         [DataMember]
@@ -53,14 +53,6 @@ namespace Rock.Model
         [DataMember]
         public string ForeignReference { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -81,9 +73,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "BatchDate", this.BatchDate );
             dictionary.Add( "IsClosed", this.IsClosed );
@@ -91,8 +83,6 @@ namespace Rock.Model
             dictionary.Add( "Entity", this.Entity );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "ForeignReference", this.ForeignReference );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -100,9 +90,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.Name = this.Name;
             expando.BatchDate = this.BatchDate;
             expando.IsClosed = this.IsClosed;
@@ -110,8 +100,6 @@ namespace Rock.Model
             expando.Entity = this.Entity;
             expando.EntityId = this.EntityId;
             expando.ForeignReference = this.ForeignReference;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -119,8 +107,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is FinancialBatch )
             {
                 var financialBatch = (FinancialBatch)model;
@@ -131,8 +121,6 @@ namespace Rock.Model
                 this.Entity = financialBatch.Entity;
                 this.EntityId = financialBatch.EntityId;
                 this.ForeignReference = financialBatch.ForeignReference;
-                this.Id = financialBatch.Id;
-                this.Guid = financialBatch.Guid;
             }
         }
 
@@ -140,8 +128,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is FinancialBatch )
             {
                 var financialBatch = (FinancialBatch)model;
@@ -152,18 +142,7 @@ namespace Rock.Model
                 financialBatch.Entity = this.Entity;
                 financialBatch.EntityId = this.EntityId;
                 financialBatch.ForeignReference = this.ForeignReference;
-                financialBatch.Id = this.Id;
-                financialBatch.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

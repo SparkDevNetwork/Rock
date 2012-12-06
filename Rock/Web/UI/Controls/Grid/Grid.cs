@@ -92,6 +92,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [delete enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [delete enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Delete Enabled" )
+        ]
+        public virtual bool IsDeleteEnabled
+        {
+            get
+            {
+                object deleteEnabled = this.ViewState["IsDeleteEnabled"];
+                if ( deleteEnabled == null )
+                {
+                    return true;
+                }
+                else
+                {
+                    return (bool)deleteEnabled;
+                }
+
+            }
+
+            set
+            {
+                this.ViewState["IsDeleteEnabled"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show confirm delete dialog].
         /// </summary>
         /// <value>
@@ -115,7 +148,7 @@ namespace Rock.Web.UI.Controls
                 {
                     return (bool)showConfirmDeleteDialog;
                 }
-                
+
             }
 
             set
@@ -248,7 +281,7 @@ namespace Rock.Web.UI.Controls
                 this.ViewState["RowClickEnabled"] = value;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether the export to excel action should be displayed.
         /// </summary>
@@ -696,16 +729,16 @@ namespace Rock.Web.UI.Controls
         {
             base.OnRowCreated( e );
 
-            if (EditRow != null && e.Row.RowType == DataControlRowType.DataRow )
+            if ( EditRow != null && e.Row.RowType == DataControlRowType.DataRow )
             {
                 string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "EditRow$" + e.Row.RowIndex );
 
-                for(int i = 0; i < e.Row.Cells.Count; i++)
+                for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
-                    if (DataBoundColumns.ContainsKey(i))
+                    if ( DataBoundColumns.ContainsKey( i ) )
                     {
                         var cell = e.Row.Cells[i];
-                        cell.AddCssClass(DataBoundColumns[i]);
+                        cell.AddCssClass( DataBoundColumns[i] );
                         cell.AddCssClass( "grid-edit-cell" );
                         cell.Attributes["onclick"] = clickUrl;
                     }
@@ -727,7 +760,7 @@ namespace Rock.Web.UI.Controls
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
-                if ( column != null)
+                if ( column != null )
                 {
                     DataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
@@ -812,7 +845,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( e.CommandName == "EditRow" )
             {
-                int rowIndex = Int32.Parse(e.CommandArgument.ToString());
+                int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
                 RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
                 OnEditRowClick( a );
             }

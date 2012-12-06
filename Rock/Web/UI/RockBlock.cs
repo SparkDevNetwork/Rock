@@ -367,7 +367,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Evaluates if the user is authorized to perform the requested action 
+        /// Evaluates if the CurrentPerson is authorized to perform the requested action 
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
@@ -542,9 +542,15 @@ namespace Rock.Web.UI
         {
             object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
-                this.CurrentBlock.BlockTypeActions = ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions;
-            else
-                this.CurrentBlock.BlockTypeActions = new List<string>();
+            {
+                foreach ( string action in ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions )
+                {
+                    if ( !this.CurrentBlock.SupportedActions.Contains( action ) )
+                    {
+                        this.CurrentBlock.SupportedActions.Add( action );
+                    }
+                }
+            }
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MetricDto : IDto, DotLiquid.ILiquidizable
+    public partial class MetricDto : DtoSecured<MetricDto>
     {
         /// <summary />
         [DataMember]
@@ -59,7 +59,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? CollectionFrequencyId { get; set; }
+        public int? CollectionFrequencyValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -76,14 +76,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public int Order { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -105,9 +97,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "Type", this.Type );
             dictionary.Add( "Category", this.Category );
@@ -116,13 +108,11 @@ namespace Rock.Model
             dictionary.Add( "Description", this.Description );
             dictionary.Add( "MinValue", this.MinValue );
             dictionary.Add( "MaxValue", this.MaxValue );
-            dictionary.Add( "CollectionFrequencyId", this.CollectionFrequencyId );
+            dictionary.Add( "CollectionFrequencyValueId", this.CollectionFrequencyValueId );
             dictionary.Add( "LastCollected", this.LastCollected );
             dictionary.Add( "Source", this.Source );
             dictionary.Add( "SourceSQL", this.SourceSQL );
             dictionary.Add( "Order", this.Order );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -130,9 +120,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.Type = this.Type;
             expando.Category = this.Category;
@@ -141,13 +131,11 @@ namespace Rock.Model
             expando.Description = this.Description;
             expando.MinValue = this.MinValue;
             expando.MaxValue = this.MaxValue;
-            expando.CollectionFrequencyId = this.CollectionFrequencyId;
+            expando.CollectionFrequencyValueId = this.CollectionFrequencyValueId;
             expando.LastCollected = this.LastCollected;
             expando.Source = this.Source;
             expando.SourceSQL = this.SourceSQL;
             expando.Order = this.Order;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -155,8 +143,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Metric )
             {
                 var metric = (Metric)model;
@@ -168,13 +158,11 @@ namespace Rock.Model
                 this.Description = metric.Description;
                 this.MinValue = metric.MinValue;
                 this.MaxValue = metric.MaxValue;
-                this.CollectionFrequencyId = metric.CollectionFrequencyId;
+                this.CollectionFrequencyValueId = metric.CollectionFrequencyValueId;
                 this.LastCollected = metric.LastCollected;
                 this.Source = metric.Source;
                 this.SourceSQL = metric.SourceSQL;
                 this.Order = metric.Order;
-                this.Id = metric.Id;
-                this.Guid = metric.Guid;
             }
         }
 
@@ -182,8 +170,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Metric )
             {
                 var metric = (Metric)model;
@@ -195,23 +185,12 @@ namespace Rock.Model
                 metric.Description = this.Description;
                 metric.MinValue = this.MinValue;
                 metric.MaxValue = this.MaxValue;
-                metric.CollectionFrequencyId = this.CollectionFrequencyId;
+                metric.CollectionFrequencyValueId = this.CollectionFrequencyValueId;
                 metric.LastCollected = this.LastCollected;
                 metric.Source = this.Source;
                 metric.SourceSQL = this.SourceSQL;
                 metric.Order = this.Order;
-                metric.Id = this.Id;
-                metric.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

@@ -91,10 +91,10 @@ namespace Rock.Jobs
                 sendMessage = true;
 
             // set last run date
-            job.LastRunDate = context.FireTimeUtc.Value.DateTime.ToLocalTime();
+            job.LastRunDateTime = context.FireTimeUtc.Value.DateTime.ToLocalTime();
 
             // set run time
-            job.LastRunDuration = Convert.ToInt32(context.JobRunTime.TotalSeconds);
+            job.LastRunDurationSeconds = Convert.ToInt32(context.JobRunTime.TotalSeconds);
 
             // set the scheduler name
             job.LastRunSchedulerName = context.Scheduler.SchedulerName;
@@ -102,7 +102,7 @@ namespace Rock.Jobs
             // determine if an error occured
             if ( jobException == null )
             {
-                job.LastSuccessfulRun = job.LastRunDate;
+                job.LastSuccessfulRunDateTime = job.LastRunDateTime;
                 job.LastStatus = "Success";
                 job.LastStatusMessage = "";
                 

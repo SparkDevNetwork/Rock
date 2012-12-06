@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-using System.Linq;
+
 using Rock.Security;
 
 namespace Rock.Web.Cache
@@ -17,15 +17,10 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockCache : Rock.Model.BlockDto, Security.ISecured, Rock.Attribute.IHasAttributes
+    public class BlockCache : Rock.Model.BlockDto, Rock.Attribute.IHasAttributes
     {
         private BlockCache() : base() { }
         private BlockCache( Rock.Model.Block model ) : base( model ) { }
-
-        /// <summary>
-        /// Gets the location of the block (Layout or Page)
-        /// </summary>
-        public BlockLocation BlockLocation { get; private set; }
 
         private List<int> AttributeIds = new List<int>();
 
@@ -151,6 +146,27 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.BlockLocation == Model.BlockLocation.Page)
+                {
+                    return this.Page;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -229,17 +245,12 @@ namespace Rock.Web.Cache
         {
             BlockCache block = new BlockCache(blockModel);
 
-            block.BlockLocation = blockModel.Page != null ? BlockLocation.Page : BlockLocation.Layout;
             block.AttributeValues = blockModel.AttributeValues;
             
             block.AttributeIds = new List<int>();
             if (blockModel.Attributes != null)
                 foreach ( var attribute in blockModel.Attributes )
                     block.AttributeIds.Add( attribute.Value.Id );
-
-            block.TypeId = blockModel.TypeId;
-            block.TypeName = blockModel.TypeName;
-            block.BlockActions = blockModel.SupportedActions;
 
             return block;
         }
@@ -256,110 +267,6 @@ namespace Rock.Web.Cache
 
         #endregion
 
-        #region ISecure Implementation
+     }
 
-        /// <summary>
-        /// Gets the Entity Type ID for this entity.
-        /// </summary>
-        /// <value>
-        /// The type id.
-        /// </value>
-        public int TypeId { get; set; }
-
-        /// <summary>
-        /// The auth entity. The auth entity is a unique identifier for each type of class that implements
-        /// the <see cref="Rock.Security.ISecured"/> interface.
-        /// </summary>
-        public string TypeName { get; set; }
-
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check access to the parent authority specified by this property.
-        /// </summary>
-        public Security.ISecured ParentAuthority
-        {
-            get 
-            {
-
-                if ( this.BlockLocation == Cache.BlockLocation.Page )
-                    return this.Page;
-                else
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// The list of actions that this class supports.
-        /// </summary>
-        public List<string> SupportedActions 
-        {
-            get 
-            {
-                List<string> combinedActions = new List<string>();
-                
-                if (BlockActions != null)
-                    combinedActions.AddRange(BlockActions);
-                
-                if (BlockTypeActions != null)
-                    combinedActions.AddRange(BlockTypeActions);
-
-                return combinedActions;
-            }
-        }
-
-        internal List<string> BlockActions { get; set; }
-        internal List<string> BlockTypeActions { get; set; }
-
-        /// <summary>
-        /// Returns <c>true</c> if the user is authorized to perform the selected action on this object.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
-        {
-            return Security.Authorization.Authorized( this, action, person );
-        }
-
-        /// <summary>
-        /// If a user or role is not specifically allowed or denied to perform the selected action,
-        /// returna <c>true</c> if they will be allowed anyway or <c>false</c> if not.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
-        public bool IsAllowedByDefault( string action )
-        {
-            return action == "View";
-        }
-
-        /// <summary>
-        /// Finds the AuthRule records associated with the current object.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<AuthRule> FindAuthRules()
-        {
-            return Authorization.FindAuthRules( this );
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// The location of the block 
-    /// </summary>
-    [Serializable]
-    public enum BlockLocation
-    {
-        /// <summary>
-        /// Block is located in the layout (will be rendered for every page using the layout)
-        /// </summary>
-        Layout,
-
-        /// <summary>
-        /// Block is located on the page
-        /// </summary>
-        Page,
-    }
 }

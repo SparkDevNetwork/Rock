@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class AttributeDto : IDto, DotLiquid.ILiquidizable
+    public partial class AttributeDto : DtoSecured<AttributeDto>
     {
         /// <summary />
         [DataMember]
@@ -81,14 +81,6 @@ namespace Rock.Model
         [DataMember]
         public bool IsRequired { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -109,9 +101,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "FieldTypeId", this.FieldTypeId );
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
@@ -126,8 +118,6 @@ namespace Rock.Model
             dictionary.Add( "DefaultValue", this.DefaultValue );
             dictionary.Add( "IsMultiValue", this.IsMultiValue );
             dictionary.Add( "IsRequired", this.IsRequired );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -135,9 +125,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.FieldTypeId = this.FieldTypeId;
             expando.EntityTypeId = this.EntityTypeId;
@@ -152,8 +142,6 @@ namespace Rock.Model
             expando.DefaultValue = this.DefaultValue;
             expando.IsMultiValue = this.IsMultiValue;
             expando.IsRequired = this.IsRequired;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -161,8 +149,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Attribute )
             {
                 var attribute = (Attribute)model;
@@ -180,8 +170,6 @@ namespace Rock.Model
                 this.DefaultValue = attribute.DefaultValue;
                 this.IsMultiValue = attribute.IsMultiValue;
                 this.IsRequired = attribute.IsRequired;
-                this.Id = attribute.Id;
-                this.Guid = attribute.Guid;
             }
         }
 
@@ -189,8 +177,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Attribute )
             {
                 var attribute = (Attribute)model;
@@ -208,18 +198,7 @@ namespace Rock.Model
                 attribute.DefaultValue = this.DefaultValue;
                 attribute.IsMultiValue = this.IsMultiValue;
                 attribute.IsRequired = this.IsRequired;
-                attribute.Id = this.Id;
-                attribute.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

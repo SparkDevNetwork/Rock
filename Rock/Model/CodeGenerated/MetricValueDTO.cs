@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class MetricValueDto : IDto, DotLiquid.ILiquidizable
+    public partial class MetricValueDto : DtoSecured<MetricValueDto>
     {
         /// <summary />
         [DataMember]
@@ -57,14 +57,6 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -85,9 +77,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "MetricId", this.MetricId );
             dictionary.Add( "Value", this.Value );
@@ -96,8 +88,6 @@ namespace Rock.Model
             dictionary.Add( "isDateBased", this.isDateBased );
             dictionary.Add( "Label", this.Label );
             dictionary.Add( "Order", this.Order );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,9 +95,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.MetricId = this.MetricId;
             expando.Value = this.Value;
@@ -116,8 +106,6 @@ namespace Rock.Model
             expando.isDateBased = this.isDateBased;
             expando.Label = this.Label;
             expando.Order = this.Order;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is MetricValue )
             {
                 var metricValue = (MetricValue)model;
@@ -138,8 +128,6 @@ namespace Rock.Model
                 this.isDateBased = metricValue.isDateBased;
                 this.Label = metricValue.Label;
                 this.Order = metricValue.Order;
-                this.Id = metricValue.Id;
-                this.Guid = metricValue.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is MetricValue )
             {
                 var metricValue = (MetricValue)model;
@@ -160,18 +150,7 @@ namespace Rock.Model
                 metricValue.isDateBased = this.isDateBased;
                 metricValue.Label = this.Label;
                 metricValue.Order = this.Order;
-                metricValue.Id = this.Id;
-                metricValue.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

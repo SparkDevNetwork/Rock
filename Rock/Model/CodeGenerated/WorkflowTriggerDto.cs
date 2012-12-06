@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class WorkflowTriggerDto : IDto, DotLiquid.ILiquidizable
+    public partial class WorkflowTriggerDto : Dto
     {
         /// <summary />
         [DataMember]
@@ -53,14 +53,6 @@ namespace Rock.Model
         [DataMember]
         public string WorkflowName { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -81,9 +73,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "EntityTypeId", this.EntityTypeId );
             dictionary.Add( "EntityTypeQualifierColumn", this.EntityTypeQualifierColumn );
@@ -91,8 +83,6 @@ namespace Rock.Model
             dictionary.Add( "WorkflowTypeId", this.WorkflowTypeId );
             dictionary.Add( "WorkflowTriggerType", this.WorkflowTriggerType );
             dictionary.Add( "WorkflowName", this.WorkflowName );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -100,9 +90,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.EntityTypeId = this.EntityTypeId;
             expando.EntityTypeQualifierColumn = this.EntityTypeQualifierColumn;
@@ -110,8 +100,6 @@ namespace Rock.Model
             expando.WorkflowTypeId = this.WorkflowTypeId;
             expando.WorkflowTriggerType = this.WorkflowTriggerType;
             expando.WorkflowName = this.WorkflowName;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -119,8 +107,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is WorkflowTrigger )
             {
                 var workflowTrigger = (WorkflowTrigger)model;
@@ -131,8 +121,6 @@ namespace Rock.Model
                 this.WorkflowTypeId = workflowTrigger.WorkflowTypeId;
                 this.WorkflowTriggerType = workflowTrigger.WorkflowTriggerType;
                 this.WorkflowName = workflowTrigger.WorkflowName;
-                this.Id = workflowTrigger.Id;
-                this.Guid = workflowTrigger.Guid;
             }
         }
 
@@ -140,8 +128,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is WorkflowTrigger )
             {
                 var workflowTrigger = (WorkflowTrigger)model;
@@ -152,18 +142,7 @@ namespace Rock.Model
                 workflowTrigger.WorkflowTypeId = this.WorkflowTypeId;
                 workflowTrigger.WorkflowTriggerType = this.WorkflowTriggerType;
                 workflowTrigger.WorkflowName = this.WorkflowName;
-                workflowTrigger.Id = this.Id;
-                workflowTrigger.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

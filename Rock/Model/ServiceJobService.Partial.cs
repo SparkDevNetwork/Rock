@@ -37,13 +37,13 @@ namespace Rock.Model
         {
             // build the type object, will depend if the class is in an assembly or the App_Code folder
             Type type = null;
-            if ( job.Assemby == string.Empty || job.Assemby == null )
+            if ( job.Assembly == string.Empty || job.Assembly == null )
             {
                 type = BuildManager.GetType( job.Class, false );
             }
             else
             {
-                string thetype = string.Format( "{0}, {1}", job.Class, job.Assemby );
+                string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
                 type = Type.GetType( thetype );
             }
 

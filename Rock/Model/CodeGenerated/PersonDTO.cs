@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class PersonDto : IDto, DotLiquid.ILiquidizable
+    public partial class PersonDto : DtoSecured<PersonDto>
     {
         /// <summary />
         [DataMember]
@@ -31,23 +31,23 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? RecordTypeId { get; set; }
+        public int? RecordTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? RecordStatusId { get; set; }
+        public int? RecordStatusValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? RecordStatusReasonId { get; set; }
+        public int? RecordStatusReasonValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? PersonStatusId { get; set; }
+        public int? PersonStatusValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? TitleId { get; set; }
+        public int? TitleValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -63,7 +63,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? SuffixId { get; set; }
+        public int? SuffixValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -87,7 +87,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? MaritalStatusId { get; set; }
+        public int? MaritalStatusValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -121,14 +121,6 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -149,25 +141,25 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "RecordTypeId", this.RecordTypeId );
-            dictionary.Add( "RecordStatusId", this.RecordStatusId );
-            dictionary.Add( "RecordStatusReasonId", this.RecordStatusReasonId );
-            dictionary.Add( "PersonStatusId", this.PersonStatusId );
-            dictionary.Add( "TitleId", this.TitleId );
+            dictionary.Add( "RecordTypeValueId", this.RecordTypeValueId );
+            dictionary.Add( "RecordStatusValueId", this.RecordStatusValueId );
+            dictionary.Add( "RecordStatusReasonValueId", this.RecordStatusReasonValueId );
+            dictionary.Add( "PersonStatusValueId", this.PersonStatusValueId );
+            dictionary.Add( "TitleValueId", this.TitleValueId );
             dictionary.Add( "GivenName", this.GivenName );
             dictionary.Add( "NickName", this.NickName );
             dictionary.Add( "LastName", this.LastName );
-            dictionary.Add( "SuffixId", this.SuffixId );
+            dictionary.Add( "SuffixValueId", this.SuffixValueId );
             dictionary.Add( "PhotoId", this.PhotoId );
             dictionary.Add( "BirthDay", this.BirthDay );
             dictionary.Add( "BirthMonth", this.BirthMonth );
             dictionary.Add( "BirthYear", this.BirthYear );
             dictionary.Add( "Gender", this.Gender );
-            dictionary.Add( "MaritalStatusId", this.MaritalStatusId );
+            dictionary.Add( "MaritalStatusValueId", this.MaritalStatusValueId );
             dictionary.Add( "AnniversaryDate", this.AnniversaryDate );
             dictionary.Add( "GraduationDate", this.GraduationDate );
             dictionary.Add( "Email", this.Email );
@@ -176,8 +168,6 @@ namespace Rock.Model
             dictionary.Add( "DoNotEmail", this.DoNotEmail );
             dictionary.Add( "SystemNote", this.SystemNote );
             dictionary.Add( "ViewedCount", this.ViewedCount );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -185,25 +175,25 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
-            expando.RecordTypeId = this.RecordTypeId;
-            expando.RecordStatusId = this.RecordStatusId;
-            expando.RecordStatusReasonId = this.RecordStatusReasonId;
-            expando.PersonStatusId = this.PersonStatusId;
-            expando.TitleId = this.TitleId;
+            expando.RecordTypeValueId = this.RecordTypeValueId;
+            expando.RecordStatusValueId = this.RecordStatusValueId;
+            expando.RecordStatusReasonValueId = this.RecordStatusReasonValueId;
+            expando.PersonStatusValueId = this.PersonStatusValueId;
+            expando.TitleValueId = this.TitleValueId;
             expando.GivenName = this.GivenName;
             expando.NickName = this.NickName;
             expando.LastName = this.LastName;
-            expando.SuffixId = this.SuffixId;
+            expando.SuffixValueId = this.SuffixValueId;
             expando.PhotoId = this.PhotoId;
             expando.BirthDay = this.BirthDay;
             expando.BirthMonth = this.BirthMonth;
             expando.BirthYear = this.BirthYear;
             expando.Gender = this.Gender;
-            expando.MaritalStatusId = this.MaritalStatusId;
+            expando.MaritalStatusValueId = this.MaritalStatusValueId;
             expando.AnniversaryDate = this.AnniversaryDate;
             expando.GraduationDate = this.GraduationDate;
             expando.Email = this.Email;
@@ -212,8 +202,6 @@ namespace Rock.Model
             expando.DoNotEmail = this.DoNotEmail;
             expando.SystemNote = this.SystemNote;
             expando.ViewedCount = this.ViewedCount;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -221,27 +209,29 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Person )
             {
                 var person = (Person)model;
                 this.IsSystem = person.IsSystem;
-                this.RecordTypeId = person.RecordTypeId;
-                this.RecordStatusId = person.RecordStatusId;
-                this.RecordStatusReasonId = person.RecordStatusReasonId;
-                this.PersonStatusId = person.PersonStatusId;
-                this.TitleId = person.TitleId;
+                this.RecordTypeValueId = person.RecordTypeValueId;
+                this.RecordStatusValueId = person.RecordStatusValueId;
+                this.RecordStatusReasonValueId = person.RecordStatusReasonValueId;
+                this.PersonStatusValueId = person.PersonStatusValueId;
+                this.TitleValueId = person.TitleValueId;
                 this.GivenName = person.GivenName;
                 this.NickName = person.NickName;
                 this.LastName = person.LastName;
-                this.SuffixId = person.SuffixId;
+                this.SuffixValueId = person.SuffixValueId;
                 this.PhotoId = person.PhotoId;
                 this.BirthDay = person.BirthDay;
                 this.BirthMonth = person.BirthMonth;
                 this.BirthYear = person.BirthYear;
                 this.Gender = person.Gender;
-                this.MaritalStatusId = person.MaritalStatusId;
+                this.MaritalStatusValueId = person.MaritalStatusValueId;
                 this.AnniversaryDate = person.AnniversaryDate;
                 this.GraduationDate = person.GraduationDate;
                 this.Email = person.Email;
@@ -250,8 +240,6 @@ namespace Rock.Model
                 this.DoNotEmail = person.DoNotEmail;
                 this.SystemNote = person.SystemNote;
                 this.ViewedCount = person.ViewedCount;
-                this.Id = person.Id;
-                this.Guid = person.Guid;
             }
         }
 
@@ -259,27 +247,29 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Person )
             {
                 var person = (Person)model;
                 person.IsSystem = this.IsSystem;
-                person.RecordTypeId = this.RecordTypeId;
-                person.RecordStatusId = this.RecordStatusId;
-                person.RecordStatusReasonId = this.RecordStatusReasonId;
-                person.PersonStatusId = this.PersonStatusId;
-                person.TitleId = this.TitleId;
+                person.RecordTypeValueId = this.RecordTypeValueId;
+                person.RecordStatusValueId = this.RecordStatusValueId;
+                person.RecordStatusReasonValueId = this.RecordStatusReasonValueId;
+                person.PersonStatusValueId = this.PersonStatusValueId;
+                person.TitleValueId = this.TitleValueId;
                 person.GivenName = this.GivenName;
                 person.NickName = this.NickName;
                 person.LastName = this.LastName;
-                person.SuffixId = this.SuffixId;
+                person.SuffixValueId = this.SuffixValueId;
                 person.PhotoId = this.PhotoId;
                 person.BirthDay = this.BirthDay;
                 person.BirthMonth = this.BirthMonth;
                 person.BirthYear = this.BirthYear;
                 person.Gender = this.Gender;
-                person.MaritalStatusId = this.MaritalStatusId;
+                person.MaritalStatusValueId = this.MaritalStatusValueId;
                 person.AnniversaryDate = this.AnniversaryDate;
                 person.GraduationDate = this.GraduationDate;
                 person.Email = this.Email;
@@ -288,18 +278,7 @@ namespace Rock.Model
                 person.DoNotEmail = this.DoNotEmail;
                 person.SystemNote = this.SystemNote;
                 person.ViewedCount = this.ViewedCount;
-                person.Id = this.Id;
-                person.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

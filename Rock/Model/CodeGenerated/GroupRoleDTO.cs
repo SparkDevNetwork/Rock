@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class GroupRoleDto : IDto, DotLiquid.ILiquidizable
+    public partial class GroupRoleDto : DtoSecured<GroupRoleDto>
     {
         /// <summary />
         [DataMember]
@@ -57,14 +57,6 @@ namespace Rock.Model
         [DataMember]
         public bool IsLeader { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -85,9 +77,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "GroupTypeId", this.GroupTypeId );
             dictionary.Add( "Name", this.Name );
@@ -96,8 +88,6 @@ namespace Rock.Model
             dictionary.Add( "MaxCount", this.MaxCount );
             dictionary.Add( "MinCount", this.MinCount );
             dictionary.Add( "IsLeader", this.IsLeader );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -105,9 +95,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.GroupTypeId = this.GroupTypeId;
             expando.Name = this.Name;
@@ -116,8 +106,6 @@ namespace Rock.Model
             expando.MaxCount = this.MaxCount;
             expando.MinCount = this.MinCount;
             expando.IsLeader = this.IsLeader;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -125,8 +113,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is GroupRole )
             {
                 var groupRole = (GroupRole)model;
@@ -138,8 +128,6 @@ namespace Rock.Model
                 this.MaxCount = groupRole.MaxCount;
                 this.MinCount = groupRole.MinCount;
                 this.IsLeader = groupRole.IsLeader;
-                this.Id = groupRole.Id;
-                this.Guid = groupRole.Guid;
             }
         }
 
@@ -147,8 +135,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is GroupRole )
             {
                 var groupRole = (GroupRole)model;
@@ -160,18 +150,7 @@ namespace Rock.Model
                 groupRole.MaxCount = this.MaxCount;
                 groupRole.MinCount = this.MinCount;
                 groupRole.IsLeader = this.IsLeader;
-                groupRole.Id = this.Id;
-                groupRole.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

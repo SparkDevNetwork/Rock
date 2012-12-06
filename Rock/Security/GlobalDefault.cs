@@ -89,15 +89,6 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Finds the AuthRule records associated with the current object.
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<AuthRule> FindAuthRules()
-        {
-            return Authorization.FindAuthRules( this );
-        }
-
-        /// <summary>
         /// Reads the specified id.
         /// </summary>
         /// <param name="id">The id.</param>

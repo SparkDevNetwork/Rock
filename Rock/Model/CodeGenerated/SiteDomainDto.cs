@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class SiteDomainDto : IDto, DotLiquid.ILiquidizable
+    public partial class SiteDomainDto : DtoSecured<SiteDomainDto>
     {
         /// <summary />
         [DataMember]
@@ -36,14 +36,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public string Domain { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -65,14 +57,12 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "IsSystem", this.IsSystem );
             dictionary.Add( "SiteId", this.SiteId );
             dictionary.Add( "Domain", this.Domain );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -80,14 +70,12 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.IsSystem = this.IsSystem;
             expando.SiteId = this.SiteId;
             expando.Domain = this.Domain;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -95,16 +83,16 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is SiteDomain )
             {
                 var siteDomain = (SiteDomain)model;
                 this.IsSystem = siteDomain.IsSystem;
                 this.SiteId = siteDomain.SiteId;
                 this.Domain = siteDomain.Domain;
-                this.Id = siteDomain.Id;
-                this.Guid = siteDomain.Guid;
             }
         }
 
@@ -112,26 +100,17 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is SiteDomain )
             {
                 var siteDomain = (SiteDomain)model;
                 siteDomain.IsSystem = this.IsSystem;
                 siteDomain.SiteId = this.SiteId;
                 siteDomain.Domain = this.Domain;
-                siteDomain.Id = this.Id;
-                siteDomain.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }
