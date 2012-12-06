@@ -55,7 +55,7 @@ namespace Rock.Model
         /// <summary>
         /// Type of phone number
         /// </summary>
-        public int? NumberTypeId { get; set; }
+        public int? NumberTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets whether the number has been opted in for SMS
@@ -66,7 +66,7 @@ namespace Rock.Model
         /// <summary>
         /// The phone number type
         /// </summary>
-        public virtual Model.DefinedValue NumberType { get; set; }
+        public virtual Model.DefinedValue NumberTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the whether the number is unlisted or not.
@@ -153,7 +153,7 @@ namespace Rock.Model
         public PhoneNumberConfiguration()
         {
             this.HasRequired( p => p.Person ).WithMany( p => p.PhoneNumbers ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.NumberType ).WithMany().HasForeignKey( p => p.NumberTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.NumberTypeValue ).WithMany().HasForeignKey( p => p.NumberTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 }

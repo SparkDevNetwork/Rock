@@ -100,7 +100,7 @@ namespace Rock.Model
         /// <value>
         /// CollectionFrequency.
         /// </value>
-        public int? CollectionFrequencyId { get; set; }
+        public int? CollectionFrequencyValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the LastCollected Date Time.
@@ -169,7 +169,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
-        public virtual Model.DefinedValue CollectionFrequency { get; set; }
+        public virtual Model.DefinedValue CollectionFrequencyValue { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// </summary>
         public MetricConfiguration()
         {
-            this.HasOptional( p => p.CollectionFrequency ).WithMany().HasForeignKey( p => p.CollectionFrequencyId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.CollectionFrequencyValue ).WithMany().HasForeignKey( p => p.CollectionFrequencyValueId ).WillCascadeOnDelete( false );
         }
     }
 }

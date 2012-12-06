@@ -33,29 +33,29 @@ namespace Rock.Model
             {
                 transactions = transactions.Where(transaction => transaction.Amount <= searchValue.AmountRange.To); 
             }
-            if (searchValue.CreditCardTypeId.HasValue)
+            if (searchValue.CreditCardTypeValueId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.CreditCardType.Id == searchValue.CreditCardTypeId.Value);
+                transactions = transactions.Where(transaction => transaction.CreditCardTypeValue.Id == searchValue.CreditCardTypeValueId.Value);
             }
-            if (searchValue.CurrencyTypeId.HasValue)
+            if (searchValue.CurrencyTypeValueId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.CurrencyType.Id == searchValue.CurrencyTypeId.Value);
+                transactions = transactions.Where(transaction => transaction.CurrencyTypeValue.Id == searchValue.CurrencyTypeValueId.Value);
             }
             if (searchValue.DateRange.From.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.TransactionDate >= searchValue.DateRange.From.Value);
+                transactions = transactions.Where(transaction => transaction.TransactionDateTime >= searchValue.DateRange.From.Value);
             }
             if (searchValue.DateRange.To.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.TransactionDate <= searchValue.DateRange.To.Value);
+                transactions = transactions.Where(transaction => transaction.TransactionDateTime <= searchValue.DateRange.To.Value);
             }
             if (searchValue.FundId.HasValue)
             {
                 transactions = transactions.Where(transaction => transaction.TransactionFunds.Any(transactionFund => transactionFund.Fund.Id == searchValue.FundId.Value));
             }
-            if (searchValue.SourceTypeId.HasValue)
+            if (searchValue.SourceTypeValueId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.SourceTypeId == searchValue.SourceTypeId.Value);
+                transactions = transactions.Where(transaction => transaction.SourceTypeValueId == searchValue.SourceTypeValueId.Value);
             }
             if (!String.IsNullOrEmpty(searchValue.TransactionCode))
             {

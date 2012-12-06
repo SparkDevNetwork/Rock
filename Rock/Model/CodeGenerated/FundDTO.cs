@@ -71,7 +71,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? FundTypeId { get; set; }
+        public int? FundTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -115,7 +115,7 @@ namespace Rock.Model
             dictionary.Add( "EndDate", this.EndDate );
             dictionary.Add( "IsPledgable", this.IsPledgable );
             dictionary.Add( "GlCode", this.GlCode );
-            dictionary.Add( "FundTypeId", this.FundTypeId );
+            dictionary.Add( "FundTypeValueId", this.FundTypeValueId );
             dictionary.Add( "Entity", this.Entity );
             dictionary.Add( "EntityId", this.EntityId );
             return dictionary;
@@ -139,7 +139,7 @@ namespace Rock.Model
             expando.EndDate = this.EndDate;
             expando.IsPledgable = this.IsPledgable;
             expando.GlCode = this.GlCode;
-            expando.FundTypeId = this.FundTypeId;
+            expando.FundTypeValueId = this.FundTypeValueId;
             expando.Entity = this.Entity;
             expando.EntityId = this.EntityId;
             return expando;
@@ -167,7 +167,7 @@ namespace Rock.Model
                 this.EndDate = fund.EndDate;
                 this.IsPledgable = fund.IsPledgable;
                 this.GlCode = fund.GlCode;
-                this.FundTypeId = fund.FundTypeId;
+                this.FundTypeValueId = fund.FundTypeValueId;
                 this.Entity = fund.Entity;
                 this.EntityId = fund.EntityId;
             }
@@ -195,7 +195,7 @@ namespace Rock.Model
                 fund.EndDate = this.EndDate;
                 fund.IsPledgable = this.IsPledgable;
                 fund.GlCode = this.GlCode;
-                fund.FundTypeId = this.FundTypeId;
+                fund.FundTypeValueId = this.FundTypeValueId;
                 fund.Entity = this.Entity;
                 fund.EntityId = this.EntityId;
             }

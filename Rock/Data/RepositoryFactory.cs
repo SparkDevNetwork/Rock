@@ -6,6 +6,7 @@
 
 using System;
 using System.Configuration;
+using System.Text.RegularExpressions;
 
 namespace Rock.Data
 {
@@ -35,8 +36,20 @@ namespace Rock.Data
             }
 
             var settingArray = repositoryType.Split( new[] { ',' } );
-            var className = settingArray[0] + "," + settingArray[1];
-            var assemblyName = settingArray[2];
+            string className, assemblyName;
+
+            // Is this a generic Repository?
+            if ( Regex.IsMatch( repositoryType, @"`\d\[\[.+\]\]," ) )
+            {
+                className = settingArray[0] + "," + settingArray[1];
+                assemblyName = settingArray[2];
+            }
+            // Or is it already typed?
+            else
+            {
+                className = settingArray[0];
+                assemblyName = settingArray[1];
+            }
 
             return (IRepository<T>)Activator.CreateInstance( assemblyName, className ).Unwrap();
         }
