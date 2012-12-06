@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Administration
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
-                _canConfigure = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                 if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
                 {

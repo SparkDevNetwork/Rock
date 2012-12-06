@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -50,17 +49,16 @@ namespace Rock.Model
         /// <value>
         /// Notes about the job..
         /// </value>
-        [MaxLength( 500 )]
         public string Description { get; set; }
         
         /// <summary>
-        /// Gets or sets the Assemby.
+        /// Gets or sets the Assembly.
         /// </summary>
         /// <value>
         /// Assembly (.dll) that contains the job class..
         /// </value>
-        [MaxLength( 100 )]
-        public string Assemby { get; set; }
+        [MaxLength( 260 )]
+        public string Assembly { get; set; }
         
         /// <summary>
         /// Gets or sets the Class.
@@ -88,7 +86,7 @@ namespace Rock.Model
         /// <value>
         /// Date and time the job last completed successfully..
         /// </value>
-        public DateTime? LastSuccessfulRun { get; set; }
+        public DateTime? LastSuccessfulRunDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Date.
@@ -96,7 +94,7 @@ namespace Rock.Model
         /// <value>
         /// Last date and time the job attempted to run..
         /// </value>
-        public DateTime? LastRunDate { get; set; }
+        public DateTime? LastRunDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Run Duration.
@@ -104,7 +102,7 @@ namespace Rock.Model
         /// <value>
         /// Number of seconds that the last job took to finish..
         /// </value>
-        public int? LastRunDuration { get; set; }
+        public int? LastRunDurationSeconds { get; set; }
         
         /// <summary>
         /// Gets or sets the Last Status.
@@ -185,12 +183,12 @@ namespace Rock.Model
     /// <summary>
     /// Job Configuration class.
     /// </summary>
-    public partial class JobConfiguration : EntityTypeConfiguration<ServiceJob>
+    public partial class ServiceJobConfiguration : EntityTypeConfiguration<ServiceJob>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="JobConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="ServiceJobConfiguration"/> class.
         /// </summary>
-        public JobConfiguration()
+        public ServiceJobConfiguration()
         {
         }
     }

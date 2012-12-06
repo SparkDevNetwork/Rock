@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Configure" ) )
+            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Administrate" ) )
             {
                 Rock.Model.HtmlContent content = null;
                 HtmlContentService service = new HtmlContentService();
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Cms
 
         #region Methods
 
-        public override List<Control> GetConfigurationControls( bool canConfig, bool canEdit )
+        public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
             List<Control> configControls = new List<Control>();
 
@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Cms
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEdit );
             }
 
-            configControls.AddRange( base.GetConfigurationControls( canConfig, canEdit ) );
+            configControls.AddRange( base.GetAdministrateControls( canConfig, canEdit ) );
 
             return configControls;
         }

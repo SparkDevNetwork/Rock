@@ -392,7 +392,7 @@ namespace Rock.Web.UI
                     // Cache object used for block output caching
                     ObjectCache cache = MemoryCache.Default;
 
-                    bool canConfigPage = CurrentPage.IsAuthorized( "Configure", CurrentPerson );
+                    bool canAdministratePage = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     string script = string.Format( @"
@@ -409,7 +409,7 @@ namespace Rock.Web.UI
                     if ( CurrentPage.IncludeAdminFooter )
                     {
                         AddPopupControls();
-                        if ( canConfigPage )
+                        if ( canAdministratePage )
                             AddConfigElements();
                     }
 
@@ -417,12 +417,12 @@ namespace Rock.Web.UI
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
                         // Get current user's permissions for the block instance
-                        bool canConfig = block.IsAuthorized( "Configure", CurrentPerson );
+                        bool canAdministrate = block.IsAuthorized( "Administrate", CurrentPerson );
                         bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
                         bool canView = block.IsAuthorized( "View", CurrentPerson );
 
                         // Make sure user has access to view block instance
-                        if ( canConfig || canEdit || canView )
+                        if ( canAdministrate || canEdit || canView )
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
@@ -432,7 +432,7 @@ namespace Rock.Web.UI
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
-                                ( canConfig || canEdit ? "can-configure " : "" ) +
+                                ( canAdministrate || canEdit ? "can-configure " : "" ) +
                                 HtmlHelper.CssClassFormat( block.BlockType.Name ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
@@ -490,7 +490,7 @@ namespace Rock.Web.UI
 
                                     // Add the block configuration scripts and icons if user is authorized
                                     if ( CurrentPage.IncludeAdminFooter )
-                                        AddBlockConfig( blockWrapper, blockControl, block, canConfig, canEdit );
+                                        AddBlockConfig( blockWrapper, blockControl, block, canAdministrate, canEdit );
                                 }
 
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
@@ -525,7 +525,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( CurrentPage.IncludeAdminFooter && canConfigPage )
+                    if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
@@ -798,12 +798,12 @@ namespace Rock.Web.UI
         /// <param name="blockWrapper">The block wrapper.</param>
         /// <param name="blockControl">The block control.</param>
         /// <param name="block">The block.</param>
-        /// <param name="canConfig">if set to <c>true</c> [can config].</param>
+        /// <param name="canAdministrate">if set to <c>true</c> [can config].</param>
         /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
         private void AddBlockConfig( HtmlGenericContainer blockWrapper, RockBlock blockControl,
-            Rock.Web.Cache.BlockCache block, bool canConfig, bool canEdit )
+            Rock.Web.Cache.BlockCache block, bool canAdministrate, bool canEdit )
         {
-            if ( canConfig || canEdit )
+            if ( canAdministrate || canEdit )
             {
                 // Add the config buttons
                 HtmlGenericControl blockConfig = new HtmlGenericControl( "div" );
@@ -831,7 +831,7 @@ namespace Rock.Web.UI
                     blockConfigTitle.InnerText = block.Name;
                 blockConfigBar.Controls.Add( blockConfigTitle );
 
-                foreach ( Control configControl in blockControl.GetConfigurationControls( canConfig, canEdit ) )
+                foreach ( Control configControl in blockControl.GetAdministrateControls( canAdministrate, canEdit ) )
                 {
                     configControl.ClientIDMode = ClientIDMode.AutoID;
                     blockConfigBar.Controls.Add( configControl );

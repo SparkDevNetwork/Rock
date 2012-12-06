@@ -123,12 +123,12 @@ namespace Rock.Model
         /// <value>
         /// The activities.
         /// </value>
-        public virtual ICollection<Activity> Activities 
+        public virtual ICollection<WorkflowActivity> Activities 
         {
-            get { return _activities ?? ( _activities = new Collection<Activity>() ); }
+            get { return _activities ?? ( _activities = new Collection<WorkflowActivity>() ); }
             set { _activities = value; }
         }
-        private ICollection<Activity> _activities;
+        private ICollection<WorkflowActivity> _activities;
 
         /// <summary>
         /// Gets the active activities.
@@ -136,7 +136,7 @@ namespace Rock.Model
         /// <value>
         /// The active activities.
         /// </value>
-        public virtual IEnumerable<Activity> ActiveActivities
+        public virtual IEnumerable<WorkflowActivity> ActiveActivities
         {
             get
             {
@@ -342,7 +342,7 @@ namespace Rock.Model
             {
                 if ( activityType.IsActivatedWithWorkflow)
                 {
-                    workflow.Activities.Add( Activity.Activate(activityType, workflow) );
+                    workflow.Activities.Add( WorkflowActivity.Activate(activityType, workflow) );
                 }
             }
 

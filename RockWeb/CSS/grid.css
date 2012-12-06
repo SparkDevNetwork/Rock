@@ -81,7 +81,7 @@
 
 .grid-table tbody tr:nth-child(even) 
 {
-	/* background: #d2d2d2; do we need this with bs table-stripped ? */
+	background: #d2d2d2; 
 }
 
 .grid-icon-cell
@@ -324,4 +324,22 @@
     border-width: 0;
     box-shadow: none;
     border-color: none;
+}
+
+/* grid disabled styling */
+.grid-table.aspNetDisabled
+{
+    opacity: 0.5;
+}
+
+.grid-table.aspNetDisabled.table-hover tbody tr:hover th,
+.grid-table.aspNetDisabled.table-hover tbody tr:hover td
+{
+    background-color: inherit;
+    cursor: default;
+}
+
+.grid-table.aspNetDisabled a
+{
+    cursor: default;
 }

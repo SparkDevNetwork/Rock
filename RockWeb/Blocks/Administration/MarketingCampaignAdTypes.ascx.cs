@@ -50,7 +50,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gMarketingCampaignAdType.DataKeyNames = new string[] { "id" };
             gMarketingCampaignAdType.Actions.IsAddEnabled = true;
@@ -73,7 +73,7 @@ public partial class MarketingCampaignAdTypes : RockBlock
     {
         nbWarning.Visible = false;
 
-        if ( CurrentPage.IsAuthorized( "Configure", CurrentPerson ) )
+        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             if ( !Page.IsPostBack )
             {

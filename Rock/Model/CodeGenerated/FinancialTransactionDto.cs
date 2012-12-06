@@ -31,7 +31,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public DateTime? TransactionDate { get; set; }
+        public DateTime? TransactionDateTime { get; set; }
 
         /// <summary />
         [DataMember]
@@ -47,11 +47,11 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? CurrencyTypeId { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? CreditCardTypeId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -71,11 +71,11 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? PaymentGatewayId { get; set; }
 
         /// <summary />
         [DataMember]
-        public int? SourceTypeId { get; set; }
+        public int? SourceTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -113,18 +113,18 @@ namespace Rock.Model
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Description", this.Description );
-            dictionary.Add( "TransactionDate", this.TransactionDate );
+            dictionary.Add( "TransactionDateTime", this.TransactionDateTime );
             dictionary.Add( "Entity", this.Entity );
             dictionary.Add( "EntityId", this.EntityId );
             dictionary.Add( "BatchId", this.BatchId );
-            dictionary.Add( "CurrencyTypeId", this.CurrencyTypeId );
-            dictionary.Add( "CreditCardTypeId", this.CreditCardTypeId );
+            dictionary.Add( "CurrencyTypeValueId", this.CurrencyTypeValueId );
+            dictionary.Add( "CreditCardTypeValueId", this.CreditCardTypeValueId );
             dictionary.Add( "Amount", this.Amount );
             dictionary.Add( "RefundTransactionId", this.RefundTransactionId );
             dictionary.Add( "TransactionImageId", this.TransactionImageId );
             dictionary.Add( "TransactionCode", this.TransactionCode );
-            dictionary.Add( "GatewayId", this.GatewayId );
-            dictionary.Add( "SourceTypeId", this.SourceTypeId );
+            dictionary.Add( "PaymentGatewayId", this.PaymentGatewayId );
+            dictionary.Add( "SourceTypeValueId", this.SourceTypeValueId );
             dictionary.Add( "Summary", this.Summary );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
@@ -139,18 +139,18 @@ namespace Rock.Model
         {
             dynamic expando = new ExpandoObject();
             expando.Description = this.Description;
-            expando.TransactionDate = this.TransactionDate;
+            expando.TransactionDateTime = this.TransactionDateTime;
             expando.Entity = this.Entity;
             expando.EntityId = this.EntityId;
             expando.BatchId = this.BatchId;
-            expando.CurrencyTypeId = this.CurrencyTypeId;
-            expando.CreditCardTypeId = this.CreditCardTypeId;
+            expando.CurrencyTypeValueId = this.CurrencyTypeValueId;
+            expando.CreditCardTypeValueId = this.CreditCardTypeValueId;
             expando.Amount = this.Amount;
             expando.RefundTransactionId = this.RefundTransactionId;
             expando.TransactionImageId = this.TransactionImageId;
             expando.TransactionCode = this.TransactionCode;
-            expando.GatewayId = this.GatewayId;
-            expando.SourceTypeId = this.SourceTypeId;
+            expando.PaymentGatewayId = this.PaymentGatewayId;
+            expando.SourceTypeValueId = this.SourceTypeValueId;
             expando.Summary = this.Summary;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
@@ -167,18 +167,18 @@ namespace Rock.Model
             {
                 var financialTransaction = (FinancialTransaction)model;
                 this.Description = financialTransaction.Description;
-                this.TransactionDate = financialTransaction.TransactionDate;
+                this.TransactionDateTime = financialTransaction.TransactionDateTime;
                 this.Entity = financialTransaction.Entity;
                 this.EntityId = financialTransaction.EntityId;
                 this.BatchId = financialTransaction.BatchId;
-                this.CurrencyTypeId = financialTransaction.CurrencyTypeId;
-                this.CreditCardTypeId = financialTransaction.CreditCardTypeId;
+                this.CurrencyTypeValueId = financialTransaction.CurrencyTypeValueId;
+                this.CreditCardTypeValueId = financialTransaction.CreditCardTypeValueId;
                 this.Amount = financialTransaction.Amount;
                 this.RefundTransactionId = financialTransaction.RefundTransactionId;
                 this.TransactionImageId = financialTransaction.TransactionImageId;
                 this.TransactionCode = financialTransaction.TransactionCode;
-                this.GatewayId = financialTransaction.GatewayId;
-                this.SourceTypeId = financialTransaction.SourceTypeId;
+                this.PaymentGatewayId = financialTransaction.PaymentGatewayId;
+                this.SourceTypeValueId = financialTransaction.SourceTypeValueId;
                 this.Summary = financialTransaction.Summary;
                 this.Id = financialTransaction.Id;
                 this.Guid = financialTransaction.Guid;
@@ -195,18 +195,18 @@ namespace Rock.Model
             {
                 var financialTransaction = (FinancialTransaction)model;
                 financialTransaction.Description = this.Description;
-                financialTransaction.TransactionDate = this.TransactionDate;
+                financialTransaction.TransactionDateTime = this.TransactionDateTime;
                 financialTransaction.Entity = this.Entity;
                 financialTransaction.EntityId = this.EntityId;
                 financialTransaction.BatchId = this.BatchId;
-                financialTransaction.CurrencyTypeId = this.CurrencyTypeId;
-                financialTransaction.CreditCardTypeId = this.CreditCardTypeId;
+                financialTransaction.CurrencyTypeValueId = this.CurrencyTypeValueId;
+                financialTransaction.CreditCardTypeValueId = this.CreditCardTypeValueId;
                 financialTransaction.Amount = this.Amount;
                 financialTransaction.RefundTransactionId = this.RefundTransactionId;
                 financialTransaction.TransactionImageId = this.TransactionImageId;
                 financialTransaction.TransactionCode = this.TransactionCode;
-                financialTransaction.GatewayId = this.GatewayId;
-                financialTransaction.SourceTypeId = this.SourceTypeId;
+                financialTransaction.PaymentGatewayId = this.PaymentGatewayId;
+                financialTransaction.SourceTypeValueId = this.SourceTypeValueId;
                 financialTransaction.Summary = this.Summary;
                 financialTransaction.Id = this.Id;
                 financialTransaction.Guid = this.Guid;

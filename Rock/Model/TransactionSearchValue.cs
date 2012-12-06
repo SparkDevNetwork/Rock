@@ -46,7 +46,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the currency.
         /// </value>
-        public int? CurrencyTypeId { get; set; }
+        public int? CurrencyTypeValueId { get; set; }
         
         /// <summary>
         /// Gets or sets the type of the credit card.
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the credit card.
         /// </value>
-        public int? CreditCardTypeId { get; set; }
+        public int? CreditCardTypeValueId { get; set; }
     
         /// <summary>
         /// Gets or sets the type of the source.
@@ -62,7 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the source.
         /// </value>
-        public int? SourceTypeId { get; set; }
+        public int? SourceTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.

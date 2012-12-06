@@ -59,7 +59,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? CollectionFrequencyId { get; set; }
+        public int? CollectionFrequencyValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -116,7 +116,7 @@ namespace Rock.Model
             dictionary.Add( "Description", this.Description );
             dictionary.Add( "MinValue", this.MinValue );
             dictionary.Add( "MaxValue", this.MaxValue );
-            dictionary.Add( "CollectionFrequencyId", this.CollectionFrequencyId );
+            dictionary.Add( "CollectionFrequencyValueId", this.CollectionFrequencyValueId );
             dictionary.Add( "LastCollected", this.LastCollected );
             dictionary.Add( "Source", this.Source );
             dictionary.Add( "SourceSQL", this.SourceSQL );
@@ -141,7 +141,7 @@ namespace Rock.Model
             expando.Description = this.Description;
             expando.MinValue = this.MinValue;
             expando.MaxValue = this.MaxValue;
-            expando.CollectionFrequencyId = this.CollectionFrequencyId;
+            expando.CollectionFrequencyValueId = this.CollectionFrequencyValueId;
             expando.LastCollected = this.LastCollected;
             expando.Source = this.Source;
             expando.SourceSQL = this.SourceSQL;
@@ -168,7 +168,7 @@ namespace Rock.Model
                 this.Description = metric.Description;
                 this.MinValue = metric.MinValue;
                 this.MaxValue = metric.MaxValue;
-                this.CollectionFrequencyId = metric.CollectionFrequencyId;
+                this.CollectionFrequencyValueId = metric.CollectionFrequencyValueId;
                 this.LastCollected = metric.LastCollected;
                 this.Source = metric.Source;
                 this.SourceSQL = metric.SourceSQL;
@@ -195,7 +195,7 @@ namespace Rock.Model
                 metric.Description = this.Description;
                 metric.MinValue = this.MinValue;
                 metric.MaxValue = this.MaxValue;
-                metric.CollectionFrequencyId = this.CollectionFrequencyId;
+                metric.CollectionFrequencyValueId = this.CollectionFrequencyValueId;
                 metric.LastCollected = this.LastCollected;
                 metric.Source = this.Source;
                 metric.SourceSQL = this.SourceSQL;

@@ -94,12 +94,12 @@ namespace Rock.Model
     /// <summary>
     /// Attribute Value Configuration class.
     /// </summary>
-    public partial class TaggeedItemConfiguration : EntityTypeConfiguration<TaggedItem>
+    public partial class TaggedItemConfiguration : EntityTypeConfiguration<TaggedItem>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueConfiguration"/> class.
         /// </summary>
-        public TaggeedItemConfiguration()
+        public TaggedItemConfiguration()
         {
             this.HasRequired( p => p.Tag ).WithMany( p => p.TaggedItems ).HasForeignKey( p => p.TagId ).WillCascadeOnDelete(true);
         }

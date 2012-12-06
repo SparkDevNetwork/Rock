@@ -114,12 +114,12 @@ namespace Rock.Model
     /// <summary>
     /// Member Configuration class.
     /// </summary>
-    public partial class MemberConfiguration : EntityTypeConfiguration<GroupMember>
+    public partial class GroupMemberConfiguration : EntityTypeConfiguration<GroupMember>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemberConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="GroupMemberConfiguration"/> class.
         /// </summary>
-        public MemberConfiguration()
+        public GroupMemberConfiguration()
         {
             this.HasRequired( p => p.Person ).WithMany( p => p.Members ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
             this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);

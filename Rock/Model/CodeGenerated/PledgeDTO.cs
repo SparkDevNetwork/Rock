@@ -47,7 +47,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? FrequencyTypeId { get; set; }
+        public int? FrequencyTypeValueId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -89,7 +89,7 @@ namespace Rock.Model
             dictionary.Add( "Amount", this.Amount );
             dictionary.Add( "StartDate", this.StartDate );
             dictionary.Add( "EndDate", this.EndDate );
-            dictionary.Add( "FrequencyTypeId", this.FrequencyTypeId );
+            dictionary.Add( "FrequencyTypeValueId", this.FrequencyTypeValueId );
             dictionary.Add( "FrequencyAmount", this.FrequencyAmount );
             dictionary.Add( "Id", this.Id );
             dictionary.Add( "Guid", this.Guid );
@@ -108,7 +108,7 @@ namespace Rock.Model
             expando.Amount = this.Amount;
             expando.StartDate = this.StartDate;
             expando.EndDate = this.EndDate;
-            expando.FrequencyTypeId = this.FrequencyTypeId;
+            expando.FrequencyTypeValueId = this.FrequencyTypeValueId;
             expando.FrequencyAmount = this.FrequencyAmount;
             expando.Id = this.Id;
             expando.Guid = this.Guid;
@@ -129,7 +129,7 @@ namespace Rock.Model
                 this.Amount = pledge.Amount;
                 this.StartDate = pledge.StartDate;
                 this.EndDate = pledge.EndDate;
-                this.FrequencyTypeId = pledge.FrequencyTypeId;
+                this.FrequencyTypeValueId = pledge.FrequencyTypeValueId;
                 this.FrequencyAmount = pledge.FrequencyAmount;
                 this.Id = pledge.Id;
                 this.Guid = pledge.Guid;
@@ -150,7 +150,7 @@ namespace Rock.Model
                 pledge.Amount = this.Amount;
                 pledge.StartDate = this.StartDate;
                 pledge.EndDate = this.EndDate;
-                pledge.FrequencyTypeId = this.FrequencyTypeId;
+                pledge.FrequencyTypeValueId = this.FrequencyTypeValueId;
                 pledge.FrequencyAmount = this.FrequencyAmount;
                 pledge.Id = this.Id;
                 pledge.Guid = this.Guid;

@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Administration
         {
             TransactionSearchValue searchValue = GetSearchValue();
 
-            var transactionService = new TransactionService();
+            var transactionService = new FinancialTransactionService();
             grdTransactions.DataSource = transactionService.Get( searchValue ).ToList();
             grdTransactions.DataBind();
         }
@@ -183,11 +183,11 @@ namespace RockWeb.Blocks.Administration
             searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
             if ( ddlCreditCardType.SelectedValue != All.Id.ToString() )
             {
-                searchValue.CreditCardTypeId = int.Parse( ddlCreditCardType.SelectedValue );
+                searchValue.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
             }
             if ( ddlCurrencyType.SelectedValue != All.Id.ToString() )
             {
-                searchValue.CurrencyTypeId = int.Parse( ddlCurrencyType.SelectedValue );
+                searchValue.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
             }
             DateTime? fromTransactionDate = dtStartDate.SelectedDate;
             DateTime? toTransactionDate = dtEndDate.SelectedDate;
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Administration
                 searchValue.FundId = int.Parse( ddlFundType.SelectedValue );
             }
             searchValue.TransactionCode = txtTransactionCode.Text;
-            searchValue.SourceTypeId = int.Parse( ddlSourceType.SelectedValue );
+            searchValue.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
 
             return searchValue;
         }

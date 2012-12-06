@@ -280,12 +280,12 @@ namespace Rock.Model
     /// <summary>
     /// User Configuration class.
     /// </summary>
-    public partial class UserConfiguration : EntityTypeConfiguration<UserLogin>
+    public partial class UserLoginConfiguration : EntityTypeConfiguration<UserLogin>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="UserLoginConfiguration"/> class.
         /// </summary>
-        public UserConfiguration()
+        public UserLoginConfiguration()
         {
             this.HasOptional( p => p.Person ).WithMany( p => p.Users ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete(true);
         }
