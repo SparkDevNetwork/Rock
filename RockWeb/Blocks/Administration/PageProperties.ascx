@@ -42,8 +42,14 @@
                 <fieldset>
                     <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
                     <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
-                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
                     <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
+                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
+                    <div class="control-group">
+                        <label class="control-label">Icon Image</label>
+                        <div class="controls">
+                            <Rock:ImageSelector ID="imgIcon" runat="server" />
+                        </div>
+                    </div>
                 </fieldset>
             </asp:Panel>
 
