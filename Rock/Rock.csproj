@@ -147,6 +147,16 @@
     <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.Designer.cs">
       <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212071233248_PageIconFile.cs" />
+    <Compile Include="Migrations\201212071233248_PageIconFile.Designer.cs">
+      <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\RockMigration_1.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockDto.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
@@ -452,7 +462,6 @@
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
-    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Net\WebRequest.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
@@ -806,6 +815,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052255598_ServiceJobColumnNames.resx">
       <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212071233248_PageIconFile.resx">
+      <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

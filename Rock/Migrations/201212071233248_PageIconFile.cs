@@ -11,13 +11,17 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class ClassRename : RockMigration_1
+    public partial class PageIconFile : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
+            AddColumn("dbo.Page", "IconFileId", c => c.Int());
+            AddForeignKey("dbo.Page", "IconFileId", "dbo.BinaryFile", "Id");
+            CreateIndex("dbo.Page", "IconFileId");
+            DropColumn("dbo.Page", "IconUrl");
         }
         
         /// <summary>
@@ -25,6 +29,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            AddColumn("dbo.Page", "IconUrl", c => c.String(maxLength: 150));
+            DropIndex("dbo.Page", new[] { "IconFileId" });
+            DropForeignKey("dbo.Page", "IconFileId", "dbo.BinaryFile");
+            DropColumn("dbo.Page", "IconFileId");
         }
     }
 }

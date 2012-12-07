@@ -413,6 +413,8 @@ namespace Rock.Web.UI
                             AddConfigElements();
                     }
 
+                    AddKendoScripts();
+
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
@@ -699,6 +701,17 @@ namespace Rock.Web.UI
             return string.Join( "|", CurrentPage.AttributeValues[key] );
         }
 
+        /// <summary>
+        /// Adds the kendo scripts.
+        /// </summary>
+        protected virtual void AddKendoScripts()
+        {
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
+            AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
+            AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
+        }
+
         #endregion
 
         #region Cms Admin Content
@@ -728,12 +741,6 @@ namespace Rock.Web.UI
             
             // add the scripts for RockGrid
             AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
-
-            // add Kendo js and css here since we don't know if a partial postback will have a kendo control until runtime
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             AddBlockMove();
             // Add Zone Wrappers
