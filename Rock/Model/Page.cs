@@ -201,6 +201,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [NotExportable]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -331,6 +332,7 @@ namespace Rock.Model
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
