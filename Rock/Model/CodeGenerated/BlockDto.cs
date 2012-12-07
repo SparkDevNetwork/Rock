@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Block Extension Methods
     /// </summary>
-    public static class BlockDtoExtension
+    public static class BlockExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,91 @@ namespace Rock.Model
         public static BlockDto ToDto( this Block value )
         {
             return new BlockDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Block value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Block> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Block value, bool deep = false )
+        {
+            dynamic dynamicBlock = new BlockDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicBlock;
+            }
+
+            dynamicBlock.HtmlContents = value.HtmlContents.ToDynamic();
+            dynamicBlock.BlockType = value.BlockType.ToDynamic();
+
+            return dynamicBlock;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Block value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        var HtmlContentsList = dict["HtmlContents"] as List<object>;
+                        if (HtmlContentsList != null)
+                        {
+                            value.HtmlContents = new List<HtmlContent>();
+                            foreach(object childObj in HtmlContentsList)
+                            {
+                                var HtmlContent = new HtmlContent();
+                                new HtmlContentDto().FromDynamic(childObj).CopyToModel(HtmlContent);
+                                value.HtmlContents.Add(HtmlContent);
+                            }
+                        }
+
+                        new BlockTypeDto().FromDynamic( dict["BlockType"] ).CopyToModel(value.BlockType);
+
+                    }
+                }
+            }
         }
 
     }

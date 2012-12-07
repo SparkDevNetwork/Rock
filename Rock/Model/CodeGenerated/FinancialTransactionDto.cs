@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -203,10 +205,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// FinancialTransaction Extension Methods
     /// </summary>
-    public static class FinancialTransactionDtoExtension
+    public static class FinancialTransactionExtensions
     {
         /// <summary>
         /// To the model.
@@ -252,6 +255,99 @@ namespace Rock.Model
         public static FinancialTransactionDto ToDto( this FinancialTransaction value )
         {
             return new FinancialTransactionDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this FinancialTransaction value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<FinancialTransaction> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this FinancialTransaction value, bool deep = false )
+        {
+            dynamic dynamicFinancialTransaction = new FinancialTransactionDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicFinancialTransaction;
+            }
+
+            dynamicFinancialTransaction.Batch = value.Batch.ToDynamic();
+            dynamicFinancialTransaction.CurrencyTypeValue = value.CurrencyTypeValue.ToDynamic();
+            dynamicFinancialTransaction.CreditCardTypeValue = value.CreditCardTypeValue.ToDynamic();
+            dynamicFinancialTransaction.PaymentGateway = value.PaymentGateway.ToDynamic();
+            dynamicFinancialTransaction.SourceTypeValue = value.SourceTypeValue.ToDynamic();
+            dynamicFinancialTransaction.TransactionDetails = value.TransactionDetails.ToDynamic();
+
+            return dynamicFinancialTransaction;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this FinancialTransaction value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new FinancialBatchDto().FromDynamic( dict["Batch"] ).CopyToModel(value.Batch);
+                        new DefinedValueDto().FromDynamic( dict["CurrencyTypeValue"] ).CopyToModel(value.CurrencyTypeValue);
+                        new DefinedValueDto().FromDynamic( dict["CreditCardTypeValue"] ).CopyToModel(value.CreditCardTypeValue);
+                        new PaymentGatewayDto().FromDynamic( dict["PaymentGateway"] ).CopyToModel(value.PaymentGateway);
+                        new DefinedValueDto().FromDynamic( dict["SourceTypeValue"] ).CopyToModel(value.SourceTypeValue);
+                        var TransactionDetailsList = dict["TransactionDetails"] as List<object>;
+                        if (TransactionDetailsList != null)
+                        {
+                            value.TransactionDetails = new List<FinancialTransactionDetail>();
+                            foreach(object childObj in TransactionDetailsList)
+                            {
+                                var FinancialTransactionDetail = new FinancialTransactionDetail();
+                                new FinancialTransactionDetailDto().FromDynamic(childObj).CopyToModel(FinancialTransactionDetail);
+                                value.TransactionDetails.Add(FinancialTransactionDetail);
+                            }
+                        }
+
+
+                    }
+                }
+            }
         }
 
     }

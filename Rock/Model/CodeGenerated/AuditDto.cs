@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -147,10 +149,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Audit Extension Methods
     /// </summary>
-    public static class AuditDtoExtension
+    public static class AuditExtensions
     {
         /// <summary>
         /// To the model.
@@ -196,6 +199,80 @@ namespace Rock.Model
         public static AuditDto ToDto( this Audit value )
         {
             return new AuditDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Audit value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Audit> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Audit value, bool deep = false )
+        {
+            dynamic dynamicAudit = new AuditDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicAudit;
+            }
+
+            dynamicAudit.EntityType = value.EntityType.ToDynamic();
+            dynamicAudit.Person = value.Person.ToDynamic();
+
+            return dynamicAudit;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Audit value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+
+                    }
+                }
+            }
         }
 
     }

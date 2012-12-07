@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Workflow Extension Methods
     /// </summary>
-    public static class WorkflowDtoExtension
+    public static class WorkflowExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,104 @@ namespace Rock.Model
         public static WorkflowDto ToDto( this Workflow value )
         {
             return new WorkflowDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Workflow value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Workflow> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Workflow value, bool deep = false )
+        {
+            dynamic dynamicWorkflow = new WorkflowDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicWorkflow;
+            }
+
+            dynamicWorkflow.WorkflowType = value.WorkflowType.ToDynamic();
+            dynamicWorkflow.Activities = value.Activities.ToDynamic();
+            dynamicWorkflow.LogEntries = value.LogEntries.ToDynamic();
+
+            return dynamicWorkflow;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Workflow value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+                        var ActivitiesList = dict["Activities"] as List<object>;
+                        if (ActivitiesList != null)
+                        {
+                            value.Activities = new List<WorkflowActivity>();
+                            foreach(object childObj in ActivitiesList)
+                            {
+                                var WorkflowActivity = new WorkflowActivity();
+                                new WorkflowActivityDto().FromDynamic(childObj).CopyToModel(WorkflowActivity);
+                                value.Activities.Add(WorkflowActivity);
+                            }
+                        }
+
+                        var LogEntriesList = dict["LogEntries"] as List<object>;
+                        if (LogEntriesList != null)
+                        {
+                            value.LogEntries = new List<WorkflowLog>();
+                            foreach(object childObj in LogEntriesList)
+                            {
+                                var WorkflowLog = new WorkflowLog();
+                                new WorkflowLogDto().FromDynamic(childObj).CopyToModel(WorkflowLog);
+                                value.LogEntries.Add(WorkflowLog);
+                            }
+                        }
+
+
+                    }
+                }
+            }
         }
 
     }

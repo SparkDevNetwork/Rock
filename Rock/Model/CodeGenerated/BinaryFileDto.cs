@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// BinaryFile Extension Methods
     /// </summary>
-    public static class BinaryFileDtoExtension
+    public static class BinaryFileExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,76 @@ namespace Rock.Model
         public static BinaryFileDto ToDto( this BinaryFile value )
         {
             return new BinaryFileDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this BinaryFile value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<BinaryFile> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this BinaryFile value, bool deep = false )
+        {
+            dynamic dynamicBinaryFile = new BinaryFileDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicBinaryFile;
+            }
+
+
+            return dynamicBinaryFile;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this BinaryFile value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+
+                    }
+                }
+            }
         }
 
     }

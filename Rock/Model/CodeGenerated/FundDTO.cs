@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -203,10 +205,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Fund Extension Methods
     /// </summary>
-    public static class FundDtoExtension
+    public static class FundExtensions
     {
         /// <summary>
         /// To the model.
@@ -252,6 +255,106 @@ namespace Rock.Model
         public static FundDto ToDto( this Fund value )
         {
             return new FundDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Fund value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Fund> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Fund value, bool deep = false )
+        {
+            dynamic dynamicFund = new FundDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicFund;
+            }
+
+            dynamicFund.ParentFund = value.ParentFund.ToDynamic();
+            dynamicFund.FundTypeValue = value.FundTypeValue.ToDynamic();
+            dynamicFund.ChildFunds = value.ChildFunds.ToDynamic();
+            dynamicFund.Pledges = value.Pledges.ToDynamic();
+
+            return dynamicFund;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Fund value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new FundDto().FromDynamic( dict["ParentFund"] ).CopyToModel(value.ParentFund);
+                        new DefinedValueDto().FromDynamic( dict["FundTypeValue"] ).CopyToModel(value.FundTypeValue);
+                        var ChildFundsList = dict["ChildFunds"] as List<object>;
+                        if (ChildFundsList != null)
+                        {
+                            value.ChildFunds = new List<Fund>();
+                            foreach(object childObj in ChildFundsList)
+                            {
+                                var Fund = new Fund();
+                                new FundDto().FromDynamic(childObj).CopyToModel(Fund);
+                                value.ChildFunds.Add(Fund);
+                            }
+                        }
+
+                        var PledgesList = dict["Pledges"] as List<object>;
+                        if (PledgesList != null)
+                        {
+                            value.Pledges = new List<Pledge>();
+                            foreach(object childObj in PledgesList)
+                            {
+                                var Pledge = new Pledge();
+                                new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
+                                value.Pledges.Add(Pledge);
+                            }
+                        }
+
+
+                    }
+                }
+            }
         }
 
     }

@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -283,10 +285,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Person Extension Methods
     /// </summary>
-    public static class PersonDtoExtension
+    public static class PersonExtensions
     {
         /// <summary>
         /// To the model.
@@ -332,6 +335,172 @@ namespace Rock.Model
         public static PersonDto ToDto( this Person value )
         {
             return new PersonDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Person value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Person> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Person value, bool deep = false )
+        {
+            dynamic dynamicPerson = new PersonDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPerson;
+            }
+
+            dynamicPerson.Users = value.Users.ToDynamic();
+            dynamicPerson.EmailTemplates = value.EmailTemplates.ToDynamic();
+            dynamicPerson.PhoneNumbers = value.PhoneNumbers.ToDynamic();
+            dynamicPerson.Members = value.Members.ToDynamic();
+            dynamicPerson.Pledges = value.Pledges.ToDynamic();
+            dynamicPerson.PersonAccountLookups = value.PersonAccountLookups.ToDynamic();
+            dynamicPerson.MaritalStatusValue = value.MaritalStatusValue.ToDynamic();
+            dynamicPerson.PersonStatusValue = value.PersonStatusValue.ToDynamic();
+            dynamicPerson.RecordStatusValue = value.RecordStatusValue.ToDynamic();
+            dynamicPerson.RecordStatusReasonValue = value.RecordStatusReasonValue.ToDynamic();
+            dynamicPerson.RecordTypeValue = value.RecordTypeValue.ToDynamic();
+            dynamicPerson.SuffixValue = value.SuffixValue.ToDynamic();
+            dynamicPerson.TitleValue = value.TitleValue.ToDynamic();
+            dynamicPerson.Photo = value.Photo.ToDynamic();
+            dynamicPerson.ImpersonatedUser = value.ImpersonatedUser.ToDynamic();
+
+            return dynamicPerson;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Person value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        var UsersList = dict["Users"] as List<object>;
+                        if (UsersList != null)
+                        {
+                            value.Users = new List<UserLogin>();
+                            foreach(object childObj in UsersList)
+                            {
+                                var UserLogin = new UserLogin();
+                                new UserLoginDto().FromDynamic(childObj).CopyToModel(UserLogin);
+                                value.Users.Add(UserLogin);
+                            }
+                        }
+
+                        var EmailTemplatesList = dict["EmailTemplates"] as List<object>;
+                        if (EmailTemplatesList != null)
+                        {
+                            value.EmailTemplates = new List<EmailTemplate>();
+                            foreach(object childObj in EmailTemplatesList)
+                            {
+                                var EmailTemplate = new EmailTemplate();
+                                new EmailTemplateDto().FromDynamic(childObj).CopyToModel(EmailTemplate);
+                                value.EmailTemplates.Add(EmailTemplate);
+                            }
+                        }
+
+                        var PhoneNumbersList = dict["PhoneNumbers"] as List<object>;
+                        if (PhoneNumbersList != null)
+                        {
+                            value.PhoneNumbers = new List<PhoneNumber>();
+                            foreach(object childObj in PhoneNumbersList)
+                            {
+                                var PhoneNumber = new PhoneNumber();
+                                new PhoneNumberDto().FromDynamic(childObj).CopyToModel(PhoneNumber);
+                                value.PhoneNumbers.Add(PhoneNumber);
+                            }
+                        }
+
+                        var MembersList = dict["Members"] as List<object>;
+                        if (MembersList != null)
+                        {
+                            value.Members = new List<GroupMember>();
+                            foreach(object childObj in MembersList)
+                            {
+                                var GroupMember = new GroupMember();
+                                new GroupMemberDto().FromDynamic(childObj).CopyToModel(GroupMember);
+                                value.Members.Add(GroupMember);
+                            }
+                        }
+
+                        var PledgesList = dict["Pledges"] as List<object>;
+                        if (PledgesList != null)
+                        {
+                            value.Pledges = new List<Pledge>();
+                            foreach(object childObj in PledgesList)
+                            {
+                                var Pledge = new Pledge();
+                                new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
+                                value.Pledges.Add(Pledge);
+                            }
+                        }
+
+                        var PersonAccountLookupsList = dict["PersonAccountLookups"] as List<object>;
+                        if (PersonAccountLookupsList != null)
+                        {
+                            value.PersonAccountLookups = new List<PersonAccount>();
+                            foreach(object childObj in PersonAccountLookupsList)
+                            {
+                                var PersonAccount = new PersonAccount();
+                                new PersonAccountDto().FromDynamic(childObj).CopyToModel(PersonAccount);
+                                value.PersonAccountLookups.Add(PersonAccount);
+                            }
+                        }
+
+                        new DefinedValueDto().FromDynamic( dict["MaritalStatusValue"] ).CopyToModel(value.MaritalStatusValue);
+                        new DefinedValueDto().FromDynamic( dict["PersonStatusValue"] ).CopyToModel(value.PersonStatusValue);
+                        new DefinedValueDto().FromDynamic( dict["RecordStatusValue"] ).CopyToModel(value.RecordStatusValue);
+                        new DefinedValueDto().FromDynamic( dict["RecordStatusReasonValue"] ).CopyToModel(value.RecordStatusReasonValue);
+                        new DefinedValueDto().FromDynamic( dict["RecordTypeValue"] ).CopyToModel(value.RecordTypeValue);
+                        new DefinedValueDto().FromDynamic( dict["SuffixValue"] ).CopyToModel(value.SuffixValue);
+                        new DefinedValueDto().FromDynamic( dict["TitleValue"] ).CopyToModel(value.TitleValue);
+                        new BinaryFileDto().FromDynamic( dict["Photo"] ).CopyToModel(value.Photo);
+                        new UserLoginDto().FromDynamic( dict["ImpersonatedUser"] ).CopyToModel(value.ImpersonatedUser);
+
+                    }
+                }
+            }
         }
 
     }

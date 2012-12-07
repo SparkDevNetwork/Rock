@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -227,10 +229,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Page Extension Methods
     /// </summary>
-    public static class PageDtoExtension
+    public static class PageExtensions
     {
         /// <summary>
         /// To the model.
@@ -276,6 +279,132 @@ namespace Rock.Model
         public static PageDto ToDto( this Page value )
         {
             return new PageDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Page value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Page> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Page value, bool deep = false )
+        {
+            dynamic dynamicPage = new PageDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPage;
+            }
+
+            dynamicPage.Site = value.Site.ToDynamic();
+            dynamicPage.IconFile = value.IconFile.ToDynamic();
+            dynamicPage.Blocks = value.Blocks.ToDynamic();
+            dynamicPage.Pages = value.Pages.ToDynamic();
+            dynamicPage.PageRoutes = value.PageRoutes.ToDynamic();
+            dynamicPage.PageContexts = value.PageContexts.ToDynamic();
+
+            return dynamicPage;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Page value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new SiteDto().FromDynamic( dict["Site"] ).CopyToModel(value.Site);
+                        new BinaryFileDto().FromDynamic( dict["IconFile"] ).CopyToModel(value.IconFile);
+                        var BlocksList = dict["Blocks"] as List<object>;
+                        if (BlocksList != null)
+                        {
+                            value.Blocks = new List<Block>();
+                            foreach(object childObj in BlocksList)
+                            {
+                                var Block = new Block();
+                                new BlockDto().FromDynamic(childObj).CopyToModel(Block);
+                                value.Blocks.Add(Block);
+                            }
+                        }
+
+                        var PagesList = dict["Pages"] as List<object>;
+                        if (PagesList != null)
+                        {
+                            value.Pages = new List<Page>();
+                            foreach(object childObj in PagesList)
+                            {
+                                var Page = new Page();
+                                new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                value.Pages.Add(Page);
+                            }
+                        }
+
+                        var PageRoutesList = dict["PageRoutes"] as List<object>;
+                        if (PageRoutesList != null)
+                        {
+                            value.PageRoutes = new List<PageRoute>();
+                            foreach(object childObj in PageRoutesList)
+                            {
+                                var PageRoute = new PageRoute();
+                                new PageRouteDto().FromDynamic(childObj).CopyToModel(PageRoute);
+                                value.PageRoutes.Add(PageRoute);
+                            }
+                        }
+
+                        var PageContextsList = dict["PageContexts"] as List<object>;
+                        if (PageContextsList != null)
+                        {
+                            value.PageContexts = new List<PageContext>();
+                            foreach(object childObj in PageContextsList)
+                            {
+                                var PageContext = new PageContext();
+                                new PageContextDto().FromDynamic(childObj).CopyToModel(PageContext);
+                                value.PageContexts.Add(PageContext);
+                            }
+                        }
+
+
+                    }
+                }
+            }
         }
 
     }
