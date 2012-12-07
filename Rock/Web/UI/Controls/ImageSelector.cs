@@ -3,7 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -36,18 +36,24 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "Image Id" )
         ]
-        public string ImageId
+        public int? ImageId
         {
             get
             {
                 EnsureChildControls();
-                return hiddenField.Value;
+ 
+                int id = 0;
+                if (Int32.TryParse(hiddenField.Value, out id))
+                {
+                    return id;
+                }
+                return null;
             }
 
             set
             {
                 EnsureChildControls();
-                hiddenField.Value = value;
+                hiddenField.Value = value.HasValue ? value.Value.ToString() : string.Empty;
             }
         }
 
@@ -125,10 +131,10 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "rock-image" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( !string.IsNullOrEmpty( ImageId ) && ImageId != "0" )
+            if ( ImageId.HasValue )
             {
                 image.Style["display"] = "inline";
-                image.ImageUrl = "~/image.ashx?" + ImageId + "&width=50&height=50";
+                image.ImageUrl = "~/image.ashx?" + ImageId.Value.ToString() + "&width=50&height=50";
             }
             else
             {
