@@ -10,7 +10,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Dynamic;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -21,6 +23,8 @@ namespace Rock.Model
     [Table( "Page" )]
     public partial class Page : Model<Page>, IOrdered, IExportable
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
@@ -31,6 +35,14 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [TrackChanges]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Parent Page Id.
+        /// </summary>
+        /// <value>
+        /// Parent Page Id.
+        /// </value>
+        public int? ParentPageId { get; set; }
 
         /// <summary>
         /// Gets or sets the Title.
@@ -49,14 +61,6 @@ namespace Rock.Model
         /// </value>
         [Required]
         public bool IsSystem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Parent Page Id.
-        /// </summary>
-        /// <value>
-        /// Parent Page Id.
-        /// </value>
-        public int? ParentPageId { get; set; }
 
         /// <summary>
         /// Gets or sets the Site Id.
@@ -166,28 +170,12 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets or sets the Icon File ID.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// Icon Url.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Site;
-            }
-        }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        [NotExportable]
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
+        public int? IconFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the Include Admin Footer.
@@ -203,24 +191,33 @@ namespace Rock.Model
         }
         private bool _includeAdminFooter = true;
 
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Page Read( int id )
-        {
-            return Read<Page>( id );
-        }
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Icon Url.
+        /// Gets or sets the Parent Page.
         /// </summary>
         /// <value>
-        /// Icon Url.
+        /// A <see cref="Page"/> object.
         /// </value>
-        [MaxLength( 150 )]
-        public string IconUrl { get; set; }
+        public virtual Page ParentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Site.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Site"/> object.
+        /// </value>
+        public virtual Site Site { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon file.
+        /// </summary>
+        /// <value>
+        /// The icon file.
+        /// </value>
+        public virtual BinaryFile IconFile { get; set; }
 
         /// <summary>
         /// Gets or sets the Blocks.
@@ -263,39 +260,17 @@ namespace Rock.Model
         public virtual ICollection<Site> Sites { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Page.
+        /// Gets the parent authority.
         /// </summary>
         /// <value>
-        /// A <see cref="Page"/> object.
+        /// The parent authority.
         /// </value>
-        [NotExportable]
-        public virtual Page ParentPage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Site.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Site"/> object.
-        /// </value>
-        public virtual Site Site { get; set; }
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        public override List<string> SupportedActions
+        public override Security.ISecured ParentAuthority
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
-        }
-
-        /// <summary>
-        /// Returns a <see cref="string"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="string"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return Name;
+            get
+            {
+                return this.Site;
+            }
         }
 
         /// <summary>
@@ -353,6 +328,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the dto.
+        /// </summary>
+        /// <returns></returns>
+        public override IDto Dto
+        {
+            get { return this.ToDto(); }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
         /// Exports the Page as JSON.
         /// </summary>
         /// <returns></returns>
@@ -368,6 +356,42 @@ namespace Rock.Model
         public object ExportObject()
         {
             return ExportPagesRecursive( this );
+        }
+
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        public void ImportJson( string data )
+        {
+            JsonConvert.PopulateObject( data, this );
+            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
+            ImportPagesRecursive( obj, this );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Static Method to return an object based on the id
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static Page Read( int id )
+        {
+            return Read<Page>( id );
         }
 
         /// <summary>
@@ -455,17 +479,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
-            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
-            ImportPagesRecursive( obj, this );
-        }
-
         private static void ImportPagesRecursive( dynamic data, Page page )
         {
             var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
@@ -488,7 +501,12 @@ namespace Rock.Model
                 }
             }
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Page Configuration class.
@@ -502,8 +520,13 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconFile ).WithMany().HasForeignKey( p => p.IconFileId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// How should page be displayed in a page navigation block
@@ -526,5 +549,5 @@ namespace Rock.Model
         Never = 2
     }
 
-
+    #endregion
 }

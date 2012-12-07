@@ -128,7 +128,8 @@ namespace RockWeb.Blocks.Administration
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
                 tbPageRoute.Text = string.Join(",", page.PageRoutes.Select( route => route.Route ).ToArray());
-              
+                imgIcon.ImageId = page.IconFileId;
+
             }
 
             base.OnLoad( e );
@@ -187,6 +188,7 @@ namespace RockWeb.Blocks.Administration
                     page.DisplayInNavWhen = (Rock.Model.DisplayInNavWhen)Enum.Parse( typeof( Rock.Model.DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                     page.MenuDisplayDescription = cbMenuDescription.Checked;
                     page.MenuDisplayIcon = cbMenuIcon.Checked;
+                    page.IconFileId = imgIcon.ImageId;
                     page.MenuDisplayChildPages = cbMenuChildPages.Checked;
                     page.RequiresEncryption = cbRequiresEncryption.Checked;
                     page.EnableViewState = cbEnableViewState.Checked;
