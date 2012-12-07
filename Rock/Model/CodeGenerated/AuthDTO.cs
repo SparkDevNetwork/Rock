@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Auth Extension Methods
     /// </summary>
-    public static class AuthDtoExtension
+    public static class AuthExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,82 @@ namespace Rock.Model
         public static AuthDto ToDto( this Auth value )
         {
             return new AuthDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Auth value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Auth> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Auth value, bool deep = false )
+        {
+            dynamic dynamicAuth = new AuthDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicAuth;
+            }
+
+            dynamicAuth.Group = value.Group.ToDynamic();
+            dynamicAuth.Person = value.Person.ToDynamic();
+            dynamicAuth.EntityType = value.EntityType.ToDynamic();
+
+            return dynamicAuth;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Auth value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new GroupDto().FromDynamic( dict["Group"] ).CopyToModel(value.Group);
+                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+
+                    }
+                }
+            }
         }
 
     }

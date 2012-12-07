@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -203,10 +205,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Attribute Extension Methods
     /// </summary>
-    public static class AttributeDtoExtension
+    public static class AttributeExtensions
     {
         /// <summary>
         /// To the model.
@@ -252,6 +255,93 @@ namespace Rock.Model
         public static AttributeDto ToDto( this Attribute value )
         {
             return new AttributeDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Attribute value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Attribute> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Attribute value, bool deep = false )
+        {
+            dynamic dynamicAttribute = new AttributeDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicAttribute;
+            }
+
+            dynamicAttribute.EntityType = value.EntityType.ToDynamic();
+            dynamicAttribute.AttributeQualifiers = value.AttributeQualifiers.ToDynamic();
+            dynamicAttribute.FieldType = value.FieldType.ToDynamic();
+
+            return dynamicAttribute;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Attribute value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        var AttributeQualifiersList = dict["AttributeQualifiers"] as List<object>;
+                        if (AttributeQualifiersList != null)
+                        {
+                            value.AttributeQualifiers = new List<AttributeQualifier>();
+                            foreach(object childObj in AttributeQualifiersList)
+                            {
+                                var AttributeQualifier = new AttributeQualifier();
+                                new AttributeQualifierDto().FromDynamic(childObj).CopyToModel(AttributeQualifier);
+                                value.AttributeQualifiers.Add(AttributeQualifier);
+                            }
+                        }
+
+                        new FieldTypeDto().FromDynamic( dict["FieldType"] ).CopyToModel(value.FieldType);
+
+                    }
+                }
+            }
         }
 
     }

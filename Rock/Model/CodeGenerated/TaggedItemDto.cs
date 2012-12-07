@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -115,10 +117,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// TaggedItem Extension Methods
     /// </summary>
-    public static class TaggedItemDtoExtension
+    public static class TaggedItemExtensions
     {
         /// <summary>
         /// To the model.
@@ -164,6 +167,78 @@ namespace Rock.Model
         public static TaggedItemDto ToDto( this TaggedItem value )
         {
             return new TaggedItemDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this TaggedItem value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<TaggedItem> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this TaggedItem value, bool deep = false )
+        {
+            dynamic dynamicTaggedItem = new TaggedItemDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicTaggedItem;
+            }
+
+            dynamicTaggedItem.Tag = value.Tag.ToDynamic();
+
+            return dynamicTaggedItem;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this TaggedItem value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new TagDto().FromDynamic( dict["Tag"] ).CopyToModel(value.Tag);
+
+                    }
+                }
+            }
         }
 
     }

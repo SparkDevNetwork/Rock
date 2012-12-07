@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -187,10 +189,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Site Extension Methods
     /// </summary>
-    public static class SiteDtoExtension
+    public static class SiteExtensions
     {
         /// <summary>
         /// To the model.
@@ -236,6 +239,104 @@ namespace Rock.Model
         public static SiteDto ToDto( this Site value )
         {
             return new SiteDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Site value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Site> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Site value, bool deep = false )
+        {
+            dynamic dynamicSite = new SiteDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicSite;
+            }
+
+            dynamicSite.Pages = value.Pages.ToDynamic();
+            dynamicSite.SiteDomains = value.SiteDomains.ToDynamic();
+            dynamicSite.DefaultPage = value.DefaultPage.ToDynamic();
+
+            return dynamicSite;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Site value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        var PagesList = dict["Pages"] as List<object>;
+                        if (PagesList != null)
+                        {
+                            value.Pages = new List<Page>();
+                            foreach(object childObj in PagesList)
+                            {
+                                var Page = new Page();
+                                new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                value.Pages.Add(Page);
+                            }
+                        }
+
+                        var SiteDomainsList = dict["SiteDomains"] as List<object>;
+                        if (SiteDomainsList != null)
+                        {
+                            value.SiteDomains = new List<SiteDomain>();
+                            foreach(object childObj in SiteDomainsList)
+                            {
+                                var SiteDomain = new SiteDomain();
+                                new SiteDomainDto().FromDynamic(childObj).CopyToModel(SiteDomain);
+                                value.SiteDomains.Add(SiteDomain);
+                            }
+                        }
+
+                        new PageDto().FromDynamic( dict["DefaultPage"] ).CopyToModel(value.DefaultPage);
+
+                    }
+                }
+            }
         }
 
     }

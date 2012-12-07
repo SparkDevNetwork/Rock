@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -147,10 +149,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Pledge Extension Methods
     /// </summary>
-    public static class PledgeDtoExtension
+    public static class PledgeExtensions
     {
         /// <summary>
         /// To the model.
@@ -196,6 +199,82 @@ namespace Rock.Model
         public static PledgeDto ToDto( this Pledge value )
         {
             return new PledgeDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Pledge value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Pledge> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Pledge value, bool deep = false )
+        {
+            dynamic dynamicPledge = new PledgeDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPledge;
+            }
+
+            dynamicPledge.Person = value.Person.ToDynamic();
+            dynamicPledge.Fund = value.Fund.ToDynamic();
+            dynamicPledge.FrequencyTypeValue = value.FrequencyTypeValue.ToDynamic();
+
+            return dynamicPledge;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Pledge value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        new FundDto().FromDynamic( dict["Fund"] ).CopyToModel(value.Fund);
+                        new DefinedValueDto().FromDynamic( dict["FrequencyTypeValue"] ).CopyToModel(value.FrequencyTypeValue);
+
+                    }
+                }
+            }
         }
 
     }

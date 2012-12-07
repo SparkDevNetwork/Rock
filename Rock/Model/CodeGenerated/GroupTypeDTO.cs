@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -123,10 +125,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// GroupType Extension Methods
     /// </summary>
-    public static class GroupTypeDtoExtension
+    public static class GroupTypeExtensions
     {
         /// <summary>
         /// To the model.
@@ -172,6 +175,130 @@ namespace Rock.Model
         public static GroupTypeDto ToDto( this GroupType value )
         {
             return new GroupTypeDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this GroupType value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<GroupType> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this GroupType value, bool deep = false )
+        {
+            dynamic dynamicGroupType = new GroupTypeDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicGroupType;
+            }
+
+            dynamicGroupType.Groups = value.Groups.ToDynamic();
+            dynamicGroupType.ChildGroupTypes = value.ChildGroupTypes.ToDynamic();
+            dynamicGroupType.ParentGroupTypes = value.ParentGroupTypes.ToDynamic();
+            dynamicGroupType.Roles = value.Roles.ToDynamic();
+            dynamicGroupType.DefaultGroupRole = value.DefaultGroupRole.ToDynamic();
+
+            return dynamicGroupType;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this GroupType value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        var GroupsList = dict["Groups"] as List<object>;
+                        if (GroupsList != null)
+                        {
+                            value.Groups = new List<Group>();
+                            foreach(object childObj in GroupsList)
+                            {
+                                var Group = new Group();
+                                new GroupDto().FromDynamic(childObj).CopyToModel(Group);
+                                value.Groups.Add(Group);
+                            }
+                        }
+
+                        var ChildGroupTypesList = dict["ChildGroupTypes"] as List<object>;
+                        if (ChildGroupTypesList != null)
+                        {
+                            value.ChildGroupTypes = new List<GroupType>();
+                            foreach(object childObj in ChildGroupTypesList)
+                            {
+                                var GroupType = new GroupType();
+                                new GroupTypeDto().FromDynamic(childObj).CopyToModel(GroupType);
+                                value.ChildGroupTypes.Add(GroupType);
+                            }
+                        }
+
+                        var ParentGroupTypesList = dict["ParentGroupTypes"] as List<object>;
+                        if (ParentGroupTypesList != null)
+                        {
+                            value.ParentGroupTypes = new List<GroupType>();
+                            foreach(object childObj in ParentGroupTypesList)
+                            {
+                                var GroupType = new GroupType();
+                                new GroupTypeDto().FromDynamic(childObj).CopyToModel(GroupType);
+                                value.ParentGroupTypes.Add(GroupType);
+                            }
+                        }
+
+                        var RolesList = dict["Roles"] as List<object>;
+                        if (RolesList != null)
+                        {
+                            value.Roles = new List<GroupRole>();
+                            foreach(object childObj in RolesList)
+                            {
+                                var GroupRole = new GroupRole();
+                                new GroupRoleDto().FromDynamic(childObj).CopyToModel(GroupRole);
+                                value.Roles.Add(GroupRole);
+                            }
+                        }
+
+                        new GroupRoleDto().FromDynamic( dict["DefaultGroupRole"] ).CopyToModel(value.DefaultGroupRole);
+
+                    }
+                }
+            }
         }
 
     }
