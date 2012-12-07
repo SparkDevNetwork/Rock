@@ -704,20 +704,18 @@ namespace Rock.Web.Cache
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
-                string iconUrl = this.IconUrl ?? "";
-                if ( iconUrl.StartsWith( @"~/" ) )
+                string iconUrl = string.Empty;
+                if ( this.IconFileId.HasValue )
                 {
-                    iconUrl = HttpContext.Current.Request.ApplicationPath + iconUrl.Substring( 1 );
+                    iconUrl = string.Format( "{0}/image.ashx?{1}",
+                        HttpContext.Current.Request.ApplicationPath,
+                        this.IconFileId.Value );
                 }
-                else if ( iconUrl.StartsWith( @"/" ) )
-                {
-                    iconUrl = HttpContext.Current.Request.ApplicationPath + iconUrl;
-                }
-                                
+
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
-                    new XAttribute( "url", this.Url),
+                    new XAttribute( "url", this.Url ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),

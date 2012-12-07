@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class EntityTypesAdmin : RockMigration
+    public partial class EntityTypesAdmin : RockMigration_1
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

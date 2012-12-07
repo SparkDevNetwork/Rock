@@ -52,7 +52,10 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
-                return ( ( Rock.Web.UI.Controls.ImageSelector )control ).ImageId;
+            {
+                int? imageId = ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId;
+                return imageId.HasValue ? imageId.Value.ToString() : string.Empty;
+            }
             return null;
         }
 
@@ -65,7 +68,17 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
-                ( ( Rock.Web.UI.Controls.ImageSelector )control ).ImageId = value;
+            {
+                int imageId = 0;
+                if ( Int32.TryParse( value, out imageId ) )
+                {
+                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = imageId;
+                }
+                else
+                {
+                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = null;
+                }
+            }
         }
     }
 }
