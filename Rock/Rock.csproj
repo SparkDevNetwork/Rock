@@ -118,6 +118,7 @@
     </Compile>
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
+    <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
