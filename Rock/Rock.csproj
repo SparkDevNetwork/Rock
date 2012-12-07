@@ -116,10 +116,6 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Attribute\BooleanFieldAttribute.cs" />
-    <Compile Include="Attribute\FieldAttribute.cs" />
-    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
     <Compile Include="Field\Types\GroupTypeField.cs" />
