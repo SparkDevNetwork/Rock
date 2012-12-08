@@ -9,15 +9,15 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [BlockProperty( 0, "Enable Facebook Login", "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false, "True", "Rock", "Rock.Field.Types.Boolean" )]
+    [BooleanField( 0, "Enable Facebook Login", false, "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.")]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>

@@ -7,26 +7,36 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class BlockProperties : Rock.Web.UI.RockBlock
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class BlockProperties : RockBlock
     {
-        private Rock.Web.Cache.BlockCache _block = null;
-        private string _zoneName = string.Empty;
+        //private BlockCache _block = null;
+        //private string _zoneName = string.Empty;
 
+        /// <summary>
+        /// Raises the <see cref="E:Init" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             Rock.Web.UI.DialogMasterPage masterPage = this.Page.Master as Rock.Web.UI.DialogMasterPage;
             if ( masterPage != null )
+            {
                 masterPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+            }
             
             try
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                _block = Rock.Web.Cache.BlockCache.Read( blockId );
+                BlockCache _block = BlockCache.Read( blockId );
 
                 if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
@@ -46,8 +56,15 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+            BlockCache _block = BlockCache.Read( blockId );
+
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 tbBlockName.Text = _block.Name;
@@ -57,8 +74,15 @@ namespace RockWeb.Blocks.Administration
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Handles the OnSave event of the masterPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
+            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+            BlockCache _block = BlockCache.Read( blockId );
             if ( Page.IsValid )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
@@ -82,10 +106,15 @@ namespace RockWeb.Blocks.Administration
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
             else
+            {
                 Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
-
+            }
         }
 
+        /// <summary>
+        /// Displays the error.
+        /// </summary>
+        /// <param name="message">The message.</param>
         private void DisplayError( string message )
         {
             pnlMessage.Controls.Clear();

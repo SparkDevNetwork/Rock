@@ -7,18 +7,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Runtime.Caching;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Field;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -26,9 +21,9 @@ namespace RockWeb.Blocks.Core
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
     [ContextAware]
-    [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BlockProperty( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
+    [TextField( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [TextField( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [TextField( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
     public partial class ContextAttributeValues : RockBlock
     {
         protected string _category = string.Empty;
@@ -94,7 +89,7 @@ namespace RockWeb.Blocks.Core
                         {
                             var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                             if ( attribute != null )
-                                phAttributes.Controls.Add( (AttributeInstanceValues)this.LoadControl( "~/Blocks/Core/AttributeInstanceValues.ascx", model, attribute, CurrentPersonId ) );
+                                phAttributes.Controls.Add( /*(AttributeInstanceValues)*/this.LoadControl( "~/Blocks/Core/AttributeInstanceValues.ascx", model, attribute, CurrentPersonId ) );
                         }
                 }
             }
