@@ -116,6 +116,9 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\FieldAttribute.cs" />
+    <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
@@ -569,7 +572,7 @@
     <Compile Include="Web\UI\RockBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\BlockPropertyAttribute.cs" />
+    <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />

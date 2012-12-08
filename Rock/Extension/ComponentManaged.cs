@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using Rock.Attribute;
 using Rock.Web.UI;
 
 namespace Rock.Extension
@@ -34,8 +34,8 @@ namespace Rock.Extension
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [BlockProperty( 0, "Order", "", "The order that this service should be used (priority)", false, "0" )]
-    [BlockProperty( 0, "Active", "", "Should Service be used?", false, "False", "Rock", "Rock.Field.Types.Boolean" )]
+    [IntegerField( 0, "Order", "", null, "", "The order that this service should be used (priority)" )]
+    [BooleanField( 0, "Active", false, null, "", "Should Service be used?")]
     public abstract class ComponentManaged : Rock.Attribute.IHasAttributes
     {
         /// <summary>

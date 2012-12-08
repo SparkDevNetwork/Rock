@@ -7,7 +7,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.Web.UI;
 
 namespace Rock.Address.Geocode
@@ -18,9 +18,9 @@ namespace Rock.Address.Geocode
     [Description( "Address Geocoding service from Tele Atlas (EZ-Locate)" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "TelaAtlas" )]
-    [BlockProperty( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
-    [BlockProperty( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
-    [BlockProperty( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
+    [TextField( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
+    [TextField( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
+    [TextField( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
     public class TelaAtlas : GeocodeComponent
     {
         /// <summary>

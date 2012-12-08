@@ -6,17 +6,16 @@
 using System;
 using System.Xml.Linq;
 using System.Xml.Xsl;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
     /// User control for viewing key attributes
     /// </summary>
-    [BlockProperty( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
+    [TextField( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
     public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
         private XDocument xDocument = null;
@@ -38,7 +37,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             foreach ( string keyAttributeId in GetUserValue( "Rock.KeyAttributes" ).SplitDelimitedValues() )
             {
                 int attributeId = 0;
-                if (Int32.TryParse(keyAttributeId, out attributeId))
+                if ( Int32.TryParse( keyAttributeId, out attributeId ) )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                     if ( attribute != null )
