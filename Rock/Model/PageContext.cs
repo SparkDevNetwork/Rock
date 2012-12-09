@@ -103,16 +103,28 @@ namespace Rock.Model
             return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
         }
 
+        /// <summary>
+        /// Exports the object.
+        /// </summary>
+        /// <returns></returns>
         public object ExportObject()
         {
             return this.ToDynamic();
         }
 
+        /// <summary>
+        /// Exports the object as JSON.
+        /// </summary>
+        /// <returns></returns>
         public string ExportJson()
         {
             return ExportObject().ToJSON();
         }
 
+        /// <summary>
+        /// Imports the object from JSON.
+        /// </summary>
+        /// <param name="data">The data.</param>
         public void ImportJson( string data )
         {
             JsonConvert.PopulateObject( data, this );

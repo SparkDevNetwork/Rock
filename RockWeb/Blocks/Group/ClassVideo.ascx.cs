@@ -9,18 +9,17 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Group
 {
-    [BlockProperty( 0, "Group Id", "Behavior", "The Group Id of the parent group", false, "", "Rock", "Rock.Field.Types.Integer" )]
-    [BlockProperty( 1, "Group Levels", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.Field.Types.Integer" )]
-    [BlockProperty( 2, "Group Role", "Behavior", "The Group Role to use when person is added to group", true, "", "Rock", "Rock.Field.Types.Integer" )]
-    [BlockProperty( 3, "Duration Attribute Key", "Behavior", "The key of the duration attribute", false, "Duration" )]
-    [BlockProperty( 3, "Video Attribute Key", "Behavior", "The key of the video attribute", false, "Video" )]
+    [IntegerField( 0, "Group Id", "", null, "Behavior", "The Group Id of the parent group")]
+    [IntegerField( 1, "Group Levels", "", null, "Behavior", "The Group Role to use when person is added to group", true )]
+    [IntegerField( 2, "Group Role", "", null, "Behavior", "The Group Role to use when person is added to group", true )]
+    [TextField( 3, "Duration Attribute Key", "Behavior", "The key of the duration attribute", false, "Duration" )]
+    [TextField( 3, "Video Attribute Key", "Behavior", "The key of the video attribute", false, "Video" )]
     public partial class ClassVideo : Rock.Web.UI.RockBlock
     {
         GroupService groupService = new GroupService();

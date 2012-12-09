@@ -9,8 +9,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -22,8 +22,8 @@ namespace Rock.Search.Person
     [Description( "Person Phone Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Phone")]
-    [BlockProperty( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Phone" )]
-    [BlockProperty( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
+    [TextField( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Phone" )]
+    [TextField( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
     public class Phone : SearchComponent
     {
         /// <summary>

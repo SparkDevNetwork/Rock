@@ -88,7 +88,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where FundTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where FundTypeValueId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
@@ -103,7 +103,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupLocation where LocationTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupLocation where LocationTypeValueId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
@@ -118,7 +118,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Metric where CollectionFrequencyId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Metric where CollectionFrequencyValueId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
@@ -133,7 +133,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from PhoneNumber where NumberTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from PhoneNumber where NumberTypeValueId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
@@ -148,7 +148,7 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FrequencyTypeId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FrequencyTypeValueId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )

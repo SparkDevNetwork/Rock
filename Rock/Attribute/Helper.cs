@@ -34,7 +34,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Uses reflection to find any <see cref="BlockPropertyAttribute" /> attributes for the specified type and will create and/or update
+        /// Uses reflection to find any <see cref="FieldAttribute" /> attributes for the specified type and will create and/or update
         /// a <see cref="Rock.Model.Attribute" /> record for each attribute defined.
         /// </summary>
         /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
@@ -49,7 +49,7 @@ namespace Rock.Attribute
 
             List<string> existingKeys = new List<string>();
 
-            var blockProperties = new List<BlockPropertyAttribute>();
+            var blockProperties = new List<FieldAttribute>();
 
             // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
             int properties = 0;
@@ -61,14 +61,14 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    blockProperties.Add( new BlockPropertyAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
+                    blockProperties.Add( new TextFieldAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
                 }
             }
 
             // Add any property attributes that were defined for the block
-            foreach ( var customAttribute in type.GetCustomAttributes( typeof( BlockPropertyAttribute ), true ) )
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
             {
-                blockProperties.Add( (BlockPropertyAttribute)customAttribute );
+                blockProperties.Add( (FieldAttribute)customAttribute );
             }
 
             // Create any attributes that need to be created
@@ -99,7 +99,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( BlockPropertyAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
 
@@ -416,8 +416,8 @@ namespace Rock.Attribute
                             attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                             attributeControl.ClientIDMode = ClientIDMode.AutoID;
                             divControls.Controls.Add( attributeControl );
-                            
-                            if ( attribute.IsRequired )
+
+                            if ( attribute.IsRequired && ( attributeControl is TextBox ) )
                             {
                                 RequiredFieldValidator rfv = new RequiredFieldValidator();
                                 divControls.Controls.Add( rfv );

@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -20,8 +20,8 @@ namespace Rock.Workflow.Action
     [Description( "Set the workflow status" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Set Status")]
-    [BlockProperty( 0, "EmailTemplate", "The email template to send", true )]
-    [BlockProperty( 1, "Recipient", "The email address to send to", true )]
+    [TextField( 0, "EmailTemplate", "The email template to send", true )]
+    [TextField( 1, "Recipient", "The email address to send to", true )]
     public class SendEmail : ActionComponent
     {
         /// <summary>

@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddMissingTagConfiguration : RockMigration
+    public partial class AddMissingTagConfiguration : RockMigration_1
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

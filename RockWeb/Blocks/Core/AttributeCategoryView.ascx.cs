@@ -10,8 +10,8 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Xml.Linq;
 using System.Xml.Xsl;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -21,10 +21,10 @@ namespace RockWeb.Blocks.Core
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
     [ContextAware]
-    [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BlockProperty( 3, "Attribute Categories", "Filter", "Delimited List of Attribute Category Names", true, "" )]
-    [BlockProperty( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
+    [TextField( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [TextField( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [TextField( 3, "Attribute Categories", "Filter", "Delimited List of Attribute Category Names", true, "" )]
+    [TextField( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
     public partial class AttributeCategoryView : RockBlock
     {
         private XDocument xDocument = null;
