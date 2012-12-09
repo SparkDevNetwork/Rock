@@ -5,12 +5,11 @@
 //
 
 using System;
-
-using Rock.Web.UI;
+using Rock.Attribute;
 
 namespace RockWeb.Blocks.Cms
 {
-    [BlockProperty( 0, "Url", "The path to redirect to", true )]
+    [TextField( 0, "Url", "The path to redirect to", true )]
     public partial class Redirect : Rock.Web.UI.RockBlock
     {
         protected override void OnInit( EventArgs e )

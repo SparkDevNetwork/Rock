@@ -8,18 +8,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Xsl;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    [BlockProperty( 0, "Group Type", "GroupType", "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed", false, "0", "Rock", "Rock.Field.Types.Integer" )]
-    [BlockProperty( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
-    [BlockProperty( 2, "Include Self", "IncludeSelf", "Behavior", "Should the current person be included in list of group members?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-    [BlockProperty( 3, "Include Locations", "IncludeLocations", "Behavior", "Should locations be included?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-    [BlockProperty( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
+    [IntegerField( 0, "Group Type", "0", null, "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed")]
+    [TextField( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
+    [BooleanField( 2, "Include Self", false, null, "Behavior", "Should the current person be included in list of group members?")]
+    [BooleanField( 3, "Include Locations", false, null, "Behavior", "Should locations be included?")]
+    [TextField( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         private XDocument xDocument = null;

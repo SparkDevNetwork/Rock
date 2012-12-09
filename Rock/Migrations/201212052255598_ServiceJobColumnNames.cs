@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class ServiceJobColumnNames : RockMigration
+    public partial class ServiceJobColumnNames : RockMigration_1
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

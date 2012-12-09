@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -21,7 +21,7 @@ namespace Rock.Workflow.Action
     [Description( "Activates a new activity for a given activity type" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
-    [BlockProperty( 0, "Activity Type", "The activity type to activate", true )]
+    [TextField( 0, "Activity Type", "The activity type to activate", true )]
     public class ActivateActivity : ActionComponent
     {
         /// <summary>

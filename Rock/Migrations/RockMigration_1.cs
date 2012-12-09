@@ -13,7 +13,7 @@ namespace Rock.Migrations
     /// <summary>
     /// Custom Migration methods
     /// </summary>
-    public abstract class RockMigration : DbMigration
+    public abstract class RockMigration_1 : DbMigration
     {
 
         #region Block Type Methods
@@ -126,7 +126,7 @@ namespace Rock.Migrations
                     '{1}','{2}',{3},@ParentPageId,{4},'{5}',
                     {6},{7},{8},{9},{10},{11},
                     @Order,{12},'{13}',{14},
-                    {15},'{16}')
+                    '{15}','{16}')
 ",
                     parentPageGuid,
                     page.Name,
@@ -143,7 +143,7 @@ namespace Rock.Migrations
                     page.OutputCacheDuration,
                     page.Description.Replace( "'", "''" ),
                     page.IncludeAdminFooter.Bit(),
-                    page.IconFileId.HasValue ? page.IconFileId.Value.ToString() : "NULL",
+                    "", //page.IconUrl,
                     page.Guid ) );
         }
 
