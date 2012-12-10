@@ -348,7 +348,6 @@
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RockTransactionScope.cs" />
