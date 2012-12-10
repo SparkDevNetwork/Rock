@@ -333,6 +333,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -350,9 +362,10 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-
                         new SiteDto().FromDynamic( dict["Site"] ).CopyToModel(value.Site);
                         new BinaryFileDto().FromDynamic( dict["IconFile"] ).CopyToModel(value.IconFile);
+
+                        // Blocks
                         var BlocksList = dict["Blocks"] as List<object>;
                         if (BlocksList != null)
                         {
@@ -365,6 +378,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // Pages
                         var PagesList = dict["Pages"] as List<object>;
                         if (PagesList != null)
                         {
@@ -377,6 +391,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // PageRoutes
                         var PageRoutesList = dict["PageRoutes"] as List<object>;
                         if (PageRoutesList != null)
                         {
@@ -389,6 +404,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // PageContexts
                         var PageContextsList = dict["PageContexts"] as List<object>;
                         if (PageContextsList != null)
                         {
@@ -400,7 +416,6 @@ namespace Rock.Model
                                 value.PageContexts.Add(PageContext);
                             }
                         }
-
 
                     }
                 }

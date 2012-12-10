@@ -228,6 +228,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -246,6 +258,7 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
+                        // Groups
                         var GroupsList = dict["Groups"] as List<object>;
                         if (GroupsList != null)
                         {
@@ -258,6 +271,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // ChildGroupTypes
                         var ChildGroupTypesList = dict["ChildGroupTypes"] as List<object>;
                         if (ChildGroupTypesList != null)
                         {
@@ -270,6 +284,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // ParentGroupTypes
                         var ParentGroupTypesList = dict["ParentGroupTypes"] as List<object>;
                         if (ParentGroupTypesList != null)
                         {
@@ -282,6 +297,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // Roles
                         var RolesList = dict["Roles"] as List<object>;
                         if (RolesList != null)
                         {
@@ -293,7 +309,6 @@ namespace Rock.Model
                                 value.Roles.Add(GroupRole);
                             }
                         }
-
                         new GroupRoleDto().FromDynamic( dict["DefaultGroupRole"] ).CopyToModel(value.DefaultGroupRole);
 
                     }

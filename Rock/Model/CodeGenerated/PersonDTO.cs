@@ -398,6 +398,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -416,6 +428,7 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
+                        // Users
                         var UsersList = dict["Users"] as List<object>;
                         if (UsersList != null)
                         {
@@ -428,6 +441,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // EmailTemplates
                         var EmailTemplatesList = dict["EmailTemplates"] as List<object>;
                         if (EmailTemplatesList != null)
                         {
@@ -440,6 +454,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // PhoneNumbers
                         var PhoneNumbersList = dict["PhoneNumbers"] as List<object>;
                         if (PhoneNumbersList != null)
                         {
@@ -452,6 +467,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // Members
                         var MembersList = dict["Members"] as List<object>;
                         if (MembersList != null)
                         {
@@ -464,6 +480,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // Pledges
                         var PledgesList = dict["Pledges"] as List<object>;
                         if (PledgesList != null)
                         {
@@ -476,6 +493,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // PersonAccountLookups
                         var PersonAccountLookupsList = dict["PersonAccountLookups"] as List<object>;
                         if (PersonAccountLookupsList != null)
                         {
@@ -487,7 +505,6 @@ namespace Rock.Model
                                 value.PersonAccountLookups.Add(PersonAccount);
                             }
                         }
-
                         new DefinedValueDto().FromDynamic( dict["MaritalStatusValue"] ).CopyToModel(value.MaritalStatusValue);
                         new DefinedValueDto().FromDynamic( dict["PersonStatusValue"] ).CopyToModel(value.PersonStatusValue);
                         new DefinedValueDto().FromDynamic( dict["RecordStatusValue"] ).CopyToModel(value.RecordStatusValue);

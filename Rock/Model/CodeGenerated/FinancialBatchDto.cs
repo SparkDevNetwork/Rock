@@ -248,6 +248,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -266,6 +278,7 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
+                        // Transactions
                         var TransactionsList = dict["Transactions"] as List<object>;
                         if (TransactionsList != null)
                         {
@@ -277,7 +290,6 @@ namespace Rock.Model
                                 value.Transactions.Add(FinancialTransaction);
                             }
                         }
-
 
                     }
                 }
