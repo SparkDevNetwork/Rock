@@ -422,7 +422,7 @@ order by [parentTable]
             sb.AppendLine( "using System.Dynamic;" );
             sb.AppendLine( "using System.Runtime.Serialization;" );
 
-            if ( properties.Values.Any( v => v == "DbGeography" ) )
+            if ( properties.Any( v => v.Value == "DbGeography" ) )
             {
                 sb.AppendLine( "using System.Data.Spatial;" );
             }

@@ -84,6 +84,7 @@ namespace Rock.Model
                     GeocodeAttemptedServiceType = m.GeocodeAttemptedServiceType,
                     GeocodeAttemptedResult = m.GeocodeAttemptedResult,
                     GeocodedDateTime = m.GeocodedDateTime,
+                    PrinterDeviceId = m.PrinterDeviceId,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

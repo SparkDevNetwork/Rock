@@ -81,7 +81,7 @@ namespace Rock.Model
         /// <value>
         /// The printer id.
         /// </value>
-        public int? PrinterId { get; set; }
+        public int? PrinterDeviceId { get; set; }
 
         /// <summary>
         /// Gets or sets the print from.
@@ -122,7 +122,7 @@ namespace Rock.Model
         /// <value>
         /// The printer.
         /// </value>
-        public virtual Device Printer { get; set; }
+        public virtual Device PrinterDevice { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the device.
@@ -201,7 +201,7 @@ namespace Rock.Model
         public DeviceConfiguration()
         {
             this.HasMany( d => d.Locations ).WithMany().Map( d => { d.MapLeftKey( "DeviceId" ); d.MapRightKey( "LocationId" ); d.ToTable( "DeviceLocation" ); } );
-            this.HasOptional( d => d.Printer ).WithMany().HasForeignKey( d => d.PrinterId ).WillCascadeOnDelete( false );
+            this.HasOptional( d => d.PrinterDevice ).WithMany().HasForeignKey( d => d.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );
         }
     }

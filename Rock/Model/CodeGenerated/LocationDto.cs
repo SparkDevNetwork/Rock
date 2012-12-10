@@ -114,6 +114,10 @@ namespace Rock.Model
         [DataMember]
         public DateTime? GeocodedDateTime { get; set; }
 
+        /// <summary />
+        [DataMember]
+        public int? PrinterDeviceId { get; set; }
+
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -159,6 +163,7 @@ namespace Rock.Model
             dictionary.Add( "GeocodeAttemptedServiceType", this.GeocodeAttemptedServiceType );
             dictionary.Add( "GeocodeAttemptedResult", this.GeocodeAttemptedResult );
             dictionary.Add( "GeocodedDateTime", this.GeocodedDateTime );
+            dictionary.Add( "PrinterDeviceId", this.PrinterDeviceId );
             return dictionary;
         }
 
@@ -191,6 +196,7 @@ namespace Rock.Model
             expando.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
             expando.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
             expando.GeocodedDateTime = this.GeocodedDateTime;
+            expando.PrinterDeviceId = this.PrinterDeviceId;
             return expando;
         }
 
@@ -227,6 +233,7 @@ namespace Rock.Model
                 this.GeocodeAttemptedServiceType = location.GeocodeAttemptedServiceType;
                 this.GeocodeAttemptedResult = location.GeocodeAttemptedResult;
                 this.GeocodedDateTime = location.GeocodedDateTime;
+                this.PrinterDeviceId = location.PrinterDeviceId;
             }
         }
 
@@ -263,6 +270,7 @@ namespace Rock.Model
                 location.GeocodeAttemptedServiceType = this.GeocodeAttemptedServiceType;
                 location.GeocodeAttemptedResult = this.GeocodeAttemptedResult;
                 location.GeocodedDateTime = this.GeocodedDateTime;
+                location.PrinterDeviceId = this.PrinterDeviceId;
             }
         }
 
