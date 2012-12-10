@@ -7,18 +7,17 @@
 using System;
 using System.Web.Security;
 using System.Web.UI;
-
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [BlockProperty( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account" )]
-    [BlockProperty( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,"{0}, Enter a new password for your '{1}' account" )]
-    [BlockProperty( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,"{0}, The password for your '{1}' account has been changed" )]
-    [BlockProperty( 3, "Delete", "DeleteCaption", "Captions", "", false,"Are you sure you want to delete the '{0}' account?" )]
-    [BlockProperty( 4, "Deleted", "DeletedCaption", "Captions", "", false,"The account has been deleted." )]
-    [BlockProperty( 5, "Invalid", "InvalidCaption", "Captions", "", false,"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
+    [TextField( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account" )]
+    [TextField( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,"{0}, Enter a new password for your '{1}' account" )]
+    [TextField( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,"{0}, The password for your '{1}' account has been changed" )]
+    [TextField( 3, "Delete", "DeleteCaption", "Captions", "", false,"Are you sure you want to delete the '{0}' account?" )]
+    [TextField( 4, "Deleted", "DeletedCaption", "Captions", "", false,"The account has been deleted." )]
+    [TextField( 5, "Invalid", "InvalidCaption", "Captions", "", false,"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserService userService = null;

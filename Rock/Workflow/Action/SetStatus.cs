@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
@@ -19,7 +19,7 @@ namespace Rock.Workflow.Action
     [Description( "Set the workflow status" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Set Status")]
-    [BlockProperty( 0, "Status", "The status to set workflow to", true )]
+    [TextField( 0, "Status", "The status to set workflow to", true )]
     public class SetStatus : ActionComponent
     {
         /// <summary>

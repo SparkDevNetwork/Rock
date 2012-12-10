@@ -5,24 +5,24 @@
 //
 using System;
 using System.Linq;
-
 using Quartz;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Jobs
 {
-    
+
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [BlockProperty( 0, "Hours to Keep Unconfirmed Accounts", "HoursKeepUnconfirmedAccounts", "General", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)",  false, "48", "Rock", "Rock.Field.Types.Integer" )]
-    [BlockProperty( 0, "Days to Keep Exceptions in Log", "DaysKeepExceptions", "General", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, "14", "Rock", "Rock.Field.Types.Integer" )]
+    [IntegerField( 0, "Hours to Keep Unconfirmed Accounts", "14", "HoursKeepUnconfirmedAccounts", "General", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)" )]
+    [IntegerField( 0, "Days to Keep Exceptions in Log", "14", "DaysKeepExceptions", "General", "The number of days to keep exceptions in the exception log (default is 14 days.)" )]
     public class SendGridProcess : IJob
-    {        
+    {
         /// <summary> 
         /// Empty constructor for job initilization
         /// <para>
@@ -33,7 +33,7 @@ namespace Rock.Jobs
         public SendGridProcess()
         {
         }
-        
+
         /// <summary> 
         /// Job that updates the JobPulse setting with the current date/time.
         /// This will allow us to notify an admin if the jobs stop running.
@@ -42,19 +42,19 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void  Execute(IJobExecutionContext context)
+        public virtual void Execute( IJobExecutionContext context )
         {
-            
+
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // delete accounts that have not been confirmed in X hours
             int userExpireHours = Int32.Parse( dataMap.GetString( "HoursKeepUnconfirmedAccounts" ) );
-            DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1,0,0 ) );
+            DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
 
             UserService userService = new UserService();
 
-            foreach (var user in userService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
+            foreach ( var user in userService.Queryable().Where( u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate ) )
             {
                 userService.Delete( user, null );
             }
