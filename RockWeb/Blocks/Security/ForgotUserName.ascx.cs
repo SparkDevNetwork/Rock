@@ -7,15 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [BlockProperty( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
-    [BlockProperty( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
-    [BlockProperty( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
+    [TextField( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
+    [TextField( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
+    [TextField( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Overridden RockPage Methods

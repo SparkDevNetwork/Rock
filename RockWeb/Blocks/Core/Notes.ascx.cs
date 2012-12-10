@@ -5,15 +5,13 @@
 //
 
 using System;
-using System.Web.UI;
-
-using Rock.Model;
+using Rock.Attribute;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
     [ContextAware]
-    [BlockProperty( 1, "Attribute Name", "Behavior", "The name of the notes attribute", false, "Notes" )]
+    [TextField( 1, "Attribute Name", "Behavior", "The name of the notes attribute", false, "Notes" )]
     public partial class Notes : RockBlock
     {
         protected override void OnInit( EventArgs e )

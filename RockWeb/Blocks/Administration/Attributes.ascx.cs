@@ -11,9 +11,10 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
-using Rock.Model;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -23,11 +24,11 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [BlockProperty( 0, "Entity", "Applies To", "Entity Name", false, "" )]
-    [BlockProperty( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [BlockProperty( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BlockProperty( 3, "Allow Setting of Values", "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?", false, "false", "Rock", "Rock.Field.Types.Boolean" )]
-    [BlockProperty( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
+    [TextField( 0, "Entity", "Applies To", "Entity Name", false, "" )]
+    [TextField( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [TextField( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [BooleanField( 3, "Allow Setting of Values", false, "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?")]
+    [TextField( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
     public partial class Attributes : RockBlock
     {
         #region Fields

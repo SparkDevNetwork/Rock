@@ -21,11 +21,11 @@ namespace Rock.Web.Cache
         private BlockTypeCache( Rock.Model.BlockType blockType ) : base( blockType ) { }
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="Rock.Web.UI.BlockPropertyAttribute"/> attributes have been 
+        /// Gets a value indicating whether the <see cref="Rock.Attribute.TextFieldAttribute" /> attributes have been
         /// verified for the block type.  If not, Rock will create and/or update the attributes associated with the block.
         /// </summary>
         /// <value>
-        ///     <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
+        /// <c>true</c> if attributes have already been verified; otherwise, <c>false</c>.
         /// </value>
         public bool IsInstancePropertiesVerified { get; internal set; }
 
