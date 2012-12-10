@@ -260,6 +260,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -278,6 +290,7 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
+                        // Groups
                         var GroupsList = dict["Groups"] as List<object>;
                         if (GroupsList != null)
                         {
@@ -290,6 +303,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // Members
                         var MembersList = dict["Members"] as List<object>;
                         if (MembersList != null)
                         {
@@ -301,7 +315,6 @@ namespace Rock.Model
                                 value.Members.Add(GroupMember);
                             }
                         }
-
                         new GroupDto().FromDynamic( dict["ParentGroup"] ).CopyToModel(value.ParentGroup);
                         new GroupTypeDto().FromDynamic( dict["GroupType"] ).CopyToModel(value.GroupType);
                         new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);

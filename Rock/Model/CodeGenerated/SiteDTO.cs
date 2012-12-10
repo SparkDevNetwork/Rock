@@ -290,6 +290,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -308,6 +320,7 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
+                        // Pages
                         var PagesList = dict["Pages"] as List<object>;
                         if (PagesList != null)
                         {
@@ -320,6 +333,7 @@ namespace Rock.Model
                             }
                         }
 
+                        // SiteDomains
                         var SiteDomainsList = dict["SiteDomains"] as List<object>;
                         if (SiteDomainsList != null)
                         {
@@ -331,7 +345,6 @@ namespace Rock.Model
                                 value.SiteDomains.Add(SiteDomain);
                             }
                         }
-
                         new PageDto().FromDynamic( dict["DefaultPage"] ).CopyToModel(value.DefaultPage);
 
                     }

@@ -250,6 +250,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -267,7 +279,6 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-
                         new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
                         new FundDto().FromDynamic( dict["Fund"] ).CopyToModel(value.Fund);
                         new DefinedValueDto().FromDynamic( dict["FrequencyTypeValue"] ).CopyToModel(value.FrequencyTypeValue);

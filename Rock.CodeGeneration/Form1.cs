@@ -653,6 +653,18 @@ order by [parentTable]
         }}
 
         /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <param name=""json"">The json.</param>
+        public static void FromJson( this Page value, string json )
+        {{
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }}
+
+        /// <summary>
         /// Froms the dynamic.
         /// </summary>
         /// <param name=""value"">The value.</param>
@@ -670,7 +682,6 @@ order by [parentTable]
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {{
-
 ", type.Name );
 
             var entityType = typeof(Rock.Data.IEntity);
@@ -689,7 +700,9 @@ order by [parentTable]
                     string propertyType = property.Value.GetGenericArguments()[0].Name;
                     string pluralizedName = pls.Pluralize( property.Key );
 
-                    sb.AppendFormat( @"                        var {0}List = dict[""{0}""] as List<object>;
+                    sb.AppendFormat( @"
+                        // {0}
+                        var {0}List = dict[""{0}""] as List<object>;
                         if ({0}List != null)
                         {{
                             value.{0} = new List<{1}>();
@@ -700,7 +713,6 @@ order by [parentTable]
                                 value.{0}.Add({1});
                             }}
                         }}
-
 ", property.Key, propertyType );
                 }
             }
