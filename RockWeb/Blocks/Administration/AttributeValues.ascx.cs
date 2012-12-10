@@ -8,9 +8,8 @@ using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -18,10 +17,10 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [BlockProperty( 0, "Entity", "Applies To", "Entity Name", false, "" )]
-    [BlockProperty( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [BlockProperty( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BlockProperty( 3, "Entity Id", "Entity", "The entity id that values apply to", false, "" )]
+    [TextField( 0, "Entity", "Applies To", "Entity Name", false, "" )]
+    [TextField( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [TextField( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [TextField( 3, "Entity Id", "Entity", "The entity id that values apply to", false, "" )]
     public partial class AttributeValues : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -16,9 +16,10 @@ namespace Rock.Data
     /// <summary>
     /// Data transfer object
     /// </summary>
+    [Serializable]
     public abstract class Dto : IDto, DotLiquid.ILiquidizable
     {
-        /// <summary>
+        /// <summary> 
         /// Gets or sets the id.
         /// </summary>
         /// <value>
