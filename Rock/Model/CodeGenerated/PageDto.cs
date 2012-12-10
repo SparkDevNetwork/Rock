@@ -31,15 +31,15 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
+        public int? ParentPageId { get; set; }
+
+        /// <summary />
+        [DataMember]
         public string Title { get; set; }
 
         /// <summary />
         [DataMember]
         public bool IsSystem { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int? ParentPageId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -87,11 +87,11 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public bool IncludeAdminFooter { get; set; }
+        public int? IconFileId { get; set; }
 
         /// <summary />
         [DataMember]
-        public string IconUrl { get; set; }
+        public bool IncludeAdminFooter { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -117,9 +117,9 @@ namespace Rock.Model
         {
             var dictionary = base.ToDictionary();
             dictionary.Add( "Name", this.Name );
+            dictionary.Add( "ParentPageId", this.ParentPageId );
             dictionary.Add( "Title", this.Title );
             dictionary.Add( "IsSystem", this.IsSystem );
-            dictionary.Add( "ParentPageId", this.ParentPageId );
             dictionary.Add( "SiteId", this.SiteId );
             dictionary.Add( "Layout", this.Layout );
             dictionary.Add( "RequiresEncryption", this.RequiresEncryption );
@@ -131,8 +131,8 @@ namespace Rock.Model
             dictionary.Add( "Order", this.Order );
             dictionary.Add( "OutputCacheDuration", this.OutputCacheDuration );
             dictionary.Add( "Description", this.Description );
+            dictionary.Add( "IconFileId", this.IconFileId );
             dictionary.Add( "IncludeAdminFooter", this.IncludeAdminFooter );
-            dictionary.Add( "IconUrl", this.IconUrl );
             return dictionary;
         }
 
@@ -144,9 +144,9 @@ namespace Rock.Model
         {
             dynamic expando = base.ToDynamic();
             expando.Name = this.Name;
+            expando.ParentPageId = this.ParentPageId;
             expando.Title = this.Title;
             expando.IsSystem = this.IsSystem;
-            expando.ParentPageId = this.ParentPageId;
             expando.SiteId = this.SiteId;
             expando.Layout = this.Layout;
             expando.RequiresEncryption = this.RequiresEncryption;
@@ -158,8 +158,8 @@ namespace Rock.Model
             expando.Order = this.Order;
             expando.OutputCacheDuration = this.OutputCacheDuration;
             expando.Description = this.Description;
+            expando.IconFileId = this.IconFileId;
             expando.IncludeAdminFooter = this.IncludeAdminFooter;
-            expando.IconUrl = this.IconUrl;
             return expando;
         }
 
@@ -175,9 +175,9 @@ namespace Rock.Model
             {
                 var page = (Page)model;
                 this.Name = page.Name;
+                this.ParentPageId = page.ParentPageId;
                 this.Title = page.Title;
                 this.IsSystem = page.IsSystem;
-                this.ParentPageId = page.ParentPageId;
                 this.SiteId = page.SiteId;
                 this.Layout = page.Layout;
                 this.RequiresEncryption = page.RequiresEncryption;
@@ -189,8 +189,8 @@ namespace Rock.Model
                 this.Order = page.Order;
                 this.OutputCacheDuration = page.OutputCacheDuration;
                 this.Description = page.Description;
+                this.IconFileId = page.IconFileId;
                 this.IncludeAdminFooter = page.IncludeAdminFooter;
-                this.IconUrl = page.IconUrl;
             }
         }
 
@@ -206,9 +206,9 @@ namespace Rock.Model
             {
                 var page = (Page)model;
                 page.Name = this.Name;
+                page.ParentPageId = this.ParentPageId;
                 page.Title = this.Title;
                 page.IsSystem = this.IsSystem;
-                page.ParentPageId = this.ParentPageId;
                 page.SiteId = this.SiteId;
                 page.Layout = this.Layout;
                 page.RequiresEncryption = this.RequiresEncryption;
@@ -220,8 +220,8 @@ namespace Rock.Model
                 page.Order = this.Order;
                 page.OutputCacheDuration = this.OutputCacheDuration;
                 page.Description = this.Description;
+                page.IconFileId = this.IconFileId;
                 page.IncludeAdminFooter = this.IncludeAdminFooter;
-                page.IconUrl = this.IconUrl;
             }
         }
 

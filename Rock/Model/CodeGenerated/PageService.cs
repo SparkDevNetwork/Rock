@@ -63,9 +63,9 @@ namespace Rock.Model
             return items.Select( m => new PageDto()
                 {
                     Name = m.Name,
+                    ParentPageId = m.ParentPageId,
                     Title = m.Title,
                     IsSystem = m.IsSystem,
-                    ParentPageId = m.ParentPageId,
                     SiteId = m.SiteId,
                     Layout = m.Layout,
                     RequiresEncryption = m.RequiresEncryption,
@@ -77,8 +77,8 @@ namespace Rock.Model
                     Order = m.Order,
                     OutputCacheDuration = m.OutputCacheDuration,
                     Description = m.Description,
+                    IconFileId = m.IconFileId,
                     IncludeAdminFooter = m.IncludeAdminFooter,
-                    IconUrl = m.IconUrl,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

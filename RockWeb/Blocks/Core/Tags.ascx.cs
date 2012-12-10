@@ -9,14 +9,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
 {
     [ContextAware]
-    [BlockProperty( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [BlockProperty( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [TextField( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
+    [TextField( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
     public partial class Tags : RockBlock
     {
         protected void Page_Load( object sender, EventArgs e )

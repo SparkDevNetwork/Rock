@@ -10,9 +10,8 @@ using System.Dynamic;
 using System.Linq;
 using System.Web;
 using System.Web.Security;
-
 using Facebook;
-
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -24,8 +23,8 @@ namespace Rock.Security.ExternalAuthentication
     [Description( "Facebook Authentication Provider" )]
     [Export( typeof( ExternalAuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
-    [BlockProperty( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
-    [BlockProperty( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
+    [TextField( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
+    [TextField( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
     public class Facebook : ExternalAuthenticationComponent
     {
         /// <summary>

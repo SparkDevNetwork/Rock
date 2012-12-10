@@ -16,7 +16,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class MarketingCampaignAudienceDto : IDto
+    public partial class MarketingCampaignAudienceDto
     {
         /// <summary>
         /// Gets the name.

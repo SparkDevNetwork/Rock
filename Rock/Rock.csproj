@@ -116,6 +116,9 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\FieldAttribute.cs" />
+    <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
@@ -142,9 +145,19 @@
     <Compile Include="Migrations\201212052255598_ServiceJobColumnNames.Designer.cs">
       <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212071233248_PageIconFile.cs" />
+    <Compile Include="Migrations\201212071233248_PageIconFile.Designer.cs">
+      <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
         <Compile Include="Migrations\201212051636262_CheckIn.cs" />
     <Compile Include="Migrations\201212051636262_CheckIn.Designer.cs">
       <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
+    </Compile>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\RockMigration_1.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockDto.Partial.cs" />
@@ -462,7 +475,6 @@
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
-    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Net\WebRequest.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
@@ -575,7 +587,7 @@
     <Compile Include="Web\UI\RockBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\BlockPropertyAttribute.cs" />
+    <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Web\RockRouteHandler.cs" />
     <Compile Include="Security\Authorization.cs" />
     <Compile Include="Security\ISecured.cs" />
@@ -816,6 +828,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052255598_ServiceJobColumnNames.resx">
       <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212071233248_PageIconFile.resx">
+      <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051636262_CheckIn.resx">
       <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>

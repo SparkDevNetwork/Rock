@@ -6,7 +6,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using Rock.Attribute;
 using Rock.MelissaData.AddressCheck;
 using Rock.Web.UI;
 
@@ -18,7 +18,7 @@ namespace Rock.Address.Standardize
     [Description( "Address Standardization service from Melissa Data" )]
     [Export( typeof( StandardizeComponent ) )]
     [ExportMetadata( "ComponentName", "MelissaData" )]
-    [BlockProperty( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
+    [TextField( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
     public class MelissaData : StandardizeComponent
     {
         /// <summary>

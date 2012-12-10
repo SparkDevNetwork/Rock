@@ -4,8 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
-
+using System.Runtime.Serialization;
 using Rock.Model;
 using Rock.Security;
 
@@ -15,6 +16,7 @@ namespace Rock.Data
     /// A Secured data transfer object
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [Serializable]
     public abstract class DtoSecured<T> : Dto, ISecured
         where T : ISecured, new()
     {
@@ -24,7 +26,7 @@ namespace Rock.Data
         /// <param name="model">The model.</param>
         public override void CopyFromModel( IEntity model )
         {
-            base.CopyFromModel(model);
+            base.CopyFromModel( model );
 
             var secureModel = model as ISecured;
             if ( secureModel != null )
@@ -43,6 +45,7 @@ namespace Rock.Data
         /// <value>
         /// The type id.
         /// </value>
+        [DataMember]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -50,6 +53,7 @@ namespace Rock.Data
         /// a value that is unique across all <see cref="ISecured" /> classes.  Typically this is the
         /// qualified name of the class.
         /// </summary>
+        [DataMember]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
