@@ -106,6 +106,21 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Page where IconFileId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "Page" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Page";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
                 cmdCheckRef.CommandText = string.Format( "select count(*) from Person where PhotoId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
