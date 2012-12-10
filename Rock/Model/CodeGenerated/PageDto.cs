@@ -322,12 +322,36 @@ namespace Rock.Model
                 return dynamicPage;
             }
 
-            dynamicPage.Site = value.Site.ToDynamic();
-            dynamicPage.IconFile = value.IconFile.ToDynamic();
-            dynamicPage.Blocks = value.Blocks.ToDynamic();
-            dynamicPage.Pages = value.Pages.ToDynamic();
-            dynamicPage.PageRoutes = value.PageRoutes.ToDynamic();
-            dynamicPage.PageContexts = value.PageContexts.ToDynamic();
+
+            if (value.Site != null)
+            {
+                dynamicPage.Site = value.Site.ToDynamic();
+            }
+
+            if (value.IconFile != null)
+            {
+                dynamicPage.IconFile = value.IconFile.ToDynamic();
+            }
+
+            if (value.Blocks != null)
+            {
+                dynamicPage.Blocks = value.Blocks.ToDynamic();
+            }
+
+            if (value.Pages != null)
+            {
+                dynamicPage.Pages = value.Pages.ToDynamic();
+            }
+
+            if (value.PageRoutes != null)
+            {
+                dynamicPage.PageRoutes = value.PageRoutes.ToDynamic();
+            }
+
+            if (value.PageContexts != null)
+            {
+                dynamicPage.PageContexts = value.PageContexts.ToDynamic();
+            }
 
             return dynamicPage;
         }
@@ -362,58 +386,82 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new SiteDto().FromDynamic( dict["Site"] ).CopyToModel(value.Site);
-                        new BinaryFileDto().FromDynamic( dict["IconFile"] ).CopyToModel(value.IconFile);
+
+                        // Site
+                        if (dict.ContainsKey("Site"))
+                        {
+                            value.Site = new Site();
+                            new SiteDto().FromDynamic( dict["Site"] ).CopyToModel(value.Site);
+                        }
+
+                        // IconFile
+                        if (dict.ContainsKey("IconFile"))
+                        {
+                            value.IconFile = new BinaryFile();
+                            new BinaryFileDto().FromDynamic( dict["IconFile"] ).CopyToModel(value.IconFile);
+                        }
 
                         // Blocks
-                        var BlocksList = dict["Blocks"] as List<object>;
-                        if (BlocksList != null)
+                        if (dict.ContainsKey("Blocks"))
                         {
-                            value.Blocks = new List<Block>();
-                            foreach(object childObj in BlocksList)
+                            var BlocksList = dict["Blocks"] as List<object>;
+                            if (BlocksList != null)
                             {
-                                var Block = new Block();
-                                new BlockDto().FromDynamic(childObj).CopyToModel(Block);
-                                value.Blocks.Add(Block);
+                                value.Blocks = new List<Block>();
+                                foreach(object childObj in BlocksList)
+                                {
+                                    var Block = new Block();
+                                    new BlockDto().FromDynamic(childObj).CopyToModel(Block);
+                                    value.Blocks.Add(Block);
+                                }
                             }
                         }
 
                         // Pages
-                        var PagesList = dict["Pages"] as List<object>;
-                        if (PagesList != null)
+                        if (dict.ContainsKey("Pages"))
                         {
-                            value.Pages = new List<Page>();
-                            foreach(object childObj in PagesList)
+                            var PagesList = dict["Pages"] as List<object>;
+                            if (PagesList != null)
                             {
-                                var Page = new Page();
-                                new PageDto().FromDynamic(childObj).CopyToModel(Page);
-                                value.Pages.Add(Page);
+                                value.Pages = new List<Page>();
+                                foreach(object childObj in PagesList)
+                                {
+                                    var Page = new Page();
+                                    new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                    value.Pages.Add(Page);
+                                }
                             }
                         }
 
                         // PageRoutes
-                        var PageRoutesList = dict["PageRoutes"] as List<object>;
-                        if (PageRoutesList != null)
+                        if (dict.ContainsKey("PageRoutes"))
                         {
-                            value.PageRoutes = new List<PageRoute>();
-                            foreach(object childObj in PageRoutesList)
+                            var PageRoutesList = dict["PageRoutes"] as List<object>;
+                            if (PageRoutesList != null)
                             {
-                                var PageRoute = new PageRoute();
-                                new PageRouteDto().FromDynamic(childObj).CopyToModel(PageRoute);
-                                value.PageRoutes.Add(PageRoute);
+                                value.PageRoutes = new List<PageRoute>();
+                                foreach(object childObj in PageRoutesList)
+                                {
+                                    var PageRoute = new PageRoute();
+                                    new PageRouteDto().FromDynamic(childObj).CopyToModel(PageRoute);
+                                    value.PageRoutes.Add(PageRoute);
+                                }
                             }
                         }
 
                         // PageContexts
-                        var PageContextsList = dict["PageContexts"] as List<object>;
-                        if (PageContextsList != null)
+                        if (dict.ContainsKey("PageContexts"))
                         {
-                            value.PageContexts = new List<PageContext>();
-                            foreach(object childObj in PageContextsList)
+                            var PageContextsList = dict["PageContexts"] as List<object>;
+                            if (PageContextsList != null)
                             {
-                                var PageContext = new PageContext();
-                                new PageContextDto().FromDynamic(childObj).CopyToModel(PageContext);
-                                value.PageContexts.Add(PageContext);
+                                value.PageContexts = new List<PageContext>();
+                                foreach(object childObj in PageContextsList)
+                                {
+                                    var PageContext = new PageContext();
+                                    new PageContextDto().FromDynamic(childObj).CopyToModel(PageContext);
+                                    value.PageContexts.Add(PageContext);
+                                }
                             }
                         }
 

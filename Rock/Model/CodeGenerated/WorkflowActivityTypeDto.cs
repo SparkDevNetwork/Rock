@@ -234,8 +234,16 @@ namespace Rock.Model
                 return dynamicWorkflowActivityType;
             }
 
-            dynamicWorkflowActivityType.WorkflowType = value.WorkflowType.ToDynamic();
-            dynamicWorkflowActivityType.ActionTypes = value.ActionTypes.ToDynamic();
+
+            if (value.WorkflowType != null)
+            {
+                dynamicWorkflowActivityType.WorkflowType = value.WorkflowType.ToDynamic();
+            }
+
+            if (value.ActionTypes != null)
+            {
+                dynamicWorkflowActivityType.ActionTypes = value.ActionTypes.ToDynamic();
+            }
 
             return dynamicWorkflowActivityType;
         }
@@ -245,7 +253,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowActivityType value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -270,18 +278,27 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+
+                        // WorkflowType
+                        if (dict.ContainsKey("WorkflowType"))
+                        {
+                            value.WorkflowType = new WorkflowType();
+                            new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+                        }
 
                         // ActionTypes
-                        var ActionTypesList = dict["ActionTypes"] as List<object>;
-                        if (ActionTypesList != null)
+                        if (dict.ContainsKey("ActionTypes"))
                         {
-                            value.ActionTypes = new List<WorkflowActionType>();
-                            foreach(object childObj in ActionTypesList)
+                            var ActionTypesList = dict["ActionTypes"] as List<object>;
+                            if (ActionTypesList != null)
                             {
-                                var WorkflowActionType = new WorkflowActionType();
-                                new WorkflowActionTypeDto().FromDynamic(childObj).CopyToModel(WorkflowActionType);
-                                value.ActionTypes.Add(WorkflowActionType);
+                                value.ActionTypes = new List<WorkflowActionType>();
+                                foreach(object childObj in ActionTypesList)
+                                {
+                                    var WorkflowActionType = new WorkflowActionType();
+                                    new WorkflowActionTypeDto().FromDynamic(childObj).CopyToModel(WorkflowActionType);
+                                    value.ActionTypes.Add(WorkflowActionType);
+                                }
                             }
                         }
 

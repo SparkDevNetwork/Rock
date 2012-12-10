@@ -226,7 +226,11 @@ namespace Rock.Model
                 return dynamicPaymentGateway;
             }
 
-            dynamicPaymentGateway.Transactions = value.Transactions.ToDynamic();
+
+            if (value.Transactions != null)
+            {
+                dynamicPaymentGateway.Transactions = value.Transactions.ToDynamic();
+            }
 
             return dynamicPaymentGateway;
         }
@@ -236,7 +240,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this PaymentGateway value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -263,15 +267,18 @@ namespace Rock.Model
                     {
 
                         // Transactions
-                        var TransactionsList = dict["Transactions"] as List<object>;
-                        if (TransactionsList != null)
+                        if (dict.ContainsKey("Transactions"))
                         {
-                            value.Transactions = new List<FinancialTransaction>();
-                            foreach(object childObj in TransactionsList)
+                            var TransactionsList = dict["Transactions"] as List<object>;
+                            if (TransactionsList != null)
                             {
-                                var FinancialTransaction = new FinancialTransaction();
-                                new FinancialTransactionDto().FromDynamic(childObj).CopyToModel(FinancialTransaction);
-                                value.Transactions.Add(FinancialTransaction);
+                                value.Transactions = new List<FinancialTransaction>();
+                                foreach(object childObj in TransactionsList)
+                                {
+                                    var FinancialTransaction = new FinancialTransaction();
+                                    new FinancialTransactionDto().FromDynamic(childObj).CopyToModel(FinancialTransaction);
+                                    value.Transactions.Add(FinancialTransaction);
+                                }
                             }
                         }
 

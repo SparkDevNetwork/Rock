@@ -250,8 +250,16 @@ namespace Rock.Model
                 return dynamicPhoneNumber;
             }
 
-            dynamicPhoneNumber.NumberTypeValue = value.NumberTypeValue.ToDynamic();
-            dynamicPhoneNumber.Person = value.Person.ToDynamic();
+
+            if (value.NumberTypeValue != null)
+            {
+                dynamicPhoneNumber.NumberTypeValue = value.NumberTypeValue.ToDynamic();
+            }
+
+            if (value.Person != null)
+            {
+                dynamicPhoneNumber.Person = value.Person.ToDynamic();
+            }
 
             return dynamicPhoneNumber;
         }
@@ -261,7 +269,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this PhoneNumber value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -286,8 +294,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new DefinedValueDto().FromDynamic( dict["NumberTypeValue"] ).CopyToModel(value.NumberTypeValue);
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+
+                        // NumberTypeValue
+                        if (dict.ContainsKey("NumberTypeValue"))
+                        {
+                            value.NumberTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["NumberTypeValue"] ).CopyToModel(value.NumberTypeValue);
+                        }
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
 
                     }
                 }

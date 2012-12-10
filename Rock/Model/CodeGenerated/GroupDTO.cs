@@ -250,11 +250,31 @@ namespace Rock.Model
                 return dynamicGroup;
             }
 
-            dynamicGroup.Groups = value.Groups.ToDynamic();
-            dynamicGroup.Members = value.Members.ToDynamic();
-            dynamicGroup.ParentGroup = value.ParentGroup.ToDynamic();
-            dynamicGroup.GroupType = value.GroupType.ToDynamic();
-            dynamicGroup.Campus = value.Campus.ToDynamic();
+
+            if (value.Groups != null)
+            {
+                dynamicGroup.Groups = value.Groups.ToDynamic();
+            }
+
+            if (value.Members != null)
+            {
+                dynamicGroup.Members = value.Members.ToDynamic();
+            }
+
+            if (value.ParentGroup != null)
+            {
+                dynamicGroup.ParentGroup = value.ParentGroup.ToDynamic();
+            }
+
+            if (value.GroupType != null)
+            {
+                dynamicGroup.GroupType = value.GroupType.ToDynamic();
+            }
+
+            if (value.Campus != null)
+            {
+                dynamicGroup.Campus = value.Campus.ToDynamic();
+            }
 
             return dynamicGroup;
         }
@@ -264,7 +284,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Group value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -291,33 +311,57 @@ namespace Rock.Model
                     {
 
                         // Groups
-                        var GroupsList = dict["Groups"] as List<object>;
-                        if (GroupsList != null)
+                        if (dict.ContainsKey("Groups"))
                         {
-                            value.Groups = new List<Group>();
-                            foreach(object childObj in GroupsList)
+                            var GroupsList = dict["Groups"] as List<object>;
+                            if (GroupsList != null)
                             {
-                                var Group = new Group();
-                                new GroupDto().FromDynamic(childObj).CopyToModel(Group);
-                                value.Groups.Add(Group);
+                                value.Groups = new List<Group>();
+                                foreach(object childObj in GroupsList)
+                                {
+                                    var Group = new Group();
+                                    new GroupDto().FromDynamic(childObj).CopyToModel(Group);
+                                    value.Groups.Add(Group);
+                                }
                             }
                         }
 
                         // Members
-                        var MembersList = dict["Members"] as List<object>;
-                        if (MembersList != null)
+                        if (dict.ContainsKey("Members"))
                         {
-                            value.Members = new List<GroupMember>();
-                            foreach(object childObj in MembersList)
+                            var MembersList = dict["Members"] as List<object>;
+                            if (MembersList != null)
                             {
-                                var GroupMember = new GroupMember();
-                                new GroupMemberDto().FromDynamic(childObj).CopyToModel(GroupMember);
-                                value.Members.Add(GroupMember);
+                                value.Members = new List<GroupMember>();
+                                foreach(object childObj in MembersList)
+                                {
+                                    var GroupMember = new GroupMember();
+                                    new GroupMemberDto().FromDynamic(childObj).CopyToModel(GroupMember);
+                                    value.Members.Add(GroupMember);
+                                }
                             }
                         }
-                        new GroupDto().FromDynamic( dict["ParentGroup"] ).CopyToModel(value.ParentGroup);
-                        new GroupTypeDto().FromDynamic( dict["GroupType"] ).CopyToModel(value.GroupType);
-                        new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);
+
+                        // ParentGroup
+                        if (dict.ContainsKey("ParentGroup"))
+                        {
+                            value.ParentGroup = new Group();
+                            new GroupDto().FromDynamic( dict["ParentGroup"] ).CopyToModel(value.ParentGroup);
+                        }
+
+                        // GroupType
+                        if (dict.ContainsKey("GroupType"))
+                        {
+                            value.GroupType = new GroupType();
+                            new GroupTypeDto().FromDynamic( dict["GroupType"] ).CopyToModel(value.GroupType);
+                        }
+
+                        // Campus
+                        if (dict.ContainsKey("Campus"))
+                        {
+                            value.Campus = new Campus();
+                            new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);
+                        }
 
                     }
                 }

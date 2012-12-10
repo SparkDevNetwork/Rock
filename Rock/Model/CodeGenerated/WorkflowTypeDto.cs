@@ -274,9 +274,21 @@ namespace Rock.Model
                 return dynamicWorkflowType;
             }
 
-            dynamicWorkflowType.Category = value.Category.ToDynamic();
-            dynamicWorkflowType.File = value.File.ToDynamic();
-            dynamicWorkflowType.ActivityTypes = value.ActivityTypes.ToDynamic();
+
+            if (value.Category != null)
+            {
+                dynamicWorkflowType.Category = value.Category.ToDynamic();
+            }
+
+            if (value.File != null)
+            {
+                dynamicWorkflowType.File = value.File.ToDynamic();
+            }
+
+            if (value.ActivityTypes != null)
+            {
+                dynamicWorkflowType.ActivityTypes = value.ActivityTypes.ToDynamic();
+            }
 
             return dynamicWorkflowType;
         }
@@ -286,7 +298,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowType value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -311,19 +323,34 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new CategoryDto().FromDynamic( dict["Category"] ).CopyToModel(value.Category);
-                        new BinaryFileDto().FromDynamic( dict["File"] ).CopyToModel(value.File);
+
+                        // Category
+                        if (dict.ContainsKey("Category"))
+                        {
+                            value.Category = new Category();
+                            new CategoryDto().FromDynamic( dict["Category"] ).CopyToModel(value.Category);
+                        }
+
+                        // File
+                        if (dict.ContainsKey("File"))
+                        {
+                            value.File = new BinaryFile();
+                            new BinaryFileDto().FromDynamic( dict["File"] ).CopyToModel(value.File);
+                        }
 
                         // ActivityTypes
-                        var ActivityTypesList = dict["ActivityTypes"] as List<object>;
-                        if (ActivityTypesList != null)
+                        if (dict.ContainsKey("ActivityTypes"))
                         {
-                            value.ActivityTypes = new List<WorkflowActivityType>();
-                            foreach(object childObj in ActivityTypesList)
+                            var ActivityTypesList = dict["ActivityTypes"] as List<object>;
+                            if (ActivityTypesList != null)
                             {
-                                var WorkflowActivityType = new WorkflowActivityType();
-                                new WorkflowActivityTypeDto().FromDynamic(childObj).CopyToModel(WorkflowActivityType);
-                                value.ActivityTypes.Add(WorkflowActivityType);
+                                value.ActivityTypes = new List<WorkflowActivityType>();
+                                foreach(object childObj in ActivityTypesList)
+                                {
+                                    var WorkflowActivityType = new WorkflowActivityType();
+                                    new WorkflowActivityTypeDto().FromDynamic(childObj).CopyToModel(WorkflowActivityType);
+                                    value.ActivityTypes.Add(WorkflowActivityType);
+                                }
                             }
                         }
 

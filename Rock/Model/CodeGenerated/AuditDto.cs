@@ -242,8 +242,16 @@ namespace Rock.Model
                 return dynamicAudit;
             }
 
-            dynamicAudit.EntityType = value.EntityType.ToDynamic();
-            dynamicAudit.Person = value.Person.ToDynamic();
+
+            if (value.EntityType != null)
+            {
+                dynamicAudit.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.Person != null)
+            {
+                dynamicAudit.Person = value.Person.ToDynamic();
+            }
 
             return dynamicAudit;
         }
@@ -253,7 +261,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Audit value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -278,8 +286,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
 
                     }
                 }

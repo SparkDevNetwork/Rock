@@ -242,9 +242,21 @@ namespace Rock.Model
                 return dynamicTag;
             }
 
-            dynamicTag.Owner = value.Owner.ToDynamic();
-            dynamicTag.EntityType = value.EntityType.ToDynamic();
-            dynamicTag.TaggedItems = value.TaggedItems.ToDynamic();
+
+            if (value.Owner != null)
+            {
+                dynamicTag.Owner = value.Owner.ToDynamic();
+            }
+
+            if (value.EntityType != null)
+            {
+                dynamicTag.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.TaggedItems != null)
+            {
+                dynamicTag.TaggedItems = value.TaggedItems.ToDynamic();
+            }
 
             return dynamicTag;
         }
@@ -254,7 +266,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Tag value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -279,19 +291,34 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new PersonDto().FromDynamic( dict["Owner"] ).CopyToModel(value.Owner);
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+
+                        // Owner
+                        if (dict.ContainsKey("Owner"))
+                        {
+                            value.Owner = new Person();
+                            new PersonDto().FromDynamic( dict["Owner"] ).CopyToModel(value.Owner);
+                        }
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
 
                         // TaggedItems
-                        var TaggedItemsList = dict["TaggedItems"] as List<object>;
-                        if (TaggedItemsList != null)
+                        if (dict.ContainsKey("TaggedItems"))
                         {
-                            value.TaggedItems = new List<TaggedItem>();
-                            foreach(object childObj in TaggedItemsList)
+                            var TaggedItemsList = dict["TaggedItems"] as List<object>;
+                            if (TaggedItemsList != null)
                             {
-                                var TaggedItem = new TaggedItem();
-                                new TaggedItemDto().FromDynamic(childObj).CopyToModel(TaggedItem);
-                                value.TaggedItems.Add(TaggedItem);
+                                value.TaggedItems = new List<TaggedItem>();
+                                foreach(object childObj in TaggedItemsList)
+                                {
+                                    var TaggedItem = new TaggedItem();
+                                    new TaggedItemDto().FromDynamic(childObj).CopyToModel(TaggedItem);
+                                    value.TaggedItems.Add(TaggedItem);
+                                }
                             }
                         }
 

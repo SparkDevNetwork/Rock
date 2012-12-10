@@ -234,8 +234,16 @@ namespace Rock.Model
                 return dynamicDefinedType;
             }
 
-            dynamicDefinedType.DefinedValues = value.DefinedValues.ToDynamic();
-            dynamicDefinedType.FieldType = value.FieldType.ToDynamic();
+
+            if (value.DefinedValues != null)
+            {
+                dynamicDefinedType.DefinedValues = value.DefinedValues.ToDynamic();
+            }
+
+            if (value.FieldType != null)
+            {
+                dynamicDefinedType.FieldType = value.FieldType.ToDynamic();
+            }
 
             return dynamicDefinedType;
         }
@@ -245,7 +253,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this DefinedType value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -272,18 +280,27 @@ namespace Rock.Model
                     {
 
                         // DefinedValues
-                        var DefinedValuesList = dict["DefinedValues"] as List<object>;
-                        if (DefinedValuesList != null)
+                        if (dict.ContainsKey("DefinedValues"))
                         {
-                            value.DefinedValues = new List<DefinedValue>();
-                            foreach(object childObj in DefinedValuesList)
+                            var DefinedValuesList = dict["DefinedValues"] as List<object>;
+                            if (DefinedValuesList != null)
                             {
-                                var DefinedValue = new DefinedValue();
-                                new DefinedValueDto().FromDynamic(childObj).CopyToModel(DefinedValue);
-                                value.DefinedValues.Add(DefinedValue);
+                                value.DefinedValues = new List<DefinedValue>();
+                                foreach(object childObj in DefinedValuesList)
+                                {
+                                    var DefinedValue = new DefinedValue();
+                                    new DefinedValueDto().FromDynamic(childObj).CopyToModel(DefinedValue);
+                                    value.DefinedValues.Add(DefinedValue);
+                                }
                             }
                         }
-                        new FieldTypeDto().FromDynamic( dict["FieldType"] ).CopyToModel(value.FieldType);
+
+                        // FieldType
+                        if (dict.ContainsKey("FieldType"))
+                        {
+                            value.FieldType = new FieldType();
+                            new FieldTypeDto().FromDynamic( dict["FieldType"] ).CopyToModel(value.FieldType);
+                        }
 
                     }
                 }

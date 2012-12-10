@@ -298,12 +298,36 @@ namespace Rock.Model
                 return dynamicFinancialTransaction;
             }
 
-            dynamicFinancialTransaction.Batch = value.Batch.ToDynamic();
-            dynamicFinancialTransaction.CurrencyTypeValue = value.CurrencyTypeValue.ToDynamic();
-            dynamicFinancialTransaction.CreditCardTypeValue = value.CreditCardTypeValue.ToDynamic();
-            dynamicFinancialTransaction.PaymentGateway = value.PaymentGateway.ToDynamic();
-            dynamicFinancialTransaction.SourceTypeValue = value.SourceTypeValue.ToDynamic();
-            dynamicFinancialTransaction.TransactionDetails = value.TransactionDetails.ToDynamic();
+
+            if (value.Batch != null)
+            {
+                dynamicFinancialTransaction.Batch = value.Batch.ToDynamic();
+            }
+
+            if (value.CurrencyTypeValue != null)
+            {
+                dynamicFinancialTransaction.CurrencyTypeValue = value.CurrencyTypeValue.ToDynamic();
+            }
+
+            if (value.CreditCardTypeValue != null)
+            {
+                dynamicFinancialTransaction.CreditCardTypeValue = value.CreditCardTypeValue.ToDynamic();
+            }
+
+            if (value.PaymentGateway != null)
+            {
+                dynamicFinancialTransaction.PaymentGateway = value.PaymentGateway.ToDynamic();
+            }
+
+            if (value.SourceTypeValue != null)
+            {
+                dynamicFinancialTransaction.SourceTypeValue = value.SourceTypeValue.ToDynamic();
+            }
+
+            if (value.TransactionDetails != null)
+            {
+                dynamicFinancialTransaction.TransactionDetails = value.TransactionDetails.ToDynamic();
+            }
 
             return dynamicFinancialTransaction;
         }
@@ -313,7 +337,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this FinancialTransaction value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -338,22 +362,55 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new FinancialBatchDto().FromDynamic( dict["Batch"] ).CopyToModel(value.Batch);
-                        new DefinedValueDto().FromDynamic( dict["CurrencyTypeValue"] ).CopyToModel(value.CurrencyTypeValue);
-                        new DefinedValueDto().FromDynamic( dict["CreditCardTypeValue"] ).CopyToModel(value.CreditCardTypeValue);
-                        new PaymentGatewayDto().FromDynamic( dict["PaymentGateway"] ).CopyToModel(value.PaymentGateway);
-                        new DefinedValueDto().FromDynamic( dict["SourceTypeValue"] ).CopyToModel(value.SourceTypeValue);
+
+                        // Batch
+                        if (dict.ContainsKey("Batch"))
+                        {
+                            value.Batch = new FinancialBatch();
+                            new FinancialBatchDto().FromDynamic( dict["Batch"] ).CopyToModel(value.Batch);
+                        }
+
+                        // CurrencyTypeValue
+                        if (dict.ContainsKey("CurrencyTypeValue"))
+                        {
+                            value.CurrencyTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["CurrencyTypeValue"] ).CopyToModel(value.CurrencyTypeValue);
+                        }
+
+                        // CreditCardTypeValue
+                        if (dict.ContainsKey("CreditCardTypeValue"))
+                        {
+                            value.CreditCardTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["CreditCardTypeValue"] ).CopyToModel(value.CreditCardTypeValue);
+                        }
+
+                        // PaymentGateway
+                        if (dict.ContainsKey("PaymentGateway"))
+                        {
+                            value.PaymentGateway = new PaymentGateway();
+                            new PaymentGatewayDto().FromDynamic( dict["PaymentGateway"] ).CopyToModel(value.PaymentGateway);
+                        }
+
+                        // SourceTypeValue
+                        if (dict.ContainsKey("SourceTypeValue"))
+                        {
+                            value.SourceTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["SourceTypeValue"] ).CopyToModel(value.SourceTypeValue);
+                        }
 
                         // TransactionDetails
-                        var TransactionDetailsList = dict["TransactionDetails"] as List<object>;
-                        if (TransactionDetailsList != null)
+                        if (dict.ContainsKey("TransactionDetails"))
                         {
-                            value.TransactionDetails = new List<FinancialTransactionDetail>();
-                            foreach(object childObj in TransactionDetailsList)
+                            var TransactionDetailsList = dict["TransactionDetails"] as List<object>;
+                            if (TransactionDetailsList != null)
                             {
-                                var FinancialTransactionDetail = new FinancialTransactionDetail();
-                                new FinancialTransactionDetailDto().FromDynamic(childObj).CopyToModel(FinancialTransactionDetail);
-                                value.TransactionDetails.Add(FinancialTransactionDetail);
+                                value.TransactionDetails = new List<FinancialTransactionDetail>();
+                                foreach(object childObj in TransactionDetailsList)
+                                {
+                                    var FinancialTransactionDetail = new FinancialTransactionDetail();
+                                    new FinancialTransactionDetailDto().FromDynamic(childObj).CopyToModel(FinancialTransactionDetail);
+                                    value.TransactionDetails.Add(FinancialTransactionDetail);
+                                }
                             }
                         }
 

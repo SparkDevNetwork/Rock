@@ -210,8 +210,16 @@ namespace Rock.Model
                 return dynamicMarketingCampaignAudience;
             }
 
-            dynamicMarketingCampaignAudience.MarketingCampaign = value.MarketingCampaign.ToDynamic();
-            dynamicMarketingCampaignAudience.AudienceTypeValue = value.AudienceTypeValue.ToDynamic();
+
+            if (value.MarketingCampaign != null)
+            {
+                dynamicMarketingCampaignAudience.MarketingCampaign = value.MarketingCampaign.ToDynamic();
+            }
+
+            if (value.AudienceTypeValue != null)
+            {
+                dynamicMarketingCampaignAudience.AudienceTypeValue = value.AudienceTypeValue.ToDynamic();
+            }
 
             return dynamicMarketingCampaignAudience;
         }
@@ -221,7 +229,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this MarketingCampaignAudience value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -246,8 +254,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
-                        new DefinedValueDto().FromDynamic( dict["AudienceTypeValue"] ).CopyToModel(value.AudienceTypeValue);
+
+                        // MarketingCampaign
+                        if (dict.ContainsKey("MarketingCampaign"))
+                        {
+                            value.MarketingCampaign = new MarketingCampaign();
+                            new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
+                        }
+
+                        // AudienceTypeValue
+                        if (dict.ContainsKey("AudienceTypeValue"))
+                        {
+                            value.AudienceTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["AudienceTypeValue"] ).CopyToModel(value.AudienceTypeValue);
+                        }
 
                     }
                 }

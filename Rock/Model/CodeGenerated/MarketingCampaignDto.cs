@@ -234,11 +234,31 @@ namespace Rock.Model
                 return dynamicMarketingCampaign;
             }
 
-            dynamicMarketingCampaign.ContactPerson = value.ContactPerson.ToDynamic();
-            dynamicMarketingCampaign.EventGroup = value.EventGroup.ToDynamic();
-            dynamicMarketingCampaign.MarketingCampaignAds = value.MarketingCampaignAds.ToDynamic();
-            dynamicMarketingCampaign.MarketingCampaignAudiences = value.MarketingCampaignAudiences.ToDynamic();
-            dynamicMarketingCampaign.MarketingCampaignCampuses = value.MarketingCampaignCampuses.ToDynamic();
+
+            if (value.ContactPerson != null)
+            {
+                dynamicMarketingCampaign.ContactPerson = value.ContactPerson.ToDynamic();
+            }
+
+            if (value.EventGroup != null)
+            {
+                dynamicMarketingCampaign.EventGroup = value.EventGroup.ToDynamic();
+            }
+
+            if (value.MarketingCampaignAds != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignAds = value.MarketingCampaignAds.ToDynamic();
+            }
+
+            if (value.MarketingCampaignAudiences != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignAudiences = value.MarketingCampaignAudiences.ToDynamic();
+            }
+
+            if (value.MarketingCampaignCampuses != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignCampuses = value.MarketingCampaignCampuses.ToDynamic();
+            }
 
             return dynamicMarketingCampaign;
         }
@@ -248,7 +268,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this MarketingCampaign value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -273,45 +293,66 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new PersonDto().FromDynamic( dict["ContactPerson"] ).CopyToModel(value.ContactPerson);
-                        new GroupDto().FromDynamic( dict["EventGroup"] ).CopyToModel(value.EventGroup);
+
+                        // ContactPerson
+                        if (dict.ContainsKey("ContactPerson"))
+                        {
+                            value.ContactPerson = new Person();
+                            new PersonDto().FromDynamic( dict["ContactPerson"] ).CopyToModel(value.ContactPerson);
+                        }
+
+                        // EventGroup
+                        if (dict.ContainsKey("EventGroup"))
+                        {
+                            value.EventGroup = new Group();
+                            new GroupDto().FromDynamic( dict["EventGroup"] ).CopyToModel(value.EventGroup);
+                        }
 
                         // MarketingCampaignAds
-                        var MarketingCampaignAdsList = dict["MarketingCampaignAds"] as List<object>;
-                        if (MarketingCampaignAdsList != null)
+                        if (dict.ContainsKey("MarketingCampaignAds"))
                         {
-                            value.MarketingCampaignAds = new List<MarketingCampaignAd>();
-                            foreach(object childObj in MarketingCampaignAdsList)
+                            var MarketingCampaignAdsList = dict["MarketingCampaignAds"] as List<object>;
+                            if (MarketingCampaignAdsList != null)
                             {
-                                var MarketingCampaignAd = new MarketingCampaignAd();
-                                new MarketingCampaignAdDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAd);
-                                value.MarketingCampaignAds.Add(MarketingCampaignAd);
+                                value.MarketingCampaignAds = new List<MarketingCampaignAd>();
+                                foreach(object childObj in MarketingCampaignAdsList)
+                                {
+                                    var MarketingCampaignAd = new MarketingCampaignAd();
+                                    new MarketingCampaignAdDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAd);
+                                    value.MarketingCampaignAds.Add(MarketingCampaignAd);
+                                }
                             }
                         }
 
                         // MarketingCampaignAudiences
-                        var MarketingCampaignAudiencesList = dict["MarketingCampaignAudiences"] as List<object>;
-                        if (MarketingCampaignAudiencesList != null)
+                        if (dict.ContainsKey("MarketingCampaignAudiences"))
                         {
-                            value.MarketingCampaignAudiences = new List<MarketingCampaignAudience>();
-                            foreach(object childObj in MarketingCampaignAudiencesList)
+                            var MarketingCampaignAudiencesList = dict["MarketingCampaignAudiences"] as List<object>;
+                            if (MarketingCampaignAudiencesList != null)
                             {
-                                var MarketingCampaignAudience = new MarketingCampaignAudience();
-                                new MarketingCampaignAudienceDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAudience);
-                                value.MarketingCampaignAudiences.Add(MarketingCampaignAudience);
+                                value.MarketingCampaignAudiences = new List<MarketingCampaignAudience>();
+                                foreach(object childObj in MarketingCampaignAudiencesList)
+                                {
+                                    var MarketingCampaignAudience = new MarketingCampaignAudience();
+                                    new MarketingCampaignAudienceDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAudience);
+                                    value.MarketingCampaignAudiences.Add(MarketingCampaignAudience);
+                                }
                             }
                         }
 
                         // MarketingCampaignCampuses
-                        var MarketingCampaignCampusesList = dict["MarketingCampaignCampuses"] as List<object>;
-                        if (MarketingCampaignCampusesList != null)
+                        if (dict.ContainsKey("MarketingCampaignCampuses"))
                         {
-                            value.MarketingCampaignCampuses = new List<MarketingCampaignCampus>();
-                            foreach(object childObj in MarketingCampaignCampusesList)
+                            var MarketingCampaignCampusesList = dict["MarketingCampaignCampuses"] as List<object>;
+                            if (MarketingCampaignCampusesList != null)
                             {
-                                var MarketingCampaignCampus = new MarketingCampaignCampus();
-                                new MarketingCampaignCampusDto().FromDynamic(childObj).CopyToModel(MarketingCampaignCampus);
-                                value.MarketingCampaignCampuses.Add(MarketingCampaignCampus);
+                                value.MarketingCampaignCampuses = new List<MarketingCampaignCampus>();
+                                foreach(object childObj in MarketingCampaignCampusesList)
+                                {
+                                    var MarketingCampaignCampus = new MarketingCampaignCampus();
+                                    new MarketingCampaignCampusDto().FromDynamic(childObj).CopyToModel(MarketingCampaignCampus);
+                                    value.MarketingCampaignCampuses.Add(MarketingCampaignCampus);
+                                }
                             }
                         }
 

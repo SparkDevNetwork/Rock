@@ -242,9 +242,21 @@ namespace Rock.Model
                 return dynamicPledge;
             }
 
-            dynamicPledge.Person = value.Person.ToDynamic();
-            dynamicPledge.Fund = value.Fund.ToDynamic();
-            dynamicPledge.FrequencyTypeValue = value.FrequencyTypeValue.ToDynamic();
+
+            if (value.Person != null)
+            {
+                dynamicPledge.Person = value.Person.ToDynamic();
+            }
+
+            if (value.Fund != null)
+            {
+                dynamicPledge.Fund = value.Fund.ToDynamic();
+            }
+
+            if (value.FrequencyTypeValue != null)
+            {
+                dynamicPledge.FrequencyTypeValue = value.FrequencyTypeValue.ToDynamic();
+            }
 
             return dynamicPledge;
         }
@@ -254,7 +266,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Pledge value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -279,9 +291,27 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
-                        new FundDto().FromDynamic( dict["Fund"] ).CopyToModel(value.Fund);
-                        new DefinedValueDto().FromDynamic( dict["FrequencyTypeValue"] ).CopyToModel(value.FrequencyTypeValue);
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
+
+                        // Fund
+                        if (dict.ContainsKey("Fund"))
+                        {
+                            value.Fund = new Fund();
+                            new FundDto().FromDynamic( dict["Fund"] ).CopyToModel(value.Fund);
+                        }
+
+                        // FrequencyTypeValue
+                        if (dict.ContainsKey("FrequencyTypeValue"))
+                        {
+                            value.FrequencyTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["FrequencyTypeValue"] ).CopyToModel(value.FrequencyTypeValue);
+                        }
 
                     }
                 }

@@ -210,7 +210,11 @@ namespace Rock.Model
                 return dynamicWorkflowLog;
             }
 
-            dynamicWorkflowLog.Workflow = value.Workflow.ToDynamic();
+
+            if (value.Workflow != null)
+            {
+                dynamicWorkflowLog.Workflow = value.Workflow.ToDynamic();
+            }
 
             return dynamicWorkflowLog;
         }
@@ -220,7 +224,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowLog value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -245,7 +249,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowDto().FromDynamic( dict["Workflow"] ).CopyToModel(value.Workflow);
+
+                        // Workflow
+                        if (dict.ContainsKey("Workflow"))
+                        {
+                            value.Workflow = new Workflow();
+                            new WorkflowDto().FromDynamic( dict["Workflow"] ).CopyToModel(value.Workflow);
+                        }
 
                     }
                 }

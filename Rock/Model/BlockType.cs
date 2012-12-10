@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Block Type POCO Entity.
     /// </summary>
     [Table( "BlockType" )]
-    public partial class BlockType : Model<BlockType>, IExportable
+    public partial class BlockType : Model<BlockType>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -94,33 +94,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson(string data)
-        {
-            JsonConvert.PopulateObject( data, this );
         }
 
     }

@@ -250,8 +250,11 @@ namespace Rock.Model
                 return dynamicBlock;
             }
 
-            dynamicBlock.HtmlContents = value.HtmlContents.ToDynamic();
-            dynamicBlock.BlockType = value.BlockType.ToDynamic();
+
+            if (value.BlockType != null)
+            {
+                dynamicBlock.BlockType = value.BlockType.ToDynamic();
+            }
 
             return dynamicBlock;
         }
@@ -261,7 +264,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Block value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -287,19 +290,12 @@ namespace Rock.Model
                     if (dict != null)
                     {
 
-                        // HtmlContents
-                        var HtmlContentsList = dict["HtmlContents"] as List<object>;
-                        if (HtmlContentsList != null)
+                        // BlockType
+                        if (dict.ContainsKey("BlockType"))
                         {
-                            value.HtmlContents = new List<HtmlContent>();
-                            foreach(object childObj in HtmlContentsList)
-                            {
-                                var HtmlContent = new HtmlContent();
-                                new HtmlContentDto().FromDynamic(childObj).CopyToModel(HtmlContent);
-                                value.HtmlContents.Add(HtmlContent);
-                            }
+                            value.BlockType = new BlockType();
+                            new BlockTypeDto().FromDynamic( dict["BlockType"] ).CopyToModel(value.BlockType);
                         }
-                        new BlockTypeDto().FromDynamic( dict["BlockType"] ).CopyToModel(value.BlockType);
 
                     }
                 }

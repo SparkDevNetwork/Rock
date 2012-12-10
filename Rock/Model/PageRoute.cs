@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -16,7 +15,7 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageRoute" )]
-    public partial class PageRoute : Model<PageRoute>, IExportable
+    public partial class PageRoute : Model<PageRoute>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -85,34 +84,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Route;
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
         }
 
     }

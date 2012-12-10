@@ -258,8 +258,16 @@ namespace Rock.Model
                 return dynamicEntityChange;
             }
 
-            dynamicEntityChange.EntityType = value.EntityType.ToDynamic();
-            dynamicEntityChange.CreatedByPerson = value.CreatedByPerson.ToDynamic();
+
+            if (value.EntityType != null)
+            {
+                dynamicEntityChange.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.CreatedByPerson != null)
+            {
+                dynamicEntityChange.CreatedByPerson = value.CreatedByPerson.ToDynamic();
+            }
 
             return dynamicEntityChange;
         }
@@ -269,7 +277,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this EntityChange value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -294,8 +302,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
-                        new PersonDto().FromDynamic( dict["CreatedByPerson"] ).CopyToModel(value.CreatedByPerson);
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
+
+                        // CreatedByPerson
+                        if (dict.ContainsKey("CreatedByPerson"))
+                        {
+                            value.CreatedByPerson = new Person();
+                            new PersonDto().FromDynamic( dict["CreatedByPerson"] ).CopyToModel(value.CreatedByPerson);
+                        }
 
                     }
                 }

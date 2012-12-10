@@ -21,7 +21,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    public partial class Page : Model<Page>, IOrdered, IExportable
+    public partial class Page : Model<Page>, IOrdered
     {
         #region Entity Properties
 
@@ -334,34 +334,7 @@ namespace Rock.Model
 
         #region Methods
 
-        /// <summary>
-        /// Exports the Page as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return this.ToJson( true );
-        }
-
-        /// <summary>
-        /// Exports the Page.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic( true );
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson( string data )
-        {
-            this.FromJson( data );
-        }
-
-        /// <summary>
+         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>

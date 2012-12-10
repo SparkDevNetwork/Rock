@@ -20,25 +20,15 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var block = new Block { Name = "Foo" };
-                dynamic result = block.ExportObject();
+                dynamic result = block.ToDynamic( true );
                 Assert.AreEqual( result.Name, block.Name );
-            }
-
-            [Test]
-            public void ShouldCopyHtmlContents()
-            {
-                var block = new Block { HtmlContents = new List<HtmlContent>() };
-                block.HtmlContents.Add( new HtmlContent() );
-                dynamic result = block.ExportObject();
-                Assert.NotNull( result.HtmlContents );
-                Assert.IsNotEmpty( result.HtmlContents );
             }
 
             [Test]
             public void ShouldCopyBlock()
             {
                 var block = new Block { BlockType = new BlockType() };
-                dynamic result = block.ExportObject();
+                dynamic result = block.ToDynamic( true );
                 Assert.NotNull( result.BlockType );
             }
         }
@@ -49,7 +39,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var block = new Block() { Name = "Foo" };
-                var result = block.ExportJson();
+                var result = block.ToJson( true );
                 Assert.IsNotEmpty( result );
             }
         }
@@ -67,29 +57,11 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var block = new Block();
-                block.ImportJson( json );
+                block.FromJson( json );
                 Assert.AreEqual( obj.Name, block.Name );
                 Assert.AreEqual( obj.IsSystem, block.IsSystem );
             }
 
-            [Test]
-            public void ShouldImportHtmlContents()
-            {
-                var obj = new
-                {
-                    Name = "Foo Block",
-                    IsSystem = true,
-                    HtmlContents = new List<dynamic> { new { Content = "Foo Html" } }
-                };
-
-                var json = obj.ToJSON();
-                var block = new Block();
-                block.ImportJson( json );
-                var htmlContents = block.HtmlContents;
-                Assert.IsNotNull( htmlContents );
-                Assert.IsNotEmpty( htmlContents );
-                Assert.AreEqual( htmlContents.First().Content, obj.HtmlContents[ 0 ].Content );
-            }
         }
     }
 }

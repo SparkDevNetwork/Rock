@@ -290,8 +290,16 @@ namespace Rock.Model
                 return dynamicMetric;
             }
 
-            dynamicMetric.MetricValues = value.MetricValues.ToDynamic();
-            dynamicMetric.CollectionFrequencyValue = value.CollectionFrequencyValue.ToDynamic();
+
+            if (value.MetricValues != null)
+            {
+                dynamicMetric.MetricValues = value.MetricValues.ToDynamic();
+            }
+
+            if (value.CollectionFrequencyValue != null)
+            {
+                dynamicMetric.CollectionFrequencyValue = value.CollectionFrequencyValue.ToDynamic();
+            }
 
             return dynamicMetric;
         }
@@ -301,7 +309,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Metric value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -328,18 +336,27 @@ namespace Rock.Model
                     {
 
                         // MetricValues
-                        var MetricValuesList = dict["MetricValues"] as List<object>;
-                        if (MetricValuesList != null)
+                        if (dict.ContainsKey("MetricValues"))
                         {
-                            value.MetricValues = new List<MetricValue>();
-                            foreach(object childObj in MetricValuesList)
+                            var MetricValuesList = dict["MetricValues"] as List<object>;
+                            if (MetricValuesList != null)
                             {
-                                var MetricValue = new MetricValue();
-                                new MetricValueDto().FromDynamic(childObj).CopyToModel(MetricValue);
-                                value.MetricValues.Add(MetricValue);
+                                value.MetricValues = new List<MetricValue>();
+                                foreach(object childObj in MetricValuesList)
+                                {
+                                    var MetricValue = new MetricValue();
+                                    new MetricValueDto().FromDynamic(childObj).CopyToModel(MetricValue);
+                                    value.MetricValues.Add(MetricValue);
+                                }
                             }
                         }
-                        new DefinedValueDto().FromDynamic( dict["CollectionFrequencyValue"] ).CopyToModel(value.CollectionFrequencyValue);
+
+                        // CollectionFrequencyValue
+                        if (dict.ContainsKey("CollectionFrequencyValue"))
+                        {
+                            value.CollectionFrequencyValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["CollectionFrequencyValue"] ).CopyToModel(value.CollectionFrequencyValue);
+                        }
 
                     }
                 }

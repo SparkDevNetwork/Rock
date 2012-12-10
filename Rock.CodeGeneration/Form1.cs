@@ -645,7 +645,11 @@ order by [parentTable]
 
             foreach ( var property in GetRelatedEntityProperties( type ) )
             {
-                sb.AppendFormat( "            dynamic{0}.{1} = value.{1}.ToDynamic();" + Environment.NewLine, type.Name, property.Key );
+                sb.AppendFormat( @"
+            if (value.{1} != null)
+            {{
+                dynamic{0}.{1} = value.{1}.ToDynamic();
+            }}" + Environment.NewLine, type.Name, property.Key );
             }
 
             sb.AppendFormat( @"
@@ -657,7 +661,7 @@ order by [parentTable]
         /// </summary>
         /// <param name=""value"">The value.</param>
         /// <param name=""json"">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this {0} value, string json )
         {{
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -686,11 +690,18 @@ order by [parentTable]
 
             var entityType = typeof(Rock.Data.IEntity);
 
-            foreach ( var property in GetRelatedEntityProperties( type ) )
+            foreach ( var property in GetRelatedEntityProperties( type, false ) )
             {
                 if ( entityType.IsAssignableFrom( property.Value ) )
                 {
-                    sb.AppendFormat( "                        new {1}Dto().FromDynamic( dict[\"{0}\"] ).CopyToModel(value.{0});" + Environment.NewLine,  property.Key, property.Value.Name );
+                    sb.AppendFormat( @"
+                        // {0}
+                        if (dict.ContainsKey(""{0}""))
+                        {{
+                            value.{0} = new {1}();
+                            new {1}Dto().FromDynamic( dict[""{0}""] ).CopyToModel(value.{0});
+                        }}
+",  property.Key, property.Value.Name );
                 }
 
                 if ( property.Value.IsGenericType &&
@@ -702,15 +713,18 @@ order by [parentTable]
 
                     sb.AppendFormat( @"
                         // {0}
-                        var {0}List = dict[""{0}""] as List<object>;
-                        if ({0}List != null)
+                        if (dict.ContainsKey(""{0}""))
                         {{
-                            value.{0} = new List<{1}>();
-                            foreach(object childObj in {0}List)
+                            var {0}List = dict[""{0}""] as List<object>;
+                            if ({0}List != null)
                             {{
-                                var {1} = new {1}();
-                                new {1}Dto().FromDynamic(childObj).CopyToModel({1});
-                                value.{0}.Add({1});
+                                value.{0} = new List<{1}>();
+                                foreach(object childObj in {0}List)
+                                {{
+                                    var {1} = new {1}();
+                                    new {1}Dto().FromDynamic(childObj).CopyToModel({1});
+                                    value.{0}.Add({1});
+                                }}
                             }}
                         }}
 ", property.Key, propertyType );
@@ -950,7 +964,7 @@ order by [parentTable]
             return properties;
         }
 
-        private Dictionary<string, Type> GetRelatedEntityProperties( Type type )
+        private Dictionary<string, Type> GetRelatedEntityProperties( Type type, bool includeReadOnly = true)
         {
             var properties = new Dictionary<string, Type>();
 
@@ -961,12 +975,15 @@ order by [parentTable]
                 if ( property.GetGetMethod().IsVirtual &&
                     property.GetCustomAttribute(typeof(Rock.Data.NotExportable)) == null )
                 {
-                    if ( entityType.IsAssignableFrom( property.PropertyType ) ||
-                        (property.PropertyType.IsGenericType && 
-                        property.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                        entityType.IsAssignableFrom( property.PropertyType.GetGenericArguments()[0] ) ) )
+                    if ( includeReadOnly || property.GetSetMethod(false) != null )
                     {
-                        properties.Add( property.Name, property.PropertyType );
+                        if ( entityType.IsAssignableFrom( property.PropertyType ) ||
+                            ( property.PropertyType.IsGenericType &&
+                            property.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                            entityType.IsAssignableFrom( property.PropertyType.GetGenericArguments()[0] ) ) )
+                        {
+                            properties.Add( property.Name, property.PropertyType );
+                        }
                     }
                 }
             }

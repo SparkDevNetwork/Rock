@@ -250,7 +250,11 @@ namespace Rock.Model
                 return dynamicMetricValue;
             }
 
-            dynamicMetricValue.Metric = value.Metric.ToDynamic();
+
+            if (value.Metric != null)
+            {
+                dynamicMetricValue.Metric = value.Metric.ToDynamic();
+            }
 
             return dynamicMetricValue;
         }
@@ -260,7 +264,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this MetricValue value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -285,7 +289,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new MetricDto().FromDynamic( dict["Metric"] ).CopyToModel(value.Metric);
+
+                        // Metric
+                        if (dict.ContainsKey("Metric"))
+                        {
+                            value.Metric = new Metric();
+                            new MetricDto().FromDynamic( dict["Metric"] ).CopyToModel(value.Metric);
+                        }
 
                     }
                 }
