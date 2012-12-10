@@ -218,8 +218,16 @@ namespace Rock.Model
                 return dynamicWorkflowAction;
             }
 
-            dynamicWorkflowAction.Activity = value.Activity.ToDynamic();
-            dynamicWorkflowAction.ActionType = value.ActionType.ToDynamic();
+
+            if (value.Activity != null)
+            {
+                dynamicWorkflowAction.Activity = value.Activity.ToDynamic();
+            }
+
+            if (value.ActionType != null)
+            {
+                dynamicWorkflowAction.ActionType = value.ActionType.ToDynamic();
+            }
 
             return dynamicWorkflowAction;
         }
@@ -229,7 +237,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowAction value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -254,8 +262,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowActivityDto().FromDynamic( dict["Activity"] ).CopyToModel(value.Activity);
-                        new WorkflowActionTypeDto().FromDynamic( dict["ActionType"] ).CopyToModel(value.ActionType);
+
+                        // Activity
+                        if (dict.ContainsKey("Activity"))
+                        {
+                            value.Activity = new WorkflowActivity();
+                            new WorkflowActivityDto().FromDynamic( dict["Activity"] ).CopyToModel(value.Activity);
+                        }
+
+                        // ActionType
+                        if (dict.ContainsKey("ActionType"))
+                        {
+                            value.ActionType = new WorkflowActionType();
+                            new WorkflowActionTypeDto().FromDynamic( dict["ActionType"] ).CopyToModel(value.ActionType);
+                        }
 
                     }
                 }

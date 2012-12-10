@@ -242,10 +242,26 @@ namespace Rock.Model
                 return dynamicCategory;
             }
 
-            dynamicCategory.ParentCategory = value.ParentCategory.ToDynamic();
-            dynamicCategory.ChildCategories = value.ChildCategories.ToDynamic();
-            dynamicCategory.EntityType = value.EntityType.ToDynamic();
-            dynamicCategory.File = value.File.ToDynamic();
+
+            if (value.ParentCategory != null)
+            {
+                dynamicCategory.ParentCategory = value.ParentCategory.ToDynamic();
+            }
+
+            if (value.ChildCategories != null)
+            {
+                dynamicCategory.ChildCategories = value.ChildCategories.ToDynamic();
+            }
+
+            if (value.EntityType != null)
+            {
+                dynamicCategory.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.File != null)
+            {
+                dynamicCategory.File = value.File.ToDynamic();
+            }
 
             return dynamicCategory;
         }
@@ -255,7 +271,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Category value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -280,22 +296,43 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new CategoryDto().FromDynamic( dict["ParentCategory"] ).CopyToModel(value.ParentCategory);
+
+                        // ParentCategory
+                        if (dict.ContainsKey("ParentCategory"))
+                        {
+                            value.ParentCategory = new Category();
+                            new CategoryDto().FromDynamic( dict["ParentCategory"] ).CopyToModel(value.ParentCategory);
+                        }
 
                         // ChildCategories
-                        var ChildCategoriesList = dict["ChildCategories"] as List<object>;
-                        if (ChildCategoriesList != null)
+                        if (dict.ContainsKey("ChildCategories"))
                         {
-                            value.ChildCategories = new List<Category>();
-                            foreach(object childObj in ChildCategoriesList)
+                            var ChildCategoriesList = dict["ChildCategories"] as List<object>;
+                            if (ChildCategoriesList != null)
                             {
-                                var Category = new Category();
-                                new CategoryDto().FromDynamic(childObj).CopyToModel(Category);
-                                value.ChildCategories.Add(Category);
+                                value.ChildCategories = new List<Category>();
+                                foreach(object childObj in ChildCategoriesList)
+                                {
+                                    var Category = new Category();
+                                    new CategoryDto().FromDynamic(childObj).CopyToModel(Category);
+                                    value.ChildCategories.Add(Category);
+                                }
                             }
                         }
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
-                        new BinaryFileDto().FromDynamic( dict["File"] ).CopyToModel(value.File);
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
+
+                        // File
+                        if (dict.ContainsKey("File"))
+                        {
+                            value.File = new BinaryFile();
+                            new BinaryFileDto().FromDynamic( dict["File"] ).CopyToModel(value.File);
+                        }
 
                     }
                 }

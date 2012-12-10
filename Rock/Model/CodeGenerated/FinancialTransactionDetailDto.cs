@@ -226,7 +226,11 @@ namespace Rock.Model
                 return dynamicFinancialTransactionDetail;
             }
 
-            dynamicFinancialTransactionDetail.Transaction = value.Transaction.ToDynamic();
+
+            if (value.Transaction != null)
+            {
+                dynamicFinancialTransactionDetail.Transaction = value.Transaction.ToDynamic();
+            }
 
             return dynamicFinancialTransactionDetail;
         }
@@ -236,7 +240,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this FinancialTransactionDetail value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -261,7 +265,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new FinancialTransactionDto().FromDynamic( dict["Transaction"] ).CopyToModel(value.Transaction);
+
+                        // Transaction
+                        if (dict.ContainsKey("Transaction"))
+                        {
+                            value.Transaction = new FinancialTransaction();
+                            new FinancialTransactionDto().FromDynamic( dict["Transaction"] ).CopyToModel(value.Transaction);
+                        }
 
                     }
                 }

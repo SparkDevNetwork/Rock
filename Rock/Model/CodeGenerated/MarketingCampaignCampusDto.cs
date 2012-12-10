@@ -202,8 +202,16 @@ namespace Rock.Model
                 return dynamicMarketingCampaignCampus;
             }
 
-            dynamicMarketingCampaignCampus.MarketingCampaign = value.MarketingCampaign.ToDynamic();
-            dynamicMarketingCampaignCampus.Campus = value.Campus.ToDynamic();
+
+            if (value.MarketingCampaign != null)
+            {
+                dynamicMarketingCampaignCampus.MarketingCampaign = value.MarketingCampaign.ToDynamic();
+            }
+
+            if (value.Campus != null)
+            {
+                dynamicMarketingCampaignCampus.Campus = value.Campus.ToDynamic();
+            }
 
             return dynamicMarketingCampaignCampus;
         }
@@ -213,7 +221,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this MarketingCampaignCampus value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -238,8 +246,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
-                        new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);
+
+                        // MarketingCampaign
+                        if (dict.ContainsKey("MarketingCampaign"))
+                        {
+                            value.MarketingCampaign = new MarketingCampaign();
+                            new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
+                        }
+
+                        // Campus
+                        if (dict.ContainsKey("Campus"))
+                        {
+                            value.Campus = new Campus();
+                            new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);
+                        }
 
                     }
                 }

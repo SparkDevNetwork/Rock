@@ -234,8 +234,16 @@ namespace Rock.Model
                 return dynamicWorkflowActionType;
             }
 
-            dynamicWorkflowActionType.ActivityType = value.ActivityType.ToDynamic();
-            dynamicWorkflowActionType.EntityType = value.EntityType.ToDynamic();
+
+            if (value.ActivityType != null)
+            {
+                dynamicWorkflowActionType.ActivityType = value.ActivityType.ToDynamic();
+            }
+
+            if (value.EntityType != null)
+            {
+                dynamicWorkflowActionType.EntityType = value.EntityType.ToDynamic();
+            }
 
             return dynamicWorkflowActionType;
         }
@@ -245,7 +253,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowActionType value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -270,8 +278,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowActivityTypeDto().FromDynamic( dict["ActivityType"] ).CopyToModel(value.ActivityType);
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+
+                        // ActivityType
+                        if (dict.ContainsKey("ActivityType"))
+                        {
+                            value.ActivityType = new WorkflowActivityType();
+                            new WorkflowActivityTypeDto().FromDynamic( dict["ActivityType"] ).CopyToModel(value.ActivityType);
+                        }
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
 
                     }
                 }

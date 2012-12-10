@@ -226,7 +226,11 @@ namespace Rock.Model
                 return dynamicFieldType;
             }
 
-            dynamicFieldType.DefinedTypes = value.DefinedTypes.ToDynamic();
+
+            if (value.DefinedTypes != null)
+            {
+                dynamicFieldType.DefinedTypes = value.DefinedTypes.ToDynamic();
+            }
 
             return dynamicFieldType;
         }
@@ -236,7 +240,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this FieldType value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -263,15 +267,18 @@ namespace Rock.Model
                     {
 
                         // DefinedTypes
-                        var DefinedTypesList = dict["DefinedTypes"] as List<object>;
-                        if (DefinedTypesList != null)
+                        if (dict.ContainsKey("DefinedTypes"))
                         {
-                            value.DefinedTypes = new List<DefinedType>();
-                            foreach(object childObj in DefinedTypesList)
+                            var DefinedTypesList = dict["DefinedTypes"] as List<object>;
+                            if (DefinedTypesList != null)
                             {
-                                var DefinedType = new DefinedType();
-                                new DefinedTypeDto().FromDynamic(childObj).CopyToModel(DefinedType);
-                                value.DefinedTypes.Add(DefinedType);
+                                value.DefinedTypes = new List<DefinedType>();
+                                foreach(object childObj in DefinedTypesList)
+                                {
+                                    var DefinedType = new DefinedType();
+                                    new DefinedTypeDto().FromDynamic(childObj).CopyToModel(DefinedType);
+                                    value.DefinedTypes.Add(DefinedType);
+                                }
                             }
                         }
 

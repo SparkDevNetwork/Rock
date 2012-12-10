@@ -250,9 +250,21 @@ namespace Rock.Model
                 return dynamicAuth;
             }
 
-            dynamicAuth.Group = value.Group.ToDynamic();
-            dynamicAuth.Person = value.Person.ToDynamic();
-            dynamicAuth.EntityType = value.EntityType.ToDynamic();
+
+            if (value.Group != null)
+            {
+                dynamicAuth.Group = value.Group.ToDynamic();
+            }
+
+            if (value.Person != null)
+            {
+                dynamicAuth.Person = value.Person.ToDynamic();
+            }
+
+            if (value.EntityType != null)
+            {
+                dynamicAuth.EntityType = value.EntityType.ToDynamic();
+            }
 
             return dynamicAuth;
         }
@@ -262,7 +274,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Auth value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -287,9 +299,27 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new GroupDto().FromDynamic( dict["Group"] ).CopyToModel(value.Group);
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+
+                        // Group
+                        if (dict.ContainsKey("Group"))
+                        {
+                            value.Group = new Group();
+                            new GroupDto().FromDynamic( dict["Group"] ).CopyToModel(value.Group);
+                        }
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
 
                     }
                 }

@@ -226,7 +226,11 @@ namespace Rock.Model
                 return dynamicDefinedValue;
             }
 
-            dynamicDefinedValue.DefinedType = value.DefinedType.ToDynamic();
+
+            if (value.DefinedType != null)
+            {
+                dynamicDefinedValue.DefinedType = value.DefinedType.ToDynamic();
+            }
 
             return dynamicDefinedValue;
         }
@@ -236,7 +240,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this DefinedValue value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -261,7 +265,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new DefinedTypeDto().FromDynamic( dict["DefinedType"] ).CopyToModel(value.DefinedType);
+
+                        // DefinedType
+                        if (dict.ContainsKey("DefinedType"))
+                        {
+                            value.DefinedType = new DefinedType();
+                            new DefinedTypeDto().FromDynamic( dict["DefinedType"] ).CopyToModel(value.DefinedType);
+                        }
 
                     }
                 }

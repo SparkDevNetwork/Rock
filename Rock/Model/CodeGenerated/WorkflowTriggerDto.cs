@@ -242,8 +242,16 @@ namespace Rock.Model
                 return dynamicWorkflowTrigger;
             }
 
-            dynamicWorkflowTrigger.EntityType = value.EntityType.ToDynamic();
-            dynamicWorkflowTrigger.WorkflowType = value.WorkflowType.ToDynamic();
+
+            if (value.EntityType != null)
+            {
+                dynamicWorkflowTrigger.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.WorkflowType != null)
+            {
+                dynamicWorkflowTrigger.WorkflowType = value.WorkflowType.ToDynamic();
+            }
 
             return dynamicWorkflowTrigger;
         }
@@ -253,7 +261,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowTrigger value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -278,8 +286,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
-                        new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
+
+                        // WorkflowType
+                        if (dict.ContainsKey("WorkflowType"))
+                        {
+                            value.WorkflowType = new WorkflowType();
+                            new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+                        }
 
                     }
                 }

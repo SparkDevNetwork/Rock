@@ -226,9 +226,21 @@ namespace Rock.Model
                 return dynamicWorkflowActivity;
             }
 
-            dynamicWorkflowActivity.Workflow = value.Workflow.ToDynamic();
-            dynamicWorkflowActivity.ActivityType = value.ActivityType.ToDynamic();
-            dynamicWorkflowActivity.Actions = value.Actions.ToDynamic();
+
+            if (value.Workflow != null)
+            {
+                dynamicWorkflowActivity.Workflow = value.Workflow.ToDynamic();
+            }
+
+            if (value.ActivityType != null)
+            {
+                dynamicWorkflowActivity.ActivityType = value.ActivityType.ToDynamic();
+            }
+
+            if (value.Actions != null)
+            {
+                dynamicWorkflowActivity.Actions = value.Actions.ToDynamic();
+            }
 
             return dynamicWorkflowActivity;
         }
@@ -238,7 +250,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this WorkflowActivity value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -263,19 +275,34 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowDto().FromDynamic( dict["Workflow"] ).CopyToModel(value.Workflow);
-                        new WorkflowActivityTypeDto().FromDynamic( dict["ActivityType"] ).CopyToModel(value.ActivityType);
+
+                        // Workflow
+                        if (dict.ContainsKey("Workflow"))
+                        {
+                            value.Workflow = new Workflow();
+                            new WorkflowDto().FromDynamic( dict["Workflow"] ).CopyToModel(value.Workflow);
+                        }
+
+                        // ActivityType
+                        if (dict.ContainsKey("ActivityType"))
+                        {
+                            value.ActivityType = new WorkflowActivityType();
+                            new WorkflowActivityTypeDto().FromDynamic( dict["ActivityType"] ).CopyToModel(value.ActivityType);
+                        }
 
                         // Actions
-                        var ActionsList = dict["Actions"] as List<object>;
-                        if (ActionsList != null)
+                        if (dict.ContainsKey("Actions"))
                         {
-                            value.Actions = new List<WorkflowAction>();
-                            foreach(object childObj in ActionsList)
+                            var ActionsList = dict["Actions"] as List<object>;
+                            if (ActionsList != null)
                             {
-                                var WorkflowAction = new WorkflowAction();
-                                new WorkflowActionDto().FromDynamic(childObj).CopyToModel(WorkflowAction);
-                                value.Actions.Add(WorkflowAction);
+                                value.Actions = new List<WorkflowAction>();
+                                foreach(object childObj in ActionsList)
+                                {
+                                    var WorkflowAction = new WorkflowAction();
+                                    new WorkflowActionDto().FromDynamic(childObj).CopyToModel(WorkflowAction);
+                                    value.Actions.Add(WorkflowAction);
+                                }
                             }
                         }
 

@@ -314,7 +314,11 @@ namespace Rock.Model
                 return dynamicUserLogin;
             }
 
-            dynamicUserLogin.Person = value.Person.ToDynamic();
+
+            if (value.Person != null)
+            {
+                dynamicUserLogin.Person = value.Person.ToDynamic();
+            }
 
             return dynamicUserLogin;
         }
@@ -324,7 +328,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this UserLogin value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -349,7 +353,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
 
                     }
                 }

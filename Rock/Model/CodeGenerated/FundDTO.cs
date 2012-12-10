@@ -298,10 +298,26 @@ namespace Rock.Model
                 return dynamicFund;
             }
 
-            dynamicFund.ParentFund = value.ParentFund.ToDynamic();
-            dynamicFund.FundTypeValue = value.FundTypeValue.ToDynamic();
-            dynamicFund.ChildFunds = value.ChildFunds.ToDynamic();
-            dynamicFund.Pledges = value.Pledges.ToDynamic();
+
+            if (value.ParentFund != null)
+            {
+                dynamicFund.ParentFund = value.ParentFund.ToDynamic();
+            }
+
+            if (value.FundTypeValue != null)
+            {
+                dynamicFund.FundTypeValue = value.FundTypeValue.ToDynamic();
+            }
+
+            if (value.ChildFunds != null)
+            {
+                dynamicFund.ChildFunds = value.ChildFunds.ToDynamic();
+            }
+
+            if (value.Pledges != null)
+            {
+                dynamicFund.Pledges = value.Pledges.ToDynamic();
+            }
 
             return dynamicFund;
         }
@@ -311,7 +327,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Fund value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -336,32 +352,50 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new FundDto().FromDynamic( dict["ParentFund"] ).CopyToModel(value.ParentFund);
-                        new DefinedValueDto().FromDynamic( dict["FundTypeValue"] ).CopyToModel(value.FundTypeValue);
+
+                        // ParentFund
+                        if (dict.ContainsKey("ParentFund"))
+                        {
+                            value.ParentFund = new Fund();
+                            new FundDto().FromDynamic( dict["ParentFund"] ).CopyToModel(value.ParentFund);
+                        }
+
+                        // FundTypeValue
+                        if (dict.ContainsKey("FundTypeValue"))
+                        {
+                            value.FundTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["FundTypeValue"] ).CopyToModel(value.FundTypeValue);
+                        }
 
                         // ChildFunds
-                        var ChildFundsList = dict["ChildFunds"] as List<object>;
-                        if (ChildFundsList != null)
+                        if (dict.ContainsKey("ChildFunds"))
                         {
-                            value.ChildFunds = new List<Fund>();
-                            foreach(object childObj in ChildFundsList)
+                            var ChildFundsList = dict["ChildFunds"] as List<object>;
+                            if (ChildFundsList != null)
                             {
-                                var Fund = new Fund();
-                                new FundDto().FromDynamic(childObj).CopyToModel(Fund);
-                                value.ChildFunds.Add(Fund);
+                                value.ChildFunds = new List<Fund>();
+                                foreach(object childObj in ChildFundsList)
+                                {
+                                    var Fund = new Fund();
+                                    new FundDto().FromDynamic(childObj).CopyToModel(Fund);
+                                    value.ChildFunds.Add(Fund);
+                                }
                             }
                         }
 
                         // Pledges
-                        var PledgesList = dict["Pledges"] as List<object>;
-                        if (PledgesList != null)
+                        if (dict.ContainsKey("Pledges"))
                         {
-                            value.Pledges = new List<Pledge>();
-                            foreach(object childObj in PledgesList)
+                            var PledgesList = dict["Pledges"] as List<object>;
+                            if (PledgesList != null)
                             {
-                                var Pledge = new Pledge();
-                                new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
-                                value.Pledges.Add(Pledge);
+                                value.Pledges = new List<Pledge>();
+                                foreach(object childObj in PledgesList)
+                                {
+                                    var Pledge = new Pledge();
+                                    new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
+                                    value.Pledges.Add(Pledge);
+                                }
                             }
                         }
 

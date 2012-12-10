@@ -218,7 +218,11 @@ namespace Rock.Model
                 return dynamicAttributeQualifier;
             }
 
-            dynamicAttributeQualifier.Attribute = value.Attribute.ToDynamic();
+
+            if (value.Attribute != null)
+            {
+                dynamicAttributeQualifier.Attribute = value.Attribute.ToDynamic();
+            }
 
             return dynamicAttributeQualifier;
         }
@@ -228,7 +232,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this AttributeQualifier value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -253,7 +257,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new AttributeDto().FromDynamic( dict["Attribute"] ).CopyToModel(value.Attribute);
+
+                        // Attribute
+                        if (dict.ContainsKey("Attribute"))
+                        {
+                            value.Attribute = new Attribute();
+                            new AttributeDto().FromDynamic( dict["Attribute"] ).CopyToModel(value.Attribute);
+                        }
 
                     }
                 }

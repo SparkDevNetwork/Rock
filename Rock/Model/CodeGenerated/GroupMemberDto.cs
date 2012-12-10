@@ -218,9 +218,21 @@ namespace Rock.Model
                 return dynamicGroupMember;
             }
 
-            dynamicGroupMember.Person = value.Person.ToDynamic();
-            dynamicGroupMember.Group = value.Group.ToDynamic();
-            dynamicGroupMember.GroupRole = value.GroupRole.ToDynamic();
+
+            if (value.Person != null)
+            {
+                dynamicGroupMember.Person = value.Person.ToDynamic();
+            }
+
+            if (value.Group != null)
+            {
+                dynamicGroupMember.Group = value.Group.ToDynamic();
+            }
+
+            if (value.GroupRole != null)
+            {
+                dynamicGroupMember.GroupRole = value.GroupRole.ToDynamic();
+            }
 
             return dynamicGroupMember;
         }
@@ -230,7 +242,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this GroupMember value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -255,9 +267,27 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
-                        new GroupDto().FromDynamic( dict["Group"] ).CopyToModel(value.Group);
-                        new GroupRoleDto().FromDynamic( dict["GroupRole"] ).CopyToModel(value.GroupRole);
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
+
+                        // Group
+                        if (dict.ContainsKey("Group"))
+                        {
+                            value.Group = new Group();
+                            new GroupDto().FromDynamic( dict["Group"] ).CopyToModel(value.Group);
+                        }
+
+                        // GroupRole
+                        if (dict.ContainsKey("GroupRole"))
+                        {
+                            value.GroupRole = new GroupRole();
+                            new GroupRoleDto().FromDynamic( dict["GroupRole"] ).CopyToModel(value.GroupRole);
+                        }
 
                     }
                 }

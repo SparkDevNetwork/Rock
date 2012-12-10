@@ -250,9 +250,21 @@ namespace Rock.Model
                 return dynamicWorkflow;
             }
 
-            dynamicWorkflow.WorkflowType = value.WorkflowType.ToDynamic();
-            dynamicWorkflow.Activities = value.Activities.ToDynamic();
-            dynamicWorkflow.LogEntries = value.LogEntries.ToDynamic();
+
+            if (value.WorkflowType != null)
+            {
+                dynamicWorkflow.WorkflowType = value.WorkflowType.ToDynamic();
+            }
+
+            if (value.Activities != null)
+            {
+                dynamicWorkflow.Activities = value.Activities.ToDynamic();
+            }
+
+            if (value.LogEntries != null)
+            {
+                dynamicWorkflow.LogEntries = value.LogEntries.ToDynamic();
+            }
 
             return dynamicWorkflow;
         }
@@ -262,7 +274,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Workflow value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -287,31 +299,43 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+
+                        // WorkflowType
+                        if (dict.ContainsKey("WorkflowType"))
+                        {
+                            value.WorkflowType = new WorkflowType();
+                            new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+                        }
 
                         // Activities
-                        var ActivitiesList = dict["Activities"] as List<object>;
-                        if (ActivitiesList != null)
+                        if (dict.ContainsKey("Activities"))
                         {
-                            value.Activities = new List<WorkflowActivity>();
-                            foreach(object childObj in ActivitiesList)
+                            var ActivitiesList = dict["Activities"] as List<object>;
+                            if (ActivitiesList != null)
                             {
-                                var WorkflowActivity = new WorkflowActivity();
-                                new WorkflowActivityDto().FromDynamic(childObj).CopyToModel(WorkflowActivity);
-                                value.Activities.Add(WorkflowActivity);
+                                value.Activities = new List<WorkflowActivity>();
+                                foreach(object childObj in ActivitiesList)
+                                {
+                                    var WorkflowActivity = new WorkflowActivity();
+                                    new WorkflowActivityDto().FromDynamic(childObj).CopyToModel(WorkflowActivity);
+                                    value.Activities.Add(WorkflowActivity);
+                                }
                             }
                         }
 
                         // LogEntries
-                        var LogEntriesList = dict["LogEntries"] as List<object>;
-                        if (LogEntriesList != null)
+                        if (dict.ContainsKey("LogEntries"))
                         {
-                            value.LogEntries = new List<WorkflowLog>();
-                            foreach(object childObj in LogEntriesList)
+                            var LogEntriesList = dict["LogEntries"] as List<object>;
+                            if (LogEntriesList != null)
                             {
-                                var WorkflowLog = new WorkflowLog();
-                                new WorkflowLogDto().FromDynamic(childObj).CopyToModel(WorkflowLog);
-                                value.LogEntries.Add(WorkflowLog);
+                                value.LogEntries = new List<WorkflowLog>();
+                                foreach(object childObj in LogEntriesList)
+                                {
+                                    var WorkflowLog = new WorkflowLog();
+                                    new WorkflowLogDto().FromDynamic(childObj).CopyToModel(WorkflowLog);
+                                    value.LogEntries.Add(WorkflowLog);
+                                }
                             }
                         }
 

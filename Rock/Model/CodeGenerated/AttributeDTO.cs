@@ -298,9 +298,21 @@ namespace Rock.Model
                 return dynamicAttribute;
             }
 
-            dynamicAttribute.EntityType = value.EntityType.ToDynamic();
-            dynamicAttribute.AttributeQualifiers = value.AttributeQualifiers.ToDynamic();
-            dynamicAttribute.FieldType = value.FieldType.ToDynamic();
+
+            if (value.EntityType != null)
+            {
+                dynamicAttribute.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.AttributeQualifiers != null)
+            {
+                dynamicAttribute.AttributeQualifiers = value.AttributeQualifiers.ToDynamic();
+            }
+
+            if (value.FieldType != null)
+            {
+                dynamicAttribute.FieldType = value.FieldType.ToDynamic();
+            }
 
             return dynamicAttribute;
         }
@@ -310,7 +322,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Attribute value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -335,21 +347,36 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
 
                         // AttributeQualifiers
-                        var AttributeQualifiersList = dict["AttributeQualifiers"] as List<object>;
-                        if (AttributeQualifiersList != null)
+                        if (dict.ContainsKey("AttributeQualifiers"))
                         {
-                            value.AttributeQualifiers = new List<AttributeQualifier>();
-                            foreach(object childObj in AttributeQualifiersList)
+                            var AttributeQualifiersList = dict["AttributeQualifiers"] as List<object>;
+                            if (AttributeQualifiersList != null)
                             {
-                                var AttributeQualifier = new AttributeQualifier();
-                                new AttributeQualifierDto().FromDynamic(childObj).CopyToModel(AttributeQualifier);
-                                value.AttributeQualifiers.Add(AttributeQualifier);
+                                value.AttributeQualifiers = new List<AttributeQualifier>();
+                                foreach(object childObj in AttributeQualifiersList)
+                                {
+                                    var AttributeQualifier = new AttributeQualifier();
+                                    new AttributeQualifierDto().FromDynamic(childObj).CopyToModel(AttributeQualifier);
+                                    value.AttributeQualifiers.Add(AttributeQualifier);
+                                }
                             }
                         }
-                        new FieldTypeDto().FromDynamic( dict["FieldType"] ).CopyToModel(value.FieldType);
+
+                        // FieldType
+                        if (dict.ContainsKey("FieldType"))
+                        {
+                            value.FieldType = new FieldType();
+                            new FieldTypeDto().FromDynamic( dict["FieldType"] ).CopyToModel(value.FieldType);
+                        }
 
                     }
                 }

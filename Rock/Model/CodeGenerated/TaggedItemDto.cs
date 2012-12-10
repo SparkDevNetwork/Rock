@@ -210,7 +210,11 @@ namespace Rock.Model
                 return dynamicTaggedItem;
             }
 
-            dynamicTaggedItem.Tag = value.Tag.ToDynamic();
+
+            if (value.Tag != null)
+            {
+                dynamicTaggedItem.Tag = value.Tag.ToDynamic();
+            }
 
             return dynamicTaggedItem;
         }
@@ -220,7 +224,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this TaggedItem value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -245,7 +249,13 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new TagDto().FromDynamic( dict["Tag"] ).CopyToModel(value.Tag);
+
+                        // Tag
+                        if (dict.ContainsKey("Tag"))
+                        {
+                            value.Tag = new Tag();
+                            new TagDto().FromDynamic( dict["Tag"] ).CopyToModel(value.Tag);
+                        }
 
                     }
                 }

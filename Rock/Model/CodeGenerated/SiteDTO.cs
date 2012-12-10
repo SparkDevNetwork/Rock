@@ -282,9 +282,21 @@ namespace Rock.Model
                 return dynamicSite;
             }
 
-            dynamicSite.Pages = value.Pages.ToDynamic();
-            dynamicSite.SiteDomains = value.SiteDomains.ToDynamic();
-            dynamicSite.DefaultPage = value.DefaultPage.ToDynamic();
+
+            if (value.Pages != null)
+            {
+                dynamicSite.Pages = value.Pages.ToDynamic();
+            }
+
+            if (value.SiteDomains != null)
+            {
+                dynamicSite.SiteDomains = value.SiteDomains.ToDynamic();
+            }
+
+            if (value.DefaultPage != null)
+            {
+                dynamicSite.DefaultPage = value.DefaultPage.ToDynamic();
+            }
 
             return dynamicSite;
         }
@@ -294,7 +306,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this Site value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -321,31 +333,43 @@ namespace Rock.Model
                     {
 
                         // Pages
-                        var PagesList = dict["Pages"] as List<object>;
-                        if (PagesList != null)
+                        if (dict.ContainsKey("Pages"))
                         {
-                            value.Pages = new List<Page>();
-                            foreach(object childObj in PagesList)
+                            var PagesList = dict["Pages"] as List<object>;
+                            if (PagesList != null)
                             {
-                                var Page = new Page();
-                                new PageDto().FromDynamic(childObj).CopyToModel(Page);
-                                value.Pages.Add(Page);
+                                value.Pages = new List<Page>();
+                                foreach(object childObj in PagesList)
+                                {
+                                    var Page = new Page();
+                                    new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                    value.Pages.Add(Page);
+                                }
                             }
                         }
 
                         // SiteDomains
-                        var SiteDomainsList = dict["SiteDomains"] as List<object>;
-                        if (SiteDomainsList != null)
+                        if (dict.ContainsKey("SiteDomains"))
                         {
-                            value.SiteDomains = new List<SiteDomain>();
-                            foreach(object childObj in SiteDomainsList)
+                            var SiteDomainsList = dict["SiteDomains"] as List<object>;
+                            if (SiteDomainsList != null)
                             {
-                                var SiteDomain = new SiteDomain();
-                                new SiteDomainDto().FromDynamic(childObj).CopyToModel(SiteDomain);
-                                value.SiteDomains.Add(SiteDomain);
+                                value.SiteDomains = new List<SiteDomain>();
+                                foreach(object childObj in SiteDomainsList)
+                                {
+                                    var SiteDomain = new SiteDomain();
+                                    new SiteDomainDto().FromDynamic(childObj).CopyToModel(SiteDomain);
+                                    value.SiteDomains.Add(SiteDomain);
+                                }
                             }
                         }
-                        new PageDto().FromDynamic( dict["DefaultPage"] ).CopyToModel(value.DefaultPage);
+
+                        // DefaultPage
+                        if (dict.ContainsKey("DefaultPage"))
+                        {
+                            value.DefaultPage = new Page();
+                            new PageDto().FromDynamic( dict["DefaultPage"] ).CopyToModel(value.DefaultPage);
+                        }
 
                     }
                 }

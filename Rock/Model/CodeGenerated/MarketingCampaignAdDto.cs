@@ -250,8 +250,16 @@ namespace Rock.Model
                 return dynamicMarketingCampaignAd;
             }
 
-            dynamicMarketingCampaignAd.MarketingCampaign = value.MarketingCampaign.ToDynamic();
-            dynamicMarketingCampaignAd.MarketingCampaignAdType = value.MarketingCampaignAdType.ToDynamic();
+
+            if (value.MarketingCampaign != null)
+            {
+                dynamicMarketingCampaignAd.MarketingCampaign = value.MarketingCampaign.ToDynamic();
+            }
+
+            if (value.MarketingCampaignAdType != null)
+            {
+                dynamicMarketingCampaignAd.MarketingCampaignAdType = value.MarketingCampaignAdType.ToDynamic();
+            }
 
             return dynamicMarketingCampaignAd;
         }
@@ -261,7 +269,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="json">The json.</param>
-        public static void FromJson( this Page value, string json )
+        public static void FromJson( this MarketingCampaignAd value, string json )
         {
             //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
             var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
@@ -286,8 +294,20 @@ namespace Rock.Model
                     var dict = obj as IDictionary<string, object>;
                     if (dict != null)
                     {
-                        new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
-                        new MarketingCampaignAdTypeDto().FromDynamic( dict["MarketingCampaignAdType"] ).CopyToModel(value.MarketingCampaignAdType);
+
+                        // MarketingCampaign
+                        if (dict.ContainsKey("MarketingCampaign"))
+                        {
+                            value.MarketingCampaign = new MarketingCampaign();
+                            new MarketingCampaignDto().FromDynamic( dict["MarketingCampaign"] ).CopyToModel(value.MarketingCampaign);
+                        }
+
+                        // MarketingCampaignAdType
+                        if (dict.ContainsKey("MarketingCampaignAdType"))
+                        {
+                            value.MarketingCampaignAdType = new MarketingCampaignAdType();
+                            new MarketingCampaignAdTypeDto().FromDynamic( dict["MarketingCampaignAdType"] ).CopyToModel(value.MarketingCampaignAdType);
+                        }
 
                     }
                 }
