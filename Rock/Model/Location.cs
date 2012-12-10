@@ -218,7 +218,7 @@ namespace Rock.Model
         /// <value>
         /// The attendance printer id.
         /// </value>
-        public int? AttendancePrinterId { get; set; }
+        public int? PrinterDeviceId { get; set; }
 
         #endregion
 
@@ -259,7 +259,7 @@ namespace Rock.Model
         /// <value>
         /// The attendance printer.
         /// </value>
-        public virtual Device AttendancePrinter { get; set; }
+        public virtual Device PrinterDevice { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -342,7 +342,7 @@ namespace Rock.Model
         {
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.LocationType ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( l => l.AttendancePrinter ).WithMany().HasForeignKey( l => l.AttendancePrinterId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

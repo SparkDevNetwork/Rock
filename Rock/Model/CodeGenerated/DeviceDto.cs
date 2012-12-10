@@ -24,7 +24,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class DeviceDto : IDto, DotLiquid.ILiquidizable
+    public partial class DeviceDto : DtoSecured<DeviceDto>
     {
         /// <summary />
         [DataMember]
@@ -52,7 +52,7 @@ namespace Rock.Model
 
         /// <summary />
         [DataMember]
-        public int? PrinterId { get; set; }
+        public int? PrinterDeviceId { get; set; }
 
         /// <summary />
         [DataMember]
@@ -61,14 +61,6 @@ namespace Rock.Model
         /// <summary />
         [DataMember]
         public PrintTo PrintToOverride { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
 
         /// <summary>
         /// Instantiates a new DTO object
@@ -90,20 +82,18 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "Name", this.Name );
             dictionary.Add( "Description", this.Description );
             dictionary.Add( "GeoPoint", this.GeoPoint );
             dictionary.Add( "GeoFence", this.GeoFence );
             dictionary.Add( "DeviceTypeValueId", this.DeviceTypeValueId );
             dictionary.Add( "IPAddress", this.IPAddress );
-            dictionary.Add( "PrinterId", this.PrinterId );
+            dictionary.Add( "PrinterDeviceId", this.PrinterDeviceId );
             dictionary.Add( "PrintFrom", this.PrintFrom );
             dictionary.Add( "PrintToOverride", this.PrintToOverride );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -111,20 +101,18 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.Name = this.Name;
             expando.Description = this.Description;
             expando.GeoPoint = this.GeoPoint;
             expando.GeoFence = this.GeoFence;
             expando.DeviceTypeValueId = this.DeviceTypeValueId;
             expando.IPAddress = this.IPAddress;
-            expando.PrinterId = this.PrinterId;
+            expando.PrinterDeviceId = this.PrinterDeviceId;
             expando.PrintFrom = this.PrintFrom;
             expando.PrintToOverride = this.PrintToOverride;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -132,8 +120,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Device )
             {
                 var device = (Device)model;
@@ -143,11 +133,9 @@ namespace Rock.Model
                 this.GeoFence = device.GeoFence;
                 this.DeviceTypeValueId = device.DeviceTypeValueId;
                 this.IPAddress = device.IPAddress;
-                this.PrinterId = device.PrinterId;
+                this.PrinterDeviceId = device.PrinterDeviceId;
                 this.PrintFrom = device.PrintFrom;
                 this.PrintToOverride = device.PrintToOverride;
-                this.Id = device.Id;
-                this.Guid = device.Guid;
             }
         }
 
@@ -155,8 +143,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Device )
             {
                 var device = (Device)model;
@@ -166,21 +156,10 @@ namespace Rock.Model
                 device.GeoFence = this.GeoFence;
                 device.DeviceTypeValueId = this.DeviceTypeValueId;
                 device.IPAddress = this.IPAddress;
-                device.PrinterId = this.PrinterId;
+                device.PrinterDeviceId = this.PrinterDeviceId;
                 device.PrintFrom = this.PrintFrom;
                 device.PrintToOverride = this.PrintToOverride;
-                device.Id = this.Id;
-                device.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

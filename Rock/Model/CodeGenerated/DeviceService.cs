@@ -68,7 +68,7 @@ namespace Rock.Model
                     GeoFence = m.GeoFence,
                     DeviceTypeValueId = m.DeviceTypeValueId,
                     IPAddress = m.IPAddress,
-                    PrinterId = m.PrinterId,
+                    PrinterDeviceId = m.PrinterDeviceId,
                     PrintFrom = m.PrintFrom,
                     PrintToOverride = m.PrintToOverride,
                     Id = m.Id,
@@ -92,13 +92,28 @@ namespace Rock.Model
 
             using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Device where PrinterId = {0} ", item.Id );
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Device where PrinterDeviceId = {0} ", item.Id );
                 var result = cmdCheckRef.ExecuteScalar();
                 int? refCount = result as int?;
                 if ( refCount > 0 )
                 {
                     Type entityType = RockContext.GetEntityFromTableName( "Device" );
                     string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Device";
+
+                    errorMessage = string.Format("This {0} is assigned to a {1}.", Device.FriendlyTypeName, friendlyName);
+                    return false;
+                }
+            }
+
+            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            {
+                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where PrinterDeviceId = {0} ", item.Id );
+                var result = cmdCheckRef.ExecuteScalar();
+                int? refCount = result as int?;
+                if ( refCount > 0 )
+                {
+                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
+                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
 
                     errorMessage = string.Format("This {0} is assigned to a {1}.", Device.FriendlyTypeName, friendlyName);
                     return false;

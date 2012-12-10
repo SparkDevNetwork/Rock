@@ -64,7 +64,7 @@ namespace Rock.Model
                 {
                     GroupId = m.GroupId,
                     LocationId = m.LocationId,
-                    LocationTypeId = m.LocationTypeId,
+                    LocationTypeValueId = m.LocationTypeValueId,
                     Id = m.Id,
                     Guid = m.Guid,
                 });

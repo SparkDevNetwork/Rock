@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [Serializable]
     [DataContract]
-    public partial class AttendanceDto : IDto, DotLiquid.ILiquidizable
+    public partial class AttendanceDto : DtoSecured<AttendanceDto>
     {
         /// <summary />
         [DataMember]
@@ -65,14 +65,6 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
-        /// <summary />
-        [DataMember]
-        public int Id { get; set; }
-
-        /// <summary />
-        [DataMember]
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Instantiates a new DTO object
         /// </summary>
@@ -93,9 +85,9 @@ namespace Rock.Model
         /// Creates a dictionary object.
         /// </summary>
         /// <returns></returns>
-        public virtual Dictionary<string, object> ToDictionary()
+        public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "LocationId", this.LocationId );
             dictionary.Add( "ScheduleId", this.ScheduleId );
             dictionary.Add( "GroupId", this.GroupId );
@@ -106,8 +98,6 @@ namespace Rock.Model
             dictionary.Add( "DidAttend", this.DidAttend );
             dictionary.Add( "SecurityCode", this.SecurityCode );
             dictionary.Add( "Note", this.Note );
-            dictionary.Add( "Id", this.Id );
-            dictionary.Add( "Guid", this.Guid );
             return dictionary;
         }
 
@@ -115,9 +105,9 @@ namespace Rock.Model
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
-        public virtual dynamic ToDynamic()
+        public override dynamic ToDynamic()
         {
-            dynamic expando = new ExpandoObject();
+            dynamic expando = base.ToDynamic();
             expando.LocationId = this.LocationId;
             expando.ScheduleId = this.ScheduleId;
             expando.GroupId = this.GroupId;
@@ -128,8 +118,6 @@ namespace Rock.Model
             expando.DidAttend = this.DidAttend;
             expando.SecurityCode = this.SecurityCode;
             expando.Note = this.Note;
-            expando.Id = this.Id;
-            expando.Guid = this.Guid;
             return expando;
         }
 
@@ -137,8 +125,10 @@ namespace Rock.Model
         /// Copies the model property values to the DTO properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyFromModel( IEntity model )
+        public override void CopyFromModel( IEntity model )
         {
+            base.CopyFromModel( model );
+
             if ( model is Attendance )
             {
                 var attendance = (Attendance)model;
@@ -152,8 +142,6 @@ namespace Rock.Model
                 this.DidAttend = attendance.DidAttend;
                 this.SecurityCode = attendance.SecurityCode;
                 this.Note = attendance.Note;
-                this.Id = attendance.Id;
-                this.Guid = attendance.Guid;
             }
         }
 
@@ -161,8 +149,10 @@ namespace Rock.Model
         /// Copies the DTO property values to the entity properties
         /// </summary>
         /// <param name="model">The model.</param>
-        public void CopyToModel ( IEntity model )
+        public override void CopyToModel ( IEntity model )
         {
+            base.CopyToModel( model );
+
             if ( model is Attendance )
             {
                 var attendance = (Attendance)model;
@@ -176,18 +166,7 @@ namespace Rock.Model
                 attendance.DidAttend = this.DidAttend;
                 attendance.SecurityCode = this.SecurityCode;
                 attendance.Note = this.Note;
-                attendance.Id = this.Id;
-                attendance.Guid = this.Guid;
             }
-        }
-
-        /// <summary>
-        /// Converts to liquidizable object for dotLiquid templating
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            return this.ToDictionary();
         }
 
     }

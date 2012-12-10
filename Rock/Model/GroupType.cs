@@ -207,7 +207,7 @@ namespace Rock.Model
         /// <value>
         /// The small icon.
         /// </value>
-        public virtual BinaryFile SmallIcon { get; set; }
+        public virtual BinaryFile SmallIconFile { get; set; }
 
         /// <summary>
         /// Gets or sets the large icon.
@@ -215,7 +215,7 @@ namespace Rock.Model
         /// <value>
         /// The large icon.
         /// </value>
-        public virtual BinaryFile LargeIcon { get; set; }
+        public virtual BinaryFile LargeIconFile { get; set; }
 
         /// <summary>
         /// Gets the dto.
@@ -287,6 +287,8 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SmallIconFile ).WithMany().HasForeignKey( p => p.SmallIconFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.LargeIconFile ).WithMany().HasForeignKey( p => p.LargeIconFileId ).WillCascadeOnDelete( false );
         }
     }
 
