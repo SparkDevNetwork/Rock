@@ -148,10 +148,10 @@
     <Compile Include="Migrations\201212071233248_PageIconFile.cs" />
     <Compile Include="Migrations\201212071233248_PageIconFile.Designer.cs">
       <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
+	</Compile>
         <Compile Include="Migrations\201212051636262_CheckIn.cs" />
     <Compile Include="Migrations\201212051636262_CheckIn.Designer.cs">
       <DependentUpon>201212051636262_CheckIn.cs</DependentUpon>
-    </Compile>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
