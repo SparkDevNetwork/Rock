@@ -23,8 +23,6 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
-
-        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>

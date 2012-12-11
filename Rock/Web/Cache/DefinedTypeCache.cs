@@ -129,7 +129,9 @@ namespace Rock.Web.Cache
             object cacheObj = cache[guid.ToString()];
 
             if ( cacheObj != null )
-                return Read((int)cacheObj);
+            {
+                return Read( (int)cacheObj );
+            }
             else
             {
                 Rock.Model.DefinedTypeService definedTypeService = new Rock.Model.DefinedTypeService();
@@ -149,7 +151,9 @@ namespace Rock.Web.Cache
                     return definedType;
                 }
                 else
+                {
                     return null;
+                }
             }
         }
 

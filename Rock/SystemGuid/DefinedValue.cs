@@ -13,6 +13,46 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Device Type
+
+        /// <summary>
+        /// Check-in Kiosk device type
+        /// </summary>
+        public static Guid DEVICE_TYPE_CHECKIN_KIOSK { get { return new Guid( "BC809626-1389-4543-B8BB-6FAC79C27AFD" ); } }
+
+        /// <summary>
+        /// Check-in Kiosk device type
+        /// </summary>
+        public static Guid DEVICE_TYPE_GIVING_KIOSK { get { return new Guid( "64A1DBE5-10AD-42F1-A9BA-646A781D4112" ); } }
+
+        /// <summary>
+        /// Check-in Kiosk device type
+        /// </summary>
+        public static Guid DEVICE_TYPE_PRINTER { get { return new Guid( "8284B128-E73B-4863-9FC2-43E6827B65E6" ); } }
+
+        /// <summary>
+        /// Check-in Kiosk device type
+        /// </summary>
+        public static Guid DEVICE_TYPE_DIGITAL_SIGNAGE { get { return new Guid( "01B585B1-389D-4C86-A9DA-267A8564699D" ); } }
+
+        #endregion
+        
+        #region Person Phone Type
+
+        /// <summary>
+        /// Person Primary Phone
+        /// </summary>
+        public static Guid PERSON_PHONE_TYPE_PRIMARY { get { return new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ); } }
+
+        /// <summary>
+        /// Person Secondary Phone
+        /// </summary>
+        public static Guid PERSON_PHONE_TYPE_SECONDARY { get { return new Guid( "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303" ); } }
+
+        #endregion
+
+        #region Person Record Status
+
         /// <summary>
         /// Active Record Status
         /// </summary>
@@ -28,6 +68,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public static Guid PERSON_RECORD_STATUS_PENDING { get { return new Guid( "283999EC-7346-42E3-B807-BCE9B2BABB49" ); } }
 
+        #endregion
+
+        #region Person Record Type
+
         /// <summary>
         /// Person Record Type
         /// </summary>
@@ -38,15 +82,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public static Guid PERSON_RECORD_TYPE_BUSINESS { get { return new Guid( "BF64ADD3-E70A-44CE-9C4B-E76BBED37550" ); } }
 
-        /// <summary>
-        /// Person Primary Phone
-        /// </summary>
-        public static Guid PERSON_PHONE_TYPE_PRIMARY { get { return new Guid( "407E7E45-7B2E-4FCD-9605-ECB1339F2453" ); } }
-
-        /// <summary>
-        /// Person Secondary Phone
-        /// </summary>
-        public static Guid PERSON_PHONE_TYPE_SECONDARY { get { return new Guid( "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303" ); } }
+        #endregion
 
     }
 }
