@@ -26,7 +26,20 @@ namespace Rock.Rest.Controllers
         {
             if (KioskCache.Kiosks.ContainsKey(kioskId))
             {
-                return KioskCache.Kiosks[kioskId];
+                // Clone the kioskstatus, but only copy group types that have been selected by admin
+                var masterKioskStatus = KioskCache.Kiosks[kioskId];
+                var configuredkioskStatus = new KioskStatus();
+                configuredkioskStatus.FromDictionary( masterKioskStatus.ToDictionary() );
+
+                foreach ( var groupType in masterKioskStatus.GroupTypes )
+                {
+                    if ( groupTypeIds.Contains( groupType.Value.Id ) )
+                    {
+                        configuredkioskStatus.GroupTypes.Add( groupType.Key, groupType.Value );
+                    }
+                }
+
+                return configuredkioskStatus;
             }
             
             return null;

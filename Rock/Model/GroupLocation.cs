@@ -154,8 +154,8 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationConfiguration()
         {
-            this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
-            this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
+            this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
+            this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }

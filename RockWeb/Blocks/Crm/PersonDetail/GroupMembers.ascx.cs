@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Name = m.Group.Name,
                     Role = m.GroupRole.Name,
                     Type = m.Group.GroupType.Name,
-                    Locations = m.Group.Locations,
+                    GroupLocations = m.Group.GroupLocations,
                 }
                     ) )
             {
@@ -115,27 +115,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var locationsElement = new XElement( "locations" );
                     groupElement.Add( locationsElement );
 
-                    foreach ( GroupLocation location in group.Locations )
+                    foreach ( GroupLocation groupLocation in group.GroupLocations )
                     {
                         var locationElement = new XElement( "location",
-                            new XAttribute( "id", location.LocationId.ToString() ),
-                            new XAttribute( "type", location.LocationTypeValueId.HasValue ?
-                                Rock.Web.Cache.DefinedValueCache.Read( location.LocationTypeValueId.Value ).Name : "Unknown" ) );
-                        if ( location.Location != null )
+                            new XAttribute( "id", groupLocation.LocationId.ToString() ),
+                            new XAttribute( "type", groupLocation.LocationTypeValueId.HasValue ?
+                                Rock.Web.Cache.DefinedValueCache.Read( groupLocation.LocationTypeValueId.Value ).Name : "Unknown" ) );
+                        if ( groupLocation.Location != null )
                         {
                             var addressElement = new XElement( "address" );
-                            if ( !String.IsNullOrWhiteSpace( location.Location.Street1 ) )
+                            if ( !String.IsNullOrWhiteSpace( groupLocation.Location.Street1 ) )
                             {
-                                addressElement.Add( new XAttribute( "street1", location.Location.Street1 ) );
+                                addressElement.Add( new XAttribute( "street1", groupLocation.Location.Street1 ) );
                             }
-                            if ( !String.IsNullOrWhiteSpace( location.Location.Street2 ) )
+                            if ( !String.IsNullOrWhiteSpace( groupLocation.Location.Street2 ) )
                             {
-                                addressElement.Add( new XAttribute( "street2", location.Location.Street2 ) );
+                                addressElement.Add( new XAttribute( "street2", groupLocation.Location.Street2 ) );
                             }
                             addressElement.Add(
-                                new XAttribute( "city", location.Location.City ),
-                                new XAttribute( "state", location.Location.State ),
-                                new XAttribute( "zip", location.Location.Zip ) );
+                                new XAttribute( "city", groupLocation.Location.City ),
+                                new XAttribute( "state", groupLocation.Location.State ),
+                                new XAttribute( "zip", groupLocation.Location.Zip ) );
                             locationElement.Add( addressElement );
                         }
                         locationsElement.Add( locationElement );
