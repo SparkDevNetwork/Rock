@@ -132,7 +132,7 @@
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
-    <Compile Include="CheckIn\KioskController.cs" />
+    <Compile Include="CheckIn\KioskCache.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
