@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Group Extension Methods
     /// </summary>
-    public static class GroupDtoExtension
+    public static class GroupExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,165 @@ namespace Rock.Model
         public static GroupDto ToDto( this Group value )
         {
             return new GroupDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Group value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Group> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Group value, bool deep = false )
+        {
+            dynamic dynamicGroup = new GroupDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicGroup;
+            }
+
+
+            if (value.Groups != null)
+            {
+                dynamicGroup.Groups = value.Groups.ToDynamic();
+            }
+
+            if (value.Members != null)
+            {
+                dynamicGroup.Members = value.Members.ToDynamic();
+            }
+
+            if (value.ParentGroup != null)
+            {
+                dynamicGroup.ParentGroup = value.ParentGroup.ToDynamic();
+            }
+
+            if (value.GroupType != null)
+            {
+                dynamicGroup.GroupType = value.GroupType.ToDynamic();
+            }
+
+            if (value.Campus != null)
+            {
+                dynamicGroup.Campus = value.Campus.ToDynamic();
+            }
+
+            return dynamicGroup;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Group value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Group value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // Groups
+                        if (dict.ContainsKey("Groups"))
+                        {
+                            var GroupsList = dict["Groups"] as List<object>;
+                            if (GroupsList != null)
+                            {
+                                value.Groups = new List<Group>();
+                                foreach(object childObj in GroupsList)
+                                {
+                                    var Group = new Group();
+                                    Group.FromDynamic(childObj, true);
+                                    value.Groups.Add(Group);
+                                }
+                            }
+                        }
+
+                        // Members
+                        if (dict.ContainsKey("Members"))
+                        {
+                            var MembersList = dict["Members"] as List<object>;
+                            if (MembersList != null)
+                            {
+                                value.Members = new List<GroupMember>();
+                                foreach(object childObj in MembersList)
+                                {
+                                    var GroupMember = new GroupMember();
+                                    GroupMember.FromDynamic(childObj, true);
+                                    value.Members.Add(GroupMember);
+                                }
+                            }
+                        }
+
+                        // ParentGroup
+                        if (dict.ContainsKey("ParentGroup"))
+                        {
+                            value.ParentGroup = new Group();
+                            new GroupDto().FromDynamic( dict["ParentGroup"] ).CopyToModel(value.ParentGroup);
+                        }
+
+                        // GroupType
+                        if (dict.ContainsKey("GroupType"))
+                        {
+                            value.GroupType = new GroupType();
+                            new GroupTypeDto().FromDynamic( dict["GroupType"] ).CopyToModel(value.GroupType);
+                        }
+
+                        // Campus
+                        if (dict.ContainsKey("Campus"))
+                        {
+                            value.Campus = new Campus();
+                            new CampusDto().FromDynamic( dict["Campus"] ).CopyToModel(value.Campus);
+                        }
+
+                    }
+                }
+            }
         }
 
     }

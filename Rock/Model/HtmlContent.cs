@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "HtmlContent" )]
-    public partial class HtmlContent : Model<HtmlContent>, IExportable
+    public partial class HtmlContent : Model<HtmlContent>
     {
         /// <summary>
         /// Gets or sets the Block Id.
@@ -102,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
+        [NotExportable]
         public virtual Block Block { get; set; }
         
         /// <summary>
@@ -116,6 +117,7 @@ namespace Rock.Model
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
@@ -142,32 +144,6 @@ namespace Rock.Model
             return Content;
         }
 
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the data.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson(string data)
-        {
-            JsonConvert.PopulateObject( data, this );
-        }
     }
 
     /// <summary>
@@ -180,7 +156,7 @@ namespace Rock.Model
         /// </summary>
         public HtmlContentConfiguration()
         {
-            this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
             this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
         }
     }

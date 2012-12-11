@@ -582,10 +582,6 @@ namespace Rock.Data
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
             modelBuilder.Configurations.Add( new AttendanceConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
@@ -643,6 +639,10 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new TaggedItemConfiguration() );
             modelBuilder.Configurations.Add( new UserLoginConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );

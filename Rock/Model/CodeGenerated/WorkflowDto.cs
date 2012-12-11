@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -155,10 +157,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Workflow Extension Methods
     /// </summary>
-    public static class WorkflowDtoExtension
+    public static class WorkflowExtensions
     {
         /// <summary>
         /// To the model.
@@ -204,6 +207,141 @@ namespace Rock.Model
         public static WorkflowDto ToDto( this Workflow value )
         {
             return new WorkflowDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Workflow value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Workflow> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Workflow value, bool deep = false )
+        {
+            dynamic dynamicWorkflow = new WorkflowDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicWorkflow;
+            }
+
+
+            if (value.WorkflowType != null)
+            {
+                dynamicWorkflow.WorkflowType = value.WorkflowType.ToDynamic();
+            }
+
+            if (value.Activities != null)
+            {
+                dynamicWorkflow.Activities = value.Activities.ToDynamic();
+            }
+
+            if (value.LogEntries != null)
+            {
+                dynamicWorkflow.LogEntries = value.LogEntries.ToDynamic();
+            }
+
+            return dynamicWorkflow;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Workflow value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Workflow value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // WorkflowType
+                        if (dict.ContainsKey("WorkflowType"))
+                        {
+                            value.WorkflowType = new WorkflowType();
+                            new WorkflowTypeDto().FromDynamic( dict["WorkflowType"] ).CopyToModel(value.WorkflowType);
+                        }
+
+                        // Activities
+                        if (dict.ContainsKey("Activities"))
+                        {
+                            var ActivitiesList = dict["Activities"] as List<object>;
+                            if (ActivitiesList != null)
+                            {
+                                value.Activities = new List<WorkflowActivity>();
+                                foreach(object childObj in ActivitiesList)
+                                {
+                                    var WorkflowActivity = new WorkflowActivity();
+                                    WorkflowActivity.FromDynamic(childObj, true);
+                                    value.Activities.Add(WorkflowActivity);
+                                }
+                            }
+                        }
+
+                        // LogEntries
+                        if (dict.ContainsKey("LogEntries"))
+                        {
+                            var LogEntriesList = dict["LogEntries"] as List<object>;
+                            if (LogEntriesList != null)
+                            {
+                                value.LogEntries = new List<WorkflowLog>();
+                                foreach(object childObj in LogEntriesList)
+                                {
+                                    var WorkflowLog = new WorkflowLog();
+                                    WorkflowLog.FromDynamic(childObj, true);
+                                    value.LogEntries.Add(WorkflowLog);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
     }

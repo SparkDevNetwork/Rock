@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -131,10 +133,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// DefinedValue Extension Methods
     /// </summary>
-    public static class DefinedValueDtoExtension
+    public static class DefinedValueExtensions
     {
         /// <summary>
         /// To the model.
@@ -180,6 +183,99 @@ namespace Rock.Model
         public static DefinedValueDto ToDto( this DefinedValue value )
         {
             return new DefinedValueDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this DefinedValue value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<DefinedValue> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this DefinedValue value, bool deep = false )
+        {
+            dynamic dynamicDefinedValue = new DefinedValueDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicDefinedValue;
+            }
+
+
+            if (value.DefinedType != null)
+            {
+                dynamicDefinedValue.DefinedType = value.DefinedType.ToDynamic();
+            }
+
+            return dynamicDefinedValue;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this DefinedValue value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this DefinedValue value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // DefinedType
+                        if (dict.ContainsKey("DefinedType"))
+                        {
+                            value.DefinedType = new DefinedType();
+                            new DefinedTypeDto().FromDynamic( dict["DefinedType"] ).CopyToModel(value.DefinedType);
+                        }
+
+                    }
+                }
+            }
         }
 
     }
