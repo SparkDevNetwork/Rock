@@ -17,47 +17,51 @@ namespace Rock.CheckIn
     /// Static object for caching kiosk configuration
     /// TODO: Need to figure out thread concurency issues with static object and lock/unlock appropriately
     /// </summary>
-    public class KioskController
+    public static class KioskCache
     {
-        private static int CacheSeconds = 30;
-        private static DateTimeOffset LastCached { get; set; }
+        private static int _cacheSeconds = 30;
+        private static DateTimeOffset _lastCached { get; set; }
+        private static Dictionary<int, KioskStatus> _kiosks;
 
         /// <summary>
-        /// Gets or sets the kiosks.
+        /// Gets the kiosks.
         /// </summary>
         /// <value>
         /// The kiosks.
         /// </value>
-        public static Dictionary<int, KioskStatus> Kiosks { get; private set; }
+        public static Dictionary<int, KioskStatus> Kiosks
+        {
+            get
+            {
+                if ( _lastCached.AddSeconds( _cacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
+                {
+                    RefreshCache();
+                }
+
+                return _kiosks;
+            }
+        }
 
         /// <summary>
-        /// Initializes the <see cref="KioskController" /> class.
+        /// Initializes the <see cref="KioskCache" /> class.
         /// </summary>
-        static KioskController()
+        static KioskCache()
         {
             var globalAttributes = GlobalAttributesCache.Read();
             string value = globalAttributes.GetValue( "KioskCacheExpiration" );
-            
-            if (!Int32.TryParse(value, out CacheSeconds))
-                CacheSeconds = 30;
+
+            if ( !Int32.TryParse( value, out _cacheSeconds ) )
+                _cacheSeconds = 30;
 
             RefreshCache();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="KioskController" /> class.
+        /// Refreshes the cache.
         /// </summary>
-        public KioskController()
-        {
-            if ( LastCached.AddSeconds( CacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
-            {
-                RefreshCache();
-            }
-        }
-
 	    private static void RefreshCache()
 	    {
-		    Kiosks = new Dictionary<int, KioskStatus>();
+		    _kiosks = new Dictionary<int, KioskStatus>();
 		
             var checkInDeviceTypeId = DefinedValueCache.Read(SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK).Id;
 		    foreach(var kiosk in new DeviceService().Queryable()
@@ -71,10 +75,10 @@ namespace Rock.CheckIn
                     LoadKioskLocations( kioskStatus, location );
 			    }
 			
-			    Kiosks.Add(kiosk.Id, kioskStatus);
+			    _kiosks.Add(kiosk.Id, kioskStatus);
 		    }
 
-            LastCached = DateTimeOffset.Now;
+            _lastCached = DateTimeOffset.Now;
 	    }
 
         private static void LoadKioskLocations(KioskStatus kioskStatus, Location location)
