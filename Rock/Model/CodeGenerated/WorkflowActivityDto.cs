@@ -300,7 +300,7 @@ namespace Rock.Model
                                 foreach(object childObj in ActionsList)
                                 {
                                     var WorkflowAction = new WorkflowAction();
-                                    new WorkflowActionDto().FromDynamic(childObj).CopyToModel(WorkflowAction);
+                                    WorkflowAction.FromDynamic(childObj, true);
                                     value.Actions.Add(WorkflowAction);
                                 }
                             }

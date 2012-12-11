@@ -408,7 +408,7 @@ namespace Rock.Model
                                 foreach(object childObj in TransactionDetailsList)
                                 {
                                     var FinancialTransactionDetail = new FinancialTransactionDetail();
-                                    new FinancialTransactionDetailDto().FromDynamic(childObj).CopyToModel(FinancialTransactionDetail);
+                                    FinancialTransactionDetail.FromDynamic(childObj, true);
                                     value.TransactionDetails.Add(FinancialTransactionDetail);
                                 }
                             }

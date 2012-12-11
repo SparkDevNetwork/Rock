@@ -320,7 +320,7 @@ namespace Rock.Model
                                 foreach(object childObj in GroupsList)
                                 {
                                     var Group = new Group();
-                                    new GroupDto().FromDynamic(childObj).CopyToModel(Group);
+                                    Group.FromDynamic(childObj, true);
                                     value.Groups.Add(Group);
                                 }
                             }
@@ -336,7 +336,7 @@ namespace Rock.Model
                                 foreach(object childObj in MembersList)
                                 {
                                     var GroupMember = new GroupMember();
-                                    new GroupMemberDto().FromDynamic(childObj).CopyToModel(GroupMember);
+                                    GroupMember.FromDynamic(childObj, true);
                                     value.Members.Add(GroupMember);
                                 }
                             }

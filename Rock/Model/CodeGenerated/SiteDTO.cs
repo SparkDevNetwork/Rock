@@ -342,7 +342,7 @@ namespace Rock.Model
                                 foreach(object childObj in PagesList)
                                 {
                                     var Page = new Page();
-                                    new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                    Page.FromDynamic(childObj, true);
                                     value.Pages.Add(Page);
                                 }
                             }
@@ -358,7 +358,7 @@ namespace Rock.Model
                                 foreach(object childObj in SiteDomainsList)
                                 {
                                     var SiteDomain = new SiteDomain();
-                                    new SiteDomainDto().FromDynamic(childObj).CopyToModel(SiteDomain);
+                                    SiteDomain.FromDynamic(childObj, true);
                                     value.SiteDomains.Add(SiteDomain);
                                 }
                             }
