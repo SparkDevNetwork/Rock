@@ -316,7 +316,7 @@ namespace Rock.Model
                                 foreach(object childObj in TaggedItemsList)
                                 {
                                     var TaggedItem = new TaggedItem();
-                                    new TaggedItemDto().FromDynamic(childObj).CopyToModel(TaggedItem);
+                                    TaggedItem.FromDynamic(childObj, true);
                                     value.TaggedItems.Add(TaggedItem);
                                 }
                             }

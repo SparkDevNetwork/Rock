@@ -498,7 +498,7 @@ namespace Rock.Model
                                 foreach(object childObj in UsersList)
                                 {
                                     var UserLogin = new UserLogin();
-                                    new UserLoginDto().FromDynamic(childObj).CopyToModel(UserLogin);
+                                    UserLogin.FromDynamic(childObj, true);
                                     value.Users.Add(UserLogin);
                                 }
                             }
@@ -514,7 +514,7 @@ namespace Rock.Model
                                 foreach(object childObj in EmailTemplatesList)
                                 {
                                     var EmailTemplate = new EmailTemplate();
-                                    new EmailTemplateDto().FromDynamic(childObj).CopyToModel(EmailTemplate);
+                                    EmailTemplate.FromDynamic(childObj, true);
                                     value.EmailTemplates.Add(EmailTemplate);
                                 }
                             }
@@ -530,7 +530,7 @@ namespace Rock.Model
                                 foreach(object childObj in PhoneNumbersList)
                                 {
                                     var PhoneNumber = new PhoneNumber();
-                                    new PhoneNumberDto().FromDynamic(childObj).CopyToModel(PhoneNumber);
+                                    PhoneNumber.FromDynamic(childObj, true);
                                     value.PhoneNumbers.Add(PhoneNumber);
                                 }
                             }
@@ -546,7 +546,7 @@ namespace Rock.Model
                                 foreach(object childObj in MembersList)
                                 {
                                     var GroupMember = new GroupMember();
-                                    new GroupMemberDto().FromDynamic(childObj).CopyToModel(GroupMember);
+                                    GroupMember.FromDynamic(childObj, true);
                                     value.Members.Add(GroupMember);
                                 }
                             }
@@ -562,7 +562,7 @@ namespace Rock.Model
                                 foreach(object childObj in PledgesList)
                                 {
                                     var Pledge = new Pledge();
-                                    new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
+                                    Pledge.FromDynamic(childObj, true);
                                     value.Pledges.Add(Pledge);
                                 }
                             }
@@ -578,7 +578,7 @@ namespace Rock.Model
                                 foreach(object childObj in PersonAccountLookupsList)
                                 {
                                     var PersonAccount = new PersonAccount();
-                                    new PersonAccountDto().FromDynamic(childObj).CopyToModel(PersonAccount);
+                                    PersonAccount.FromDynamic(childObj, true);
                                     value.PersonAccountLookups.Add(PersonAccount);
                                 }
                             }

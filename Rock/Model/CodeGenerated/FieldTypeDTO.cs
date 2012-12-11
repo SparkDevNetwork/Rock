@@ -276,7 +276,7 @@ namespace Rock.Model
                                 foreach(object childObj in DefinedTypesList)
                                 {
                                     var DefinedType = new DefinedType();
-                                    new DefinedTypeDto().FromDynamic(childObj).CopyToModel(DefinedType);
+                                    DefinedType.FromDynamic(childObj, true);
                                     value.DefinedTypes.Add(DefinedType);
                                 }
                             }
