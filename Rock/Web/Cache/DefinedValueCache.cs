@@ -76,12 +76,50 @@ namespace Rock.Web.Cache
                 {
                     definedValue = CopyModel( definedValueModel );
 
-                    cache.Set( cacheKey, definedValue, new CacheItemPolicy() );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, definedValue, cachePolicy );
+                    cache.Set( definedValue.Guid.ToString(), definedValue.Id, cachePolicy );
 
                     return definedValue;
                 }
                 else
                     return null;
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static DefinedValueCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                Rock.Model.DefinedValueService definedValueService = new Rock.Model.DefinedValueService();
+                Rock.Model.DefinedValue definedValueModel = definedValueService.Get( guid );
+
+                if ( definedValueModel != null )
+                {
+                    var definedValue = new DefinedValueCache( definedValueModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( DefinedValueCache.CacheKey(definedValue.Id), definedValue, cachePolicy );
+                    cache.Set( definedValue.Guid.ToString(), definedValue.Id, cachePolicy );
+
+                    return definedValue;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
