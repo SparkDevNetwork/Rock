@@ -348,7 +348,7 @@ namespace Rock.Model
                                 foreach(object childObj in ActivityTypesList)
                                 {
                                     var WorkflowActivityType = new WorkflowActivityType();
-                                    new WorkflowActivityTypeDto().FromDynamic(childObj).CopyToModel(WorkflowActivityType);
+                                    WorkflowActivityType.FromDynamic(childObj, true);
                                     value.ActivityTypes.Add(WorkflowActivityType);
                                 }
                             }

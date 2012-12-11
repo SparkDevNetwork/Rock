@@ -288,7 +288,7 @@ namespace Rock.Model
                                 foreach(object childObj in GroupsList)
                                 {
                                     var Group = new Group();
-                                    new GroupDto().FromDynamic(childObj).CopyToModel(Group);
+                                    Group.FromDynamic(childObj, true);
                                     value.Groups.Add(Group);
                                 }
                             }
@@ -304,7 +304,7 @@ namespace Rock.Model
                                 foreach(object childObj in ChildGroupTypesList)
                                 {
                                     var GroupType = new GroupType();
-                                    new GroupTypeDto().FromDynamic(childObj).CopyToModel(GroupType);
+                                    GroupType.FromDynamic(childObj, true);
                                     value.ChildGroupTypes.Add(GroupType);
                                 }
                             }
@@ -320,7 +320,7 @@ namespace Rock.Model
                                 foreach(object childObj in ParentGroupTypesList)
                                 {
                                     var GroupType = new GroupType();
-                                    new GroupTypeDto().FromDynamic(childObj).CopyToModel(GroupType);
+                                    GroupType.FromDynamic(childObj, true);
                                     value.ParentGroupTypes.Add(GroupType);
                                 }
                             }
@@ -336,7 +336,7 @@ namespace Rock.Model
                                 foreach(object childObj in RolesList)
                                 {
                                     var GroupRole = new GroupRole();
-                                    new GroupRoleDto().FromDynamic(childObj).CopyToModel(GroupRole);
+                                    GroupRole.FromDynamic(childObj, true);
                                     value.Roles.Add(GroupRole);
                                 }
                             }

@@ -318,7 +318,7 @@ namespace Rock.Model
                                 foreach(object childObj in MarketingCampaignAdsList)
                                 {
                                     var MarketingCampaignAd = new MarketingCampaignAd();
-                                    new MarketingCampaignAdDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAd);
+                                    MarketingCampaignAd.FromDynamic(childObj, true);
                                     value.MarketingCampaignAds.Add(MarketingCampaignAd);
                                 }
                             }
@@ -334,7 +334,7 @@ namespace Rock.Model
                                 foreach(object childObj in MarketingCampaignAudiencesList)
                                 {
                                     var MarketingCampaignAudience = new MarketingCampaignAudience();
-                                    new MarketingCampaignAudienceDto().FromDynamic(childObj).CopyToModel(MarketingCampaignAudience);
+                                    MarketingCampaignAudience.FromDynamic(childObj, true);
                                     value.MarketingCampaignAudiences.Add(MarketingCampaignAudience);
                                 }
                             }
@@ -350,7 +350,7 @@ namespace Rock.Model
                                 foreach(object childObj in MarketingCampaignCampusesList)
                                 {
                                     var MarketingCampaignCampus = new MarketingCampaignCampus();
-                                    new MarketingCampaignCampusDto().FromDynamic(childObj).CopyToModel(MarketingCampaignCampus);
+                                    MarketingCampaignCampus.FromDynamic(childObj, true);
                                     value.MarketingCampaignCampuses.Add(MarketingCampaignCampus);
                                 }
                             }

@@ -317,7 +317,7 @@ namespace Rock.Model
                                 foreach(object childObj in ActivitiesList)
                                 {
                                     var WorkflowActivity = new WorkflowActivity();
-                                    new WorkflowActivityDto().FromDynamic(childObj).CopyToModel(WorkflowActivity);
+                                    WorkflowActivity.FromDynamic(childObj, true);
                                     value.Activities.Add(WorkflowActivity);
                                 }
                             }
@@ -333,7 +333,7 @@ namespace Rock.Model
                                 foreach(object childObj in LogEntriesList)
                                 {
                                     var WorkflowLog = new WorkflowLog();
-                                    new WorkflowLogDto().FromDynamic(childObj).CopyToModel(WorkflowLog);
+                                    WorkflowLog.FromDynamic(childObj, true);
                                     value.LogEntries.Add(WorkflowLog);
                                 }
                             }

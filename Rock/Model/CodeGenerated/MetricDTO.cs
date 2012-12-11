@@ -345,7 +345,7 @@ namespace Rock.Model
                                 foreach(object childObj in MetricValuesList)
                                 {
                                     var MetricValue = new MetricValue();
-                                    new MetricValueDto().FromDynamic(childObj).CopyToModel(MetricValue);
+                                    MetricValue.FromDynamic(childObj, true);
                                     value.MetricValues.Add(MetricValue);
                                 }
                             }

@@ -289,7 +289,7 @@ namespace Rock.Model
                                 foreach(object childObj in DefinedValuesList)
                                 {
                                     var DefinedValue = new DefinedValue();
-                                    new DefinedValueDto().FromDynamic(childObj).CopyToModel(DefinedValue);
+                                    DefinedValue.FromDynamic(childObj, true);
                                     value.DefinedValues.Add(DefinedValue);
                                 }
                             }

@@ -377,7 +377,7 @@ namespace Rock.Model
                                 foreach(object childObj in ChildFundsList)
                                 {
                                     var Fund = new Fund();
-                                    new FundDto().FromDynamic(childObj).CopyToModel(Fund);
+                                    Fund.FromDynamic(childObj, true);
                                     value.ChildFunds.Add(Fund);
                                 }
                             }
@@ -393,7 +393,7 @@ namespace Rock.Model
                                 foreach(object childObj in PledgesList)
                                 {
                                     var Pledge = new Pledge();
-                                    new PledgeDto().FromDynamic(childObj).CopyToModel(Pledge);
+                                    Pledge.FromDynamic(childObj, true);
                                     value.Pledges.Add(Pledge);
                                 }
                             }

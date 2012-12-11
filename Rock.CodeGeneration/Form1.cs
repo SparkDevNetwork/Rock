@@ -722,7 +722,7 @@ order by [parentTable]
                                 foreach(object childObj in {0}List)
                                 {{
                                     var {1} = new {1}();
-                                    new {1}Dto().FromDynamic(childObj).CopyToModel({1});
+                                    {1}.FromDynamic(childObj, true);
                                     value.{0}.Add({1});
                                 }}
                             }}
