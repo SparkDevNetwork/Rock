@@ -246,6 +246,19 @@ namespace Rock.Model
         private ICollection<Location> _childLocations;
 
         /// <summary>
+        /// Gets or sets the group locations.
+        /// </summary>
+        /// <value>
+        /// The group locations.
+        /// </value>
+        public virtual ICollection<GroupLocation> GroupLocations
+        {
+            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
+            set { _groupLocations = value; }
+        }
+        private ICollection<GroupLocation> _groupLocations;
+
+        /// <summary>
         /// Gets or sets the type of the location
         /// </summary>
         /// <value>

@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
+using System.Linq;
 
 using Rock.Data;
 
@@ -144,6 +145,29 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the group types that are configured for the locations that this device is
+        /// configured for.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerable<GroupType> GetLocationGroupTypes()
+        {
+            var groupTypes = new Dictionary<int, GroupType>();
+            foreach ( var groupLocations in this.Locations
+                .Select( l => l.GroupLocations ) )
+            {
+                foreach(var groupType in groupLocations.Select( gl => gl.Group.GroupType))
+                {
+                    if (!groupTypes.ContainsKey(groupType.Id))
+                    {
+                        groupTypes.Add(groupType.Id, groupType);
+                    }
+                }
+            }
+
+            return groupTypes.Select( g => g.Value );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
