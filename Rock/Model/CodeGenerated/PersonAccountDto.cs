@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -107,10 +109,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// PersonAccount Extension Methods
     /// </summary>
-    public static class PersonAccountDtoExtension
+    public static class PersonAccountExtensions
     {
         /// <summary>
         /// To the model.
@@ -156,6 +159,99 @@ namespace Rock.Model
         public static PersonAccountDto ToDto( this PersonAccount value )
         {
             return new PersonAccountDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this PersonAccount value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<PersonAccount> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this PersonAccount value, bool deep = false )
+        {
+            dynamic dynamicPersonAccount = new PersonAccountDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPersonAccount;
+            }
+
+
+            if (value.Person != null)
+            {
+                dynamicPersonAccount.Person = value.Person.ToDynamic();
+            }
+
+            return dynamicPersonAccount;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this PersonAccount value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this PersonAccount value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // Person
+                        if (dict.ContainsKey("Person"))
+                        {
+                            value.Person = new Person();
+                            new PersonDto().FromDynamic( dict["Person"] ).CopyToModel(value.Person);
+                        }
+
+                    }
+                }
+            }
         }
 
     }

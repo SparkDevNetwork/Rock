@@ -11,6 +11,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 
+using Rock;
+
 namespace Rock.CodeGeneration
 {
     /// <summary>
@@ -420,6 +422,8 @@ order by [parentTable]
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "using System.Dynamic;" );
+            sb.AppendLine( "using System.Linq;" );
+            sb.AppendLine( "using System.Reflection;" );
             sb.AppendLine( "using System.Runtime.Serialization;" );
 
             if ( properties.Any( v => v.Value == "DbGeography" ) )
@@ -549,11 +553,12 @@ order by [parentTable]
 
             sb.AppendLine( "    }" );
 
-            string extensionSection = @"
+            sb.AppendFormat( @"
+
     /// <summary>
-    /// 
+    /// {0} Extension Methods
     /// </summary>
-    public static class {0}DtoExtension
+    public static class {0}Extensions
     {{
         /// <summary>
         /// To the model.
@@ -601,10 +606,147 @@ order by [parentTable]
             return new {0}Dto( value );
         }}
 
-    }}
-}}";
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this {0} value, bool deep = false )
+        {{
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }}
 
-            sb.AppendFormat( extensionSection, type.Name );
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name=""values"">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<{0}> values )
+        {{
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {{
+                dynamicList.Add( value.ToDynamic( true ) );
+            }}
+            return dynamicList;
+        }}
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this {0} value, bool deep = false )
+        {{
+            dynamic dynamic{0} = new {0}Dto( value ).ToDynamic();
+
+            if ( !deep )
+            {{
+                return dynamic{0};
+            }}
+
+", type.Name );
+
+            foreach ( var property in GetRelatedEntityProperties( type ) )
+            {
+                sb.AppendFormat( @"
+            if (value.{1} != null)
+            {{
+                dynamic{0}.{1} = value.{1}.ToDynamic();
+            }}" + Environment.NewLine, type.Name, property.Key );
+            }
+
+            sb.AppendFormat( @"
+            return dynamic{0};
+        }}
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <param name=""json"">The json.</param>
+        public static void FromJson( this {0} value, string json )
+        {{
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }}
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <param name=""obj"">The obj.</param>
+        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this {0} value, object obj, bool deep = false )
+        {{
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {{
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {{
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {{
+", type.Name );
+
+            var entityType = typeof(Rock.Data.IEntity);
+
+            foreach ( var property in GetRelatedEntityProperties( type, false ) )
+            {
+                if ( entityType.IsAssignableFrom( property.Value ) )
+                {
+                    sb.AppendFormat( @"
+                        // {0}
+                        if (dict.ContainsKey(""{0}""))
+                        {{
+                            value.{0} = new {1}();
+                            new {1}Dto().FromDynamic( dict[""{0}""] ).CopyToModel(value.{0});
+                        }}
+",  property.Key, property.Value.Name );
+                }
+
+                if ( property.Value.IsGenericType &&
+                        property.Value.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                        entityType.IsAssignableFrom( property.Value.GetGenericArguments()[0] ) )
+                {
+                    string propertyType = property.Value.GetGenericArguments()[0].Name;
+                    string pluralizedName = pls.Pluralize( property.Key );
+
+                    sb.AppendFormat( @"
+                        // {0}
+                        if (dict.ContainsKey(""{0}""))
+                        {{
+                            var {0}List = dict[""{0}""] as List<object>;
+                            if ({0}List != null)
+                            {{
+                                value.{0} = new List<{1}>();
+                                foreach(object childObj in {0}List)
+                                {{
+                                    var {1} = new {1}();
+                                    {1}.FromDynamic(childObj, true);
+                                    value.{0}.Add({1});
+                                }}
+                            }}
+                        }}
+", property.Key, propertyType );
+                }
+            }
+
+            sb.AppendFormat( @"
+                    }}
+                }}
+            }}
+        }}
+
+    }}
+}}", type.Name);
+
+
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             WriteFile( file, sb );
         }
@@ -822,6 +964,33 @@ order by [parentTable]
                 if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
                 {
                     properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                }
+            }
+
+            return properties;
+        }
+
+        private Dictionary<string, Type> GetRelatedEntityProperties( Type type, bool includeReadOnly = true)
+        {
+            var properties = new Dictionary<string, Type>();
+
+            var entityType = typeof(Rock.Data.IEntity);
+
+            foreach ( var property in type.GetProperties() )
+            {
+                if ( property.GetGetMethod().IsVirtual &&
+                    property.GetCustomAttribute(typeof(Rock.Data.NotExportable)) == null )
+                {
+                    if ( includeReadOnly || property.GetSetMethod(false) != null )
+                    {
+                        if ( entityType.IsAssignableFrom( property.PropertyType ) ||
+                            ( property.PropertyType.IsGenericType &&
+                            property.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                            entityType.IsAssignableFrom( property.PropertyType.GetGenericArguments()[0] ) ) )
+                        {
+                            properties.Add( property.Name, property.PropertyType );
+                        }
+                    }
                 }
             }
 

@@ -36,10 +36,24 @@ namespace Rock.Data
         Dictionary<string, object> ToDictionary();
 
         /// <summary>
+        /// Sets property values from a dictionary
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <returns></returns>
+        IDto FromDictionary( IDictionary<string, object> dictionary );
+
+        /// <summary>
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
         dynamic ToDynamic();
+
+        /// <summary>
+        /// Sets property values from a dynamic object.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        /// <returns></returns>
+        IDto FromDynamic( object obj );
 
         /// <summary>
         /// Copies from model.

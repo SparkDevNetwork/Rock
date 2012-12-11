@@ -21,7 +21,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    public partial class Page : Model<Page>, IOrdered, IExportable
+    public partial class Page : Model<Page>, IOrdered
     {
         #region Entity Properties
 
@@ -201,6 +201,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [NotExportable]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -250,14 +251,6 @@ namespace Rock.Model
         /// Collection of Page Contexts.
         /// </value>
         public virtual ICollection<PageContext> PageContexts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Sites.
-        /// </summary>
-        /// <value>
-        /// Collection of Sites.
-        /// </value>
-        public virtual ICollection<Site> Sites { get; set; }
 
         /// <summary>
         /// Gets the parent authority.
@@ -331,6 +324,7 @@ namespace Rock.Model
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
@@ -340,36 +334,7 @@ namespace Rock.Model
 
         #region Methods
 
-        /// <summary>
-        /// Exports the Page as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the Page.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return ExportPagesRecursive( this );
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
-            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
-            ImportPagesRecursive( obj, this );
-        }
-
-        /// <summary>
+         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -392,114 +357,6 @@ namespace Rock.Model
         public static Page Read( int id )
         {
             return Read<Page>( id );
-        }
-
-        /// <summary>
-        /// Recursivly adds collections of child pages to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        public static dynamic ExportPagesRecursive( Page page )
-        {
-            dynamic exportPage = new PageDto( page ).ToDynamic();
-            exportPage.AuthRoles = Security.Authorization.FindAuthRules(page).Select( r => r.ToDynamic() );
-            exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
-            exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
-            ExportBlocks( page, exportPage );
-            ExportPageRoutes( page, exportPage );
-            ExportPageContexts( page, exportPage );
-
-            if ( page.Pages == null )
-            {
-                return exportPage;
-            }
-
-            exportPage.Pages = new List<dynamic>();
-
-            foreach ( var childPage in page.Pages )
-            {
-                exportPage.Pages.Add( ExportPagesRecursive( childPage ) );
-            }
-
-            return exportPage;
-        }
-
-        /// <summary>
-        /// Maps the blocks to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="exportPage">The export page.</param>
-        private static void ExportBlocks( Page page, dynamic exportPage )
-        {
-            if ( page.Blocks == null )
-            {
-                return;
-            }
-
-            exportPage.Blocks = new List<dynamic>();
-
-            foreach ( var block in page.Blocks )
-            {
-                exportPage.Blocks.Add( block.ExportObject() );
-            }
-        }
-
-        /// <summary>
-        /// Maps the page routes to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="exportPage">The export page.</param>
-        private static void ExportPageRoutes( Page page, dynamic exportPage )
-        {
-            if ( page.PageRoutes == null )
-            {
-                return;
-            }
-
-            exportPage.PageRoutes = new List<dynamic>();
-
-            foreach ( var pageRoute in page.PageRoutes )
-            {
-                exportPage.PageRoutes.Add( pageRoute.ExportObject() );
-            }
-        }
-
-        private static void ExportPageContexts( Page page, dynamic exportPage )
-        {
-            if ( page.PageContexts == null )
-            {
-                return;
-            }
-
-            exportPage.PageContexts = new List<dynamic>();
-
-            foreach ( var pageContext in page.PageContexts )
-            {
-                exportPage.PageContexts.Add( pageContext.ExportObject() );
-            }
-        }
-
-        private static void ImportPagesRecursive( dynamic data, Page page )
-        {
-            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
-            page.Pages = new List<Page>();
-
-            if ( !dict.ContainsKey( "Pages" ) )
-            {
-                return;
-            }
-
-            foreach ( var p in data.Pages )
-            {
-                var newPage = ( (object) p ).ToModel<Page>();
-                var newDict = p as IDictionary<string, object>;
-                page.Pages.Add( newPage );
-
-                if ( newDict.ContainsKey( "Pages" ) )
-                {
-                    ImportPagesRecursive( p, newPage );
-                }
-            }
         }
 
         #endregion

@@ -135,6 +135,7 @@
     <Compile Include="CheckIn\KioskCache.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
+    <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -380,7 +381,6 @@
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RockTransactionScope.cs" />

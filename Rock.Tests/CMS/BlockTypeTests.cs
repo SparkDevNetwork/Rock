@@ -20,7 +20,7 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var blockType = new BlockType() {Name = "some block type"};
-                dynamic result = blockType.ExportObject();
+                dynamic result = blockType.ToDynamic( true );
                 Assert.AreEqual( result.Name, blockType.Name );
             }
         }
@@ -31,7 +31,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var blockType = new BlockType() { Name = "some block type" };
-                var result = blockType.ExportJson();
+                var result = blockType.ToJson( true );
                 Assert.IsNotEmpty( result );
             }
         }
@@ -49,7 +49,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var blockType = new BlockType();
-                blockType.ImportJson( json );
+                blockType.FromJson( json );
                 Assert.AreEqual( obj.Description, blockType.Description );
                 Assert.AreEqual( obj.IsSystem, blockType.IsSystem );
             }
@@ -66,7 +66,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var blockType = new BlockType();
-                blockType.ImportJson( json );
+                blockType.FromJson( json );
                 var blocks = blockType.Blocks;
                 Assert.IsNotNull( blocks );
                 Assert.IsNotEmpty( blocks );

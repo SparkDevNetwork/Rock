@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -147,10 +149,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Category Extension Methods
     /// </summary>
-    public static class CategoryDtoExtension
+    public static class CategoryExtensions
     {
         /// <summary>
         /// To the model.
@@ -196,6 +199,144 @@ namespace Rock.Model
         public static CategoryDto ToDto( this Category value )
         {
             return new CategoryDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Category value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Category> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Category value, bool deep = false )
+        {
+            dynamic dynamicCategory = new CategoryDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicCategory;
+            }
+
+
+            if (value.ParentCategory != null)
+            {
+                dynamicCategory.ParentCategory = value.ParentCategory.ToDynamic();
+            }
+
+            if (value.ChildCategories != null)
+            {
+                dynamicCategory.ChildCategories = value.ChildCategories.ToDynamic();
+            }
+
+            if (value.EntityType != null)
+            {
+                dynamicCategory.EntityType = value.EntityType.ToDynamic();
+            }
+
+            if (value.File != null)
+            {
+                dynamicCategory.File = value.File.ToDynamic();
+            }
+
+            return dynamicCategory;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Category value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Category value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // ParentCategory
+                        if (dict.ContainsKey("ParentCategory"))
+                        {
+                            value.ParentCategory = new Category();
+                            new CategoryDto().FromDynamic( dict["ParentCategory"] ).CopyToModel(value.ParentCategory);
+                        }
+
+                        // ChildCategories
+                        if (dict.ContainsKey("ChildCategories"))
+                        {
+                            var ChildCategoriesList = dict["ChildCategories"] as List<object>;
+                            if (ChildCategoriesList != null)
+                            {
+                                value.ChildCategories = new List<Category>();
+                                foreach(object childObj in ChildCategoriesList)
+                                {
+                                    var Category = new Category();
+                                    Category.FromDynamic(childObj, true);
+                                    value.ChildCategories.Add(Category);
+                                }
+                            }
+                        }
+
+                        // EntityType
+                        if (dict.ContainsKey("EntityType"))
+                        {
+                            value.EntityType = new EntityType();
+                            new EntityTypeDto().FromDynamic( dict["EntityType"] ).CopyToModel(value.EntityType);
+                        }
+
+                        // File
+                        if (dict.ContainsKey("File"))
+                        {
+                            value.File = new BinaryFile();
+                            new BinaryFileDto().FromDynamic( dict["File"] ).CopyToModel(value.File);
+                        }
+
+                    }
+                }
+            }
         }
 
     }

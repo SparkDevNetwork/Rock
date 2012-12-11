@@ -7,6 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Rock.Data
@@ -48,6 +50,24 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Sets property values from a dictionary
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        public virtual IDto FromDictionary( IDictionary<string, object> dictionary )
+        {
+            var properties = this.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                .Where( p => dictionary.ContainsKey( p.Name ) );
+
+            foreach ( var prop in properties )
+            {
+                try { prop.SetValue( this, dictionary[prop.Name] ); }
+                catch ( Exception ) { }
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Creates a dynamic object.
         /// </summary>
         /// <returns></returns>
@@ -57,6 +77,25 @@ namespace Rock.Data
             expando.Id = this.Id;
             expando.Guid = this.Guid;
             return expando;
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="obj">The obj.</param>
+        public virtual IDto FromDynamic( object obj )
+        {
+            var o = obj as ExpandoObject;
+            if ( o != null )
+            {
+                var dict = o as IDictionary<string, object>;
+                if ( dict != null )
+                {
+                    FromDictionary( dict );
+                }
+            }
+
+            return this;
         }
 
         /// <summary>

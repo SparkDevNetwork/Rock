@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -139,10 +141,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// MarketingCampaign Extension Methods
     /// </summary>
-    public static class MarketingCampaignDtoExtension
+    public static class MarketingCampaignExtensions
     {
         /// <summary>
         /// To the model.
@@ -188,6 +191,174 @@ namespace Rock.Model
         public static MarketingCampaignDto ToDto( this MarketingCampaign value )
         {
             return new MarketingCampaignDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this MarketingCampaign value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<MarketingCampaign> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this MarketingCampaign value, bool deep = false )
+        {
+            dynamic dynamicMarketingCampaign = new MarketingCampaignDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicMarketingCampaign;
+            }
+
+
+            if (value.ContactPerson != null)
+            {
+                dynamicMarketingCampaign.ContactPerson = value.ContactPerson.ToDynamic();
+            }
+
+            if (value.EventGroup != null)
+            {
+                dynamicMarketingCampaign.EventGroup = value.EventGroup.ToDynamic();
+            }
+
+            if (value.MarketingCampaignAds != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignAds = value.MarketingCampaignAds.ToDynamic();
+            }
+
+            if (value.MarketingCampaignAudiences != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignAudiences = value.MarketingCampaignAudiences.ToDynamic();
+            }
+
+            if (value.MarketingCampaignCampuses != null)
+            {
+                dynamicMarketingCampaign.MarketingCampaignCampuses = value.MarketingCampaignCampuses.ToDynamic();
+            }
+
+            return dynamicMarketingCampaign;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this MarketingCampaign value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this MarketingCampaign value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // ContactPerson
+                        if (dict.ContainsKey("ContactPerson"))
+                        {
+                            value.ContactPerson = new Person();
+                            new PersonDto().FromDynamic( dict["ContactPerson"] ).CopyToModel(value.ContactPerson);
+                        }
+
+                        // EventGroup
+                        if (dict.ContainsKey("EventGroup"))
+                        {
+                            value.EventGroup = new Group();
+                            new GroupDto().FromDynamic( dict["EventGroup"] ).CopyToModel(value.EventGroup);
+                        }
+
+                        // MarketingCampaignAds
+                        if (dict.ContainsKey("MarketingCampaignAds"))
+                        {
+                            var MarketingCampaignAdsList = dict["MarketingCampaignAds"] as List<object>;
+                            if (MarketingCampaignAdsList != null)
+                            {
+                                value.MarketingCampaignAds = new List<MarketingCampaignAd>();
+                                foreach(object childObj in MarketingCampaignAdsList)
+                                {
+                                    var MarketingCampaignAd = new MarketingCampaignAd();
+                                    MarketingCampaignAd.FromDynamic(childObj, true);
+                                    value.MarketingCampaignAds.Add(MarketingCampaignAd);
+                                }
+                            }
+                        }
+
+                        // MarketingCampaignAudiences
+                        if (dict.ContainsKey("MarketingCampaignAudiences"))
+                        {
+                            var MarketingCampaignAudiencesList = dict["MarketingCampaignAudiences"] as List<object>;
+                            if (MarketingCampaignAudiencesList != null)
+                            {
+                                value.MarketingCampaignAudiences = new List<MarketingCampaignAudience>();
+                                foreach(object childObj in MarketingCampaignAudiencesList)
+                                {
+                                    var MarketingCampaignAudience = new MarketingCampaignAudience();
+                                    MarketingCampaignAudience.FromDynamic(childObj, true);
+                                    value.MarketingCampaignAudiences.Add(MarketingCampaignAudience);
+                                }
+                            }
+                        }
+
+                        // MarketingCampaignCampuses
+                        if (dict.ContainsKey("MarketingCampaignCampuses"))
+                        {
+                            var MarketingCampaignCampusesList = dict["MarketingCampaignCampuses"] as List<object>;
+                            if (MarketingCampaignCampusesList != null)
+                            {
+                                value.MarketingCampaignCampuses = new List<MarketingCampaignCampus>();
+                                foreach(object childObj in MarketingCampaignCampusesList)
+                                {
+                                    var MarketingCampaignCampus = new MarketingCampaignCampus();
+                                    MarketingCampaignCampus.FromDynamic(childObj, true);
+                                    value.MarketingCampaignCampuses.Add(MarketingCampaignCampus);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
     }

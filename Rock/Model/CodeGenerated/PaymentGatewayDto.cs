@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -131,10 +133,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// PaymentGateway Extension Methods
     /// </summary>
-    public static class PaymentGatewayDtoExtension
+    public static class PaymentGatewayExtensions
     {
         /// <summary>
         /// To the model.
@@ -180,6 +183,108 @@ namespace Rock.Model
         public static PaymentGatewayDto ToDto( this PaymentGateway value )
         {
             return new PaymentGatewayDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this PaymentGateway value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<PaymentGateway> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this PaymentGateway value, bool deep = false )
+        {
+            dynamic dynamicPaymentGateway = new PaymentGatewayDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPaymentGateway;
+            }
+
+
+            if (value.Transactions != null)
+            {
+                dynamicPaymentGateway.Transactions = value.Transactions.ToDynamic();
+            }
+
+            return dynamicPaymentGateway;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this PaymentGateway value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this PaymentGateway value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // Transactions
+                        if (dict.ContainsKey("Transactions"))
+                        {
+                            var TransactionsList = dict["Transactions"] as List<object>;
+                            if (TransactionsList != null)
+                            {
+                                value.Transactions = new List<FinancialTransaction>();
+                                foreach(object childObj in TransactionsList)
+                                {
+                                    var FinancialTransaction = new FinancialTransaction();
+                                    FinancialTransaction.FromDynamic(childObj, true);
+                                    value.Transactions.Add(FinancialTransaction);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
     }

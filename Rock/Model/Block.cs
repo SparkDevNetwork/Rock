@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Block POCO Entity.
     /// </summary>
     [Table( "Block" )]
-    public partial class Block : Model<Block>, IOrdered, IExportable
+    public partial class Block : Model<Block>, IOrdered
     {
         /// <summary>
         /// Gets or sets the System.
@@ -94,14 +94,6 @@ namespace Rock.Model
         public int OutputCacheDuration { get; set; }
         
         /// <summary>
-        /// Gets or sets the Html Contents.
-        /// </summary>
-        /// <value>
-        /// Collection of Html Contents.
-        /// </value>
-        public virtual ICollection<HtmlContent> HtmlContents { get; set; }
-
-        /// <summary>
         /// Gets or sets the Block Type.
         /// </summary>
         /// <value>
@@ -115,6 +107,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [NotExportable]
         public virtual Page Page { get; set; }
         
         /// <summary>
@@ -129,6 +122,7 @@ namespace Rock.Model
         /// Gets the dto.
         /// </summary>
         /// <returns></returns>
+        [NotExportable]
         public override IDto Dto
         {
             get { return this.ToDto(); }
@@ -169,51 +163,6 @@ namespace Rock.Model
             return this.Name;
         }
 
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            dynamic exportObject = this.ToDynamic();
-
-            if ( BlockType != null )
-            {
-                exportObject.BlockType = BlockType.ExportObject();
-            }
-
-            if ( HtmlContents == null )
-            {
-                return exportObject;
-            }
-
-            exportObject.HtmlContents = new List<dynamic>();
-
-            foreach ( var content in HtmlContents )
-            {
-                exportObject.HtmlContents.Add( content.ExportObject() );
-            }
-
-            return exportObject;
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
-        }
     }
 
     /// <summary>

@@ -12,6 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -283,10 +285,11 @@ namespace Rock.Model
 
     }
 
+
     /// <summary>
-    /// 
+    /// Person Extension Methods
     /// </summary>
-    public static class PersonDtoExtension
+    public static class PersonExtensions
     {
         /// <summary>
         /// To the model.
@@ -332,6 +335,314 @@ namespace Rock.Model
         public static PersonDto ToDto( this Person value )
         {
             return new PersonDto( value );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static string ToJson( this Person value, bool deep = false )
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns></returns>
+        public static List<dynamic> ToDynamic( this ICollection<Person> values )
+        {
+            var dynamicList = new List<dynamic>();
+            foreach ( var value in values )
+            {
+                dynamicList.Add( value.ToDynamic( true ) );
+            }
+            return dynamicList;
+        }
+
+        /// <summary>
+        /// To the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        /// <returns></returns>
+        public static dynamic ToDynamic( this Person value, bool deep = false )
+        {
+            dynamic dynamicPerson = new PersonDto( value ).ToDynamic();
+
+            if ( !deep )
+            {
+                return dynamicPerson;
+            }
+
+
+            if (value.Users != null)
+            {
+                dynamicPerson.Users = value.Users.ToDynamic();
+            }
+
+            if (value.EmailTemplates != null)
+            {
+                dynamicPerson.EmailTemplates = value.EmailTemplates.ToDynamic();
+            }
+
+            if (value.PhoneNumbers != null)
+            {
+                dynamicPerson.PhoneNumbers = value.PhoneNumbers.ToDynamic();
+            }
+
+            if (value.Members != null)
+            {
+                dynamicPerson.Members = value.Members.ToDynamic();
+            }
+
+            if (value.Pledges != null)
+            {
+                dynamicPerson.Pledges = value.Pledges.ToDynamic();
+            }
+
+            if (value.PersonAccountLookups != null)
+            {
+                dynamicPerson.PersonAccountLookups = value.PersonAccountLookups.ToDynamic();
+            }
+
+            if (value.MaritalStatusValue != null)
+            {
+                dynamicPerson.MaritalStatusValue = value.MaritalStatusValue.ToDynamic();
+            }
+
+            if (value.PersonStatusValue != null)
+            {
+                dynamicPerson.PersonStatusValue = value.PersonStatusValue.ToDynamic();
+            }
+
+            if (value.RecordStatusValue != null)
+            {
+                dynamicPerson.RecordStatusValue = value.RecordStatusValue.ToDynamic();
+            }
+
+            if (value.RecordStatusReasonValue != null)
+            {
+                dynamicPerson.RecordStatusReasonValue = value.RecordStatusReasonValue.ToDynamic();
+            }
+
+            if (value.RecordTypeValue != null)
+            {
+                dynamicPerson.RecordTypeValue = value.RecordTypeValue.ToDynamic();
+            }
+
+            if (value.SuffixValue != null)
+            {
+                dynamicPerson.SuffixValue = value.SuffixValue.ToDynamic();
+            }
+
+            if (value.TitleValue != null)
+            {
+                dynamicPerson.TitleValue = value.TitleValue.ToDynamic();
+            }
+
+            if (value.Photo != null)
+            {
+                dynamicPerson.Photo = value.Photo.ToDynamic();
+            }
+
+            if (value.ImpersonatedUser != null)
+            {
+                dynamicPerson.ImpersonatedUser = value.ImpersonatedUser.ToDynamic();
+            }
+
+            return dynamicPerson;
+        }
+
+        /// <summary>
+        /// Froms the json.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="json">The json.</param>
+        public static void FromJson( this Person value, string json )
+        {
+            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
+            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
+            value.FromDynamic( obj, true );
+        }
+
+        /// <summary>
+        /// Froms the dynamic.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="obj">The obj.</param>
+        /// <param name="deep">if set to <c>true</c> [deep].</param>
+        public static void FromDynamic( this Person value, object obj, bool deep = false )
+        {
+            new PageDto().FromDynamic(obj).CopyToModel(value);
+
+            if (deep)
+            {
+                var expando = obj as ExpandoObject;
+                if (obj != null)
+                {
+                    var dict = obj as IDictionary<string, object>;
+                    if (dict != null)
+                    {
+
+                        // Users
+                        if (dict.ContainsKey("Users"))
+                        {
+                            var UsersList = dict["Users"] as List<object>;
+                            if (UsersList != null)
+                            {
+                                value.Users = new List<UserLogin>();
+                                foreach(object childObj in UsersList)
+                                {
+                                    var UserLogin = new UserLogin();
+                                    UserLogin.FromDynamic(childObj, true);
+                                    value.Users.Add(UserLogin);
+                                }
+                            }
+                        }
+
+                        // EmailTemplates
+                        if (dict.ContainsKey("EmailTemplates"))
+                        {
+                            var EmailTemplatesList = dict["EmailTemplates"] as List<object>;
+                            if (EmailTemplatesList != null)
+                            {
+                                value.EmailTemplates = new List<EmailTemplate>();
+                                foreach(object childObj in EmailTemplatesList)
+                                {
+                                    var EmailTemplate = new EmailTemplate();
+                                    EmailTemplate.FromDynamic(childObj, true);
+                                    value.EmailTemplates.Add(EmailTemplate);
+                                }
+                            }
+                        }
+
+                        // PhoneNumbers
+                        if (dict.ContainsKey("PhoneNumbers"))
+                        {
+                            var PhoneNumbersList = dict["PhoneNumbers"] as List<object>;
+                            if (PhoneNumbersList != null)
+                            {
+                                value.PhoneNumbers = new List<PhoneNumber>();
+                                foreach(object childObj in PhoneNumbersList)
+                                {
+                                    var PhoneNumber = new PhoneNumber();
+                                    PhoneNumber.FromDynamic(childObj, true);
+                                    value.PhoneNumbers.Add(PhoneNumber);
+                                }
+                            }
+                        }
+
+                        // Members
+                        if (dict.ContainsKey("Members"))
+                        {
+                            var MembersList = dict["Members"] as List<object>;
+                            if (MembersList != null)
+                            {
+                                value.Members = new List<GroupMember>();
+                                foreach(object childObj in MembersList)
+                                {
+                                    var GroupMember = new GroupMember();
+                                    GroupMember.FromDynamic(childObj, true);
+                                    value.Members.Add(GroupMember);
+                                }
+                            }
+                        }
+
+                        // Pledges
+                        if (dict.ContainsKey("Pledges"))
+                        {
+                            var PledgesList = dict["Pledges"] as List<object>;
+                            if (PledgesList != null)
+                            {
+                                value.Pledges = new List<Pledge>();
+                                foreach(object childObj in PledgesList)
+                                {
+                                    var Pledge = new Pledge();
+                                    Pledge.FromDynamic(childObj, true);
+                                    value.Pledges.Add(Pledge);
+                                }
+                            }
+                        }
+
+                        // PersonAccountLookups
+                        if (dict.ContainsKey("PersonAccountLookups"))
+                        {
+                            var PersonAccountLookupsList = dict["PersonAccountLookups"] as List<object>;
+                            if (PersonAccountLookupsList != null)
+                            {
+                                value.PersonAccountLookups = new List<PersonAccount>();
+                                foreach(object childObj in PersonAccountLookupsList)
+                                {
+                                    var PersonAccount = new PersonAccount();
+                                    PersonAccount.FromDynamic(childObj, true);
+                                    value.PersonAccountLookups.Add(PersonAccount);
+                                }
+                            }
+                        }
+
+                        // MaritalStatusValue
+                        if (dict.ContainsKey("MaritalStatusValue"))
+                        {
+                            value.MaritalStatusValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["MaritalStatusValue"] ).CopyToModel(value.MaritalStatusValue);
+                        }
+
+                        // PersonStatusValue
+                        if (dict.ContainsKey("PersonStatusValue"))
+                        {
+                            value.PersonStatusValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["PersonStatusValue"] ).CopyToModel(value.PersonStatusValue);
+                        }
+
+                        // RecordStatusValue
+                        if (dict.ContainsKey("RecordStatusValue"))
+                        {
+                            value.RecordStatusValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["RecordStatusValue"] ).CopyToModel(value.RecordStatusValue);
+                        }
+
+                        // RecordStatusReasonValue
+                        if (dict.ContainsKey("RecordStatusReasonValue"))
+                        {
+                            value.RecordStatusReasonValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["RecordStatusReasonValue"] ).CopyToModel(value.RecordStatusReasonValue);
+                        }
+
+                        // RecordTypeValue
+                        if (dict.ContainsKey("RecordTypeValue"))
+                        {
+                            value.RecordTypeValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["RecordTypeValue"] ).CopyToModel(value.RecordTypeValue);
+                        }
+
+                        // SuffixValue
+                        if (dict.ContainsKey("SuffixValue"))
+                        {
+                            value.SuffixValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["SuffixValue"] ).CopyToModel(value.SuffixValue);
+                        }
+
+                        // TitleValue
+                        if (dict.ContainsKey("TitleValue"))
+                        {
+                            value.TitleValue = new DefinedValue();
+                            new DefinedValueDto().FromDynamic( dict["TitleValue"] ).CopyToModel(value.TitleValue);
+                        }
+
+                        // Photo
+                        if (dict.ContainsKey("Photo"))
+                        {
+                            value.Photo = new BinaryFile();
+                            new BinaryFileDto().FromDynamic( dict["Photo"] ).CopyToModel(value.Photo);
+                        }
+
+                    }
+                }
+            }
         }
 
     }
