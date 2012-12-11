@@ -365,7 +365,7 @@ namespace Rock.Model
                                 foreach(object childObj in AttributeQualifiersList)
                                 {
                                     var AttributeQualifier = new AttributeQualifier();
-                                    new AttributeQualifierDto().FromDynamic(childObj).CopyToModel(AttributeQualifier);
+                                    AttributeQualifier.FromDynamic(childObj, true);
                                     value.AttributeQualifiers.Add(AttributeQualifier);
                                 }
                             }

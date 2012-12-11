@@ -411,7 +411,7 @@ namespace Rock.Model
                                 foreach(object childObj in BlocksList)
                                 {
                                     var Block = new Block();
-                                    new BlockDto().FromDynamic(childObj).CopyToModel(Block);
+                                    Block.FromDynamic(childObj, true);
                                     value.Blocks.Add(Block);
                                 }
                             }
@@ -427,7 +427,7 @@ namespace Rock.Model
                                 foreach(object childObj in PagesList)
                                 {
                                     var Page = new Page();
-                                    new PageDto().FromDynamic(childObj).CopyToModel(Page);
+                                    Page.FromDynamic(childObj, true);
                                     value.Pages.Add(Page);
                                 }
                             }
@@ -443,7 +443,7 @@ namespace Rock.Model
                                 foreach(object childObj in PageRoutesList)
                                 {
                                     var PageRoute = new PageRoute();
-                                    new PageRouteDto().FromDynamic(childObj).CopyToModel(PageRoute);
+                                    PageRoute.FromDynamic(childObj, true);
                                     value.PageRoutes.Add(PageRoute);
                                 }
                             }
@@ -459,7 +459,7 @@ namespace Rock.Model
                                 foreach(object childObj in PageContextsList)
                                 {
                                     var PageContext = new PageContext();
-                                    new PageContextDto().FromDynamic(childObj).CopyToModel(PageContext);
+                                    PageContext.FromDynamic(childObj, true);
                                     value.PageContexts.Add(PageContext);
                                 }
                             }

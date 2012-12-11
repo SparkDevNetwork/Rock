@@ -314,7 +314,7 @@ namespace Rock.Model
                                 foreach(object childObj in ChildCategoriesList)
                                 {
                                     var Category = new Category();
-                                    new CategoryDto().FromDynamic(childObj).CopyToModel(Category);
+                                    Category.FromDynamic(childObj, true);
                                     value.ChildCategories.Add(Category);
                                 }
                             }
