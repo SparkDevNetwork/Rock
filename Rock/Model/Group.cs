@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using Rock.Data;
 
-namespace Rock.Model    
+namespace Rock.Model
 {
     /// <summary>
     /// Group POCO Entity.
@@ -26,7 +26,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Parent Group Id.
         /// </summary>
@@ -34,7 +34,7 @@ namespace Rock.Model
         /// Parent Group Id.
         /// </value>
         public int? ParentGroupId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Group Type Id.
         /// </summary>
@@ -61,7 +61,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// Description.
         /// </value>
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Is Security Role.
         /// </summary>
@@ -106,7 +106,7 @@ namespace Rock.Model
         {
             return Read<Group>( id );
         }
-        
+
         /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
@@ -114,7 +114,7 @@ namespace Rock.Model
         /// Collection of Groups.
         /// </value>
         public virtual ICollection<Group> Groups { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Members.
         /// </summary>
@@ -138,7 +138,7 @@ namespace Rock.Model
         /// A <see cref="Group"/> object.
         /// </value>
         public virtual Group ParentGroup { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Group Type.
         /// </summary>
@@ -166,6 +166,40 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Determines whether [is ancestor of group] [the specified parent group id].
+        /// </summary>
+        /// <param name="parentGroupId">The parent group id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is ancestor of group] [the specified parent group id]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAncestorOfGroup( int parentGroupId )
+        {
+            HashSet<Guid> ancestorList = new HashSet<Guid>();
+
+            Group parentGroup = this.ParentGroup;
+            while ( parentGroup != null )
+            {
+                if ( ancestorList.Contains( parentGroup.Guid ) )
+                {
+                    throw new GroupParentCircularReferenceException();
+                }
+                else
+                {
+                    ancestorList.Add( parentGroup.Guid );
+                }
+
+                if ( parentGroup.Id.Equals( parentGroupId ) )
+                {
+                    return true;
+                }
+
+                parentGroup = parentGroup.ParentGroup;
+            }
+
+            return false;
+        }
+
     }
 
     /// <summary>
@@ -178,9 +212,23 @@ namespace Rock.Model
         /// </summary>
         public GroupConfiguration()
         {
-            this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete(false);
-            this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GroupParentCircularReferenceException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupParentCircularReferenceException" /> class.
+        /// </summary>
+        public GroupParentCircularReferenceException()
+            : base( "Circular Reference in Group Parents" )
+        {
         }
     }
 }

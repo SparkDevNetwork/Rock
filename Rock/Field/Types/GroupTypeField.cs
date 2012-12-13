@@ -1,4 +1,4 @@
-﻿//
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -6,8 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI.WebControls;
-using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Field.Types
@@ -15,8 +15,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
-    public class PageReference : FieldType
+    public class GroupTypeField : FieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
@@ -27,17 +26,16 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = new DropDownList();
+            CheckBoxList editControl = new CheckBoxList();
 
-            PageService pageService = new PageService();
-            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
-            dropDownList.Items.Add( new ListItem(None.Text, None.IdValue) );
-            foreach ( var page in allPages.OrderBy(a => a.PageSortHash) )
+            GroupTypeService groupTypeService = new GroupTypeService();
+            var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            foreach ( var groupType in groupTypes )
             {
-                dropDownList.Items.Add( new ListItem( page.DropDownListText, page.Guid.ToString() ) );
+                editControl.Items.Add(new ListItem(groupType.Name, groupType.Id.ToString()));
             }
 
-            return dropDownList;
+            return editControl;
         }
 
         /// <summary>
@@ -48,15 +46,18 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = control as DropDownList;
-            string result = null;
-            
-            if ( dropDownList != null )
+            List<string> values = new List<string>();
+
+            if ( control != null && control is ListControl )
             {
-                result = dropDownList.SelectedValue;
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach ( ListItem li in cbl.Items )
+                    if ( li.Selected )
+                        values.Add( li.Value );
+                return values.AsDelimited<string>( "," );
             }
 
-            return result;
+            return null;
         }
 
         /// <summary>
@@ -67,10 +68,14 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            DropDownList dropDownList = control as DropDownList;
-            if ( dropDownList != null )
+            List<string> values = new List<string>();
+            values.AddRange( value.Split( ',' ) );
+
+            if ( control != null && control is ListControl )
             {
-                dropDownList.SetValue( value );
+                CheckBoxList cbl = (CheckBoxList)control;
+                foreach ( ListItem li in cbl.Items )
+                    li.Selected = values.Contains( li.Value );
             }
         }
     }

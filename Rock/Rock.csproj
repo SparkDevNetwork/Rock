@@ -117,10 +117,13 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
+    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
+    <Compile Include="Field\Types\GroupTypeField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -148,6 +151,10 @@
     <Compile Include="Migrations\201212071233248_PageIconFile.cs" />
     <Compile Include="Migrations\201212071233248_PageIconFile.Designer.cs">
       <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212110027467_GroupBlockAttributes.cs" />
+    <Compile Include="Migrations\201212110027467_GroupBlockAttributes.Designer.cs">
+      <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -816,6 +823,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212071233248_PageIconFile.resx">
       <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212110027467_GroupBlockAttributes.resx">
+      <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

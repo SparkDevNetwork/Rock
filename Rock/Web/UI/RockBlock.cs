@@ -13,6 +13,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -396,6 +397,33 @@ namespace Rock.Web.UI
         public string GetUserValue( string key )
         {
             return ( (RockPage)this.Page ).GetUserValue( key );
+        }
+
+        /// <summary>
+        /// Navigates to parent page.
+        /// </summary>
+        public void NavigateToParentPage()
+        {
+            Response.Redirect( CurrentPage.BuildUrl( this.CurrentPage.ParentPageId.Value, null ), false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Shows the detail page.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void NavigateToDetailPage( string itemKey, int itemKeyValue )
+        {
+            string pageGuid = AttributeValue( DetailPageAttribute.Key );
+
+            Rock.Model.Page page = new PageService().Get( new Guid(pageGuid) );
+
+            if ( page != null )
+            {
+                Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>

@@ -1,21 +1,25 @@
-﻿//
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
-using Rock.Model;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
-public partial class Groups : RockBlock
+[GroupTypeField( 0, "Group Types", false, "", "", "", "Select group types to show in this block.  Leave all unchecked to show all group types." )]
+[BooleanField( 3, "Show Edit", true )]
+[BooleanField( 6, "Limit to Security Role Groups", false )]
+public partial class GroupDetail : RockBlock
 {
     #region Control Methods
 
@@ -27,13 +31,10 @@ public partial class Groups : RockBlock
     {
         base.OnInit( e );
 
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
-        {
-            gGroups.DataKeyNames = new string[] { "id" };
-            gGroups.Actions.IsAddEnabled = true;
-            gGroups.Actions.AddClick += gGroups_Add;
-            gGroups.GridRebind += gGroups_GridRebind;
-        }
+        // Block Security and special attributes (RockPage takes care of "View")
+        bool canAddEditDelete = IsUserAuthorized( "Edit" ) && AttributeValue( "ShowEdit" ).FromTrueFalse();
+        btnSave.Enabled = canAddEditDelete;
+        btnSave.ToolTip = canAddEditDelete ? "" : "Not authorized";
     }
 
     /// <summary>
@@ -42,82 +43,16 @@ public partial class Groups : RockBlock
     /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnLoad( EventArgs e )
     {
-        nbMessage.Visible = false;
-
-        if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
-        {
-            if ( !Page.IsPostBack )
-            {
-                BindGrid();
-                
-            }
-        }
-        else
-        {
-            gGroups.Visible = false;
-            nbMessage.Text = WarningMessage.NotAuthorizedToEdit( Group.FriendlyTypeName );
-            nbMessage.Visible = true;
-        }
-
         base.OnLoad( e );
-    }
-    #endregion
 
-    #region Grid Events
-
-    /// <summary>
-    /// Handles the Add event of the gGroups control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    protected void gGroups_Add( object sender, EventArgs e )
-    {
-        ShowEdit( 0 );
-    }
-
-    /// <summary>
-    /// Handles the Edit event of the gGroups control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-    protected void gGroups_Edit( object sender, RowEventArgs e )
-    {
-        ShowEdit( (int)e.RowKeyValue );
-    }
-
-    /// <summary>
-    /// Handles the Delete event of the gGroups control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-    protected void gGroups_Delete( object sender, RowEventArgs e )
-    {
-        GroupService groupService = new GroupService();
-        Group group = groupService.Get( (int)e.RowKeyValue );
-        if ( CurrentBlock != null )
+        if ( !Page.IsPostBack )
         {
-            string errorMessage;
-            if ( !groupService.CanDelete( group, out errorMessage ) )
+            string itemId = PageParameter( "groupId" );
+            if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                return;
+                ShowDetail( int.Parse( itemId ) );
             }
-            
-            groupService.Delete( group, CurrentPersonId );
-            groupService.Save( group, CurrentPersonId );
         }
-
-        BindGrid();
-    }
-
-    /// <summary>
-    /// Handles the GridRebind event of the gGroups control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-    private void gGroups_GridRebind( object sender, EventArgs e )
-    {
-        BindGrid();
     }
 
     #endregion
@@ -131,8 +66,7 @@ public partial class Groups : RockBlock
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void btnCancel_Click( object sender, EventArgs e )
     {
-        pnlDetails.Visible = false;
-        pnlList.Visible = true;
+        NavigateToParentPage();
     }
 
     /// <summary>
@@ -155,18 +89,21 @@ public partial class Groups : RockBlock
         }
         else
         {
+            // just in case this group is or was a SecurityRole
+            Rock.Security.Role.Flush( groupId );
+
             group = groupService.Get( groupId );
         }
-        
+
         group.Name = tbName.Text;
         group.Description = tbDescription.Text;
         group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
         group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
         group.ParentGroupId = ddlParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlParentGroup.SelectedValue );
         group.IsSecurityRole = cbIsSecurityRole.Checked;
-        
+
         // check for duplicates within GroupType
-        if ( groupService.Queryable().Where(g => g.GroupTypeId.Equals(group.GroupTypeId)).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
+        if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
         {
             tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.FriendlyTypeName ) );
             return;
@@ -179,13 +116,14 @@ public partial class Groups : RockBlock
         }
 
         RockTransactionScope.WrapTransaction( () =>
-            {
-                groupService.Save( group, CurrentPersonId );
-            } );
+        {
+            groupService.Save( group, CurrentPersonId );
+        } );
 
-        BindGrid();
-        pnlDetails.Visible = false;
-        pnlList.Visible = true;
+        // just in case this group is or was a SecurityRole
+        Rock.Security.Authorization.Flush();
+
+        NavigateToParentPage();
     }
 
     #endregion
@@ -193,40 +131,29 @@ public partial class Groups : RockBlock
     #region Internal Methods
 
     /// <summary>
-    /// Binds the grid.
-    /// </summary>
-    private void BindGrid()
-    {
-        GroupService groupService = new GroupService();
-        SortProperty sortProperty = gGroups.SortProperty;
-
-        if ( sortProperty != null )
-        {
-            gGroups.DataSource = groupService.Queryable().Sort( sortProperty ).ToList();
-        }
-        else
-        {
-            gGroups.DataSource = groupService.Queryable().OrderBy( p => p.Name ).ToList();
-        }
-
-        gGroups.DataBind();
-    }
-
-    /// <summary>
     /// Loads the drop downs.
     /// </summary>
     private void LoadDropDowns()
     {
         GroupTypeService groupTypeService = new GroupTypeService();
-        List<GroupType> groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+        var groupTypeQry = groupTypeService.Queryable();
+
+        // limit GroupType selection to what Block Attributes allow
+        List<int> groupTypeIds = AttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+        if ( groupTypeIds.Count > 0 )
+        {
+            groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
+        }
+
+        List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
         ddlGroupType.DataSource = groupTypes;
         ddlGroupType.DataBind();
 
-        int currentGroupId = int.Parse(hfGroupId.Value);
+        int currentGroupId = int.Parse( hfGroupId.Value );
 
         // TODO: Only include valid Parent choices (no circular references)
         GroupService groupService = new GroupService();
-        List<Group> groups = groupService.Queryable().Where(g => g.Id != currentGroupId).OrderBy( a => a.Name).ToList();
+        List<Group> groups = groupService.Queryable().Where( g => g.Id != currentGroupId ).OrderBy( a => a.Name ).ToList();
         groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
         ddlParentGroup.DataSource = groups;
         ddlParentGroup.DataBind();
@@ -239,14 +166,11 @@ public partial class Groups : RockBlock
     }
 
     /// <summary>
-    /// Shows the edit.
+    /// Shows the detail.
     /// </summary>
-    /// <param name="groupId">The group type id.</param>
-    protected void ShowEdit( int groupId )
+    /// <param name="groupId">The group id.</param>
+    protected void ShowDetail( int groupId )
     {
-        pnlList.Visible = false;
-        pnlDetails.Visible = true;
-
         GroupService groupService = new GroupService();
         Group group = groupService.Get( groupId );
         bool readOnly = false;
@@ -264,7 +188,7 @@ public partial class Groups : RockBlock
             ddlParentGroup.SelectedValue = ( group.ParentGroupId ?? None.Id ).ToString();
             ddlCampus.SelectedValue = ( group.CampusId ?? None.Id ).ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
-           
+
             readOnly = group.IsSystem;
 
             if ( group.IsSystem )
@@ -295,10 +219,17 @@ public partial class Groups : RockBlock
         ddlParentGroup.Enabled = !readOnly;
         ddlCampus.Enabled = !readOnly;
         cbIsSecurityRole.Enabled = !readOnly;
-        
+
         tbName.ReadOnly = readOnly;
         tbDescription.ReadOnly = readOnly;
         btnSave.Visible = !readOnly;
+
+        // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
+        if ( AttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+        {
+            cbIsSecurityRole.Enabled = false;
+            cbIsSecurityRole.Checked = true;
+        }
     }
 
     #endregion

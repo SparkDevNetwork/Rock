@@ -165,8 +165,13 @@ namespace Rock.Web.Cache
         {
             var qualifiers = new Dictionary<string, string>();
 
-            foreach ( Rock.Model.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
-                qualifiers.Add( qualifier.Key, qualifier.Value );
+            if ( attributeModel.AttributeQualifiers != null )
+            {
+                foreach ( Rock.Model.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
+                {
+                    qualifiers.Add( qualifier.Key, qualifier.Value );
+                }
+            }
 
             return CopyModel( attributeModel, qualifiers );
         }
