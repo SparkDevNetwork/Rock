@@ -90,24 +90,12 @@ namespace Rock.Model
         public bool CanDelete( Site item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Page>().Queryable().Any( a => a.SiteId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Page where SiteId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Page" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Page";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Site.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, Page.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

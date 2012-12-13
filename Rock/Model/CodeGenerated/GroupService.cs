@@ -86,39 +86,18 @@ namespace Rock.Model
         public bool CanDelete( Group item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Group>().Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where ParentGroupId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Group" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Group";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Group.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MarketingCampaign>().Queryable().Any( a => a.EventGroupId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaign where EventGroupId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "MarketingCampaign" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "MarketingCampaign";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Group.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

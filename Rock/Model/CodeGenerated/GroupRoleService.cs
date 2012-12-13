@@ -85,39 +85,18 @@ namespace Rock.Model
         public bool CanDelete( GroupRole item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<GroupMember>().Queryable().Any( a => a.GroupRoleId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupMember where GroupRoleId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "GroupMember" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupMember";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>().Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupType where DefaultGroupRoleId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "GroupType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
