@@ -33,6 +33,14 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
         /// </summary>
+        public KioskSchedule()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
+        /// </summary>
         /// <param name="schedule">The schedule.</param>
         public KioskSchedule( Schedule schedule )
             : base( schedule )
