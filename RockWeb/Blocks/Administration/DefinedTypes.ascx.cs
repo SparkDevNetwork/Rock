@@ -664,10 +664,10 @@ namespace RockWeb.Blocks.Administration
                 tbAttributeDefaultValue.Text = attribute.DefaultValue;
                 cbAttributeGridColumn.Checked = attribute.IsGridColumn;
                 cbAttributeRequired.Checked = attribute.IsRequired;
-                if ( attribute.FieldType.Id != null )
-                {
+                //if ( attribute.FieldType.Id != null )
+                //{
                     ddlAttributeFieldType.SelectedValue = attribute.FieldType.Id.ToString();
-                }
+                //}
             }
             else
             {
@@ -699,7 +699,7 @@ namespace RockWeb.Blocks.Administration
                 .Get( _entityTypeId, _entityQualifier, hfIdType.Value )
                 .ToArray();
 
-            int i = 0;
+            //int i = 0;
             // add control for each attribute associated with the defined type
             foreach ( var attribute in attributeList )
             {
