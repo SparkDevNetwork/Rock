@@ -81,24 +81,12 @@ namespace Rock.Model
         public bool CanDelete( MarketingCampaignAdType item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<MarketingCampaignAd>().Queryable().Any( a => a.MarketingCampaignAdTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "MarketingCampaignAd" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "MarketingCampaignAd";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", MarketingCampaignAdType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", MarketingCampaignAdType.FriendlyTypeName, MarketingCampaignAd.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

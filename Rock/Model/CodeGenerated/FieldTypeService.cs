@@ -83,39 +83,18 @@ namespace Rock.Model
         public bool CanDelete( FieldType item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Attribute>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Attribute where FieldTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Attribute" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Attribute";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, Attribute.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<DefinedType>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from DefinedType where FieldTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "DefinedType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "DefinedType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

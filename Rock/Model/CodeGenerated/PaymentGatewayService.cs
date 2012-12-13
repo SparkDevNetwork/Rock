@@ -83,24 +83,12 @@ namespace Rock.Model
         public bool CanDelete( PaymentGateway item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.PaymentGatewayId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransaction where PaymentGatewayId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "FinancialTransaction" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "FinancialTransaction";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", PaymentGateway.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PaymentGateway.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

@@ -84,24 +84,12 @@ namespace Rock.Model
         public bool CanDelete( WorkflowActionType item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<WorkflowAction>().Queryable().Any( a => a.ActionTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowAction where ActionTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowAction" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowAction";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", WorkflowActionType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionType.FriendlyTypeName, WorkflowAction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

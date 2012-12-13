@@ -92,24 +92,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.TransactionId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransactionDetail where TransactionId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "FinancialTransactionDetail" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "FinancialTransactionDetail";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

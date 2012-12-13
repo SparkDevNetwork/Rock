@@ -36,9 +36,9 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-			var entityInterface = typeof( Rock.Data.IEntity );
-			rockAssembly = entityInterface.Assembly;
-			FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            var entityInterface = typeof( Rock.Data.IEntity );
+            rockAssembly = entityInterface.Assembly;
+            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
 
             ofdAssembly.InitialDirectory = fi.DirectoryName;
             ofdAssembly.Filter = "dll files (*.dll)|*.dll";
@@ -55,7 +55,7 @@ namespace Rock.CodeGeneration
                 {
                     var assembly = Assembly.LoadFrom( file );
 
-                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName))
+                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
                         if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
                         {
@@ -68,7 +68,7 @@ namespace Rock.CodeGeneration
                             }
                         }
                     }
-				}
+                }
 
                 CheckAllItems( true );
                 cbSelectAll.Checked = true;
@@ -327,6 +327,9 @@ order by [parentTable]
             // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
             List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Key ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
 
+            // GroupLocation isn't an Entity/Model :(
+            parentTablesToIgnore.Add( "GroupLocation" );
+
             string canDeleteBegin = string.Format( @"
         /// <summary>
         /// Determines whether this instance can delete the specified item.
@@ -347,6 +350,10 @@ order by [parentTable]
             {
                 if ( parentTablesToIgnore.Contains( item.Key ) )
                 {
+                    canDeleteMiddle += string.Format(
+@"            
+            // ignoring {0},{1} 
+", item.Key, item.Value);
                     continue;
                 }
 
@@ -354,38 +361,24 @@ order by [parentTable]
                 string columnName = item.Value;
 
                 canDeleteMiddle += string.Format(
-@"            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+@" 
+            if ( new Service<{0}>().Queryable().Any( a => a.{1} == item.Id ) )
             {{
-                cmdCheckRef.CommandText = string.Format( ""select count(*) from {0} where {1} = {{0}} "", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {{
-                    Type entityType = RockContext.GetEntityFromTableName( ""{0}"" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : ""{0}"";
-
-                    errorMessage = string.Format(""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, friendlyName);
-                    return false;
-                }}
-            }}
-
+                errorMessage = string.Format( ""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName );
+                return false;
+            }}  
 ",
-               parentTable,
-               columnName,
-               type.Name );
+                    parentTable,
+                    columnName,
+                    type.Name 
+                    );
             }
+
 
             string canDeleteEnd = @"            return true;
         }
 ";
 
-            if ( !string.IsNullOrWhiteSpace( canDeleteMiddle ) )
-            {
-                canDeleteBegin += @"            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-";
-            };
 
             return canDeleteBegin + canDeleteMiddle + canDeleteEnd;
 
@@ -402,7 +395,7 @@ order by [parentTable]
 
             var properties = GetEntityProperties( type ).Where( p => p.Key != "Id" && p.Key != "Guid" );
 
-            bool isSecured = typeof(Rock.Security.ISecured).IsAssignableFrom(type);
+            bool isSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
 
             var sb = new StringBuilder();
 
@@ -433,13 +426,13 @@ order by [parentTable]
             sb.AppendLine( "    [Serializable]" );
             sb.AppendLine( "    [DataContract]" );
 
-            if (isSecured)
+            if ( isSecured )
             {
                 sb.AppendFormat( "    public partial class {0}Dto : DtoSecured<{0}Dto>" + Environment.NewLine, type.Name );
             }
             else
             {
-                sb.AppendFormat( "    public partial class {0}Dto : Dto" + Environment.NewLine, type.Name);
+                sb.AppendFormat( "    public partial class {0}Dto : Dto" + Environment.NewLine, type.Name );
             }
 
             sb.AppendLine( "    {" );
@@ -804,10 +797,10 @@ order by [parentTable]
 
             return false;
             
-             */ 
+             */
         }
 
-        private Dictionary<string, string> GetEntityProperties (Type type)
+        private Dictionary<string, string> GetEntityProperties( Type type )
         {
             var properties = new Dictionary<string, string>();
 
@@ -821,6 +814,6 @@ order by [parentTable]
 
             return properties;
         }
-        
+
     }
 }

@@ -92,39 +92,18 @@ namespace Rock.Model
         public bool CanDelete( Fund item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Fund>().Queryable().Any( a => a.ParentFundId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where ParentFundId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Fund" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Fund";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Fund.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Fund.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Pledge>().Queryable().Any( a => a.FundId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FundId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Pledge" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Pledge";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Fund.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Pledge.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

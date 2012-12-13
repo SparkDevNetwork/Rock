@@ -83,84 +83,52 @@ namespace Rock.Model
         public bool CanDelete( DefinedValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+            
+            // ignoring FinancialTransaction,CurrencyTypeValueId 
+            
+            // ignoring FinancialTransaction,CreditCardTypeValueId 
+            
+            // ignoring FinancialTransaction,SourceTypeValueId 
+ 
+            if ( new Service<Fund>().Queryable().Any( a => a.FundTypeValueId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where FundTypeValueId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Fund" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Fund";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Fund.FriendlyTypeName );
+                return false;
+            }  
+            
+            // ignoring GroupLocation,LocationTypeValueId 
+ 
+            if ( new Service<Metric>().Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupLocation where LocationTypeValueId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "GroupLocation" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupLocation";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }  
+            
+            // ignoring Person,MaritalStatusValueId 
+            
+            // ignoring Person,PersonStatusValueId 
+            
+            // ignoring Person,RecordStatusValueId 
+            
+            // ignoring Person,RecordStatusReasonValueId 
+            
+            // ignoring Person,RecordTypeValueId 
+            
+            // ignoring Person,SuffixValueId 
+            
+            // ignoring Person,TitleValueId 
+ 
+            if ( new Service<PhoneNumber>().Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Metric where CollectionFrequencyValueId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Metric" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Metric";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Pledge>().Queryable().Any( a => a.FrequencyTypeValueId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from PhoneNumber where NumberTypeValueId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "PhoneNumber" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "PhoneNumber";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FrequencyTypeValueId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Pledge" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Pledge";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Pledge.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

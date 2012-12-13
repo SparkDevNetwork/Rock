@@ -85,39 +85,18 @@ namespace Rock.Model
         public bool CanDelete( Category item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Category>().Queryable().Any( a => a.ParentCategoryId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Category where ParentCategoryId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Category" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Category";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Category.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WorkflowType>().Queryable().Any( a => a.CategoryId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowType where CategoryId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Category.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
