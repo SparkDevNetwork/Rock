@@ -19,8 +19,7 @@ namespace Rock.Rest.Controllers
     {
         public virtual KioskStatus Get( int id )
         {
-            var kioskStatus = KioskCache.Kiosks.Where( k => k.Id == id ).FirstOrDefault();
-            return kioskStatus;
+            return KioskCache.Kiosks.Where( k => k.Id == id ).FirstOrDefault();
         }
     }
 }
