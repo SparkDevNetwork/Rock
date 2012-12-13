@@ -23,9 +23,9 @@ namespace Rock.Model
         /// Gets the active jobs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<ServiceJob> GetActiveJobs()
+        public IQueryable<ServiceJob> GetActiveJobs()
         {
-            return Repository.Find( t => t.IsActive == true );
+            return Repository.AsQueryable().Where( t => t.IsActive == true );
         }
 
         /// <summary>
