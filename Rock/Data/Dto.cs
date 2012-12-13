@@ -17,6 +17,7 @@ namespace Rock.Data
     /// Data transfer object
     /// </summary>
     [Serializable]
+    [DataContract]
     public abstract class Dto : IDto, DotLiquid.ILiquidizable
     {
         /// <summary> 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -11,6 +12,7 @@ namespace Rock.CheckIn
     /// The status of the currently active check-in.  Contains all the available options
     /// and the values selected for check-in
     /// </summary>
+    [DataContract]
     public class CheckInStatus
     {
         /// <summary>
@@ -19,6 +21,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if user entered search; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool UserEnteredSearch { get; set; }
 
         /// <summary>
@@ -29,6 +32,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if confirm single family; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool ConfirmSingleFamily { get; set; }
 
         /// <summary>
@@ -38,6 +42,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the search.
         /// </value>
+        [DataMember]
         public DefinedValue SearchType { get; set; }
 
         /// <summary>
@@ -46,6 +51,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The search value.
         /// </value>
+        [DataMember]
         public string SearchValue { get; set; }
 
         /// <summary>
@@ -54,7 +60,8 @@ namespace Rock.CheckIn
         /// <value>
         /// The families.
         /// </value>
-        public Dictionary<int, CheckInFamily> Families { get; set; }
+        [DataMember]
+        public List<CheckInFamily> Families { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInStatus" /> class.
@@ -62,7 +69,7 @@ namespace Rock.CheckIn
         public CheckInStatus()
             : base()
         {
-            Families = new Dictionary<int, CheckInFamily>();
+            Families = new List<CheckInFamily>();
         }
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// 
     /// </summary>
+    [DataContract]
     public class KioskGroupType : GroupTypeDto
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The next active time.
         /// </value>
+        [DataMember]
         public DateTimeOffset NextActiveTime { get; set; }
 	
         /// <summary>
@@ -35,14 +38,15 @@ namespace Rock.CheckIn
         /// <value>
         /// The locations.
         /// </value>
-        public Dictionary<int, KioskLocation> Locations { get; set; }
+        [DataMember]
+        public List<KioskLocation> Locations { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
         /// </summary>
 	    public KioskGroupType() : base()
 	    {
-		    Locations = new Dictionary<int, KioskLocation>();
+            Locations = new List<KioskLocation>();
 	    }
 
         /// <summary>
@@ -52,7 +56,7 @@ namespace Rock.CheckIn
         public KioskGroupType( GroupType groupType )
             : base( groupType )
         {
-            Locations = new Dictionary<int, KioskLocation>();
+            Locations = new List<KioskLocation>();
         }
     }
 }

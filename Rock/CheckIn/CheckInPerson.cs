@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// A person option for the current check-in
     /// </summary>
+    [DataContract]
     public class CheckInPerson : PersonDto
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if selected; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool Selected { get; set; }
 
         /// <summary>
@@ -31,6 +34,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The last check in.
         /// </value>
+        [DataMember]
         public DateTime LastCheckIn { get; set; }
 
         /// <summary>
@@ -39,7 +43,8 @@ namespace Rock.CheckIn
         /// <value>
         /// The group types.
         /// </value>
-        public Dictionary<int, CheckInGroupType> GroupTypes { get; set; }
+        [DataMember]
+        public List<CheckInGroupType> GroupTypes { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
@@ -47,7 +52,7 @@ namespace Rock.CheckIn
         public CheckInPerson()
             : base()
         {
-            GroupTypes = new Dictionary<int, CheckInGroupType>();
+            GroupTypes = new List<CheckInGroupType>();
         }
     }
 }

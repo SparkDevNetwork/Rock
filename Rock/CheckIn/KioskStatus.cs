@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// The status of a check-in kiosk.  
     /// </summary>
+    [DataContract]
     public class KioskStatus : DeviceDto
     {
         /// <summary>
@@ -23,14 +25,15 @@ namespace Rock.CheckIn
         /// <value>
         /// The group types.
         /// </value>
-	    public Dictionary<int, KioskGroupType> GroupTypes { get; set; }
+        [DataMember]
+        public List<KioskGroupType> GroupTypes { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskStatus" /> class.
         /// </summary>
 	    public KioskStatus() : base()
 	    {
-		    GroupTypes = new Dictionary<int, KioskGroupType>();
+            GroupTypes = new List<KioskGroupType>();
 	    }
 
         /// <summary>
@@ -40,7 +43,7 @@ namespace Rock.CheckIn
         public KioskStatus( Device device )
             : base( device )
         {
-            GroupTypes = new Dictionary<int, KioskGroupType>();
+            GroupTypes = new List<KioskGroupType>();
         }
     }
 }

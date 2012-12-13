@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// 
     /// </summary>
+    [DataContract]
     public class KioskSchedule : ScheduleDto
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The current attendance.
         /// </value>
+        [DataMember]
         public int currentAttendance { get; set; }
 
         /// <summary>
