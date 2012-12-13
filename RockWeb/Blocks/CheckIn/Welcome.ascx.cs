@@ -22,9 +22,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [TextField( 0, "Admin Page Url", "", "The url of the Check-In admin page", false, "~/checkin/welcome" )]
-    [TextField( 1, "Search Page Url", "", "The url of the Check-In admin page", false, "~/checkin/welcome" )]
-    [TextField( 2, "Family Select Page Url", "", "The url of the Check-In admin page", false, "~/checkin/welcome" )]
+    [TextField( 0, "Admin Page Url", "", "The url of the Check-In admin page", false, "~/checkin" )]
+    [TextField( 1, "Search Page Url", "", "The url of the Check-In admin page", false, "~/checkin/search" )]
+    [TextField( 2, "Family Select Page Url", "", "The url of the Check-In admin page", false, "~/checkin/selectfamily" )]
     [IntegerField( 3, "Workflow Type Id", "0", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in" )]
     public partial class Welcome : Rock.Web.UI.RockBlock
     {
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn
 
         private void RefreshKioskData()
         {
-            string adminPageUrl = AttributeValue("AdminPageUrl");
+            string adminPageUrl = AttributeValue( "AdminPageUrl" );
 
             if ( Session["CheckInKioskId"] == null || Session["CheckInGroupTypeIds"] == null )
             {
@@ -62,9 +62,7 @@ namespace RockWeb.Blocks.CheckIn
             int kioskId = (int)Session["CheckInKioskId"];
             var groupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
 
-            var kioskStatus = KioskCache.Kiosks.Where( k => k.Id == kioskId ).FirstOrDefault();
-
-            var result = Rock.Net.WebRequest.Get(string.Format("~/api/kiosks/{0}", kioskId));
+            var kioskStatus = KioskCache.GetKiosk( kioskId );
 
         }
     }

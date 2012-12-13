@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -23,28 +25,7 @@ namespace Rock.CheckIn
 
         private static int _cacheSeconds = 30;
         private static DateTimeOffset _lastCached { get; set; }
-        private static List<KioskStatus> _kiosks;
-
-        /// <summary>
-        /// Gets the kiosks.
-        /// </summary>
-        /// <value>
-        /// The kiosks.
-        /// </value>
-        public static List<KioskStatus> Kiosks
-        {
-            get
-            {
-                lock ( obj )
-                {
-                    if ( _lastCached.AddSeconds( _cacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
-                    {
-                        RefreshCache();
-                    }
-                }
-                return _kiosks;
-            }
-        }
+        private static Dictionary<int, KioskStatus> _kiosks;
 
         /// <summary>
         /// Initializes the <see cref="KioskCache" /> class.
@@ -64,11 +45,38 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the kiosk status.
+        /// </summary>
+        /// <param name="kioskId">The kiosk id.</param>
+        /// <returns></returns>
+        public static KioskStatus GetKiosk( int kioskId )
+        {
+            lock ( obj )
+            {
+                if ( _lastCached.AddSeconds( _cacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
+                {
+                    RefreshCache();
+                }
+
+                if (_kiosks.ContainsKey(kioskId))
+                {
+                    // Clone the object so that a reference to the static object is not maintaned (or updated)
+                    string json = JsonConvert.SerializeObject( _kiosks[kioskId] );
+                    KioskStatus kioskStatus =  JsonConvert.DeserializeObject( json, typeof(KioskStatus) ) as KioskStatus;
+                    return kioskStatus;
+                }
+            }
+
+            return null;
+
+        }
+
+        /// <summary>
         /// Refreshes the cache.
         /// </summary>
 	    private static void RefreshCache()
 	    {
-            _kiosks = new List<KioskStatus>();
+            _kiosks = new Dictionary<int, KioskStatus>();
 		
             var checkInDeviceTypeId = DefinedValueCache.Read(SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK).Id;
 		    foreach(var kiosk in new DeviceService().Queryable()
@@ -82,7 +90,7 @@ namespace Rock.CheckIn
                     LoadKioskLocations( kioskStatus, location );
 			    }
 			
-			    _kiosks.Add(kioskStatus);
+			    _kiosks.Add(kiosk.Id, kioskStatus);
 		    }
 
             _lastCached = DateTimeOffset.Now;
