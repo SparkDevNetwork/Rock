@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -30,7 +35,14 @@ namespace Rock.Attribute
             string fieldTypeClass = "Rock.Field.Types.Text", string fieldTypeAssembly = "Rock")
             : base()
         {
-            Key = key ?? name.Replace(" ", string.Empty);
+            if ( string.IsNullOrWhiteSpace( key ) )
+            {
+                Key = name.Replace( " ", string.Empty );
+            }
+            else
+            {
+                Key = key;
+            }
             Name = name;
             Category = category;
             Description = description;

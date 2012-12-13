@@ -13,20 +13,20 @@ namespace Rock.Attribute
     /// <summary>
     /// 
     /// </summary>
-    public class IntegerFieldAttribute : FieldAttribute
+    public class GroupTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="IntegerFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
-        /// <param name="defaultValue">The default value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultGroupTypeId">The default group type id.</param>
         /// <param name="key">The key.</param>
         /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        public IntegerFieldAttribute( int order, string name, string defaultValue, string key = null, string category = "", string description = "", bool required = false )
-            : base( order, name, required, defaultValue, key, category, description, typeof(Rock.Field.Types.Integer).FullName)
+        public GroupTypeFieldAttribute( int order, string name, bool required, string defaultGroupTypeId = "", string key = null, string category = "", string description = "" )
+            : base( order, name, required, defaultGroupTypeId, key, category, description, typeof(Rock.Field.Types.GroupTypeField).FullName )
         {
         }
     }

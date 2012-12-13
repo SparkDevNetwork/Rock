@@ -1,4 +1,9 @@
-﻿using System;
+//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -19,7 +24,7 @@ namespace Rock.Attribute
         /// <param name="key">The key. (null means derive from name)</param>
         /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
-        public BooleanFieldAttribute( int order, string name, bool defaultValue, string key, string category = "", string description = "" )
+        public BooleanFieldAttribute( int order, string name, bool defaultValue, string key = null, string category = "", string description = "" )
             : base( order, name, false, defaultValue.ToTrueFalse(), key, category, description, typeof(Rock.Field.Types.Boolean).FullName)
         {
         }
