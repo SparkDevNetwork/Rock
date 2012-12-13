@@ -706,10 +706,16 @@ namespace Rock.Web.UI
         /// </summary>
         protected virtual void AddKendoScripts()
         {
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
             AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
             AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
+
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.treeview.min.js" );
         }
 
         #endregion
