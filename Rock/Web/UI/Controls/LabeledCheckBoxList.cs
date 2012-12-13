@@ -130,11 +130,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute( "class", "controls checkbox" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "checkbox" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            //writer.AddAttribute( "class", "checkbox" );
+            //writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
             base.Render( writer );
 
@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
+            //writer.RenderEndTag();
 
             writer.RenderEndTag();
         }
