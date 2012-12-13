@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// 
     /// </summary>
+    [DataContract]
     public class KioskLocation : LocationDto
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The groups.
         /// </value>
+        [DataMember]
         public List<KioskGroup> Groups { get; set; }
 
         /// <summary>
@@ -41,6 +44,7 @@ namespace Rock.CheckIn
         public KioskLocation( Location location )
             : base( location )
         {
+            Groups = new List<KioskGroup>();
         }
     }
 }

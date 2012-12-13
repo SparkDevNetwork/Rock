@@ -151,8 +151,8 @@ namespace Rock.Model
                     return false;
                 }
 
-                if (CheckInStartTime.Value.TimeOfDay.Seconds > DateTimeOffset.Now.TimeOfDay.Seconds ||
-                    CheckInEndTime.Value.TimeOfDay.Seconds <= DateTimeOffset.Now.TimeOfDay.Seconds)
+                if ( CheckInStartTime.Value.TimeOfDay.TotalSeconds > DateTimeOffset.Now.TimeOfDay.TotalSeconds ||
+                    CheckInEndTime.Value.TimeOfDay.TotalSeconds <= DateTimeOffset.Now.TimeOfDay.TotalSeconds )
                 {
                     return false;
                 }
@@ -279,7 +279,7 @@ namespace Rock.Model
                     {
                         nextStartTime = CombineDateTime( date, CheckInStartTime.Value );
                         nextEndTime = CombineDateTime( date, CheckInEndTime.Value );
-                        if ( nextEndTime.Value.CompareTo( from ) > 0 )
+                        if ( nextEndTime.Value.CompareTo( from.DateTime ) > 0 )
                         {
                             break;
                         }
@@ -294,7 +294,7 @@ namespace Rock.Model
                     // a day.
                     nextStartTime = CombineDateTime( from.DateTime, CheckInStartTime.Value );
                     nextEndTime = CombineDateTime( from.DateTime, CheckInEndTime.Value );
-                    if ( nextEndTime.Value.CompareTo( from ) <= 0 )
+                    if ( nextEndTime.Value.CompareTo( from.DateTime ) <= 0 )
                     {
                         nextStartTime = nextStartTime.Value.AddDays( 1 );
                     }
@@ -311,7 +311,7 @@ namespace Rock.Model
                         nextStartTime = CombineDateTime( theDate, CheckInStartTime.Value );
                         nextEndTime = CombineDateTime( theDate, CheckInEndTime.Value );
 
-                        if ( nextEndTime.Value.CompareTo( from ) <= 0 )
+                        if ( nextEndTime.Value.CompareTo( from.DateTime ) <= 0 )
                         {
                             nextStartTime = null;
                         }

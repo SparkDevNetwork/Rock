@@ -17,6 +17,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
+    [DataContract]
     public abstract class DtoSecured<T> : Dto, ISecured
         where T : ISecured, new()
     {

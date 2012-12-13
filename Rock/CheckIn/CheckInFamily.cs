@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// A family option for the current check-in
     /// </summary>
+    [DataContract]
     public class CheckInFamily : GroupDto
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if selected; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool Selected { get; set; }
 
         /// <summary>
@@ -31,7 +34,8 @@ namespace Rock.CheckIn
         /// <value>
         /// The members.
         /// </value>
-        public Dictionary<int, CheckInPerson> Members { get; set; }
+        [DataMember]
+        public List<CheckInPerson> Members { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
@@ -39,7 +43,7 @@ namespace Rock.CheckIn
         public CheckInFamily()
             : base()
         {
-            Members = new Dictionary<int, CheckInPerson>();
+            Members = new List<CheckInPerson>();
         }
     }
 }

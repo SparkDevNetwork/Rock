@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// 
     /// </summary>
+    [DataContract]
     public class KioskGroup : GroupDto
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The schedules.
         /// </value>
+        [DataMember]
         public List<KioskSchedule> Schedules { get; set; }
 
         /// <summary>

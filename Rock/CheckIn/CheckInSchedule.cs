@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
@@ -15,6 +16,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// A shedule options for the current check-in
     /// </summary>
+    [DataContract]
     public class CheckInSchedule : ScheduleDto
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The security code.
         /// </value>
+        [DataMember]
         string SecurityCode { get; set; }
 
         /// <summary>
@@ -31,6 +34,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The last check in.
         /// </value>
+        [DataMember]
         public DateTime LastCheckIn { get; set; }
 
         /// <summary>
@@ -39,6 +43,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if selected; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool Selected { get; set; }
     }
 }
