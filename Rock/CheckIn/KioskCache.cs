@@ -15,10 +15,12 @@ namespace Rock.CheckIn
 {
     /// <summary>
     /// Static object for caching kiosk configuration
-    /// TODO: Need to figure out thread concurency issues with static object and lock/unlock appropriately
     /// </summary>
     public static class KioskCache
     {
+        // Locking object
+        private static readonly Object obj = new object();
+
         private static int _cacheSeconds = 30;
         private static DateTimeOffset _lastCached { get; set; }
         private static List<KioskStatus> _kiosks;
@@ -33,11 +35,13 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( _lastCached.AddSeconds( _cacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
+                lock ( obj )
                 {
-                    RefreshCache();
+                    if ( _lastCached.AddSeconds( _cacheSeconds ).CompareTo( DateTimeOffset.Now ) < 0 )
+                    {
+                        RefreshCache();
+                    }
                 }
-
                 return _kiosks;
             }
         }
@@ -47,13 +51,16 @@ namespace Rock.CheckIn
         /// </summary>
         static KioskCache()
         {
-            var globalAttributes = GlobalAttributesCache.Read();
-            string value = globalAttributes.GetValue( "KioskCacheExpiration" );
+            lock ( obj )
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+                string value = globalAttributes.GetValue( "KioskCacheExpiration" );
 
-            if ( !Int32.TryParse( value, out _cacheSeconds ) )
-                _cacheSeconds = 30;
+                if ( !Int32.TryParse( value, out _cacheSeconds ) )
+                    _cacheSeconds = 30;
 
-            RefreshCache();
+                RefreshCache();
+            }
         }
 
         /// <summary>
