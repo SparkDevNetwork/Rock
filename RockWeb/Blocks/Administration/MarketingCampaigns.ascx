@@ -22,7 +22,7 @@
 
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
             <div id="pnlEditDetails" runat="server" class="well">
                 <fieldset>

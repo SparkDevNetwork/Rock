@@ -49,7 +49,7 @@
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
 
-        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="failureNotification" ValidationGroup="ZoneBlockValidationGroup"/>
+        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="alert alert-error" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" />

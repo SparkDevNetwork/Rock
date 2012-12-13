@@ -16,7 +16,7 @@
 
             <asp:HiddenField ID="hfCampusId" runat="server" />
 
-            <asp:ValidationSummary runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary runat="server" CssClass="alert alert-error" />
 
             <fieldset>
                 <legend>
