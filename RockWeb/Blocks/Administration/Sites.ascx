@@ -21,7 +21,7 @@
 
             <asp:HiddenField ID="hfSiteId" runat="server" />
 
-            <asp:ValidationSummary runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary runat="server" CssClass="alert alert-error" />
 
             <div class="row-fluid">
 

@@ -23,7 +23,7 @@
 
             <asp:HiddenField ID="hfEntityTypeId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
             <fieldset id="fieldsetEditDetails" runat="server">
                 <legend><asp:Literal ID="lActionTitle" runat="server" /></legend>
