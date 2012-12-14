@@ -18,7 +18,7 @@
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                     <asp:BoundField DataField="MinValue" HeaderText="Minimum Value" SortExpression="MinValue" />
                     <asp:BoundField DataField="MaxValue" HeaderText="Maximum Value" SortExpression="MaxValue" />
-                    <asp:BoundField DataField="CollectionFrequency.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequency.Name" />
+                    <asp:BoundField DataField="CollectionFrequencyValue.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequencyValue.Name" />
                     <asp:BoundField DataField="Source" HeaderText="Source" SortExpression="Source" />
                     <Rock:EditValueField OnClick="rGridMetric_EditValue" />
                     <Rock:DeleteField OnClick="rGridMetric_Delete" />
