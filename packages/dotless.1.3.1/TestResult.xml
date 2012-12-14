@@ -1,0 +1,1064 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--This file represents the results of running a test suite-->
+<test-results name="C:\git\dotless\build\\dotless.Test.dll" total="648" errors="0" failures="0" not-run="14" inconclusive="0" ignored="14" skipped="0" invalid="0" date="2012-09-21" time="21:57:27">
+  <environment nunit-version="2.5.2.9222" clr-version="2.0.50727.5456" os-version="Microsoft Windows NT 6.1.7601 Service Pack 1" platform="Win32NT" cwd="C:\git\dotless\build" machine-name="LUKE-VAIO" user="Luke" user-domain="Luke-VAIO" />
+  <culture-info current-culture="en-GB" current-uiculture="en-US" />
+  <test-suite name="C:\git\dotless\build\\dotless.Test.dll" executed="True" success="True" time="2.555" asserts="0">
+    <results>
+      <test-suite name="dotless" executed="True" success="True" time="2.501" asserts="0">
+        <results>
+          <test-suite name="Test" executed="True" success="True" time="2.497" asserts="0">
+            <results>
+              <test-suite name="Config" executed="True" success="True" time="0.231" asserts="0">
+                <results>
+                  <test-suite name="AspNetConfigurationFixture" executed="True" success="True" time="0.182" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.CachedCssResponseInstanceIsTransient" executed="True" success="True" time="0.134" asserts="2" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.CssResponseInstanceIsTransient" executed="True" success="True" time="0.001" asserts="2" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.HandlerImplInstanceIsTransient" executed="True" success="True" time="0.038" asserts="4" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.HttpInstanceIsTransient" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.IfWebAndCacheOptionsSetCacheIsHttpCache" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.IfWebAndCacheOptionsSetEngineIsCacheDecorator" executed="True" success="True" time="0.001" asserts="2" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.IfWebCacheAndMinifyOptionsSetEngineIsCacheDecoratorThenLessEngine" executed="True" success="True" time="0.000" asserts="2" />
+                      <test-case name="dotless.Test.Config.AspNetConfigurationFixture.IfWebOptionSetButCachedIsFalseEngineIsLessEngine" executed="True" success="True" time="0.000" asserts="1" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="ConfigurationFixture" executed="True" success="True" time="0.010" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.CachingIsEnabledByDefault" executed="True" success="True" time="0.002" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.CanOverrideLogLevel" executed="True" success="True" time="0.003" asserts="2" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.CanOverrideOptimization" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.CanPassCustomLessSource" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.CanPassCustomLogger" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.DefaultEngineIsParameterDecorator" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.IfCacheOptionSetCacheIsInMemoryCache" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Config.ConfigurationFixture.IfMinifyOptionSetEngineIsLessEngine" executed="True" success="True" time="0.000" asserts="1" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="XmlConfigurationFixture" executed="True" success="True" time="0.036" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Config.XmlConfigurationFixture.CheckSessionMode" executed="True" success="True" time="0.034" asserts="3" />
+                      <test-case name="dotless.Test.Config.XmlConfigurationFixture.ShouldThrowOnEmptySessionParamName" executed="True" success="True" time="0.002" asserts="0" />
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+              <test-suite name="Plugins" executed="True" success="True" time="0.258" asserts="0">
+                <results>
+                  <test-suite name="ColorSpinPluginFixture" executed="True" success="True" time="0.137" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Plugins.ColorSpinPluginFixture.ColorIsRotated60Degrees" executed="True" success="True" time="0.135" asserts="2" />
+                      <test-case name="dotless.Test.Plugins.ColorSpinPluginFixture.ExpressionIsRotatedAfterEvaluation" executed="True" success="True" time="0.002" asserts="1" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="PluginFixture" executed="True" success="True" time="0.095" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Plugins.PluginFixture.CanNavigateThrough" executed="True" success="True" time="0.064" asserts="290" />
+                      <test-case name="dotless.Test.Plugins.PluginFixture.TestGenericConfiguratorParams1" executed="True" success="True" time="0.008" asserts="2" />
+                      <test-case name="dotless.Test.Plugins.PluginFixture.TestGenericConfiguratorParams2" executed="True" success="True" time="0.003" asserts="17" />
+                      <test-case name="dotless.Test.Plugins.PluginFixture.TestGenericConfiguratorParams3" executed="True" success="True" time="0.008" asserts="6" />
+                      <test-case name="dotless.Test.Plugins.PluginFixture.TestLoadingAndConfigurating" executed="True" success="True" time="0.011" asserts="9" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="RtlPluginFixture" executed="True" success="True" time="0.024" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNameReversalLtr1" executed="True" success="True" time="0.004" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNameReversalLtr2" executed="True" success="True" time="0.003" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNameReversalRtl1" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNameReversalRtl2" executed="True" success="True" time="0.002" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNonRemovalRtl1" executed="True" success="True" time="0.002" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyNonRemovalRtl2" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyRemovalLtr" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyRemovalRemoveClass" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyRemovalRtl" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyReversal" executed="True" success="True" time="0.002" asserts="1" />
+                      <test-case name="dotless.Test.Plugins.RtlPluginFixture.PropertyReversalComments" executed="True" success="True" time="0.001" asserts="1" />
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+              <test-suite name="Specs" executed="True" success="True" time="1.304" asserts="0">
+                <results>
+                  <test-suite name="AccessorsFixture" executed="True" success="False" time="0.005" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.AccessorsFixture.Accessors" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                    </results>
+                  </test-suite>
+                  <test-suite name="ColorsFixture" executed="True" success="True" time="0.039" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.ColorsFixture.ColorLiterals" executed="True" success="True" time="0.002" asserts="116" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.ColorLiteralsUnchanged" executed="False">
+                        <reason>
+                          <message><![CDATA[]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.ColorsFixture.Gray" executed="True" success="True" time="0.014" asserts="117" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.Green" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.Overflow" executed="True" success="True" time="0.004" asserts="124" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.RgbaNonOpaqueColorsUnchanged" executed="True" success="True" time="0.001" asserts="84" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.RgbaOpaqueColors" executed="True" success="True" time="0.001" asserts="84" />
+                      <test-case name="dotless.Test.Specs.ColorsFixture.Transparent" executed="True" success="True" time="0.012" asserts="119" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="CommentsFixture" executed="True" success="True" time="0.045" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterMixinCallMissingSemiColon" executed="True" success="True" time="0.002" asserts="66" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterProperty" executed="True" success="True" time="0.001" asserts="35" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterPropertyMissingSemiColon" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterPropertyMissingSemiColonColor" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterPropertyMissingSemiColonDimension" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentAfterSelector" executed="True" success="True" time="0.000" asserts="25" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommentBeforeProperty" executed="True" success="True" time="0.000" asserts="35" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommented1" executed="True" success="True" time="0.000" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommented2" executed="True" success="True" time="0.001" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.BlockCommented3" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CheckCommentsAreAcceptedBetweenSelectors" executed="True" success="True" time="0.000" asserts="41" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CheckCommentsAreAcceptedWhereWhitespaceIsAllowed" executed="True" success="True" time="0.000" asserts="53" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CheckCommentsAreNotAcceptedAsASelector" executed="True" success="True" time="0.003" asserts="0" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.ColorInsideComments" executed="True" success="True" time="0.001" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentBeforeAndAfterMixinDefinition" executed="True" success="True" time="0.001" asserts="68" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentBeforeAndAfterMixinDefinitionWithDefaultArgs" executed="True" success="True" time="0.001" asserts="80" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentBeforeMixinDefinition" executed="True" success="True" time="0.001" asserts="63" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentBeforeVariableRuleKept" executed="True" success="True" time="0.001" asserts="41" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentCSSHackException1Accepted" executed="True" success="True" time="0.001" asserts="35" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentCSSHackException2Accepted" executed="True" success="True" time="0.000" asserts="11" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentHeader" executed="True" success="True" time="0.001" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentInsideAComment" executed="True" success="True" time="0.000" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentOnLastLine" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInDirective1" executed="True" success="True" time="0.001" asserts="15" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInDirective2" executed="True" success="True" time="0.003" asserts="49" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInDirective3" executed="True" success="True" time="0.002" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInExpression1NoParen" executed="True" success="True" time="0.001" asserts="74" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInExpression1Paren" executed="True" success="True" time="0.002" asserts="90" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInExpression2" executed="True" success="True" time="0.001" asserts="58" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInExpression3" executed="True" success="True" time="0.001" asserts="56" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInExpressionMultiplication" executed="True" success="True" time="0.002" asserts="62" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInSelectorAttributes" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported - Requires an attribute node]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInSelectorPsuedos" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInUrl" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.CommentsInVariableRuleAccepted" executed="True" success="True" time="0.000" asserts="41" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.EmptyComment" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.LineCommentAfterALineComment" executed="True" success="True" time="0.000" asserts="35" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.LineCommentAfterBlock" executed="True" success="True" time="0.001" asserts="27" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.LineCommentAfterProperty" executed="True" success="True" time="0.000" asserts="35" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.LineCommentGetsRemoved" executed="True" success="True" time="0.001" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.MultilineComment" executed="True" success="True" time="0.000" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.MultilineComment2" executed="True" success="True" time="0.000" asserts="9" />
+                      <test-case name="dotless.Test.Specs.CommentsFixture.VariablesInsideComments" executed="True" success="True" time="0.000" asserts="9" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="Compression" executed="True" success="True" time="0.046" asserts="0">
+                    <results>
+                      <test-suite name="ColorsFixture" executed="True" success="True" time="0.012" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.ColorsFixture.Colors" executed="True" success="True" time="0.003" asserts="2" />
+                          <test-case name="dotless.Test.Specs.Compression.ColorsFixture.Gray" executed="True" success="True" time="0.002" asserts="2" />
+                          <test-case name="dotless.Test.Specs.Compression.ColorsFixture.Overflow" executed="True" success="True" time="0.003" asserts="5" />
+                          <test-case name="dotless.Test.Specs.Compression.ColorsFixture.Should_not_compress_IE_ARGB" executed="True" success="True" time="0.004" asserts="2" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="CommentsFixture" executed="True" success="True" time="0.007" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.BlockCommentGetsRemoved" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckCommentsAreNotObscuringWhitepsace1" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckCommentsAreNotObscuringWhitepsace2" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckCommentsAreNotObscuringWhitepsace3" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckCommentsAreNotTakenToBeWhitespace1" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckCommentsAreNotTakenToBeWhitespace2" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.CheckEmptyRuleSetsAreNotCreatedBecauseOfComments" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.CommentsFixture.DoubleStarBlockCommentGetsRemoved" executed="True" success="True" time="0.000" asserts="1" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="Css3Fixture" executed="True" success="True" time="0.002" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.Css3Fixture.MediaDirectiveEmpty1" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.Css3Fixture.MediaDirectiveEmpty2" executed="True" success="True" time="0.001" asserts="1" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ImportFixture" executed="True" success="True" time="0.004" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.ImportFixture.Imports" executed="True" success="True" time="0.004" asserts="1" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="KeepFirstCommentFixture" executed="True" success="True" time="0.004" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.KeepFirstCommentFixture.KeepsDoubleStarCommentOnly1" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.KeepFirstCommentFixture.KeepsDoubleStarCommentOnly2" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.KeepFirstCommentFixture.KeepsDoubleStarCommentOnly3" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.KeepFirstCommentFixture.KeepsFirstCommentOnly1" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.KeepFirstCommentFixture.KeepsFirstCommentOnly2" executed="True" success="True" time="0.001" asserts="1" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="SelectorsFixture" executed="True" success="True" time="0.006" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.DecendantSelectorWithTabs" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.EmptySelectorRemoved" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.IdSelectors" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.MultipleTags" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.ParentSelector1" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.Tag" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.SelectorsFixture.TwoTags" executed="True" success="True" time="0.002" asserts="1" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="WhitespaceFixture" executed="True" success="True" time="0.007" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.Empty" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.NewLines1" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.NewLines2" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.NoSemiColon1" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.NoSemiColon2" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.NoSemiColon3" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.Whitespace" executed="True" success="True" time="0.001" asserts="1" />
+                          <test-case name="dotless.Test.Specs.Compression.WhitespaceFixture.Whitespace2" executed="True" success="True" time="0.001" asserts="1" />
+                        </results>
+                      </test-suite>
+                    </results>
+                  </test-suite>
+                  <test-suite name="Css3Fixture" executed="True" success="True" time="0.046" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.Css3Fixture.AfterPseudoElement" executed="True" success="True" time="0.001" asserts="83" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.AttributeBeginsWith" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.AttributeEndsWith" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.AttributeSelectorsInsideMixin" executed="True" success="True" time="0.001" asserts="43" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.BeforePseudoElement" executed="True" success="True" time="0.000" asserts="25" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.CommaDelimited" executed="True" success="True" time="0.002" asserts="149" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.Css3UnitsSupported" executed="True" success="True" time="0.019" asserts="806" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.FontFaceDirective" executed="True" success="True" time="0.001" asserts="43" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.FontFaceDirectiveInClass" executed="True" success="True" time="0.003" asserts="209" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.FontFaceMixin" executed="True" success="True" time="0.001" asserts="65" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirective" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirective2" executed="True" success="True" time="0.001" asserts="61" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirective3" executed="True" success="True" time="0.001" asserts="111" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirective4" executed="True" success="True" time="0.001" asserts="59" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirectiveMoz" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.KeyFrameDirectiveWebKit" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.MozTransform" executed="True" success="True" time="0.000" asserts="44" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.MultipleAttributeSelectors1" executed="True" success="True" time="0.002" asserts="49" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.MultipleAttributeSelectors2" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.MultipleBackgroundProperty" executed="True" success="True" time="0.000" asserts="55" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.NamespaceDirective" executed="True" success="True" time="0.001" asserts="17" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.NotPseudoClass" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.NthChildExpressions" executed="True" success="True" time="0.001" asserts="65" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.SiblingSelector" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.SupportMozDocument" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.SupportSupports" executed="True" success="True" time="0.000" asserts="45" />
+                      <test-case name="dotless.Test.Specs.Css3Fixture.SupportVendorXDocument" executed="True" success="True" time="0.001" asserts="29" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="CssFixture" executed="True" success="True" time="0.032" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.CssFixture.AttributeEquals" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CssFixture.AttributeExists" executed="True" success="True" time="0.000" asserts="73" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CapitalProperties" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CharsetDirective" executed="True" success="True" time="0.001" asserts="13" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CheckUrlWithData" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CheckUrlWithDataContainingQuoted" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CheckUrlWithDataNotQuoted" executed="True" success="True" time="0.001" asserts="41" />
+                      <test-case name="dotless.Test.Specs.CssFixture.CheckUrlWithHorizBarCharacterIsAcceptedWithoutQuotes" executed="True" success="True" time="0.000" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CssFixture.ChildSelector" executed="True" success="True" time="0.000" asserts="49" />
+                      <test-case name="dotless.Test.Specs.CssFixture.ClassAndIdSelectors" executed="True" success="True" time="0.001" asserts="79" />
+                      <test-case name="dotless.Test.Specs.CssFixture.Directives" executed="True" success="True" time="0.001" asserts="81" />
+                      <test-case name="dotless.Test.Specs.CssFixture.DirectiveWithNoSpace" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CssFixture.DuplicatesRemoved1" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CssFixture.DuplicatesRemoved2" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.CssFixture.EmptyUrl" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CssFixture.FirstChildPseudoClass" executed="True" success="True" time="0.000" asserts="37" />
+                      <test-case name="dotless.Test.Specs.CssFixture.GlobalSelector" executed="True" success="True" time="0.000" asserts="25" />
+                      <test-case name="dotless.Test.Specs.CssFixture.HttpUrl" executed="True" success="True" time="0.000" asserts="43" />
+                      <test-case name="dotless.Test.Specs.CssFixture.HttpUrl3" executed="True" success="True" time="0.000" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CssFixture.HttpUrl4" executed="True" success="True" time="0.000" asserts="39" />
+                      <test-case name="dotless.Test.Specs.CssFixture.HttpUrlClosingBraceOnSameLine" executed="True" success="True" time="0.001" asserts="31" />
+                      <test-case name="dotless.Test.Specs.CssFixture.Important" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CssFixture.ImportantVariable" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.CssFixture.LangPseudoClass" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.CssFixture.Misc" executed="True" success="True" time="0.001" asserts="93" />
+                      <test-case name="dotless.Test.Specs.CssFixture.NextSiblingSelector" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CssFixture.PropertyWithNumbers" executed="True" success="True" time="0.000" asserts="25" />
+                      <test-case name="dotless.Test.Specs.CssFixture.PropertyWithUnderscore" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.CssFixture.PseudoClass" executed="True" success="True" time="0.001" asserts="41" />
+                      <test-case name="dotless.Test.Specs.CssFixture.Shorthands" executed="True" success="True" time="0.002" asserts="117" />
+                      <test-case name="dotless.Test.Specs.CssFixture.SupportIEFilters" executed="True" success="True" time="0.001" asserts="74" />
+                      <test-case name="dotless.Test.Specs.CssFixture.TagSelector" executed="True" success="True" time="0.000" asserts="43" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="Functions" executed="True" success="True" time="0.621" asserts="0">
+                    <results>
+                      <test-suite name="AbsFixture" executed="True" success="True" time="0.012" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.AbsFixture.Abs" executed="True" success="True" time="0.004" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.AbsFixture.AbsInfo" executed="True" success="True" time="0.001" asserts="32" />
+                          <test-case name="dotless.Test.Specs.Functions.AbsFixture.ThrowsIfIncorrectType" executed="True" success="True" time="0.005" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="AlphaFixture" executed="True" success="True" time="0.047" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestAlpha" executed="True" success="True" time="0.003" asserts="125" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestAlphaOpacityHack" executed="True" success="True" time="0.001" asserts="31" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestAlphaOpacityHackWithVariable" executed="True" success="True" time="0.002" asserts="39" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestAlphaTestsTypes" executed="True" success="True" time="0.001" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlpha" executed="True" success="True" time="0.011" asserts="588" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlpha2" executed="True" success="True" time="0.010" asserts="588" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaFade" executed="True" success="True" time="0.003" asserts="170" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaPercent" executed="True" success="True" time="0.003" asserts="147" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaPercent2" executed="True" success="True" time="0.002" asserts="147" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaTestsTypes" executed="True" success="True" time="0.001" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaTestsTypes2" executed="True" success="True" time="0.004" asserts="96" />
+                          <test-case name="dotless.Test.Specs.Functions.AlphaFixture.TestEditAlphaWarning" executed="True" success="True" time="0.002" asserts="96" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ArgbFixture" executed="True" success="True" time="0.003" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.ArgbFixture.TestArgb" executed="True" success="True" time="0.003" asserts="106" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="BlendModesFixture" executed="True" success="True" time="0.009" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.BlendModesFixture.TestFunctions" executed="True" success="True" time="0.009" asserts="324" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="BlueFixture" executed="True" success="True" time="0.007" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.BlueFixture.TestBlue" executed="True" success="True" time="0.001" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.BlueFixture.TestBlueException" executed="True" success="True" time="0.001" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.BlueFixture.TestBlueInfo" executed="True" success="True" time="0.001" asserts="35" />
+                          <test-case name="dotless.Test.Specs.Functions.BlueFixture.TestEditBlue" executed="True" success="True" time="0.002" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.BlueFixture.TestEditBlueTestsTypes" executed="True" success="True" time="0.001" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="CielFixture" executed="True" success="True" time="0.005" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.CielFixture.TestCeil" executed="True" success="True" time="0.005" asserts="186" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ColorFixture" executed="True" success="True" time="0.004" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.ColorFixture.TestColor" executed="True" success="True" time="0.002" asserts="66" />
+                          <test-case name="dotless.Test.Specs.Functions.ColorFixture.TestToDrawingColor" executed="True" success="True" time="0.002" asserts="4" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ComplementFixture" executed="True" success="True" time="0.007" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.ComplementFixture.TestComplement" executed="True" success="True" time="0.004" asserts="165" />
+                          <test-case name="dotless.Test.Specs.Functions.ComplementFixture.TestComplementInfo" executed="True" success="True" time="0.001" asserts="32" />
+                          <test-case name="dotless.Test.Specs.Functions.ComplementFixture.TestComplementTestsTypes" executed="True" success="True" time="0.001" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ContrastFixture" executed="True" success="True" time="0.018" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.ContrastFixture.OverrideDarkColor" executed="True" success="True" time="0.005" asserts="156" />
+                          <test-case name="dotless.Test.Specs.Functions.ContrastFixture.OverrideLightColor" executed="True" success="True" time="0.003" asserts="144" />
+                          <test-case name="dotless.Test.Specs.Functions.ContrastFixture.OverrideThreshold" executed="True" success="True" time="0.005" asserts="312" />
+                          <test-case name="dotless.Test.Specs.Functions.ContrastFixture.TestContrast" executed="True" success="True" time="0.003" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.ContrastFixture.TestContrastException" executed="True" success="True" time="0.001" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="FloorFixture" executed="True" success="True" time="0.004" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.FloorFixture.TestFloor" executed="True" success="True" time="0.004" asserts="153" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="FormatStringFixture" executed="True" success="True" time="0.029" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.EscapeAndShortFormatFunction" executed="True" success="True" time="0.003" asserts="54" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.EscapeFunction" executed="True" success="True" time="0.001" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.EscapesQuotes" executed="True" success="True" time="0.003" asserts="66" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.ExceptionOnMissingArguments1" executed="True" success="True" time="0.001" asserts="20" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.ExceptionOnMissingArguments2" executed="True" success="True" time="0.001" asserts="20" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.FormatGradients" executed="True" success="True" time="0.002" asserts="149" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.FormattingWithVariables" executed="True" success="True" time="0.003" asserts="129" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.NoFormatting" executed="True" success="True" time="0.002" asserts="66" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.ShortFormatFunction" executed="True" success="True" time="0.001" asserts="50" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.ShortFormatFunctionAcceptingString" executed="True" success="True" time="0.001" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.ShortFormatFunctionUrlEncode" executed="True" success="True" time="0.002" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.SimpleFormatting" executed="True" success="True" time="0.002" asserts="117" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.SubsequentArgumentsIgnored" executed="True" success="True" time="0.001" asserts="39" />
+                          <test-case name="dotless.Test.Specs.Functions.FormatStringFixture.TestFormatStringInfo" executed="True" success="True" time="0.003" asserts="67" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="GradientImageFixture" executed="True" success="True" time="0.073" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.ShouldCacheResult" executed="True" success="True" time="0.031" asserts="86" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.ShouldCacheTheSameForEquivalentDeclarations" executed="True" success="True" time="0.002" asserts="77" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.ShouldThrowOnPositionLessThanPrevious" executed="True" success="True" time="0.001" asserts="32" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.TestGradientImage" executed="True" success="True" time="0.002" asserts="37" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.TestGradientInfo" executed="True" success="True" time="0.003" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.TestImageDimensionsAndColors" executed="True" success="True" time="0.010" asserts="86" />
+                          <test-case name="dotless.Test.Specs.Functions.GradientImageFixture.TestManyPoints" executed="True" success="True" time="0.005" asserts="129" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="GrayscaleFixture" executed="True" success="True" time="0.012" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.GrayscaleFixture.TestEditGrayscaleWarning" executed="True" success="True" time="0.002" asserts="64" />
+                          <test-case name="dotless.Test.Specs.Functions.GrayscaleFixture.TestGrayscale" executed="True" success="True" time="0.004" asserts="165" />
+                          <test-case name="dotless.Test.Specs.Functions.GrayscaleFixture.TestGrayscaleTestsTypes" executed="True" success="True" time="0.001" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.GrayscaleFixture.TestGreyscale" executed="True" success="True" time="0.004" asserts="165" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="GreenFixture" executed="True" success="True" time="0.006" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.GreenFixture.TestEditGreen" executed="True" success="True" time="0.001" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.GreenFixture.TestEditGreenTestsTypes" executed="True" success="True" time="0.001" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.GreenFixture.TestGreen" executed="True" success="True" time="0.001" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.GreenFixture.TestGreenException" executed="True" success="True" time="0.002" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.GreenFixture.TestGreenInfo" executed="True" success="True" time="0.001" asserts="35" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="HexFixture" executed="True" success="True" time="0.009" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.HexFixture.TestHex" executed="True" success="True" time="0.004" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.HexFixture.TestHexInfo" executed="True" success="True" time="0.001" asserts="32" />
+                          <test-case name="dotless.Test.Specs.Functions.HexFixture.ThrowsExpressionError_WhenNumberPassedHasUnit" executed="True" success="True" time="0.001" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.HexFixture.ValuesAbove_255_AreInterpretedAs_FF" executed="True" success="True" time="0.001" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.HexFixture.ValuesBelow_0_AreInterpretedAs_0" executed="True" success="True" time="0.002" asserts="33" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="HslaFixture" executed="True" success="True" time="0.014" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.HslaFixture.TestHsla" executed="True" success="True" time="0.002" asserts="126" />
+                          <test-case name="dotless.Test.Specs.Functions.HslaFixture.TestHslaChecksTypes" executed="True" success="True" time="0.003" asserts="120" />
+                          <test-case name="dotless.Test.Specs.Functions.HslaFixture.TestHslaOverflows" executed="True" success="True" time="0.007" asserts="352" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="HslFixture" executed="True" success="True" time="0.011" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.HslFixture.TestHsl" executed="True" success="True" time="0.000" asserts="39" />
+                          <test-case name="dotless.Test.Specs.Functions.HslFixture.TestHslChecksTypes" executed="True" success="True" time="0.003" asserts="81" />
+                          <test-case name="dotless.Test.Specs.Functions.HslFixture.TestHslOverflows" executed="True" success="True" time="0.008" asserts="250" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="HueFixture" executed="True" success="True" time="0.027" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestEditHue" executed="True" success="True" time="0.008" asserts="321" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestEditHue2" executed="True" success="True" time="0.008" asserts="321" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestEditHueInfo" executed="True" success="True" time="0.003" asserts="67" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestEditHueTestsTypes" executed="True" success="True" time="0.002" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestEditHueTestsTypes2" executed="True" success="True" time="0.001" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestHue" executed="True" success="True" time="0.001" asserts="43" />
+                          <test-case name="dotless.Test.Specs.Functions.HueFixture.TestHueException" executed="True" success="True" time="0.001" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="IsFunctionsFixture" executed="True" success="True" time="0.043" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsColor" executed="True" success="True" time="0.008" asserts="213" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsEm" executed="True" success="True" time="0.008" asserts="270" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsKeyword" executed="True" success="True" time="0.004" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsNumber" executed="True" success="True" time="0.003" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsPercentage" executed="True" success="True" time="0.007" asserts="237" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsPixel" executed="True" success="True" time="0.006" asserts="200" />
+                          <test-case name="dotless.Test.Specs.Functions.IsFunctionsFixture.TestIsString" executed="True" success="True" time="0.003" asserts="132" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="LightnessFixture" executed="True" success="True" time="0.043" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestDarknessInsideGradient" executed="True" success="True" time="0.001" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestDarknessInsideGradientMixin" executed="True" success="True" time="0.001" asserts="104" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightness" executed="True" success="True" time="0.013" asserts="478" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightness2" executed="True" success="True" time="0.011" asserts="478" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightnessInfo" executed="True" success="True" time="0.001" asserts="67" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightnessOverflow" executed="True" success="True" time="0.001" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightnessOverflow2" executed="True" success="True" time="0.002" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightnessTestsTypes" executed="True" success="True" time="0.002" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestEditLightnessTestsTypes2" executed="True" success="True" time="0.005" asserts="96" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestLightness" executed="True" success="True" time="0.001" asserts="86" />
+                          <test-case name="dotless.Test.Specs.Functions.LightnessFixture.TestLightnessException" executed="True" success="True" time="0.000" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="MixFixture" executed="True" success="True" time="0.023" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.MixFixture.TestMix" executed="True" success="True" time="0.011" asserts="544" />
+                          <test-case name="dotless.Test.Specs.Functions.MixFixture.TestMixTestsBounds" executed="True" success="True" time="0.002" asserts="78" />
+                          <test-case name="dotless.Test.Specs.Functions.MixFixture.TestMixTestsTypes" executed="True" success="True" time="0.003" asserts="81" />
+                          <test-case name="dotless.Test.Specs.Functions.MixFixture.TestTintAndShade" executed="True" success="True" time="0.007" asserts="216" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="PercentageFixture" executed="True" success="True" time="0.007" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.PercentageFixture.TestPercentage" executed="True" success="True" time="0.004" asserts="167" />
+                          <test-case name="dotless.Test.Specs.Functions.PercentageFixture.TestPercentageChecksTypes" executed="True" success="True" time="0.003" asserts="63" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="PowFixture" executed="True" success="True" time="0.004" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.PowFixture.Abs" executed="True" success="True" time="0.003" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.PowFixture.AbsInfo" executed="True" success="True" time="0.000" asserts="35" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="RedFixture" executed="True" success="True" time="0.010" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.RedFixture.TestEditRed" executed="True" success="True" time="0.002" asserts="36" />
+                          <test-case name="dotless.Test.Specs.Functions.RedFixture.TestEditRedTestsTypes" executed="True" success="True" time="0.002" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.RedFixture.TestRed" executed="True" success="True" time="0.002" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.RedFixture.TestRedException" executed="True" success="True" time="0.002" asserts="21" />
+                          <test-case name="dotless.Test.Specs.Functions.RedFixture.TestRedInfo" executed="True" success="True" time="0.002" asserts="35" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="RgbaFixture" executed="True" success="True" time="0.032" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgba" executed="True" success="True" time="0.005" asserts="126" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgbaOverflows" executed="True" success="True" time="0.009" asserts="252" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgbaTestsNumArgs" executed="True" success="True" time="0.003" asserts="99" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgbaTestsTypes" executed="True" success="True" time="0.006" asserts="120" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgbaWithColor" executed="True" success="True" time="0.003" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbaFixture.TestRgbaWithColorTestsTypes" executed="True" success="True" time="0.003" asserts="48" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="RgbFixture" executed="True" success="True" time="0.027" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.RgbFixture.TestRgb" executed="True" success="True" time="0.005" asserts="117" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbFixture.TestRgbOverflows" executed="True" success="True" time="0.005" asserts="195" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbFixture.TestRgbPercent" executed="True" success="True" time="0.005" asserts="156" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbFixture.TestRgbTestPercentBounds" executed="True" success="True" time="0.004" asserts="117" />
+                          <test-case name="dotless.Test.Specs.Functions.RgbFixture.TestRgbTestsTypes" executed="True" success="True" time="0.005" asserts="81" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="RoundFixture" executed="True" success="True" time="0.044" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.RoundFixture.RoundsMidpointAwayFromZero" executed="True" success="True" time="0.006" asserts="132" />
+                          <test-case name="dotless.Test.Specs.Functions.RoundFixture.TestRound" executed="True" success="True" time="0.016" asserts="186" />
+                          <test-case name="dotless.Test.Specs.Functions.RoundFixture.TestRoundToDecimals" executed="True" success="True" time="0.021" asserts="180" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="SaturationFixture" executed="True" success="True" time="0.052" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturation" executed="True" success="True" time="0.022" asserts="550" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturation2" executed="True" success="True" time="0.013" asserts="550" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturationInfo" executed="True" success="True" time="0.001" asserts="67" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturationOverflow" executed="True" success="True" time="0.002" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturationOverflow2" executed="True" success="True" time="0.002" asserts="72" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturationTestsTypes" executed="True" success="True" time="0.002" asserts="48" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestEditSaturationTestsTypes2" executed="True" success="True" time="0.004" asserts="96" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestSaturation" executed="True" success="True" time="0.003" asserts="86" />
+                          <test-case name="dotless.Test.Specs.Functions.SaturationFixture.TestSaturationException" executed="True" success="True" time="0.002" asserts="21" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="StringFunctionsFixture" executed="True" success="True" time="0.019" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.EscapeCopesWithIE8Hack" executed="True" success="True" time="0.000" asserts="33" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.EscapesQuotes" executed="True" success="True" time="0.001" asserts="66" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.FormatGradients" executed="True" success="True" time="0.001" asserts="165" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.FormattingWithVariables" executed="True" success="True" time="0.003" asserts="129" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.NoFormatting" executed="True" success="True" time="0.002" asserts="66" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.SimpleFormatting" executed="True" success="True" time="0.003" asserts="78" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.SubsequentArgumentssIgnored" executed="True" success="True" time="0.001" asserts="39" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.TestEFunctionInfo" executed="True" success="True" time="0.001" asserts="32" />
+                          <test-case name="dotless.Test.Specs.Functions.StringFunctionsFixture.TestPercentageFunctionInfo" executed="True" success="True" time="0.001" asserts="35" />
+                        </results>
+                      </test-suite>
+                    </results>
+                  </test-suite>
+                  <test-suite name="ImportFixture" executed="True" success="True" time="0.082" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.ImportFixture.AbsoluteUrls" executed="True" success="True" time="0.004" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.CanImportCssFilesAsLess" executed="True" success="True" time="0.002" asserts="37" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.CssImportFromEmbeddedResource" executed="True" success="True" time="0.011" asserts="9" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ErrorInImport" executed="True" success="True" time="0.002" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ErrorInImport2" executed="True" success="True" time="0.002" asserts="38" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportCanNavigateIntoAndOutOfSubDirectory" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportCanNavigateIntoAndOutOfSubDirectoryWithImport" executed="True" success="True" time="0.002" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportFileExtensionNotNecessary" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingCssFileAsLessThrowsError" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingLessFileThrowsError1" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingLessFileThrowsError2" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingLessFileThrowsError3" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingLessFileThrowsError4" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForMissingLessFileThrowsExceptionThatIncludesFileName" executed="True" success="True" time="0.002" asserts="1" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportForUrlGetsOutput" executed="True" success="True" time="0.000" asserts="11" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportInlinedWithMediaSpecificationsSupported" executed="True" success="True" time="0.001" asserts="45" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportOnceTwiceImportsOnce" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.Imports" executed="True" success="True" time="0.004" asserts="120" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportTwiceImportsTwice" executed="True" success="True" time="0.001" asserts="43" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportTwiceWithDifferentRelativePathsImportsOnce" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportWithMediaSpecificationsSupported" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.ImportWithMediaSpecificationsSupportedWithVariable" executed="True" success="True" time="0.001" asserts="45" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.LessImportFromEmbeddedResource" executed="True" success="True" time="0.012" asserts="67" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.LessImportWithMediaSpecificationsConverted" executed="True" success="True" time="0.002" asserts="61" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.LessImportWithMediaSpecificationsConvertedMultipleRequirements" executed="True" success="True" time="0.001" asserts="79" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.LessImportWithMediaSpecificationsConvertedWithOnce" executed="True" success="True" time="0.002" asserts="61" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.LessImportWithMediaSpecificationsConvertedWithVariable" executed="True" success="True" time="0.002" asserts="77" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.OtherProtocolImportTest1" executed="True" success="True" time="0.002" asserts="65" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.OtherProtocolImportTest2" executed="True" success="True" time="0.000" asserts="11" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.OtherProtocolImportTest3" executed="True" success="True" time="0.000" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.RelativeUrls" executed="True" success="True" time="0.002" asserts="133" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.RelativeUrlsWithRewritingOff" executed="True" success="True" time="0.002" asserts="133" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.RelativeUrlWithParentDirReference" executed="True" success="True" time="0.002" asserts="25" />
+                      <test-case name="dotless.Test.Specs.ImportFixture.Test247" executed="True" success="True" time="0.002" asserts="115" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="LineNumbersFixture" executed="True" success="True" time="0.003" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.LineNumbersFixture.LineNumbers" executed="True" success="True" time="0.001" asserts="61" />
+                      <test-case name="dotless.Test.Specs.LineNumbersFixture.LineNumbersAndFileNameWhenImporting" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.LineNumbersFixture.LineNumbersWhenCallingMixin" executed="True" success="True" time="0.001" asserts="80" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="MediaFixture" executed="True" success="True" time="0.028" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling1" executed="True" success="True" time="0.001" asserts="47" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling2" executed="True" success="True" time="0.000" asserts="61" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling3" executed="True" success="True" time="0.002" asserts="100" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling4" executed="True" success="True" time="0.001" asserts="122" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling5" executed="True" success="True" time="0.001" asserts="146" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling6" executed="True" success="True" time="0.001" asserts="111" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaBubbling7" executed="True" success="True" time="0.001" asserts="231" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirective" executed="True" success="True" time="0.000" asserts="61" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirective2" executed="True" success="True" time="0.000" asserts="73" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveCanDeclareVariables" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveCanHavePageDirective1" executed="True" success="True" time="0.000" asserts="37" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveCanHavePageDirective2" executed="True" success="True" time="0.002" asserts="201" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveCanHavePageDirective3" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveCanUseVariables" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveEmpty" executed="True" success="True" time="0.001" asserts="49" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveWithDecimal" executed="True" success="True" time="0.001" asserts="59" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaDirectiveWithSlash" executed="True" success="True" time="0.001" asserts="59" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaMixin1" executed="True" success="True" time="0.001" asserts="170" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaMixin2" executed="True" success="True" time="0.001" asserts="167" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MediaUsesDpiUnit" executed="True" success="True" time="0.000" asserts="43" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.MixinCallNotDefinition" executed="True" success="True" time="0.002" asserts="92" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.VariablesInMediaDirective" executed="True" success="True" time="0.001" asserts="89" />
+                      <test-case name="dotless.Test.Specs.MediaFixture.VariablesInMediaDirective2" executed="True" success="True" time="0.001" asserts="53" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="MixinGuardsFixture" executed="True" success="True" time="0.044" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ArgumentsAgainstEachOther" executed="True" success="True" time="0.003" asserts="137" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression1" executed="True" success="True" time="0.001" asserts="74" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression10" executed="True" success="True" time="0.001" asserts="102" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression11" executed="True" success="True" time="0.001" asserts="126" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression12" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression13" executed="True" success="True" time="0.001" asserts="76" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression14" executed="True" success="True" time="0.001" asserts="76" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression15" executed="True" success="True" time="0.001" asserts="103" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression2" executed="True" success="True" time="0.001" asserts="80" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression3" executed="True" success="True" time="0.001" asserts="64" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression4" executed="True" success="True" time="0.001" asserts="70" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression5" executed="True" success="True" time="0.001" asserts="81" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression6" executed="True" success="True" time="0.001" asserts="111" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression7" executed="True" success="True" time="0.001" asserts="100" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression8" executed="True" success="True" time="0.002" asserts="97" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.BooleanExpression9" executed="True" success="True" time="0.001" asserts="96" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ColorCompare" executed="True" success="True" time="0.002" asserts="191" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ColorCompareAlpha" executed="True" success="True" time="0.001" asserts="207" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ComparisonAgainstEqualIgnoresUnits" executed="True" success="True" time="0.001" asserts="132" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ComparisonAgainstFunctionCall" executed="True" success="True" time="0.001" asserts="139" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.GlobalsInsideGuardsNegative" executed="True" success="True" time="0.001" asserts="75" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.GlobalsInsideGuardsPositive" executed="True" success="True" time="0.002" asserts="80" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.GuardsVariableBug1" executed="True" success="True" time="0.002" asserts="133" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.KeywordCompare" executed="True" success="True" time="0.001" asserts="171" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.OtherOperators" executed="True" success="True" time="0.002" asserts="193" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ScopeAndDefaultValuesNegative" executed="True" success="True" time="0.001" asserts="71" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.ScopeAndDefaultValuesPositive" executed="True" success="True" time="0.001" asserts="70" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.StackingFunctions" executed="True" success="True" time="0.001" asserts="153" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.StringCompare" executed="True" success="True" time="0.002" asserts="199" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.TestCompareArgsInGuard" executed="True" success="True" time="0.001" asserts="92" />
+                      <test-case name="dotless.Test.Specs.MixinGuardsFixture.TrueAndFalse" executed="True" success="True" time="0.002" asserts="199" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="MixinsArgsFixture" executed="True" success="True" time="0.029" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.CanEvaluateCommaSepearatedExpressions" executed="True" success="True" time="0.002" asserts="76" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.CanUseSameVariableName" executed="True" success="True" time="0.001" asserts="95" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.CanUseVariablesInsideMixins" executed="True" success="True" time="0.001" asserts="80" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinArgsExceptCurlyBracketString" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinArgsHashMixin1" executed="True" success="True" time="0.001" asserts="48" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinArgsHashMixin2" executed="True" success="True" time="0.001" asserts="48" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinCallError" executed="True" success="True" time="0.001" asserts="47" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgs" executed="True" success="True" time="0.001" asserts="93" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsHidden1" executed="True" success="True" time="0.000" asserts="48" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsHidden2" executed="True" success="True" time="0.000" asserts="48" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsMulti" executed="True" success="True" time="0.001" asserts="171" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsNestedRuleset" executed="True" success="True" time="0.001" asserts="102" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsNoArgs" executed="True" success="True" time="0.001" asserts="94" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsNoParens" executed="True" success="True" time="0.001" asserts="94" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsOneArg" executed="True" success="True" time="0.001" asserts="97" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsScopeMix" executed="True" success="True" time="0.001" asserts="79" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsTwoArgs" executed="True" success="True" time="0.001" asserts="165" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.MixinsArgsVariableArgs" executed="True" success="True" time="0.001" asserts="110" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs1" executed="True" success="True" time="0.001" asserts="137" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs2" executed="True" success="True" time="0.002" asserts="114" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs3a" executed="True" success="True" time="0.001" asserts="232" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs3b" executed="True" success="True" time="0.001" asserts="235" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs3c" executed="True" success="True" time="0.001" asserts="234" />
+                      <test-case name="dotless.Test.Specs.MixinsArgsFixture.VariadicArgs3d" executed="True" success="True" time="0.001" asserts="237" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="MixinsFixture" executed="True" success="True" time="0.060" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ArgumentsOverridesVariableInSameScope" executed="True" success="True" time="0.001" asserts="102" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CallSiteCorrectWhenMixinThrowsAnError" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanCallMixinFromWithinInnerRuleset" executed="True" success="True" time="0.001" asserts="77" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanNestParameterizedMixins" executed="True" success="True" time="0.001" asserts="121" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanNestParameterizedMixinsWithDefaults" executed="True" success="True" time="0.001" asserts="112" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanNestParameterizedMixinsWithSameParameterNames" executed="True" success="True" time="0.001" asserts="121" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanPassNamedArguments" executed="True" success="True" time="0.001" asserts="101" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanPassNamedArgumentsInDifferentOrder" executed="True" success="True" time="0.001" asserts="104" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanPassNamedArgumentsWithoutDefaults" executed="True" success="True" time="0.001" asserts="92" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanPassVariablesAsNamedArgs" executed="True" success="True" time="0.001" asserts="105" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanPassVariablesAsPositionalArgs" executed="True" success="True" time="0.002" asserts="105" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanResolveMixinsInSameScopeAsMixinDefinition" executed="True" success="True" time="0.000" asserts="96" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanResolveVariablesInSameScopeAsMixinDefinition" executed="True" success="True" time="0.001" asserts="80" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanUseArgumentsWithSameNameAsVariable" executed="False">
+                        <reason>
+                          <message><![CDATA[Infinite Loop - breaks tester]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CanUseVariablesAsDefaultArgumentValues" executed="True" success="True" time="0.001" asserts="102" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ChildSelector" executed="True" success="True" time="0.001" asserts="68" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.CommaSeparatedMixins" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.DontCacheFunctions" executed="True" success="True" time="0.002" asserts="117" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.DuplicatesRemovedFromMixinCall" executed="True" success="True" time="0.001" asserts="71" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.IncludeAllMixinsInSameScope" executed="True" success="True" time="0.001" asserts="100" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.IncludesAllMatchedMixins2" executed="True" success="True" time="0.002" asserts="103" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.IncludesAllMatchedMixins3" executed="True" success="True" time="0.001" asserts="179" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.InnerMixinEvaluatedCorrectly" executed="True" success="True" time="0.001" asserts="117" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.InnerMixinsFindInnerVariables" executed="True" success="True" time="0.001" asserts="125" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixedPositionalAndNamedArguments" executed="True" success="True" time="0.001" asserts="126" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinCallingSameName" executed="True" success="True" time="0.001" asserts="181" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinImportant" executed="True" success="True" time="0.001" asserts="209" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinMatchingAllowsMultiples" executed="True" success="True" time="0.002" asserts="95" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinNestedRules" executed="True" success="True" time="0.001" asserts="102" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.Mixins" executed="True" success="True" time="0.001" asserts="373" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinsKeepImportantKeyword" executed="True" success="True" time="0.001" asserts="69" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinWithArgs" executed="True" success="True" time="0.001" asserts="100" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MixinWithArgsInsideNamespace" executed="True" success="True" time="0.000" asserts="113" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MultipleCallsToMixinsContainingMixinCalls" executed="True" success="True" time="0.001" asserts="172" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MultipleCallsToMixinsUsingAndHoisting" executed="True" success="True" time="0.003" asserts="383" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MultipleCallsToMixinsUsingAndHoistingSimple" executed="True" success="True" time="0.001" asserts="141" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.MultipleMixins" executed="True" success="True" time="0.001" asserts="66" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedParameterizedMixins1" executed="True" success="True" time="0.001" asserts="114" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedParameterizedMixins2" executed="True" success="True" time="0.001" asserts="121" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedParameterizedMixins3" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedParameterizedMixins4" executed="True" success="True" time="0.001" asserts="127" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedParameterizedMixins5" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.NestedRulesInMixinsShouldRespectArguments" executed="True" success="True" time="0.001" asserts="119" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.OverrideMixinToAddNonSimpleDefaultArguments" executed="True" success="True" time="0.001" asserts="131" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.PassAllVariablesAsNamedArgumentsWhereNoDefaultValues" executed="True" success="True" time="0.001" asserts="71" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.PositionalArgumentsMustAppearBeforeAllNamedArguments" executed="True" success="True" time="0.001" asserts="66" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ShortMixinDoesntMatchLongerSelectors" executed="True" success="True" time="0.001" asserts="106" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.StringMixinArgument" executed="True" success="True" time="0.001" asserts="69" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.SupportOnePositionArgumentOneDefaultVariableAndOneNamed" executed="True" success="True" time="0.001" asserts="79" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.TestMixinCallIncorrectlyRecognisedLessJsBug901" executed="True" success="True" time="0.001" asserts="92" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ThrowsIfArumentNotFound" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ThrowsIfMixinNotFound" executed="True" success="True" time="0.001" asserts="16" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ThrowsIfNoMatchFound" executed="True" success="True" time="0.001" asserts="43" />
+                      <test-case name="dotless.Test.Specs.MixinsFixture.ThrowsIfNotDefined" executed="True" success="True" time="0.001" asserts="16" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="OperationsFixture" executed="True" success="True" time="0.044" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.OperationsFixture.CanIncludeColorFunctionsInOperations" executed="True" success="True" time="0.004" asserts="133" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.CanIncludeFunctionsInOperations" executed="True" success="True" time="0.002" asserts="105" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.CanUseColorKeywordsInOperations" executed="True" success="True" time="0.002" asserts="95" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Colours" executed="True" success="True" time="0.004" asserts="155" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.DivideNumberByColor" executed="True" success="True" time="0.001" asserts="19" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.DivisionByZero" executed="True" success="True" time="0.002" asserts="71" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Negations" executed="True" success="True" time="0.006" asserts="293" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Negative" executed="True" success="True" time="0.002" asserts="78" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Operations" executed="True" success="True" time="0.003" asserts="173" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.OperationsAndPrecisions" executed="True" success="True" time="0.005" asserts="186" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.OperationsAreLeftAssociative" executed="True" success="True" time="0.002" asserts="68" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.OperationsKeepImportantKeyword" executed="True" success="True" time="0.002" asserts="97" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Rounding" executed="True" success="True" time="0.002" asserts="39" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.Shorthands" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.ThrowsIfLeftHandSideIsNotOperable" executed="True" success="True" time="0.002" asserts="50" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.ThrowsIfRightHandSideIsNotANumber" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.ThrowsIfUnableToConvertRightHandSideToColor" executed="True" success="True" time="0.001" asserts="25" />
+                      <test-case name="dotless.Test.Specs.OperationsFixture.WithVariables" executed="True" success="True" time="0.002" asserts="141" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="OptimizationsFixture" executed="True" success="True" time="0.005" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.OptimizationsFixture.DontStripComments" executed="True" success="True" time="0.002" asserts="27" />
+                      <test-case name="dotless.Test.Specs.OptimizationsFixture.ErrorAfterCommentIsReportedOnCorrectLine" executed="True" success="True" time="0.002" asserts="51" />
+                      <test-case name="dotless.Test.Specs.OptimizationsFixture.Optimization0LeavesBlankLinesInComments" executed="True" success="True" time="0.000" asserts="9" />
+                      <test-case name="dotless.Test.Specs.OptimizationsFixture.Optimization1DoesNotRemoveWhitespaceLinesFromComments" executed="True" success="True" time="0.001" asserts="9" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="ParensFixture" executed="True" success="True" time="0.011" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.ParensFixture.MixedUnits" executed="True" success="True" time="0.001" asserts="66" />
+                      <test-case name="dotless.Test.Specs.ParensFixture.MoreParens" executed="True" success="True" time="0.004" asserts="198" />
+                      <test-case name="dotless.Test.Specs.ParensFixture.NestedParens" executed="True" success="True" time="0.002" asserts="94" />
+                      <test-case name="dotless.Test.Specs.ParensFixture.Parens" executed="True" success="True" time="0.003" asserts="174" />
+                      <test-case name="dotless.Test.Specs.ParensFixture.UnitsOutsideParens" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                    </results>
+                  </test-suite>
+                  <test-suite name="RulesetsFixture" executed="True" success="True" time="0.002" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.RulesetsFixture.ImplicitParentSelectorPseudoClass" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.RulesetsFixture.Rulesets" executed="True" success="True" time="0.002" asserts="241" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="ScopeFixture" executed="True" success="True" time="0.005" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.ScopeFixture.MixinVariableKeepsScope" executed="True" success="True" time="0.000" asserts="78" />
+                      <test-case name="dotless.Test.Specs.ScopeFixture.TestVariablesFromDifferentScopes" executed="True" success="True" time="0.001" asserts="119" />
+                      <test-case name="dotless.Test.Specs.ScopeFixture.VariableAssignmentDoesntEscapeScope" executed="True" success="True" time="0.002" asserts="75" />
+                      <test-case name="dotless.Test.Specs.ScopeFixture.VariableInClosestScopeUsed" executed="True" success="True" time="0.001" asserts="73" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="ScriptFixture" executed="True" success="True" time="0.003" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.ScriptFixture.ScriptExpressions" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.ScriptFixture.ScriptHasAccessToVariablesInScope1" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.ScriptFixture.ScriptHasAccessToVariablesInScope2" executed="False">
+                        <reason>
+                          <message><![CDATA[Unsupported]]></message>
+                        </reason>
+                      </test-case>
+                      <test-case name="dotless.Test.Specs.ScriptFixture.ScriptUnsupported" executed="True" success="True" time="0.002" asserts="87" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="SelectorsFixture" executed="True" success="True" time="0.026" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.AttributeCharacterTest" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.DecendantSelectorWithTabs" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.DynamicSelectors" executed="True" success="True" time="0.001" asserts="45" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.EscapedSelector" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.IdSelectors" executed="True" success="True" time="0.001" asserts="61" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.MultipleTags" executed="True" success="True" time="0.001" asserts="65" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.NestedCombinedSelector" executed="True" success="True" time="0.001" asserts="43" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector1" executed="True" success="True" time="0.001" asserts="81" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector2" executed="True" success="True" time="0.001" asserts="95" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector3" executed="True" success="True" time="0.001" asserts="87" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector4" executed="True" success="True" time="0.001" asserts="65" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector5" executed="True" success="True" time="0.000" asserts="61" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector6" executed="True" success="True" time="0.002" asserts="283" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector7" executed="True" success="True" time="0.000" asserts="61" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector8" executed="True" success="True" time="0.001" asserts="47" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelector9" executed="True" success="True" time="0.001" asserts="47" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelectorCombinators" executed="True" success="True" time="0.001" asserts="65" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelectorMultiplied" executed="True" success="True" time="0.001" asserts="51" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelectorMultipliedDouble" executed="True" success="True" time="0.001" asserts="73" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelectorWhenNoParentExists1" executed="True" success="True" time="0.001" asserts="156" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.ParentSelectorWhenNoParentExists2" executed="True" success="True" time="0.001" asserts="80" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.PseudoSelectors" executed="True" success="True" time="0.001" asserts="113" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.SelectorInterpolation1" executed="True" success="True" time="0.000" asserts="53" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.SelectorInterpolation2" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.Tag" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.TwoTags" executed="True" success="True" time="0.002" asserts="33" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.VariableSelector" executed="True" success="True" time="0.001" asserts="35" />
+                      <test-case name="dotless.Test.Specs.SelectorsFixture.VariableSelectorInRecursiveMixin" executed="True" success="True" time="0.001" asserts="141" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="StringsFixture" executed="True" success="True" time="0.029" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.StringsFixture.BracesInQuotes" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.BracesInQuotesUneven" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.CloseBraceInsideStringAfterQuoteInsideString" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.Comments" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapeCopesWithIE8Hack1" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapeCopesWithIE8Hack2" executed="True" success="True" time="0.002" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapedWithTilde" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapeSlash" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapingQuotes" executed="True" success="True" time="0.002" asserts="87" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.EscapingQuotesUnescaped" executed="True" success="True" time="0.002" asserts="58" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NewLineInStringNotSupported1" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NewLineInStringNotSupported2" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndComment" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndDoubleQuote" executed="True" success="True" time="0.001" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndDoubleQuote2" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndSingleQuote" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndSingleQuote2" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndSingleQuote3" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.NoEndSingleQuote4" executed="True" success="True" time="0.000" asserts="1" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.SemiColonInQuotes" executed="True" success="True" time="0.002" asserts="29" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.SingleQuotes" executed="True" success="True" time="0.002" asserts="91" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolation1" executed="True" success="True" time="0.000" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolation2" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolation3" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolation4" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolation5" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolationInUrl" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.StringInterpolationMultipleCalls" executed="True" success="True" time="0.002" asserts="87" />
+                      <test-case name="dotless.Test.Specs.StringsFixture.Strings" executed="True" success="True" time="0.002" asserts="120" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="VariablesFixture" executed="True" success="True" time="0.032" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.VariablesFixture.Redefine" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.StringVariables" executed="True" success="True" time="0.000" asserts="63" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.ThrowsIfNotFound" executed="True" success="True" time="0.000" asserts="17" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.ThrowsIfVariableDefinedAfterUse" executed="True" success="True" time="0.000" asserts="23" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.ThrowsWhenTryToEvaluateBeforeDefinition" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOerators" executed="True" success="True" time="0.002" asserts="73" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOverridesPreviousValue1" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOverridesPreviousValue2" executed="True" success="True" time="0.001" asserts="53" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOverridesPreviousValue3" executed="True" success="True" time="0.002" asserts="61" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOverridesPreviousValue4" executed="True" success="True" time="0.001" asserts="67" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableOverridesPreviousValue5" executed="True" success="True" time="0.002" asserts="87" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesChangingUnit" executed="True" success="True" time="0.002" asserts="63" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesColor" executed="True" success="True" time="0.001" asserts="37" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesKeepImportantKeyword" executed="True" success="True" time="0.004" asserts="98" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesKeepImportantKeyword2" executed="True" success="True" time="0.001" asserts="107" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesNames" executed="True" success="True" time="0.001" asserts="45" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariablesQuoted" executed="True" success="True" time="0.001" asserts="55" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableValuesImportant" executed="True" success="True" time="0.001" asserts="39" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableValuesMulti" executed="True" success="True" time="0.001" asserts="47" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableValuesMultipleValues" executed="True" success="True" time="0.001" asserts="69" />
+                      <test-case name="dotless.Test.Specs.VariablesFixture.VariableValuesUrl" executed="True" success="True" time="0.001" asserts="41" />
+                    </results>
+                  </test-suite>
+                  <test-suite name="WhitespaceFixture" executed="True" success="True" time="0.007" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.Empty" executed="True" success="True" time="0.000" asserts="21" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.NewLines" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.NewLines2" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.NoSemiColon1" executed="True" success="True" time="0.000" asserts="29" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.NoSemiColon2" executed="True" success="True" time="0.001" asserts="33" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.NoSemiColon3" executed="True" success="True" time="0.000" asserts="35" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.Tabs" executed="True" success="True" time="0.001" asserts="29" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.Whitespace" executed="True" success="True" time="0.001" asserts="97" />
+                      <test-case name="dotless.Test.Specs.WhitespaceFixture.Whitespace2" executed="True" success="True" time="0.001" asserts="41" />
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+              <test-suite name="Unit" executed="True" success="True" time="0.654" asserts="0">
+                <results>
+                  <test-suite name="Engine" executed="True" success="True" time="0.327" asserts="0">
+                    <results>
+                      <test-suite name="CacheDecoratorFixture" executed="True" success="True" time="0.295" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.CacheDecoratorFixture.DependanciesContainsFileName" executed="True" success="True" time="0.253" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.CacheDecoratorFixture.IncludesDependancyForAllImports" executed="True" success="True" time="0.011" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.CacheDecoratorFixture.InsertsIfNotAlreadyCached" executed="True" success="True" time="0.008" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.CacheDecoratorFixture.OneDependancyIfNoImports" executed="True" success="True" time="0.014" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.CacheDecoratorFixture.RetrievesIfAlreadyCached" executed="True" success="True" time="0.009" asserts="0" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="CommentBug" executed="True" success="True" time="0.001" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.CommentBug.Block_comment_with_multiple_asterisks_before_closing_slash_does_not_cause_tokenizer_error" executed="True" success="True" time="0.001" asserts="41" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="MixinOverrideBug" executed="True" success="True" time="0.000" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.MixinOverrideBug.Mixin_override_stack_overflow" executed="True" success="True" time="0.000" asserts="70" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="NullVariableValueBug" executed="True" success="True" time="0.009" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.NullVariableValueBug.NullVariableValuesProduceSensibleErrorMessage" executed="True" success="True" time="0.009" asserts="0" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="ParameterDecoratorFixture" executed="True" success="True" time="0.015" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.ParameterDecoratorFixture.IgnoresParameterWithEmptyValue" executed="True" success="True" time="0.008" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.ParameterDecoratorFixture.IgnoresParamtersWithNullValue" executed="True" success="True" time="0.002" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.ParameterDecoratorFixture.PrependsParametersAsVariableDeclarationToInput" executed="True" success="True" time="0.001" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Engine.ParameterDecoratorFixture.PutsOneParameterPerLine" executed="True" success="True" time="0.003" asserts="0" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="PathAggregatorBug" executed="True" success="True" time="0.003" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Engine.PathAggregatorBug.StringExtension_AggregatePath_CantEscapeToParentDirectory" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Engine.PathAggregatorBug.StringExtension_AggregatePath_CantGoUpMultipleLevels" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Engine.PathAggregatorBug.StringExtension_AggregatePath_ReplacesAllBackwardSlashesWithForwardSlashes" executed="True" success="True" time="0.000" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Engine.PathAggregatorBug.StringExtension_AggregatePath_WillFixParentDeclarationIfPossible" executed="True" success="True" time="0.000" asserts="1" />
+                        </results>
+                      </test-suite>
+                    </results>
+                  </test-suite>
+                  <test-suite name="HttpHandlerFixture" executed="True" success="True" time="0.176" asserts="0">
+                    <results>
+                      <test-case name="dotless.Test.Unit.HttpHandlerFixture.HttpHandlerRequiresSession" executed="True" success="True" time="0.175" asserts="2" />
+                      <test-case name="dotless.Test.Unit.HttpHandlerFixture.SessionParam" executed="False">
+                        <reason>
+                          <message><![CDATA[Handler factory looks in IHtml.Context.Request.QueryString. Cannot mock IHtml implementor.]]></message>
+                        </reason>
+                      </test-case>
+                    </results>
+                  </test-suite>
+                  <test-suite name="Parameters" executed="True" success="True" time="0.044" asserts="0">
+                    <results>
+                      <test-suite name="ParameterSourceFixture" executed="True" success="True" time="0.044" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.AttackOnKey" executed="True" success="True" time="0.009" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.AttackOnValue" executed="True" success="True" time="0.004" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.CanHandleMultipleEntries" executed="True" success="True" time="0.003" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.CanHandleNullEntries" executed="True" success="True" time="0.003" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.GetsParametersFromQueryStringDictionary" executed="True" success="True" time="0.004" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.ReturnsEmptyDictionaryIfNoParametersArePassed" executed="True" success="True" time="0.003" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.ShouldSkipSessionParam" executed="True" success="True" time="0.004" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.TestValidKeysAccepted" executed="True" success="True" time="0.003" asserts="1" />
+                          <test-case name="dotless.Test.Unit.Parameters.ParameterSourceFixture.TestValidValuesAccepted" executed="True" success="True" time="0.010" asserts="1" />
+                        </results>
+                      </test-suite>
+                    </results>
+                  </test-suite>
+                  <test-suite name="Response" executed="True" success="True" time="0.092" asserts="0">
+                    <results>
+                      <test-suite name="CachedCssResponseFixture" executed="True" success="True" time="0.019" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Response.CachedCssResponseFixture.ContentTypeIsSetToTextCss" executed="True" success="True" time="0.014" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CachedCssResponseFixture.SetsCachabilityPublic" executed="True" success="True" time="0.005" asserts="0" />
+                        </results>
+                      </test-suite>
+                      <test-suite name="CssResponseFixture" executed="True" success="True" time="0.073" asserts="0">
+                        <results>
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingGzip" executed="True" success="True" time="0.015" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingGzip2" executed="True" success="True" time="0.005" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingGzip3" executed="True" success="True" time="0.006" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingGzip4" executed="True" success="True" time="0.006" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingGzip5" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingNoGzip1" executed="True" success="True" time="0.005" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingNoGzip2" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionAcceptEncodingNoGzip3" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionNoAcceptEncodingEmpty" executed="True" success="True" time="0.005" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionNoAcceptEncodingNull" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CompressionNoAcceptEncodingStrange" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.ContentTypeIsTextCss" executed="True" success="True" time="0.004" asserts="0" />
+                          <test-case name="dotless.Test.Unit.Response.CssResponseFixture.CssIsWrittenToResponse" executed="True" success="True" time="0.005" asserts="0" />
+                        </results>
+                      </test-suite>
+                    </results>
+                  </test-suite>
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>
