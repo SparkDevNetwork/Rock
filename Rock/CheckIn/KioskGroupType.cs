@@ -30,7 +30,7 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public DateTimeOffset NextActiveTime { get; set; }
-	
+
         /// <summary>
         /// All locations with active schedules.  Note: the location itself 
         /// may not be active (i.e. room is closed)
@@ -44,10 +44,11 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
         /// </summary>
-	    public KioskGroupType() : base()
-	    {
+        public KioskGroupType()
+            : base()
+        {
             Locations = new List<KioskLocation>();
-	    }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.

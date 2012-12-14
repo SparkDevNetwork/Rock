@@ -204,9 +204,8 @@ namespace Rock.Model
         /// Processes this instance.
         /// </summary>
         /// <returns></returns>
-        public virtual bool Process()
+        public virtual bool Process( out List<string> errorMessages)
         {
-            List<string> errorMessages;
             bool result = Process( null, out errorMessages );
             return result;
         }
@@ -327,7 +326,7 @@ namespace Rock.Model
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        internal static Workflow Activate( WorkflowType workflowType, string name )
+        public static Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = new Workflow();
             workflow.WorkflowTypeId = workflowType.Id;
