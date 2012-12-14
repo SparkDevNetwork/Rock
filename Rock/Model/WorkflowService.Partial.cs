@@ -39,12 +39,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="workflow">The workflow.</param>
         /// <param name="CurrentPersonId">The current person id.</param>
-        public void Process( Workflow workflow, int? CurrentPersonId )
+        public void Process( Workflow workflow, int? CurrentPersonId, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
             this.Save( workflow, null );
 
-            workflow.Process();
+            workflow.Process(out errorMessages);
 
             workflow.IsProcessing = false;
             this.Save( workflow, null );

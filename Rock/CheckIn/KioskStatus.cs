@@ -29,6 +29,34 @@ namespace Rock.CheckIn
         public List<KioskGroupType> GroupTypes { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance has active locations.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasLocations
+        {
+            get
+            {
+                return GroupTypes.Any( g => g.Locations.Any() );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has active locations.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasActiveLocations
+        {
+            get
+            {
+                return GroupTypes.Any( g => g.Locations.Any( l => l.IsActive ) );
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="KioskStatus" /> class.
         /// </summary>
 	    public KioskStatus() : base()

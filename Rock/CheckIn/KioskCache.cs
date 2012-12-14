@@ -58,45 +58,44 @@ namespace Rock.CheckIn
                     RefreshCache();
                 }
 
-                if (_kiosks.ContainsKey(kioskId))
+                if ( _kiosks.ContainsKey( kioskId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
                     string json = JsonConvert.SerializeObject( _kiosks[kioskId] );
-                    KioskStatus kioskStatus =  JsonConvert.DeserializeObject( json, typeof(KioskStatus) ) as KioskStatus;
+                    KioskStatus kioskStatus = JsonConvert.DeserializeObject( json, typeof( KioskStatus ) ) as KioskStatus;
                     return kioskStatus;
                 }
             }
 
             return null;
-
         }
 
         /// <summary>
         /// Refreshes the cache.
         /// </summary>
-	    private static void RefreshCache()
-	    {
+        private static void RefreshCache()
+        {
             _kiosks = new Dictionary<int, KioskStatus>();
-		
-            var checkInDeviceTypeId = DefinedValueCache.Read(SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK).Id;
-		    foreach(var kiosk in new DeviceService().Queryable()
-                .Where( d => d.DeviceTypeValueId == checkInDeviceTypeId)
-                .ToList())
-		    {
-			    var kioskStatus = new KioskStatus(kiosk);
-			
-			    foreach(Location location in kiosk.Locations)
-			    {
+
+            var checkInDeviceTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            foreach ( var kiosk in new DeviceService().Queryable()
+                .Where( d => d.DeviceTypeValueId == checkInDeviceTypeId )
+                .ToList() )
+            {
+                var kioskStatus = new KioskStatus( kiosk );
+
+                foreach ( Location location in kiosk.Locations )
+                {
                     LoadKioskLocations( kioskStatus, location );
-			    }
-			
-			    _kiosks.Add(kiosk.Id, kioskStatus);
-		    }
+                }
+
+                _kiosks.Add( kiosk.Id, kioskStatus );
+            }
 
             _lastCached = DateTimeOffset.Now;
-	    }
+        }
 
-        private static void LoadKioskLocations(KioskStatus kioskStatus, Location location)
+        private static void LoadKioskLocations( KioskStatus kioskStatus, Location location )
         {
             foreach ( var groupLocation in new GroupLocationService().GetActiveByLocation( location.Id ) )
             {
@@ -123,7 +122,7 @@ namespace Rock.CheckIn
                 if ( kioskGroup.Schedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
                     KioskGroupType kioskGroupType = kioskStatus.GroupTypes.Where( g => g.Id == kioskGroup.GroupTypeId ).FirstOrDefault();
-                    if (kioskGroupType == null)
+                    if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
                         kioskGroupType.NextActiveTime = DateTimeOffset.MaxValue;
@@ -139,7 +138,7 @@ namespace Rock.CheckIn
                     if ( kioskGroup.Schedules.Count > 0 )
                     {
                         KioskLocation kioskLocation = kioskGroupType.Locations.Where( l => l.Id == location.Id ).FirstOrDefault();
-                        if ( kioskLocation == null)
+                        if ( kioskLocation == null )
                         {
                             kioskLocation = new KioskLocation( location );
                             kioskGroupType.Locations.Add( kioskLocation );
@@ -150,7 +149,7 @@ namespace Rock.CheckIn
                 }
             }
 
-            foreach(var childLocation in location.ChildLocations)
+            foreach ( var childLocation in location.ChildLocations )
             {
                 LoadKioskLocations( kioskStatus, childLocation );
             }
