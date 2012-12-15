@@ -15,6 +15,7 @@
                     <asp:BoundField DataField="LastStatus" HeaderText="Last Status" SortExpression="LastStatus"/>
                     <asp:BoundField DataField="NotificationEmails" HeaderText="Notification Emails" />
                     <asp:BoundField DataField="NotificationStatus" HeaderText="Notification Status" SortExpression="NotificationStatus"/>
+                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                     <Rock:DeleteField OnClick="gScheduledJobs_Delete" />
                 </Columns>
             </Rock:Grid>
