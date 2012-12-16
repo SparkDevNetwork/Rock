@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
             <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
-            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true" OnEditRow="gGroupRoles_Edit">
+            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true" OnRowSelected="gGroupRoles_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />

@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upGroupList" runat="server">
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="gGroups" runat="server" AllowSorting="true" OnEditRow="gGroups_Edit">
+        <Rock:Grid ID="gGroups" runat="server" AllowSorting="true" OnRowSelected="gGroups_Edit">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="GroupType.Name" HeaderText="Group Type" SortExpression="GroupType.Name" />
