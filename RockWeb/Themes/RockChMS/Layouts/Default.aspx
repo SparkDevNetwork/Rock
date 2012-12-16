@@ -3,21 +3,12 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <script type="text/javascript">
-
-        Sys.Application.add_load(function () {
-            $('a.brand').attr('href', rock.baseUrl);
-        });
-
-    </script>
-
-
     <div id="page-frame">
         <header id="page-header" class="navbar navbar-fixed-top">
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span3">
-                        <a class="brand">Rock ChMS</a>
+                        <asp:HyperLink runat="server" CssClass="brand" NavigateUrl="~" Text="Rock ChMS" />
                     </div>
                     <div class="span9">
                         <div class="content pull-right">
