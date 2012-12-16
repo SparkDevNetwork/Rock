@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" OnEditRow="gPageRoutes_Edit">
+            <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" OnRowSelected="gPageRoutes_Edit">
                 <Columns>
                     <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
                     <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name" />

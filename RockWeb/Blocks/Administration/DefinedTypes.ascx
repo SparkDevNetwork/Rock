@@ -11,7 +11,7 @@
             <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" />            
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridType" runat="server" AllowSorting="true" RowItemText="setting" OnEditRow="rGridType_Edit" EmptyDataText="No Defined Types Found">
+        <Rock:Grid ID="rGridType" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGridType_Edit" EmptyDataText="No Defined Types Found">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -49,7 +49,7 @@
     
     <asp:Panel ID="pnlAttributes" runat="server" Visible="false">
   
-        <Rock:Grid ID="rGridAttribute" runat="server" AllowSorting="true" RowItemText="setting" OnEditRow="rGridAttribute_Edit" ShowHeader="true" EmptyDataText="No Attributes Found">
+        <Rock:Grid ID="rGridAttribute" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGridAttribute_Edit" ShowHeader="true" EmptyDataText="No Attributes Found">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -72,7 +72,7 @@
             <asp:Literal ID="valueCaption" runat="server" Text="Defined Values"></asp:Literal>
         </label>
                 
-        <Rock:Grid ID="rGridValue" runat="server" ShowHeader="true" RowItemText="setting" OnEditRow="rGridValue_Edit" AllowSorting="true" EmptyDataText="No Defined Values Found" >
+        <Rock:Grid ID="rGridValue" runat="server" ShowHeader="true" RowItemText="setting" OnRowSelected="rGridValue_Edit" AllowSorting="true" EmptyDataText="No Defined Values Found" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name"/>

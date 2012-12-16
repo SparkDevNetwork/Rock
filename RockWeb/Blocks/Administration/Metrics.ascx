@@ -10,7 +10,7 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnEditRow="rGridMetric_Edit">
+            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnRowSelected="rGridMetric_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -80,7 +80,7 @@
 
             <legend>
                 <asp:Literal ID="lMetric" runat="server">Metric Values</asp:Literal></legend>
-            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnEditRow="rGridValue_Edit">
+            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnRowSelected="rGridValue_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Value" HeaderText="Value" SortExpression="Value" />

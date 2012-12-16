@@ -8,7 +8,7 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnEditRow="gEmailTemplates_Edit">
+            <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnRowSelected="gEmailTemplates_Edit">
                 <Columns>
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                     <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />

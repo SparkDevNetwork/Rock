@@ -40,7 +40,7 @@ public partial class EntityTypes : RockBlock
             gEntityTypes.DataKeyNames = new string[] { "id" };
             gEntityTypes.Actions.IsAddEnabled = true;
             gEntityTypes.Actions.AddClick += Actions_AddClick;
-            gEntityTypes.EditRow += gEntityTypes_EditRow;
+            gEntityTypes.RowSelected += gEntityTypes_EditRow;
             gEntityTypes.GridRebind += gEntityTypes_GridRebind;
             gEntityTypes.RowDataBound += gEntityTypes_RowDataBound;
 

@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
                 gBlockTypes.DataKeyNames = new string[] { "id" };
                 gBlockTypes.Actions.IsAddEnabled = true;
                 gBlockTypes.Actions.AddClick += gBlockTypes_Add;
-                gBlockTypes.EditRow += gBlockTypes_EditRow;
+                gBlockTypes.RowSelected += gBlockTypes_EditRow;
                 gBlockTypes.GridRebind += gBlockTypes_GridRebind;
             }
         }
