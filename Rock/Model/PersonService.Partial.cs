@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Person POCO Service class
     /// </summary>
-    public partial class PersonService : Service<Person, PersonDto>
+    public partial class PersonService 
     {
         #region Get People
 

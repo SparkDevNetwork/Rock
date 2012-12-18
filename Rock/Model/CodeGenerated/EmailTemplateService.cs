@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EmailTemplate Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
+    public partial class EmailTemplateService : Service<EmailTemplate>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
@@ -35,46 +35,6 @@ namespace Rock.Model
         /// </summary>
         public EmailTemplateService(IRepository<EmailTemplate> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EmailTemplate CreateNew()
-        {
-            return new EmailTemplate();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EmailTemplateDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
-        {
-            return items.Select( m => new EmailTemplateDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PersonId = m.PersonId,
-                    Category = m.Category,
-                    Title = m.Title,
-                    From = m.From,
-                    To = m.To,
-                    Cc = m.Cc,
-                    Bcc = m.Bcc,
-                    Subject = m.Subject,
-                    Body = m.Body,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

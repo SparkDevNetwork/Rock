@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PersonAccount Service class
     /// </summary>
-    public partial class PersonAccountService : Service<PersonAccount, PersonAccountDto>
+    public partial class PersonAccountService : Service<PersonAccount>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAccountService"/> class
@@ -35,38 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PersonAccountService(IRepository<PersonAccount> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PersonAccount CreateNew()
-        {
-            return new PersonAccount();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonAccountDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonAccountDto> QueryableDto( IQueryable<PersonAccount> items )
-        {
-            return items.Select( m => new PersonAccountDto()
-                {
-                    PersonId = m.PersonId,
-                    Account = m.Account,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

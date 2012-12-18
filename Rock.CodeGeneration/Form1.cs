@@ -206,7 +206,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Service : Service<{0}, {0}Dto>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0}Service : Service<{0}>" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
             sb.AppendLine( "        /// <summary>" );
@@ -223,41 +223,6 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// </summary>" );
             sb.AppendFormat( "        public {0}Service(IRepository<{0}> repository) : base(repository)" + Environment.NewLine, type.Name );
             sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a new model" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public override {0} CreateNew()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return new {0}();" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public override IQueryable<{0}Dto> QueryableDto( )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            return QueryableDto( this.Queryable() );" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public IQueryable<{0}Dto> QueryableDto( IQueryable<{0}> items )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return items.Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "                {" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                    {0} = m.{0}," + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "                });" );
             sb.AppendLine( "        }" );
 
             sb.Append( GetCanDeleteCode( rootFolder, type ) );

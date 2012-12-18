@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Location POCO Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService 
     {
         /// <summary>
         /// Gets Location by Raw

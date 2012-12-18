@@ -18,7 +18,7 @@ namespace Rock.Model
     /// <summary>
     /// User POCO Service class
     /// </summary>
-    public partial class UserService : Service<UserLogin, UserLoginDto>
+    public partial class UserLoginService 
     {
         /// <summary>
         /// Gets Users by Api Key

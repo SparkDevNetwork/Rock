@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Pledge Service class
     /// </summary>
-    public partial class PledgeService : Service<Pledge, PledgeDto>
+    public partial class PledgeService : Service<Pledge>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PledgeService"/> class
@@ -35,43 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PledgeService(IRepository<Pledge> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Pledge CreateNew()
-        {
-            return new Pledge();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PledgeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PledgeDto> QueryableDto( IQueryable<Pledge> items )
-        {
-            return items.Select( m => new PledgeDto()
-                {
-                    PersonId = m.PersonId,
-                    FundId = m.FundId,
-                    Amount = m.Amount,
-                    StartDate = m.StartDate,
-                    EndDate = m.EndDate,
-                    FrequencyTypeValueId = m.FrequencyTypeValueId,
-                    FrequencyAmount = m.FrequencyAmount,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

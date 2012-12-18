@@ -15,7 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityType POCO Service class
     /// </summary>
-    public partial class EntityTypeService : Service<EntityType, EntityTypeDto>
+    public partial class EntityTypeService
     {
         /// <summary>
         /// Gets EntityTypes by EntityName
