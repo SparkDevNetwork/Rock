@@ -3,15 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Services;
-using System.Linq;
+using System.Runtime.Serialization;
 
-using Rock;
 using Rock.Attribute;
 using Rock.Security;
 
@@ -21,6 +17,7 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    [DataContract( IsReference = true )]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
         where T : ISecured, new()
     {

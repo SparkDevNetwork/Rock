@@ -3,11 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Rock.Data
 {
@@ -15,6 +16,7 @@ namespace Rock.Data
     /// Base class that all models need to inherit from
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    [DataContract(IsReference=true)]
     public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
     {
         #region Entity Properties
@@ -23,6 +25,7 @@ namespace Rock.Data
         /// The Id
         /// </summary>
         [Key]
+        [DataMember]
         public int Id { get; set; }
 
         /// <summary>
@@ -32,6 +35,7 @@ namespace Rock.Data
         /// The GUID.
         /// </value>
         [AlternateKey]
+        [DataMember]
         public Guid Guid
         {
             get { return _guid; }
@@ -167,6 +171,15 @@ namespace Rock.Data
         #region Methods
 
         /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string ToJson()
+        {
+            return JsonConvert.SerializeObject( this );
+        }
+
+        /// <summary>
         /// Converts object to dictionary for DotLiquid.
         /// </summary>
         /// <returns></returns>
@@ -199,6 +212,17 @@ namespace Rock.Data
         public static TT Read<TT>( Guid guid ) where TT : Entity<TT>
         {
             return new Service<TT>().Get( guid );
+        }
+
+        /// <summary>
+        /// Static method to return an object from a json string.
+        /// </summary>
+        /// <typeparam name="TT">The type of the T.</typeparam>
+        /// <param name="json">The json.</param>
+        /// <returns></returns>
+        public static TT FromJson<TT>(string json) where TT : Entity<TT>
+        {
+            return JsonConvert.DeserializeObject(json, typeof(TT)) as TT;
         }
 
         #endregion

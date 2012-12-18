@@ -477,6 +477,25 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Sets the configuration.
+        /// </summary>
+        /// <param name="config">The config.</param>
+        public void SetConfigurationValue( string key, string value )
+        {
+            switch ( key.ToUpper() )
+            {
+                case "PROXYCREATIONENABLED":
+
+                    bool enabled = true;
+                    if ( Boolean.TryParse( value, out enabled ) )
+                    {
+                        Context.Configuration.ProxyCreationEnabled = enabled;
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Audits the class.
         /// </summary>
         /// <param name="baseType">Type of the base.</param>
