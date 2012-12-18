@@ -486,6 +486,25 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Rocks the page.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockPage RockPage( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockPage )
+                {
+                    return (Rock.Web.UI.RockPage)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions
@@ -578,9 +597,9 @@ namespace Rock
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int value )
+        public static void SetValue( this DropDownList ddl, int? value )
         {
-            ddl.SetValue( value.ToString() );
+            ddl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
