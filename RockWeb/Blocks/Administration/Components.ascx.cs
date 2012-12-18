@@ -55,7 +55,6 @@ namespace RockWeb.Blocks.Administration
                         if ( _isAuthorizedToConfigure )
                             rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.Columns[0].Visible = _isAuthorizedToConfigure;    // Reorder
-                        rGrid.Columns[4].Visible = _isAuthorizedToConfigure;    // Edit Column
                         rGrid.GridRebind += rGrid_GridRebind;
                     }
                     else

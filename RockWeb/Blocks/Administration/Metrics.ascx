@@ -10,7 +10,7 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnEditRow="rGridMetric_Edit">
+            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnRowSelected="rGridMetric_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -18,7 +18,7 @@
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                     <asp:BoundField DataField="MinValue" HeaderText="Minimum Value" SortExpression="MinValue" />
                     <asp:BoundField DataField="MaxValue" HeaderText="Maximum Value" SortExpression="MaxValue" />
-                    <asp:BoundField DataField="CollectionFrequency.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequency.Name" />
+                    <asp:BoundField DataField="CollectionFrequencyValue.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequencyValue.Name" />
                     <asp:BoundField DataField="Source" HeaderText="Source" SortExpression="Source" />
                     <Rock:EditValueField OnClick="rGridMetric_EditValue" />
                     <Rock:DeleteField OnClick="rGridMetric_Delete" />
@@ -80,7 +80,7 @@
 
             <legend>
                 <asp:Literal ID="lMetric" runat="server">Metric Values</asp:Literal></legend>
-            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnEditRow="rGridValue_Edit">
+            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnRowSelected="rGridValue_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Value" HeaderText="Value" SortExpression="Value" />

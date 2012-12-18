@@ -7,7 +7,7 @@
 
     <asp:Panel ID="pnlList" runat="server" Visible="false" >
         
-        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnEditRow="rGrid_Edit">
+        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
