@@ -14,16 +14,16 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Users REST API
     /// </summary>
-    public partial class UsersController : IHasCustomRoutes
+    public partial class UserLoginsController : IHasCustomRoutes
     {
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
                 name: "UsernameAvailable",
-                routeTemplate: "api/users/available/{username}",
+                routeTemplate: "api/userlogins/available/{username}",
                 defaults: new
                 {
-                    controller = "users",
+                    controller = "userlogins",
                     action = "available"
                 } );
         }
