@@ -46,22 +46,19 @@ namespace Rock.Rest
 
         // POST api/<controller> (insert)
         [Authenticate]
-        public virtual HttpResponseMessage Post( [FromBody]D value )
+        public virtual HttpResponseMessage Post( [FromBody]T value )
         {
             var user = CurrentUser();
             if ( user != null )
             {
-                T model = _service.CreateNew();
-                _service.Add( model, null );
+                _service.Add( value, null );
 
-                value.CopyToModel( model );
-
-                if ( !model.IsValid )
+                if ( !value.IsValid )
                     return ControllerContext.Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
-                        String.Join( ",", model.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                        String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-                _service.Save( model, user.PersonId );
+                _service.Save( value, user.PersonId );
 
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 // TODO set response.Headers.Location as per REST POST convention
@@ -74,20 +71,18 @@ namespace Rock.Rest
 
         // PUT api/<controller>/5  (update)
         [Authenticate]
-        public virtual void Put( int id, [FromBody]D value )
+        public virtual void Put( int id, [FromBody]T value )
         {
             var user = CurrentUser();
             if ( user != null )
             {
-                var service = new Service<T, D>();
-                T model;
-                if ( !service.TryGet( id, out model ) )
+                T existingModel;
+                if ( !_service.TryGet( id, out existingModel ) )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                value.CopyToModel( model );
-
-                if ( model.IsValid )
-                    service.Save( model, user.PersonId );
+                _service.Attach( value );
+                if ( value.IsValid )
+                    _service.Save( value, user.PersonId );
                 else
 
                     throw new HttpResponseException( HttpStatusCode.BadRequest );
