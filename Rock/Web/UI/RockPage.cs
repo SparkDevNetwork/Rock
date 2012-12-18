@@ -632,7 +632,7 @@ namespace Rock.Web.UI
             Page.Header.DataBind();
 
             // create a page view transaction if enabled
-            if ( Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
+            if (CurrentPage != null && Convert.ToBoolean( ConfigurationManager.AppSettings["EnablePageViewTracking"] ) )
             {
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
@@ -706,10 +706,16 @@ namespace Rock.Web.UI
         /// </summary>
         protected virtual void AddKendoScripts()
         {
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
             AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
             AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
+
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.fx.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.popup.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.calendar.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
+            AddScriptLink( Page, "~/scripts/Kendo/kendo.treeview.min.js" );
         }
 
         #endregion

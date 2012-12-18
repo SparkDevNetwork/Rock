@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Administration
 
                 rGrid.Columns[7].Visible = !_displayValueEdit;
                 rGrid.Columns[8].Visible = _displayValueEdit;
-                rGrid.Columns[10].Visible = _displayValueEdit;
+                rGrid.Columns[9].Visible = _displayValueEdit;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );

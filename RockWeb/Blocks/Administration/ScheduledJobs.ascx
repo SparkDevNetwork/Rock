@@ -3,7 +3,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlGrid" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gScheduledJobs" runat="server" OnEditRow="gScheduledJobs_Edit" AllowSorting="true">
+            <Rock:Grid ID="gScheduledJobs" runat="server" OnRowSelected="gScheduledJobs_Edit" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name"/>
                     <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description"/>
@@ -15,6 +15,7 @@
                     <asp:BoundField DataField="LastStatus" HeaderText="Last Status" SortExpression="LastStatus"/>
                     <asp:BoundField DataField="NotificationEmails" HeaderText="Notification Emails" />
                     <asp:BoundField DataField="NotificationStatus" HeaderText="Notification Status" SortExpression="NotificationStatus"/>
+                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                     <Rock:DeleteField OnClick="gScheduledJobs_Delete" />
                 </Columns>
             </Rock:Grid>

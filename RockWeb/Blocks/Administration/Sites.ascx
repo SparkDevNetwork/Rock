@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:Grid ID="gSites" runat="server" OnEditRow="gSites_Edit">
+            <Rock:Grid ID="gSites" runat="server" OnRowSelected="gSites_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:BoundField HeaderText="Description" DataField="Description" />

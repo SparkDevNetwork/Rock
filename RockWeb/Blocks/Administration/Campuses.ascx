@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlList" runat="server">
-            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true" OnEditRow="gCampuses_Edit">
+            <Rock:Grid ID="gCampuses" runat="server" AllowSorting="true" OnRowSelected="gCampuses_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <Rock:DeleteField OnClick="gCampuses_Delete" />

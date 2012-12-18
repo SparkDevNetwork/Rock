@@ -28,8 +28,6 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
         }
