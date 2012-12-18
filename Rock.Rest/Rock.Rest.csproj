@@ -84,7 +84,6 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\UsersController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />
@@ -147,6 +146,8 @@
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
+    <Compile Include="Controllers\TagsController.Partial.cs" />
+    <Compile Include="Controllers\UsersController.Partial.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
