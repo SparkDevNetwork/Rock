@@ -86,6 +86,20 @@ namespace Rock.Constants
         /// 
         /// </summary>
         public const string TextHtml = "&lt;none&gt;";
+
+        /// <summary>
+        /// Gets the list item.
+        /// </summary>
+        /// <value>
+        /// The list item.
+        /// </value>
+        public static System.Web.UI.WebControls.ListItem ListItem
+        {
+            get
+            {
+                return new System.Web.UI.WebControls.ListItem( None.Text, None.IdValue );
+            }
+        }
     }
 
     /// <summary>
@@ -143,5 +157,21 @@ namespace Rock.Constants
         {
             return string.Format( "View {0}", itemFieldName );
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EditModeMessage
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string ReadOnlySystem = "This record is read-only because this is a core system value.";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string ReadOnlyEditActionNotAllowed = "This record is editable only by authorized users.";
     }
 }

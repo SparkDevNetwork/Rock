@@ -413,6 +413,12 @@ namespace Rock.Attribute
                             divControls.AddCssClass( "controls" );
 
                             Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue );
+                            if ( attributeControl is CheckBox )
+                            {
+                                ( attributeControl as CheckBox ).Text = attribute.Name;
+                                lbl.Visible = false;
+                            }
+
                             attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                             attributeControl.ClientIDMode = ClientIDMode.AutoID;
                             divControls.Controls.Add( attributeControl );

@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
@@ -417,12 +418,25 @@ namespace Rock.Web.UI
         {
             string pageGuid = AttributeValue( DetailPageAttribute.Key );
 
-            Rock.Model.Page page = new PageService().Get( new Guid(pageGuid) );
-
-            if ( page != null )
+            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
-                Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
-                Context.ApplicationInstance.CompleteRequest();
+                Rock.Model.Page page = new PageService().Get( new Guid( pageGuid ) );
+                if ( page != null )
+                {
+                    if ( page.Guid.Equals( CurrentPage.Guid ) )
+                    {
+                        RockPage rockPage = this.RockPage();
+                        foreach ( IDetailBlock detailBlock in rockPage.RockBlocks.Where(a => a is IDetailBlock))
+                        {
+                            detailBlock.ShowDetail( itemKey, itemKeyValue );
+                        }
+                    }
+                    else
+                    {
+                        Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
             }
         }
 

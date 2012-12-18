@@ -11,12 +11,12 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute to select 0 or more GroupTypes
     /// </summary>
-    public class GroupTypeFieldAttribute : FieldAttribute
+    public class GroupTypesFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="GroupTypesFieldAttribute" /> class.
         /// </summary>
         /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
@@ -25,8 +25,8 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
-        public GroupTypeFieldAttribute( int order, string name, bool required, string defaultGroupTypeId = "", string key = null, string category = "", string description = "" )
-            : base( order, name, required, defaultGroupTypeId, key, category, description, typeof(Rock.Field.Types.GroupTypeField).FullName )
+        public GroupTypesFieldAttribute( int order, string name, bool required, string defaultGroupTypeId = "", string key = null, string category = "", string description = "" )
+            : base( order, name, required, defaultGroupTypeId, key, category, description, typeof(Rock.Field.Types.GroupTypesField).FullName )
         {
         }
     }
