@@ -119,11 +119,13 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
-    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
-    <Compile Include="Field\Types\GroupTypeField.cs" />
+    <Compile Include="Field\Types\GroupField.cs" />
+    <Compile Include="Field\Types\GroupTypesField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -155,6 +157,10 @@
     <Compile Include="Migrations\201212110027467_GroupBlockAttributes.cs" />
     <Compile Include="Migrations\201212110027467_GroupBlockAttributes.Designer.cs">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212131758268_GroupTypeField.cs" />
+    <Compile Include="Migrations\201212131758268_GroupTypeField.Designer.cs">
+      <DependentUpon>201212131758268_GroupTypeField.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -285,6 +291,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -826,6 +833,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212110027467_GroupBlockAttributes.resx">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212131758268_GroupTypeField.resx">
+      <DependentUpon>201212131758268_GroupTypeField.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
