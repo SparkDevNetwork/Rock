@@ -31,7 +31,7 @@ namespace Rock.Data
         /// <summary>
         /// Gets the Repository.
         /// </summary>
-        protected IRepository<T> Repository
+        public IRepository<T> Repository
         {
             get { return _repository; }
         }

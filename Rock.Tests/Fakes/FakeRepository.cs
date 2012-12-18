@@ -136,5 +136,10 @@ namespace Rock.Tests.Fakes
 
             return true;
         }
+
+        public void SetConfigurationValue( string key, string value )
+        {
+        }
+
     }
 }

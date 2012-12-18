@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock.Model;
 using Rock.Data;
@@ -18,6 +19,7 @@ namespace Rock.Model
     /// Category POCO Entity.
     /// </summary>
     [Table( "Category" )]
+    [DataContract]
     public partial class Category : Entity<Category>
     {
         /// <summary>
@@ -27,6 +29,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -35,6 +38,7 @@ namespace Rock.Model
         /// <value>
         /// The parent category id.
         /// </value>
+        [DataMember]
         public int? ParentCategoryId { get; set; }
 
         /// <summary>

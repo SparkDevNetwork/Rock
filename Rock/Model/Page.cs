@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
@@ -21,6 +22,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
+    [DataContract( IsReference = true )]
     public partial class Page : Model<Page>, IOrdered, IExportable
     {
         #region Entity Properties
@@ -34,6 +36,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [TrackChanges]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -42,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// Parent Page Id.
         /// </value>
+        [DataMember]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -51,6 +55,7 @@ namespace Rock.Model
         /// Title.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -201,6 +206,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [DataMember]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -233,6 +239,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Pages.
         /// </value>
+        [DataMember]
         public virtual ICollection<Page> Pages { get; set; }
 
         /// <summary>
@@ -392,6 +399,16 @@ namespace Rock.Model
         public static Page Read( int id )
         {
             return Read<Page>( id );
+        }
+
+        /// <summary>
+        /// Static method to return an object based on the guid
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <returns></returns>
+        public static Page FromJson( string json )
+        {
+            return FromJson<Page>( json );
         }
 
         /// <summary>

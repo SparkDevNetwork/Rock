@@ -25,24 +25,23 @@ namespace Rock.Rest
         public ApiController( Service<T, D> service )
         {
             _service = service;
+            _service.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
         }
 
         // GET api/<controller>
         [Queryable]
-        public virtual IQueryable<D> Get()
+        public virtual IQueryable<T> Get()
         {
-            return _service.QueryableDto();
+            return _service.Queryable();
         }
 
         // GET api/<controller>/5
-        public virtual D Get( int id )
+        public virtual T Get( int id )
         {
             T model;
             if ( !_service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
-            var dto = new D();
-            dto.CopyFromModel( model );
-            return dto;
+            return model;
         }
 
         // POST api/<controller> (insert)
