@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Tags REST API
     /// </summary>
-    public partial class TagsController : Rock.Rest.ApiController<Rock.Model.Tag, Rock.Model.TagDto>
+    public partial class TagsController : Rock.Rest.ApiController<Rock.Model.Tag>
     {
         public TagsController() : base( new Rock.Model.TagService() ) { } 
     }

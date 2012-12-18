@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Campus REST API
     /// </summary>
-    public partial class CampusController : Rock.Rest.ApiController<Rock.Model.Campus, Rock.Model.CampusDto>
+    public partial class CampusController : Rock.Rest.ApiController<Rock.Model.Campus>
     {
         public CampusController() : base( new Rock.Model.CampusService() ) { } 
     }

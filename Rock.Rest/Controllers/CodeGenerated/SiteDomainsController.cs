@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// SiteDomains REST API
     /// </summary>
-    public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.Model.SiteDomain, Rock.Model.SiteDomainDto>
+    public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.Model.SiteDomain>
     {
         public SiteDomainsController() : base( new Rock.Model.SiteDomainService() ) { } 
     }

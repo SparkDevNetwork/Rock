@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// EntityTypes REST API
     /// </summary>
-    public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Model.EntityType, Rock.Model.EntityTypeDto>
+    public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Model.EntityType>
     {
         public EntityTypesController() : base( new Rock.Model.EntityTypeService() ) { } 
     }
