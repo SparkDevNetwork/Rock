@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// WorkflowTriggers REST API
     /// </summary>
-    public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Model.WorkflowTrigger, Rock.Model.WorkflowTriggerDto>
+    public partial class WorkflowTriggersController : Rock.Rest.ApiController<Rock.Model.WorkflowTrigger>
     {
         public WorkflowTriggersController() : base( new Rock.Model.WorkflowTriggerService() ) { } 
     }

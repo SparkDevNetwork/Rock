@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// WorkflowLogs REST API
     /// </summary>
-    public partial class WorkflowLogsController : Rock.Rest.ApiController<Rock.Model.WorkflowLog, Rock.Model.WorkflowLogDto>
+    public partial class WorkflowLogsController : Rock.Rest.ApiController<Rock.Model.WorkflowLog>
     {
         public WorkflowLogsController() : base( new Rock.Model.WorkflowLogService() ) { } 
     }

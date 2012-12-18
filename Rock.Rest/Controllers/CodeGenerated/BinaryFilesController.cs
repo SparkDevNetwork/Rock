@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// BinaryFiles REST API
     /// </summary>
-    public partial class BinaryFilesController : Rock.Rest.ApiController<Rock.Model.BinaryFile, Rock.Model.BinaryFileDto>
+    public partial class BinaryFilesController : Rock.Rest.ApiController<Rock.Model.BinaryFile>
     {
         public BinaryFilesController() : base( new Rock.Model.BinaryFileService() ) { } 
     }

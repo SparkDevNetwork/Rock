@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Categories REST API
     /// </summary>
-    public partial class CategoriesController : Rock.Rest.ApiController<Rock.Model.Category, Rock.Model.CategoryDto>
+    public partial class CategoriesController : Rock.Rest.ApiController<Rock.Model.Category>
     {
         public CategoriesController() : base( new Rock.Model.CategoryService() ) { } 
     }

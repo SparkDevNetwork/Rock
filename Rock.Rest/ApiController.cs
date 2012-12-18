@@ -16,13 +16,11 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
-    public abstract class ApiController<T, D> : ApiController
-        where T : Rock.Data.Entity<T>
-        where D : Rock.Data.IDto, new()
+    public abstract class ApiController<T> : ApiController where T : Rock.Data.Entity<T>
     {
-        private Service<T, D> _service;
+        private Service<T> _service;
 
-        public ApiController( Service<T, D> service )
+        public ApiController( Service<T> service )
         {
             _service = service;
             _service.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
