@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Field Type POCO Service class
     /// </summary>
-    public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
+    public partial class FieldTypeService
     {
         /// <summary>
         /// Gets Field Types by Name

@@ -9,7 +9,7 @@ using Rock.Data;
 
 namespace Rock.Model
 {
-    public partial class MarketingCampaignAdDto : IDto, IHasAttributes
+    public partial class MarketingCampaignAdDto 
     {
         /// <summary>
         /// Gets the name.

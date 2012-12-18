@@ -11,7 +11,7 @@ namespace Rock.Model
     /// <summary>
     /// Group Type POCO Service class
     /// </summary>
-    public partial class GroupTypeService : Service<GroupType, GroupTypeDto>
+    public partial class GroupTypeService 
     {
         /// <summary>
         /// Gets Group Types by Default Group Role Id

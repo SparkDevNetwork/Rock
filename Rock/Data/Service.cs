@@ -474,44 +474,44 @@ namespace Rock.Data
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <typeparam name="D"></typeparam>
-    public class Service<T, D> : Service<T>
-        where T : Rock.Data.Entity<T>
-        where D : Rock.Data.IDto
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Service{D}" /> class.
-        /// </summary>
-        public Service() : base() { }
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    ///// <typeparam name="T"></typeparam>
+    ///// <typeparam name="D"></typeparam>
+    //public class Service<T, D> : Service<T>
+    //    where T : Rock.Data.Entity<T>
+    //    where D : Rock.Data.IDto
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
+    //    /// </summary>
+    //    public Service() : base() { }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Service{D}" /> class.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public Service( IRepository<T> repository ) : base( repository ) { }
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
+    //    /// </summary>
+    //    /// <param name="repository">The repository.</param>
+    //    public Service( IRepository<T> repository ) : base( repository ) { }
 
-        /// <summary>
-        /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
-        /// </summary>
-        /// <returns></returns>
-        public virtual IQueryable<D> QueryableDto()
-        {
-            throw new System.NotImplementedException();
-        }
+    //    /// <summary>
+    //    /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    public virtual IQueryable<D> QueryableDto()
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        /// <summary>
-        /// Creates the new.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public virtual T CreateNew()
-        {
-            throw new System.NotImplementedException();
-        }
-    }
+    //    /// <summary>
+    //    /// Creates the new.
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    /// <exception cref="System.NotImplementedException"></exception>
+    //    public virtual T CreateNew()
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
+    //}
 
 }

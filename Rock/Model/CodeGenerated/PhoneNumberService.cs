@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PhoneNumber Service class
     /// </summary>
-    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
+    public partial class PhoneNumberService : Service<PhoneNumber>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
@@ -35,44 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PhoneNumber CreateNew()
-        {
-            return new PhoneNumber();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PhoneNumberDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
-        {
-            return items.Select( m => new PhoneNumberDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PersonId = m.PersonId,
-                    Number = m.Number,
-                    Extension = m.Extension,
-                    NumberTypeValueId = m.NumberTypeValueId,
-                    IsMessagingEnabled = m.IsMessagingEnabled,
-                    IsUnlisted = m.IsUnlisted,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

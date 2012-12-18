@@ -13,7 +13,7 @@ namespace Rock.Model
     /// <summary>
     /// Page POCO Service class
     /// </summary>
-    public partial class PageService : Service<Page, PageDto>
+    public partial class PageService 
     {
         /// <summary>
         /// Gets Pages by Parent Page Id

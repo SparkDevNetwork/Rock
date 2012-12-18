@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Auth Service class
     /// </summary>
-    public partial class AuthService : Service<Auth, AuthDto>
+    public partial class AuthService : Service<Auth>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class
@@ -35,44 +35,6 @@ namespace Rock.Model
         /// </summary>
         public AuthService(IRepository<Auth> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Auth CreateNew()
-        {
-            return new Auth();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AuthDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
-        {
-            return items.Select( m => new AuthDto()
-                {
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Order = m.Order,
-                    Action = m.Action,
-                    AllowOrDeny = m.AllowOrDeny,
-                    SpecialRole = m.SpecialRole,
-                    PersonId = m.PersonId,
-                    GroupId = m.GroupId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
