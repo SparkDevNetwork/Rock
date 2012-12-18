@@ -94,8 +94,8 @@ namespace Rock.Security.ExternalAuthentication
                     string facebookId = "FACEBOOK_" + me.id.ToString();
 
                     // query for matching id in the user table 
-                    UserService userService = new UserService();
-                    var user = userService.GetByUserName( facebookId );
+                    var userLoginService = new UserLoginService();
+                    var user = userLoginService.GetByUserName( facebookId );
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -152,7 +152,7 @@ namespace Rock.Security.ExternalAuthentication
                                 personService.Save( person, null );
                             }
 
-                            user = userService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
+                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {

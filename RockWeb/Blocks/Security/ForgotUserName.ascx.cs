@@ -47,13 +47,13 @@ namespace RockWeb.Blocks.Security
 
             var personDictionaries = new List<IDictionary<string, object>>();
 
-            PersonService personService = new PersonService();
-            UserService userService = new UserService();
+            var personService = new PersonService();
+            var userLoginService = new UserLoginService();
 
             foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
             {
                 var users = new List<IDictionary<string,object>>();
-                foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
+                foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
                     {

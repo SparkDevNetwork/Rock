@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public bool Available( string username )
         {
-            return new UserService().GetByUserName( username ) == null;
+            return new UserLoginService().GetByUserName( username ) == null;
         }
     }
 }

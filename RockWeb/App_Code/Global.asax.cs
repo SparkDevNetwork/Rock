@@ -379,7 +379,7 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
+                Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
                 // save the exception info to the db
                 ExceptionLogService service = new ExceptionLogService();
@@ -437,8 +437,8 @@ namespace RockWeb
                 cookies.Append( "</table>" );
                 exceptionLog.ServerVariables = serverVars.ToString();
 
-                if ( user != null )
-                    exceptionLog.CreatedByPersonId = user.PersonId;
+                if ( userLogin != null )
+                    exceptionLog.CreatedByPersonId = userLogin.PersonId;
 
                 service.Add( exceptionLog, null );
                 service.Save( exceptionLog, null );
