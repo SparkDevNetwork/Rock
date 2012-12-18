@@ -23,16 +23,83 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class PageCache : PageDto, Rock.Attribute.IHasAttributes
+    public class PageCache : CachedModel<Page>
     {
-        #region Constructors
+        #region constructors
 
-        private PageCache() : base() { }
-        private PageCache( Rock.Model.Page page ) : base( page ) { }
+        private PageCache()
+        {
+        }
+
+        private PageCache( Page page )
+        {
+            CopyFromModel( page );
+        }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent page id.
+        /// </summary>
+        /// <value>
+        /// The parent page id.
+        /// </value>
+        public int? ParentPageId { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
+
+        /// <summary />
+        public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int? SiteId { get; set; }
+
+        /// <summary />
+        public string Layout { get; set; }
+
+        /// <summary />
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary />
+        public bool EnableViewState { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayDescription { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayIcon { get; set; }
+
+        /// <summary />
+        public bool MenuDisplayChildPages { get; set; }
+
+        /// <summary />
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public int? IconFileId { get; set; }
+
+        /// <summary />
+        public bool IncludeAdminFooter { get; set; }
 
         /// <summary>
         /// Gets or sets the route id.
@@ -76,66 +143,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories
-        {
-            get
-            {
-                var attributeCategories = new SortedDictionary<string, List<string>>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    var attribute = AttributeCache.Read( id );
-                    if ( !attributeCategories.ContainsKey( attribute.Key ) )
-                        attributeCategories.Add( attribute.Category, new List<string>() );
-                    attributeCategories[attribute.Category].Add( attribute.Key );
-                }
-
-                return attributeCategories;
-            }
-
-            set { }
-        }
-
-        /// <summary>
-        /// List of attributes associated with the page.  This object will not include values.
-        /// To get values associated with the current page instance, use the AttributeValues
-        /// </summary>
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
-        {
-            get
-            {
-                var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
-                    attributes.Add( attribute.Key, attribute );
-                }
-
-                return attributes;
-            }
-
-            set
-            {
-                this.AttributeIds = new List<int>();
-                foreach ( var attribute in value )
-                    this.AttributeIds.Add( attribute.Value.Id );
-            }
-        }
-
-        private List<int> AttributeIds = new List<int>();
-
-        /// <summary>
-        /// Dictionary of all attributes and their value.
-        /// </summary>
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
-
-        /// <summary>
         /// Gets or sets the layout path for the page
         /// </summary>
         /// <value>
@@ -154,9 +161,13 @@ namespace Rock.Web.Cache
             get
             {
                 if ( ParentPageId != null && ParentPageId.Value != 0 )
+                {
                     return PageCache.Read( ParentPageId.Value );
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -168,9 +179,13 @@ namespace Rock.Web.Cache
             get
             {
                 if ( SiteId != null && SiteId.Value != 0 )
+                {
                     return SiteCache.Read( SiteId.Value );
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -186,14 +201,16 @@ namespace Rock.Web.Cache
                 if ( pageIds != null )
                 {
                     foreach ( int id in pageIds )
+                    {
                         pages.Add( PageCache.Read( id ) );
+                    }
                 }
                 else
                 {
                     pageIds = new List<int>();
 
-                    Rock.Model.PageService pageService = new Rock.Model.PageService();
-                    foreach ( Rock.Model.Page page in pageService.GetByParentPageId( this.Id ) )
+                    PageService pageService = new PageService();
+                    foreach ( Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         pageIds.Add( page.Id );
                         pages.Add( PageCache.Read( page ) );
@@ -220,7 +237,9 @@ namespace Rock.Web.Cache
                     {
                         BlockCache block = BlockCache.Read( id );
                         if ( block != null )
+                        {
                             blocks.Add( block );
+                        }
                     }
                 }
                 else
@@ -228,8 +247,8 @@ namespace Rock.Web.Cache
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.Model.BlockService blockService = new Rock.Model.BlockService();
-                    foreach ( Rock.Model.Block block in blockService.GetByLayout( this.Layout ) )
+                    BlockService blockService = new BlockService();
+                    foreach ( Block block in blockService.GetByLayout( this.Layout ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
@@ -237,7 +256,7 @@ namespace Rock.Web.Cache
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.Model.Block block in blockService.GetByPageId( this.Id ) )
+                    foreach ( Block block in blockService.GetByPageId( this.Id ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
@@ -268,9 +287,75 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.ParentPage != null )
+                {
+                    return this.ParentPage;
+                }
+                else
+                {
+                    return this.Site;
+                }
+            }
+        }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
+        {
+            base.CopyFromModel( model );
+
+            if ( model is Page )
+            {
+                var page = (Page)model;
+                this.Name = page.Name;
+                this.ParentPageId = page.ParentPageId;
+                this.Title = page.Title;
+                this.IsSystem = page.IsSystem;
+                this.SiteId = page.SiteId;
+                this.Layout = page.Layout;
+                this.RequiresEncryption = page.RequiresEncryption;
+                this.EnableViewState = page.EnableViewState;
+                this.MenuDisplayDescription = page.MenuDisplayDescription;
+                this.MenuDisplayIcon = page.MenuDisplayIcon;
+                this.MenuDisplayChildPages = page.MenuDisplayChildPages;
+                this.DisplayInNavWhen = page.DisplayInNavWhen;
+                this.Order = page.Order;
+                this.OutputCacheDuration = page.OutputCacheDuration;
+                this.Description = page.Description;
+                this.IconFileId = page.IconFileId;
+                this.IncludeAdminFooter = page.IncludeAdminFooter;
+
+                if ( page.Attributes != null )
+                {
+                    this.Attributes = page.Attributes;
+                }
+
+                this.PageContexts = new Dictionary<string, string>();
+                if ( page.PageContexts != null )
+                {
+                    foreach ( var pageContext in page.PageContexts )
+                    {
+                        this.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Saves the attribute values for the page
@@ -278,13 +363,15 @@ namespace Rock.Web.Cache
         /// <param name="personId">The person id.</param>
         public void SaveAttributeValues(int? personId)
         {
-            Rock.Model.PageService pageService = new Model.PageService();
-            Rock.Model.Page pageModel = pageService.Get( this.Id );
+            PageService pageService = new Model.PageService();
+            Page pageModel = pageService.Get( this.Id );
             if ( pageModel != null )
             {
                 pageModel.LoadAttributes();
                 foreach ( var attribute in pageModel.Attributes )
+                {
                     Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                }
             }
         }
 
@@ -294,7 +381,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public bool DisplayInNav( Rock.Model.Person person )
+        public bool DisplayInNav( Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
@@ -337,7 +424,9 @@ namespace Rock.Web.Cache
                     }
 
                     if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
+                    {
                         Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                    }
                 }
 
                 return keyModel.Entity;
@@ -368,27 +457,10 @@ namespace Rock.Web.Cache
         public void BlockContentUpdated(object sender)
         {
             if ( OnBlockContentUpdated != null )
-                OnBlockContentUpdated( sender, new EventArgs() );
-        }
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
             {
-                if ( this.ParentPage != null )
-                    return this.ParentPage;
-                else
-                    return this.Site;
+                OnBlockContentUpdated( sender, new EventArgs() );
             }
         }
-
-        #endregion
 
         #region SharedItemCaching
 
@@ -536,6 +608,12 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #endregion
+
+        #region Private Methods
+
+        #endregion
+
         #region Static Methods
 
         /// <summary>
@@ -564,7 +642,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="pageModel"></param>
         /// <returns></returns>
-        public static PageCache Read( Rock.Model.Page pageModel )
+        public static PageCache Read( Page pageModel )
         {
             string cacheKey = PageCache.CacheKey( pageModel.Id );
 
@@ -575,7 +653,7 @@ namespace Rock.Web.Cache
                 return page;
             else
             {
-                page = PageCache.CopyModel( pageModel );
+                page = new PageCache( pageModel );
                 cache.Set( cacheKey, page, new CacheItemPolicy() );
 
                 return page;
@@ -599,13 +677,13 @@ namespace Rock.Web.Cache
                 return page;
             else
             {
-                Rock.Model.PageService pageService = new Model.PageService();
-                Rock.Model.Page pageModel = pageService.Get( id );
+                var pageService = new PageService();
+                var pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     pageModel.LoadAttributes();
 
-                    page = PageCache.CopyModel( pageModel );
+                    page = new PageCache( pageModel );
  
                     cache.Set( cacheKey, page, new CacheItemPolicy() );
 
@@ -615,24 +693,6 @@ namespace Rock.Web.Cache
                     return null;
 
             }
-        }
-
-        // Copies the Model object to the Cached object
-        private static PageCache CopyModel( Rock.Model.Page pageModel )
-        {
-            // Creates new object by copying properties of model
-            var page = new Rock.Web.Cache.PageCache(pageModel);
-
-            if (pageModel.Attributes != null)
-                foreach ( var attribute in pageModel.Attributes )
-                    page.AttributeIds.Add( attribute.Value.Id );
-
-            page.PageContexts = new Dictionary<string,string>();
-            if ( pageModel.PageContexts != null )
-                foreach ( var pageContext in pageModel.PageContexts )
-                    page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
-
-            return page;
         }
 
         /// <summary>
@@ -695,7 +755,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( Rock.Model.Person person )
+        public XDocument MenuXml( Person person )
         {
             return MenuXml( 1, person );
         }
@@ -706,13 +766,13 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Rock.Model.Person person )
+        public XDocument MenuXml( int levelsDeep, Person person )
         {
             XElement menuElement = MenuXmlElement( levelsDeep, person );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep,  Rock.Model.Person person )
+        private XElement MenuXmlElement( int levelsDeep,  Person person )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {

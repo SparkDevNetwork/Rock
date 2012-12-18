@@ -285,6 +285,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
