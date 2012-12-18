@@ -477,9 +477,10 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Sets the configuration.
+        /// Sets the configuration value.
         /// </summary>
-        /// <param name="config">The config.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
         public void SetConfigurationValue( string key, string value )
         {
             switch ( key.ToUpper() )

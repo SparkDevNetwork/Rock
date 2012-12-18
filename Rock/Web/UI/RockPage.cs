@@ -95,7 +95,7 @@ namespace Rock.Web.UI
 
                 if ( _CurrentUser == null )
                 {
-                    _CurrentUser = Rock.Model.UserService.GetCurrentUser();
+                    _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
                         Context.Items.Add( "CurrentUser", _CurrentUser );
                 }

@@ -112,11 +112,11 @@ namespace Rock.Rest
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userService = new Rock.Model.UserService();
-                var user = userService.GetByUserName( principal.Identity.Name );
+                var userLoginService = new Rock.Model.UserLoginService();
+                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
-                if ( user != null )
-                    return user;
+                if ( userLogin != null )
+                    return userLogin;
             }
 
             return null;
