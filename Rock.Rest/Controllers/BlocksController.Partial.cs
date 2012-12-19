@@ -46,6 +46,7 @@ namespace Rock.Rest.Controllers
             if ( user != null )
             {
                 var service = new BlockService();
+                block.Id = id;
                 Block model;
                 if ( !service.TryGet( id, out model ) )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
