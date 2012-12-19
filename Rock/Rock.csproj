@@ -163,7 +163,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
-    <Compile Include="Model\BlockDto.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AuthDTO.cs" />

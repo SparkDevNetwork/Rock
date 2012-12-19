@@ -18,7 +18,7 @@ namespace Rock.Web.Cache
     /// <typeparam name="T"></typeparam>
     [Serializable]
     public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes
-        where T : ISecured, Rock.Attribute.IHasAttributes, new()
+        where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
         /// <summary>
         /// Gets or sets the id.
@@ -51,6 +51,16 @@ namespace Rock.Web.Cache
                 this.TypeId = secureModel.TypeId;
                 this.TypeName = secureModel.TypeName;
                 this.SupportedActions = secureModel.SupportedActions;
+            }
+
+            var attributeModel = model as Rock.Attribute.IHasAttributes;
+            if ( attributeModel != null )
+            {
+                if ( attributeModel.Attributes != null )
+                {
+                    this.Attributes = attributeModel.Attributes;
+                }
+                this.AttributeValues = attributeModel.AttributeValues;
             }
         }
 
@@ -152,9 +162,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// List of attributes associated with the page.  This object will not include values.
-        /// To get values associated with the current page instance, use the AttributeValues
+        /// List of attributes associated with the object.  This property will not include the attribute values.
+        /// The <see cref="AttributeValues" /> property should be used to get attribute values.  Dictionary key
+        /// is the attribute key, and value is the cached attribute
         /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
         public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
         {
             get
@@ -173,8 +187,13 @@ namespace Rock.Web.Cache
             set
             {
                 this.AttributeIds = new List<int>();
-                foreach ( var attribute in value )
-                    this.AttributeIds.Add( attribute.Value.Id );
+                if ( value != null )
+                {
+                    foreach ( var attribute in value )
+                    {
+                        this.AttributeIds.Add( attribute.Value.Id );
+                    }
+                }
             }
         }
         /// <summary>
@@ -186,6 +205,42 @@ namespace Rock.Web.Cache
         /// Dictionary of all attributes and their value.
         /// </summary>
         public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public virtual void SaveAttributeValues( int? personId )
+        {
+            var service = new Rock.Data.Service<T>();
+            var model = service.Get( this.Id );
+
+            if ( model != null )
+            {
+                model.LoadAttributes();
+                foreach ( var attribute in model.Attributes )
+                {
+                    Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reloads the attribute values.
+        /// </summary>
+        public virtual void ReloadAttributeValues()
+        {
+            var service = new Rock.Data.Service<T>();
+            var model = service.Get( this.Id );
+
+            if ( model != null )
+            {
+                model.LoadAttributes();
+
+                this.AttributeValues = model.AttributeValues;
+                this.Attributes = model.Attributes;
+            }
+        }
 
         #endregion
     }

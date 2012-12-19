@@ -292,14 +292,14 @@ namespace RockWeb.Blocks.Administration
             MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
             tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
 
-            List<Rock.Model.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
             marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
             marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
             marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValueDto>>();
             foreach ( var attribute in attributesForAdType )
             {
-                marketingCampaignAd.Attributes[attribute.Key] = Rock.Web.Cache.AttributeCache.Read( attribute );
+                marketingCampaignAd.Attributes[attribute.Key] = attribute;
                 if ( marketingCampaignAd.AttributeValues.Count( v => v.Key.Equals( attribute.Key ) ) == 0 )
                 {
                     List<AttributeValueDto> attributeValues = new List<AttributeValueDto>();
@@ -325,22 +325,13 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="marketingAdTypeId">The marketing ad type id.</param>
         /// <returns></returns>
-        private static List<Rock.Model.Attribute> GetAttributesForAdType( int marketingAdTypeId )
+        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
         {
             MarketingCampaignAd temp = new MarketingCampaignAd();
             temp.MarketingCampaignAdTypeId = marketingAdTypeId;
 
             Rock.Attribute.Helper.LoadAttributes( temp );
-            List<Rock.Web.Cache.AttributeCache> attribs = temp.Attributes.Values.ToList();
-
-            List<Rock.Model.Attribute> result = new List<Rock.Model.Attribute>();
-            foreach ( var item in attribs )
-            {
-                var attrib = item.ToModel();
-                result.Add( attrib );
-            }
-
-            return result;
+            return temp.Attributes.Values.ToList();
         }
 
         /// <summary>
