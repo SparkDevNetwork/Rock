@@ -105,8 +105,9 @@ namespace Rock.Migrations
         /// <param name="parentPageGuid">The parent page GUID.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="layout">The layout.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddPage( string parentPageGuid, string name, string description, string guid )
+        public void AddPage( string parentPageGuid, string name, string description, string layout, string guid )
         {
             Sql( string.Format( @"
                 
@@ -122,16 +123,29 @@ namespace Rock.Migrations
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[Guid])
                 VALUES(
-                    '{1}','{1}',1,@ParentPageId,1,'Default',
+                    '{1}','{1}',1,@ParentPageId,1,'{3}',
                     0,1,1,0,1,0,
                     @Order,0,'{2}',1,
-                    null,'{3}')
+                    null,'{4}')
 ",
                     parentPageGuid,
                     name,
                     description.Replace( "'", "''" ),
+                    layout,
                     guid
                     ) );
+        }
+
+        /// <summary>
+        /// Adds the page.
+        /// </summary>
+        /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddPage( string parentPageGuid, string name, string description, string guid )
+        {
+            AddPage( parentPageGuid, name, description, "Default", guid );
         }
 
         /// <summary>

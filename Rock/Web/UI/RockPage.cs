@@ -718,6 +718,42 @@ namespace Rock.Web.UI
             AddScriptLink( Page, "~/scripts/Kendo/kendo.treeview.min.js" );
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<RockBlock> RockBlocks
+        {
+            get
+            {
+                List<RockBlock> result = new List<RockBlock>();
+                GetControlList<RockBlock>( this.Controls, result );
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets the control list. 
+        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="controlCollection">The control collection.</param>
+        /// <param name="resultCollection">The result collection.</param>
+        private void GetControlList<T>( ControlCollection controlCollection, List<T> resultCollection ) where T : Control
+        {
+            foreach ( Control control in controlCollection )
+            {
+                if ( control is T )
+                {
+                    resultCollection.Add( (T)control );
+                }
+
+                if ( control.HasControls() )
+                {
+                    GetControlList( control.Controls, resultCollection );
+                }
+            }
+        }
+
         #endregion
 
         #region Cms Admin Content

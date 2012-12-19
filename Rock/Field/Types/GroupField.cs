@@ -1,21 +1,17 @@
-//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field Type to select a single (or null) Group
     /// </summary>
-    public class GroupTypeField : FieldType
+    public class GroupField : FieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
@@ -26,13 +22,14 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            CheckBoxList editControl = new CheckBoxList();
+            DropDownList editControl = new DropDownList();
 
-            GroupTypeService groupTypeService = new GroupTypeService();
-            var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            GroupService groupService = new GroupService();
+            var groupTypes = groupService.Queryable().OrderBy( a => a.Name ).ToList();
+            editControl.Items.Add( None.ListItem );
             foreach ( var groupType in groupTypes )
             {
-                editControl.Items.Add(new ListItem(groupType.Name, groupType.Id.ToString()));
+                editControl.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
 
             return editControl;
@@ -48,13 +45,18 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is ListControl )
+            DropDownList dropDownList = control as DropDownList;
+
+            if ( dropDownList != null )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                    if ( li.Selected )
-                        values.Add( li.Value );
-                return values.AsDelimited<string>( "," );
+                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
+                {
+                    return null;
+                }
+                else
+                {
+                    return dropDownList.SelectedValue;
+                }
             }
 
             return null;
@@ -68,15 +70,8 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            List<string> values = new List<string>();
-            values.AddRange( value.Split( ',' ) );
-
-            if ( control != null && control is ListControl )
-            {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                    li.Selected = values.Contains( li.Value );
-            }
+            DropDownList dropDownList = control as DropDownList;
+            dropDownList.SetValue( value );
         }
     }
 }
