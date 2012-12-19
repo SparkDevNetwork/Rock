@@ -515,7 +515,7 @@ namespace Rock.Data
         private bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                propertyInfo.GetCustomAttribute( typeof( System.Runtime.Serialization.DataMemberAttribute ) ) != null )
+                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" ) )
             {
                 return true;
             }
