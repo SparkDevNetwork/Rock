@@ -51,4 +51,29 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class SiteDomainExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static SiteDomain Clone( this SiteDomain entity )
+        {
+            var newEntity = new SiteDomain();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.SiteId = entity.SiteId;
+            newEntity.Domain = entity.Domain;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

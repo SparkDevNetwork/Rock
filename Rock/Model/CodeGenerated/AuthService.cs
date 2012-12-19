@@ -51,4 +51,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AuthExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Auth Clone( this Auth entity )
+        {
+            var newEntity = new Auth();
+
+            newEntity.EntityTypeId = entity.EntityTypeId;
+            newEntity.EntityId = entity.EntityId;
+            newEntity.Order = entity.Order;
+            newEntity.Action = entity.Action;
+            newEntity.AllowOrDeny = entity.AllowOrDeny;
+            newEntity.SpecialRole = entity.SpecialRole;
+            newEntity.PersonId = entity.PersonId;
+            newEntity.GroupId = entity.GroupId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

@@ -63,4 +63,43 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PageExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Page Clone( this Page entity )
+        {
+            var newEntity = new Page();
+
+            newEntity.Name = entity.Name;
+            newEntity.ParentPageId = entity.ParentPageId;
+            newEntity.Title = entity.Title;
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.SiteId = entity.SiteId;
+            newEntity.Layout = entity.Layout;
+            newEntity.RequiresEncryption = entity.RequiresEncryption;
+            newEntity.EnableViewState = entity.EnableViewState;
+            newEntity.MenuDisplayDescription = entity.MenuDisplayDescription;
+            newEntity.MenuDisplayIcon = entity.MenuDisplayIcon;
+            newEntity.MenuDisplayChildPages = entity.MenuDisplayChildPages;
+            newEntity.DisplayInNavWhen = entity.DisplayInNavWhen;
+            newEntity.Order = entity.Order;
+            newEntity.OutputCacheDuration = entity.OutputCacheDuration;
+            newEntity.Description = entity.Description;
+            newEntity.IconFileId = entity.IconFileId;
+            newEntity.IncludeAdminFooter = entity.IncludeAdminFooter;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

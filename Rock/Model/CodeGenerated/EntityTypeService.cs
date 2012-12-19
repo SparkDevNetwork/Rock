@@ -93,4 +93,31 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EntityTypeExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static EntityType Clone( this EntityType entity )
+        {
+            var newEntity = new EntityType();
+
+            newEntity.Name = entity.Name;
+            newEntity.AssemblyName = entity.AssemblyName;
+            newEntity.FriendlyName = entity.FriendlyName;
+            newEntity.IsEntity = entity.IsEntity;
+            newEntity.IsSecured = entity.IsSecured;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

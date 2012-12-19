@@ -51,4 +51,31 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonViewedExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonViewed Clone( this PersonViewed entity )
+        {
+            var newEntity = new PersonViewed();
+
+            newEntity.ViewerPersonId = entity.ViewerPersonId;
+            newEntity.TargetPersonId = entity.TargetPersonId;
+            newEntity.ViewDateTime = entity.ViewDateTime;
+            newEntity.IpAddress = entity.IpAddress;
+            newEntity.Source = entity.Source;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

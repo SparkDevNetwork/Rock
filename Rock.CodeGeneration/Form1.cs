@@ -228,7 +228,35 @@ namespace Rock.CodeGeneration
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
-            sb.AppendLine( "}" );
+
+            sb.AppendFormat( @"
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class {0}Extension
+    {{
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name=""value"">The value.</param>
+        /// <returns></returns>
+        public static {0} Clone( this {0} entity )
+        {{
+            var newEntity = new {0}();
+
+", type.Name);
+
+            foreach ( var property in properties )
+            {
+                sb.AppendFormat( "            newEntity.{0} = entity.{0};" + Environment.NewLine, property.Key );
+            }
+
+            sb.AppendFormat( @"
+            return newEntity;
+        }}
+
+    }}
+}}", type.Name);
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );
             WriteFile( file, sb );
@@ -501,7 +529,7 @@ order by [parentTable]
 
             sb.AppendLine( "    }" );
 
-            string extensionSection = @"
+            sb.AppendFormat( @"
     /// <summary>
     /// 
     /// </summary>
@@ -554,9 +582,8 @@ order by [parentTable]
         }}
 
     }}
-}}";
+}}", type.Name);
 
-            sb.AppendFormat( extensionSection, type.Name );
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
             WriteFile( file, sb );
         }

@@ -57,4 +57,31 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PaymentGatewayExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PaymentGateway Clone( this PaymentGateway entity )
+        {
+            var newEntity = new PaymentGateway();
+
+            newEntity.Name = entity.Name;
+            newEntity.Description = entity.Description;
+            newEntity.ApiUrl = entity.ApiUrl;
+            newEntity.ApiKey = entity.ApiKey;
+            newEntity.ApiSecret = entity.ApiSecret;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

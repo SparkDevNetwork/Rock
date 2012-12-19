@@ -61,4 +61,30 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GroupTypeExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static GroupType Clone( this GroupType entity )
+        {
+            var newEntity = new GroupType();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.Name = entity.Name;
+            newEntity.Description = entity.Description;
+            newEntity.DefaultGroupRoleId = entity.DefaultGroupRoleId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

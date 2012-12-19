@@ -51,4 +51,35 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class HtmlContentExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static HtmlContent Clone( this HtmlContent entity )
+        {
+            var newEntity = new HtmlContent();
+
+            newEntity.BlockId = entity.BlockId;
+            newEntity.EntityValue = entity.EntityValue;
+            newEntity.Version = entity.Version;
+            newEntity.Content = entity.Content;
+            newEntity.IsApproved = entity.IsApproved;
+            newEntity.ApprovedByPersonId = entity.ApprovedByPersonId;
+            newEntity.ApprovedDateTime = entity.ApprovedDateTime;
+            newEntity.StartDateTime = entity.StartDateTime;
+            newEntity.ExpireDateTime = entity.ExpireDateTime;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

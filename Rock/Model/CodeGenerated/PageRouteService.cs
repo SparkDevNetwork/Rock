@@ -51,4 +51,29 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PageRouteExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PageRoute Clone( this PageRoute entity )
+        {
+            var newEntity = new PageRoute();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.PageId = entity.PageId;
+            newEntity.Route = entity.Route;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

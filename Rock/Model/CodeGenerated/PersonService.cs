@@ -91,4 +91,50 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Person Clone( this Person entity )
+        {
+            var newEntity = new Person();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.RecordTypeValueId = entity.RecordTypeValueId;
+            newEntity.RecordStatusValueId = entity.RecordStatusValueId;
+            newEntity.RecordStatusReasonValueId = entity.RecordStatusReasonValueId;
+            newEntity.PersonStatusValueId = entity.PersonStatusValueId;
+            newEntity.TitleValueId = entity.TitleValueId;
+            newEntity.GivenName = entity.GivenName;
+            newEntity.NickName = entity.NickName;
+            newEntity.LastName = entity.LastName;
+            newEntity.SuffixValueId = entity.SuffixValueId;
+            newEntity.PhotoId = entity.PhotoId;
+            newEntity.BirthDay = entity.BirthDay;
+            newEntity.BirthMonth = entity.BirthMonth;
+            newEntity.BirthYear = entity.BirthYear;
+            newEntity.Gender = entity.Gender;
+            newEntity.MaritalStatusValueId = entity.MaritalStatusValueId;
+            newEntity.AnniversaryDate = entity.AnniversaryDate;
+            newEntity.GraduationDate = entity.GraduationDate;
+            newEntity.Email = entity.Email;
+            newEntity.IsEmailActive = entity.IsEmailActive;
+            newEntity.EmailNote = entity.EmailNote;
+            newEntity.DoNotEmail = entity.DoNotEmail;
+            newEntity.SystemNote = entity.SystemNote;
+            newEntity.ViewedCount = entity.ViewedCount;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }
