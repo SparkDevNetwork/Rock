@@ -843,6 +843,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
         protected override void OnRowCommand( GridViewCommandEventArgs e )
         {
+        	base.OnRowCommand( e );
+        	
             if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = Int32.Parse( e.CommandArgument.ToString() );

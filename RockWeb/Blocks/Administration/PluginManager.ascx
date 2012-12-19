@@ -31,25 +31,21 @@
                 onrowdatabound="gPackageList_RowDataBound" DataKeyNames="Id,Version" GridLines="none"
                 onrowcommand="gPackageList_RowCommand" >
                     <Columns>
+                        <asp:ImageField DataImageUrlField="IconUrl" NullImageUrl="http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png" ItemStyle-VerticalAlign="Top" ItemStyle-Width="80" ItemStyle-Height="80" AlternateText="Plugin Icon"></asp:ImageField>
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
-                                <div class="span2">
-                                    <img runat="server" id="imgIcon" src='<%# Eval("IconUrl") %>' alt="Plugin Icon" width="80" height="80" />
+                                <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
+                                <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
+                                <p><asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
+                                    <asp:Literal runat="server" ID="lblLatestVersion" Visible="false" Text="Latest Version "></asp:Literal>
+                                    <asp:Literal runat="server" ID="lblInstalledVersion"  Visible="false" Text="Installed Version "></asp:Literal>
+                                </p>
+                                <div>
+                                    <p><%# Eval("Description") %></p>
                                 </div>
-                                <div class="span10">
-                                    <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
-                                    <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
-                                    <p><asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
-                                        <asp:Literal runat="server" ID="lblLatestVersion" Visible="false" Text="Latest Version "></asp:Literal>
-                                        <asp:Literal runat="server" ID="lblInstalledVersion"  Visible="false" Text="Installed Version "></asp:Literal>
-                                    </p>
-                                    <div>
-                                        <p><%# Eval("Description") %></p>
-                                    </div>
-                                    <asp:LinkButton CssClass="btn" ID="lbCommand" runat="server" />
-                                    <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="update" Text="Update" runat="server" /> &nbsp;
-                                    <a runat="server" id="lProjectUrl" href="#">Project Website</a>
-                                </div>
+                                <asp:LinkButton CssClass="btn" ID="lbCommand" runat="server" />
+                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="update" Text="Update" runat="server" /> &nbsp;
+                                <a runat="server" id="lProjectUrl" href="#">Project Website</a>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
