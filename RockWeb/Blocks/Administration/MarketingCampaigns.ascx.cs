@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pnlMarketingCampaignAdEditor.Visible )
             {
-                LoadAdAttributes( new MarketingCampaignAdDto(), true, false );
+                LoadAdAttributes( new MarketingCampaignAd(), true, false );
             }
 
             base.OnLoad( e );
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlMarketingCampaignAdType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            MarketingCampaignAdDto marketingCampaignAd = new MarketingCampaignAdDto();
+            MarketingCampaignAd marketingCampaignAd = new MarketingCampaignAd();
 
             LoadAdAttributes( marketingCampaignAd, false, false );
             Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
