@@ -19,7 +19,7 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [DataContract( IsReference = true )]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
-        where T : ISecured, new()
+        where T : Model<T>, ISecured, new()
     {
         #region ISecured implementation
 
@@ -139,7 +139,7 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues
+        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues
         {
             get 
             {
@@ -152,7 +152,7 @@ namespace Rock.Data
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, List<Rock.Model.AttributeValueDto>> _attributeValues;
+        private Dictionary<string, List<Rock.Model.AttributeValue>> _attributeValues;
 
         #endregion
     }

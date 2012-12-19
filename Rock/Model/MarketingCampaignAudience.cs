@@ -3,9 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -14,6 +15,7 @@ namespace Rock.Model
     /// MarketingCampaignAudience POCO Entity
     /// </summary>
     [Table( "MarketingCampaignAudience" )]
+    [DataContract( IsReference = true )]
     public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>
     {
         /// <summary>
@@ -22,6 +24,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign id.
         /// </value>
+        [DataMember]
         public int MarketingCampaignId { get; set; }
 
         /// <summary>
@@ -30,6 +33,7 @@ namespace Rock.Model
         /// <value>
         /// The audience type id.
         /// </value>
+        [DataMember]
         public int AudienceTypeValueId { get; set; }
 
         /// <summary>
@@ -38,26 +42,8 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is primary; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsPrimary { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MarketingCampaignAudience Read( int id )
-        {
-            return Read<MarketingCampaignAudience>( id );
-        }
 
         /// <summary>
         /// Gets the name.
@@ -65,16 +51,12 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public virtual string Name
         {
             get
             {
-                if ( AudienceTypeValue == null )
-                {
-                    AudienceTypeValue = Model.DefinedValue.Read( AudienceTypeValueId );
-                }
-                
-                return AudienceTypeValue.Name;
+                return ( AudienceTypeValue != null ? AudienceTypeValue.Name : string.Empty );
             }
         }
 
@@ -84,6 +66,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign.
         /// </value>
+        [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
         /// <summary>
@@ -92,6 +75,7 @@ namespace Rock.Model
         /// <value>
         /// The audience type value.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue AudienceTypeValue { get; set; }
     }
 

@@ -3,12 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Model;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +17,7 @@ namespace Rock.Model
     /// MarketingCampaign POCO Entity
     /// </summary>
     [Table( "MarketingCampaign" )]
+    [DataContract( IsReference = true )]
     public partial class MarketingCampaign : Model<MarketingCampaign>
     {
         /// <summary>
@@ -27,6 +28,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -35,6 +37,7 @@ namespace Rock.Model
         /// <value>
         /// The contact person id.
         /// </value>
+        [DataMember]
         public int? ContactPersonId { get; set; }
 
         /// <summary>
@@ -44,6 +47,7 @@ namespace Rock.Model
         /// The contact email.
         /// </value>
         [MaxLength( 254 )]
+        [DataMember]
         public string ContactEmail { get; set; }
 
         /// <summary>
@@ -53,6 +57,7 @@ namespace Rock.Model
         /// The contact phone number.
         /// </value>
         [MaxLength( 20 )]
+        [DataMember]
         public string ContactPhoneNumber { get; set; }
 
         /// <summary>
@@ -62,6 +67,7 @@ namespace Rock.Model
         /// The full name of the contact.
         /// </value>
         [MaxLength( 152 )]
+        [DataMember]
         public string ContactFullName { get; set; }
 
         /// <summary>
@@ -70,17 +76,8 @@ namespace Rock.Model
         /// <value>
         /// The event group id.
         /// </value>
+        [DataMember]
         public int? EventGroupId { get; set; }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MarketingCampaign Read( int id )
-        {
-            return Read<MarketingCampaign>( id );
-        }
 
         /// <summary>
         /// Gets or sets the contact person.
@@ -88,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The contact person.
         /// </value>
+        [DataMember]
         public virtual Person ContactPerson { get; set; }
 
         /// <summary>
@@ -96,6 +94,7 @@ namespace Rock.Model
         /// <value>
         /// The event group.
         /// </value>
+        [DataMember]
         public virtual Group EventGroup { get; set; }
 
         /// <summary>
@@ -104,6 +103,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign ads.
         /// </value>
+        [DataMember]
         public virtual ICollection<MarketingCampaignAd> MarketingCampaignAds { get; set; }
 
         /// <summary>
@@ -112,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign audiences.
         /// </value>
+        [DataMember]
         public virtual ICollection<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
 
         /// <summary>
@@ -120,16 +121,8 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign campuses.
         /// </value>
+        [DataMember]
         public virtual ICollection<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

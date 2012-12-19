@@ -63,31 +63,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class FieldTypeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static FieldType Clone( this FieldType entity )
-        {
-            var newEntity = new FieldType();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.Assembly = entity.Assembly;
-            newEntity.Class = entity.Class;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

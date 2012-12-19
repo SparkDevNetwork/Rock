@@ -6,7 +6,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Model;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -15,6 +16,7 @@ namespace Rock.Model
     /// PersonAccountLookup POCO class.
     /// </summary>
     [Table("PersonAccount")]
+    [DataContract( IsReference = true )]
     public partial class PersonAccount : Model<PersonAccount>
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.Model
         /// <value>
         /// The person id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -32,6 +35,7 @@ namespace Rock.Model
         /// The account.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Account { get; set; }
 
         /// <summary>
@@ -40,26 +44,8 @@ namespace Rock.Model
         /// <value>
         /// The person.
         /// </value>
+        [DataMember]
         public virtual Person Person { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PersonAccount Read( int id )
-        {
-            return Read<PersonAccount>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

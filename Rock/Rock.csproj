@@ -171,54 +171,32 @@
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\AuthDTO.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
-    <Compile Include="Model\CodeGenerated\BinaryFileDto.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
-    <Compile Include="Model\CodeGenerated\BlockDto.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
-    <Compile Include="Model\CodeGenerated\BlockTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\HtmlContentDto.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignCampusDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignService.cs" />
-    <Compile Include="Model\CodeGenerated\PageContextDto.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
-    <Compile Include="Model\CodeGenerated\PageDto.cs" />
-    <Compile Include="Model\CodeGenerated\PageRouteDto.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
-    <Compile Include="Model\CodeGenerated\SiteDomainDto.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
-    <Compile Include="Model\CodeGenerated\SiteDTO.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\CodeGenerated\UserLoginDto.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActionDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActionService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActionTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActivityDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActivityTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
-    <Compile Include="Model\MarketingCampaignAdDto.partial.cs" />
     <Compile Include="Model\MarketingCampaignAdType.cs" />
     <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Model\MarketingCampaignAudience.cs" />
-    <Compile Include="Model\MarketingCampaignAudienceDto.partial.cs" />
     <Compile Include="Model\MarketingCampaignCampus.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
@@ -232,36 +210,24 @@
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeDto.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeQualifierDto.cs" />
     <Compile Include="Model\CodeGenerated\AttributeQualifierService.cs" />
     <Compile Include="Model\AttributeQualifierService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AttributeService.cs" />
     <Compile Include="Model\AttributeService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeValueDto.cs" />
     <Compile Include="Model\CodeGenerated\AttributeValueService.cs" />
     <Compile Include="Model\AttributeValueService.Partial.cs" />
     <Compile Include="Model\Audit.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\AuditDto.cs" />
     <Compile Include="Model\CodeGenerated\AuditService.cs" />
-    <Compile Include="Model\CodeGenerated\CategoryDto.cs" />
     <Compile Include="Model\CodeGenerated\CategoryService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\EntityTypeService.cs" />
-    <Compile Include="Model\EntityTypeDto.Partial.cs" />
     <Compile Include="Field\Types\HtmlField.cs" />
     <Compile Include="Field\Types\MemoField.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialBatchDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
-    <Compile Include="Model\CodeGenerated\PaymentGatewayDto.cs" />
     <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
-    <Compile Include="Model\CodeGenerated\PersonAccountDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
@@ -279,13 +245,8 @@
     <Compile Include="Migrations\201212041823461_RockModel.Designer.cs">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\CodeGenerated\ServiceJobDto.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowTriggerDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
-    <Compile Include="Model\CodeGenerated\MetricDto.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -300,22 +261,15 @@
     <Compile Include="Model\TaggedItemService.Partial.cs" />
     <Compile Include="Model\TagService.Partial.cs" />
     <Compile Include="Model\Tag.cs" />
-    <Compile Include="Model\CodeGenerated\TagDto.cs" />
     <Compile Include="Model\TaggedItem.cs" />
-    <Compile Include="Model\CodeGenerated\DefinedTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\DefinedTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\DefinedValueDto.cs" />
     <Compile Include="Model\CodeGenerated\DefinedValueService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityChangeDto.cs" />
     <Compile Include="Model\CodeGenerated\EntityChangeService.cs" />
-    <Compile Include="Model\CodeGenerated\ExceptionLogDto.cs" />
     <Compile Include="Model\CodeGenerated\ExceptionLogService.cs" />
-    <Compile Include="Model\CodeGenerated\FieldTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\FieldTypeService.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\CodeGenerated\MetricValueDto.cs" />
     <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
     <Compile Include="Model\Metric.cs" />
     <Compile Include="Model\DefinedTypeService.Partial.cs" />
@@ -326,35 +280,26 @@
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\MetricValueService.Partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
-    <Compile Include="Model\CodeGenerated\ServiceLogDto.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
-    <Compile Include="Model\CodeGenerated\TaggedItemDto.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
-    <Compile Include="Model\CodeGenerated\LocationDto.cs" />
     <Compile Include="Model\CodeGenerated\LocationService.cs" />
     <Compile Include="Model\GroupTypeLocationType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Campus.cs" />
-    <Compile Include="Model\CodeGenerated\CampusDto.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EmailTemplateDto.cs" />
     <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
     <Compile Include="Model\EmailTemplateService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\PersonDto.cs" />
-    <Compile Include="Model\CodeGenerated\PersonMergedDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonMergedService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonMergedService.Partial.cs" />
     <Compile Include="Model\PersonMerged.cs" />
     <Compile Include="Model\PersonViewed.cs" />
-    <Compile Include="Model\CodeGenerated\PersonViewedDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonViewedService.cs" />
     <Compile Include="Model\PersonViewedService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\PhoneNumberDto.cs" />
     <Compile Include="Model\CodeGenerated\PhoneNumberService.cs" />
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\DiscService.cs" />
@@ -428,7 +373,6 @@
     <Compile Include="Model\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\FundDto.cs" />
     <Compile Include="Model\CodeGenerated\FundService.cs" />
     <Compile Include="Model\PaymentGateway.cs">
       <SubType>Code</SubType>
@@ -439,7 +383,6 @@
     <Compile Include="Model\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\PledgeDto.cs" />
     <Compile Include="Model\CodeGenerated\PledgeService.cs" />
     <Compile Include="Model\FinancialTransaction.cs">
       <SubType>Code</SubType>
@@ -453,19 +396,15 @@
     <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupDto.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
     <Compile Include="Model\GroupRole.cs" />
     <Compile Include="Model\GroupRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
-    <Compile Include="Model\CodeGenerated\GroupTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
     <Compile Include="Model\GroupMember.cs" />
-    <Compile Include="Model\CodeGenerated\GroupMemberDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
@@ -527,11 +466,8 @@
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowDto.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowLogDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowLogService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.cs" />
     <Compile Include="Model\WorkflowLog.cs" />
     <Compile Include="Model\Workflow.cs" />

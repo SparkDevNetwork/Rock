@@ -40,7 +40,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authenticate]
-        public void Move( int id, BlockDto block )
+        public void Move( int id, Block block )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -53,7 +53,9 @@ namespace Rock.Rest.Controllers
                 if ( !model.IsAuthorized( "Edit", user.Person ) )
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
-                if ( model.IsValid )
+                service.Attach( block );
+
+                if ( block.IsValid )
                 {
                     if ( model.Layout != null && model.Layout != block.Layout )
                         Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
@@ -66,10 +68,8 @@ namespace Rock.Rest.Controllers
                         page.FlushBlocks();
                     }
 
-                    block.CopyToModel( model );
-
-                    service.Move( model );
-                    service.Save( model, user.PersonId );
+                    service.Move( block );
+                    service.Save( block, user.PersonId );
                 }
                 else
                     throw new HttpResponseException( HttpStatusCode.BadRequest );

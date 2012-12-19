@@ -82,11 +82,9 @@ namespace Rock.Data
         bool IsValid { get; }
 
         /// <summary>
-        /// Gets the dto.
+        /// Clones this instance.
         /// </summary>
-        /// <value>
-        /// The dto.
-        /// </value>
-        IDto Dto { get; }
+        /// <returns></returns>
+        IEntity Clone();
     }
 }

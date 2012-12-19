@@ -51,29 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class WorkflowLogExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static WorkflowLog Clone( this WorkflowLog entity )
-        {
-            var newEntity = new WorkflowLog();
-
-            newEntity.WorkflowId = entity.WorkflowId;
-            newEntity.LogDateTime = entity.LogDateTime;
-            newEntity.LogText = entity.LogText;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -51,39 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class MetricExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Metric Clone( this Metric entity )
-        {
-            var newEntity = new Metric();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.Type = entity.Type;
-            newEntity.Category = entity.Category;
-            newEntity.Title = entity.Title;
-            newEntity.Subtitle = entity.Subtitle;
-            newEntity.Description = entity.Description;
-            newEntity.MinValue = entity.MinValue;
-            newEntity.MaxValue = entity.MaxValue;
-            newEntity.CollectionFrequencyValueId = entity.CollectionFrequencyValueId;
-            newEntity.LastCollected = entity.LastCollected;
-            newEntity.Source = entity.Source;
-            newEntity.SourceSQL = entity.SourceSQL;
-            newEntity.Order = entity.Order;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

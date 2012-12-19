@@ -6,6 +6,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -14,6 +16,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "MarketingCampaignAdType" )]
+    [DataContract( IsReference = true )]
     public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
         /// <summary>
@@ -22,6 +25,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -32,6 +36,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -40,26 +45,9 @@ namespace Rock.Model
         /// <value>
         /// The type of the date range.
         /// </value>
-        public DateRangeTypeEnum DateRangeType {get; set;}
+        [DataMember]
+        public DateRangeTypeEnum DateRangeType { get; set; }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MarketingCampaignAdType Read( int id )
-        {
-            return Read<MarketingCampaignAdType>( id );
-        }
     }
 
     /// <summary>

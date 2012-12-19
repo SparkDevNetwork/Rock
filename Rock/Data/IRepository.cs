@@ -170,7 +170,7 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages);
+        bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages);
 
         /// <summary>
         /// Sets the configuration value.

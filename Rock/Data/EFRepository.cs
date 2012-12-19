@@ -23,7 +23,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class EFRepository<T> : IRepository<T>, IDisposable
-        where T : Rock.Data.Entity<T>
+        where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
         /// 
@@ -345,10 +345,10 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
         {
             changes = new List<EntityChange>();
-            audits = new List<AuditDto>();
+            audits = new List<Audit>();
             errorMessages = new List<string>();
 
             Context.ChangeTracker.DetectChanges();
@@ -363,7 +363,7 @@ namespace Rock.Data
                 System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
-                var audit = new Rock.Model.AuditDto();
+                var audit = new Rock.Model.Audit();
 
                 switch ( entry.State )
                 {

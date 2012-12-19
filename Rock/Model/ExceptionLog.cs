@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "ExceptionLog" )]
+    [DataContract( IsReference = true )]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// <value>
         /// Parent Id of the exeption, used for linking inner exceptions..
         /// </value>
+        [DataMember]
         public int? ParentId { get; set; }
         
         /// <summary>
@@ -33,6 +36,7 @@ namespace Rock.Model
         /// <value>
         /// Site Id that the exception occurred on..
         /// </value>
+        [DataMember]
         public int? SiteId { get; set; }
         
         /// <summary>
@@ -41,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// Page Id that the exception occurred on..
         /// </value>
+        [DataMember]
         public int? PageId { get; set; }
         
         /// <summary>
@@ -50,6 +55,7 @@ namespace Rock.Model
         /// Date / time that the exception occurred..
         /// </value>
         [Required]
+        [DataMember]
         public DateTime ExceptionDate { get; set; }
 
         /// <summary>
@@ -58,6 +64,7 @@ namespace Rock.Model
         /// <value>
         /// Created By Person Id.
         /// </value>
+        [DataMember]
         public int? CreatedByPersonId { get; set; }
 
         /// <summary>
@@ -66,6 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The created by person.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Person CreatedByPerson { get; set; }
 
         /// <summary>
@@ -74,6 +82,7 @@ namespace Rock.Model
         /// <value>
         /// Whether the exception has an inner exception..
         /// </value>
+        [DataMember]
         public bool? HasInnerException { get; set; }
         
         /// <summary>
@@ -83,6 +92,7 @@ namespace Rock.Model
         /// Status code that would have been thrown (404, 500, etc).
         /// </value>
         [MaxLength( 10 )]
+        [DataMember]
         public string StatusCode { get; set; }
         
         /// <summary>
@@ -92,6 +102,7 @@ namespace Rock.Model
         /// Name of the exception.
         /// </value>
         [MaxLength( 150 )]
+        [DataMember]
         public string ExceptionType { get; set; }
         
         /// <summary>
@@ -100,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The exception message..
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -109,6 +121,7 @@ namespace Rock.Model
         /// What assembly the exception occurred in..
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Source { get; set; }
         
         /// <summary>
@@ -117,6 +130,7 @@ namespace Rock.Model
         /// <value>
         /// The stack trace that was produced..
         /// </value>
+        [DataMember]
         public string StackTrace { get; set; }
         
         /// <summary>
@@ -126,6 +140,7 @@ namespace Rock.Model
         /// The URL of the page that generated the exception..
         /// </value>
         [MaxLength( 250 )]
+        [DataMember]
         public string PageUrl { get; set; }
         
         /// <summary>
@@ -134,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// Server variables at the time of the exception..
         /// </value>
+        [DataMember]
         public string ServerVariables { get; set; }
         
         /// <summary>
@@ -142,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// Full query string..
         /// </value>
+        [DataMember]
         public string QueryString { get; set; }
         
         /// <summary>
@@ -150,6 +167,7 @@ namespace Rock.Model
         /// <value>
         /// Form items at the time of the exception..
         /// </value>
+        [DataMember]
         public string Form { get; set; }
         
         /// <summary>
@@ -158,26 +176,8 @@ namespace Rock.Model
         /// <value>
         /// Cookies at the time of the exception..
         /// </value>
+        [DataMember]
         public string Cookies { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static ExceptionLog Read( int id )
-        {
-            return Read<ExceptionLog>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

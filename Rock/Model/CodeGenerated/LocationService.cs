@@ -51,44 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class LocationExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Location Clone( this Location entity )
-        {
-            var newEntity = new Location();
-
-            newEntity.Raw = entity.Raw;
-            newEntity.Street1 = entity.Street1;
-            newEntity.Street2 = entity.Street2;
-            newEntity.City = entity.City;
-            newEntity.State = entity.State;
-            newEntity.Country = entity.Country;
-            newEntity.Zip = entity.Zip;
-            newEntity.Latitude = entity.Latitude;
-            newEntity.Longitude = entity.Longitude;
-            newEntity.ParcelId = entity.ParcelId;
-            newEntity.StandardizeAttempt = entity.StandardizeAttempt;
-            newEntity.StandardizeService = entity.StandardizeService;
-            newEntity.StandardizeResult = entity.StandardizeResult;
-            newEntity.StandardizeDate = entity.StandardizeDate;
-            newEntity.GeocodeAttempt = entity.GeocodeAttempt;
-            newEntity.GeocodeService = entity.GeocodeService;
-            newEntity.GeocodeResult = entity.GeocodeResult;
-            newEntity.GeocodeDate = entity.GeocodeDate;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

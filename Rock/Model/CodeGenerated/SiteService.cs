@@ -57,38 +57,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class SiteExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Site Clone( this Site entity )
-        {
-            var newEntity = new Site();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.Theme = entity.Theme;
-            newEntity.DefaultPageId = entity.DefaultPageId;
-            newEntity.FaviconUrl = entity.FaviconUrl;
-            newEntity.AppleTouchIconUrl = entity.AppleTouchIconUrl;
-            newEntity.FacebookAppId = entity.FacebookAppId;
-            newEntity.FacebookAppSecret = entity.FacebookAppSecret;
-            newEntity.LoginPageReference = entity.LoginPageReference;
-            newEntity.RegistrationPageReference = entity.RegistrationPageReference;
-            newEntity.ErrorPage = entity.ErrorPage;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Security
                 {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
                     {
-                        var userDictionary = new UserLoginDto( user ).ToDictionary();
+                        var userDictionary = user.ToDictionary();
                         userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
                         users.Add(userDictionary);
                     }
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
 
                 if (users.Count > 0)
                 {
-                    IDictionary<string,object> personDictionary = new PersonDto(person).ToDictionary();
+                    IDictionary<string,object> personDictionary = person.ToDictionary();
                     personDictionary.Add("FirstName", person.FirstName);
                     personDictionary.Add("Users", users.ToArray());
                     personDictionaries.Add( personDictionary );

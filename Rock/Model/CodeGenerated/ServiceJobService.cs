@@ -51,41 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class ServiceJobExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static ServiceJob Clone( this ServiceJob entity )
-        {
-            var newEntity = new ServiceJob();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.IsActive = entity.IsActive;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.Assembly = entity.Assembly;
-            newEntity.Class = entity.Class;
-            newEntity.CronExpression = entity.CronExpression;
-            newEntity.LastSuccessfulRunDateTime = entity.LastSuccessfulRunDateTime;
-            newEntity.LastRunDateTime = entity.LastRunDateTime;
-            newEntity.LastRunDurationSeconds = entity.LastRunDurationSeconds;
-            newEntity.LastStatus = entity.LastStatus;
-            newEntity.LastStatusMessage = entity.LastStatusMessage;
-            newEntity.LastRunSchedulerName = entity.LastRunSchedulerName;
-            newEntity.NotificationEmails = entity.NotificationEmails;
-            newEntity.NotificationStatus = entity.NotificationStatus;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -51,31 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class AttributeValueExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static AttributeValue Clone( this AttributeValue entity )
-        {
-            var newEntity = new AttributeValue();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.AttributeId = entity.AttributeId;
-            newEntity.EntityId = entity.EntityId;
-            newEntity.Order = entity.Order;
-            newEntity.Value = entity.Value;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

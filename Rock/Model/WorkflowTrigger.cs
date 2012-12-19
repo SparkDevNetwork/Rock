@@ -3,11 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -17,6 +16,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "WorkflowTrigger" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowTrigger : Entity<WorkflowTrigger>
     {
         #region Entity Properties
@@ -28,6 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -46,6 +48,7 @@ namespace Rock.Model
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -64,6 +68,7 @@ namespace Rock.Model
         /// The workflow type id.
         /// </value>
         [Required]
+        [DataMember]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
@@ -73,6 +78,7 @@ namespace Rock.Model
         /// The type of the entity change.
         /// </value>
         [Required]
+        [DataMember]
         public WorkflowTriggerType WorkflowTriggerType { get; set; }
 
         /// <summary>
@@ -83,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [Required]
+        [DataMember]
         public string WorkflowName { get; set; }
 
         #endregion
@@ -95,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -103,16 +111,8 @@ namespace Rock.Model
         /// <value>
         /// The type of the workflow.
         /// </value>
+        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -131,29 +131,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowTrigger Read( int id )
-        {
-            return Read<WorkflowTrigger>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowTrigger Read( Guid guid )
-        {
-            return Read<WorkflowTrigger>( guid );
-        }
-
-        #endregion
     }
 
     #region Entity Configuration

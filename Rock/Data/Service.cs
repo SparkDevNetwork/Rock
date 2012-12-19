@@ -17,7 +17,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Entity<T>
+    public class Service<T> where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
         /// Gets or sets the save messages.
@@ -320,7 +320,7 @@ namespace Rock.Data
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
         {
-            foreach ( var trigger in TriggerCache.Instance.Triggers( entity.TypeName, triggerType ) )
+            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ) )
             {
                 if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
                 {
@@ -332,7 +332,7 @@ namespace Rock.Data
                         var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                         List<string> workflowErrors;
-                        if ( !workflow.Process( entity.Dto, out workflowErrors ) )
+                        if ( !workflow.Process( entity, out workflowErrors ) )
                         {
                             ErrorMessages.AddRange( workflowErrors );
                             return false;
@@ -352,7 +352,7 @@ namespace Rock.Data
                 {
                     var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
                     transaction.Trigger = trigger;
-                    transaction.Dto = entity.Dto;
+                    transaction.Entity = entity.Clone();
                     transaction.PersonId = personId;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
@@ -410,7 +410,7 @@ namespace Rock.Data
                 item.Guid = Guid.NewGuid();
 
             List<EntityChange> changes;
-            List<AuditDto> audits;
+            List<Audit> audits;
             List<string> errorMessages;
 
             if ( _repository.Save( personId, out changes, out audits, out errorMessages ) )

@@ -51,30 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class AttributeQualifierExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static AttributeQualifier Clone( this AttributeQualifier entity )
-        {
-            var newEntity = new AttributeQualifier();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.AttributeId = entity.AttributeId;
-            newEntity.Key = entity.Key;
-            newEntity.Value = entity.Value;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

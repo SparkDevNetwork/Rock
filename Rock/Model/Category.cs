@@ -3,14 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
-using Rock.Model;
 using Rock.Data;
 
 namespace Rock.Model
@@ -19,7 +17,7 @@ namespace Rock.Model
     /// Category POCO Entity.
     /// </summary>
     [Table( "Category" )]
-    [DataContract]
+    [DataContract( IsReference = true )]
     public partial class Category : Entity<Category>
     {
         /// <summary>
@@ -47,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
+        [DataMember]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>
@@ -55,6 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The child categories.
         /// </value>
+        [DataMember]
         public virtual ICollection<Category> ChildCategories { get; set; }
 
         /// <summary>
@@ -64,6 +64,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -72,6 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
@@ -81,6 +83,7 @@ namespace Rock.Model
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -90,6 +93,7 @@ namespace Rock.Model
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -99,6 +103,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -107,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The file id.
         /// </value>
+        [DataMember]
         public int? FileId { get; set; }
 
         /// <summary>
@@ -115,36 +121,8 @@ namespace Rock.Model
         /// <value>
         /// The file.
         /// </value>
+        [DataMember]
         public virtual BinaryFile File { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Category Read( int id )
-        {
-            return Read<Category>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Category Read( Guid guid )
-        {
-            return Read<Category>( guid );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

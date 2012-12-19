@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// File POCO Entity.
     /// </summary>
     [Table( "BinaryFile" )]
+    [DataContract( IsReference = true )]
     public partial class BinaryFile : Model<BinaryFile>
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// Temporary.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsTemporary { get; set; }
         
         /// <summary>
@@ -34,6 +37,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -42,6 +46,7 @@ namespace Rock.Model
         /// <value>
         /// Data.
         /// </value>
+        [DataMember]
         public byte[] Data { get; set; }
         
         /// <summary>
@@ -51,6 +56,7 @@ namespace Rock.Model
         /// Url.
         /// </value>
         [MaxLength( 255 )]
+        [DataMember]
         public string Url { get; set; }
         
         /// <summary>
@@ -61,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 255 )]
+        [DataMember]
         public string FileName { get; set; }
         
         /// <summary>
@@ -71,6 +78,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 255 )]
+        [DataMember]
         public string MimeType { get; set; }
 
         /// <summary>
@@ -79,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The last modified time.
         /// </value>
+        [DataMember]
         public DateTime? LastModifiedTime { get; set; }
 
         /// <summary>
@@ -87,26 +96,8 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static BinaryFile Read( int id )
-        {
-            return Read<BinaryFile>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -10,6 +10,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,6 +20,7 @@ namespace Rock.Model
     /// Workflow POCO Entity.
     /// </summary>
     [Table( "Workflow" )]
+    [DataContract( IsReference = true )]
     public partial class Workflow : Model<Workflow>
     {
 
@@ -29,6 +32,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow type id.
         /// </value>
+        [DataMember]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
@@ -39,6 +43,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -47,6 +52,7 @@ namespace Rock.Model
         /// <value>
         /// Notes about the job..
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -57,6 +63,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Status { get; set; }
 
         /// <summary>
@@ -65,6 +72,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is processing; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsProcessing { get; set; }
 
         /// <summary>
@@ -73,6 +81,7 @@ namespace Rock.Model
         /// <value>
         /// The activated date time.
         /// </value>
+        [DataMember]
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
@@ -81,6 +90,7 @@ namespace Rock.Model
         /// <value>
         /// The last processed date time.
         /// </value>
+        [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
@@ -89,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The completed date time.
         /// </value>
+        [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
         #endregion
@@ -101,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the workflow.
         /// </value>
+        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -123,6 +135,7 @@ namespace Rock.Model
         /// <value>
         /// The activities.
         /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowActivity> Activities 
         {
             get { return _activities ?? ( _activities = new Collection<WorkflowActivity>() ); }
@@ -166,6 +179,7 @@ namespace Rock.Model
         /// <value>
         /// The log entries.
         /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowLog> LogEntries
         {
             get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }
@@ -187,15 +201,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Public Methods
@@ -214,10 +219,10 @@ namespace Rock.Model
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        /// <param name="dto">The dto.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public virtual bool Process( IDto dto, out List<string> errorMessages )
+        public virtual bool Process( IEntity entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -225,7 +230,7 @@ namespace Rock.Model
 
             DateTime processStartTime = DateTime.Now;
 
-            while ( ProcessActivity( processStartTime, dto, out errorMessages )
+            while ( ProcessActivity( processStartTime, entity, out errorMessages )
                 && errorMessages.Count == 0 ) { }
 
             this.LastProcessedDateTime = DateTime.Now;
@@ -281,10 +286,10 @@ namespace Rock.Model
         /// Processes the activity.
         /// </summary>
         /// <param name="processStartTime">The process start time.</param>
-        /// <param name="dto">The dto.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private bool ProcessActivity( DateTime processStartTime, IDto dto, out List<string> errorMessages )
+        private bool ProcessActivity( DateTime processStartTime, IEntity entity, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {
@@ -293,7 +298,7 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        return activity.Process( dto, out errorMessages );
+                        return activity.Process( entity, out errorMessages );
                     }
                 }
             }
@@ -347,26 +352,6 @@ namespace Rock.Model
             }
 
             return workflow;
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Workflow Read( int id )
-        {
-            return Read<Workflow>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Workflow Read( Guid guid )
-        {
-            return Read<Workflow>( guid );
         }
 
         #endregion

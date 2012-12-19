@@ -51,31 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class PageContextExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static PageContext Clone( this PageContext entity )
-        {
-            var newEntity = new PageContext();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.PageId = entity.PageId;
-            newEntity.Entity = entity.Entity;
-            newEntity.IdParameter = entity.IdParameter;
-            newEntity.CreatedDateTime = entity.CreatedDateTime;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

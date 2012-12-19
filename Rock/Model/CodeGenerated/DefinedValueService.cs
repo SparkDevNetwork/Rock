@@ -97,31 +97,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class DefinedValueExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static DefinedValue Clone( this DefinedValue entity )
-        {
-            var newEntity = new DefinedValue();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.DefinedTypeId = entity.DefinedTypeId;
-            newEntity.Order = entity.Order;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

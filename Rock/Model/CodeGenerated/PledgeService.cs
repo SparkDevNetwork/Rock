@@ -51,33 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class PledgeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Pledge Clone( this Pledge entity )
-        {
-            var newEntity = new Pledge();
-
-            newEntity.PersonId = entity.PersonId;
-            newEntity.FundId = entity.FundId;
-            newEntity.Amount = entity.Amount;
-            newEntity.StartDate = entity.StartDate;
-            newEntity.EndDate = entity.EndDate;
-            newEntity.FrequencyTypeValueId = entity.FrequencyTypeValueId;
-            newEntity.FrequencyAmount = entity.FrequencyAmount;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

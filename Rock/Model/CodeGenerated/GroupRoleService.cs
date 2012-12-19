@@ -63,33 +63,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class GroupRoleExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static GroupRole Clone( this GroupRole entity )
-        {
-            var newEntity = new GroupRole();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.GroupTypeId = entity.GroupTypeId;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.SortOrder = entity.SortOrder;
-            newEntity.MaxCount = entity.MaxCount;
-            newEntity.MinCount = entity.MinCount;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

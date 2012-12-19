@@ -3,11 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Defined Type POCO Entity.
     /// </summary>
     [Table( "DefinedType" )]
+    [DataContract( IsReference = true )]
     public partial class DefinedType : Model<DefinedType>, IOrdered
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -33,6 +36,7 @@ namespace Rock.Model
         /// <value>
         /// Field Type Id.
         /// </value>
+        [DataMember]
         public int? FieldTypeId { get; set; }
         
         /// <summary>
@@ -42,6 +46,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
@@ -51,6 +56,7 @@ namespace Rock.Model
         /// Category.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -61,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -69,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -77,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Defined Values.
         /// </value>
+        [DataMember]
         public virtual ICollection<DefinedValue> DefinedValues { get; set; }
         
         /// <summary>
@@ -85,26 +94,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
+        [DataMember]
         public virtual FieldType FieldType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static DefinedType Read( int id )
-        {
-            return Read<DefinedType>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -57,32 +57,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class DefinedTypeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static DefinedType Clone( this DefinedType entity )
-        {
-            var newEntity = new DefinedType();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.FieldTypeId = entity.FieldTypeId;
-            newEntity.Order = entity.Order;
-            newEntity.Category = entity.Category;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

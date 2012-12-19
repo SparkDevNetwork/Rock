@@ -3,13 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,6 +18,7 @@ namespace Rock.Model
     /// ActivityType POCO Entity.
     /// </summary>
     [Table( "WorkflowActivityType" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered
     {
 
@@ -29,6 +30,7 @@ namespace Rock.Model
         /// <value>
         /// Determines is the job is currently active..
         /// </value>
+        [DataMember]
         public bool? IsActive { get; set; }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow type id.
         /// </value>
+        [DataMember]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// Notes about the job..
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -63,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is activatedd with workflow; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActivatedWithWorkflow { get; set; }
 
         /// <summary>
@@ -72,6 +78,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember]
         public int Order { get; set; }
 
         #endregion
@@ -84,6 +91,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the workflow.
         /// </value>
+        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -92,6 +100,7 @@ namespace Rock.Model
         /// <value>
         /// The action types.
         /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowActionType> ActionTypes
         {
             get { return _actionTypes ?? ( _actionTypes = new Collection<WorkflowActionType>() ); }
@@ -113,15 +122,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Methods
@@ -135,30 +135,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowActivityType Read( int id )
-        {
-            return Read<WorkflowActivityType>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowActivityType Read( Guid guid )
-        {
-            return Read<WorkflowActivityType>( guid );
         }
 
         #endregion

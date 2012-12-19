@@ -51,42 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class ExceptionLogExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static ExceptionLog Clone( this ExceptionLog entity )
-        {
-            var newEntity = new ExceptionLog();
-
-            newEntity.ParentId = entity.ParentId;
-            newEntity.SiteId = entity.SiteId;
-            newEntity.PageId = entity.PageId;
-            newEntity.ExceptionDate = entity.ExceptionDate;
-            newEntity.CreatedByPersonId = entity.CreatedByPersonId;
-            newEntity.HasInnerException = entity.HasInnerException;
-            newEntity.StatusCode = entity.StatusCode;
-            newEntity.ExceptionType = entity.ExceptionType;
-            newEntity.Description = entity.Description;
-            newEntity.Source = entity.Source;
-            newEntity.StackTrace = entity.StackTrace;
-            newEntity.PageUrl = entity.PageUrl;
-            newEntity.ServerVariables = entity.ServerVariables;
-            newEntity.QueryString = entity.QueryString;
-            newEntity.Form = entity.Form;
-            newEntity.Cookies = entity.Cookies;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

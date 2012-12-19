@@ -51,34 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class MarketingCampaignAdExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static MarketingCampaignAd Clone( this MarketingCampaignAd entity )
-        {
-            var newEntity = new MarketingCampaignAd();
-
-            newEntity.MarketingCampaignId = entity.MarketingCampaignId;
-            newEntity.MarketingCampaignAdTypeId = entity.MarketingCampaignAdTypeId;
-            newEntity.Priority = entity.Priority;
-            newEntity.MarketingCampaignAdStatus = entity.MarketingCampaignAdStatus;
-            newEntity.MarketingCampaignStatusPersonId = entity.MarketingCampaignStatusPersonId;
-            newEntity.StartDate = entity.StartDate;
-            newEntity.EndDate = entity.EndDate;
-            newEntity.Url = entity.Url;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -51,40 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class AttributeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Attribute Clone( this Attribute entity )
-        {
-            var newEntity = new Attribute();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.FieldTypeId = entity.FieldTypeId;
-            newEntity.EntityTypeId = entity.EntityTypeId;
-            newEntity.EntityTypeQualifierColumn = entity.EntityTypeQualifierColumn;
-            newEntity.EntityTypeQualifierValue = entity.EntityTypeQualifierValue;
-            newEntity.Key = entity.Key;
-            newEntity.Name = entity.Name;
-            newEntity.Category = entity.Category;
-            newEntity.Description = entity.Description;
-            newEntity.Order = entity.Order;
-            newEntity.IsGridColumn = entity.IsGridColumn;
-            newEntity.DefaultValue = entity.DefaultValue;
-            newEntity.IsMultiValue = entity.IsMultiValue;
-            newEntity.IsRequired = entity.IsRequired;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -46,7 +46,7 @@ namespace Rock.Migrations
         /// Adds the type of the block.
         /// </summary>
         /// <param name="blockType">Type of the block.</param>
-        public void AddBlockType( BlockTypeDto blockType )
+        public void AddBlockType( BlockType blockType )
         {
             Sql( string.Format( @"
                 INSERT INTO [BlockType] (
@@ -83,9 +83,9 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public BlockTypeDto DefaultSystemBlockType( string name, string description, Guid guid )
+        public BlockType DefaultSystemBlockType( string name, string description, Guid guid )
         {
-            var blockType = new BlockTypeDto();
+            var blockType = new BlockType();
 
             blockType.IsSystem = true;
             blockType.Name = name;
@@ -153,7 +153,7 @@ namespace Rock.Migrations
         /// </summary>
         /// <param name="parentPageGuid">The parent page GUID.</param>
         /// <param name="page">The page.</param>
-        public void AddPage( string parentPageGuid, PageDto page )
+        public void AddPage( string parentPageGuid, Page page )
         {
 
             Sql( string.Format( @"
@@ -230,9 +230,9 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public PageDto DefaultSystemPage( string name, string description, Guid guid )
+        public Page DefaultSystemPage( string name, string description, Guid guid )
         {
-            var page = new PageDto();
+            var page = new Page();
 
             page.Name = name;
             page.Title = name;
@@ -320,7 +320,7 @@ namespace Rock.Migrations
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="block">The block.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, BlockDto block )
+        public void AddBlock( string pageGuid, string blockTypeGuid, Block block )
         {
             var sb = new StringBuilder();
 
@@ -398,9 +398,9 @@ namespace Rock.Migrations
         /// <param name="name">The name.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public BlockDto DefaultSystemBlock( string name, Guid guid )
+        public Block DefaultSystemBlock( string name, Guid guid )
         {
-            var block = new BlockDto();
+            var block = new Block();
 
             block.IsSystem = true;
             block.Zone = "Content";
@@ -475,7 +475,7 @@ namespace Rock.Migrations
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
         /// <param name="attribute">The attribute.</param>
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.AttributeDto attribute )
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.Attribute attribute )
         {
             AddBlockTypeAttribute( blockGuid, fieldTypeGuid, attribute.Name, attribute.Key, attribute.Category, attribute.Description, attribute.Order, attribute.DefaultValue, attribute.Guid.ToString() );
 
@@ -598,9 +598,9 @@ namespace Rock.Migrations
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public Rock.Model.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
+        public Rock.Model.Attribute DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
         {
-            var attribute = new Rock.Model.AttributeDto();
+            var attribute = new Rock.Model.Attribute();
 
             attribute.IsSystem = true;
             attribute.Key = name.Replace( " ", string.Empty );
