@@ -101,7 +101,7 @@ namespace Rock.Web.UI
                     _contextTypesRequired = new List<string>();
 
                     int properties = 0;
-                    foreach(var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true))
+                    foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
                         var contextAttribute = (ContextAwareAttribute)attribute;
                         string contextType = string.Empty;
@@ -426,7 +426,7 @@ namespace Rock.Web.UI
                     if ( page.Guid.Equals( CurrentPage.Guid ) )
                     {
                         RockPage rockPage = this.RockPage();
-                        foreach ( IDetailBlock detailBlock in rockPage.RockBlocks.Where(a => a is IDetailBlock))
+                        foreach ( IDetailBlock detailBlock in rockPage.RockBlocks.Where( a => a is IDetailBlock ) )
                         {
                             detailBlock.ShowDetail( itemKey, itemKeyValue );
                         }
@@ -497,9 +497,11 @@ namespace Rock.Web.UI
 
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
+                aAttributes.ID = "aBlockProperties";
+                aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) );
+                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aBlockProperties'), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -512,10 +514,12 @@ namespace Rock.Web.UI
             {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
+                aSecureBlock.ID = "aSecureBlock";
+                aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
-                    Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) );
+                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($('#aSecureBlock'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
+                    Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -544,7 +548,7 @@ namespace Rock.Web.UI
                 aDeleteBlock.Controls.Add( iDeleteBlock );
                 iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
             }
-            
+
             return configControls;
         }
 
@@ -553,7 +557,7 @@ namespace Rock.Web.UI
         /// </summary>
         protected virtual void ContentUpdated()
         {
-            CurrentPage.BlockContentUpdated(this);
+            CurrentPage.BlockContentUpdated( this );
         }
 
         #endregion
@@ -565,7 +569,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Model.Block").Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
