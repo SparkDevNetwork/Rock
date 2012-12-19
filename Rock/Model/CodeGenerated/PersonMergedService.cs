@@ -51,4 +51,28 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PersonMergedExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PersonMerged Clone( this PersonMerged entity )
+        {
+            var newEntity = new PersonMerged();
+
+            newEntity.CurrentId = entity.CurrentId;
+            newEntity.CurrentGuid = entity.CurrentGuid;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

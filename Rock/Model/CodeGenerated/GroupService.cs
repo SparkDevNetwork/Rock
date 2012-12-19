@@ -63,4 +63,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class GroupExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Group Clone( this Group entity )
+        {
+            var newEntity = new Group();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.ParentGroupId = entity.ParentGroupId;
+            newEntity.GroupTypeId = entity.GroupTypeId;
+            newEntity.CampusId = entity.CampusId;
+            newEntity.Name = entity.Name;
+            newEntity.Description = entity.Description;
+            newEntity.IsSecurityRole = entity.IsSecurityRole;
+            newEntity.IsActive = entity.IsActive;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

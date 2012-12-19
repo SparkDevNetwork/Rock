@@ -51,4 +51,32 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ServiceLogExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static ServiceLog Clone( this ServiceLog entity )
+        {
+            var newEntity = new ServiceLog();
+
+            newEntity.Time = entity.Time;
+            newEntity.Input = entity.Input;
+            newEntity.Type = entity.Type;
+            newEntity.Name = entity.Name;
+            newEntity.Result = entity.Result;
+            newEntity.Success = entity.Success;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

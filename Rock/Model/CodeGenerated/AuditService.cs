@@ -51,4 +51,33 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AuditExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Audit Clone( this Audit entity )
+        {
+            var newEntity = new Audit();
+
+            newEntity.EntityTypeId = entity.EntityTypeId;
+            newEntity.EntityId = entity.EntityId;
+            newEntity.Title = entity.Title;
+            newEntity.AuditType = entity.AuditType;
+            newEntity.Properties = entity.Properties;
+            newEntity.DateTime = entity.DateTime;
+            newEntity.PersonId = entity.PersonId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

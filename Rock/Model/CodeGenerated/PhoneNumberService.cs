@@ -51,4 +51,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class PhoneNumberExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static PhoneNumber Clone( this PhoneNumber entity )
+        {
+            var newEntity = new PhoneNumber();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.PersonId = entity.PersonId;
+            newEntity.Number = entity.Number;
+            newEntity.Extension = entity.Extension;
+            newEntity.NumberTypeValueId = entity.NumberTypeValueId;
+            newEntity.IsMessagingEnabled = entity.IsMessagingEnabled;
+            newEntity.IsUnlisted = entity.IsUnlisted;
+            newEntity.Description = entity.Description;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

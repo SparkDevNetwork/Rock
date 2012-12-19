@@ -75,4 +75,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class BinaryFileExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BinaryFile Clone( this BinaryFile entity )
+        {
+            var newEntity = new BinaryFile();
+
+            newEntity.IsTemporary = entity.IsTemporary;
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.Data = entity.Data;
+            newEntity.Url = entity.Url;
+            newEntity.FileName = entity.FileName;
+            newEntity.MimeType = entity.MimeType;
+            newEntity.LastModifiedTime = entity.LastModifiedTime;
+            newEntity.Description = entity.Description;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

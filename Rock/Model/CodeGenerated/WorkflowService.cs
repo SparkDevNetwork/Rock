@@ -51,4 +51,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class WorkflowExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Workflow Clone( this Workflow entity )
+        {
+            var newEntity = new Workflow();
+
+            newEntity.WorkflowTypeId = entity.WorkflowTypeId;
+            newEntity.Name = entity.Name;
+            newEntity.Description = entity.Description;
+            newEntity.Status = entity.Status;
+            newEntity.IsProcessing = entity.IsProcessing;
+            newEntity.ActivatedDateTime = entity.ActivatedDateTime;
+            newEntity.LastProcessedDateTime = entity.LastProcessedDateTime;
+            newEntity.CompletedDateTime = entity.CompletedDateTime;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

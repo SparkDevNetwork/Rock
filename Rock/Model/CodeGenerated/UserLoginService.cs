@@ -51,4 +51,42 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class UserLoginExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static UserLogin Clone( this UserLogin entity )
+        {
+            var newEntity = new UserLogin();
+
+            newEntity.ServiceType = entity.ServiceType;
+            newEntity.ServiceName = entity.ServiceName;
+            newEntity.UserName = entity.UserName;
+            newEntity.Password = entity.Password;
+            newEntity.IsConfirmed = entity.IsConfirmed;
+            newEntity.LastActivityDate = entity.LastActivityDate;
+            newEntity.LastLoginDate = entity.LastLoginDate;
+            newEntity.LastPasswordChangedDate = entity.LastPasswordChangedDate;
+            newEntity.CreationDate = entity.CreationDate;
+            newEntity.IsOnLine = entity.IsOnLine;
+            newEntity.IsLockedOut = entity.IsLockedOut;
+            newEntity.LastLockedOutDate = entity.LastLockedOutDate;
+            newEntity.FailedPasswordAttemptCount = entity.FailedPasswordAttemptCount;
+            newEntity.FailedPasswordAttemptWindowStart = entity.FailedPasswordAttemptWindowStart;
+            newEntity.ApiKey = entity.ApiKey;
+            newEntity.PersonId = entity.PersonId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

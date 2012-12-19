@@ -51,4 +51,32 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class MarketingCampaignExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static MarketingCampaign Clone( this MarketingCampaign entity )
+        {
+            var newEntity = new MarketingCampaign();
+
+            newEntity.Title = entity.Title;
+            newEntity.ContactPersonId = entity.ContactPersonId;
+            newEntity.ContactEmail = entity.ContactEmail;
+            newEntity.ContactPhoneNumber = entity.ContactPhoneNumber;
+            newEntity.ContactFullName = entity.ContactFullName;
+            newEntity.EventGroupId = entity.EventGroupId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

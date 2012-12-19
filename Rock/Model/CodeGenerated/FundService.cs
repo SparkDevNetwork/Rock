@@ -63,4 +63,40 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FundExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Fund Clone( this Fund entity )
+        {
+            var newEntity = new Fund();
+
+            newEntity.Name = entity.Name;
+            newEntity.PublicName = entity.PublicName;
+            newEntity.Description = entity.Description;
+            newEntity.ParentFundId = entity.ParentFundId;
+            newEntity.IsTaxDeductible = entity.IsTaxDeductible;
+            newEntity.Order = entity.Order;
+            newEntity.IsActive = entity.IsActive;
+            newEntity.StartDate = entity.StartDate;
+            newEntity.EndDate = entity.EndDate;
+            newEntity.IsPledgable = entity.IsPledgable;
+            newEntity.GlCode = entity.GlCode;
+            newEntity.FundTypeValueId = entity.FundTypeValueId;
+            newEntity.Entity = entity.Entity;
+            newEntity.EntityId = entity.EntityId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

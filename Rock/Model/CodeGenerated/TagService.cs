@@ -51,4 +51,33 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class TagExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static Tag Clone( this Tag entity )
+        {
+            var newEntity = new Tag();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.EntityTypeId = entity.EntityTypeId;
+            newEntity.EntityTypeQualifierColumn = entity.EntityTypeQualifierColumn;
+            newEntity.EntityTypeQualifierValue = entity.EntityTypeQualifierValue;
+            newEntity.Name = entity.Name;
+            newEntity.Order = entity.Order;
+            newEntity.OwnerId = entity.OwnerId;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }

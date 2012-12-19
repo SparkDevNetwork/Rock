@@ -51,4 +51,30 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class BlockTypeExtension
+    {
+        /// <summary>
+        /// To the dto.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static BlockType Clone( this BlockType entity )
+        {
+            var newEntity = new BlockType();
+
+            newEntity.IsSystem = entity.IsSystem;
+            newEntity.Path = entity.Path;
+            newEntity.Name = entity.Name;
+            newEntity.Description = entity.Description;
+            newEntity.Id = entity.Id;
+            newEntity.Guid = entity.Guid;
+
+            return newEntity;
+        }
+
+    }
 }
