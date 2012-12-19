@@ -3,10 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
+
+using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -15,10 +18,54 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockTypeCache : Rock.Model.BlockTypeDto
+    public class BlockTypeCache : CachedModel<BlockType>
     {
-        private BlockTypeCache() : base() { }
-        private BlockTypeCache( Rock.Model.BlockType blockType ) : base( blockType ) { }
+        #region Constructors
+
+        private BlockTypeCache()
+        {
+        }
+        
+        private BlockTypeCache( BlockType blockType )
+        {
+            CopyFromModel( blockType );
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is system.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>
+        /// The path.
+        /// </value>
+        public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="Rock.Attribute.TextFieldAttribute" /> attributes have been
@@ -29,45 +76,42 @@ namespace Rock.Web.Cache
         /// </value>
         public bool IsInstancePropertiesVerified { get; internal set; }
 
-        private List<int> AttributeIds = new List<int>();
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
-        /// List of attributes associated with the block type.  This object will not include values.
-        /// To get values associated with the current block instance, use the AttributeValues
+        /// Copies from model.
         /// </summary>
-        public List<Rock.Web.Cache.AttributeCache> Attributes
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
         {
-            get
+            base.CopyFromModel( model );
+
+            if ( model is BlockType )
             {
-                List<Rock.Web.Cache.AttributeCache> attributes = new List<Rock.Web.Cache.AttributeCache>();
+                var blockType = (BlockType)model;
+                this.IsSystem = blockType.IsSystem;
+                this.Path = blockType.Path;
+                this.Name = blockType.Name;
+                this.Description = blockType.Description;
 
-                foreach ( int id in AttributeIds )
-                    attributes.Add( AttributeCache.Read( id ) );
-
-                return attributes;
+                this.IsInstancePropertiesVerified = false;
             }
         }
 
         /// <summary>
-        /// Gets the attribute values.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; private set; }
-
-        /// <summary>
-        /// Saves the attribute values.
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        public void SaveAttributeValues(int? personId)
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            Rock.Model.BlockTypeService blockTypeService = new Model.BlockTypeService();
-            Rock.Model.BlockType blockTypeModel = blockTypeService.Get( this.Id );
-
-            if ( blockTypeModel != null )
-            {
-                blockTypeModel.LoadAttributes();
-                foreach ( var attribute in blockTypeModel.Attributes )
-                    Rock.Attribute.Helper.SaveAttributeValues( blockTypeModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
-            }
+            return this.Name;
         }
+
+        #endregion
 
         #region Static Methods
 
@@ -90,43 +134,109 @@ namespace Rock.Web.Cache
             BlockTypeCache blockType = cache[cacheKey] as BlockTypeCache;
 
             if ( blockType != null )
+            {
                 return blockType;
+            }
             else
             {
-                Rock.Model.BlockTypeService blockTypeService = new Model.BlockTypeService();
-                Rock.Model.BlockType blockTypeModel = blockTypeService.Get( id );
+                var blockTypeService = new BlockTypeService();
+                var blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
-                    blockType = new BlockTypeCache(blockTypeModel);
-
-                    blockType.IsInstancePropertiesVerified = false;
-
                     blockTypeModel.LoadAttributes();
+                    blockType = new BlockTypeCache( blockTypeModel );
 
-                    blockType.AttributeValues = blockTypeModel.AttributeValues;
-
-                    if (blockTypeModel.Attributes != null)
-                        foreach ( var attribute in blockTypeModel.Attributes )
-                            blockType.AttributeIds.Add( attribute.Value.Id );
-
-                    // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
-                    // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any
-                    // BlockPropery attributes that may have been added or modified
-                    string physicalPath = System.Web.HttpContext.Current.Request.MapPath( blockType.Path );
-                    List<string> filePaths = new List<string>();
-                    filePaths.Add( physicalPath );
-                    filePaths.Add( physicalPath + ".cs" );
-
-                    CacheItemPolicy cacheItemPolicy = new CacheItemPolicy();
-                    cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
-                    cache.Set( cacheKey, blockType, cacheItemPolicy );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, blockType, cachePolicy );
+                    cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
+                    AddChangeMonitor( cachePolicy, blockType.Path );
 
                     return blockType;
                 }
                 else
+                {
                     return null;
-
+                }
             }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static BlockTypeCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var blockTypeService = new BlockTypeService();
+                var blockTypeModel = blockTypeService.Get( guid );
+                if ( blockTypeModel != null )
+                {
+                    blockTypeModel.LoadAttributes();
+                    var blockType = new BlockTypeCache( blockTypeModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( BlockTypeCache.CacheKey( blockType.Id ), blockType, cachePolicy );
+                    cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
+                    AddChangeMonitor( cachePolicy, blockType.Path );
+
+                    return blockType;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified block type model.
+        /// </summary>
+        /// <param name="blockTypeModel">The block type model.</param>
+        /// <returns></returns>
+        public static BlockTypeCache Read( BlockType blockTypeModel )
+        {
+            string cacheKey = BlockTypeCache.CacheKey( blockTypeModel.Id );
+
+            ObjectCache cache = MemoryCache.Default;
+            BlockTypeCache blockType = cache[cacheKey] as BlockTypeCache;
+
+            if ( blockType != null )
+            {
+                return blockType;
+            }
+            else
+            {
+                blockType = new BlockTypeCache( blockTypeModel );
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, blockType, cachePolicy );
+                cache.Set( blockType.Guid.ToString(), blockType.Id, cachePolicy );
+                AddChangeMonitor( cachePolicy, blockType.Path );
+
+                return blockType;
+            }
+        }
+
+        private static void AddChangeMonitor(CacheItemPolicy cacheItemPolicy, string filePath )
+        {
+            // Block Type cache expiration monitors the actual block on the file system so that it is flushed from 
+            // memory anytime the file contents change.  This is to force the cmsPage object to revalidate any
+            // BlockPropery attributes that may have been added or modified
+            string physicalPath = System.Web.HttpContext.Current.Request.MapPath( filePath );
+            List<string> filePaths = new List<string>();
+            filePaths.Add( physicalPath );
+            filePaths.Add( physicalPath + ".cs" );
+
+            cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
         }
 
         /// <summary>

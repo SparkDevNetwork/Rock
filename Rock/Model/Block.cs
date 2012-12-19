@@ -116,7 +116,18 @@ namespace Rock.Model
         /// A <see cref="Page"/> object.
         /// </value>
         public virtual Page Page { get; set; }
-        
+
+        /// <summary>
+        /// Gets the block location.
+        /// </summary>
+        /// <value>
+        /// The block location.
+        /// </value>
+        public virtual BlockLocation BlockLocation
+        {
+            get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+        }
+
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
@@ -230,4 +241,22 @@ namespace Rock.Model
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
+
+    /// <summary>
+    /// The location of the block 
+    /// </summary>
+    [Serializable]
+    public enum BlockLocation
+    {
+        /// <summary>
+        /// Block is located in the layout (will be rendered for every page using the layout)
+        /// </summary>
+        Layout,
+
+        /// <summary>
+        /// Block is located on the page
+        /// </summary>
+        Page,
+    }
+
 }
