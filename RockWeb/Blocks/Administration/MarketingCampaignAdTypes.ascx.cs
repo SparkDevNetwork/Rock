@@ -30,11 +30,11 @@ namespace RockWeb.Blocks.Administration
         /// <value>
         /// The state of the attributes.
         /// </value>
-        private List<AttributeDto> AttributesState
+        private List<Attribute> AttributesState
         {
             get
             {
-                return ViewState["AttributesState"] as List<AttributeDto>;
+                return ViewState["AttributesState"] as List<Attribute>;
             }
 
             set
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeGuid != Guid.Empty )
             {
-                Attribute attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) ).ToModel();
+                Attribute attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 lAttributeActionTitle.Text = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
                 hfAttributeGuid.Value = attribute.Guid.ToString();
                 tbAttributeKey.Text = attribute.Key;
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Administration
         protected void gMarketingCampaignAdAttributeType_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributesState.RemoveDto<AttributeDto>( attributeGuid );
+            AttributesState.RemoveEntity<Attribute>( attributeGuid );
 
             BindMarketingCampaignAdAttributeTypeGrid();
         }
@@ -267,8 +267,8 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            AttributesState.RemoveDto<AttributeDto>( attribute.Guid );
-            AttributesState.Add( new AttributeDto( attribute ) );
+            AttributesState.RemoveEntity<Attribute>( attribute.Guid );
+            AttributesState.Add( attribute );
 
             pnlDetails.Visible = true;
             pnlList.Visible = false;
@@ -382,13 +382,13 @@ namespace RockWeb.Blocks.Administration
                     Attribute attribute = qry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
                     if ( attribute == null )
                     {
-                        attribute = attributeState.ToModel();
+                        attribute = attributeState.Clone() as Rock.Model.Attribute;
                         attributeService.Add( attribute, CurrentPersonId );
                     }
                     else
                     {
                         attributeState.Id = attribute.Id;
-                        attributeState.CopyToModel( attribute );
+                        attribute.FromDictionary( attributeState.ToDictionary() );
                     }
 
                     attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Administration
             MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
             MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
             bool readOnly = false;
-            AttributesState = new List<Attribute>().ToDto();
+            AttributesState = new List<Attribute>();
 
             if ( marketingCampaignAdType != null )
             {
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Administration
                     .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
                     && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
 
-                AttributesState = qry.ToList().ToDto();
+                AttributesState = qry.ToList();
 
                 readOnly = marketingCampaignAdType.IsSystem;
 

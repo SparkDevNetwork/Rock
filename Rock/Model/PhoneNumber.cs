@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Phone Number POCO Entity.
     /// </summary>
     [Table( "PhoneNumber" )]
+    [DataContract( IsReference = true )]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +37,7 @@ namespace Rock.Model
         /// Person Id.
         /// </value>
         [Required]
+        [DataMember]
         public int PersonId { get; set; }
         
         /// <summary>
@@ -44,28 +48,33 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 20 )]
+        [DataMember]
         public string Number { get; set; }
 
         /// <summary>
         /// Gets or sets the extension
         /// </summary>
         [MaxLength( 20 )]
+        [DataMember]
         public string Extension { get; set; }
 
         /// <summary>
         /// Type of phone number
         /// </summary>
+        [DataMember]
         public int? NumberTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets whether the number has been opted in for SMS
         /// </summary>
         [Required]
+        [DataMember]
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
         /// The phone number type
         /// </summary>
+        [DataMember]
         public virtual Model.DefinedValue NumberTypeValue { get; set; }
 
         /// <summary>
@@ -74,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// IsUnlisted.
         /// </value>
+        [DataMember]
         public bool IsUnlisted { get; set; }
 
         /// <summary>
@@ -82,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -90,26 +101,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Person Person { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PhoneNumber Read( int id )
-        {
-            return Read<PhoneNumber>( id );
-        }
 
         /// <summary>
         /// Formats a phone number

@@ -57,40 +57,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class FinancialTransactionExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static FinancialTransaction Clone( this FinancialTransaction entity )
-        {
-            var newEntity = new FinancialTransaction();
-
-            newEntity.Description = entity.Description;
-            newEntity.TransactionDateTime = entity.TransactionDateTime;
-            newEntity.Entity = entity.Entity;
-            newEntity.EntityId = entity.EntityId;
-            newEntity.BatchId = entity.BatchId;
-            newEntity.CurrencyTypeValueId = entity.CurrencyTypeValueId;
-            newEntity.CreditCardTypeValueId = entity.CreditCardTypeValueId;
-            newEntity.Amount = entity.Amount;
-            newEntity.RefundTransactionId = entity.RefundTransactionId;
-            newEntity.TransactionImageId = entity.TransactionImageId;
-            newEntity.TransactionCode = entity.TransactionCode;
-            newEntity.PaymentGatewayId = entity.PaymentGatewayId;
-            newEntity.SourceTypeValueId = entity.SourceTypeValueId;
-            newEntity.Summary = entity.Summary;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

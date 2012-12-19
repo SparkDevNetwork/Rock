@@ -144,10 +144,10 @@ namespace Rock.Tests.Fakes
             db.ToList().Remove( entity );
         }
 
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
         {
             changes = new List<EntityChange>();
-            audits = new List<AuditDto>();
+            audits = new List<Audit>();
             errorMessages = new List<string>();
 
             return true;

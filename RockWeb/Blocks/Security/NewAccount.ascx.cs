@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Security
                     {
                         if ( user.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            var userDictionary = new UserLoginDto( user ).ToDictionary();
+                            var userDictionary = user.ToDictionary();
                             userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
                             users.Add( userDictionary );
                         }
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Security
 
                     if ( users.Count > 0 )
                     {
-                        IDictionary<string, object> personDictionary = new PersonDto( person ).ToDictionary();
+                        IDictionary<string, object> personDictionary = person.ToDictionary();
                         personDictionary.Add( "FirstName", person.FirstName );
                         personDictionary.Add( "Users", users.ToArray() );
                         personDictionaries.Add( personDictionary );
@@ -317,11 +317,11 @@ namespace RockWeb.Blocks.Security
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                var personDictionary = new PersonDto( person ).ToDictionary();
+                var personDictionary = person.ToDictionary();
                 personDictionary.Add( "FirstName", person.FirstName );
                 mergeObjects.Add( "Person", personDictionary );
 
-                mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
+                mergeObjects.Add( "User", user.ToDictionary() );
 
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
@@ -350,11 +350,11 @@ namespace RockWeb.Blocks.Security
                     var mergeObjects = new Dictionary<string, object>();
                     mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                    var personDictionary = new PersonDto( person ).ToDictionary();
+                    var personDictionary = person.ToDictionary();
                     personDictionary.Add("FirstName", person.FirstName);
                     mergeObjects.Add( "Person", personDictionary );
 
-                    mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
+                    mergeObjects.Add( "User", user.ToDictionary() );
 
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );

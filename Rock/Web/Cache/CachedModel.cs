@@ -204,7 +204,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
+        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
         /// Saves the attribute values.

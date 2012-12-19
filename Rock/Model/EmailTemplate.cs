@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +18,7 @@ namespace Rock.Model
     /// Email Template POCO Entity.
     /// </summary>
     [Table( "EmailTemplate" )]
+    [DataContract( IsReference = true )]
     public partial class EmailTemplate : Model<EmailTemplate>
     {
         /// <summary>
@@ -25,6 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -33,6 +37,7 @@ namespace Rock.Model
         /// <value>
         /// Person Id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
         
         /// <summary>
@@ -42,6 +47,7 @@ namespace Rock.Model
         /// Category.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -52,6 +58,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Title { get; set; }
         
         /// <summary>
@@ -61,6 +68,7 @@ namespace Rock.Model
         /// From.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string From { get; set; }
         
         /// <summary>
@@ -69,6 +77,7 @@ namespace Rock.Model
         /// <value>
         /// To.
         /// </value>
+        [DataMember]
         public string To { get; set; }
         
         /// <summary>
@@ -77,6 +86,7 @@ namespace Rock.Model
         /// <value>
         /// Cc.
         /// </value>
+        [DataMember]
         public string Cc { get; set; }
         
         /// <summary>
@@ -85,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// Bcc.
         /// </value>
+        [DataMember]
         public string Bcc { get; set; }
         
         /// <summary>
@@ -95,6 +106,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
+        [DataMember]
         public string Subject { get; set; }
         
         /// <summary>
@@ -104,26 +116,8 @@ namespace Rock.Model
         /// Body.
         /// </value>
         [Required]
+        [DataMember]
         public string Body { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static EmailTemplate Read( int id )
-        {
-            return Read<EmailTemplate>( id );
-        }
 
         /// <summary>
         /// Gets or sets the Person.
@@ -131,6 +125,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>

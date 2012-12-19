@@ -51,35 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class EntityChangeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static EntityChange Clone( this EntityChange entity )
-        {
-            var newEntity = new EntityChange();
-
-            newEntity.ChangeSet = entity.ChangeSet;
-            newEntity.ChangeType = entity.ChangeType;
-            newEntity.EntityTypeId = entity.EntityTypeId;
-            newEntity.EntityId = entity.EntityId;
-            newEntity.Property = entity.Property;
-            newEntity.OriginalValue = entity.OriginalValue;
-            newEntity.CurrentValue = entity.CurrentValue;
-            newEntity.CreatedDateTime = entity.CreatedDateTime;
-            newEntity.CreatedByPersonId = entity.CreatedByPersonId;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

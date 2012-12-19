@@ -4,10 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +18,7 @@ namespace Rock.Model
     /// Location POCO Entity.
     /// </summary>
     [Table( "Location" )]
+    [DataContract( IsReference = true )]
     public partial class Location : Model<Location>
     {
         /// <summary>
@@ -25,6 +28,7 @@ namespace Rock.Model
         /// Raw.
         /// </value>
         [MaxLength( 400 )]
+        [DataMember]
         public string Raw { get; set; }
         
         /// <summary>
@@ -34,6 +38,7 @@ namespace Rock.Model
         /// Street 1.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Street1 { get; set; }
         
         /// <summary>
@@ -43,6 +48,7 @@ namespace Rock.Model
         /// Street 2.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Street2 { get; set; }
         
         /// <summary>
@@ -52,6 +58,7 @@ namespace Rock.Model
         /// City.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string City { get; set; }
         
         /// <summary>
@@ -61,6 +68,7 @@ namespace Rock.Model
         /// State.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string State { get; set; }
         
         /// <summary>
@@ -70,6 +78,7 @@ namespace Rock.Model
         /// Country.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Country { get; set; }
         
         /// <summary>
@@ -79,6 +88,7 @@ namespace Rock.Model
         /// Zip.
         /// </value>
         [MaxLength( 10 )]
+        [DataMember]
         public string Zip { get; set; }
         
         /// <summary>
@@ -87,6 +97,7 @@ namespace Rock.Model
         /// <value>
         /// Latitude.
         /// </value>
+        [DataMember]
         public double? Latitude { get; set; }
 
         /// <summary>
@@ -95,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// Longitude.
         /// </value>
+        [DataMember]
         public double? Longitude { get; set; }
 
         /// <summary>
@@ -104,6 +116,7 @@ namespace Rock.Model
         /// Parcel Id.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string ParcelId { get; set; }
 
         /// <summary>
@@ -112,6 +125,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Attempt.
         /// </value>
+        [DataMember]
         public DateTime? StandardizeAttempt { get; set; }
         
         /// <summary>
@@ -121,6 +135,7 @@ namespace Rock.Model
         /// Standardize Service.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string StandardizeService { get; set; }
         
         /// <summary>
@@ -130,6 +145,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string StandardizeResult { get; set; }
         
         /// <summary>
@@ -138,6 +154,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Date.
         /// </value>
+        [DataMember]
         public DateTime? StandardizeDate { get; set; }
         
         /// <summary>
@@ -146,6 +163,7 @@ namespace Rock.Model
         /// <value>
         /// Geocode Attempt.
         /// </value>
+        [DataMember]
         public DateTime? GeocodeAttempt { get; set; }
         
         /// <summary>
@@ -155,6 +173,7 @@ namespace Rock.Model
         /// Geocode Service.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string GeocodeService { get; set; }
         
         /// <summary>
@@ -164,6 +183,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string GeocodeResult { get; set; }
         
         /// <summary>
@@ -172,26 +192,8 @@ namespace Rock.Model
         /// <value>
         /// Geocode Date.
         /// </value>
+        [DataMember]
         public DateTime? GeocodeDate { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Location Read( int id )
-        {
-            return Read<Location>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

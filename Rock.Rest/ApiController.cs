@@ -16,7 +16,8 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
-    public abstract class ApiController<T> : ApiController where T : Rock.Data.Entity<T>
+    public abstract class ApiController<T> : ApiController 
+        where T : Rock.Data.Entity<T>, new()
     {
         private Service<T> _service;
 

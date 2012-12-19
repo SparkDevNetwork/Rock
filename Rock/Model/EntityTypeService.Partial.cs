@@ -60,15 +60,20 @@ namespace Rock.Model
         /// <param name="physWebAppPath">the physical path of the web application</param>
         public void RegisterEntityTypes( string physWebAppPath )
         {
-            var entityTypes = new Dictionary<string, EntityTypeDto>();
+            var entityTypes = new Dictionary<string, EntityType>();
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ),
                 new DirectoryInfo[] { 
                     new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
-
-                entityTypes.Add( type.Value.FullName, new EntityTypeDto( type.Value.FullName, type.Value.Name.SplitCase(), type.Value.AssemblyQualifiedName, true, false ) );
+                var entityType = new EntityType();
+                entityType.Name = type.Value.FullName;
+                entityType.FriendlyName = type.Value.Name.SplitCase();
+                entityType.AssemblyName = type.Value.AssemblyQualifiedName;
+                entityType.IsEntity = true;
+                entityType.IsSecured = false;
+                entityTypes.Add( type.Value.FullName, entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
@@ -82,7 +87,13 @@ namespace Rock.Model
                 }
                 else
                 {
-                    entityTypes.Add( type.Value.FullName, new EntityTypeDto( type.Value.FullName, type.Value.Name.SplitCase(), type.Value.AssemblyQualifiedName, false, true ) );
+                    var entityType = new EntityType();
+                    entityType.Name = type.Value.FullName;
+                    entityType.FriendlyName = type.Value.Name.SplitCase();
+                    entityType.AssemblyName = type.Value.AssemblyQualifiedName;
+                    entityType.IsEntity = false;
+                    entityType.IsSecured = true;
+                    entityTypes.Add( type.Value.FullName, entityType);
                 }
             }
 
@@ -115,9 +126,8 @@ namespace Rock.Model
             // Add the newly discovered entities
             foreach ( var entityTypeInfo in entityTypes )
             {
-                var entityType = entityTypeInfo.Value.ToModel();
-                this.Add( entityType, null );
-                this.Save( entityType, null );
+                this.Add( entityTypeInfo.Value, null );
+                this.Save( entityTypeInfo.Value, null );
             }
         }
 

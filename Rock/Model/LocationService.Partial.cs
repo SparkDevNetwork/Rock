@@ -41,21 +41,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Standardizes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Standardize(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Standardize( locationModel, personId );
-
-            return locationModel;
-        }
-
-        /// <summary>
         /// Standardizes the specified <see cref="Location"/>
         /// </summary>
         /// <param name="location">The location.</param>
@@ -94,21 +79,6 @@ namespace Rock.Model
                 }
 
             location.StandardizeAttempt = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Geocodes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Geocode(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Geocode( locationModel, personId );
-
-            return locationModel;
         }
 
         /// <summary>
@@ -161,7 +131,7 @@ namespace Rock.Model
         /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Location GetByLocationDto(LocationDto location, int? personId)
+        private Location GetByLocation(Location location, int? personId)
         {
             string raw = location.Raw;
 

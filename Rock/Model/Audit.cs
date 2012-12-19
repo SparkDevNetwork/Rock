@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "Audit" )]
+    [DataContract( IsReference = true )]
     public partial class Audit : Entity<Audit>
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -35,6 +38,7 @@ namespace Rock.Model
         /// Entity Id.
         /// </value>
         [Required]
+        [DataMember]
         public int EntityId { get; set; }
 
         /// <summary>
@@ -45,6 +49,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
+        [DataMember]
         public string Title { get; set; }
         
         /// <summary>
@@ -54,6 +59,7 @@ namespace Rock.Model
         /// Original Value.
         /// </value>
         [Required]
+        [DataMember]
         public AuditType AuditType { get; set; }
         
         /// <summary>
@@ -62,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// Properties.
         /// </value>
+        [DataMember]
         public string Properties { get; set; }
 
         /// <summary>
@@ -70,6 +77,7 @@ namespace Rock.Model
         /// <value>
         /// Date Time.
         /// </value>
+        [DataMember]
         public DateTime? DateTime { get; set; }
         
         /// <summary>
@@ -78,6 +86,7 @@ namespace Rock.Model
         /// <value>
         /// Person Id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -86,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -94,26 +104,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Person Person { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Audit Read( int id )
-        {
-            return Read<Audit>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

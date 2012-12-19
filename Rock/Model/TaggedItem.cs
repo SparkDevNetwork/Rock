@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// Tagged Ited POCO Entity.
     /// </summary>
     [Table( "TaggedItem" )]
+    [DataContract( IsReference = true )]
     public partial class TaggedItem : Model<TaggedItem>
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// Attribute Id.
         /// </value>
         [Required]
+        [DataMember]
         public int TagId { get; set; }
         
         /// <summary>
@@ -42,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// Entity Id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
         
         /// <summary>
@@ -50,33 +54,15 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Tag"/> object.
         /// </value>
+        [DataMember]
         public virtual Tag Tag { get; set; }
         
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static AttributeValue Read( int id )
-        {
-            return Read<AttributeValue>( id );
-        }
-
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
             get { return this.Tag; }
-        }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
         }
 
         /// <summary>

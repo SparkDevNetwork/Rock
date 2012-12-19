@@ -51,36 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class EmailTemplateExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static EmailTemplate Clone( this EmailTemplate entity )
-        {
-            var newEntity = new EmailTemplate();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.PersonId = entity.PersonId;
-            newEntity.Category = entity.Category;
-            newEntity.Title = entity.Title;
-            newEntity.From = entity.From;
-            newEntity.To = entity.To;
-            newEntity.Cc = entity.Cc;
-            newEntity.Bcc = entity.Bcc;
-            newEntity.Subject = entity.Subject;
-            newEntity.Body = entity.Body;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

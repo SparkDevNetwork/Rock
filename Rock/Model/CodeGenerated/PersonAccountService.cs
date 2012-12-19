@@ -51,28 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class PersonAccountExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static PersonAccount Clone( this PersonAccount entity )
-        {
-            var newEntity = new PersonAccount();
-
-            newEntity.PersonId = entity.PersonId;
-            newEntity.Account = entity.Account;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

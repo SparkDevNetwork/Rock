@@ -57,33 +57,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class FinancialBatchExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static FinancialBatch Clone( this FinancialBatch entity )
-        {
-            var newEntity = new FinancialBatch();
-
-            newEntity.Name = entity.Name;
-            newEntity.BatchDate = entity.BatchDate;
-            newEntity.IsClosed = entity.IsClosed;
-            newEntity.CampusId = entity.CampusId;
-            newEntity.Entity = entity.Entity;
-            newEntity.EntityId = entity.EntityId;
-            newEntity.ForeignReference = entity.ForeignReference;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

@@ -97,6 +97,7 @@ namespace Rock.Extension
                     components.Add( i.Value.Order, new List<Lazy<T, TData>>() );
                 }
 
+                i.Value.LoadAttributes();
                 components[i.Value.Order].Add( i );
             }
 

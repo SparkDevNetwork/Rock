@@ -51,34 +51,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class MetricValueExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static MetricValue Clone( this MetricValue entity )
-        {
-            var newEntity = new MetricValue();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.MetricId = entity.MetricId;
-            newEntity.Value = entity.Value;
-            newEntity.Description = entity.Description;
-            newEntity.xValue = entity.xValue;
-            newEntity.isDateBased = entity.isDateBased;
-            newEntity.Label = entity.Label;
-            newEntity.Order = entity.Order;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

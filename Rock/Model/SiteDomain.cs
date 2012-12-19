@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// Site Domain POCO Entity.
     /// </summary>
     [Table( "SiteDomain" )]
+    [DataContract( IsReference = true )]
     public partial class SiteDomain : Model<SiteDomain>
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// Site Id.
         /// </value>
         [Required]
+        [DataMember]
         public int SiteId { get; set; }
         
         /// <summary>
@@ -44,6 +47,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
+        [DataMember]
         public string Domain { get; set; }
         
         /// <summary>
@@ -52,26 +56,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
+        [DataMember]
         public virtual Site Site { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static SiteDomain Read( int id )
-        {
-            return Read<SiteDomain>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

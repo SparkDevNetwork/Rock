@@ -57,32 +57,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class WorkflowActivityTypeExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static WorkflowActivityType Clone( this WorkflowActivityType entity )
-        {
-            var newEntity = new WorkflowActivityType();
-
-            newEntity.IsActive = entity.IsActive;
-            newEntity.WorkflowTypeId = entity.WorkflowTypeId;
-            newEntity.Name = entity.Name;
-            newEntity.Description = entity.Description;
-            newEntity.IsActivatedWithWorkflow = entity.IsActivatedWithWorkflow;
-            newEntity.Order = entity.Order;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

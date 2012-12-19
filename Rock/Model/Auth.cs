@@ -3,14 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 using System.Text;
 
-using Rock;
 using Rock.Data;
 
 namespace Rock.Model
@@ -19,6 +17,7 @@ namespace Rock.Model
     /// Auth POCO Entity.
     /// </summary>
     [Table( "Auth" )]
+    [DataContract( IsReference = true )]
     public partial class Auth : Model<Auth>, IOrdered
     {
         /// <summary>
@@ -28,6 +27,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -36,6 +36,7 @@ namespace Rock.Model
         /// <value>
         /// Entity Id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
         
         /// <summary>
@@ -45,6 +46,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember]
         public int Order { get; set; }
         
         /// <summary>
@@ -55,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 50 )]
+        [DataMember]
         public string Action { get; set; }
         
         /// <summary>
@@ -65,6 +68,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 1 )]
+        [DataMember]
         public string AllowOrDeny { get; set; }
         
         /// <summary>
@@ -74,6 +78,7 @@ namespace Rock.Model
         /// Enum[SpecialRole].
         /// </value>
         [Required]
+        [DataMember]
         public SpecialRole SpecialRole { get; set; }
 
         /// <summary>
@@ -82,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// Person Id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
         
         /// <summary>
@@ -90,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// Group Id.
         /// </value>
+        [DataMember]
         public int? GroupId { get; set; }
         
         /// <summary>
@@ -98,6 +105,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.Group"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.Group Group { get; set; }
         
         /// <summary>
@@ -106,6 +114,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -114,16 +123,8 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// The default authorization for a specific action.
@@ -133,16 +134,6 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Auth Read( int id )
-        {
-            return Read<Auth>( id );
         }
 
         /// <summary>

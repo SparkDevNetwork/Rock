@@ -63,33 +63,4 @@ namespace Rock.Model
             return true;
         }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class CategoryExtension
-    {
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Category Clone( this Category entity )
-        {
-            var newEntity = new Category();
-
-            newEntity.IsSystem = entity.IsSystem;
-            newEntity.ParentCategoryId = entity.ParentCategoryId;
-            newEntity.EntityTypeId = entity.EntityTypeId;
-            newEntity.EntityTypeQualifierColumn = entity.EntityTypeQualifierColumn;
-            newEntity.EntityTypeQualifierValue = entity.EntityTypeQualifierValue;
-            newEntity.Name = entity.Name;
-            newEntity.FileId = entity.FileId;
-            newEntity.Id = entity.Id;
-            newEntity.Guid = entity.Guid;
-
-            return newEntity;
-        }
-
-    }
 }

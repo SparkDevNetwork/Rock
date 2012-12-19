@@ -3,12 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +16,7 @@ namespace Rock.Model
     /// MetricValue POCO Entity.
     /// </summary>
     [Table( "MetricValue" )]
+    [DataContract( IsReference = true )]
     public partial class MetricValue : Model<MetricValue>, IOrdered
     {
         /// <summary>
@@ -26,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace Rock.Model
         /// MetricId.
         /// </value>
         [Required]
+        [DataMember]
         public int MetricId { get; set; }
 
         /// <summary>
@@ -45,6 +47,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember]
         public string Value { get; set; }
         
         /// <summary>
@@ -53,6 +56,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -62,6 +66,7 @@ namespace Rock.Model
         /// xValue.
         /// </value>
         [Required]
+        [DataMember]
         public string xValue { get; set; }
                 
         /// <summary>
@@ -71,6 +76,7 @@ namespace Rock.Model
         /// isDateBased.
         /// </value>
         [Required]
+        [DataMember]
         public bool isDateBased { get; set; }
 
         /// <summary>
@@ -79,6 +85,7 @@ namespace Rock.Model
         /// <value>
         /// Label.
         /// </value>
+        [DataMember]
         public string Label { get; set; }
 
         /// <summary>
@@ -88,6 +95,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -96,26 +104,8 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
+        [DataMember]
         public virtual Metric Metric { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MetricValue Read( int id )
-        {
-            return Read<MetricValue>( id );
-        }
 
         /// <summary>
         /// Gets the parent authority.

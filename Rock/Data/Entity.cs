@@ -18,6 +18,7 @@ namespace Rock.Data
     /// <typeparam name="T"></typeparam>
     [DataContract(IsReference=true)]
     public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
+        where T : Entity<T>, new()
     {
         #region Entity Properties
 
@@ -125,16 +126,6 @@ namespace Rock.Data
 
         #endregion
 
-        #region Abstract Properties
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public abstract IDto Dto { get; }
-
-        #endregion
-
         #region Static Properties
 
         /// <summary>
@@ -180,12 +171,58 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEntity Clone()
+        {
+            return FromJson( this.ToJson() );
+        }
+
+        /// <summary>
+        /// Converts object to dictionary.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+
+            foreach(var propInfo in this.GetType().GetProperties())
+            {
+                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" )
+                {
+                    dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
+                }
+            }
+
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Froms the dictionary.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        public virtual void FromDictionary( Dictionary<string, object> properties )
+        {
+            Type type = this.GetType();
+
+            foreach ( var property in properties )
+            {
+                var propInfo = type.GetProperty( property.Key );
+                if ( propInfo != null )
+                {
+                    propInfo.SetValue( this, property.Value );
+                }
+            }
+        }
+
+        /// <summary>
         /// Converts object to dictionary for DotLiquid.
         /// </summary>
         /// <returns></returns>
         public virtual object ToLiquid()
         {
-            return this.Dto.ToDictionary();
+            return this.ToDictionary();
         }
 
         #endregion
@@ -193,36 +230,13 @@ namespace Rock.Data
         #region Static Methods
 
         /// <summary>
-        /// Static method to return an object based on the id
-        /// </summary>
-        /// <typeparam name="TT">The type of the T.</typeparam>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static TT Read<TT>( int id ) where TT : Entity<TT>
-        {
-            return new Service<TT>().Get( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the guid
-        /// </summary>
-        /// <typeparam name="TT">The type of the T.</typeparam>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static TT Read<TT>( Guid guid ) where TT : Entity<TT>
-        {
-            return new Service<TT>().Get( guid );
-        }
-
-        /// <summary>
         /// Static method to return an object from a json string.
         /// </summary>
-        /// <typeparam name="TT">The type of the T.</typeparam>
         /// <param name="json">The json.</param>
         /// <returns></returns>
-        public static TT FromJson<TT>(string json) where TT : Entity<TT>
+        public static T FromJson(string json) 
         {
-            return JsonConvert.DeserializeObject(json, typeof(TT)) as TT;
+            return JsonConvert.DeserializeObject(json, typeof(T)) as T;
         }
 
         #endregion

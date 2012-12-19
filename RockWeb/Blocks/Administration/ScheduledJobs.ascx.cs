@@ -92,7 +92,8 @@ namespace RockWeb.Blocks.Administration
             ServiceJob job = null;
             if ( jobId != 0 )
             {
-                job = ServiceJob.Read( jobId );
+                var service = new ServiceJobService();
+                job = service.Get( jobId );
                 lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName );
             }
             else

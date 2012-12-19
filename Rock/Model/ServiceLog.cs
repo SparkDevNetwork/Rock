@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Service Log POCO Entity.
     /// </summary>
     [Table( "ServiceLog" )]
+    [DataContract( IsReference = true )]
     public partial class ServiceLog : Model<ServiceLog>
     {
         /// <summary>
@@ -24,6 +26,7 @@ namespace Rock.Model
         /// <value>
         /// Time.
         /// </value>
+        [DataMember]
         public DateTime? Time { get; set; }
         
         /// <summary>
@@ -32,6 +35,7 @@ namespace Rock.Model
         /// <value>
         /// Input.
         /// </value>
+        [DataMember]
         public string Input { get; set; }
         
         /// <summary>
@@ -41,6 +45,7 @@ namespace Rock.Model
         /// Type.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Type { get; set; }
         
         /// <summary>
@@ -50,6 +55,7 @@ namespace Rock.Model
         /// Name.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Name { get; set; }
         
         /// <summary>
@@ -59,6 +65,7 @@ namespace Rock.Model
         /// Result.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Result { get; set; }
         
         /// <summary>
@@ -68,26 +75,8 @@ namespace Rock.Model
         /// Success.
         /// </value>
         [Required]
+        [DataMember]
         public bool Success { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static ServiceLog Read( int id )
-        {
-            return Read<ServiceLog>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

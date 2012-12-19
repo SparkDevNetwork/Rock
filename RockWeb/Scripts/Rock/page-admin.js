@@ -8,6 +8,8 @@ function saveBlockMove() {
     // The new zone selected
     var zoneName = $('#block-move-zone').val();
 
+    alert(blockId);
+
     // Get the current block instance object
     $.ajax({
         type: 'GET',
@@ -66,12 +68,12 @@ function saveBlockMove() {
 
                 },
                 error: function (xhr, status, error) {
-                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                    alert('PUT ' + status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         },
         error: function (xhr, status, error) {
-            alert(status + ' [' + error + ']: ' + xhr.responseText);
+            alert('GET ' + status + ' [' + error + ']: ' + xhr.responseText);
         }
     });
 
@@ -87,6 +89,8 @@ $(document).ready(function () {
 
         // Add the current block's id as an attribute of the move dialog's save button
         $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance', $(this).attr('href'));
+
+        alert($('#modal-block-move_panel div.modal-footer a.btn.primary').attr('id'));
 
         // Set the dialog's zone selection select box value to the block's current zone 
         $('#block-move-zone').val($(this).attr('zone'));
