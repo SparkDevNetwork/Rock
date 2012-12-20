@@ -30,7 +30,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// Block Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int BlockTypeId { get; set; }
         
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Zone { get; set; }
         
         /// <summary>
@@ -80,7 +80,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -92,7 +92,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [TrackChanges]
         [Required( ErrorMessage = "Name is required" )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -102,7 +102,7 @@ namespace Rock.Model
         /// Output Cache Duration.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
         
         /// <summary>

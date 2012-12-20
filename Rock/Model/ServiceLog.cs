@@ -75,7 +75,7 @@ namespace Rock.Model
         /// Success.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool Success { get; set; }
 
         /// <summary>

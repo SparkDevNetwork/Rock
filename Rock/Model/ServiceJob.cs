@@ -46,7 +46,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -76,7 +76,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Class { get; set; }
         
         /// <summary>
@@ -87,7 +87,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 120 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string CronExpression { get; set; }
         
         /// <summary>
@@ -163,7 +163,7 @@ namespace Rock.Model
         /// Enum[JobNotificationStatus].
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public JobNotificationStatus NotificationStatus { get; set; }
 
         /// <summary>

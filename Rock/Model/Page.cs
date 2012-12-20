@@ -33,7 +33,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [TrackChanges]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Rock.Model
         /// IsSystem.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Rock.Model
         /// Requires Encryption.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Rock.Model
         /// Enable View State.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool EnableViewState
         {
             get { return _enableViewState; }
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// Menu Display Description.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayDescription { get; set; }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Rock.Model
         /// Menu Display Icon.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayIcon { get; set; }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Rock.Model
         /// Menu Display Child Pages.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace Rock.Model
         /// Enum[DisplayInNavWhen].
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace Rock.Model
         /// Output Cache Duration.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace Rock.Model
         /// Include Admin Footer.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IncludeAdminFooter
         {
             get { return _includeAdminFooter; }

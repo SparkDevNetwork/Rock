@@ -26,7 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +36,7 @@ namespace Rock.Model
         /// Site Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int SiteId { get; set; }
         
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Domain { get; set; }
         
         /// <summary>

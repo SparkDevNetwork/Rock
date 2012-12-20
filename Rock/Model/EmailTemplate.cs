@@ -28,7 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Title { get; set; }
         
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// From.
         /// </value>
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string From { get; set; }
         
         /// <summary>
@@ -79,7 +79,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string To { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Cc.
         /// </summary>
@@ -106,7 +106,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Subject { get; set; }
         
         /// <summary>
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// Body.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Body { get; set; }
 
         /// <summary>

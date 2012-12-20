@@ -26,7 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <value>
         /// The sort order.
         /// </value>
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int? SortOrder { get; set; }
 
         /// <summary>

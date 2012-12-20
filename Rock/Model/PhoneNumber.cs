@@ -27,7 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// Person Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
         
         /// <summary>
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 20 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Number { get; set; }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// Gets or sets whether the number has been opted in for SMS
         /// </summary>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary>

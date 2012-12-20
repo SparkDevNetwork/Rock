@@ -27,7 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>

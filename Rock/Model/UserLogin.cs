@@ -31,7 +31,7 @@ namespace Rock.Model
         /// The type of the service.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string ServiceName { get; set; }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 255 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string UserName { get; set; }
         
         /// <summary>

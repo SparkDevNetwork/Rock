@@ -27,7 +27,7 @@ namespace Rock.Model
         /// Current Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int CurrentId { get; set; }
         
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// Current Guid.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public Guid CurrentGuid { get; set; }
         
         /// <summary>

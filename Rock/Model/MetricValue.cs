@@ -26,7 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Rock.Model
         /// MetricId.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int MetricId { get; set; }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Value { get; set; }
         
         /// <summary>
@@ -66,7 +66,7 @@ namespace Rock.Model
         /// xValue.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string xValue { get; set; }
                 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Rock.Model
         /// isDateBased.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool isDateBased { get; set; }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
