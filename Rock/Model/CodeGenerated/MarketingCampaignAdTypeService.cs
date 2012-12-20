@@ -57,4 +57,23 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignAdTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this MarketingCampaignAdType to another
+        /// </summary>
+        public static void ShallowCopy( this MarketingCampaignAdType source, MarketingCampaignAdType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.DateRangeType = source.DateRangeType;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

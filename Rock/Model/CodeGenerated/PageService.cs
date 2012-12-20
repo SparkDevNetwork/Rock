@@ -63,4 +63,37 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PageExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Page to another
+        /// </summary>
+        public static void ShallowCopy( this Page source, Page target )
+        {
+            target.Name = source.Name;
+            target.ParentPageId = source.ParentPageId;
+            target.Title = source.Title;
+            target.IsSystem = source.IsSystem;
+            target.SiteId = source.SiteId;
+            target.Layout = source.Layout;
+            target.RequiresEncryption = source.RequiresEncryption;
+            target.EnableViewState = source.EnableViewState;
+            target.MenuDisplayDescription = source.MenuDisplayDescription;
+            target.MenuDisplayIcon = source.MenuDisplayIcon;
+            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
+            target.DisplayInNavWhen = source.DisplayInNavWhen;
+            target.Order = source.Order;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.Description = source.Description;
+            target.IconFileId = source.IconFileId;
+            target.IncludeAdminFooter = source.IncludeAdminFooter;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

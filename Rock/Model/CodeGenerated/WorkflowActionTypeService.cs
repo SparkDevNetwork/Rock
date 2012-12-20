@@ -57,4 +57,26 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowActionTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this WorkflowActionType to another
+        /// </summary>
+        public static void ShallowCopy( this WorkflowActionType source, WorkflowActionType target )
+        {
+            target.ActivityTypeId = source.ActivityTypeId;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.EntityTypeId = source.EntityTypeId;
+            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
+            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

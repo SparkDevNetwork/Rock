@@ -91,4 +91,44 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Person to another
+        /// </summary>
+        public static void ShallowCopy( this Person source, Person target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.RecordTypeValueId = source.RecordTypeValueId;
+            target.RecordStatusValueId = source.RecordStatusValueId;
+            target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
+            target.PersonStatusValueId = source.PersonStatusValueId;
+            target.TitleValueId = source.TitleValueId;
+            target.GivenName = source.GivenName;
+            target.NickName = source.NickName;
+            target.LastName = source.LastName;
+            target.SuffixValueId = source.SuffixValueId;
+            target.PhotoId = source.PhotoId;
+            target.BirthDay = source.BirthDay;
+            target.BirthMonth = source.BirthMonth;
+            target.BirthYear = source.BirthYear;
+            target.Gender = source.Gender;
+            target.MaritalStatusValueId = source.MaritalStatusValueId;
+            target.AnniversaryDate = source.AnniversaryDate;
+            target.GraduationDate = source.GraduationDate;
+            target.Email = source.Email;
+            target.IsEmailActive = source.IsEmailActive;
+            target.EmailNote = source.EmailNote;
+            target.DoNotEmail = source.DoNotEmail;
+            target.SystemNote = source.SystemNote;
+            target.ViewedCount = source.ViewedCount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

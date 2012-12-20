@@ -51,4 +51,38 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class LocationExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Location to another
+        /// </summary>
+        public static void ShallowCopy( this Location source, Location target )
+        {
+            target.Raw = source.Raw;
+            target.Street1 = source.Street1;
+            target.Street2 = source.Street2;
+            target.City = source.City;
+            target.State = source.State;
+            target.Country = source.Country;
+            target.Zip = source.Zip;
+            target.Latitude = source.Latitude;
+            target.Longitude = source.Longitude;
+            target.ParcelId = source.ParcelId;
+            target.StandardizeAttempt = source.StandardizeAttempt;
+            target.StandardizeService = source.StandardizeService;
+            target.StandardizeResult = source.StandardizeResult;
+            target.StandardizeDate = source.StandardizeDate;
+            target.GeocodeAttempt = source.GeocodeAttempt;
+            target.GeocodeService = source.GeocodeService;
+            target.GeocodeResult = source.GeocodeResult;
+            target.GeocodeDate = source.GeocodeDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

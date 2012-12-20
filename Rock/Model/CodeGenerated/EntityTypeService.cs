@@ -93,4 +93,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EntityTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this EntityType to another
+        /// </summary>
+        public static void ShallowCopy( this EntityType source, EntityType target )
+        {
+            target.Name = source.Name;
+            target.AssemblyName = source.AssemblyName;
+            target.FriendlyName = source.FriendlyName;
+            target.IsEntity = source.IsEntity;
+            target.IsSecured = source.IsSecured;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

@@ -51,4 +51,36 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class UserLoginExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this UserLogin to another
+        /// </summary>
+        public static void ShallowCopy( this UserLogin source, UserLogin target )
+        {
+            target.ServiceType = source.ServiceType;
+            target.ServiceName = source.ServiceName;
+            target.UserName = source.UserName;
+            target.Password = source.Password;
+            target.IsConfirmed = source.IsConfirmed;
+            target.LastActivityDate = source.LastActivityDate;
+            target.LastLoginDate = source.LastLoginDate;
+            target.LastPasswordChangedDate = source.LastPasswordChangedDate;
+            target.CreationDate = source.CreationDate;
+            target.IsOnLine = source.IsOnLine;
+            target.IsLockedOut = source.IsLockedOut;
+            target.LastLockedOutDate = source.LastLockedOutDate;
+            target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+            target.FailedPasswordAttemptWindowStart = source.FailedPasswordAttemptWindowStart;
+            target.ApiKey = source.ApiKey;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

@@ -51,4 +51,30 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EmailTemplateExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this EmailTemplate to another
+        /// </summary>
+        public static void ShallowCopy( this EmailTemplate source, EmailTemplate target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
+            target.Category = source.Category;
+            target.Title = source.Title;
+            target.From = source.From;
+            target.To = source.To;
+            target.Cc = source.Cc;
+            target.Bcc = source.Bcc;
+            target.Subject = source.Subject;
+            target.Body = source.Body;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

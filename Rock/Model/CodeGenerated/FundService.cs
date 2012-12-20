@@ -63,4 +63,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FundExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Fund to another
+        /// </summary>
+        public static void ShallowCopy( this Fund source, Fund target )
+        {
+            target.Name = source.Name;
+            target.PublicName = source.PublicName;
+            target.Description = source.Description;
+            target.ParentFundId = source.ParentFundId;
+            target.IsTaxDeductible = source.IsTaxDeductible;
+            target.Order = source.Order;
+            target.IsActive = source.IsActive;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.IsPledgable = source.IsPledgable;
+            target.GlCode = source.GlCode;
+            target.FundTypeValueId = source.FundTypeValueId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

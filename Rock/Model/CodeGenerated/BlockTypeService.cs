@@ -51,4 +51,24 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class BlockTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this BlockType to another
+        /// </summary>
+        public static void ShallowCopy( this BlockType source, BlockType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Path = source.Path;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }
