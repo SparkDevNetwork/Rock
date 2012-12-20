@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -23,6 +25,7 @@ namespace Rock.Model
     /// Metric POCO Entity.
     /// </summary>
     [Table( "Metric" )]
+    [DataContract( IsReference = true )]
     public partial class Metric : Model<Metric>, IOrdered
     {
         /// <summary>
@@ -32,6 +35,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -40,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// Type.
         /// </value>
+        [DataMember]
         public bool Type { get; set; }
         
         /// <summary>
@@ -49,6 +54,7 @@ namespace Rock.Model
         /// Category.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -59,6 +65,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Title { get; set; }
 
         /// <summary>
@@ -68,6 +75,7 @@ namespace Rock.Model
         /// Subtitle.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Subtitle { get; set; }
     
         /// <summary>
@@ -76,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -84,6 +93,7 @@ namespace Rock.Model
         /// <value>
         /// MinValue.
         /// </value>
+        [DataMember]
         public int? MinValue { get; set; }
 
         /// <summary>
@@ -92,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// MaxValue.
         /// </value>
+        [DataMember]
         public int? MaxValue { get; set; }
 
         /// <summary>
@@ -100,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// CollectionFrequency.
         /// </value>
+        [DataMember]
         public int? CollectionFrequencyValueId { get; set; }
 
         /// <summary>
@@ -108,6 +120,7 @@ namespace Rock.Model
         /// <value>
         /// LastCollected Date Time.
         /// </value>
+        [DataMember]
         public DateTime? LastCollected { get; set; }
 
         /// <summary>
@@ -117,6 +130,7 @@ namespace Rock.Model
         /// Source.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Source { get; set; }
 
         /// <summary>
@@ -125,6 +139,7 @@ namespace Rock.Model
         /// <value>
         /// SourceSQL.
         /// </value>
+        [DataMember]
         public string SourceSQL { get; set; }
 
         /// <summary>
@@ -134,26 +149,8 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Metric Read( int id )
-        {
-            return Read<Metric>( id );
-        }
 
         /// <summary>
         /// Gets or sets the Metric Values.
@@ -161,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Metric Values.
         /// </value>
+        [DataMember]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
@@ -169,6 +167,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue CollectionFrequencyValue { get; set; }
 
         /// <summary>

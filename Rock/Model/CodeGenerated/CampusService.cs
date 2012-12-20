@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Campus Service class
     /// </summary>
-    public partial class CampusService : Service<Campus, CampusDto>
+    public partial class CampusService : Service<Campus>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusService"/> class
@@ -38,38 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Campus CreateNew()
-        {
-            return new Campus();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<CampusDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<CampusDto> QueryableDto( IQueryable<Campus> items )
-        {
-            return items.Select( m => new CampusDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -80,24 +48,12 @@ namespace Rock.Model
         public bool CanDelete( Campus item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Group>().Queryable().Any( a => a.CampusId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Group where CampusId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Group" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Group";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Campus.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Group.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// GroupRole Service class
     /// </summary>
-    public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
+    public partial class GroupRoleService : Service<GroupRole>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override GroupRole CreateNew()
-        {
-            return new GroupRole();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupRoleDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupRoleDto> QueryableDto( IQueryable<GroupRole> items )
-        {
-            return items.Select( m => new GroupRoleDto()
-                {
-                    IsSystem = m.IsSystem,
-                    GroupTypeId = m.GroupTypeId,
-                    Name = m.Name,
-                    Description = m.Description,
-                    SortOrder = m.SortOrder,
-                    MaxCount = m.MaxCount,
-                    MinCount = m.MinCount,
-                    IsLeader = m.IsLeader,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,39 +48,18 @@ namespace Rock.Model
         public bool CanDelete( GroupRole item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<GroupMember>().Queryable().Any( a => a.GroupRoleId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupMember where GroupRoleId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "GroupMember" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupMember";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>().Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from GroupType where DefaultGroupRoleId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "GroupType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "GroupType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupRole.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

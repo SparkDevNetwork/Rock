@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
+
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -19,6 +19,7 @@ namespace Rock.Model
     /// Location POCO Entity.
     /// </summary>
     [Table( "Location" )]
+    [DataContract( IsReference = true )]
     public partial class Location : Model<Location>
     {
         #region Entity Properties
@@ -29,6 +30,7 @@ namespace Rock.Model
         /// <value>
         /// The parent location id.
         /// </value>
+        [DataMember]
         public int? ParentLocationId { get; set; }
 
         /// <summary>
@@ -38,6 +40,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -46,6 +49,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActive { get; set; }
 
         /// <summary>
@@ -54,6 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The location point.
         /// </value>
+        [DataMember]
         public DbGeography LocationPoint { get; set; }
 
         /// <summary>
@@ -62,6 +67,7 @@ namespace Rock.Model
         /// <value>
         /// The perimeter.
         /// </value>
+        [DataMember]
         public DbGeography Perimeter { get; set; }
 
         /// <summary>
@@ -70,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// The location type value id.
         /// </value>
+        [DataMember]
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>
@@ -79,6 +86,7 @@ namespace Rock.Model
         /// Street 1.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Street1 { get; set; }
         
         /// <summary>
@@ -88,6 +96,7 @@ namespace Rock.Model
         /// Street 2.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Street2 { get; set; }
         
         /// <summary>
@@ -97,6 +106,7 @@ namespace Rock.Model
         /// City.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string City { get; set; }
         
         /// <summary>
@@ -106,6 +116,7 @@ namespace Rock.Model
         /// State.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string State { get; set; }
         
         /// <summary>
@@ -115,6 +126,7 @@ namespace Rock.Model
         /// Country.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Country { get; set; }
         
         /// <summary>
@@ -124,6 +136,7 @@ namespace Rock.Model
         /// Zip.
         /// </value>
         [MaxLength( 10 )]
+        [DataMember]
         public string Zip { get; set; }
 
         /// <summary>
@@ -133,6 +146,7 @@ namespace Rock.Model
         /// Raw.
         /// </value>
         [MaxLength( 400 )]
+        [DataMember]
         public string FullAddress { get; set; }
 
         /// <summary>
@@ -142,6 +156,7 @@ namespace Rock.Model
         /// Parcel Id.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string AssessorParcelId { get; set; }
 
         /// <summary>
@@ -150,6 +165,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Attempt.
         /// </value>
+        [DataMember]
         public DateTime? StandardizeAttemptedDateTime { get; set; }
         
         /// <summary>
@@ -159,6 +175,7 @@ namespace Rock.Model
         /// Standardize Service.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string StandardizeAttemptedServiceType { get; set; }
         
         /// <summary>
@@ -168,6 +185,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string StandardizeAttemptedResult { get; set; }
         
         /// <summary>
@@ -176,6 +194,7 @@ namespace Rock.Model
         /// <value>
         /// Standardize Date.
         /// </value>
+		[DataMember]
         public DateTime? StandardizedDateTime { get; set; }
         
         /// <summary>
@@ -184,6 +203,7 @@ namespace Rock.Model
         /// <value>
         /// Geocode Attempt.
         /// </value>
+        [DataMember]
         public DateTime? GeocodeAttemptedDateTime { get; set; }
         
         /// <summary>
@@ -193,6 +213,7 @@ namespace Rock.Model
         /// Geocode Service.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string GeocodeAttemptedServiceType { get; set; }
         
         /// <summary>
@@ -202,6 +223,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string GeocodeAttemptedResult { get; set; }
         
         /// <summary>
@@ -210,6 +232,7 @@ namespace Rock.Model
         /// <value>
         /// Geocode Date.
         /// </value>
+        [DataMember]
         public DateTime? GeocodedDateTime { get; set; }
 
         /// <summary>
@@ -218,6 +241,7 @@ namespace Rock.Model
         /// <value>
         /// The attendance printer id.
         /// </value>
+        [DataMember]
         public int? PrinterDeviceId { get; set; }
 
         #endregion
@@ -230,6 +254,7 @@ namespace Rock.Model
         /// <value>
         /// The parent location.
         /// </value>
+        [DataMember]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
@@ -238,6 +263,7 @@ namespace Rock.Model
         /// <value>
         /// The child locations.
         /// </value>
+        [DataMember]
         public virtual ICollection<Location> ChildLocations
         {
             get { return _childLocations ?? ( _childLocations = new Collection<Location>() ); }
@@ -251,6 +277,7 @@ namespace Rock.Model
         /// <value>
         /// The group locations.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
@@ -264,6 +291,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the location.
         /// </value>
+        [DataMember]
         public virtual DefinedValue LocationType { get; set; }
 
         /// <summary>
@@ -272,16 +300,8 @@ namespace Rock.Model
         /// <value>
         /// The attendance printer.
         /// </value>
+        [DataMember]
         public virtual Device PrinterDevice { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -307,34 +327,6 @@ namespace Rock.Model
         {
             return string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip );
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Location Read( int id )
-        {
-            return Read<Location>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Location Read( Guid guid )
-        {
-            return Read<Location>( guid );
         }
 
         #endregion

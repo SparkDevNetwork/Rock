@@ -4,10 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -17,6 +17,7 @@ namespace Rock.Model
     /// WorkflowLog POCO Entity.
     /// </summary>
     [Table( "WorkflowLog" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowLog : Entity<WorkflowLog>
     {
 
@@ -28,6 +29,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow id.
         /// </value>
+        [DataMember]
         public int WorkflowId { get; set; }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Rock.Model
         /// The log date time.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public DateTime LogDateTime { get; set; }
 
         /// <summary>
@@ -46,6 +49,7 @@ namespace Rock.Model
         /// The log entry.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public string LogText { get; set; }
 
         #endregion
@@ -58,16 +62,8 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
+        [DataMember]
         public virtual Workflow Workflow { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -82,30 +78,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return string.Format( "{0}: {1}", this.LogDateTime.ToString(), this.LogText );
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowLog Read( int id )
-        {
-            return Read<WorkflowLog>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowLog Read( Guid guid )
-        {
-            return Read<WorkflowLog>( guid );
         }
 
         #endregion

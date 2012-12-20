@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignAdType Service class
     /// </summary>
-    public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType, MarketingCampaignAdTypeDto>
+    public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignAdTypeService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignAdType CreateNew()
-        {
-            return new MarketingCampaignAdType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignAdTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignAdTypeDto> QueryableDto( IQueryable<MarketingCampaignAdType> items )
-        {
-            return items.Select( m => new MarketingCampaignAdTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    DateRangeType = m.DateRangeType,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -81,24 +48,12 @@ namespace Rock.Model
         public bool CanDelete( MarketingCampaignAdType item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<MarketingCampaignAd>().Queryable().Any( a => a.MarketingCampaignAdTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from MarketingCampaignAd where MarketingCampaignAdTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "MarketingCampaignAd" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "MarketingCampaignAd";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", MarketingCampaignAdType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", MarketingCampaignAdType.FriendlyTypeName, MarketingCampaignAd.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

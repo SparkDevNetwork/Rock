@@ -40,15 +40,6 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit(e);
-            
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.core.min.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.fx.min.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.popup.min.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
-
-            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.common.min.css" );
-            CurrentPage.AddCSSLink( this.Page, "~/CSS/Kendo/kendo.rock.min.css" );
 
             _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
             _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );

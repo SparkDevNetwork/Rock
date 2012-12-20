@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaigns.ascx.cs" Inherits="MarketingCampaigns" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaigns.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaigns" %>
 
 <asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
     <Triggers>
@@ -8,7 +8,7 @@
 
         <asp:Panel ID="pnlList" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnEditRow="gMarketingCampaigns_Edit">
+            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnRowSelected="gMarketingCampaigns_Edit">
                 <Columns>
                     <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                     <asp:BoundField DataField="EventGroup.Name" HeaderText="Event Group" SortExpression="EventGroup.Name" />
@@ -22,7 +22,7 @@
 
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
             <div id="pnlEditDetails" runat="server" class="well">
                 <fieldset>
@@ -78,7 +78,7 @@
             </fieldset>
 
             <div id="pnlMarketingCampaignAds" runat="server" class="">
-                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnEditRow="gMarketingCampaignAds_Edit">
+                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnRowSelected="gMarketingCampaignAds_Edit">
                     <Columns>
                         <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
                         <Rock:DateField DataField="StartDate" HeaderText="Date" />

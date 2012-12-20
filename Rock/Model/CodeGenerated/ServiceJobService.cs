@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ServiceJob Service class
     /// </summary>
-    public partial class ServiceJobService : Service<ServiceJob, ServiceJobDto>
+    public partial class ServiceJobService : Service<ServiceJob>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceJobService"/> class
@@ -35,51 +35,6 @@ namespace Rock.Model
         /// </summary>
         public ServiceJobService(IRepository<ServiceJob> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override ServiceJob CreateNew()
-        {
-            return new ServiceJob();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ServiceJobDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ServiceJobDto> QueryableDto( IQueryable<ServiceJob> items )
-        {
-            return items.Select( m => new ServiceJobDto()
-                {
-                    IsSystem = m.IsSystem,
-                    IsActive = m.IsActive,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Assembly = m.Assembly,
-                    Class = m.Class,
-                    CronExpression = m.CronExpression,
-                    LastSuccessfulRunDateTime = m.LastSuccessfulRunDateTime,
-                    LastRunDateTime = m.LastRunDateTime,
-                    LastRunDurationSeconds = m.LastRunDurationSeconds,
-                    LastStatus = m.LastStatus,
-                    LastStatusMessage = m.LastStatusMessage,
-                    LastRunSchedulerName = m.LastRunSchedulerName,
-                    NotificationEmails = m.NotificationEmails,
-                    NotificationStatus = m.NotificationStatus,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

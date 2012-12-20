@@ -11,8 +11,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 
-using Rock;
-
 namespace Rock.CodeGeneration
 {
     /// <summary>
@@ -38,9 +36,9 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnLoad_Click( object sender, EventArgs e )
         {
-			var entityInterface = typeof( Rock.Data.IEntity );
-			rockAssembly = entityInterface.Assembly;
-			FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            var entityInterface = typeof( Rock.Data.IEntity );
+            rockAssembly = entityInterface.Assembly;
+            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
 
             ofdAssembly.InitialDirectory = fi.DirectoryName;
             ofdAssembly.Filter = "dll files (*.dll)|*.dll";
@@ -57,7 +55,7 @@ namespace Rock.CodeGeneration
                 {
                     var assembly = Assembly.LoadFrom( file );
 
-                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName))
+                    foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
                         if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
                         {
@@ -70,7 +68,7 @@ namespace Rock.CodeGeneration
                             }
                         }
                     }
-				}
+                }
 
                 CheckAllItems( true );
                 cbSelectAll.Checked = true;
@@ -96,15 +94,15 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
-            string serviceDtoFolder = Path.Combine( RootFolder().FullName, "Rock" );
+            string serviceFolder = Path.Combine( RootFolder().FullName, "Rock" );
             string restFolder = Path.Combine( RootFolder().FullName, "Rock.Rest" );
 
-            if ( cbService.Checked || cbDto.Checked )
+            if ( cbService.Checked  )
             {
-                fbdServiceDtoOutput.SelectedPath = serviceDtoFolder;
-                if ( fbdServiceDtoOutput.ShowDialog() == DialogResult.OK )
+                fbdServiceOutput.SelectedPath = serviceFolder;
+                if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
                 {
-                    serviceDtoFolder = fbdServiceDtoOutput.SelectedPath;
+                    serviceFolder = fbdServiceOutput.SelectedPath;
                 }
             }
 
@@ -130,12 +128,7 @@ namespace Rock.CodeGeneration
 
                         if ( cbService.Checked )
                         {
-                            WriteServiceFile( serviceDtoFolder, type );
-                        }
-
-                        if ( cbDto.Checked )
-                        {
-                            WriteDtoFile( serviceDtoFolder, type );
+                            WriteServiceFile( serviceFolder, type );
                         }
 
                         if ( cbRest.Checked )
@@ -208,7 +201,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Service : Service<{0}, {0}Dto>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0}Service : Service<{0}>" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
             sb.AppendLine( "        /// <summary>" );
@@ -225,41 +218,6 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// </summary>" );
             sb.AppendFormat( "        public {0}Service(IRepository<{0}> repository) : base(repository)" + Environment.NewLine, type.Name );
             sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a new model" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public override {0} CreateNew()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return new {0}();" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public override IQueryable<{0}Dto> QueryableDto( )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            return QueryableDto( this.Queryable() );" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public IQueryable<{0}Dto> QueryableDto( IQueryable<{0}> items )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return items.Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "                {" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                    {0} = m.{0}," + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "                });" );
             sb.AppendLine( "        }" );
 
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
@@ -329,6 +287,9 @@ order by [parentTable]
             // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
             List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Key ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
 
+            // GroupLocation isn't an Entity/Model :(
+            parentTablesToIgnore.Add( "GroupLocation" );
+
             string canDeleteBegin = string.Format( @"
         /// <summary>
         /// Determines whether this instance can delete the specified item.
@@ -349,6 +310,10 @@ order by [parentTable]
             {
                 if ( parentTablesToIgnore.Contains( item.Key ) )
                 {
+                    canDeleteMiddle += string.Format(
+@"            
+            // ignoring {0},{1} 
+", item.Key, item.Value);
                     continue;
                 }
 
@@ -356,399 +321,27 @@ order by [parentTable]
                 string columnName = item.Value;
 
                 canDeleteMiddle += string.Format(
-@"            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+@" 
+            if ( new Service<{0}>().Queryable().Any( a => a.{1} == item.Id ) )
             {{
-                cmdCheckRef.CommandText = string.Format( ""select count(*) from {0} where {1} = {{0}} "", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {{
-                    Type entityType = RockContext.GetEntityFromTableName( ""{0}"" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : ""{0}"";
-
-                    errorMessage = string.Format(""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, friendlyName);
-                    return false;
-                }}
-            }}
-
+                errorMessage = string.Format( ""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName );
+                return false;
+            }}  
 ",
-               parentTable,
-               columnName,
-               type.Name );
+                    parentTable,
+                    columnName,
+                    type.Name 
+                    );
             }
+
 
             string canDeleteEnd = @"            return true;
         }
 ";
 
-            if ( !string.IsNullOrWhiteSpace( canDeleteMiddle ) )
-            {
-                canDeleteBegin += @"            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-";
-            };
 
             return canDeleteBegin + canDeleteMiddle + canDeleteEnd;
 
-        }
-
-        /// <summary>
-        /// Writes the DTO file for a given type
-        /// </summary>
-        /// <param name="rootFolder"></param>
-        /// <param name="type"></param>
-        private void WriteDtoFile( string rootFolder, Type type )
-        {
-            string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
-
-            var properties = GetEntityProperties( type ).Where( p => p.Key != "Id" && p.Key != "Guid" );
-
-            bool isSecured = typeof(Rock.Security.ISecured).IsAssignableFrom(type);
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <auto-generated>" );
-            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
-            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
-            sb.AppendLine( "// </auto-generated>" );
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-" );
-            sb.AppendLine( "// SHAREALIKE 3.0 UNPORTED LICENSE:" );
-            sb.AppendLine( "// http://creativecommons.org/licenses/by-nc-sa/3.0/" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "using System;" );
-            sb.AppendLine( "using System.Collections.Generic;" );
-            sb.AppendLine( "using System.Dynamic;" );
-            sb.AppendLine( "using System.Linq;" );
-            sb.AppendLine( "using System.Reflection;" );
-            sb.AppendLine( "using System.Runtime.Serialization;" );
-
-            if ( properties.Any( v => v.Value == "DbGeography" ) )
-            {
-                sb.AppendLine( "using System.Data.Spatial;" );
-            }
-
-            sb.AppendLine( "" );
-            sb.AppendLine( "using Rock.Data;" );
-            sb.AppendLine( "" );
-
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
-            sb.AppendLine( "{" );
-            sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
-            sb.AppendLine( "    /// </summary>" );
-            sb.AppendLine( "    [Serializable]" );
-            sb.AppendLine( "    [DataContract]" );
-
-            if (isSecured)
-            {
-                sb.AppendFormat( "    public partial class {0}Dto : DtoSecured<{0}Dto>" + Environment.NewLine, type.Name );
-            }
-            else
-            {
-                sb.AppendFormat( "    public partial class {0}Dto : Dto" + Environment.NewLine, type.Name);
-            }
-
-            sb.AppendLine( "    {" );
-
-            foreach ( var property in properties )
-            {
-                if ( !BaseDtoProperty( property.Key ) )
-                {
-                    sb.AppendLine( "        /// <summary />" );
-                    sb.AppendLine( "        [DataMember]" );
-                    sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
-                    sb.AppendLine( "" );
-                }
-            }
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Instantiates a new DTO object" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public {0}Dto ()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Instantiates a new DTO object from the entity" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        /// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-            sb.AppendFormat( "        public {0}Dto ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            CopyFromModel( {0} );" + Environment.NewLine, lcName );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a dictionary object." );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public override Dictionary<string, object> ToDictionary()" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            var dictionary = base.ToDictionary();" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "            dictionary.Add( \"{0}\", this.{0} );" + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "            return dictionary;" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a dynamic object." );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public override dynamic ToDynamic()" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            dynamic expando = base.ToDynamic();" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "            expando.{0} = this.{0};" + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "            return expando;" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Copies the model property values to the DTO properties" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public override void CopyFromModel( IEntity model )" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            base.CopyFromModel( model );" );
-            sb.AppendLine( "" );
-            sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "            {" );
-            sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                this.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
-            }
-            sb.AppendLine( "            }" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Copies the DTO property values to the entity properties" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public override void CopyToModel ( IEntity model )" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            base.CopyToModel( model );" );
-            sb.AppendLine( "" );
-            sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "            {" );
-            sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                {1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
-            }
-            sb.AppendLine( "            }" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "    }" );
-
-            sb.AppendFormat( @"
-
-    /// <summary>
-    /// {0} Extension Methods
-    /// </summary>
-    public static class {0}Extensions
-    {{
-        /// <summary>
-        /// To the model.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static {0} ToModel( this {0}Dto value )
-        {{
-            {0} result = new {0}();
-            value.CopyToModel( result );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the model.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static List<{0}> ToModel( this List<{0}Dto> value )
-        {{
-            List<{0}> result = new List<{0}>();
-            value.ForEach( a => result.Add( a.ToModel() ) );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static List<{0}Dto> ToDto( this List<{0}> value )
-        {{
-            List<{0}Dto> result = new List<{0}Dto>();
-            value.ForEach( a => result.Add( a.ToDto() ) );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static {0}Dto ToDto( this {0} value )
-        {{
-            return new {0}Dto( value );
-        }}
-
-        /// <summary>
-        /// To the json.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
-        /// <returns></returns>
-        public static string ToJson( this {0} value, bool deep = false )
-        {{
-            return Newtonsoft.Json.JsonConvert.SerializeObject( ToDynamic( value, deep ) );
-        }}
-
-        /// <summary>
-        /// To the dynamic.
-        /// </summary>
-        /// <param name=""values"">The values.</param>
-        /// <returns></returns>
-        public static List<dynamic> ToDynamic( this ICollection<{0}> values )
-        {{
-            var dynamicList = new List<dynamic>();
-            foreach ( var value in values )
-            {{
-                dynamicList.Add( value.ToDynamic( true ) );
-            }}
-            return dynamicList;
-        }}
-
-        /// <summary>
-        /// To the dynamic.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
-        /// <returns></returns>
-        public static dynamic ToDynamic( this {0} value, bool deep = false )
-        {{
-            dynamic dynamic{0} = new {0}Dto( value ).ToDynamic();
-
-            if ( !deep )
-            {{
-                return dynamic{0};
-            }}
-
-", type.Name );
-
-            foreach ( var property in GetRelatedEntityProperties( type ) )
-            {
-                sb.AppendFormat( @"
-            if (value.{1} != null)
-            {{
-                dynamic{0}.{1} = value.{1}.ToDynamic();
-            }}" + Environment.NewLine, type.Name, property.Key );
-            }
-
-            sb.AppendFormat( @"
-            return dynamic{0};
-        }}
-
-        /// <summary>
-        /// Froms the json.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <param name=""json"">The json.</param>
-        public static void FromJson( this {0} value, string json )
-        {{
-            //Newtonsoft.Json.JsonConvert.PopulateObject( json, value );
-            var obj = Newtonsoft.Json.JsonConvert.DeserializeObject( json, typeof( ExpandoObject ) );
-            value.FromDynamic( obj, true );
-        }}
-
-        /// <summary>
-        /// Froms the dynamic.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <param name=""obj"">The obj.</param>
-        /// <param name=""deep"">if set to <c>true</c> [deep].</param>
-        public static void FromDynamic( this {0} value, object obj, bool deep = false )
-        {{
-            new PageDto().FromDynamic(obj).CopyToModel(value);
-
-            if (deep)
-            {{
-                var expando = obj as ExpandoObject;
-                if (obj != null)
-                {{
-                    var dict = obj as IDictionary<string, object>;
-                    if (dict != null)
-                    {{
-", type.Name );
-
-            var entityType = typeof(Rock.Data.IEntity);
-
-            foreach ( var property in GetRelatedEntityProperties( type, false ) )
-            {
-                if ( entityType.IsAssignableFrom( property.Value ) )
-                {
-                    sb.AppendFormat( @"
-                        // {0}
-                        if (dict.ContainsKey(""{0}""))
-                        {{
-                            value.{0} = new {1}();
-                            new {1}Dto().FromDynamic( dict[""{0}""] ).CopyToModel(value.{0});
-                        }}
-",  property.Key, property.Value.Name );
-                }
-
-                if ( property.Value.IsGenericType &&
-                        property.Value.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                        entityType.IsAssignableFrom( property.Value.GetGenericArguments()[0] ) )
-                {
-                    string propertyType = property.Value.GetGenericArguments()[0].Name;
-                    string pluralizedName = pls.Pluralize( property.Key );
-
-                    sb.AppendFormat( @"
-                        // {0}
-                        if (dict.ContainsKey(""{0}""))
-                        {{
-                            var {0}List = dict[""{0}""] as List<object>;
-                            if ({0}List != null)
-                            {{
-                                value.{0} = new List<{1}>();
-                                foreach(object childObj in {0}List)
-                                {{
-                                    var {1} = new {1}();
-                                    {1}.FromDynamic(childObj, true);
-                                    value.{0}.Add({1});
-                                }}
-                            }}
-                        }}
-", property.Key, propertyType );
-                }
-            }
-
-            sb.AppendFormat( @"
-                    }}
-                }}
-            }}
-        }}
-
-    }}
-}}", type.Name);
-
-
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
-            WriteFile( file, sb );
         }
 
         /// <summary>
@@ -803,7 +396,7 @@ order by [parentTable]
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}, {1}.{2}Dto>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    {" );
             sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service() ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    }" );
@@ -932,30 +525,7 @@ order by [parentTable]
             return typeName;
         }
 
-        /// <summary>
-        /// Evaluates if property is part of the base DTO class
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        private bool BaseDtoProperty( string propertyName )
-        {
-            return false;
-
-            /*
-             
-            if ( propertyName == "Id" ) return true;
-            if ( propertyName == "Guid" ) return true;
-            if ( propertyName == "CreatedDateTime" ) return true;
-            if ( propertyName == "ModifiedDateTime" ) return true;
-            if ( propertyName == "CreatedByPersonId" ) return true;
-            if ( propertyName == "ModifiedByPersonId" ) return true;
-
-            return false;
-            
-             */ 
-        }
-
-        private Dictionary<string, string> GetEntityProperties (Type type)
+        private Dictionary<string, string> GetEntityProperties( Type type )
         {
             var properties = new Dictionary<string, string>();
 
@@ -970,32 +540,5 @@ order by [parentTable]
             return properties;
         }
 
-        private Dictionary<string, Type> GetRelatedEntityProperties( Type type, bool includeReadOnly = true)
-        {
-            var properties = new Dictionary<string, Type>();
-
-            var entityType = typeof(Rock.Data.IEntity);
-
-            foreach ( var property in type.GetProperties() )
-            {
-                if ( property.GetGetMethod().IsVirtual &&
-                    property.GetCustomAttribute(typeof(Rock.Data.NotExportable)) == null )
-                {
-                    if ( includeReadOnly || property.GetSetMethod(false) != null )
-                    {
-                        if ( entityType.IsAssignableFrom( property.PropertyType ) ||
-                            ( property.PropertyType.IsGenericType &&
-                            property.PropertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                            entityType.IsAssignableFrom( property.PropertyType.GetGenericArguments()[0] ) ) )
-                        {
-                            properties.Add( property.Name, property.PropertyType );
-                        }
-                    }
-                }
-            }
-
-            return properties;
-        }
-        
     }
 }

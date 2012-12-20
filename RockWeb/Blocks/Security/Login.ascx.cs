@@ -85,9 +85,9 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                var userService = new UserService();
-                var user = userService.GetByUserName( tbUserName.Text );
-                if ( user != null && user.ServiceType == AuthenticationServiceType.Internal )
+                var userLoginService = new UserLoginService();
+                var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+                if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
                 {
                     foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                     {
@@ -95,12 +95,12 @@ namespace RockWeb.Blocks.Security
                         string componentName = component.GetType().FullName;
 
                         if (
-                            user.ServiceName == componentName &&
+                            userLogin.ServiceName == componentName &&
                             component.AttributeValues.ContainsKey( "Active" ) &&
                             bool.Parse( component.AttributeValues["Active"][0].Value )
                         )
                         {
-                            if ( component.Authenticate( user, tbPassword.Text ) )
+                            if ( component.Authenticate( userLogin, tbPassword.Text ) )
                             {
                                 valid = true;
                                 string returnUrl = Request.QueryString["returnurl"];

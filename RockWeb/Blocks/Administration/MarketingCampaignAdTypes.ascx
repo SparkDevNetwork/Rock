@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdTypes.ascx.cs" Inherits="MarketingCampaignAdTypes" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdTypes.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaignAdTypes" %>
 
 <asp:UpdatePanel ID="upMarketingCampaignAdType" runat="server">
     <ContentTemplate>
@@ -15,7 +15,7 @@
         </script>
         <asp:Panel ID="pnlList" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaignAdType" runat="server" AllowSorting="true" OnEditRow="gMarketingCampaignAdType_Edit">
+            <Rock:Grid ID="gMarketingCampaignAdType" runat="server" AllowSorting="true" OnRowSelected="gMarketingCampaignAdType_Edit">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
@@ -28,7 +28,7 @@
 
             <asp:HiddenField ID="hfMarketingCampaignAdTypeId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="failureNotification" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
             <fieldset>
                 <legend>

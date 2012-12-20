@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "GroupRole" )]
+    [DataContract( IsReference = true )]
     public partial class GroupRole : Model<GroupRole>
     {
 
@@ -28,6 +30,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -36,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// Group Type Id.
         /// </value>
+        [DataMember]
         public int? GroupTypeId { get; set; }
 
         /// <summary>
@@ -46,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
         /// <summary>
@@ -62,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// The sort order.
         /// </value>
+        [DataMember( IsRequired = true )]
         public int? SortOrder { get; set; }
 
         /// <summary>
@@ -70,6 +77,7 @@ namespace Rock.Model
         /// <value>
         /// The max count.
         /// </value>
+        [DataMember]
         public int? MaxCount { get; set; }
 
         /// <summary>
@@ -78,6 +86,7 @@ namespace Rock.Model
         /// <value>
         /// The min count.
         /// </value>
+        [DataMember]
         public int? MinCount { get; set; }
 
         /// <summary>
@@ -86,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The is leader.
         /// </value>
+        [DataMember]
         public bool IsLeader { get; set; }
 
         #endregion
@@ -98,16 +108,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupType GroupType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -122,34 +124,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static GroupRole Read( int id )
-        {
-            return Read<GroupRole>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static GroupRole Read( Guid guid )
-        {
-            return Read<GroupRole>( guid );
         }
 
         #endregion

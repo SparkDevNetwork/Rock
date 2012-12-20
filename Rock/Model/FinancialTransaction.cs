@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Model
 {
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// Transaction POCO class.
     /// </summary>
     [Table("FinancialTransaction")]
+    [DataContract( IsReference = true )]
     public partial class FinancialTransaction : Model<FinancialTransaction>
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [MaxLength(250)]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction date time.
         /// </value>
+        [DataMember]
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
@@ -43,6 +47,7 @@ namespace Rock.Model
         /// The entity.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Entity { get; set; }
 
         /// <summary>
@@ -51,6 +56,7 @@ namespace Rock.Model
         /// <value>
         /// The entity id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -59,6 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The batch id.
         /// </value>
+        [DataMember]
         public int? BatchId { get; set; }
 
         /// <summary>
@@ -67,6 +74,7 @@ namespace Rock.Model
         /// <value>
         /// The currency type value id.
         /// </value>
+        [DataMember]
         public int? CurrencyTypeValueId { get; set; }
 
         /// <summary>
@@ -75,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The credit card type value id.
         /// </value>
+        [DataMember]
         public int? CreditCardTypeValueId { get; set; }
 
         /// <summary>
@@ -83,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The amount.
         /// </value>
+        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -91,6 +101,7 @@ namespace Rock.Model
         /// <value>
         /// The refund transaction id.
         /// </value>
+        [DataMember]
         public int? RefundTransactionId { get; set; }
 
         /// <summary>
@@ -99,6 +110,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction image id.
         /// </value>
+        [DataMember]
         public int? TransactionImageId { get; set; }
 
         /// <summary>
@@ -108,6 +120,7 @@ namespace Rock.Model
         /// The transaction code.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -116,6 +129,7 @@ namespace Rock.Model
         /// <value>
         /// The payment gateway id.
         /// </value>
+        [DataMember]
         public int? PaymentGatewayId { get; set; }
 
         /// <summary>
@@ -124,6 +138,7 @@ namespace Rock.Model
         /// <value>
         /// The source type value id.
         /// </value>
+        [DataMember]
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
@@ -133,26 +148,8 @@ namespace Rock.Model
         /// The summary.
         /// </value>
         [MaxLength(500)]
+        [DataMember]
         public string Summary { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static FinancialTransaction Read( int id )
-        {
-            return Read<FinancialTransaction>( id );
-        }
 
         /// <summary>
         /// Gets or sets the batch.
@@ -160,6 +157,7 @@ namespace Rock.Model
         /// <value>
         /// The batch.
         /// </value>
+        [DataMember]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
@@ -168,6 +166,7 @@ namespace Rock.Model
         /// <value>
         /// The currency type value.
         /// </value>
+        [DataMember]
         public virtual DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary>
@@ -176,6 +175,7 @@ namespace Rock.Model
         /// <value>
         /// The credit card type value.
         /// </value>
+        [DataMember]
         public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
@@ -184,6 +184,7 @@ namespace Rock.Model
         /// <value>
         /// The payment gateway.
         /// </value>
+        [DataMember]
         public virtual PaymentGateway PaymentGateway { get; set; }
 
         /// <summary>
@@ -192,6 +193,7 @@ namespace Rock.Model
         /// <value>
         /// The source type value.
         /// </value>
+        [DataMember]
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
@@ -200,6 +202,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction details.
         /// </value>
+        [DataMember]
         public virtual ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }
 
         /// <summary>
@@ -208,6 +211,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction funds.
         /// </value>
+        [DataMember]
         public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Fund> Funds { get; set; }
 

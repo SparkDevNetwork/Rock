@@ -7,6 +7,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -15,6 +17,7 @@ namespace Rock.Model
     /// Job POCO Entity.
     /// </summary>
     [Table( "ServiceJob" )]
+    [DataContract( IsReference = true )]
     public partial class ServiceJob : Model<ServiceJob>
     {
         /// <summary>
@@ -23,6 +26,7 @@ namespace Rock.Model
         /// <value>
         /// Determines whether the job is a system job..
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -31,6 +35,7 @@ namespace Rock.Model
         /// <value>
         /// Determines is the job is currently active..
         /// </value>
+        [DataMember]
         public bool? IsActive { get; set; }
         
         /// <summary>
@@ -41,6 +46,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -49,6 +55,7 @@ namespace Rock.Model
         /// <value>
         /// Notes about the job..
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -58,6 +65,7 @@ namespace Rock.Model
         /// Assembly (.dll) that contains the job class..
         /// </value>
         [MaxLength( 260 )]
+        [DataMember]
         public string Assembly { get; set; }
         
         /// <summary>
@@ -68,6 +76,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Class { get; set; }
         
         /// <summary>
@@ -78,6 +87,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 120 )]
+        [DataMember( IsRequired = true )]
         public string CronExpression { get; set; }
         
         /// <summary>
@@ -86,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// Date and time the job last completed successfully..
         /// </value>
+        [DataMember]
         public DateTime? LastSuccessfulRunDateTime { get; set; }
         
         /// <summary>
@@ -94,6 +105,7 @@ namespace Rock.Model
         /// <value>
         /// Last date and time the job attempted to run..
         /// </value>
+        [DataMember]
         public DateTime? LastRunDateTime { get; set; }
         
         /// <summary>
@@ -102,6 +114,7 @@ namespace Rock.Model
         /// <value>
         /// Number of seconds that the last job took to finish..
         /// </value>
+        [DataMember]
         public int? LastRunDurationSeconds { get; set; }
         
         /// <summary>
@@ -111,6 +124,7 @@ namespace Rock.Model
         /// The completion status from the last time the job was run (valid values 'Success', 'Exception', 'Error Loading Job')..
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string LastStatus { get; set; }
         
         /// <summary>
@@ -119,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// Message from the last run.  Usually used to store the exception message..
         /// </value>
+        [DataMember]
         public string LastStatusMessage { get; set; }
         
         /// <summary>
@@ -128,6 +143,7 @@ namespace Rock.Model
         /// Name of the scheduler that the job ran under.  This is used to determine if a job ran in IIS or the Windows service..
         /// </value>
         [MaxLength( 40 )]
+        [DataMember]
         public string LastRunSchedulerName { get; set; }
         
         /// <summary>
@@ -137,6 +153,7 @@ namespace Rock.Model
         /// Email addresses (separated with commas) to be used for notification..
         /// </value>
         [MaxLength( 1000 )]
+        [DataMember]
         public string NotificationEmails { get; set; }
         
         /// <summary>
@@ -146,26 +163,8 @@ namespace Rock.Model
         /// Enum[JobNotificationStatus].
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public JobNotificationStatus NotificationStatus { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static ServiceJob Read( int id )
-        {
-            return Read<ServiceJob>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

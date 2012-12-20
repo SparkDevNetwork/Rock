@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Pledges REST API
     /// </summary>
-    public partial class PledgesController : Rock.Rest.ApiController<Rock.Model.Pledge, Rock.Model.PledgeDto>
+    public partial class PledgesController : Rock.Rest.ApiController<Rock.Model.Pledge>
     {
         public PledgesController() : base( new Rock.Model.PledgeService() ) { } 
     }

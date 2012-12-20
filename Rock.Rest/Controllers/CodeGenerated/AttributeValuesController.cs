@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AttributeValues REST API
     /// </summary>
-    public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Model.AttributeValue, Rock.Model.AttributeValueDto>
+    public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Model.AttributeValue>
     {
         public AttributeValuesController() : base( new Rock.Model.AttributeValueService() ) { } 
     }

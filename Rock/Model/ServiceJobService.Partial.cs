@@ -17,15 +17,15 @@ namespace Rock.Model
     /// <summary>
     /// Job POCO Service class
     /// </summary>
-    public partial class ServiceJobService : Service<ServiceJob, ServiceJobDto>
+    public partial class ServiceJobService 
     {
         /// <summary>
         /// Gets the active jobs.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<ServiceJob> GetActiveJobs()
+        public IQueryable<ServiceJob> GetActiveJobs()
         {
-            return Repository.Find( t => t.IsActive == true );
+            return Repository.AsQueryable().Where( t => t.IsActive == true );
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Rock.Model
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValueDto>> attrib in job.AttributeValues )
+            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValue>> attrib in job.AttributeValues )
             {
                 map.Add( attrib.Key, attrib.Value[0].Value );
             }

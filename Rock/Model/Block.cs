@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +20,7 @@ namespace Rock.Model
     /// Block POCO Entity.
     /// </summary>
     [Table( "Block" )]
+    [DataContract( IsReference = true )]
     public partial class Block : Model<Block>, IOrdered
     {
         /// <summary>
@@ -26,6 +30,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// Page Id.
         /// </value>
+        [DataMember]
         public int? PageId { get; set; }
         
         /// <summary>
@@ -43,6 +49,7 @@ namespace Rock.Model
         /// Layout.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Layout { get; set; }
         
         /// <summary>
@@ -52,6 +59,7 @@ namespace Rock.Model
         /// Block Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int BlockTypeId { get; set; }
         
         /// <summary>
@@ -62,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Zone { get; set; }
         
         /// <summary>
@@ -71,6 +80,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -82,6 +92,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [TrackChanges]
         [Required( ErrorMessage = "Name is required" )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -91,6 +102,7 @@ namespace Rock.Model
         /// Output Cache Duration.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
         
         /// <summary>
@@ -99,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="BlockType"/> object.
         /// </value>
+        [DataMember]
         public virtual BlockType BlockType { get; set; }
 
         /// <summary>
@@ -107,35 +120,26 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [NotExportable]
+        [DataMember]
         public virtual Page Page { get; set; }
-        
+
+        /// <summary>
+        /// Gets the block location.
+        /// </summary>
+        /// <value>
+        /// The block location.
+        /// </value>
+        public virtual BlockLocation BlockLocation
+        {
+            get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+        }
+
         /// <summary>
         /// Gets the supported actions.
         /// </summary>
         public override List<string> SupportedActions
         {
             get { return new List<string>() { "View", "Edit", "Administrate" }; }
-        }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        [NotExportable]
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Block Read( int id )
-        {
-            return Read<Block>( id );
         }
 
         /// <summary>
@@ -179,4 +183,22 @@ namespace Rock.Model
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
+
+    /// <summary>
+    /// The location of the block 
+    /// </summary>
+    [Serializable]
+    public enum BlockLocation
+    {
+        /// <summary>
+        /// Block is located in the layout (will be rendered for every page using the layout)
+        /// </summary>
+        Layout,
+
+        /// <summary>
+        /// Block is located on the page
+        /// </summary>
+        Page,
+    }
+
 }

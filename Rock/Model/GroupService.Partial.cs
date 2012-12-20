@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Group POCO Service class
     /// </summary>
-    public partial class GroupService : Service<Group, GroupDto>
+    public partial class GroupService 
     {
         /// <summary>
         /// Gets Groups by Group Type Id

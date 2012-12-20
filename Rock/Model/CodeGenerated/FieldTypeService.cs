@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FieldType Service class
     /// </summary>
-    public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
+    public partial class FieldTypeService : Service<FieldType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypeService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FieldType CreateNew()
-        {
-            return new FieldType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FieldTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FieldTypeDto> QueryableDto( IQueryable<FieldType> items )
-        {
-            return items.Select( m => new FieldTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Assembly = m.Assembly,
-                    Class = m.Class,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,39 +48,18 @@ namespace Rock.Model
         public bool CanDelete( FieldType item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Attribute>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Attribute where FieldTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Attribute" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Attribute";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, Attribute.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<DefinedType>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from DefinedType where FieldTypeId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "DefinedType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "DefinedType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
