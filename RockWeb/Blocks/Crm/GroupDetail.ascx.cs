@@ -24,21 +24,6 @@ namespace RockWeb.Blocks.Crm
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" ) && AttributeValue( "ShowEdit" ).FromTrueFalse();
-            btnSave.Enabled = canAddEditDelete;
-            btnSave.ToolTip = canAddEditDelete ? string.Empty : "Not authorized";
-
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -185,10 +170,12 @@ namespace RockWeb.Blocks.Crm
             if (!itemKeyValue.Equals(0))
             {
                 group = Group.Read(itemKeyValue);
+                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
             }
             else
             {
                 group = new Group { Id = 0 };
+                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
             }
 
             LoadDropDowns( group.Id );
@@ -201,6 +188,7 @@ namespace RockWeb.Blocks.Crm
             ddlCampus.SetValue( group.CampusId );
             cbIsSecurityRole.Checked = group.IsSecurityRole;
 
+            // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
@@ -221,12 +209,7 @@ namespace RockWeb.Blocks.Crm
                 lActionTitle.Text = ActionTitle.View( Group.FriendlyTypeName );
                 btnCancel.Text = "Close";
             }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
-                btnCancel.Text = "Cancel";
-            }
-
+            
             ddlGroupType.Enabled = !readOnly;
             ddlParentGroup.Enabled = !readOnly;
             ddlCampus.Enabled = !readOnly;

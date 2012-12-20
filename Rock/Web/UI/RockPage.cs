@@ -829,11 +829,11 @@ namespace Rock.Web.UI
                 // Configure Blocks icon
                 HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                 zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.ID = "aBlockConfig";
+                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", control.ID );
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($('#aBlockConfig'), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($('#" + aBlockConfig.ID + "'), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";

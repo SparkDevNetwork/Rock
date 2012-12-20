@@ -10,8 +10,10 @@
             <fieldset>
                 <legend>
                     <asp:Literal ID="lActionTitle" runat="server" />
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info"/>
                 </legend>
+                
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info"/>
+                
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
@@ -24,6 +26,7 @@
                         <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
                     </div>
                 </div>
+
             </fieldset>
 
             <div class="actions">
