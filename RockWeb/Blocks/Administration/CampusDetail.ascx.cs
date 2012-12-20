@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Administration
             Campus campus = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                campus = Campus.Read( itemKeyValue );
+                campus = new CampusService().Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Campus.FriendlyTypeName );
             }
             else
