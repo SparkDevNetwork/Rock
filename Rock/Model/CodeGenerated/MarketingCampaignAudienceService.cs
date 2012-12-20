@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignAudience Service class
     /// </summary>
-    public partial class MarketingCampaignAudienceService : Service<MarketingCampaignAudience, MarketingCampaignAudienceDto>
+    public partial class MarketingCampaignAudienceService : Service<MarketingCampaignAudience>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignAudienceService"/> class
@@ -35,39 +35,6 @@ namespace Rock.Model
         /// </summary>
         public MarketingCampaignAudienceService(IRepository<MarketingCampaignAudience> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignAudience CreateNew()
-        {
-            return new MarketingCampaignAudience();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignAudienceDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignAudienceDto> QueryableDto( IQueryable<MarketingCampaignAudience> items )
-        {
-            return items.Select( m => new MarketingCampaignAudienceDto()
-                {
-                    MarketingCampaignId = m.MarketingCampaignId,
-                    AudienceTypeValueId = m.AudienceTypeValueId,
-                    IsPrimary = m.IsPrimary,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

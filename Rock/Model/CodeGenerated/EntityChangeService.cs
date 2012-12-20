@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityChange Service class
     /// </summary>
-    public partial class EntityChangeService : Service<EntityChange, EntityChangeDto>
+    public partial class EntityChangeService : Service<EntityChange>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityChangeService"/> class
@@ -35,45 +35,6 @@ namespace Rock.Model
         /// </summary>
         public EntityChangeService(IRepository<EntityChange> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EntityChange CreateNew()
-        {
-            return new EntityChange();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EntityChangeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EntityChangeDto> QueryableDto( IQueryable<EntityChange> items )
-        {
-            return items.Select( m => new EntityChangeDto()
-                {
-                    ChangeSet = m.ChangeSet,
-                    ChangeType = m.ChangeType,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Property = m.Property,
-                    OriginalValue = m.OriginalValue,
-                    CurrentValue = m.CurrentValue,
-                    CreatedDateTime = m.CreatedDateTime,
-                    CreatedByPersonId = m.CreatedByPersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

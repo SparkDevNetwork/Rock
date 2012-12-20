@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowActivity Service class
     /// </summary>
-    public partial class WorkflowActivityService : Service<WorkflowActivity, WorkflowActivityDto>
+    public partial class WorkflowActivityService : Service<WorkflowActivity>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActivityService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityService(IRepository<WorkflowActivity> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowActivity CreateNew()
-        {
-            return new WorkflowActivity();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowActivityDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowActivityDto> QueryableDto( IQueryable<WorkflowActivity> items )
-        {
-            return items.Select( m => new WorkflowActivityDto()
-                {
-                    WorkflowId = m.WorkflowId,
-                    ActivityTypeId = m.ActivityTypeId,
-                    ActivatedDateTime = m.ActivatedDateTime,
-                    LastProcessedDateTime = m.LastProcessedDateTime,
-                    CompletedDateTime = m.CompletedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

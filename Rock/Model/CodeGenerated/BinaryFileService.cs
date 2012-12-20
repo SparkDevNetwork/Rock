@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// BinaryFile Service class
     /// </summary>
-    public partial class BinaryFileService : Service<BinaryFile, BinaryFileDto>
+    public partial class BinaryFileService : Service<BinaryFile>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileService"/> class
@@ -35,44 +35,6 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileService(IRepository<BinaryFile> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override BinaryFile CreateNew()
-        {
-            return new BinaryFile();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BinaryFileDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BinaryFileDto> QueryableDto( IQueryable<BinaryFile> items )
-        {
-            return items.Select( m => new BinaryFileDto()
-                {
-                    IsTemporary = m.IsTemporary,
-                    IsSystem = m.IsSystem,
-                    Data = m.Data,
-                    Url = m.Url,
-                    FileName = m.FileName,
-                    MimeType = m.MimeType,
-                    LastModifiedTime = m.LastModifiedTime,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

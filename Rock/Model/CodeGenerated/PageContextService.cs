@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PageContext Service class
     /// </summary>
-    public partial class PageContextService : Service<PageContext, PageContextDto>
+    public partial class PageContextService : Service<PageContext>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PageContextService(IRepository<PageContext> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PageContext CreateNew()
-        {
-            return new PageContext();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PageContextDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
-        {
-            return items.Select( m => new PageContextDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PageId = m.PageId,
-                    Entity = m.Entity,
-                    IdParameter = m.IdParameter,
-                    CreatedDateTime = m.CreatedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

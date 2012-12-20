@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Category Service class
     /// </summary>
-    public partial class CategoryService : Service<Category, CategoryDto>
+    public partial class CategoryService : Service<Category>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryService"/> class
@@ -35,43 +35,6 @@ namespace Rock.Model
         /// </summary>
         public CategoryService(IRepository<Category> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Category CreateNew()
-        {
-            return new Category();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<CategoryDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<CategoryDto> QueryableDto( IQueryable<Category> items )
-        {
-            return items.Select( m => new CategoryDto()
-                {
-                    IsSystem = m.IsSystem,
-                    ParentCategoryId = m.ParentCategoryId,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
-                    Name = m.Name,
-                    FileId = m.FileId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

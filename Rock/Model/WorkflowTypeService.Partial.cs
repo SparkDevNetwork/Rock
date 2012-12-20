@@ -15,7 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// Workflow POCO Service class
     /// </summary>
-    public partial class WorkflowTypeService : Service<WorkflowType, WorkflowTypeDto>
+    public partial class WorkflowTypeService 
     {
 
     }

@@ -3,11 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,7 +18,8 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageRoute" )]
-    public partial class PageRoute : Model<PageRoute>, IExportable
+    [DataContract( IsReference = true )]
+    public partial class PageRoute : Model<PageRoute>
     {
         /// <summary>
         /// Gets or sets the System.
@@ -25,6 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +38,7 @@ namespace Rock.Model
         /// Page Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int PageId { get; set; }
         
         /// <summary>
@@ -45,34 +50,17 @@ namespace Rock.Model
         [Route]
         [Required]
         [MaxLength( 200 )]
+        [DataMember( IsRequired = true )]
         public string Route { get; set; }
         
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PageRoute Read( int id )
-        {
-            return Read<PageRoute>( id );
-        }
-
         /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [DataMember]
         public virtual Page Page { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -83,34 +71,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Route;
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
         }
 
     }

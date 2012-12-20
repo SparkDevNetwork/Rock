@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading;
 using System.Web;
@@ -20,6 +21,7 @@ namespace Rock.Model
     /// User POCO Entity.
     /// </summary>
     [Table( "UserLogin" )]
+    [DataContract( IsReference = true )]
     public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>
@@ -29,6 +31,7 @@ namespace Rock.Model
         /// The type of the service.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
@@ -39,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
+        [DataMember( IsRequired = true )]
         public string ServiceName { get; set; }
 
         /// <summary>
@@ -49,6 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 255 )]
+        [DataMember( IsRequired = true )]
         public string UserName { get; set; }
         
         /// <summary>
@@ -66,6 +71,7 @@ namespace Rock.Model
         /// <value>
         /// Is confirmed.
         /// </value>
+        [DataMember]
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
@@ -75,6 +81,7 @@ namespace Rock.Model
         /// Last Activity Date.
         /// </value>
         [NotAudited]
+        [DataMember]
         public DateTime? LastActivityDate { get; set; }
         
         /// <summary>
@@ -83,6 +90,7 @@ namespace Rock.Model
         /// <value>
         /// Last Login Date.
         /// </value>
+        [DataMember]
         public DateTime? LastLoginDate { get; set; }
         
         /// <summary>
@@ -91,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// Last Password Changed Date.
         /// </value>
+        [DataMember]
         public DateTime? LastPasswordChangedDate { get; set; }
         
         /// <summary>
@@ -99,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// Creation Date.
         /// </value>
+        [DataMember]
         public DateTime? CreationDate { get; set; }
         
         /// <summary>
@@ -107,6 +117,7 @@ namespace Rock.Model
         /// <value>
         /// Is On Line.
         /// </value>
+        [DataMember]
         public bool? IsOnLine { get; set; }
         
         /// <summary>
@@ -115,6 +126,7 @@ namespace Rock.Model
         /// <value>
         /// Is Locked Out.
         /// </value>
+        [DataMember]
         public bool? IsLockedOut { get; set; }
         
         /// <summary>
@@ -123,6 +135,7 @@ namespace Rock.Model
         /// <value>
         /// Last Locked Out Date.
         /// </value>
+        [DataMember]
         public DateTime? LastLockedOutDate { get; set; }
         
         /// <summary>
@@ -131,6 +144,7 @@ namespace Rock.Model
         /// <value>
         /// Failed Password Attempt Count.
         /// </value>
+        [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
         
         /// <summary>
@@ -139,6 +153,7 @@ namespace Rock.Model
         /// <value>
         /// Failed Password Attempt Window Start.
         /// </value>
+        [DataMember]
         public DateTime? FailedPasswordAttemptWindowStart { get; set; }
         
         /// <summary>
@@ -148,6 +163,7 @@ namespace Rock.Model
         /// Api Key.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string ApiKey { get; set; }
         
         /// <summary>
@@ -156,16 +172,8 @@ namespace Rock.Model
         /// <value>
         /// Person Id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
@@ -193,19 +201,9 @@ namespace Rock.Model
         /// <value>
         /// The person.
         /// </value>
+        [DataMember]
         public virtual Model.Person Person { get; set; }
         
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static UserLogin Read( int id )
-        {
-            return Read<UserLogin>( id );
-        }
-
-
         /// <summary>
         /// The default authorization for the selected action.
         /// </summary>

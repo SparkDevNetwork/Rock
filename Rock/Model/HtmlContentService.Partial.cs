@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Html Content POCO Service class
     /// </summary>
-    public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
+    public partial class HtmlContentService 
     {
         /// <summary>
         /// Gets Html Contents by Approved By Person Id

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PersonAccounts REST API
     /// </summary>
-    public partial class PersonAccountsController : Rock.Rest.ApiController<Rock.Model.PersonAccount, Rock.Model.PersonAccountDto>
+    public partial class PersonAccountsController : Rock.Rest.ApiController<Rock.Model.PersonAccount>
     {
         public PersonAccountsController() : base( new Rock.Model.PersonAccountService() ) { } 
     }

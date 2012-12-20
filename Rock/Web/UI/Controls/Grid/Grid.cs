@@ -428,10 +428,10 @@ namespace Rock.Web.UI.Controls
             }
 
             // add author info
-            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
-            if ( user != null )
+            Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+            if ( userLogin != null )
             {
-                excel.Workbook.Properties.Author = user.Person.FullName;
+                excel.Workbook.Properties.Author = userLogin.Person.FullName;
             }
             else
             {

@@ -36,7 +36,7 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public void AddBlockType( BlockTypeDto blockType )
+        public void AddBlockType( BlockType blockType )
         {
             Sql( string.Format( @"
                 INSERT INTO [BlockType] (
@@ -62,9 +62,9 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public BlockTypeDto DefaultSystemBlockType( string name, string description, Guid guid )
+        public BlockType DefaultSystemBlockType( string name, string description, Guid guid )
         {
-            var blockType = new BlockTypeDto();
+            var blockType = new BlockType();
 
             blockType.IsSystem = true;
             blockType.Name = name;
@@ -106,7 +106,7 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public void AddPage( string parentPageGuid, PageDto page )
+        public void AddPage( string parentPageGuid, Page page )
         {
 
             Sql( string.Format( @"
@@ -167,9 +167,9 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public PageDto DefaultSystemPage( string name, string description, Guid guid )
+        public Page DefaultSystemPage( string name, string description, Guid guid )
         {
-            var page = new PageDto();
+            var page = new Page();
 
             page.Name = name;
             page.Title = name;
@@ -242,7 +242,7 @@ namespace Rock.Migrations
             Sql( sb.ToString() );
         }
 
-        public void AddBlock( string pageGuid, string blockTypeGuid, BlockDto block )
+        public void AddBlock( string pageGuid, string blockTypeGuid, Block block )
         {
             var sb = new StringBuilder();
 
@@ -310,9 +310,9 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public BlockDto DefaultSystemBlock( string name, Guid guid )
+        public Block DefaultSystemBlock( string name, Guid guid )
         {
-            var block = new BlockDto();
+            var block = new Block();
 
             block.IsSystem = true;
             block.Zone = "Content";
@@ -456,7 +456,7 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.AttributeDto attribute )
+        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.Attribute attribute )
         {
 
             Sql( string.Format( @"
@@ -509,9 +509,9 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public Rock.Model.AttributeDto DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
+        public Rock.Model.Attribute DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
         {
-            var attribute = new Rock.Model.AttributeDto();
+            var attribute = new Rock.Model.Attribute();
 
             attribute.IsSystem = true;
             attribute.Key = name.Replace( " ", string.Empty );

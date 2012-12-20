@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// FinancialBatches REST API
     /// </summary>
-    public partial class FinancialBatchesController : Rock.Rest.ApiController<Rock.Model.FinancialBatch, Rock.Model.FinancialBatchDto>
+    public partial class FinancialBatchesController : Rock.Rest.ApiController<Rock.Model.FinancialBatch>
     {
         public FinancialBatchesController() : base( new Rock.Model.FinancialBatchService() ) { } 
     }

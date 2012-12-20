@@ -15,7 +15,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'api/users/available/' + escape($(this).val()),
+                    url: rock.baseUrl + 'api/userlogins/available/' + escape($(this).val()),
                     success: function (getData, status, xhr) {
 
                         if (getData) {
@@ -32,7 +32,7 @@
                         }
                     },
                     error: function (xhr, status, error) {
-                        //alert(status + ' [' + error + ']: ' + xhr.responseText);
+                        alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
             }

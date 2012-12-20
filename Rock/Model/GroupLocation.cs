@@ -6,7 +6,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Data;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -14,6 +14,7 @@ namespace Rock.Model
     /// GroupLocation POCO class.
     /// </summary>
     [Table( "GroupLocation" )]
+    [DataContract( IsReference = true )]
     public partial class GroupLocation
     {
         /// <summary>
@@ -24,6 +25,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column(Order = 0)]
+        [DataMember]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column(Order = 1)]
+        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -42,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The location type.
         /// </value>
+        [DataMember]
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>
@@ -50,6 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -58,6 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The location.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Location Location { get; set; }
 
         /// <summary>
@@ -66,6 +72,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }
     }
 

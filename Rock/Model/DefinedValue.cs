@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// Defined Value POCO Entity.
     /// </summary>
     [Table( "DefinedValue" )]
+    [DataContract( IsReference = true )]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// Defined Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int DefinedTypeId { get; set; }
         
         /// <summary>
@@ -43,6 +46,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -53,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -61,6 +66,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -69,26 +75,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DefinedType"/> object.
         /// </value>
+        [DataMember]
         public virtual DefinedType DefinedType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static DefinedValue Read( int id )
-        {
-            return Read<DefinedValue>( id );
-        }
 
         /// <summary>
         /// Gets the parent authority.

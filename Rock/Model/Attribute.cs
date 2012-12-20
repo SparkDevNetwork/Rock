@@ -3,12 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +17,7 @@ namespace Rock.Model
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "Attribute" )]
+    [DataContract( IsReference = true )]
     public partial class Attribute : Model<Attribute>, IOrdered
     {
         /// <summary>
@@ -26,6 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -35,6 +37,7 @@ namespace Rock.Model
         /// Field Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int FieldTypeId { get; set; }
 
         /// <summary>
@@ -43,6 +46,7 @@ namespace Rock.Model
         /// <value>
         /// The entity type id.
         /// </value>
+        [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -51,6 +55,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -60,6 +65,7 @@ namespace Rock.Model
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
@@ -69,6 +75,7 @@ namespace Rock.Model
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
@@ -79,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         public string Key { get; set; }
         
         /// <summary>
@@ -89,6 +97,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -98,6 +107,7 @@ namespace Rock.Model
         /// Category.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Category { get; set; }
         
         /// <summary>
@@ -106,6 +116,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -115,6 +126,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -124,6 +136,7 @@ namespace Rock.Model
         /// Grid Column.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsGridColumn { get; set; }
         
         /// <summary>
@@ -132,6 +145,7 @@ namespace Rock.Model
         /// <value>
         /// Default Value.
         /// </value>
+        [DataMember]
         public string DefaultValue { get; set; }
         
         /// <summary>
@@ -141,6 +155,7 @@ namespace Rock.Model
         /// Multi Value.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
         
         /// <summary>
@@ -150,33 +165,16 @@ namespace Rock.Model
         /// Required.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsRequired { get; set; }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Attribute Read( int id )
-        {
-            return Read<Attribute>( id );
-        }
-                
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
         /// <value>
         /// Collection of Attribute Qualifiers.
         /// </value>
+        [DataMember]
         public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
         
         /// <summary>
@@ -185,6 +183,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="FieldType"/> object.
         /// </value>
+        [DataMember]
         public virtual FieldType FieldType { get; set; }
 
         /// <summary>

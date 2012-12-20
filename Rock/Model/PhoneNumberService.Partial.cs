@@ -13,7 +13,7 @@ namespace Rock.Model
     /// <summary>
     /// Phone Number POCO Service class
     /// </summary>
-    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
+    public partial class PhoneNumberService 
     {
         /// <summary>
         /// Gets Phone Numbers by Person Id

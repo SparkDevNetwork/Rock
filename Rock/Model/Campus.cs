@@ -3,12 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Web;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -18,6 +16,7 @@ namespace Rock.Model
     /// Campus POCO Entity.
     /// </summary>
     [Table( "Campus" )]
+    [DataContract( IsReference = true )]
     public partial class Campus : Model<Campus>
     {
         /// <summary>
@@ -27,6 +26,7 @@ namespace Rock.Model
         /// System indicates whether or not the campus is part of the core framework/system.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -38,26 +38,8 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [AlternateKey]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Campus Read( int id )
-        {
-            return Read<Campus>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

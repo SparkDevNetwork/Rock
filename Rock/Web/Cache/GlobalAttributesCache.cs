@@ -20,10 +20,16 @@ namespace Rock.Web.Cache
     [Serializable]
     public class GlobalAttributesCache
     {
+        #region Constructors
+
         /// <summary>
         /// Use Static Read() method to instantiate a new Global Attributes object
         /// </summary>
         private GlobalAttributesCache() { }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the attribute values.
@@ -33,65 +39,18 @@ namespace Rock.Web.Cache
         /// </value>
         public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
 
-        #region Static Methods
+        #endregion
 
-        private static string CacheKey()
-        {
-            return "Rock:GlobalAttributes";
-        }
-
-        /// <summary>
-        /// Returns Global Attributes from cache.  If they are not already in cache, they
-        /// will be read and added to cache
-        /// </summary>
-        /// <returns></returns>
-        public static GlobalAttributesCache Read()
-        {
-            string cacheKey = GlobalAttributesCache.CacheKey();
-
-            ObjectCache cache = MemoryCache.Default;
-            GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
-
-            if ( globalAttributes != null )
-                return globalAttributes;
-            else
-            {
-                globalAttributes = new GlobalAttributesCache();
-                globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
-
-                var attributeService = new Rock.Model.AttributeService();
-                var attributeValueService = new Rock.Model.AttributeValueService();
-
-                foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes())
-                {
-                    // TODO: Need to add support for multiple values
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
-                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, (attributeValue != null && !string.IsNullOrEmpty(attributeValue.Value)) ? attributeValue.Value : attribute.DefaultValue ) );
-                }
-
-                cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
-
-                return globalAttributes;
-            }
-        }
-
-        /// <summary>
-        /// Removes Global Attributes from cache
-        /// </summary>
-        public static void Flush()
-        {
-            ObjectCache cache = MemoryCache.Default;
-            cache.Remove( GlobalAttributesCache.CacheKey() );
-        }
+        #region Public Methods
 
         /// <summary>
         /// Gets the Global Attribute values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetValue(string key)
+        public string GetValue( string key )
         {
-            if (AttributeValues != null && AttributeValues.Keys.Contains( key ) )
+            if ( AttributeValues != null && AttributeValues.Keys.Contains( key ) )
                 return AttributeValues[key].Value;
             return null;
         }
@@ -137,6 +96,61 @@ namespace Rock.Web.Cache
                 string attributeName = AttributeValues[key].Key;
                 AttributeValues[key] = new KeyValuePair<string, string>( attributeName, value );
             }
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        private static string CacheKey()
+        {
+            return "Rock:GlobalAttributes";
+        }
+
+        /// <summary>
+        /// Returns Global Attributes from cache.  If they are not already in cache, they
+        /// will be read and added to cache
+        /// </summary>
+        /// <returns></returns>
+        public static GlobalAttributesCache Read()
+        {
+            string cacheKey = GlobalAttributesCache.CacheKey();
+
+            ObjectCache cache = MemoryCache.Default;
+            GlobalAttributesCache globalAttributes = cache[cacheKey] as GlobalAttributesCache;
+
+            if ( globalAttributes != null )
+            {
+                return globalAttributes;
+            }
+            else
+            {
+                globalAttributes = new GlobalAttributesCache();
+                globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
+
+                var attributeService = new Rock.Model.AttributeService();
+                var attributeValueService = new Rock.Model.AttributeValueService();
+
+                foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes() )
+                {
+                    // TODO: Need to add support for multiple values
+                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
+                    globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue ) );
+                }
+
+                cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
+
+                return globalAttributes;
+            }
+        }
+
+        /// <summary>
+        /// Removes Global Attributes from cache
+        /// </summary>
+        public static void Flush()
+        {
+            ObjectCache cache = MemoryCache.Default;
+            cache.Remove( GlobalAttributesCache.CacheKey() );
         }
 
         #endregion
