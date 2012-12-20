@@ -51,4 +51,24 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeQualifierExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this AttributeQualifier to another
+        /// </summary>
+        public static void ShallowCopy( this AttributeQualifier source, AttributeQualifier target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.Key = source.Key;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

@@ -223,6 +223,29 @@ namespace Rock.CodeGeneration
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
+
+            sb.AppendFormat( @"
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class {0}ExtensionMethods
+    {{
+        /// <summary>
+        /// Perform a shallow copy of this {0} to another
+        /// </summary>
+        public static void ShallowCopy( this {0} source, {0} target )
+        {{
+", type.Name);
+
+            foreach ( var property in properties )
+            {
+                sb.AppendFormat( "            target.{0} = source.{0};" + Environment.NewLine, property.Key );
+            }
+            
+            sb.Append( @"
+        }
+    }
+" );
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Service.cs" ) );

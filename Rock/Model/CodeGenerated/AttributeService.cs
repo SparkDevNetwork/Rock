@@ -51,4 +51,34 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Attribute to another
+        /// </summary>
+        public static void ShallowCopy( this Attribute source, Attribute target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Key = source.Key;
+            target.Name = source.Name;
+            target.Category = source.Category;
+            target.Description = source.Description;
+            target.Order = source.Order;
+            target.IsGridColumn = source.IsGridColumn;
+            target.DefaultValue = source.DefaultValue;
+            target.IsMultiValue = source.IsMultiValue;
+            target.IsRequired = source.IsRequired;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

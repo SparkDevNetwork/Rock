@@ -57,4 +57,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FinancialBatchExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this FinancialBatch to another
+        /// </summary>
+        public static void ShallowCopy( this FinancialBatch source, FinancialBatch target )
+        {
+            target.Name = source.Name;
+            target.BatchDate = source.BatchDate;
+            target.IsClosed = source.IsClosed;
+            target.CampusId = source.CampusId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.ForeignReference = source.ForeignReference;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

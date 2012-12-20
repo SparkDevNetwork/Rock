@@ -57,4 +57,26 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this DefinedType to another
+        /// </summary>
+        public static void ShallowCopy( this DefinedType source, DefinedType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.Order = source.Order;
+            target.Category = source.Category;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

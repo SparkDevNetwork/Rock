@@ -51,4 +51,28 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AuthExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Auth to another
+        /// </summary>
+        public static void ShallowCopy( this Auth source, Auth target )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Action = source.Action;
+            target.AllowOrDeny = source.AllowOrDeny;
+            target.SpecialRole = source.SpecialRole;
+            target.PersonId = source.PersonId;
+            target.GroupId = source.GroupId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

@@ -75,4 +75,28 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class BinaryFileExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this BinaryFile to another
+        /// </summary>
+        public static void ShallowCopy( this BinaryFile source, BinaryFile target )
+        {
+            target.IsTemporary = source.IsTemporary;
+            target.IsSystem = source.IsSystem;
+            target.Data = source.Data;
+            target.Url = source.Url;
+            target.FileName = source.FileName;
+            target.MimeType = source.MimeType;
+            target.LastModifiedTime = source.LastModifiedTime;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

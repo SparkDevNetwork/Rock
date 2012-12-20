@@ -51,4 +51,23 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class TaggedItemExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this TaggedItem to another
+        /// </summary>
+        public static void ShallowCopy( this TaggedItem source, TaggedItem target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.TagId = source.TagId;
+            target.EntityId = source.EntityId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

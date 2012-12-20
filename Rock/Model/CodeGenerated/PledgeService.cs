@@ -51,4 +51,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PledgeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Pledge to another
+        /// </summary>
+        public static void ShallowCopy( this Pledge source, Pledge target )
+        {
+            target.PersonId = source.PersonId;
+            target.FundId = source.FundId;
+            target.Amount = source.Amount;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.FrequencyTypeValueId = source.FrequencyTypeValueId;
+            target.FrequencyAmount = source.FrequencyAmount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }
