@@ -3,7 +3,7 @@
 function saveBlockMove() {
 
     // The current block's id
-    var blockId = $('#modal-block-move_panel').attr('block-instance');
+    var blockId = $moveLink.attr('href');
 
     // The new zone selected
     var zoneName = $('#block-move-zone').val();
@@ -66,48 +66,31 @@ function saveBlockMove() {
 
                 },
                 error: function (xhr, status, error) {
-                    alert('PUT ' + status + ' [' + error + ']: ' + xhr.responseText);
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
                 }
             });
         },
         error: function (xhr, status, error) {
-            alert('GET ' + status + ' [' + error + ']: ' + xhr.responseText);
+            alert(status + ' [' + error + ']: ' + xhr.responseText);
         }
     });
 
 }
 
-$(document).ready(function () {
+// toggle the display of each block's container and config options
+function showBlockConfig() {
+    $('.zone-configuration').hide();
+    $('.zone-instance').removeClass('outline');
+    $('.block-configuration').toggle();
+    $('.block-instance').toggleClass('outline');
 
-    // Bind the click event of the block move anchor tag
-    $('a.block-move').click(function () {
-
-        // Get a reference to the anchor tag for use in the dialog success function
-        $moveLink = $(this);
-
-        // Add the current block's id as an attribute of the move dialog's save button
-        $('#modal-block-move_panel').attr('block-instance', $(this).attr('href'));
-
-        // Set the dialog's zone selection select box value to the block's current zone 
-        $('#block-move-zone').val($(this).attr('zone'));
-
-        // Set the dialog's parent option to the current zone's parent (either the page or the layout)
-        if ($(this).attr('zoneloc') == 'Page') {
-            $('#block-move-Location_1').removeAttr('checked');
-            $('#block-move-Location_0').attr('checked', 'checked');
-        }
-        else {
-            $('#block-move-Location_0').removeAttr('checked');
-            $('#block-move-Location_1').attr('checked', 'checked');
-        }
-
-        // Show the popup block move dialog
-        $find('modal-block-move').show();
-
-        return false;
-
+    // Bind the block configure icon so that edit icons are displayed on hover
+    $(".block-configuration").hover(function () {
+        var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
+        $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+    }, function () {
+        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
     });
-
 
     // Bind the block instance delete anchor
     $('a.block-delete').click(function () {
@@ -140,33 +123,39 @@ $(document).ready(function () {
 
     });
 
-    // Bind the page's block config anchor to toggle the display
-    // of each block's container and config options
-    $('#cms-admin-footer .block-config').click(function () {
-        $('.zone-configuration').hide();
-        $('.zone-instance').removeClass('outline');
-        $('.block-configuration').toggle();
-        $('.block-instance').toggleClass('outline');
-        return false;
-    });
+    // Bind the click event of the block move anchor tag
+    $('a.block-move').click(function () {
 
-    // Bind the page's zone config anchor to toggle the display
-    // of each zone's container and config options
-    $('#cms-admin-footer .page-zones').click(function () {
-        $('.block-configuration').hide();
-        $('.block-instance').removeClass('outline');
-        $('.zone-instance').toggleClass('outline');
-        $('.zone-configuration').toggle();
-        return false;
-    });
+        // Get a reference to the anchor tag for use in the dialog success function
+        $moveLink = $(this);
 
-    // Bind the block configure icon so that edit icons are displayed on hover
-    $(".block-configuration").hover(function () {
-        var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-        $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
-    }, function () {
-        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
+        // Set the dialog's zone selection select box value to the block's current zone 
+        $('#block-move-zone').val($(this).attr('zone'));
+
+        // Set the dialog's parent option to the current zone's parent (either the page or the layout)
+        if ($(this).attr('zoneloc') == 'Page') {
+            $('#block-move-Location_1').removeAttr('checked');
+            $('#block-move-Location_0').attr('checked', 'checked');
+        }
+        else {
+            $('#block-move-Location_0').removeAttr('checked');
+            $('#block-move-Location_1').attr('checked', 'checked');
+        }
+
+        // Show the popup block move dialog
+        $find('modal-block-move').show();
+
+        return false;
+
     });
+}
+
+// toggle the display of each zone's container and config options
+function showPageZones() {
+    $('.block-configuration').hide();
+    $('.block-instance').removeClass('outline');
+    $('.zone-instance').toggleClass('outline');
+    $('.zone-configuration').toggle();
 
     // Bind the zone configure icon so that edit icons are displayed on hover
     $(".zone-configuration").hover(function () {
@@ -175,4 +164,4 @@ $(document).ready(function () {
     }, function () {
         $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
     });
-});
+}
