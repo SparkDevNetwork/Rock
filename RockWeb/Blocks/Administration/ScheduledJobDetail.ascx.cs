@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Administration
             ServiceJob job = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                job = ServiceJob.Read( itemKeyValue );
+                job = new ServiceJobService().Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName );
             }
             else
