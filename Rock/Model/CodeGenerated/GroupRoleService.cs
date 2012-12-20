@@ -63,4 +63,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupRoleExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this GroupRole to another
+        /// </summary>
+        public static void ShallowCopy( this GroupRole source, GroupRole target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.GroupTypeId = source.GroupTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.SortOrder = source.SortOrder;
+            target.MaxCount = source.MaxCount;
+            target.MinCount = source.MinCount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

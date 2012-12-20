@@ -51,4 +51,22 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonMergedExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PersonMerged to another
+        /// </summary>
+        public static void ShallowCopy( this PersonMerged source, PersonMerged target )
+        {
+            target.CurrentId = source.CurrentId;
+            target.CurrentGuid = source.CurrentGuid;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

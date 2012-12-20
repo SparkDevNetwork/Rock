@@ -51,4 +51,23 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PageRouteExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PageRoute to another
+        /// </summary>
+        public static void ShallowCopy( this PageRoute source, PageRoute target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.Route = source.Route;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

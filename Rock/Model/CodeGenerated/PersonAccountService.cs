@@ -51,4 +51,22 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonAccountExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PersonAccount to another
+        /// </summary>
+        public static void ShallowCopy( this PersonAccount source, PersonAccount target )
+        {
+            target.PersonId = source.PersonId;
+            target.Account = source.Account;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

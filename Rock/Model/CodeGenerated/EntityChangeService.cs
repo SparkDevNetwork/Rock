@@ -51,4 +51,29 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EntityChangeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this EntityChange to another
+        /// </summary>
+        public static void ShallowCopy( this EntityChange source, EntityChange target )
+        {
+            target.ChangeSet = source.ChangeSet;
+            target.ChangeType = source.ChangeType;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Property = source.Property;
+            target.OriginalValue = source.OriginalValue;
+            target.CurrentValue = source.CurrentValue;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.CreatedByPersonId = source.CreatedByPersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

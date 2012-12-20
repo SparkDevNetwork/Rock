@@ -51,4 +51,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FinancialTransactionDetailExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this FinancialTransactionDetail to another
+        /// </summary>
+        public static void ShallowCopy( this FinancialTransactionDetail source, FinancialTransactionDetail target )
+        {
+            target.TransactionId = source.TransactionId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.Amount = source.Amount;
+            target.Summary = source.Summary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

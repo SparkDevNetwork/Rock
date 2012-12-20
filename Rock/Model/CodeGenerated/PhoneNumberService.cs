@@ -51,4 +51,28 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PhoneNumberExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PhoneNumber to another
+        /// </summary>
+        public static void ShallowCopy( this PhoneNumber source, PhoneNumber target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
+            target.Number = source.Number;
+            target.Extension = source.Extension;
+            target.NumberTypeValueId = source.NumberTypeValueId;
+            target.IsMessagingEnabled = source.IsMessagingEnabled;
+            target.IsUnlisted = source.IsUnlisted;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

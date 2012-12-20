@@ -63,4 +63,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class CategoryExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Category to another
+        /// </summary>
+        public static void ShallowCopy( this Category source, Category target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.ParentCategoryId = source.ParentCategoryId;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.Name = source.Name;
+            target.FileId = source.FileId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

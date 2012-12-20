@@ -57,4 +57,22 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class CampusExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Campus to another
+        /// </summary>
+        public static void ShallowCopy( this Campus source, Campus target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

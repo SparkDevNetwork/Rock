@@ -51,4 +51,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowTriggerExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this WorkflowTrigger to another
+        /// </summary>
+        public static void ShallowCopy( this WorkflowTrigger source, WorkflowTrigger target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.WorkflowTriggerType = source.WorkflowTriggerType;
+            target.WorkflowName = source.WorkflowName;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }
