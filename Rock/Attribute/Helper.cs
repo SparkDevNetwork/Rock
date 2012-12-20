@@ -201,7 +201,7 @@ namespace Rock.Attribute
             }
 
             var attributeCategories = new SortedDictionary<string, List<string>>();
-            var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValueDto>>();
+            var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
             foreach ( var attribute in attributes )
             {
@@ -211,7 +211,7 @@ namespace Rock.Attribute
                 attributeCategories[attribute.Value.Category].Add( attribute.Value.Key );
 
                 // Add a placeholder for this item's value for each attribute
-                attributeValues.Add( attribute.Value.Key, new List<Rock.Model.AttributeValueDto>() );
+                attributeValues.Add( attribute.Value.Key, new List<Rock.Model.AttributeValue>() );
             }
 
             // Read this item's value(s) for each attribute 
@@ -223,7 +223,7 @@ namespace Rock.Attribute
                     Key = v.Attribute.Key
                 } ) )
             {
-                attributeValues[item.Key].Add( new Rock.Model.AttributeValueDto( item.Value ) );
+                attributeValues[item.Key].Add( item.Value.Clone() as Rock.Model.AttributeValue );
             }
 
             // Look for any attributes that don't have a value and create a default value entry
@@ -231,7 +231,7 @@ namespace Rock.Attribute
             {
                 if ( attributeValues[attributeEntry.Value.Key].Count == 0 )
                 {
-                    var attributeValue = new Rock.Model.AttributeValueDto();
+                    var attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attributeEntry.Value.Id;
                     attributeValue.Value = attributeEntry.Value.DefaultValue;
                     attributeValues[attributeEntry.Value.Key].Add( attributeValue );
@@ -296,7 +296,7 @@ namespace Rock.Attribute
 
             attributeValueService.Save( attributeValue, personId );
 
-            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValueDto>() { new Rock.Model.AttributeValueDto( attributeValue ) };
+            model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone() as Rock.Model.AttributeValue };
 
         }
 
@@ -307,7 +307,7 @@ namespace Rock.Attribute
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValues">The new values.</param>
         /// <param name="personId">The person id.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValueDto> newValues, int? personId )
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, int? personId )
         {
             Model.AttributeValueService attributeValueService = new Model.AttributeValueService();
 
@@ -337,11 +337,10 @@ namespace Rock.Attribute
                 {
                     if ( attributeValue.Value != newValues[i].Value )
                         attributeValue.Value = newValues[i].Value;
-                    newValues[i] = new Rock.Model.AttributeValueDto( attributeValue );
+                    newValues[i] = attributeValue.Clone() as Rock.Model.AttributeValue;
                 }
 
                 attributeValueService.Save( attributeValue, personId );
-
 
                 i++;
             }
@@ -413,6 +412,12 @@ namespace Rock.Attribute
                             divControls.AddCssClass( "controls" );
 
                             Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue );
+                            if ( attributeControl is CheckBox )
+                            {
+                                ( attributeControl as CheckBox ).Text = attribute.Name;
+                                lbl.Visible = false;
+                            }
+
                             attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                             attributeControl.ClientIDMode = ClientIDMode.AutoID;
                             divControls.Controls.Add( attributeControl );
@@ -482,9 +487,9 @@ namespace Rock.Attribute
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id.ToString() ) );
                     if ( control != null )
                     {
-                        var value = new Rock.Model.AttributeValueDto();
+                        var value = new Rock.Model.AttributeValue();
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValueDto>() { value };
+                        item.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { value };
                     }
                 }
         }

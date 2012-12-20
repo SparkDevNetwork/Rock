@@ -25,15 +25,15 @@ namespace Rock.Transactions
         /// <value>
         /// The workflow trigger.
         /// </value>
-        public WorkflowTriggerDto Trigger { get; set; }
+        public WorkflowTrigger Trigger { get; set; }
 
         /// <summary>
-        /// Gets or sets the dto entity.
+        /// Gets or sets the entity.
         /// </summary>
         /// <value>
-        /// The dto.
+        /// The entity.
         /// </value>
-        public IDto Dto { get; set; }
+        public IEntity Entity { get; set; }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -58,7 +58,7 @@ namespace Rock.Transactions
                     var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );
 
                     List<string> workflowErrors;
-                    if ( workflow.Process( Dto, out workflowErrors ) )
+                    if ( workflow.Process( Entity, out workflowErrors ) )
                     {
                         if ( workflowType.IsPersisted )
                         {

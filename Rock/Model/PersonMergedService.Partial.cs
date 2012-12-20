@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Person Trail POCO Service class
     /// </summary>
-    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
+    public partial class PersonMergedService 
     {
         /// <summary>
         /// Gets Person Trails by Current Id

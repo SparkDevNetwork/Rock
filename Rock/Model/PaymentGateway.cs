@@ -3,12 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Model;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +17,7 @@ namespace Rock.Model
     /// Payment Gateway POCO class.
     /// </summary>
     [Table( "PaymentGateway" )]
+    [DataContract( IsReference = true )]
     public partial class PaymentGateway : Model<PaymentGateway>
     {
         /// <summary>
@@ -26,6 +27,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -35,6 +37,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [MaxLength(500)]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -44,6 +47,7 @@ namespace Rock.Model
         /// The API URL.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string ApiUrl { get; set; }
 
         /// <summary>
@@ -53,6 +57,7 @@ namespace Rock.Model
         /// The API key.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string ApiKey { get; set; }
 
         /// <summary>
@@ -62,6 +67,7 @@ namespace Rock.Model
         /// The API secret.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string ApiSecret { get; set; }
 
         /// <summary>
@@ -70,26 +76,8 @@ namespace Rock.Model
         /// <value>
         /// The transactions.
         /// </value>
+        [DataMember]
         public virtual ICollection<FinancialTransaction> Transactions { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PaymentGateway Read( int id )
-        {
-            return Read<PaymentGateway>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -9,14 +9,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
-namespace Rock.Model    
+namespace Rock.Model
 {
     /// <summary>
     /// Group POCO Entity.
     /// </summary>
     [Table( "Group" )]
+    [DataContract( IsReference = true )]
     public partial class Group : Model<Group>
     {
         /// <summary>
@@ -26,16 +29,18 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Parent Group Id.
         /// </summary>
         /// <value>
         /// Parent Group Id.
         /// </value>
+        [DataMember]
         public int? ParentGroupId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Group Type Id.
         /// </summary>
@@ -43,6 +48,7 @@ namespace Rock.Model
         /// Group Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -51,6 +57,7 @@ namespace Rock.Model
         /// <value>
         /// Campus Id.
         /// </value>
+        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -61,16 +68,18 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Is Security Role.
         /// </summary>
@@ -78,6 +87,7 @@ namespace Rock.Model
         /// Is Security Role.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSecurityRole { get; set; }
 
         /// <summary>
@@ -87,41 +97,25 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsActive { get; set; }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Group Read( int id )
-        {
-            return Read<Group>( id );
-        }
-        
         /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>
         /// Collection of Groups.
         /// </value>
+        [DataMember]
         public virtual ICollection<Group> Groups { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// Collection of Members.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupMember> Members { get; set; }
 
         /// <summary>
@@ -130,6 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The group locations.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
@@ -143,14 +138,16 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
+        [DataMember]
         public virtual Group ParentGroup { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Group Type.
         /// </summary>
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -159,6 +156,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Campus"/> object.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
@@ -170,6 +168,40 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// Determines whether [is ancestor of group] [the specified parent group id].
+        /// </summary>
+        /// <param name="parentGroupId">The parent group id.</param>
+        /// <returns>
+        ///   <c>true</c> if [is ancestor of group] [the specified parent group id]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAncestorOfGroup( int parentGroupId )
+        {
+            HashSet<Guid> ancestorList = new HashSet<Guid>();
+
+            Group parentGroup = this.ParentGroup;
+            while ( parentGroup != null )
+            {
+                if ( ancestorList.Contains( parentGroup.Guid ) )
+                {
+                    throw new GroupParentCircularReferenceException();
+                }
+                else
+                {
+                    ancestorList.Add( parentGroup.Guid );
+                }
+
+                if ( parentGroup.Id.Equals( parentGroupId ) )
+                {
+                    return true;
+                }
+
+                parentGroup = parentGroup.ParentGroup;
+            }
+
+            return false;
         }
 
     }
@@ -184,9 +216,23 @@ namespace Rock.Model
         /// </summary>
         public GroupConfiguration()
         {
-            this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete(false);
-            this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ParentGroup ).WithMany( p => p.Groups ).HasForeignKey( p => p.ParentGroupId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.GroupType ).WithMany( p => p.Groups ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class GroupParentCircularReferenceException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupParentCircularReferenceException" /> class.
+        /// </summary>
+        public GroupParentCircularReferenceException()
+            : base( "Circular Reference in Group Parents" )
+        {
         }
     }
 }

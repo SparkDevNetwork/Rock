@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// BlockType Service class
     /// </summary>
-    public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
+    public partial class BlockTypeService : Service<BlockType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTypeService"/> class
@@ -35,40 +35,6 @@ namespace Rock.Model
         /// </summary>
         public BlockTypeService(IRepository<BlockType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override BlockType CreateNew()
-        {
-            return new BlockType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BlockTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BlockTypeDto> QueryableDto( IQueryable<BlockType> items )
-        {
-            return items.Select( m => new BlockTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Path = m.Path,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

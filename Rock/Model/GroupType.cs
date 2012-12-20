@@ -1,14 +1,14 @@
-using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,6 +18,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
+    [DataContract( IsReference = true )]
     public partial class GroupType : Model<GroupType>
     {
 
@@ -30,6 +31,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -48,6 +51,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -57,6 +61,7 @@ namespace Rock.Model
         /// The group term.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string GroupTerm { get; set; }
 
         /// <summary>
@@ -66,6 +71,7 @@ namespace Rock.Model
         /// The group member term.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string GroupMemberTerm { get; set; }
 
         /// <summary>
@@ -74,6 +80,7 @@ namespace Rock.Model
         /// <value>
         /// Default Group Role Id.
         /// </value>
+        [DataMember]
         public int? DefaultGroupRoleId { get; set; }
 
         /// <summary>
@@ -134,6 +141,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Groups.
         /// </value>
+        [DataMember]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -147,6 +155,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Child Group Types.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
@@ -160,6 +169,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Parent Group Types.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupType> ParentGroupTypes
         {
             get { return _parentGroupTypes ?? ( _parentGroupTypes = new Collection<GroupType>() ); }
@@ -173,6 +183,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Group Roles.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupRole> Roles
         {
             get { return _roles ?? ( _roles = new Collection<GroupRole>() ); }
@@ -186,6 +197,7 @@ namespace Rock.Model
         /// <value>
         /// The location types.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupTypeLocationType> LocationTypes
         {
             get { return _locationTypes ?? ( _locationTypes = new Collection<GroupTypeLocationType>() ); }
@@ -199,6 +211,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupRole DefaultGroupRole { get; set; }
 
         /// <summary>
@@ -207,6 +220,7 @@ namespace Rock.Model
         /// <value>
         /// The small icon.
         /// </value>
+        [DataMember]
         public virtual BinaryFile SmallIconFile { get; set; }
 
         /// <summary>
@@ -215,16 +229,8 @@ namespace Rock.Model
         /// <value>
         /// The large icon.
         /// </value>
+        [DataMember]
         public virtual BinaryFile LargeIconFile { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -239,34 +245,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static GroupType Read( int id )
-        {
-            return Read<GroupType>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static GroupType Read( Guid guid )
-        {
-            return Read<GroupType>( guid );
         }
 
         #endregion

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// BinaryFile Service class
     /// </summary>
-    public partial class BinaryFileService : Service<BinaryFile, BinaryFileDto>
+    public partial class BinaryFileService : Service<BinaryFile>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override BinaryFile CreateNew()
-        {
-            return new BinaryFile();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BinaryFileDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BinaryFileDto> QueryableDto( IQueryable<BinaryFile> items )
-        {
-            return items.Select( m => new BinaryFileDto()
-                {
-                    IsTemporary = m.IsTemporary,
-                    IsSystem = m.IsSystem,
-                    Data = m.Data,
-                    Url = m.Url,
-                    FileName = m.FileName,
-                    MimeType = m.MimeType,
-                    LastModifiedTime = m.LastModifiedTime,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,69 +48,30 @@ namespace Rock.Model
         public bool CanDelete( BinaryFile item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Category>().Queryable().Any( a => a.FileId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Category where FileId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Category" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Category";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Category.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Page where IconFileId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Page" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Page";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Page.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Person>().Queryable().Any( a => a.PhotoId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Person where PhotoId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Person" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Person";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WorkflowType>().Queryable().Any( a => a.FileId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from WorkflowType where FileId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "WorkflowType" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "WorkflowType";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, WorkflowType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

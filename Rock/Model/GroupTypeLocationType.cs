@@ -6,12 +6,15 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 namespace Rock.Model
 {
     /// <summary>
     /// 
     /// </summary>
     [Table( "GroupTypeLocationType" )]
+    [DataContract( IsReference = true )]
     public class GroupTypeLocationType
     {
         /// <summary>
@@ -22,6 +25,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column(Order=0)]
+        [DataMember]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -32,6 +36,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column( Order = 1 )]
+        [DataMember]
         public int LocationTypeValueId { get; set; }
 
         /// <summary>
@@ -40,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
+        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -48,6 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the location.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }
     }
 

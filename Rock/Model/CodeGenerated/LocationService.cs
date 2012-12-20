@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Location Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService : Service<Location>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationService"/> class
@@ -38,59 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Location CreateNew()
-        {
-            return new Location();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<LocationDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
-        {
-            return items.Select( m => new LocationDto()
-                {
-                    ParentLocationId = m.ParentLocationId,
-                    Name = m.Name,
-                    IsActive = m.IsActive,
-                    LocationPoint = m.LocationPoint,
-                    Perimeter = m.Perimeter,
-                    LocationTypeValueId = m.LocationTypeValueId,
-                    Street1 = m.Street1,
-                    Street2 = m.Street2,
-                    City = m.City,
-                    State = m.State,
-                    Country = m.Country,
-                    Zip = m.Zip,
-                    FullAddress = m.FullAddress,
-                    AssessorParcelId = m.AssessorParcelId,
-                    StandardizeAttemptedDateTime = m.StandardizeAttemptedDateTime,
-                    StandardizeAttemptedServiceType = m.StandardizeAttemptedServiceType,
-                    StandardizeAttemptedResult = m.StandardizeAttemptedResult,
-                    StandardizedDateTime = m.StandardizedDateTime,
-                    GeocodeAttemptedDateTime = m.GeocodeAttemptedDateTime,
-                    GeocodeAttemptedServiceType = m.GeocodeAttemptedServiceType,
-                    GeocodeAttemptedResult = m.GeocodeAttemptedResult,
-                    GeocodedDateTime = m.GeocodedDateTime,
-                    PrinterDeviceId = m.PrinterDeviceId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -101,24 +48,6 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where ParentLocationId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Location.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
             return true;
         }
     }

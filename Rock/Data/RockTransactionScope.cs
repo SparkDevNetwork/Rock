@@ -38,11 +38,10 @@ namespace Rock.Data
             // By default, the System.Transactions infrastructure creates Serializable transactions
             // use ReadCommitted instead (which is the default for normal SQL Server operations)
             // NOTE:  It might be a good idea to turn on Read Committed Snapshot in SQL Server. 
-            TransactionScopeOption transactionScopeOption = new TransactionScopeOption();
             TransactionOptions transactionOptions = new TransactionOptions();
             transactionOptions.IsolationLevel = IsolationLevel.ReadCommitted;
 
-            using ( var t = new TransactionScope(transactionScopeOption, transactionOptions))
+            using ( var t = new TransactionScope( TransactionScopeOption.Required, transactionOptions ) )
             {
                 action.Invoke();
                 t.Complete();

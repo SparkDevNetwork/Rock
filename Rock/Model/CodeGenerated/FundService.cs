@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Fund Service class
     /// </summary>
-    public partial class FundService : Service<Fund, FundDto>
+    public partial class FundService : Service<Fund>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FundService"/> class
@@ -38,50 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Fund CreateNew()
-        {
-            return new Fund();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FundDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FundDto> QueryableDto( IQueryable<Fund> items )
-        {
-            return items.Select( m => new FundDto()
-                {
-                    Name = m.Name,
-                    PublicName = m.PublicName,
-                    Description = m.Description,
-                    ParentFundId = m.ParentFundId,
-                    IsTaxDeductible = m.IsTaxDeductible,
-                    Order = m.Order,
-                    IsActive = m.IsActive,
-                    StartDate = m.StartDate,
-                    EndDate = m.EndDate,
-                    IsPledgable = m.IsPledgable,
-                    GlCode = m.GlCode,
-                    FundTypeValueId = m.FundTypeValueId,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -92,39 +48,18 @@ namespace Rock.Model
         public bool CanDelete( Fund item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Fund>().Queryable().Any( a => a.ParentFundId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Fund where ParentFundId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Fund" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Fund";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Fund.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Fund.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Pledge>().Queryable().Any( a => a.FundId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Pledge where FundId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Pledge" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Pledge";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Fund.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Pledge.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

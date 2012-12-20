@@ -13,7 +13,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityTypeWorkflowTrigger POCO Service class
     /// </summary>
-    public partial class WorkflowTriggerService : Service<WorkflowTrigger, WorkflowTriggerDto>
+    public partial class WorkflowTriggerService 
     {
         /// <summary>
         /// Gets the workflow types.

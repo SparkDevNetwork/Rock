@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FinancialBatch Service class
     /// </summary>
-    public partial class FinancialBatchService : Service<FinancialBatch, FinancialBatchDto>
+    public partial class FinancialBatchService : Service<FinancialBatch>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
@@ -38,43 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FinancialBatch CreateNew()
-        {
-            return new FinancialBatch();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FinancialBatchDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FinancialBatchDto> QueryableDto( IQueryable<FinancialBatch> items )
-        {
-            return items.Select( m => new FinancialBatchDto()
-                {
-                    Name = m.Name,
-                    BatchDate = m.BatchDate,
-                    IsClosed = m.IsClosed,
-                    CampusId = m.CampusId,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    ForeignReference = m.ForeignReference,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -85,24 +48,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialBatch item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.BatchId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransaction where BatchId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "FinancialTransaction" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "FinancialTransaction";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FinancialBatch.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialBatch.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

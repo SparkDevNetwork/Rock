@@ -6,7 +6,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -15,6 +18,7 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageRoute" )]
+    [DataContract( IsReference = true )]
     public partial class PageRoute : Model<PageRoute>
     {
         /// <summary>
@@ -24,6 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -33,6 +38,7 @@ namespace Rock.Model
         /// Page Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int PageId { get; set; }
         
         /// <summary>
@@ -44,36 +50,17 @@ namespace Rock.Model
         [Route]
         [Required]
         [MaxLength( 200 )]
+        [DataMember( IsRequired = true )]
         public string Route { get; set; }
         
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PageRoute Read( int id )
-        {
-            return Read<PageRoute>( id );
-        }
-
         /// <summary>
         /// Gets or sets the Page.
         /// </summary>
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [NotExportable]
+        [DataMember]
         public virtual Page Page { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        [NotExportable]
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

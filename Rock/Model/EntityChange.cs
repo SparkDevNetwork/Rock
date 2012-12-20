@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "EntityChange" )]
+    [DataContract( IsReference = true )]
     public partial class EntityChange : Model<EntityChange>
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// Change Set.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public Guid ChangeSet { get; set; }
         
         /// <summary>
@@ -36,6 +39,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 10 )]
+        [DataMember( IsRequired = true )]
         public string ChangeType { get; set; }
 
         /// <summary>
@@ -45,6 +49,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -54,6 +59,7 @@ namespace Rock.Model
         /// Entity Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int EntityId { get; set; }
         
         /// <summary>
@@ -64,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Property { get; set; }
         
         /// <summary>
@@ -72,6 +79,7 @@ namespace Rock.Model
         /// <value>
         /// Original Value.
         /// </value>
+        [DataMember]
         public string OriginalValue { get; set; }
         
         /// <summary>
@@ -80,6 +88,7 @@ namespace Rock.Model
         /// <value>
         /// Current Value.
         /// </value>
+        [DataMember]
         public string CurrentValue { get; set; }
         
         /// <summary>
@@ -88,6 +97,7 @@ namespace Rock.Model
         /// <value>
         /// Created Date Time.
         /// </value>
+        [DataMember]
         public DateTime? CreatedDateTime { get; set; }
         
         /// <summary>
@@ -96,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// Created By Person Id.
         /// </value>
+        [DataMember]
         public int? CreatedByPersonId { get; set; }
 
         /// <summary>
@@ -104,6 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -112,26 +124,8 @@ namespace Rock.Model
         /// <value>
         /// The created by person.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Person CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static EntityChange Read( int id )
-        {
-            return Read<EntityChange>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

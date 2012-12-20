@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// Member POCO Entity.
     /// </summary>
     [Table( "GroupMember" )]
+    [DataContract( IsReference = true )]
     public partial class GroupMember : Model<GroupMember>
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// Group Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
         
         /// <summary>
@@ -43,6 +46,7 @@ namespace Rock.Model
         /// Person Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
         
         /// <summary>
@@ -52,17 +56,8 @@ namespace Rock.Model
         /// Group Role Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int GroupRoleId { get; set; }
-        
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static GroupMember Read( int id )
-        {
-            return Read<GroupMember>( id );
-        }
         
         /// <summary>
         /// Gets or sets the Person.
@@ -70,6 +65,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.Person Person { get; set; }
         
         /// <summary>
@@ -78,6 +74,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
+        [DataMember]
         public virtual Group Group { get; set; }
         
         /// <summary>
@@ -86,16 +83,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupRole GroupRole { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

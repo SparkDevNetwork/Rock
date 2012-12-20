@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Page Service class
     /// </summary>
-    public partial class PageService : Service<Page, PageDto>
+    public partial class PageService : Service<Page>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageService"/> class
@@ -38,53 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Page CreateNew()
-        {
-            return new Page();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PageDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
-        {
-            return items.Select( m => new PageDto()
-                {
-                    Name = m.Name,
-                    ParentPageId = m.ParentPageId,
-                    Title = m.Title,
-                    IsSystem = m.IsSystem,
-                    SiteId = m.SiteId,
-                    Layout = m.Layout,
-                    RequiresEncryption = m.RequiresEncryption,
-                    EnableViewState = m.EnableViewState,
-                    MenuDisplayDescription = m.MenuDisplayDescription,
-                    MenuDisplayIcon = m.MenuDisplayIcon,
-                    MenuDisplayChildPages = m.MenuDisplayChildPages,
-                    DisplayInNavWhen = m.DisplayInNavWhen,
-                    Order = m.Order,
-                    OutputCacheDuration = m.OutputCacheDuration,
-                    Description = m.Description,
-                    IconFileId = m.IconFileId,
-                    IncludeAdminFooter = m.IncludeAdminFooter,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -95,39 +48,18 @@ namespace Rock.Model
         public bool CanDelete( Page item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<Page>().Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Page where ParentPageId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Page" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Page";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Page.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Site>().Queryable().Any( a => a.DefaultPageId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Site where DefaultPageId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Site" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Site";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Page.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

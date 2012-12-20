@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// UserLogin Service class
     /// </summary>
-    public partial class UserLoginService : Service<UserLogin, UserLoginDto>
+    public partial class UserLoginService : Service<UserLogin>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLoginService"/> class
@@ -35,52 +35,6 @@ namespace Rock.Model
         /// </summary>
         public UserLoginService(IRepository<UserLogin> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override UserLogin CreateNew()
-        {
-            return new UserLogin();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<UserLoginDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<UserLoginDto> QueryableDto( IQueryable<UserLogin> items )
-        {
-            return items.Select( m => new UserLoginDto()
-                {
-                    ServiceType = m.ServiceType,
-                    ServiceName = m.ServiceName,
-                    UserName = m.UserName,
-                    Password = m.Password,
-                    IsConfirmed = m.IsConfirmed,
-                    LastActivityDate = m.LastActivityDate,
-                    LastLoginDate = m.LastLoginDate,
-                    LastPasswordChangedDate = m.LastPasswordChangedDate,
-                    CreationDate = m.CreationDate,
-                    IsOnLine = m.IsOnLine,
-                    IsLockedOut = m.IsLockedOut,
-                    LastLockedOutDate = m.LastLockedOutDate,
-                    FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
-                    FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
-                    ApiKey = m.ApiKey,
-                    PersonId = m.PersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

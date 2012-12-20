@@ -3,11 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Tag POCO Entity.
     /// </summary>
     [Table( "Tag" )]
+    [DataContract( IsReference = true )]
     public partial class Tag : Model<Tag>, IOrdered
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -43,6 +47,7 @@ namespace Rock.Model
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
         
         /// <summary>
@@ -52,6 +57,7 @@ namespace Rock.Model
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
         
         /// <summary>
@@ -62,6 +68,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -71,6 +78,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
@@ -79,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// Owner Id.
         /// </value>
+        [DataMember]
         public int? OwnerId { get; set; }
 
         /// <summary>
@@ -87,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// The owner.
         /// </value>
+        [DataMember]
         public virtual Model.Person Owner { get; set; }
 
         /// <summary>
@@ -95,26 +105,8 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Tag Read( int id )
-        {
-            return Read<Tag>( id );
-        }
 
         /// <summary>
         /// Gets or sets the tagged items.
@@ -122,6 +114,7 @@ namespace Rock.Model
         /// <value>
         /// The tagged items.
         /// </value>
+        [DataMember]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
         /// <summary>

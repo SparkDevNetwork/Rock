@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Defined Value POCO Service class
     /// </summary>
-    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
+    public partial class DefinedValueService 
     {
         /// <summary>
         /// Gets Defined Values by Defined Type Id

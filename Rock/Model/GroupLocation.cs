@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-
-using Rock.Data;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -17,6 +16,7 @@ namespace Rock.Model
     /// GroupLocation POCO class.
     /// </summary>
     [Table( "GroupLocation" )]
+    [DataContract( IsReference = true )]
     public partial class GroupLocation : Model<GroupLocation>
     {
         #region Entity Properties
@@ -27,6 +27,7 @@ namespace Rock.Model
         /// <value>
         /// The group id.
         /// </value>
+        [DataMember]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace Rock.Model
         /// <value>
         /// The location id.
         /// </value>
+        [DataMember]
         public int LocationId { get; set; }
 
         /// <summary>
@@ -43,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The location type.
         /// </value>
+        [DataMember]
         public int? LocationTypeValueId { get; set; }
 
         #endregion
@@ -55,6 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -63,6 +67,7 @@ namespace Rock.Model
         /// <value>
         /// The location.
         /// </value>
+        [DataMember]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -71,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual DefinedValue LocationTypeValue { get; set; }
 
         /// <summary>
@@ -85,15 +91,6 @@ namespace Rock.Model
             set { _schedules = value; }
         }
         private ICollection<Schedule> _schedules;
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -112,36 +109,8 @@ namespace Rock.Model
 
         #endregion
 
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static GroupLocation Read( int id )
-        {
-            return Read<GroupLocation>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static GroupLocation Read( Guid guid )
-        {
-            return Read<GroupLocation>( guid );
-        }
-
-        #endregion
-
     }
-
+    
     #region Entity Configuration
 
     /// <summary>

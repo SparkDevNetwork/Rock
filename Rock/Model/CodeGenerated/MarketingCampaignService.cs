@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaign Service class
     /// </summary>
-    public partial class MarketingCampaignService : Service<MarketingCampaign, MarketingCampaignDto>
+    public partial class MarketingCampaignService : Service<MarketingCampaign>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignService"/> class
@@ -35,42 +35,6 @@ namespace Rock.Model
         /// </summary>
         public MarketingCampaignService(IRepository<MarketingCampaign> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaign CreateNew()
-        {
-            return new MarketingCampaign();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignDto> QueryableDto( IQueryable<MarketingCampaign> items )
-        {
-            return items.Select( m => new MarketingCampaignDto()
-                {
-                    Title = m.Title,
-                    ContactPersonId = m.ContactPersonId,
-                    ContactEmail = m.ContactEmail,
-                    ContactPhoneNumber = m.ContactPhoneNumber,
-                    ContactFullName = m.ContactFullName,
-                    EventGroupId = m.EventGroupId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

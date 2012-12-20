@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FinancialTransaction Service class
     /// </summary>
-    public partial class FinancialTransactionService : Service<FinancialTransaction, FinancialTransactionDto>
+    public partial class FinancialTransactionService : Service<FinancialTransaction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class
@@ -38,50 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FinancialTransaction CreateNew()
-        {
-            return new FinancialTransaction();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FinancialTransactionDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FinancialTransactionDto> QueryableDto( IQueryable<FinancialTransaction> items )
-        {
-            return items.Select( m => new FinancialTransactionDto()
-                {
-                    Description = m.Description,
-                    TransactionDateTime = m.TransactionDateTime,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    BatchId = m.BatchId,
-                    CurrencyTypeValueId = m.CurrencyTypeValueId,
-                    CreditCardTypeValueId = m.CreditCardTypeValueId,
-                    Amount = m.Amount,
-                    RefundTransactionId = m.RefundTransactionId,
-                    TransactionImageId = m.TransactionImageId,
-                    TransactionCode = m.TransactionCode,
-                    PaymentGatewayId = m.PaymentGatewayId,
-                    SourceTypeValueId = m.SourceTypeValueId,
-                    Summary = m.Summary,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -92,24 +48,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
+ 
+            if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.TransactionId == item.Id ) )
             {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from FinancialTransactionDetail where TransactionId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "FinancialTransactionDetail" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "FinancialTransactionDetail";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

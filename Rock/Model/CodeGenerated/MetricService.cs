@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Metric Service class
     /// </summary>
-    public partial class MetricService : Service<Metric, MetricDto>
+    public partial class MetricService : Service<Metric>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricService"/> class
@@ -35,49 +35,6 @@ namespace Rock.Model
         /// </summary>
         public MetricService(IRepository<Metric> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Metric CreateNew()
-        {
-            return new Metric();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MetricDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MetricDto> QueryableDto( IQueryable<Metric> items )
-        {
-            return items.Select( m => new MetricDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Type = m.Type,
-                    Category = m.Category,
-                    Title = m.Title,
-                    Subtitle = m.Subtitle,
-                    Description = m.Description,
-                    MinValue = m.MinValue,
-                    MaxValue = m.MaxValue,
-                    CollectionFrequencyValueId = m.CollectionFrequencyValueId,
-                    LastCollected = m.LastCollected,
-                    Source = m.Source,
-                    SourceSQL = m.SourceSQL,
-                    Order = m.Order,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// DefinedTypes REST API
     /// </summary>
-    public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType, Rock.Model.DefinedTypeDto>
+    public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType>
     {
         public DefinedTypesController() : base( new Rock.Model.DefinedTypeService() ) { } 
     }

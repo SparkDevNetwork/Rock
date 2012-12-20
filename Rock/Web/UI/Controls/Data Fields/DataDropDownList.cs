@@ -73,6 +73,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public void ShowErrorMessage( string errorMessage )
+        {
+            dataValidator.ErrorMessage = errorMessage;
+            dataValidator.IsValid = false;
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()

@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Location POCO Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService 
     {
         /// <summary>
         /// Gets Location by Full Address
@@ -40,21 +40,6 @@ namespace Rock.Model
         public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
         {
             return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
-        }
-
-        /// <summary>
-        /// Standardizes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Standardize(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Standardize( locationModel, personId );
-
-            return locationModel;
         }
 
         /// <summary>
@@ -96,21 +81,6 @@ namespace Rock.Model
                 }
 
             location.StandardizeAttemptedDateTime = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Geocodes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Geocode(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Geocode( locationModel, personId );
-
-            return locationModel;
         }
 
         /// <summary>
@@ -163,7 +133,7 @@ namespace Rock.Model
         /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Location GetByLocationDto(LocationDto location, int? personId)
+        private Location GetByLocation(Location location, int? personId)
         {
             string address = location.FullAddress;
 

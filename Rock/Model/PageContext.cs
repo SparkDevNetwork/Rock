@@ -4,11 +4,13 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,6 +19,7 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageContext" )]
+    [DataContract( IsReference = true )]
     public partial class PageContext : Model<PageContext>
     {
         /// <summary>
@@ -26,6 +29,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -35,6 +39,7 @@ namespace Rock.Model
         /// Page Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int PageId { get; set; }
         
         /// <summary>
@@ -45,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
+        [DataMember( IsRequired = true )]
         public string Entity { get; set; }
 
         /// <summary>
@@ -55,6 +61,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string IdParameter { get; set; }
 
         /// <summary>
@@ -63,6 +70,7 @@ namespace Rock.Model
         /// <value>
         /// Created Date Time.
         /// </value>
+        [DataMember]
         public DateTime? CreatedDateTime { get; set; }
         
         /// <summary>
@@ -71,28 +79,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [NotExportable]
+        [DataMember]
         public virtual Page Page { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        [NotExportable]
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PageContext Read( int id )
-        {
-            return Read<PageContext>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

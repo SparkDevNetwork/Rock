@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Person Viewed POCO Service class
     /// </summary>
-    public partial class PersonViewedService : Service<PersonViewed, PersonViewedDto>
+    public partial class PersonViewedService 
     {
         /// <summary>
         /// Gets Person Vieweds by Target Person Id
