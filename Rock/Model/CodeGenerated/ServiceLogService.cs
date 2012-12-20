@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ServiceLog Service class
     /// </summary>
-    public partial class ServiceLogService : Service<ServiceLog, ServiceLogDto>
+    public partial class ServiceLogService : Service<ServiceLog>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceLogService"/> class
@@ -35,42 +35,6 @@ namespace Rock.Model
         /// </summary>
         public ServiceLogService(IRepository<ServiceLog> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override ServiceLog CreateNew()
-        {
-            return new ServiceLog();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ServiceLogDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ServiceLogDto> QueryableDto( IQueryable<ServiceLog> items )
-        {
-            return items.Select( m => new ServiceLogDto()
-                {
-                    Time = m.Time,
-                    Input = m.Input,
-                    Type = m.Type,
-                    Name = m.Name,
-                    Result = m.Result,
-                    Success = m.Success,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

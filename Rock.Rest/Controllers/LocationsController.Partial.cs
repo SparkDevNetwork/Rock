@@ -49,7 +49,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authenticate]
-        public LocationDto Geocode( LocationDto location )
+        public Location Geocode( Location location )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -57,7 +57,8 @@ namespace Rock.Rest.Controllers
                 if ( location != null )
                 {
                     var locationService = new LocationService();
-                    return new LocationDto( locationService.Geocode( location, user.PersonId ) );
+                    locationService.Geocode( location, user.PersonId );
+                    return location;
                 }
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
@@ -71,7 +72,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authenticate]
-        public LocationDto Standardize( LocationDto location )
+        public Location Standardize( Location location )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -79,7 +80,8 @@ namespace Rock.Rest.Controllers
                 if ( location != null )
                 {
                     var locationService = new LocationService();
-                    return new LocationDto( locationService.Standardize( location, user.PersonId ) );
+                    locationService.Standardize( location, user.PersonId );
+                    return location;
                 }
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }

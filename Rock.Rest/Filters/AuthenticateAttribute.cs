@@ -20,8 +20,8 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
             {
-                var userService = new UserService();
-                var user = userService.GetByUserName(principal.Identity.Name);
+                var userLoginService = new UserLoginService();
+                var user = userLoginService.GetByUserName(principal.Identity.Name);
                 if ( user != null )
                 {
                     actionContext.Request.SetUserPrincipal( principal );
@@ -41,11 +41,11 @@ namespace Rock.Rest.Filters
 
             if (! String.IsNullOrWhiteSpace( authToken ) )
             {
-                var userService = new UserService();
-                var user = userService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
-                if ( user != null )
+                var userLoginService = new UserLoginService();
+                var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
+                if ( userLogin != null )
                 {
-                    var identity = new GenericIdentity( user.UserName );
+                    var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal(identity, null);
                     actionContext.Request.SetUserPrincipal( principal );
                     return;

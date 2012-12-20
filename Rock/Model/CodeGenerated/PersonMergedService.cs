@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PersonMerged Service class
     /// </summary>
-    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
+    public partial class PersonMergedService : Service<PersonMerged>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonMergedService"/> class
@@ -35,38 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PersonMerged CreateNew()
-        {
-            return new PersonMerged();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonMergedDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonMergedDto> QueryableDto( IQueryable<PersonMerged> items )
-        {
-            return items.Select( m => new PersonMergedDto()
-                {
-                    CurrentId = m.CurrentId,
-                    CurrentGuid = m.CurrentGuid,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Model
 {
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// Fund POCO class.
     /// </summary>
     [Table("Fund")]
+    [DataContract( IsReference = true )]
     public partial class Fund : Model<Fund>
     {
         /// <summary>
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -35,6 +38,7 @@ namespace Rock.Model
         /// The name of the public.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string PublicName { get; set; }
 
         /// <summary>
@@ -44,6 +48,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [MaxLength(250)]
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -52,6 +57,7 @@ namespace Rock.Model
         /// <value>
         /// The parent fund id.
         /// </value>
+        [DataMember]
         public int? ParentFundId { get; set; }
 
         /// <summary>
@@ -60,6 +66,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [tax deductible]; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
@@ -68,6 +75,7 @@ namespace Rock.Model
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -76,6 +84,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActive { get; set; }
 
         /// <summary>
@@ -84,6 +93,7 @@ namespace Rock.Model
         /// <value>
         /// The start date.
         /// </value>
+        [DataMember]
         public DateTime? StartDate { get; set; }
 
         /// <summary>
@@ -92,6 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The end date.
         /// </value>
+        [DataMember]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -100,6 +111,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsPledgable { get; set; }
 
         /// <summary>
@@ -109,6 +121,7 @@ namespace Rock.Model
         /// The gl code.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string GlCode { get; set; }
 
         /// <summary>
@@ -117,6 +130,7 @@ namespace Rock.Model
         /// <value>
         /// The fund type id.
         /// </value>
+        [DataMember]
         public int? FundTypeValueId { get; set; }
 
         /// <summary>
@@ -126,6 +140,7 @@ namespace Rock.Model
         /// The entity.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Entity { get; set; }
 
         /// <summary>
@@ -134,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The entity id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -142,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The parent fund.
         /// </value>
+        [DataMember]
         public virtual Fund ParentFund { get; set; }
 
         /// <summary>
@@ -150,6 +167,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the fund.
         /// </value>
+        [DataMember]
         public virtual DefinedValue FundTypeValue { get; set; }
 
         /// <summary>
@@ -158,6 +176,7 @@ namespace Rock.Model
         /// <value>
         /// The child funds.
         /// </value>
+        [DataMember]
         public virtual ICollection<Fund> ChildFunds { get; set; }
 
         /// <summary>
@@ -166,6 +185,7 @@ namespace Rock.Model
         /// <value>
         /// The pledges.
         /// </value>
+        [DataMember]
         public virtual ICollection<Pledge> Pledges { get; set; }
 
         /// <summary>
@@ -174,27 +194,9 @@ namespace Rock.Model
         /// <value>
         /// The transaction funds.
         /// </value>
+        [DataMember]
         public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Transaction> Transactions { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Fund Read( int id )
-        {
-            return Read<Fund>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

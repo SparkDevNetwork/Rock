@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Person Service class
     /// </summary>
-    public partial class PersonService : Service<Person, PersonDto>
+    public partial class PersonService : Service<Person>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonService"/> class
@@ -35,60 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PersonService(IRepository<Person> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Person CreateNew()
-        {
-            return new Person();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
-        {
-            return items.Select( m => new PersonDto()
-                {
-                    IsSystem = m.IsSystem,
-                    RecordTypeValueId = m.RecordTypeValueId,
-                    RecordStatusValueId = m.RecordStatusValueId,
-                    RecordStatusReasonValueId = m.RecordStatusReasonValueId,
-                    PersonStatusValueId = m.PersonStatusValueId,
-                    TitleValueId = m.TitleValueId,
-                    GivenName = m.GivenName,
-                    NickName = m.NickName,
-                    LastName = m.LastName,
-                    SuffixValueId = m.SuffixValueId,
-                    PhotoId = m.PhotoId,
-                    BirthDay = m.BirthDay,
-                    BirthMonth = m.BirthMonth,
-                    BirthYear = m.BirthYear,
-                    Gender = m.Gender,
-                    MaritalStatusValueId = m.MaritalStatusValueId,
-                    AnniversaryDate = m.AnniversaryDate,
-                    GraduationDate = m.GraduationDate,
-                    Email = m.Email,
-                    IsEmailActive = m.IsEmailActive,
-                    EmailNote = m.EmailNote,
-                    DoNotEmail = m.DoNotEmail,
-                    SystemNote = m.SystemNote,
-                    ViewedCount = m.ViewedCount,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

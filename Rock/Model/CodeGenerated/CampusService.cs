@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Campus Service class
     /// </summary>
-    public partial class CampusService : Service<Campus, CampusDto>
+    public partial class CampusService : Service<Campus>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusService"/> class
@@ -35,38 +35,6 @@ namespace Rock.Model
         /// </summary>
         public CampusService(IRepository<Campus> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Campus CreateNew()
-        {
-            return new Campus();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<CampusDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<CampusDto> QueryableDto( IQueryable<Campus> items )
-        {
-            return items.Select( m => new CampusDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>

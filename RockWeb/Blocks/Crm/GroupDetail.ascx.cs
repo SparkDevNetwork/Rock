@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Crm
 
             if (!itemKeyValue.Equals(0))
             {
-                group = Group.Read(itemKeyValue);
+                group = new GroupService().Get(itemKeyValue);
                 lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
             }
             else

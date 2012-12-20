@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PageRoutes REST API
     /// </summary>
-    public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute, Rock.Model.PageRouteDto>
+    public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute>
     {
         public PageRoutesController() : base( new Rock.Model.PageRouteService() ) { } 
     }

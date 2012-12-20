@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                groupType = GroupType.Read( itemKeyValue );
+                groupType = new GroupTypeService().Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( GroupType.FriendlyTypeName );
             }
             else

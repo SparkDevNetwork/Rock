@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Page Context POCO Service class
     /// </summary>
-    public partial class PageContextService : Service<PageContext, PageContextDto>
+    public partial class PageContextService 
     {
         /// <summary>
         /// Gets Page Contexts by Page Id

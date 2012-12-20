@@ -11,7 +11,7 @@ using Rock.Data;
 
 namespace Rock.Model
 {
-    public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType, MarketingCampaignAdTypeDto>
+    public partial class MarketingCampaignAdTypeService
     {
         /// <summary>
         /// Deletes the specified item.

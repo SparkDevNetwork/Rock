@@ -35,13 +35,13 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var userService = new UserService();
-            var user = userService.Get( UserId );
+            var userLoginService = new UserLoginService();
+            var user = userLoginService.Get( UserId );
 
             if ( user != null )
             {
                 user.LastActivityDate = LastActivityDate;
-                userService.Save( user, null );
+                userLoginService.Save( user, null );
             }
         }
     }

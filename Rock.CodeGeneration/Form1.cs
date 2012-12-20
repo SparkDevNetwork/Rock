@@ -94,15 +94,15 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
-            string serviceDtoFolder = Path.Combine( RootFolder().FullName, "Rock" );
+            string serviceFolder = Path.Combine( RootFolder().FullName, "Rock" );
             string restFolder = Path.Combine( RootFolder().FullName, "Rock.Rest" );
 
-            if ( cbService.Checked || cbDto.Checked )
+            if ( cbService.Checked  )
             {
-                fbdServiceDtoOutput.SelectedPath = serviceDtoFolder;
-                if ( fbdServiceDtoOutput.ShowDialog() == DialogResult.OK )
+                fbdServiceOutput.SelectedPath = serviceFolder;
+                if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
                 {
-                    serviceDtoFolder = fbdServiceDtoOutput.SelectedPath;
+                    serviceFolder = fbdServiceOutput.SelectedPath;
                 }
             }
 
@@ -128,12 +128,7 @@ namespace Rock.CodeGeneration
 
                         if ( cbService.Checked )
                         {
-                            WriteServiceFile( serviceDtoFolder, type );
-                        }
-
-                        if ( cbDto.Checked )
-                        {
-                            WriteDtoFile( serviceDtoFolder, type );
+                            WriteServiceFile( serviceFolder, type );
                         }
 
                         if ( cbRest.Checked )
@@ -206,7 +201,7 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} Service class" + Environment.NewLine, type.Name );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Service : Service<{0}, {0}Dto>" + Environment.NewLine, type.Name );
+            sb.AppendFormat( "    public partial class {0}Service : Service<{0}>" + Environment.NewLine, type.Name );
             sb.AppendLine( "    {" );
 
             sb.AppendLine( "        /// <summary>" );
@@ -223,41 +218,6 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// </summary>" );
             sb.AppendFormat( "        public {0}Service(IRepository<{0}> repository) : base(repository)" + Environment.NewLine, type.Name );
             sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a new model" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public override {0} CreateNew()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return new {0}();" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public override IQueryable<{0}Dto> QueryableDto( )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            return QueryableDto( this.Queryable() );" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Query DTO objects" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns>A queryable list of DTO objects</returns>" );
-            sb.AppendFormat( "        public IQueryable<{0}Dto> QueryableDto( IQueryable<{0}> items )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            return items.Select( m => new {0}Dto()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "                {" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                    {0} = m.{0}," + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "                });" );
             sb.AppendLine( "        }" );
 
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
@@ -385,218 +345,6 @@ order by [parentTable]
         }
 
         /// <summary>
-        /// Writes the DTO file for a given type
-        /// </summary>
-        /// <param name="rootFolder"></param>
-        /// <param name="type"></param>
-        private void WriteDtoFile( string rootFolder, Type type )
-        {
-            string lcName = type.Name.Substring( 0, 1 ).ToLower() + type.Name.Substring( 1 );
-
-            var properties = GetEntityProperties( type ).Where( p => p.Key != "Id" && p.Key != "Guid" );
-
-            bool isSecured = typeof( Rock.Security.ISecured ).IsAssignableFrom( type );
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "// <auto-generated>" );
-            sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
-            sb.AppendLine( "//     Changes to this file will be lost when the code is regenerated." );
-            sb.AppendLine( "// </auto-generated>" );
-            sb.AppendLine( "//------------------------------------------------------------------------------" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-" );
-            sb.AppendLine( "// SHAREALIKE 3.0 UNPORTED LICENSE:" );
-            sb.AppendLine( "// http://creativecommons.org/licenses/by-nc-sa/3.0/" );
-            sb.AppendLine( "//" );
-            sb.AppendLine( "using System;" );
-            sb.AppendLine( "using System.Collections.Generic;" );
-            sb.AppendLine( "using System.Dynamic;" );
-            sb.AppendLine( "using System.Runtime.Serialization;" );
-            sb.AppendLine( "" );
-            sb.AppendLine( "using Rock.Data;" );
-            sb.AppendLine( "" );
-
-            sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
-            sb.AppendLine( "{" );
-            sb.AppendLine( "    /// <summary>" );
-            sb.AppendFormat( "    /// Data Transfer Object for {0} object" + Environment.NewLine, type.Name );
-            sb.AppendLine( "    /// </summary>" );
-            sb.AppendLine( "    [Serializable]" );
-            sb.AppendLine( "    [DataContract]" );
-
-            if ( isSecured )
-            {
-                sb.AppendFormat( "    public partial class {0}Dto : DtoSecured<{0}Dto>" + Environment.NewLine, type.Name );
-            }
-            else
-            {
-                sb.AppendFormat( "    public partial class {0}Dto : Dto" + Environment.NewLine, type.Name );
-            }
-
-            sb.AppendLine( "    {" );
-
-            foreach ( var property in properties )
-            {
-                if ( !BaseDtoProperty( property.Key ) )
-                {
-                    sb.AppendLine( "        /// <summary />" );
-                    sb.AppendLine( "        [DataMember]" );
-                    sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, property.Value, property.Key );
-                    sb.AppendLine( "" );
-                }
-            }
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Instantiates a new DTO object" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public {0}Dto ()" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Instantiates a new DTO object from the entity" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        /// <param name=\"{0}\"></param>" + Environment.NewLine, lcName );
-            sb.AppendFormat( "        public {0}Dto ( {0} {1} )" + Environment.NewLine, type.Name, lcName );
-            sb.AppendLine( "        {" );
-            sb.AppendFormat( "            CopyFromModel( {0} );" + Environment.NewLine, lcName );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a dictionary object." );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public override Dictionary<string, object> ToDictionary()" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            var dictionary = base.ToDictionary();" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "            dictionary.Add( \"{0}\", this.{0} );" + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "            return dictionary;" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Creates a dynamic object." );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <returns></returns>" );
-            sb.AppendLine( "        public override dynamic ToDynamic()" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            dynamic expando = base.ToDynamic();" );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "            expando.{0} = this.{0};" + Environment.NewLine, property.Key );
-            }
-            sb.AppendLine( "            return expando;" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Copies the model property values to the DTO properties" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public override void CopyFromModel( IEntity model )" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            base.CopyFromModel( model );" );
-            sb.AppendLine( "" );
-            sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "            {" );
-            sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                this.{0} = {1}.{0};" + Environment.NewLine, property.Key, lcName );
-            }
-            sb.AppendLine( "            }" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendLine( "        /// Copies the DTO property values to the entity properties" );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"model\">The model.</param>" );
-            sb.AppendLine( "        public override void CopyToModel ( IEntity model )" );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "            base.CopyToModel( model );" );
-            sb.AppendLine( "" );
-            sb.AppendFormat( "            if ( model is {0} )" + Environment.NewLine, type.Name );
-            sb.AppendLine( "            {" );
-            sb.AppendFormat( "                var {0} = ({1})model;" + Environment.NewLine, lcName, type.Name );
-            foreach ( var property in properties )
-            {
-                sb.AppendFormat( "                {1}.{0} = this.{0};" + Environment.NewLine, property.Key, lcName );
-            }
-            sb.AppendLine( "            }" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "    }" );
-
-            string extensionSection = @"
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class {0}DtoExtension
-    {{
-        /// <summary>
-        /// To the model.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static {0} ToModel( this {0}Dto value )
-        {{
-            {0} result = new {0}();
-            value.CopyToModel( result );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the model.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static List<{0}> ToModel( this List<{0}Dto> value )
-        {{
-            List<{0}> result = new List<{0}>();
-            value.ForEach( a => result.Add( a.ToModel() ) );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static List<{0}Dto> ToDto( this List<{0}> value )
-        {{
-            List<{0}Dto> result = new List<{0}Dto>();
-            value.ForEach( a => result.Add( a.ToDto() ) );
-            return result;
-        }}
-
-        /// <summary>
-        /// To the dto.
-        /// </summary>
-        /// <param name=""value"">The value.</param>
-        /// <returns></returns>
-        public static {0}Dto ToDto( this {0} value )
-        {{
-            return new {0}Dto( value );
-        }}
-
-    }}
-}}";
-
-            sb.AppendFormat( extensionSection, type.Name );
-            var file = new FileInfo( Path.Combine( NamespaceFolder( rootFolder, type.Namespace ).FullName, "CodeGenerated", type.Name + "Dto.cs" ) );
-            WriteFile( file, sb );
-        }
-
-        /// <summary>
         /// Writes the REST file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
@@ -648,7 +396,7 @@ order by [parentTable]
             sb.AppendLine( "    /// <summary>" );
             sb.AppendFormat( "    /// {0} REST API" + Environment.NewLine, pluralizedName );
             sb.AppendLine( "    /// </summary>" );
-            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}, {1}.{2}Dto>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    {" );
             sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service() ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    }" );
@@ -775,29 +523,6 @@ order by [parentTable]
             }
 
             return typeName;
-        }
-
-        /// <summary>
-        /// Evaluates if property is part of the base DTO class
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
-        private bool BaseDtoProperty( string propertyName )
-        {
-            return false;
-
-            /*
-             
-            if ( propertyName == "Id" ) return true;
-            if ( propertyName == "Guid" ) return true;
-            if ( propertyName == "CreatedDateTime" ) return true;
-            if ( propertyName == "ModifiedDateTime" ) return true;
-            if ( propertyName == "CreatedByPersonId" ) return true;
-            if ( propertyName == "ModifiedByPersonId" ) return true;
-
-            return false;
-            
-             */
         }
 
         private Dictionary<string, string> GetEntityProperties( Type type )

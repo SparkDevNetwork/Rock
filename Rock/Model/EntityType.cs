@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "EntityType" )]
+    [DataContract( IsReference = true )]
     public partial class EntityType : Entity<EntityType>
     {
 
@@ -29,6 +30,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [AlternateKey]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -38,6 +40,7 @@ namespace Rock.Model
         /// The assembly name.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string AssemblyName { get; set; }
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace Rock.Model
         /// The name of the friendly.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string FriendlyName { get; set; }
 
         /// <summary>
@@ -56,6 +60,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is an entity; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsEntity { get; set; }
 
         /// <summary>
@@ -65,6 +70,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is secured; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSecured { get; set; }
 
         #endregion
@@ -82,15 +88,6 @@ namespace Rock.Model
             get { return IsSecured || IsEntity; }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Methods
@@ -104,30 +101,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static EntityType Read( int id )
-        {
-            return Read<EntityType>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static EntityType Read( Guid guid )
-        {
-            return Read<EntityType>( guid );
         }
 
         #endregion

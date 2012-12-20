@@ -22,29 +22,155 @@ namespace Rock.Web.Cache
     /// property of this attribute object.
     /// </summary>
     [Serializable]
-    public class AttributeCache : Rock.Model.AttributeDto
+    public class AttributeCache 
     {
-        private AttributeCache() : base() { }
-        private AttributeCache( Rock.Model.Attribute model ) : base( model ) { }
+        #region constructors
 
-        // <summary>
-        // Gets the category.
-        // </summary>
-        //public override string Category 
-        //{ 
-        //    get
-        //    {
-        //        return string.IsNullOrEmpty( base.Category ) ? "Attributes" : base.Category;
-        //    }
+        private AttributeCache() 
+        {
+        }
 
-        //    private set
-        //    {
-        //        if ( value == "Attributes" )
-        //            base.Category = null;
-        //        else
-        //            base.Category = value;
-        //    }
-        //}
+        private AttributeCache( Rock.Model.Attribute model )
+        {
+            CopyFromModel( model );
+        }
+
+        private AttributeCache( Rock.Model.Attribute model, Dictionary<string, string> qualifiers )
+        {
+            CopyFromModel( model, qualifiers );
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
+        public virtual int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public virtual Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is system.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field type id.
+        /// </summary>
+        /// <value>
+        /// The field type id.
+        /// </value>
+        public int FieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is grid column.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is grid column; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGridColumn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default value.
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is multi value.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is multi value; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMultiValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is required.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRequired { get; set; }
 
         /// <summary>
         /// Gets the type of the field.
@@ -62,6 +188,58 @@ namespace Rock.Web.Cache
         /// </summary>
         public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        public void CopyFromModel( Rock.Model.Attribute attribute )
+        {
+            var qualifiers = new Dictionary<string, string>();
+
+            if ( attribute.AttributeQualifiers != null )
+            {
+                foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
+                {
+                    qualifiers.Add( qualifier.Key, qualifier.Value );
+                }
+            }
+
+            CopyFromModel( attribute, qualifiers );
+        }
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="qualifiers">The qualifiers.</param>
+        public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
+        {
+            this.Id = attribute.Id;
+            this.Guid = attribute.Guid;
+            this.IsSystem = attribute.IsSystem;
+            this.FieldTypeId = attribute.FieldTypeId;
+            this.EntityTypeId = attribute.EntityTypeId;
+            this.EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn;
+            this.EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
+            this.Key = attribute.Key;
+            this.Name = attribute.Name;
+            this.Category = attribute.Category;
+            this.Description = attribute.Description;
+            this.Order = attribute.Order;
+            this.IsGridColumn = attribute.IsGridColumn;
+            this.DefaultValue = attribute.DefaultValue;
+            this.IsMultiValue = attribute.IsMultiValue;
+            this.IsRequired = attribute.IsRequired;
+
+            this.QualifierValues = new Dictionary<string, ConfigurationValue>();
+            foreach ( var qualifier in qualifiers )
+                this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+        }
+
         /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
         /// </summary>
@@ -76,51 +254,24 @@ namespace Rock.Web.Cache
             return editControl;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+
         #region Static Methods
 
         private static string CacheKey( int id )
         {
             return string.Format( "Rock:Attribute:{0}", id );
-        }
-
-        /// <summary>
-        /// Adds Attribute model to cache, and returns cached object
-        /// </summary>
-        /// <param name="attributeModel">The attributeModel to cache</param>
-        /// <returns></returns>
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel )
-        {
-            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
-
-            ObjectCache cache = MemoryCache.Default;
-            AttributeCache attribute = cache[cacheKey] as AttributeCache;
-
-            if ( attribute != null )
-                return attribute;
-            else
-            {
-                attribute = AttributeCache.CopyModel( attributeModel );
-                cache.Set( cacheKey, attribute, new CacheItemPolicy() );
-
-                return attribute;
-            }
-        }
-
-        /// <summary>
-        /// Adds Attribute model to cache, and returns cached object.  
-        /// </summary>
-        /// <param name="attributeModel">The attribute model.</param>
-        /// <param name="qualifiers">The qualifiers.</param>
-        /// <returns></returns>
-        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
-        {
-            AttributeCache attribute = AttributeCache.CopyModel( attributeModel, qualifiers );
-
-            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
-            ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
-
-            return attribute;
         }
 
         /// <summary>
@@ -137,52 +288,64 @@ namespace Rock.Web.Cache
             AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
             if ( attribute != null )
+            {
                 return attribute;
+            }
             else
             {
-                Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
-                Rock.Model.Attribute attributeModel = attributeService.Get( id );
+                var attributeService = new Rock.Model.AttributeService();
+                var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
-                    attribute = AttributeCache.CopyModel( attributeModel );
-
+                    attribute = new AttributeCache( attributeModel );
                     cache.Set( cacheKey, attribute, new CacheItemPolicy() );
-
                     return attribute;
                 }
                 else
+                {
                     return null;
-
+                }
             }
         }
 
         /// <summary>
-        /// Copies the properties of a <see cref="Rock.Model.Attribute"/> object to a <see cref="AttributeCache"/> object/>
+        /// Adds Attribute model to cache, and returns cached object
         /// </summary>
-        /// <param name="attributeModel">The attribute model.</param>
+        /// <param name="attributeModel">The attributeModel to cache</param>
         /// <returns></returns>
-        public static AttributeCache CopyModel( Rock.Model.Attribute attributeModel )
+        public static AttributeCache Read( Rock.Model.Attribute attributeModel )
         {
-            var qualifiers = new Dictionary<string, string>();
+            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
-            if ( attributeModel.AttributeQualifiers != null )
+            ObjectCache cache = MemoryCache.Default;
+            AttributeCache attribute = cache[cacheKey] as AttributeCache;
+
+            if ( attribute != null )
             {
-                foreach ( Rock.Model.AttributeQualifier qualifier in attributeModel.AttributeQualifiers )
-                {
-                    qualifiers.Add( qualifier.Key, qualifier.Value );
-                }
+                return attribute;
             }
-
-            return CopyModel( attributeModel, qualifiers );
+            else
+            {
+                attribute = new AttributeCache( attributeModel );
+                cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+                return attribute;
+            }
         }
 
-        private static AttributeCache CopyModel( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
+        /// <summary>
+        /// Adds Attribute model to cache, and returns cached object.  
+        /// </summary>
+        /// <param name="attributeModel">The attribute model.</param>
+        /// <param name="qualifiers">The qualifiers.</param>
+        /// <returns></returns>
+        public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
-            var attribute = new AttributeCache(attributeModel);
+            AttributeCache attribute = new AttributeCache( attributeModel, qualifiers );
 
-            attribute.QualifierValues = new Dictionary<string, ConfigurationValue>();
-            foreach ( var qualifier in qualifiers )
-                attribute.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+            string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
+
+            ObjectCache cache = MemoryCache.Default;
+            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
 
             return attribute;
         }

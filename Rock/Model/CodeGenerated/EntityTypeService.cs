@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityType Service class
     /// </summary>
-    public partial class EntityTypeService : Service<EntityType, EntityTypeDto>
+    public partial class EntityTypeService : Service<EntityType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityTypeService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public EntityTypeService(IRepository<EntityType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EntityType CreateNew()
-        {
-            return new EntityType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EntityTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EntityTypeDto> QueryableDto( IQueryable<EntityType> items )
-        {
-            return items.Select( m => new EntityTypeDto()
-                {
-                    Name = m.Name,
-                    AssemblyName = m.AssemblyName,
-                    FriendlyName = m.FriendlyName,
-                    IsEntity = m.IsEntity,
-                    IsSecured = m.IsSecured,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
