@@ -26,7 +26,7 @@ namespace Rock.Model
         /// System indicates whether or not the campus is part of the core framework/system.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [AlternateKey]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>

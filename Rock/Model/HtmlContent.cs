@@ -29,7 +29,7 @@ namespace Rock.Model
         /// Block Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int BlockId { get; set; }
         
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// Version.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Version { get; set; }
         
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// Content.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Content { get; set; }
         
         /// <summary>
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// Approved.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsApproved { get; set; }
         
         /// <summary>

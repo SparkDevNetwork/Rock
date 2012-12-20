@@ -98,7 +98,7 @@ namespace Rock.Data
             {
                 if ( _attributeCategories == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeCategories;
@@ -122,7 +122,7 @@ namespace Rock.Data
             {
                 if ( _attributes == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributes; 
@@ -145,7 +145,7 @@ namespace Rock.Data
             {
                 if ( _attributeValues == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeValues; 

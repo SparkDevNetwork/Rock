@@ -27,7 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// Field Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int FieldTypeId { get; set; }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 50 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Key { get; set; }
         
         /// <summary>
@@ -97,7 +97,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -126,7 +126,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -136,7 +136,7 @@ namespace Rock.Model
         /// Grid Column.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsGridColumn { get; set; }
         
         /// <summary>
@@ -155,7 +155,7 @@ namespace Rock.Model
         /// Multi Value.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
         
         /// <summary>
@@ -165,7 +165,7 @@ namespace Rock.Model
         /// Required.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsRequired { get; set; }
 
         /// <summary>

@@ -287,6 +287,7 @@ namespace Rock.Web.Cache
                     PageService pageService = new PageService();
                     foreach ( Page page in pageService.GetByParentPageId( this.Id ) )
                     {
+                        page.LoadAttributes();
                         pageIds.Add( page.Id );
                         pages.Add( PageCache.Read( page ) );
                     }

@@ -27,7 +27,7 @@ namespace Rock.Model
         /// Temporary.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsTemporary { get; set; }
         
         /// <summary>
@@ -37,7 +37,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Model
         /// <value>
         /// File Name.
         /// </value>
-        [Required]
+        [Required] 
         [MaxLength( 255 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string FileName { get; set; }
         
         /// <summary>
@@ -78,7 +78,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 255 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string MimeType { get; set; }
 
         /// <summary>

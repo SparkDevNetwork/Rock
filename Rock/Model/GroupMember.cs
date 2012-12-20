@@ -26,7 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -36,7 +36,7 @@ namespace Rock.Model
         /// Group Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int GroupId { get; set; }
         
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// Person Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
         
         /// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// Group Role Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int GroupRoleId { get; set; }
         
         /// <summary>

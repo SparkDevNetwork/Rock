@@ -39,7 +39,7 @@ namespace Rock.Model
         /// The log date time.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public DateTime LogDateTime { get; set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// The log entry.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string LogText { get; set; }
 
         #endregion

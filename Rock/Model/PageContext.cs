@@ -29,7 +29,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Rock.Model
         /// Page Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int PageId { get; set; }
         
         /// <summary>
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Entity { get; set; }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string IdParameter { get; set; }
 
         /// <summary>

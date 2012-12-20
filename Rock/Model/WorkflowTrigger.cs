@@ -28,7 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// The workflow type id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Rock.Model
         /// The type of the entity change.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public WorkflowTriggerType WorkflowTriggerType { get; set; }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string WorkflowName { get; set; }
 
         #endregion

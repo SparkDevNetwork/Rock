@@ -3,12 +3,10 @@
 function saveBlockMove() {
 
     // The current block's id
-    var blockId = $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance');
+    var blockId = $('#modal-block-move_panel').attr('block-instance');
 
     // The new zone selected
     var zoneName = $('#block-move-zone').val();
-
-    alert(blockId);
 
     // Get the current block instance object
     $.ajax({
@@ -88,9 +86,7 @@ $(document).ready(function () {
         $moveLink = $(this);
 
         // Add the current block's id as an attribute of the move dialog's save button
-        $('#modal-block-move_panel div.modal-footer a.btn.primary').attr('block-instance', $(this).attr('href'));
-
-        alert($('#modal-block-move_panel div.modal-footer a.btn.primary').attr('id'));
+        $('#modal-block-move_panel').attr('block-instance', $(this).attr('href'));
 
         // Set the dialog's zone selection select box value to the block's current zone 
         $('#block-move-zone').val($(this).attr('zone'));

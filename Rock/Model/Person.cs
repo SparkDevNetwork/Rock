@@ -34,7 +34,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -166,7 +166,7 @@ namespace Rock.Model
         /// Enum[Gender].
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -232,7 +232,7 @@ namespace Rock.Model
         /// Do Not Email.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public bool DoNotEmail { get; set; }
         
         /// <summary>

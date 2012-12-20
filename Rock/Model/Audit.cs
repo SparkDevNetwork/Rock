@@ -28,7 +28,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Model
         /// Entity Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityId { get; set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 200 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Title { get; set; }
         
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// Original Value.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public AuditType AuditType { get; set; }
         
         /// <summary>

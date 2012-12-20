@@ -27,7 +27,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
         
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
         
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 50 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Action { get; set; }
         
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 1 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string AllowOrDeny { get; set; }
         
         /// <summary>
@@ -78,7 +78,7 @@ namespace Rock.Model
         /// Enum[SpecialRole].
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public SpecialRole SpecialRole { get; set; }
 
         /// <summary>

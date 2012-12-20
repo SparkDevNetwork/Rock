@@ -53,23 +53,25 @@ namespace Rock.Rest.Controllers
                 if ( !model.IsAuthorized( "Edit", user.Person ) )
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
-                service.Attach( block );
+                if ( model.Layout != null && model.Layout != block.Layout )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
 
-                if ( block.IsValid )
+                if ( block.Layout != null )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout );
+                else
                 {
-                    if ( model.Layout != null && model.Layout != block.Layout )
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
+                    var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
+                    page.FlushBlocks();
+                }
 
-                    if (block.Layout != null)
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout);
-                    else
-                    {
-                        var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
-                        page.FlushBlocks();
-                    }
+                model.Zone = block.Zone;
+                model.PageId = block.PageId;
+                model.Layout = block.Layout;
 
-                    service.Move( block );
-                    service.Save( block, user.PersonId );
+                if ( model.IsValid )
+                {
+                    service.Move( model );
+                    service.Save( model, user.PersonId );
                 }
                 else
                     throw new HttpResponseException( HttpStatusCode.BadRequest );

@@ -55,7 +55,7 @@ namespace Rock.Model
         /// Date / time that the exception occurred..
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public DateTime ExceptionDate { get; set; }
 
         /// <summary>

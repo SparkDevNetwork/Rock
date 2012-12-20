@@ -28,7 +28,7 @@ namespace Rock.Model
         /// Change Set.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public Guid ChangeSet { get; set; }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 10 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string ChangeType { get; set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// Entity Id.
         /// </value>
         [Required]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public int EntityId { get; set; }
         
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Property { get; set; }
         
         /// <summary>
