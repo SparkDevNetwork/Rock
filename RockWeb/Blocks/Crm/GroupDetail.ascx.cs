@@ -70,6 +70,7 @@ namespace RockWeb.Blocks.Crm
             GroupService groupService = new GroupService();
 
             int groupId = int.Parse( hfGroupId.Value );
+            bool wasSecurityRole = false;
 
             if ( groupId == 0 )
             {
@@ -79,10 +80,8 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                // just in case this group is or was a SecurityRole
-                Rock.Security.Role.Flush( groupId );
-
                 group = groupService.Get( groupId );
+                wasSecurityRole = group.IsSecurityRole;
             }
 
             group.Name = tbName.Text;
@@ -110,8 +109,23 @@ namespace RockWeb.Blocks.Crm
                 groupService.Save( group, CurrentPersonId );
             } );
 
-            // just in case this group is or was a SecurityRole
-            Rock.Security.Authorization.Flush();
+            if ( wasSecurityRole )
+            {
+                if ( !group.IsSecurityRole )
+                {
+                    // if this group was a SecurityRole, but no longer is, flush
+                    Rock.Security.Role.Flush( groupId );
+                    Rock.Security.Authorization.Flush();
+                }
+            }
+            else
+            {
+                if ( group.IsSecurityRole )
+                {
+                    // new security role, flush
+                    Rock.Security.Authorization.Flush();
+                }
+            }
 
             NavigateToParentPage();
         }
