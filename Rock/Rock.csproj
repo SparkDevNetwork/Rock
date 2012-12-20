@@ -169,10 +169,6 @@
     <Compile Include="Migrations\201212071233248_PageIconFile.Designer.cs">
       <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201212101801186_CheckIn.cs" />
-    <Compile Include="Migrations\201212101801186_CheckIn.Designer.cs">
-      <DependentUpon>201212101801186_CheckIn.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201212110027467_GroupBlockAttributes.cs" />
     <Compile Include="Migrations\201212110027467_GroupBlockAttributes.Designer.cs">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
@@ -800,9 +796,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212071233248_PageIconFile.resx">
       <DependentUpon>201212071233248_PageIconFile.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201212101801186_CheckIn.resx">
-      <DependentUpon>201212101801186_CheckIn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212110027467_GroupBlockAttributes.resx">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
