@@ -166,6 +166,10 @@
     <Compile Include="Migrations\201212182319401_ListDetailSweep01.Designer.cs">
       <DependentUpon>201212182319401_ListDetailSweep01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.cs" />
+    <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.Designer.cs">
+      <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -843,6 +847,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212182319401_ListDetailSweep01.resx">
       <DependentUpon>201212182319401_ListDetailSweep01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212201910584_HomepageMenuOrder01.resx">
+      <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
