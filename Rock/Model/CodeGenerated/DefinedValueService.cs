@@ -97,4 +97,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this DefinedValue to another
+        /// </summary>
+        public static void ShallowCopy( this DefinedValue source, DefinedValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.DefinedTypeId = source.DefinedTypeId;
+            target.Order = source.Order;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

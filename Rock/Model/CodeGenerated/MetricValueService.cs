@@ -51,4 +51,28 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MetricValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this MetricValue to another
+        /// </summary>
+        public static void ShallowCopy( this MetricValue source, MetricValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.MetricId = source.MetricId;
+            target.Value = source.Value;
+            target.Description = source.Description;
+            target.xValue = source.xValue;
+            target.isDateBased = source.isDateBased;
+            target.Label = source.Label;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

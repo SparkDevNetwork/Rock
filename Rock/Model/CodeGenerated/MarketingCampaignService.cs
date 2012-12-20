@@ -51,4 +51,26 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this MarketingCampaign to another
+        /// </summary>
+        public static void ShallowCopy( this MarketingCampaign source, MarketingCampaign target )
+        {
+            target.Title = source.Title;
+            target.ContactPersonId = source.ContactPersonId;
+            target.ContactEmail = source.ContactEmail;
+            target.ContactPhoneNumber = source.ContactPhoneNumber;
+            target.ContactFullName = source.ContactFullName;
+            target.EventGroupId = source.EventGroupId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

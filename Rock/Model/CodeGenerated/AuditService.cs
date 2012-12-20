@@ -51,4 +51,27 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AuditExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Audit to another
+        /// </summary>
+        public static void ShallowCopy( this Audit source, Audit target )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Title = source.Title;
+            target.AuditType = source.AuditType;
+            target.Properties = source.Properties;
+            target.DateTime = source.DateTime;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

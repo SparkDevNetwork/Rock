@@ -51,4 +51,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonViewedExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PersonViewed to another
+        /// </summary>
+        public static void ShallowCopy( this PersonViewed source, PersonViewed target )
+        {
+            target.ViewerPersonId = source.ViewerPersonId;
+            target.TargetPersonId = source.TargetPersonId;
+            target.ViewDateTime = source.ViewDateTime;
+            target.IpAddress = source.IpAddress;
+            target.Source = source.Source;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

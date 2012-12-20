@@ -51,4 +51,26 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class ServiceLogExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this ServiceLog to another
+        /// </summary>
+        public static void ShallowCopy( this ServiceLog source, ServiceLog target )
+        {
+            target.Time = source.Time;
+            target.Input = source.Input;
+            target.Type = source.Type;
+            target.Name = source.Name;
+            target.Result = source.Result;
+            target.Success = source.Success;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

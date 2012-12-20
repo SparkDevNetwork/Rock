@@ -51,4 +51,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this AttributeValue to another
+        /// </summary>
+        public static void ShallowCopy( this AttributeValue source, AttributeValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }

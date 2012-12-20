@@ -57,4 +57,25 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PaymentGatewayExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PaymentGateway to another
+        /// </summary>
+        public static void ShallowCopy( this PaymentGateway source, PaymentGateway target )
+        {
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.ApiUrl = source.ApiUrl;
+            target.ApiKey = source.ApiKey;
+            target.ApiSecret = source.ApiSecret;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
+        }
+    }
 }
