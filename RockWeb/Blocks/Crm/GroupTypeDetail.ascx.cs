@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
-    public partial class GroupTypes : RockBlock
+    public partial class GroupTypes : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys
 
@@ -71,11 +71,6 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            gGroupType.DataKeyNames = new string[] { "id" };
-            gGroupType.Actions.IsAddEnabled = true;
-            gGroupType.Actions.AddClick += gGroupType_Add;
-            gGroupType.GridRebind += gGroupType_GridRebind;
-
             gChildGroupTypes.DataKeyNames = new string[] { "key" };
             gChildGroupTypes.Actions.IsAddEnabled = true;
             gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
@@ -95,128 +90,107 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            mdGridWarning.Hide();
-            nbWarning.Visible = false;
+            base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
-                BindGrid();
-                LoadDropDowns();
+                string itemId = PageParameter( "groupTypeId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
-
-            base.OnLoad( e );
         }
 
         #endregion
 
-        #region Grid Events (main grid)
+        #region Internal Methods
 
         /// <summary>
-        /// Handles the Add event of the gGroupType control.
+        /// Loads the drop downs.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gGroupType_Add( object sender, EventArgs e )
+        private void LoadDropDowns()
         {
-            ShowEdit( 0 );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gGroupType_Edit( object sender, RowEventArgs e )
-        {
-            ShowEdit( (int)e.RowKeyValue );
+            GroupRoleService groupRoleService = new GroupRoleService();
+            List<GroupRole> groupRoles = groupRoleService.Queryable().OrderBy( a => a.Name ).ToList();
+            groupRoles.Insert( 0, new GroupRole { Id = None.Id, Name = None.Text } );
+            ddlDefaultGroupRole.DataSource = groupRoles;
+            ddlDefaultGroupRole.DataBind();
         }
 
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="groupTypeId">The group type id.</param>
-        protected void ShowEdit( int groupTypeId )
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue )
         {
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
-
-            GroupTypeService groupTypeService = new GroupTypeService();
-            GroupType groupType = groupTypeService.Get( groupTypeId );
-            bool readOnly = false;
-            ChildGroupTypesDictionary = new Dictionary<int, string>();
-            LocationTypesDictionary = new Dictionary<int, string>();
-
-            if ( groupType != null )
+            if ( !itemKey.Equals( "groupTypeId" ) )
             {
-                hfGroupTypeId.Value = groupType.Id.ToString();
-                tbName.Text = groupType.Name;
-                tbDescription.Text = groupType.Description;
-                ddlDefaultGroupRole.SelectedValue = ( groupType.DefaultGroupRoleId ?? None.Id ).ToString();
-                groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
-                groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
-                readOnly = groupType.IsSystem;
+                return;
+            }
 
-                if ( groupType.IsSystem )
-                {
-                    lActionTitle.Text = ActionTitle.View( GroupType.FriendlyTypeName );
-                    btnCancel.Text = "Close";
-                }
-                else
-                {
-                    lActionTitle.Text = ActionTitle.Edit( GroupType.FriendlyTypeName );
-                    btnCancel.Text = "Cancel";
-                }
+            pnlDetails.Visible = true;
+            GroupType groupType = null;
+
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                groupType = GroupType.Read( itemKeyValue );
+                lActionTitle.Text = ActionTitle.Edit( GroupType.FriendlyTypeName );
             }
             else
             {
+                groupType = new GroupType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName );
-
-                hfGroupTypeId.Value = 0.ToString();
-                tbName.Text = string.Empty;
-                tbDescription.Text = string.Empty;
             }
 
-            iconIsSystem.Visible = readOnly;
+            LoadDropDowns();
+
+            ChildGroupTypesDictionary = new Dictionary<int, string>();
+            LocationTypesDictionary = new Dictionary<int, string>();
+
+            hfGroupTypeId.Value = groupType.Id.ToString();
+            tbName.Text = groupType.Name;
+            tbDescription.Text = groupType.Description;
+            ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
+            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
+            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+            }
+
+            if ( groupType.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+            }
+
+            if ( readOnly )
+            {
+                lActionTitle.Text = ActionTitle.View( GroupType.FriendlyTypeName );
+                btnCancel.Text = "Close";
+            }
+
             ddlDefaultGroupRole.Enabled = !readOnly;
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
+            gChildGroupTypes.Enabled = !readOnly;
+            gLocationTypes.Enabled = !readOnly;
             btnSave.Visible = !readOnly;
 
             BindChildGroupTypesGrid();
             BindLocationTypesGrid();
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gGroupType_Delete( object sender, RowEventArgs e )
-        {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            GroupType groupType = groupTypeService.Get( (int)e.RowKeyValue );
-
-            string errorMessage;
-            if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
-            {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                return;
-            }
-
-            groupTypeService.Delete( groupType, CurrentPersonId );
-            groupTypeService.Save( groupType, CurrentPersonId );
-
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gGroupType_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid();
         }
 
         #endregion
@@ -257,7 +231,6 @@ namespace RockWeb.Blocks.Crm
             ddlChildGroupType.DataBind();
             pnlChildGroupTypePicker.Visible = true;
             pnlDetails.Visible = false;
-            pnlList.Visible = false;
         }
 
         /// <summary>
@@ -287,7 +260,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindChildGroupTypesGrid()
         {
-            gChildGroupTypes.DataSource = ChildGroupTypesDictionary.OrderBy( a => a.Value );
+            gChildGroupTypes.DataSource = ChildGroupTypesDictionary.OrderBy( a => a.Value ).ToList();
             gChildGroupTypes.DataBind();
         }
 
@@ -302,7 +275,6 @@ namespace RockWeb.Blocks.Crm
 
             pnlChildGroupTypePicker.Visible = false;
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
 
             BindChildGroupTypesGrid();
         }
@@ -316,7 +288,6 @@ namespace RockWeb.Blocks.Crm
         {
             pnlChildGroupTypePicker.Visible = false;
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
         }
 
         #endregion
@@ -355,7 +326,6 @@ namespace RockWeb.Blocks.Crm
             ddlLocationType.DataBind();
             pnlLocationTypePicker.Visible = true;
             pnlDetails.Visible = false;
-            pnlList.Visible = false;
         }
 
         /// <summary>
@@ -385,7 +355,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindLocationTypesGrid()
         {
-            gLocationTypes.DataSource = LocationTypesDictionary.OrderBy( a => a.Value );
+            gLocationTypes.DataSource = LocationTypesDictionary.OrderBy( a => a.Value ).ToList();
             gLocationTypes.DataBind();
         }
 
@@ -400,7 +370,6 @@ namespace RockWeb.Blocks.Crm
 
             pnlLocationTypePicker.Visible = false;
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
 
             BindLocationTypesGrid();
         }
@@ -414,7 +383,6 @@ namespace RockWeb.Blocks.Crm
         {
             pnlLocationTypePicker.Visible = false;
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
         }
 
         #endregion
@@ -428,8 +396,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -508,45 +475,7 @@ namespace RockWeb.Blocks.Crm
                     groupTypeService.Save( groupType, CurrentPersonId );
                 } );
 
-            BindGrid();
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        private void BindGrid()
-        {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            SortProperty sortProperty = gGroupType.SortProperty;
-
-            if ( sortProperty != null )
-            {
-                gGroupType.DataSource = groupTypeService.Queryable().Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gGroupType.DataSource = groupTypeService.Queryable().OrderBy( p => p.Name ).ToList();
-            }
-
-            gGroupType.DataBind();
-        }
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            GroupRoleService groupRoleService = new GroupRoleService();
-            List<GroupRole> groupRoles = groupRoleService.Queryable().OrderBy( a => a.Name ).ToList();
-            groupRoles.Insert( 0, new GroupRole { Id = None.Id, Name = None.Text } );
-            ddlDefaultGroupRole.DataSource = groupRoles;
-            ddlDefaultGroupRole.DataBind();
+            NavigateToParentPage();
         }
 
         #endregion

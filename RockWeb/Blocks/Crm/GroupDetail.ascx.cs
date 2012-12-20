@@ -24,21 +24,6 @@ namespace RockWeb.Blocks.Crm
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" ) && AttributeValue( "ShowEdit" ).FromTrueFalse();
-            btnSave.Enabled = canAddEditDelete;
-            btnSave.ToolTip = canAddEditDelete ? string.Empty : "Not authorized";
-
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -85,6 +70,7 @@ namespace RockWeb.Blocks.Crm
             GroupService groupService = new GroupService();
 
             int groupId = int.Parse( hfGroupId.Value );
+            bool wasSecurityRole = false;
 
             if ( groupId == 0 )
             {
@@ -94,10 +80,8 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                // just in case this group is or was a SecurityRole
-                Rock.Security.Role.Flush( groupId );
-
                 group = groupService.Get( groupId );
+                wasSecurityRole = group.IsSecurityRole;
             }
 
             group.Name = tbName.Text;
@@ -125,8 +109,23 @@ namespace RockWeb.Blocks.Crm
                 groupService.Save( group, CurrentPersonId );
             } );
 
-            // just in case this group is or was a SecurityRole
-            Rock.Security.Authorization.Flush();
+            if ( wasSecurityRole )
+            {
+                if ( !group.IsSecurityRole )
+                {
+                    // if this group was a SecurityRole, but no longer is, flush
+                    Rock.Security.Role.Flush( groupId );
+                    Rock.Security.Authorization.Flush();
+                }
+            }
+            else
+            {
+                if ( group.IsSecurityRole )
+                {
+                    // new security role, flush
+                    Rock.Security.Authorization.Flush();
+                }
+            }
 
             NavigateToParentPage();
         }
@@ -185,10 +184,12 @@ namespace RockWeb.Blocks.Crm
             if (!itemKeyValue.Equals(0))
             {
                 group = new GroupService().Get(itemKeyValue);
+                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
             }
             else
             {
                 group = new Group { Id = 0 };
+                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
             }
 
             LoadDropDowns( group.Id );
@@ -201,6 +202,7 @@ namespace RockWeb.Blocks.Crm
             ddlCampus.SetValue( group.CampusId );
             cbIsSecurityRole.Checked = group.IsSecurityRole;
 
+            // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
@@ -221,12 +223,7 @@ namespace RockWeb.Blocks.Crm
                 lActionTitle.Text = ActionTitle.View( Group.FriendlyTypeName );
                 btnCancel.Text = "Close";
             }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
-                btnCancel.Text = "Cancel";
-            }
-
+            
             ddlGroupType.Enabled = !readOnly;
             ddlParentGroup.Enabled = !readOnly;
             ddlCampus.Enabled = !readOnly;
