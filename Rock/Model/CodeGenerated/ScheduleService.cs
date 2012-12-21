@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Schedule Service class
     /// </summary>
-    public partial class ScheduleService : Service<Schedule, ScheduleDto>
+    public partial class ScheduleService : Service<Schedule>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduleService"/> class
@@ -38,45 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Schedule CreateNew()
-        {
-            return new Schedule();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ScheduleDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ScheduleDto> QueryableDto( IQueryable<Schedule> items )
-        {
-            return items.Select( m => new ScheduleDto()
-                {
-                    Name = m.Name,
-                    Frequency = m.Frequency,
-                    FrequencyQualifier = m.FrequencyQualifier,
-                    StartTime = m.StartTime,
-                    EndTime = m.EndTime,
-                    CheckInStartTime = m.CheckInStartTime,
-                    CheckInEndTime = m.CheckInEndTime,
-                    EffectiveStartDate = m.EffectiveStartDate,
-                    EffectiveEndDate = m.EffectiveEndDate,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -88,6 +49,31 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class ScheduleExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Schedule entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Schedule target, Schedule source )
+        {
+            target.Name = source.Name;
+            target.Frequency = source.Frequency;
+            target.FrequencyQualifier = source.FrequencyQualifier;
+            target.StartTime = source.StartTime;
+            target.EndTime = source.EndTime;
+            target.CheckInStartTime = source.CheckInStartTime;
+            target.CheckInEndTime = source.CheckInEndTime;
+            target.EffectiveStartDate = source.EffectiveStartDate;
+            target.EffectiveEndDate = source.EffectiveEndDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

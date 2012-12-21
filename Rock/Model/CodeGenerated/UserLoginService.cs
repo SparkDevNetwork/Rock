@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class UserLoginExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this UserLogin to another
+        /// Copies all the entity properties from another UserLogin entity
         /// </summary>
-        public static void ShallowCopy( this UserLogin source, UserLogin target )
+        public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
         {
             target.ServiceType = source.ServiceType;
             target.ServiceName = source.ServiceName;

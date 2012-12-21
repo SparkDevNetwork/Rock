@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Attendance Service class
     /// </summary>
-    public partial class AttendanceService : Service<Attendance, AttendanceDto>
+    public partial class AttendanceService : Service<Attendance>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttendanceService"/> class
@@ -38,46 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Attendance CreateNew()
-        {
-            return new Attendance();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AttendanceDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AttendanceDto> QueryableDto( IQueryable<Attendance> items )
-        {
-            return items.Select( m => new AttendanceDto()
-                {
-                    LocationId = m.LocationId,
-                    ScheduleId = m.ScheduleId,
-                    GroupId = m.GroupId,
-                    PersonId = m.PersonId,
-                    QualifierValueId = m.QualifierValueId,
-                    StartDateTime = m.StartDateTime,
-                    EndDateTime = m.EndDateTime,
-                    DidAttend = m.DidAttend,
-                    SecurityCode = m.SecurityCode,
-                    Note = m.Note,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -89,6 +49,32 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttendanceExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Attendance entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Attendance target, Attendance source )
+        {
+            target.LocationId = source.LocationId;
+            target.ScheduleId = source.ScheduleId;
+            target.GroupId = source.GroupId;
+            target.PersonId = source.PersonId;
+            target.QualifierValueId = source.QualifierValueId;
+            target.StartDateTime = source.StartDateTime;
+            target.EndDateTime = source.EndDateTime;
+            target.DidAttend = source.DidAttend;
+            target.SecurityCode = source.SecurityCode;
+            target.Note = source.Note;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

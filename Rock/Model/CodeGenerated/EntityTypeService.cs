@@ -100,9 +100,9 @@ namespace Rock.Model
     public static class EntityTypeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this EntityType to another
+        /// Copies all the entity properties from another EntityType entity
         /// </summary>
-        public static void ShallowCopy( this EntityType source, EntityType target )
+        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
         {
             target.Name = source.Name;
             target.AssemblyName = source.AssemblyName;

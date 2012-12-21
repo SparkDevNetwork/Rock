@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class TaggedItemExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this TaggedItem to another
+        /// Copies all the entity properties from another TaggedItem entity
         /// </summary>
-        public static void ShallowCopy( this TaggedItem source, TaggedItem target )
+        public static void CopyPropertiesFrom( this TaggedItem target, TaggedItem source )
         {
             target.IsSystem = source.IsSystem;
             target.TagId = source.TagId;

@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PageRouteExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PageRoute to another
+        /// Copies all the entity properties from another PageRoute entity
         /// </summary>
-        public static void ShallowCopy( this PageRoute source, PageRoute target )
+        public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
         {
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;

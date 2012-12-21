@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class HtmlContentExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this HtmlContent to another
+        /// Copies all the entity properties from another HtmlContent entity
         /// </summary>
-        public static void ShallowCopy( this HtmlContent source, HtmlContent target )
+        public static void CopyPropertiesFrom( this HtmlContent target, HtmlContent source )
         {
             target.BlockId = source.BlockId;
             target.EntityValue = source.EntityValue;

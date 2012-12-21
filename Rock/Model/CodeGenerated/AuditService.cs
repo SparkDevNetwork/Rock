@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class AuditExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Audit to another
+        /// Copies all the entity properties from another Audit entity
         /// </summary>
-        public static void ShallowCopy( this Audit source, Audit target )
+        public static void CopyPropertiesFrom( this Audit target, Audit source )
         {
             target.EntityTypeId = source.EntityTypeId;
             target.EntityId = source.EntityId;

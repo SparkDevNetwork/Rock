@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Device Service class
     /// </summary>
-    public partial class DeviceService : Service<Device, DeviceDto>
+    public partial class DeviceService : Service<Device>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceService"/> class
@@ -38,45 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Device CreateNew()
-        {
-            return new Device();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<DeviceDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<DeviceDto> QueryableDto( IQueryable<Device> items )
-        {
-            return items.Select( m => new DeviceDto()
-                {
-                    Name = m.Name,
-                    Description = m.Description,
-                    GeoPoint = m.GeoPoint,
-                    GeoFence = m.GeoFence,
-                    DeviceTypeValueId = m.DeviceTypeValueId,
-                    IPAddress = m.IPAddress,
-                    PrinterDeviceId = m.PrinterDeviceId,
-                    PrintFrom = m.PrintFrom,
-                    PrintToOverride = m.PrintToOverride,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,40 +48,32 @@ namespace Rock.Model
         public bool CanDelete( Device item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            RockContext context = new RockContext();
-            context.Database.Connection.Open();
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Device where PrinterDeviceId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Device" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Device";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Device.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
-            using ( var cmdCheckRef = context.Database.Connection.CreateCommand() )
-            {
-                cmdCheckRef.CommandText = string.Format( "select count(*) from Location where PrinterDeviceId = {0} ", item.Id );
-                var result = cmdCheckRef.ExecuteScalar();
-                int? refCount = result as int?;
-                if ( refCount > 0 )
-                {
-                    Type entityType = RockContext.GetEntityFromTableName( "Location" );
-                    string friendlyName = entityType != null ? entityType.GetFriendlyTypeName() : "Location";
-
-                    errorMessage = string.Format("This {0} is assigned to a {1}.", Device.FriendlyTypeName, friendlyName);
-                    return false;
-                }
-            }
-
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DeviceExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Device entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Device target, Device source )
+        {
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.GeoPoint = source.GeoPoint;
+            target.GeoFence = source.GeoFence;
+            target.DeviceTypeValueId = source.DeviceTypeValueId;
+            target.IPAddress = source.IPAddress;
+            target.PrinterDeviceId = source.PrinterDeviceId;
+            target.PrintFrom = source.PrintFrom;
+            target.PrintToOverride = source.PrintToOverride;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -82,9 +82,9 @@ namespace Rock.Model
     public static class BinaryFileExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this BinaryFile to another
+        /// Copies all the entity properties from another BinaryFile entity
         /// </summary>
-        public static void ShallowCopy( this BinaryFile source, BinaryFile target )
+        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
         {
             target.IsTemporary = source.IsTemporary;
             target.IsSystem = source.IsSystem;

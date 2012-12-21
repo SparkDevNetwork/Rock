@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class WorkflowActivityExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this WorkflowActivity to another
+        /// Copies all the entity properties from another WorkflowActivity entity
         /// </summary>
-        public static void ShallowCopy( this WorkflowActivity source, WorkflowActivity target )
+        public static void CopyPropertiesFrom( this WorkflowActivity target, WorkflowActivity source )
         {
             target.WorkflowId = source.WorkflowId;
             target.ActivityTypeId = source.ActivityTypeId;
