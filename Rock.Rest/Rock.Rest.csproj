@@ -89,7 +89,6 @@
     <Compile Include="Controllers\CodeGenerated\DevicesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SchedulesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\UsersController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />

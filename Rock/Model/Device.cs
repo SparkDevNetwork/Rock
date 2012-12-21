@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
 using System.Linq;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 
@@ -20,6 +21,7 @@ namespace Rock.Model
     /// CheckInDevice EF Model.
     /// </summary>
     [Table("Device")]
+    [DataContract( IsReference = true )]
     public partial class Device : Model<Device>
     {
         #region Entity Properties
@@ -33,6 +35,7 @@ namespace Rock.Model
         [Required]
         [AlternateKey]
         [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -41,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -49,6 +53,7 @@ namespace Rock.Model
         /// <value>
         /// The geo point.
         /// </value>
+        [DataMember]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -57,6 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The geo fence.
         /// </value>
+        [DataMember]
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
@@ -65,6 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the device.
         /// </value>
+        [DataMember]
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
@@ -74,6 +81,7 @@ namespace Rock.Model
         /// The IP address.
         /// </value>
         [MaxLength(45)]
+        [DataMember]
         public string IPAddress { get; set; }
 
         /// <summary>
@@ -82,6 +90,7 @@ namespace Rock.Model
         /// <value>
         /// The printer id.
         /// </value>
+        [DataMember]
         public int? PrinterDeviceId { get; set; }
 
         /// <summary>
@@ -90,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The print from.
         /// </value>
+        [DataMember]
         public PrintFrom PrintFrom { get; set; }
 
         /// <summary>
@@ -98,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The print to override.
         /// </value>
+        [DataMember]
         public PrintTo PrintToOverride { get; set; }
 
         #endregion
@@ -110,6 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The locations.
         /// </value>
+        [DataMember]
         public virtual ICollection<Location> Locations
         {
             get { return _locations ?? ( _locations = new Collection<Location>() ); }
@@ -123,6 +135,7 @@ namespace Rock.Model
         /// <value>
         /// The printer.
         /// </value>
+        [DataMember]
         public virtual Device PrinterDevice { get; set; }
 
         /// <summary>
@@ -131,16 +144,8 @@ namespace Rock.Model
         /// <value>
         /// The type of the device.
         /// </value>
+        [DataMember]
         public virtual DefinedValue DeviceType { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -178,34 +183,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Device Read( int id )
-        {
-            return Read<Device>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Device Read( Guid guid )
-        {
-            return Read<Device>( guid );
         }
 
         #endregion

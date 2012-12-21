@@ -113,20 +113,20 @@ namespace Rock.CheckIn
 
                     if ( schedule.IsCheckInActive )
                     {
-                        kioskGroup.Schedules.Add( new KioskSchedule( schedule ) );
+                        kioskGroup.KioskSchedules.Add( new KioskSchedule( schedule ) );
                     }
                 }
 
                 // If the group has any active or future schedules, add the group's group type to the kiosk's 
                 // list of group types
-                if ( kioskGroup.Schedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
+                if ( kioskGroup.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
-                    KioskGroupType kioskGroupType = kioskStatus.GroupTypes.Where( g => g.Id == kioskGroup.GroupTypeId ).FirstOrDefault();
+                    KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == kioskGroup.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
                         kioskGroupType.NextActiveTime = DateTimeOffset.MaxValue;
-                        kioskStatus.GroupTypes.Add( kioskGroupType );
+                        kioskStatus.KioskGroupTypes.Add( kioskGroupType );
                     }
 
                     if ( nextGroupActiveTime.CompareTo( kioskGroupType.NextActiveTime ) < 0 )
@@ -135,16 +135,16 @@ namespace Rock.CheckIn
                     }
 
                     // If there are active schedules, add the locations to the group type locations
-                    if ( kioskGroup.Schedules.Count > 0 )
+                    if ( kioskGroup.KioskSchedules.Count > 0 )
                     {
-                        KioskLocation kioskLocation = kioskGroupType.Locations.Where( l => l.Id == location.Id ).FirstOrDefault();
+                        KioskLocation kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Id ).FirstOrDefault();
                         if ( kioskLocation == null )
                         {
                             kioskLocation = new KioskLocation( location );
-                            kioskGroupType.Locations.Add( kioskLocation );
+                            kioskGroupType.KioskLocations.Add( kioskLocation );
                         }
 
-                        kioskLocation.Groups.Add( kioskGroup );
+                        kioskLocation.KioskGroups.Add( kioskGroup );
                     }
                 }
             }

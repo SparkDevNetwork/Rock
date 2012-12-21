@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// 
     /// </summary>
     [DataContract]
-    public class KioskGroupType : GroupTypeDto
+    public class KioskGroupType
     {
+        /// <summary>
+        /// Gets or sets the type of the group.
+        /// </summary>
+        /// <value>
+        /// The type of the group.
+        /// </value>
+        [DataMember]
+        public GroupType GroupType { get; set; }
+
         /// <summary>
         /// Next time that a location/group/schedule will be active for
         /// this group type.  If the group type has locations, this time
@@ -39,7 +48,7 @@ namespace Rock.CheckIn
         /// The locations.
         /// </value>
         [DataMember]
-        public List<KioskLocation> Locations { get; set; }
+        public List<KioskLocation> KioskLocations { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
@@ -47,7 +56,7 @@ namespace Rock.CheckIn
         public KioskGroupType()
             : base()
         {
-            Locations = new List<KioskLocation>();
+            KioskLocations = new List<KioskLocation>();
         }
 
         /// <summary>
@@ -55,9 +64,11 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         public KioskGroupType( GroupType groupType )
-            : base( groupType )
+            : base()
         {
-            Locations = new List<KioskLocation>();
+            GroupType = new GroupType();
+            GroupType.CopyPropertiesFrom( groupType );
+            KioskLocations = new List<KioskLocation>();
         }
     }
 }

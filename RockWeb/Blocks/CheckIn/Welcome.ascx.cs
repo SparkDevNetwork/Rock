@@ -68,7 +68,7 @@ Sys.Application.add_load(function () {{
 
                 if ( workflowType != null )
                 {
-                    var workflow = Workflow.Activate( workflowType, _kiosk.Name );
+                    var workflow = Workflow.Activate( workflowType, _kiosk.Device.Name );
 
                     var checkInState = new CheckInState( _kiosk );
                     checkInState.CheckIn.UserEnteredSearch = false;
@@ -126,21 +126,21 @@ Sys.Application.add_load(function () {{
             _kiosk = KioskCache.GetKiosk( kioskId );
 
             // Remove any group types that were not selected in the admin configuration
-            foreach ( var groupType in _kiosk.GroupTypes.ToList() )
+            foreach ( var kioskGroupType in _kiosk.KioskGroupTypes.ToList() )
             {
-                if ( !groupTypeIds.Contains( groupType.Id ) )
+                if ( !groupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
                 {
-                    _kiosk.GroupTypes.Remove( groupType );
+                    _kiosk.KioskGroupTypes.Remove( kioskGroupType );
                 }
             }
 
-            if ( _kiosk.GroupTypes.Count == 0 )
+            if ( _kiosk.KioskGroupTypes.Count == 0 )
             {
                 pnlNotActive.Visible = true;
             }
             else if ( !_kiosk.HasLocations )
             {
-                DateTimeOffset activeAt = _kiosk.GroupTypes.Select( g => g.NextActiveTime ).Min();
+                DateTimeOffset activeAt = _kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
                 lblTimeUntilActive.Text = activeAt.Subtract( DateTimeOffset.Now ).ToString();
                 string script = string.Format( @"
 Sys.Application.add_load(function () {{
