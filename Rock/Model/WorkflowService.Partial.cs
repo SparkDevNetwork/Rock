@@ -15,7 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// Workflow POCO Service class
     /// </summary>
-    public partial class WorkflowService : Service<Workflow, WorkflowDto>
+    public partial class WorkflowService 
     {
         /// <summary>
         /// Activates a new worflow instance

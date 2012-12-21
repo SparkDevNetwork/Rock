@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FinancialTransactionDetail Service class
     /// </summary>
-    public partial class FinancialTransactionDetailService : Service<FinancialTransactionDetail, FinancialTransactionDetailDto>
+    public partial class FinancialTransactionDetailService : Service<FinancialTransactionDetail>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionDetailService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FinancialTransactionDetail CreateNew()
-        {
-            return new FinancialTransactionDetail();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FinancialTransactionDetailDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FinancialTransactionDetailDto> QueryableDto( IQueryable<FinancialTransactionDetail> items )
-        {
-            return items.Select( m => new FinancialTransactionDetailDto()
-                {
-                    TransactionId = m.TransactionId,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    Amount = m.Amount,
-                    Summary = m.Summary,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +49,27 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FinancialTransactionDetailExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this FinancialTransactionDetail to another
+        /// </summary>
+        public static void ShallowCopy( this FinancialTransactionDetail source, FinancialTransactionDetail target )
+        {
+            target.TransactionId = source.TransactionId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.Amount = source.Amount;
+            target.Summary = source.Summary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

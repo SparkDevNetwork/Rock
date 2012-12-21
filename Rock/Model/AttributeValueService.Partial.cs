@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Attribute Value POCO Service class
     /// </summary>
-    public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
+    public partial class AttributeValueService 
     {
         /// <summary>
         /// Gets Attribute Values by Attribute Id

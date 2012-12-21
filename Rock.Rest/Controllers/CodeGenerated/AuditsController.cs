@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Audits REST API
     /// </summary>
-    public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit, Rock.Model.AuditDto>
+    public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit>
     {
         public AuditsController() : base( new Rock.Model.AuditService() ) { } 
     }

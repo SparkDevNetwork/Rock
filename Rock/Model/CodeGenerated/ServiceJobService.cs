@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ServiceJob Service class
     /// </summary>
-    public partial class ServiceJobService : Service<ServiceJob, ServiceJobDto>
+    public partial class ServiceJobService : Service<ServiceJob>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceJobService"/> class
@@ -38,51 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override ServiceJob CreateNew()
-        {
-            return new ServiceJob();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ServiceJobDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ServiceJobDto> QueryableDto( IQueryable<ServiceJob> items )
-        {
-            return items.Select( m => new ServiceJobDto()
-                {
-                    IsSystem = m.IsSystem,
-                    IsActive = m.IsActive,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Assembly = m.Assembly,
-                    Class = m.Class,
-                    CronExpression = m.CronExpression,
-                    LastSuccessfulRunDateTime = m.LastSuccessfulRunDateTime,
-                    LastRunDateTime = m.LastRunDateTime,
-                    LastRunDurationSeconds = m.LastRunDurationSeconds,
-                    LastStatus = m.LastStatus,
-                    LastStatusMessage = m.LastStatusMessage,
-                    LastRunSchedulerName = m.LastRunSchedulerName,
-                    NotificationEmails = m.NotificationEmails,
-                    NotificationStatus = m.NotificationStatus,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -94,6 +49,37 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class ServiceJobExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this ServiceJob to another
+        /// </summary>
+        public static void ShallowCopy( this ServiceJob source, ServiceJob target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Assembly = source.Assembly;
+            target.Class = source.Class;
+            target.CronExpression = source.CronExpression;
+            target.LastSuccessfulRunDateTime = source.LastSuccessfulRunDateTime;
+            target.LastRunDateTime = source.LastRunDateTime;
+            target.LastRunDurationSeconds = source.LastRunDurationSeconds;
+            target.LastStatus = source.LastStatus;
+            target.LastStatusMessage = source.LastStatusMessage;
+            target.LastRunSchedulerName = source.LastRunSchedulerName;
+            target.NotificationEmails = source.NotificationEmails;
+            target.NotificationStatus = source.NotificationStatus;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

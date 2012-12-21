@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Location Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService : Service<Location>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationService"/> class
@@ -38,54 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Location CreateNew()
-        {
-            return new Location();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<LocationDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
-        {
-            return items.Select( m => new LocationDto()
-                {
-                    Raw = m.Raw,
-                    Street1 = m.Street1,
-                    Street2 = m.Street2,
-                    City = m.City,
-                    State = m.State,
-                    Country = m.Country,
-                    Zip = m.Zip,
-                    Latitude = m.Latitude,
-                    Longitude = m.Longitude,
-                    ParcelId = m.ParcelId,
-                    StandardizeAttempt = m.StandardizeAttempt,
-                    StandardizeService = m.StandardizeService,
-                    StandardizeResult = m.StandardizeResult,
-                    StandardizeDate = m.StandardizeDate,
-                    GeocodeAttempt = m.GeocodeAttempt,
-                    GeocodeService = m.GeocodeService,
-                    GeocodeResult = m.GeocodeResult,
-                    GeocodeDate = m.GeocodeDate,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -97,6 +49,40 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class LocationExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Location to another
+        /// </summary>
+        public static void ShallowCopy( this Location source, Location target )
+        {
+            target.Raw = source.Raw;
+            target.Street1 = source.Street1;
+            target.Street2 = source.Street2;
+            target.City = source.City;
+            target.State = source.State;
+            target.Country = source.Country;
+            target.Zip = source.Zip;
+            target.Latitude = source.Latitude;
+            target.Longitude = source.Longitude;
+            target.ParcelId = source.ParcelId;
+            target.StandardizeAttempt = source.StandardizeAttempt;
+            target.StandardizeService = source.StandardizeService;
+            target.StandardizeResult = source.StandardizeResult;
+            target.StandardizeDate = source.StandardizeDate;
+            target.GeocodeAttempt = source.GeocodeAttempt;
+            target.GeocodeService = source.GeocodeService;
+            target.GeocodeResult = source.GeocodeResult;
+            target.GeocodeDate = source.GeocodeDate;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

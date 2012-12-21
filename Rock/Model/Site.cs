@@ -3,11 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Site POCO Entity.
     /// </summary>
     [Table( "Site" )]
+    [DataContract( IsReference = true )]
     public partial class Site : Model<Site>
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -35,6 +38,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
@@ -43,6 +47,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
         
         /// <summary>
@@ -52,6 +57,7 @@ namespace Rock.Model
         /// Theme.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Theme { get; set; }
         
         /// <summary>
@@ -60,6 +66,7 @@ namespace Rock.Model
         /// <value>
         /// Default Page Id.
         /// </value>
+        [DataMember]
         public int? DefaultPageId { get; set; }
         
         /// <summary>
@@ -69,6 +76,7 @@ namespace Rock.Model
         /// Favicon Url.
         /// </value>
         [MaxLength( 150 )]
+        [DataMember]
         public string FaviconUrl { get; set; }
         
         /// <summary>
@@ -78,6 +86,7 @@ namespace Rock.Model
         /// Apple Touch Icon Url.
         /// </value>
         [MaxLength( 150 )]
+        [DataMember]
         public string AppleTouchIconUrl { get; set; }
         
         /// <summary>
@@ -87,6 +96,7 @@ namespace Rock.Model
         /// Facebook App Id.
         /// </value>
         [MaxLength( 25 )]
+        [DataMember]
         public string FacebookAppId { get; set; }
         
         /// <summary>
@@ -96,6 +106,7 @@ namespace Rock.Model
         /// Facebook App Secret.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string FacebookAppSecret { get; set; }
         
         /// <summary>
@@ -105,6 +116,7 @@ namespace Rock.Model
         /// Login Page Reference.
         /// </value>
         [MaxLength( 10 )]
+        [DataMember]
         public string LoginPageReference { get; set; }
         
         /// <summary>
@@ -114,6 +126,7 @@ namespace Rock.Model
         /// Registration Page Reference.
         /// </value>
         [MaxLength( 10 )]
+        [DataMember]
         public string RegistrationPageReference { get; set; }
         
         /// <summary>
@@ -123,6 +136,7 @@ namespace Rock.Model
         /// Path to the error page for this site..
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string ErrorPage { get; set; }
         
         /// <summary>
@@ -131,6 +145,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Pages.
         /// </value>
+        [DataMember]
         public virtual ICollection<Page> Pages { get; set; }
         
         /// <summary>
@@ -139,6 +154,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Site Domains.
         /// </value>
+        [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
         
         /// <summary>
@@ -147,26 +163,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [DataMember]
         public virtual Page DefaultPage { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Site Read( int id )
-        {
-            return Read<Site>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

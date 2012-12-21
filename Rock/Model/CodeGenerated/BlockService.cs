@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Block Service class
     /// </summary>
-    public partial class BlockService : Service<Block, BlockDto>
+    public partial class BlockService : Service<Block>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Block CreateNew()
-        {
-            return new Block();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BlockDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BlockDto> QueryableDto( IQueryable<Block> items )
-        {
-            return items.Select( m => new BlockDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PageId = m.PageId,
-                    Layout = m.Layout,
-                    BlockTypeId = m.BlockTypeId,
-                    Zone = m.Zone,
-                    Order = m.Order,
-                    Name = m.Name,
-                    OutputCacheDuration = m.OutputCacheDuration,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class BlockExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Block to another
+        /// </summary>
+        public static void ShallowCopy( this Block source, Block target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.Layout = source.Layout;
+            target.BlockTypeId = source.BlockTypeId;
+            target.Zone = source.Zone;
+            target.Order = source.Order;
+            target.Name = source.Name;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -6,7 +6,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Data;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -14,6 +14,7 @@ namespace Rock.Model
     /// TransactionFund POCO class.
     /// </summary>
     [Table("FinancialTransactionFund")]
+    [DataContract( IsReference = true )]
     public partial class FinancialTransactionFund
     {
         /// <summary>
@@ -24,6 +25,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column(Order = 0)]
+        [DataMember]
         public int TransactionId { get; set; }
 
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// </value>
         [Key]
         [Column(Order = 1)]
+        [DataMember]
         public int FundId { get; set; }
 
         /// <summary>
@@ -42,6 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The amount.
         /// </value>
+        [DataMember]
         public decimal? Amount { get; set; }
 
         /// <summary>
@@ -50,6 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction.
         /// </value>
+        [DataMember]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -58,6 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The fund.
         /// </value>
+        [DataMember]
         public virtual Fund Fund { get; set; }
     }
 

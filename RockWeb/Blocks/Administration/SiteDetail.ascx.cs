@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                site = Rock.Model.Site.Read( itemKeyValue );
+                site = new SiteService().Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Rock.Model.Site.FriendlyTypeName );
             }
             else

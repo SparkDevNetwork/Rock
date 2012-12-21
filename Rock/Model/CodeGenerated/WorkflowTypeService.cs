@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowType Service class
     /// </summary>
-    public partial class WorkflowTypeService : Service<WorkflowType, WorkflowTypeDto>
+    public partial class WorkflowTypeService : Service<WorkflowType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowTypeService"/> class
@@ -38,47 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowType CreateNew()
-        {
-            return new WorkflowType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowTypeDto> QueryableDto( IQueryable<WorkflowType> items )
-        {
-            return items.Select( m => new WorkflowTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    IsActive = m.IsActive,
-                    Name = m.Name,
-                    Description = m.Description,
-                    CategoryId = m.CategoryId,
-                    Order = m.Order,
-                    FileId = m.FileId,
-                    WorkTerm = m.WorkTerm,
-                    ProcessingIntervalSeconds = m.ProcessingIntervalSeconds,
-                    IsPersisted = m.IsPersisted,
-                    LoggingLevel = m.LoggingLevel,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -90,6 +49,33 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this WorkflowType to another
+        /// </summary>
+        public static void ShallowCopy( this WorkflowType source, WorkflowType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.IsActive = source.IsActive;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.CategoryId = source.CategoryId;
+            target.Order = source.Order;
+            target.FileId = source.FileId;
+            target.WorkTerm = source.WorkTerm;
+            target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.IsPersisted = source.IsPersisted;
+            target.LoggingLevel = source.LoggingLevel;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

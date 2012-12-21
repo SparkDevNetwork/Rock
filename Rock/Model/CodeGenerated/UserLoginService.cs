@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// UserLogin Service class
     /// </summary>
-    public partial class UserLoginService : Service<UserLogin, UserLoginDto>
+    public partial class UserLoginService : Service<UserLogin>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLoginService"/> class
@@ -38,52 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override UserLogin CreateNew()
-        {
-            return new UserLogin();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<UserLoginDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<UserLoginDto> QueryableDto( IQueryable<UserLogin> items )
-        {
-            return items.Select( m => new UserLoginDto()
-                {
-                    ServiceType = m.ServiceType,
-                    ServiceName = m.ServiceName,
-                    UserName = m.UserName,
-                    Password = m.Password,
-                    IsConfirmed = m.IsConfirmed,
-                    LastActivityDate = m.LastActivityDate,
-                    LastLoginDate = m.LastLoginDate,
-                    LastPasswordChangedDate = m.LastPasswordChangedDate,
-                    CreationDate = m.CreationDate,
-                    IsOnLine = m.IsOnLine,
-                    IsLockedOut = m.IsLockedOut,
-                    LastLockedOutDate = m.LastLockedOutDate,
-                    FailedPasswordAttemptCount = m.FailedPasswordAttemptCount,
-                    FailedPasswordAttemptWindowStart = m.FailedPasswordAttemptWindowStart,
-                    ApiKey = m.ApiKey,
-                    PersonId = m.PersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -95,6 +49,38 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class UserLoginExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this UserLogin to another
+        /// </summary>
+        public static void ShallowCopy( this UserLogin source, UserLogin target )
+        {
+            target.ServiceType = source.ServiceType;
+            target.ServiceName = source.ServiceName;
+            target.UserName = source.UserName;
+            target.Password = source.Password;
+            target.IsConfirmed = source.IsConfirmed;
+            target.LastActivityDate = source.LastActivityDate;
+            target.LastLoginDate = source.LastLoginDate;
+            target.LastPasswordChangedDate = source.LastPasswordChangedDate;
+            target.CreationDate = source.CreationDate;
+            target.IsOnLine = source.IsOnLine;
+            target.IsLockedOut = source.IsLockedOut;
+            target.LastLockedOutDate = source.LastLockedOutDate;
+            target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+            target.FailedPasswordAttemptWindowStart = source.FailedPasswordAttemptWindowStart;
+            target.ApiKey = source.ApiKey;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

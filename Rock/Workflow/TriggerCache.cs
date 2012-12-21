@@ -16,46 +16,49 @@ namespace Rock.Workflow
     /// </summary>
     public class TriggerCache
     {
-        private static TriggerCache instance;
+        #region Static Fields
 
-        private Dictionary<string, List<WorkflowTriggerDto>> EntityTriggers { get; set; }
+        // Locking object
+        private static readonly Object obj = new object();
+
+        private static Dictionary<string, List<WorkflowTrigger>> EntityTriggers { get; set; }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
-        /// Gets the instance.
+        /// Initializes the <see cref="TriggerCache" /> class.
         /// </summary>
-        public static TriggerCache Instance
-        {
-            get
-            {
-                if ( instance == null )
-                    instance = new TriggerCache();
-                return instance;
-            }
-        }
-
-        private TriggerCache()
+        static TriggerCache()
         {
             Refresh();
         }
 
+        #endregion
+
+        #region Static Methods
+
         /// <summary>
         /// Refreshes this instance.
         /// </summary>
-        public void Refresh()
+        public static void Refresh()
         {
-            EntityTriggers = new Dictionary<string, List<WorkflowTriggerDto>>();
-
-            var service = new WorkflowTriggerService();
-
-            foreach ( var trigger in service.Queryable() )
+            lock ( obj )
             {
-                if ( !EntityTriggers.ContainsKey( trigger.EntityType.Name ) )
-                {
-                    EntityTriggers.Add( trigger.EntityType.Name, new List<WorkflowTriggerDto>() );
-                }
-                EntityTriggers[trigger.EntityType.Name].Add( trigger.ToDto() );
-            }
+                EntityTriggers = new Dictionary<string, List<WorkflowTrigger>>();
 
+                var service = new WorkflowTriggerService();
+
+                foreach ( var trigger in service.Queryable() )
+                {
+                    if ( !EntityTriggers.ContainsKey( trigger.EntityType.Name ) )
+                    {
+                        EntityTriggers.Add( trigger.EntityType.Name, new List<WorkflowTrigger>() );
+                    }
+                    EntityTriggers[trigger.EntityType.Name].Add( trigger.Clone() as WorkflowTrigger );
+                }
+            }
         }
 
         /// <summary>
@@ -64,23 +67,28 @@ namespace Rock.Workflow
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="triggerType">Type of the trigger.</param>
         /// <returns></returns>
-        public List<WorkflowTriggerDto> Triggers( string entityTypeName, WorkflowTriggerType triggerType )
+        public static List<WorkflowTrigger> Triggers( string entityTypeName, WorkflowTriggerType triggerType )
         {
-            var triggers = new List<WorkflowTriggerDto>();
+            var triggers = new List<WorkflowTrigger>();
 
-            if ( EntityTriggers != null && EntityTriggers.ContainsKey( entityTypeName ) )
+            lock ( obj )
             {
-                foreach ( var trigger in EntityTriggers[entityTypeName] )
+                if ( EntityTriggers != null && EntityTriggers.ContainsKey( entityTypeName ) )
                 {
-                    if ( trigger.WorkflowTriggerType == triggerType )
+                    foreach ( var trigger in EntityTriggers[entityTypeName] )
                     {
-                        triggers.Add( trigger );
+                        if ( trigger.WorkflowTriggerType == triggerType )
+                        {
+                            triggers.Add( trigger );
+                        }
                     }
                 }
             }
 
             return triggers;
         }
+
+        #endregion
 
     }
 }

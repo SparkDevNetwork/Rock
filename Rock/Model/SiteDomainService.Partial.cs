@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Site Domain POCO Service class
     /// </summary>
-    public partial class SiteDomainService : Service<SiteDomain, SiteDomainDto>
+    public partial class SiteDomainService 
     {
         /// <summary>
         /// Gets Site Domain by Domain

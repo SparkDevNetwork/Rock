@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +18,7 @@ namespace Rock.Model
     /// Batch POCO class.
     /// </summary>
     [Table("FinancialBatch")]
+    [DataContract( IsReference = true )]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
         /// <summary>
@@ -25,6 +28,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -33,6 +37,7 @@ namespace Rock.Model
         /// <value>
         /// The batch date.
         /// </value>
+        [DataMember]
         public DateTime? BatchDate { get; set; }
 
         /// <summary>
@@ -41,6 +46,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsClosed { get; set; }
 
         /// <summary>
@@ -49,6 +55,7 @@ namespace Rock.Model
         /// <value>
         /// The campus id.
         /// </value>
+        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -58,6 +65,7 @@ namespace Rock.Model
         /// The entity.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Entity { get; set; }
 
         /// <summary>
@@ -66,6 +74,7 @@ namespace Rock.Model
         /// <value>
         /// The entity id.
         /// </value>
+        [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -75,6 +84,7 @@ namespace Rock.Model
         /// The foreign reference.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string ForeignReference { get; set; }
 
         //public virtual Campus Campus { get; set; }
@@ -85,26 +95,8 @@ namespace Rock.Model
         /// <value>
         /// The transactions.
         /// </value>
+        [DataMember]
         public virtual ICollection<FinancialTransaction> Transactions { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static FinancialBatch Read( int id )
-        {
-            return Read<FinancialBatch>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

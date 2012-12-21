@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Pages REST API
     /// </summary>
-    public partial class PagesController : Rock.Rest.ApiController<Rock.Model.Page, Rock.Model.PageDto>
+    public partial class PagesController : Rock.Rest.ApiController<Rock.Model.Page>
     {
         public PagesController() : base( new Rock.Model.PageService() ) { } 
     }

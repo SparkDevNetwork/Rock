@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Administration
         {
             // Read parameter values
             string entityName = Authorization.DecodeEntityTypeName( PageParameter( "EntityType" ) );
-            
+
             int entityId = 0;
-            if (!Int32.TryParse( PageParameter( "EntityId" ), out entityId ))
+            if ( !Int32.TryParse( PageParameter( "EntityId" ), out entityId ) )
             {
                 entityId = 0;
             }
@@ -53,16 +53,21 @@ namespace RockWeb.Blocks.Administration
             Type type = Type.GetType( entityName );
             if ( type != null )
             {
-                if (entityId == 0)
+                if ( entityId == 0 )
                 {
-                     iSecured = (ISecured)Activator.CreateInstance(type);
+                    iSecured = (ISecured)Activator.CreateInstance( type );
                 }
                 else
                 {
-                     iSecured = type.InvokeMember( "Read", System.Reflection.BindingFlags.InvokeMethod, null, type, new object[] { entityId } )as ISecured;
+                    Type serviceType = typeof( Rock.Data.Service<> );
+                    Type[] modelType = { type };
+                    Type service = serviceType.MakeGenericType( modelType );
+                    var serviceInstance = Activator.CreateInstance( service );
+                    var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                    iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
                 }
 
-                if ( iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( iSecured != null && iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
@@ -95,7 +100,7 @@ namespace RockWeb.Blocks.Administration
             {
                 rGrid.Visible = false;
                 rGridParentRules.Visible = false;
-                nbMessage.Text = string.Format("Could not load the requested entity type ('{0}') to determine security attributes", entityName);
+                nbMessage.Text = string.Format( "Could not load the requested entity type ('{0}') to determine security attributes", entityName );
                 nbMessage.Visible = true;
             }
             base.OnInit( e );

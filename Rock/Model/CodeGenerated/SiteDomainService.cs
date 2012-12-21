@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// SiteDomain Service class
     /// </summary>
-    public partial class SiteDomainService : Service<SiteDomain, SiteDomainDto>
+    public partial class SiteDomainService : Service<SiteDomain>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteDomainService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override SiteDomain CreateNew()
-        {
-            return new SiteDomain();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<SiteDomainDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<SiteDomainDto> QueryableDto( IQueryable<SiteDomain> items )
-        {
-            return items.Select( m => new SiteDomainDto()
-                {
-                    IsSystem = m.IsSystem,
-                    SiteId = m.SiteId,
-                    Domain = m.Domain,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -82,6 +49,25 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class SiteDomainExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this SiteDomain to another
+        /// </summary>
+        public static void ShallowCopy( this SiteDomain source, SiteDomain target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.SiteId = source.SiteId;
+            target.Domain = source.Domain;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// AttributeValue Service class
     /// </summary>
-    public partial class AttributeValueService : Service<AttributeValue, AttributeValueDto>
+    public partial class AttributeValueService : Service<AttributeValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override AttributeValue CreateNew()
-        {
-            return new AttributeValue();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AttributeValueDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AttributeValueDto> QueryableDto( IQueryable<AttributeValue> items )
-        {
-            return items.Select( m => new AttributeValueDto()
-                {
-                    IsSystem = m.IsSystem,
-                    AttributeId = m.AttributeId,
-                    EntityId = m.EntityId,
-                    Order = m.Order,
-                    Value = m.Value,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +49,27 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this AttributeValue to another
+        /// </summary>
+        public static void ShallowCopy( this AttributeValue source, AttributeValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

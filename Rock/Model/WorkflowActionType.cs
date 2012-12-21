@@ -3,12 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
-using Rock.Model;
 using Rock.Data;
 using Rock.Workflow;
 
@@ -18,6 +17,7 @@ namespace Rock.Model
     /// ActionType POCO Entity.
     /// </summary>
     [Table( "WorkflowActionType" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered
     {
 
@@ -29,6 +29,7 @@ namespace Rock.Model
         /// <value>
         /// The activity type id.
         /// </value>
+        [DataMember]
         public int ActivityTypeId { get; set; }
 
         /// <summary>
@@ -39,6 +40,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -48,6 +50,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
@@ -56,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// The entity type id.
         /// </value>
+        [DataMember]
         public int EntityTypeId { get; set; }
 
         /// <summary>
@@ -64,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is action completed on success; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActionCompletedOnSuccess { get; set; }
 
         /// <summary>
@@ -72,6 +77,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is activity completed on success; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
 
         #endregion
@@ -84,6 +90,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the activity.
         /// </value>
+        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -92,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
+        [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
@@ -134,15 +142,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Methods
@@ -156,30 +155,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowActionType Read( int id )
-        {
-            return Read<WorkflowActionType>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowActionType Read( Guid guid )
-        {
-            return Read<WorkflowActionType>( guid );
         }
 
         #endregion

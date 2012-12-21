@@ -147,7 +147,7 @@
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />
-    <Compile Include="Controllers\UsersController.Partial.cs" />
+    <Compile Include="Controllers\UserLoginsController.Partial.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />

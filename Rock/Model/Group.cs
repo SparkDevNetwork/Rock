@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +18,7 @@ namespace Rock.Model
     /// Group POCO Entity.
     /// </summary>
     [Table( "Group" )]
+    [DataContract( IsReference = true )]
     public partial class Group : Model<Group>
     {
         /// <summary>
@@ -25,6 +28,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -33,6 +37,7 @@ namespace Rock.Model
         /// <value>
         /// Parent Group Id.
         /// </value>
+        [DataMember]
         public int? ParentGroupId { get; set; }
 
         /// <summary>
@@ -42,6 +47,7 @@ namespace Rock.Model
         /// Group Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -50,6 +56,7 @@ namespace Rock.Model
         /// <value>
         /// Campus Id.
         /// </value>
+        [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -60,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -68,6 +76,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -77,6 +86,7 @@ namespace Rock.Model
         /// Is Security Role.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSecurityRole { get; set; }
 
         /// <summary>
@@ -86,26 +96,8 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsActive { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Group Read( int id )
-        {
-            return Read<Group>( id );
-        }
 
         /// <summary>
         /// Gets or sets the Groups.
@@ -113,6 +105,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Groups.
         /// </value>
+        [DataMember]
         public virtual ICollection<Group> Groups { get; set; }
 
         /// <summary>
@@ -121,6 +114,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Members.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupMember> Members { get; set; }
 
         /// <summary>
@@ -129,6 +123,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Locations.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupLocation> Locations { get; set; }
 
         /// <summary>
@@ -137,6 +132,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
+        [DataMember]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
@@ -145,6 +141,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -153,6 +150,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Campus"/> object.
         /// </value>
+        [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>

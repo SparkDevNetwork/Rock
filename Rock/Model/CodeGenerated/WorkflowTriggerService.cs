@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowTrigger Service class
     /// </summary>
-    public partial class WorkflowTriggerService : Service<WorkflowTrigger, WorkflowTriggerDto>
+    public partial class WorkflowTriggerService : Service<WorkflowTrigger>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowTriggerService"/> class
@@ -38,43 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowTrigger CreateNew()
-        {
-            return new WorkflowTrigger();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowTriggerDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowTriggerDto> QueryableDto( IQueryable<WorkflowTrigger> items )
-        {
-            return items.Select( m => new WorkflowTriggerDto()
-                {
-                    IsSystem = m.IsSystem,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
-                    WorkflowTypeId = m.WorkflowTypeId,
-                    WorkflowTriggerType = m.WorkflowTriggerType,
-                    WorkflowName = m.WorkflowName,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,6 +49,29 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowTriggerExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this WorkflowTrigger to another
+        /// </summary>
+        public static void ShallowCopy( this WorkflowTrigger source, WorkflowTrigger target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.WorkflowTriggerType = source.WorkflowTriggerType;
+            target.WorkflowName = source.WorkflowName;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

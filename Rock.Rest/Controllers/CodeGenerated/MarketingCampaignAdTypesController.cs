@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// MarketingCampaignAdTypes REST API
     /// </summary>
-    public partial class MarketingCampaignAdTypesController : Rock.Rest.ApiController<Rock.Model.MarketingCampaignAdType, Rock.Model.MarketingCampaignAdTypeDto>
+    public partial class MarketingCampaignAdTypesController : Rock.Rest.ApiController<Rock.Model.MarketingCampaignAdType>
     {
         public MarketingCampaignAdTypesController() : base( new Rock.Model.MarketingCampaignAdTypeService() ) { } 
     }

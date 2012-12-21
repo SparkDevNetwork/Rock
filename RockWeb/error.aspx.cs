@@ -30,12 +30,12 @@ public partial class error : System.Web.UI.Page
         if ( errorLevel == 1 )
         {
             // check to see if the user is an admin, if so allow them to view the error details
-            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
+            var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
             GroupService service = new GroupService();
             Group adminGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS );
 
-            if ( user != null && adminGroup.Members.Where( m => m.PersonId == user.PersonId ).Count() > 0 )
+            if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
             {
                 // is an admin
                 lErrorInfo.Text = "<h4>Exception Log:</h4>";

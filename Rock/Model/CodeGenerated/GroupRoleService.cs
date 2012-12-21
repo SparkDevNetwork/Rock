@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// GroupRole Service class
     /// </summary>
-    public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
+    public partial class GroupRoleService : Service<GroupRole>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleService"/> class
@@ -35,43 +35,6 @@ namespace Rock.Model
         /// </summary>
         public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override GroupRole CreateNew()
-        {
-            return new GroupRole();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupRoleDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupRoleDto> QueryableDto( IQueryable<GroupRole> items )
-        {
-            return items.Select( m => new GroupRoleDto()
-                {
-                    IsSystem = m.IsSystem,
-                    GroupTypeId = m.GroupTypeId,
-                    Name = m.Name,
-                    Description = m.Description,
-                    SortOrder = m.SortOrder,
-                    MaxCount = m.MaxCount,
-                    MinCount = m.MinCount,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -98,6 +61,29 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupRoleExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this GroupRole to another
+        /// </summary>
+        public static void ShallowCopy( this GroupRole source, GroupRole target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.GroupTypeId = source.GroupTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.SortOrder = source.SortOrder;
+            target.MaxCount = source.MaxCount;
+            target.MinCount = source.MinCount;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
