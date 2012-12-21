@@ -18,7 +18,7 @@
 					<div class="row-fluid">
 						<div class="span2 clearfix">
 	
-							<a class="brand"><object class="pageheader-logo" type="image/svg+xml" data="../../Assets/Images/rock-logo.svg"></object></a>
+							<a class="brand"><img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" /></a>
 					
 						</div>
 						
