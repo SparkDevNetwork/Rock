@@ -3,10 +3,14 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -15,16 +19,16 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupLocation" )]
     [DataContract( IsReference = true )]
-    public partial class GroupLocation
+    public partial class GroupLocation : Model<GroupLocation>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the group id.
         /// </summary>
         /// <value>
         /// The group id.
         /// </value>
-        [Key]
-        [Column(Order = 0)]
         [DataMember]
         public int GroupId { get; set; }
 
@@ -34,8 +38,6 @@ namespace Rock.Model
         /// <value>
         /// The location id.
         /// </value>
-        [Key]
-        [Column(Order = 1)]
         [DataMember]
         public int LocationId { get; set; }
 
@@ -47,6 +49,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? LocationTypeValueId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the group.
@@ -64,7 +70,7 @@ namespace Rock.Model
         /// The location.
         /// </value>
         [DataMember]
-        public virtual Rock.Model.Location Location { get; set; }
+        public virtual Location Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Location Type.
@@ -73,8 +79,41 @@ namespace Rock.Model
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue LocationTypeValue { get; set; }
+        public virtual DefinedValue LocationTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedules.
+        /// </summary>
+        /// <value>
+        /// The schedules.
+        /// </value>
+        public virtual ICollection<Schedule> Schedules
+        {
+            get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }
+            set { _schedules = value; }
+        }
+        private ICollection<Schedule> _schedules;
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group.ToString() + " at " + Location.ToString();
+        }
+
+        #endregion
+
     }
+    
+    #region Entity Configuration
 
     /// <summary>
     /// GroupLocation Configuration class
@@ -86,9 +125,13 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationConfiguration()
         {
-            this.HasRequired( t => t.Group ).WithMany( t => t.Locations ).HasForeignKey( t => t.GroupId );
-            this.HasRequired( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId );
+            this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
+            this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }
+
+    #endregion
+
 }

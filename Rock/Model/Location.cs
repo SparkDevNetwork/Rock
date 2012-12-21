@@ -4,9 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.Spatial;
 
 using System.Runtime.Serialization;
 
@@ -21,16 +24,63 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class Location : Model<Location>
     {
+        #region Entity Properties
+
         /// <summary>
-        /// Gets or sets the Raw.
+        /// Gets or sets the parent location id.
         /// </summary>
         /// <value>
-        /// Raw.
+        /// The parent location id.
         /// </value>
-        [MaxLength( 400 )]
         [DataMember]
-        public string Raw { get; set; }
-        
+        public int? ParentLocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location point.
+        /// </summary>
+        /// <value>
+        /// The location point.
+        /// </value>
+        [DataMember]
+        public DbGeography LocationPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the perimeter.
+        /// </summary>
+        /// <value>
+        /// The perimeter.
+        /// </value>
+        [DataMember]
+        public DbGeography Perimeter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location type value id.
+        /// </summary>
+        /// <value>
+        /// The location type value id.
+        /// </value>
+        [DataMember]
+        public int? LocationTypeValueId { get; set; }
+
         /// <summary>
         /// Gets or sets the Street 1.
         /// </summary>
@@ -90,24 +140,16 @@ namespace Rock.Model
         [MaxLength( 10 )]
         [DataMember]
         public string Zip { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the Latitude.
-        /// </summary>
-        /// <value>
-        /// Latitude.
-        /// </value>
-        [DataMember]
-        public double? Latitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the Longitude.
+        /// Gets or sets the Raw.
         /// </summary>
         /// <value>
-        /// Longitude.
+        /// Raw.
         /// </value>
+        [MaxLength( 400 )]
         [DataMember]
-        public double? Longitude { get; set; }
+        public string FullAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the Parcel Id.
@@ -117,7 +159,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string ParcelId { get; set; }
+        public string AssessorParcelId { get; set; }
 
         /// <summary>
         /// Gets or sets the Standardize Attempt.
@@ -126,7 +168,7 @@ namespace Rock.Model
         /// Standardize Attempt.
         /// </value>
         [DataMember]
-        public DateTime? StandardizeAttempt { get; set; }
+        public DateTime? StandardizeAttemptedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Service.
@@ -136,7 +178,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string StandardizeService { get; set; }
+        public string StandardizeAttemptedServiceType { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Result.
@@ -146,7 +188,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string StandardizeResult { get; set; }
+        public string StandardizeAttemptedResult { get; set; }
         
         /// <summary>
         /// Gets or sets the Standardize Date.
@@ -154,8 +196,8 @@ namespace Rock.Model
         /// <value>
         /// Standardize Date.
         /// </value>
-        [DataMember]
-        public DateTime? StandardizeDate { get; set; }
+		[DataMember]
+        public DateTime? StandardizedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Attempt.
@@ -164,7 +206,7 @@ namespace Rock.Model
         /// Geocode Attempt.
         /// </value>
         [DataMember]
-        public DateTime? GeocodeAttempt { get; set; }
+        public DateTime? GeocodeAttemptedDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Service.
@@ -174,7 +216,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string GeocodeService { get; set; }
+        public string GeocodeAttemptedServiceType { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Result.
@@ -184,7 +226,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string GeocodeResult { get; set; }
+        public string GeocodeAttemptedResult { get; set; }
         
         /// <summary>
         /// Gets or sets the Geocode Date.
@@ -193,7 +235,89 @@ namespace Rock.Model
         /// Geocode Date.
         /// </value>
         [DataMember]
-        public DateTime? GeocodeDate { get; set; }
+        public DateTime? GeocodedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance printer id.
+        /// </summary>
+        /// <value>
+        /// The attendance printer id.
+        /// </value>
+        [DataMember]
+        public int? PrinterDeviceId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the parent location.
+        /// </summary>
+        /// <value>
+        /// The parent location.
+        /// </value>
+        [DataMember]
+        public virtual Location ParentLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the child locations.
+        /// </summary>
+        /// <value>
+        /// The child locations.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Location> ChildLocations
+        {
+            get { return _childLocations ?? ( _childLocations = new Collection<Location>() ); }
+            set { _childLocations = value; }
+        }
+        private ICollection<Location> _childLocations;
+
+        /// <summary>
+        /// Gets or sets the group locations.
+        /// </summary>
+        /// <value>
+        /// The group locations.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupLocation> GroupLocations
+        {
+            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
+            set { _groupLocations = value; }
+        }
+        private ICollection<GroupLocation> _groupLocations;
+
+        /// <summary>
+        /// Gets or sets the type of the location
+        /// </summary>
+        /// <value>
+        /// The type of the location.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue LocationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance printer.
+        /// </summary>
+        /// <value>
+        /// The attendance printer.
+        /// </value>
+        [DataMember]
+        public virtual Device PrinterDevice { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Sets the location point from a latitude and longitude.
+        /// </summary>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
+        public void SetLocationPointFromLatLong( double latitude, double longitude )
+        {
+            this.LocationPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -206,7 +330,12 @@ namespace Rock.Model
             return string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.Zip );
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Location Configuration class.
@@ -218,6 +347,12 @@ namespace Rock.Model
         /// </summary>
         public LocationConfiguration()
         {
+            this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.LocationType ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

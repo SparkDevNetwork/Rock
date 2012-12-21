@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class TagExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Tag to another
+        /// Copies all the entity properties from another Tag entity
         /// </summary>
-        public static void ShallowCopy( this Tag source, Tag target )
+        public static void CopyPropertiesFrom( this Tag target, Tag source )
         {
             target.IsSystem = source.IsSystem;
             target.EntityTypeId = source.EntityTypeId;

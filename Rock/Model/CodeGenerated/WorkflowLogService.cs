@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class WorkflowLogExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this WorkflowLog to another
+        /// Copies all the entity properties from another WorkflowLog entity
         /// </summary>
-        public static void ShallowCopy( this WorkflowLog source, WorkflowLog target )
+        public static void CopyPropertiesFrom( this WorkflowLog target, WorkflowLog source )
         {
             target.WorkflowId = source.WorkflowId;
             target.LogDateTime = source.LogDateTime;

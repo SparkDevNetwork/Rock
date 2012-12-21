@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class GroupMemberExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this GroupMember to another
+        /// Copies all the entity properties from another GroupMember entity
         /// </summary>
-        public static void ShallowCopy( this GroupMember source, GroupMember target )
+        public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
         {
             target.IsSystem = source.IsSystem;
             target.GroupId = source.GroupId;

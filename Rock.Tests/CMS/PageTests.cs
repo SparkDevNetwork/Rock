@@ -21,7 +21,7 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var page = new Page() { Name = "SomePage" };
-                dynamic result = page.ExportObject();
+                dynamic result = page.ToDynamic( true );
                 Assert.AreEqual( result.Name, page.Name );
             }
 
@@ -30,7 +30,7 @@ namespace Rock.Tests.Cms
             {
                 var children = new List<Page>() { new Page() };
                 var parent = new Page() { Pages = children };
-                dynamic result = parent.ExportObject();
+                dynamic result = parent.ToDynamic( true );
                 Assert.IsNotEmpty( result.Pages );
             }
 
@@ -42,7 +42,7 @@ namespace Rock.Tests.Cms
                 var grandchild = new Page();
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
-                dynamic result = parent.ExportObject();
+                dynamic result = parent.ToDynamic( true );
                 Assert.IsNotEmpty( result.Pages );
                 Assert.IsNotEmpty( result.Pages[ 0 ].Pages );
             }
@@ -52,7 +52,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { Blocks = new List<Block>() };
                 page.Blocks.Add( new Block() );
-                dynamic result = page.ExportObject();
+                dynamic result = page.ToDynamic( true );
                 Assert.NotNull( result.Blocks );
                 Assert.IsNotEmpty( result.Blocks );
             }
@@ -62,7 +62,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { PageRoutes = new List<PageRoute>() };
                 page.PageRoutes.Add( new PageRoute());
-                dynamic result = page.ExportObject();
+                dynamic result = page.ToDynamic( true );
                 Assert.NotNull( result.PageRoutes );
                 Assert.IsNotEmpty( result.PageRoutes );
             }
@@ -72,7 +72,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { PageContexts = new List<PageContext>() };
                 page.PageContexts.Add( new PageContext() );
-                dynamic result = page.ExportObject();
+                dynamic result = page.ToDynamic( true );
                 Assert.NotNull( result.PageContexts );
                 Assert.IsNotEmpty( result.PageContexts );
             }
@@ -84,7 +84,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var page = new Page();
-                var result = page.ExportJson();
+                var result = page.ToJson( true );
                 Assert.IsNotEmpty( result );
             }
 
@@ -95,7 +95,7 @@ namespace Rock.Tests.Cms
                 {
                     Title = "FooPage"
                 };
-                var result = page.ExportJson();
+                var result = page.ToJson( true );
                 const string key = "\"Title\":\"FooPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
             }
@@ -108,7 +108,7 @@ namespace Rock.Tests.Cms
                     Title = "FooPage",
                     Pages = new List<Page> { new Page { Title = "BarPage" } }
                 };
-                var result = page.ExportJson();
+                var result = page.ToJson( true );
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
                 const string key = "\"Title\":\"BarPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
@@ -122,7 +122,7 @@ namespace Rock.Tests.Cms
                 var grandchild = new Page() { Title = "Grandchild" };
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
-                var result = parent.ExportJson();
+                var result = parent.ToJson( true );
                 const string parentKey = "\"Title\":\"Parent\"";
                 const string childKey = "\"Title\":\"Child\"";
                 const string grandChildKey = "\"Title\":\"Grandchild\"";
@@ -145,7 +145,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.AreEqual( obj.Name, page.Name );
                 Assert.AreEqual( obj.IsSystem, page.IsSystem );
             }
@@ -161,7 +161,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.Pages );
                 Assert.IsNotEmpty( page.Pages );
                 Assert.AreEqual( page.Pages.First().Name, obj.Pages[0].Name );
@@ -186,7 +186,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 var childPages = page.Pages.First().Pages;
                 Assert.IsNotNull( childPages );
                 Assert.IsNotEmpty( childPages );
@@ -204,7 +204,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.Blocks );
                 Assert.IsNotEmpty( page.Blocks );
                 Assert.AreEqual( page.Blocks.First().Name, obj.Blocks[0].Name );
@@ -221,7 +221,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.PageRoutes );
                 Assert.IsNotEmpty( page.PageRoutes );
                 Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes[0].Route );
@@ -240,7 +240,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.PageContexts );
                 Assert.IsNotEmpty( page.PageContexts );
                 Assert.AreEqual( page.PageContexts.First().PageId, id );
@@ -257,7 +257,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.Attributes );
                 Assert.IsNotEmpty( page.Attributes );
                 Assert.IsNull( page.Attributes.First().Value );
@@ -275,7 +275,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var page = new Page();
-                page.ImportJson( json );
+                page.FromJson( json );
                 Assert.IsNotNull( page.AttributeValues );
                 Assert.IsNotEmpty( page.AttributeValues );
                 Assert.AreEqual( page.AttributeValues.First().Value.First().Value, "baz" );

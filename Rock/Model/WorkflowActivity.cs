@@ -262,7 +262,7 @@ namespace Rock.Model
         /// <param name="activityType">Type of the activity.</param>
         /// <param name="workflow">The workflow.</param>
         /// <returns></returns>
-        internal static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
+        public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;

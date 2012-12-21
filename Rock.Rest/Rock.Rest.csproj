@@ -82,8 +82,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\KiosksController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DevicesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupLocationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />

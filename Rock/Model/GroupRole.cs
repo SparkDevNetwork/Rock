@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -19,6 +20,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class GroupRole : Model<GroupRole>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -86,6 +90,19 @@ namespace Rock.Model
         public int? MinCount { get; set; }
 
         /// <summary>
+        /// Is this role a leader of the group
+        /// </summary>
+        /// <value>
+        /// The is leader.
+        /// </value>
+        [DataMember]
+        public bool IsLeader { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
         /// Gets or sets the Group Type.
         /// </summary>
         /// <value>
@@ -93,6 +110,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual GroupType GroupType { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -104,7 +125,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Group Role Configuration class.
@@ -119,4 +145,7 @@ namespace Rock.Model
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

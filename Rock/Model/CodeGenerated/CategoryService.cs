@@ -70,9 +70,9 @@ namespace Rock.Model
     public static class CategoryExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Category to another
+        /// Copies all the entity properties from another Category entity
         /// </summary>
-        public static void ShallowCopy( this Category source, Category target )
+        public static void CopyPropertiesFrom( this Category target, Category source )
         {
             target.IsSystem = source.IsSystem;
             target.ParentCategoryId = source.ParentCategoryId;

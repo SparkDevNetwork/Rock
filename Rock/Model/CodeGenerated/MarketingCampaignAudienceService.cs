@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class MarketingCampaignAudienceExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this MarketingCampaignAudience to another
+        /// Copies all the entity properties from another MarketingCampaignAudience entity
         /// </summary>
-        public static void ShallowCopy( this MarketingCampaignAudience source, MarketingCampaignAudience target )
+        public static void CopyPropertiesFrom( this MarketingCampaignAudience target, MarketingCampaignAudience source )
         {
             target.MarketingCampaignId = source.MarketingCampaignId;
             target.AudienceTypeValueId = source.AudienceTypeValueId;

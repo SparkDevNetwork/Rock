@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PersonMergedExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PersonMerged to another
+        /// Copies all the entity properties from another PersonMerged entity
         /// </summary>
-        public static void ShallowCopy( this PersonMerged source, PersonMerged target )
+        public static void CopyPropertiesFrom( this PersonMerged target, PersonMerged source )
         {
             target.CurrentId = source.CurrentId;
             target.CurrentGuid = source.CurrentGuid;

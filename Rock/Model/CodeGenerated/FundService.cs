@@ -70,9 +70,9 @@ namespace Rock.Model
     public static class FundExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Fund to another
+        /// Copies all the entity properties from another Fund entity
         /// </summary>
-        public static void ShallowCopy( this Fund source, Fund target )
+        public static void CopyPropertiesFrom( this Fund target, Fund source )
         {
             target.Name = source.Name;
             target.PublicName = source.PublicName;

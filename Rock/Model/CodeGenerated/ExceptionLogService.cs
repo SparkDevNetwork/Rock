@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class ExceptionLogExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this ExceptionLog to another
+        /// Copies all the entity properties from another ExceptionLog entity
         /// </summary>
-        public static void ShallowCopy( this ExceptionLog source, ExceptionLog target )
+        public static void CopyPropertiesFrom( this ExceptionLog target, ExceptionLog source )
         {
             target.ParentId = source.ParentId;
             target.SiteId = source.SiteId;

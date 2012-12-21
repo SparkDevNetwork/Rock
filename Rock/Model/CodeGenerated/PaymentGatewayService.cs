@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class PaymentGatewayExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PaymentGateway to another
+        /// Copies all the entity properties from another PaymentGateway entity
         /// </summary>
-        public static void ShallowCopy( this PaymentGateway source, PaymentGateway target )
+        public static void CopyPropertiesFrom( this PaymentGateway target, PaymentGateway source )
         {
             target.Name = source.Name;
             target.Description = source.Description;

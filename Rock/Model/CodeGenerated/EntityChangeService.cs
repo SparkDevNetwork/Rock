@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class EntityChangeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this EntityChange to another
+        /// Copies all the entity properties from another EntityChange entity
         /// </summary>
-        public static void ShallowCopy( this EntityChange source, EntityChange target )
+        public static void CopyPropertiesFrom( this EntityChange target, EntityChange source )
         {
             target.ChangeSet = source.ChangeSet;
             target.ChangeType = source.ChangeType;

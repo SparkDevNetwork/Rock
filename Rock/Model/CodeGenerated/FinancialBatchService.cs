@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class FinancialBatchExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this FinancialBatch to another
+        /// Copies all the entity properties from another FinancialBatch entity
         /// </summary>
-        public static void ShallowCopy( this FinancialBatch source, FinancialBatch target )
+        public static void CopyPropertiesFrom( this FinancialBatch target, FinancialBatch source )
         {
             target.Name = source.Name;
             target.BatchDate = source.BatchDate;

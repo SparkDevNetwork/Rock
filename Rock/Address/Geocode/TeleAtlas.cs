@@ -90,8 +90,7 @@ namespace Rock.Address.Geocode
 
                                     if ( matchType.value == "1" )
                                     {
-                                        location.Latitude = double.Parse( latitude.value );
-                                        location.Longitude = double.Parse( longitude.value );
+                                        location.SetLocationPointFromLatLong( double.Parse( latitude.value ), double.Parse( longitude.value ) );
 
                                         return true;
                                     }

@@ -20,6 +20,16 @@ namespace Rock.Net
     public static class WebRequest
     {
         /// <summary>
+        /// Gets the specified request URI string.
+        /// </summary>
+        /// <param name="requestUriString">The request URI string.</param>
+        /// <returns></returns>
+        public static WebResponse Get( string requestUriString )
+        {
+            return Send( requestUriString, "GET", null, null );
+        }
+
+        /// <summary>
         /// Sends the specified request URI string.
         /// </summary>
         /// <param name="requestUriString">The request URI string.</param>

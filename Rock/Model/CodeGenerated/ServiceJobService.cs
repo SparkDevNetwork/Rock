@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class ServiceJobExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this ServiceJob to another
+        /// Copies all the entity properties from another ServiceJob entity
         /// </summary>
-        public static void ShallowCopy( this ServiceJob source, ServiceJob target )
+        public static void CopyPropertiesFrom( this ServiceJob target, ServiceJob source )
         {
             target.IsSystem = source.IsSystem;
             target.IsActive = source.IsActive;

@@ -18,7 +18,7 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var html = new HtmlContent() { Content = "Foo" };
-                dynamic result = html.ExportObject();
+                dynamic result = html.ToDynamic( true );
                 Assert.AreEqual( result.Content, html.Content );
             }
         }
@@ -29,7 +29,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var html = new HtmlContent() { Content = "Foo" };
-                var result = html.ExportJson();
+                var result = html.ToJson( true );
                 Assert.IsNotEmpty( result );
             }
         }
@@ -47,7 +47,7 @@ namespace Rock.Tests.Cms
 
                 var json = obj.ToJSON();
                 var htmlContent = new HtmlContent();
-                htmlContent.ImportJson( json );
+                htmlContent.FromJson( json );
                 Assert.AreEqual( obj.EntityValue, htmlContent.EntityValue );
                 Assert.AreEqual( obj.IsApproved, htmlContent.IsApproved );
             }

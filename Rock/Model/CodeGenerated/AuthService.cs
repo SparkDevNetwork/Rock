@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class AuthExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Auth to another
+        /// Copies all the entity properties from another Auth entity
         /// </summary>
-        public static void ShallowCopy( this Auth source, Auth target )
+        public static void CopyPropertiesFrom( this Auth target, Auth source )
         {
             target.EntityTypeId = source.EntityTypeId;
             target.EntityId = source.EntityId;

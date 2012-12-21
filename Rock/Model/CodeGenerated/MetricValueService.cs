@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class MetricValueExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this MetricValue to another
+        /// Copies all the entity properties from another MetricValue entity
         /// </summary>
-        public static void ShallowCopy( this MetricValue source, MetricValue target )
+        public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
         {
             target.IsSystem = source.IsSystem;
             target.MetricId = source.MetricId;
