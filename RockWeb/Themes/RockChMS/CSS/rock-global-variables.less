@@ -1,0 +1,38 @@
+//
+// Variables
+// --------------------------------------------------
+
+
+// Global values
+// --------------------------------------------------
+
+// Rock Specific Varables
+@rockBackgroundColor:    	#e7e7e7;
+@rockCalloutColor:       	#d6d6d6;
+@rockAccentColor:        	#2f2f2f;
+@rockTextColor:          	#515151;
+@rockSecondaryTextColor: 	#7c7c7c;
+@rockSectionTextColor:   	#bbb;
+@rockPageTitleBackground:   #f3f3f3;
+@rockPageNavBackground:  	#3A3A3A;
+
+@rockSansFontFamilyBold: 	'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // 'Helvetica Neue',Helvetica,Arial,sans-serif;
+
+
+// Mixins
+// --------------------------------------------------
+
+// Block Gradient
+
+.block-gradient (@backgroundColor: @rockPageNavBackground) {
+  	background: @backgroundColor;
+	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
+	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@rockPageNavBackground, 3%));
+	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-repeat: repeat-x;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='lighten(@backgroundColor, 3%)', endColorstr='darken(@backgroundColor, 3%)', GradientType=0);
+	
+}
