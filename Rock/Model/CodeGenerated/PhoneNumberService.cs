@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PhoneNumberExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PhoneNumber to another
+        /// Copies all the entity properties from another PhoneNumber entity
         /// </summary>
-        public static void ShallowCopy( this PhoneNumber source, PhoneNumber target )
+        public static void CopyPropertiesFrom( this PhoneNumber target, PhoneNumber source )
         {
             target.IsSystem = source.IsSystem;
             target.PersonId = source.PersonId;

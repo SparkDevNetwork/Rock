@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -118,13 +119,18 @@ namespace Rock.Model
         public virtual ICollection<GroupMember> Members { get; set; }
 
         /// <summary>
-        /// Gets or sets the Locations.
+        /// Gets or sets the group locations.
         /// </summary>
         /// <value>
-        /// Collection of Locations.
+        /// The group locations.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupLocation> Locations { get; set; }
+        public virtual ICollection<GroupLocation> GroupLocations
+        {
+            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
+            set { _groupLocations = value; }
+        }
+        private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
         /// Gets or sets the Parent Group.

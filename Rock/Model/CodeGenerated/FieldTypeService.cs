@@ -70,9 +70,9 @@ namespace Rock.Model
     public static class FieldTypeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this FieldType to another
+        /// Copies all the entity properties from another FieldType entity
         /// </summary>
-        public static void ShallowCopy( this FieldType source, FieldType target )
+        public static void CopyPropertiesFrom( this FieldType target, FieldType source )
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

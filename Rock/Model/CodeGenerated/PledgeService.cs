@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PledgeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Pledge to another
+        /// Copies all the entity properties from another Pledge entity
         /// </summary>
-        public static void ShallowCopy( this Pledge source, Pledge target )
+        public static void CopyPropertiesFrom( this Pledge target, Pledge source )
         {
             target.PersonId = source.PersonId;
             target.FundId = source.FundId;

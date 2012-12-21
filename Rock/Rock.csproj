@@ -122,8 +122,23 @@
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="CheckIn\CheckInFamily.cs" />
+    <Compile Include="CheckIn\CheckInGroup.cs" />
+    <Compile Include="CheckIn\CheckInGroupType.cs" />
+    <Compile Include="CheckIn\CheckInLocation.cs" />
+    <Compile Include="CheckIn\CheckInPerson.cs" />
+    <Compile Include="CheckIn\CheckInSchedule.cs" />
+    <Compile Include="CheckIn\CheckInState.cs" />
+    <Compile Include="CheckIn\CheckInStatus.cs" />
+    <Compile Include="CheckIn\KioskGroup.cs" />
+    <Compile Include="CheckIn\KioskGroupType.cs" />
+    <Compile Include="CheckIn\KioskLocation.cs" />
+    <Compile Include="CheckIn\KioskSchedule.cs" />
+    <Compile Include="CheckIn\KioskStatus.cs" />
+    <Compile Include="CheckIn\KioskCache.cs" />
     <Compile Include="Data\DtoSecured.cs" />
     <Compile Include="Data\Dto.cs" />
+    <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Field\Types\GroupField.cs" />
     <Compile Include="Field\Types\GroupTypesField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
@@ -170,6 +185,10 @@
     <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.Designer.cs">
       <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.cs" />
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.Designer.cs">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -179,10 +198,13 @@
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\DeviceService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeService.cs" />
@@ -192,6 +214,7 @@
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
+    <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
@@ -200,6 +223,7 @@
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
+    <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
     <Compile Include="Model\MarketingCampaignAdType.cs" />
@@ -253,6 +277,9 @@
     <Compile Include="Migrations\201212041823461_RockModel.Designer.cs">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\Attendance.cs" />
+    <Compile Include="Model\Schedule.cs" />
+    <Compile Include="Model\Device.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
     <Compile Include="Model\CodeGenerated\MetricService.cs">
@@ -317,7 +344,6 @@
     <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RockTransactionScope.cs" />
@@ -787,8 +813,13 @@
     <EmbeddedResource Include="Migrations\201212201910584_HomepageMenuOrder01.resx">
       <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212211225129_CreateCheckInTables.resx">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Workflow\Action\CheckIn\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

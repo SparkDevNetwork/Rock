@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class EmailTemplateExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this EmailTemplate to another
+        /// Copies all the entity properties from another EmailTemplate entity
         /// </summary>
-        public static void ShallowCopy( this EmailTemplate source, EmailTemplate target )
+        public static void CopyPropertiesFrom( this EmailTemplate target, EmailTemplate source )
         {
             target.IsSystem = source.IsSystem;
             target.PersonId = source.PersonId;

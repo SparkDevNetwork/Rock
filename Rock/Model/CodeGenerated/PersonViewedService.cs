@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PersonViewedExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PersonViewed to another
+        /// Copies all the entity properties from another PersonViewed entity
         /// </summary>
-        public static void ShallowCopy( this PersonViewed source, PersonViewed target )
+        public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
         {
             target.ViewerPersonId = source.ViewerPersonId;
             target.TargetPersonId = source.TargetPersonId;

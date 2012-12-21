@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class ServiceLogExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this ServiceLog to another
+        /// Copies all the entity properties from another ServiceLog entity
         /// </summary>
-        public static void ShallowCopy( this ServiceLog source, ServiceLog target )
+        public static void CopyPropertiesFrom( this ServiceLog target, ServiceLog source )
         {
             target.Time = source.Time;
             target.Input = source.Input;

@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class WorkflowTriggerExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this WorkflowTrigger to another
+        /// Copies all the entity properties from another WorkflowTrigger entity
         /// </summary>
-        public static void ShallowCopy( this WorkflowTrigger source, WorkflowTrigger target )
+        public static void CopyPropertiesFrom( this WorkflowTrigger target, WorkflowTrigger source )
         {
             target.IsSystem = source.IsSystem;
             target.EntityTypeId = source.EntityTypeId;

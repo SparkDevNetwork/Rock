@@ -68,14 +68,24 @@ namespace Rock.Model
     public static class GroupTypeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this GroupType to another
+        /// Copies all the entity properties from another GroupType entity
         /// </summary>
-        public static void ShallowCopy( this GroupType source, GroupType target )
+        public static void CopyPropertiesFrom( this GroupType target, GroupType source )
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Description = source.Description;
+            target.GroupTerm = source.GroupTerm;
+            target.GroupMemberTerm = source.GroupMemberTerm;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            target.AllowMultipleLocations = source.AllowMultipleLocations;
+            target.ShowInGroupList = source.ShowInGroupList;
+            target.IconSmallFileId = source.IconSmallFileId;
+            target.IconLargeFileId = source.IconLargeFileId;
+            target.IconCssClass = source.IconCssClass;
+            target.TakesAttendance = source.TakesAttendance;
+            target.AttendanceRule = source.AttendanceRule;
+            target.AttendancePrintTo = source.AttendancePrintTo;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

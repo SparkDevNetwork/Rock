@@ -49,53 +49,53 @@ namespace Rock
             return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
         }
 
-        /// <summary>
-        /// Creates a copy of the object's property as a DynamicObject.
-        /// </summary>
-        /// <param name="obj">The object to copy.</param>
-        /// <returns></returns>
-        public static ExpandoObject ToDynamic( this object obj )
-        {
-            dynamic expando = new ExpandoObject();
-            var dict = expando as IDictionary<string, object>;
-            var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+        ///// <summary>
+        ///// Creates a copy of the object's property as a DynamicObject.
+        ///// </summary>
+        ///// <param name="obj">The object to copy.</param>
+        ///// <returns></returns>
+        //public static ExpandoObject ToDynamic( this object obj )
+        //{
+        //    dynamic expando = new ExpandoObject();
+        //    var dict = expando as IDictionary<string, object>;
+        //    var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
 
-            foreach ( var prop in properties )
-            {
-                dict[prop.Name] = prop.GetValue( obj, null );
-            }
+        //    foreach ( var prop in properties )
+        //    {
+        //        dict[prop.Name] = prop.GetValue( obj, null );
+        //    }
 
-            return expando;
-        }
+        //    return expando;
+        //}
 
-        /// <summary>
-        /// Creates an instance of a model and populates it based on the dynamic object's properties.
-        /// </summary>
-        /// <typeparam name="T">The destination model type</typeparam>
-        /// <param name="obj">The dynamic object to convert</param>
-        /// <returns>A populated instance of the model defined in the type arg</returns>
-        public static T ToModel<T>( this object obj )
-        {
-            var o = obj as ExpandoObject;
-            var instance = Activator.CreateInstance<T>();
+        ///// <summary>
+        ///// Creates an instance of a model and populates it based on the dynamic object's properties.
+        ///// </summary>
+        ///// <typeparam name="T">The destination model type</typeparam>
+        ///// <param name="obj">The dynamic object to convert</param>
+        ///// <returns>A populated instance of the model defined in the type arg</returns>
+        //public static T ToModel<T>( this object obj )
+        //{
+        //    var o = obj as ExpandoObject;
+        //    var instance = Activator.CreateInstance<T>();
 
-            if ( o == null )
-            {
-                return instance;
-            }
+        //    if ( o == null )
+        //    {
+        //        return instance;
+        //    }
 
-            var dict = o as IDictionary<string, object>;
-            var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
-                .Where( prop => dict.ContainsKey( prop.Name ) );
+        //    var dict = o as IDictionary<string, object>;
+        //    var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
+        //        .Where( prop => dict.ContainsKey( prop.Name ) );
 
-            foreach ( var prop in properties )
-            {
-                try { prop.SetValue( instance, dict[ prop.Name ] ); }
-                catch ( Exception ) { }
-            }
+        //    foreach ( var prop in properties )
+        //    {
+        //        try { prop.SetValue( instance, dict[ prop.Name ] ); }
+        //        catch ( Exception ) { }
+        //    }
 
-            return instance;
-        }
+        //    return instance;
+        //}
 
         /// <summary>
         /// Gets the name of the friendly type.

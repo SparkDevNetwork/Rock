@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class DefinedTypeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this DefinedType to another
+        /// Copies all the entity properties from another DefinedType entity
         /// </summary>
-        public static void ShallowCopy( this DefinedType source, DefinedType target )
+        public static void CopyPropertiesFrom( this DefinedType target, DefinedType source )
         {
             target.IsSystem = source.IsSystem;
             target.FieldTypeId = source.FieldTypeId;

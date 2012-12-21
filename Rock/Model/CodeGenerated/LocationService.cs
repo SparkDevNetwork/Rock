@@ -48,6 +48,12 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Location>().Queryable().Any( a => a.ParentLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -58,28 +64,33 @@ namespace Rock.Model
     public static class LocationExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Location to another
+        /// Copies all the entity properties from another Location entity
         /// </summary>
-        public static void ShallowCopy( this Location source, Location target )
+        public static void CopyPropertiesFrom( this Location target, Location source )
         {
-            target.Raw = source.Raw;
+            target.ParentLocationId = source.ParentLocationId;
+            target.Name = source.Name;
+            target.IsActive = source.IsActive;
+            target.LocationPoint = source.LocationPoint;
+            target.Perimeter = source.Perimeter;
+            target.LocationTypeValueId = source.LocationTypeValueId;
             target.Street1 = source.Street1;
             target.Street2 = source.Street2;
             target.City = source.City;
             target.State = source.State;
             target.Country = source.Country;
             target.Zip = source.Zip;
-            target.Latitude = source.Latitude;
-            target.Longitude = source.Longitude;
-            target.ParcelId = source.ParcelId;
-            target.StandardizeAttempt = source.StandardizeAttempt;
-            target.StandardizeService = source.StandardizeService;
-            target.StandardizeResult = source.StandardizeResult;
-            target.StandardizeDate = source.StandardizeDate;
-            target.GeocodeAttempt = source.GeocodeAttempt;
-            target.GeocodeService = source.GeocodeService;
-            target.GeocodeResult = source.GeocodeResult;
-            target.GeocodeDate = source.GeocodeDate;
+            target.FullAddress = source.FullAddress;
+            target.AssessorParcelId = source.AssessorParcelId;
+            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+            target.StandardizedDateTime = source.StandardizedDateTime;
+            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+            target.GeocodedDateTime = source.GeocodedDateTime;
+            target.PrinterDeviceId = source.PrinterDeviceId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

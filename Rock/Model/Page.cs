@@ -275,15 +275,6 @@ namespace Rock.Model
         public virtual ICollection<PageContext> PageContexts { get; set; }
 
         /// <summary>
-        /// Gets or sets the Sites.
-        /// </summary>
-        /// <value>
-        /// Collection of Sites.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<Site> Sites { get; set; }
-
-        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>

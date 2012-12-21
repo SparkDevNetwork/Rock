@@ -54,6 +54,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring GroupType,IconSmallFileId 
+            
+            // ignoring GroupType,IconLargeFileId 
  
             if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
@@ -82,9 +86,9 @@ namespace Rock.Model
     public static class BinaryFileExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this BinaryFile to another
+        /// Copies all the entity properties from another BinaryFile entity
         /// </summary>
-        public static void ShallowCopy( this BinaryFile source, BinaryFile target )
+        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
         {
             target.IsTemporary = source.IsTemporary;
             target.IsSystem = source.IsSystem;

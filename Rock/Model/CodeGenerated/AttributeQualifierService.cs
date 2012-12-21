@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class AttributeQualifierExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this AttributeQualifier to another
+        /// Copies all the entity properties from another AttributeQualifier entity
         /// </summary>
-        public static void ShallowCopy( this AttributeQualifier source, AttributeQualifier target )
+        public static void CopyPropertiesFrom( this AttributeQualifier target, AttributeQualifier source )
         {
             target.IsSystem = source.IsSystem;
             target.AttributeId = source.AttributeId;

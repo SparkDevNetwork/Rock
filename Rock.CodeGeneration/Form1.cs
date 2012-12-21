@@ -231,9 +231,9 @@ namespace Rock.CodeGeneration
     public static class {0}ExtensionMethods
     {{
         /// <summary>
-        /// Perform a shallow copy of this {0} to another
+        /// Copies all the entity properties from another {0} entity
         /// </summary>
-        public static void ShallowCopy( this {0} source, {0} target )
+        public static void CopyPropertiesFrom( this {0} target, {0} source )
         {{
 ", type.Name);
 
