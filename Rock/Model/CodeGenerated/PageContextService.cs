@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PageContextExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PageContext to another
+        /// Copies all the entity properties from another PageContext entity
         /// </summary>
-        public static void ShallowCopy( this PageContext source, PageContext target )
+        public static void CopyPropertiesFrom( this PageContext target, PageContext source )
         {
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;

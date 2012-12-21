@@ -70,9 +70,9 @@ namespace Rock.Model
     public static class GroupRoleExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this GroupRole to another
+        /// Copies all the entity properties from another GroupRole entity
         /// </summary>
-        public static void ShallowCopy( this GroupRole source, GroupRole target )
+        public static void CopyPropertiesFrom( this GroupRole target, GroupRole source )
         {
             target.IsSystem = source.IsSystem;
             target.GroupTypeId = source.GroupTypeId;
@@ -81,6 +81,7 @@ namespace Rock.Model
             target.SortOrder = source.SortOrder;
             target.MaxCount = source.MaxCount;
             target.MinCount = source.MinCount;
+            target.IsLeader = source.IsLeader;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

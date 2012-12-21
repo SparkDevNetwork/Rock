@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class SiteExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Site to another
+        /// Copies all the entity properties from another Site entity
         /// </summary>
-        public static void ShallowCopy( this Site source, Site target )
+        public static void CopyPropertiesFrom( this Site target, Site source )
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

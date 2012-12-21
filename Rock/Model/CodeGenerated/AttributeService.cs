@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class AttributeExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Attribute to another
+        /// Copies all the entity properties from another Attribute entity
         /// </summary>
-        public static void ShallowCopy( this Attribute source, Attribute target )
+        public static void CopyPropertiesFrom( this Attribute target, Attribute source )
         {
             target.IsSystem = source.IsSystem;
             target.FieldTypeId = source.FieldTypeId;

@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class CampusExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Campus to another
+        /// Copies all the entity properties from another Campus entity
         /// </summary>
-        public static void ShallowCopy( this Campus source, Campus target )
+        public static void CopyPropertiesFrom( this Campus target, Campus source )
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;

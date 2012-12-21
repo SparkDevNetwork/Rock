@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class BlockExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Block to another
+        /// Copies all the entity properties from another Block entity
         /// </summary>
-        public static void ShallowCopy( this Block source, Block target )
+        public static void CopyPropertiesFrom( this Block target, Block source )
         {
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;

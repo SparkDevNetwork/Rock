@@ -70,9 +70,9 @@ namespace Rock.Model
     public static class PageExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Page to another
+        /// Copies all the entity properties from another Page entity
         /// </summary>
-        public static void ShallowCopy( this Page source, Page target )
+        public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Name = source.Name;
             target.ParentPageId = source.ParentPageId;

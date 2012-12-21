@@ -98,9 +98,9 @@ namespace Rock.Model
     public static class PersonExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this Person to another
+        /// Copies all the entity properties from another Person entity
         /// </summary>
-        public static void ShallowCopy( this Person source, Person target )
+        public static void CopyPropertiesFrom( this Person target, Person source )
         {
             target.IsSystem = source.IsSystem;
             target.RecordTypeValueId = source.RecordTypeValueId;

@@ -58,9 +58,9 @@ namespace Rock.Model
     public static class PersonAccountExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this PersonAccount to another
+        /// Copies all the entity properties from another PersonAccount entity
         /// </summary>
-        public static void ShallowCopy( this PersonAccount source, PersonAccount target )
+        public static void CopyPropertiesFrom( this PersonAccount target, PersonAccount source )
         {
             target.PersonId = source.PersonId;
             target.Account = source.Account;

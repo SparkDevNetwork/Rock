@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// GroupLocation Service class
     /// </summary>
-    public partial class GroupLocationService : Service<GroupLocation, GroupLocationDto>
+    public partial class GroupLocationService : Service<GroupLocation>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupLocationService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override GroupLocation CreateNew()
-        {
-            return new GroupLocation();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupLocationDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupLocationDto> QueryableDto( IQueryable<GroupLocation> items )
-        {
-            return items.Select( m => new GroupLocationDto()
-                {
-                    GroupId = m.GroupId,
-                    LocationId = m.LocationId,
-                    LocationTypeValueId = m.LocationTypeValueId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -82,6 +49,25 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupLocationExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another GroupLocation entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this GroupLocation target, GroupLocation source )
+        {
+            target.GroupId = source.GroupId;
+            target.LocationId = source.LocationId;
+            target.LocationTypeValueId = source.LocationTypeValueId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

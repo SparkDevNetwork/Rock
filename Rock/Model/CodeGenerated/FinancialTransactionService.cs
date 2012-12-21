@@ -64,9 +64,9 @@ namespace Rock.Model
     public static class FinancialTransactionExtensionMethods
     {
         /// <summary>
-        /// Perform a shallow copy of this FinancialTransaction to another
+        /// Copies all the entity properties from another FinancialTransaction entity
         /// </summary>
-        public static void ShallowCopy( this FinancialTransaction source, FinancialTransaction target )
+        public static void CopyPropertiesFrom( this FinancialTransaction target, FinancialTransaction source )
         {
             target.Description = source.Description;
             target.TransactionDateTime = source.TransactionDateTime;
