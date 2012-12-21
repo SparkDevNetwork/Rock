@@ -90,7 +90,22 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if [allow multiple locations]; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool AllowMultipleLocations { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show in group list].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show in group list]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowInGroupList
+        {
+            get { return showInGroupList; }
+            set { showInGroupList = value; }
+        }
+        private bool showInGroupList = true;
 
         /// <summary>
         /// Gets or sets the small icon.
@@ -98,7 +113,8 @@ namespace Rock.Model
         /// <value>
         /// The small icon.
         /// </value>
-        public int? SmallIconFileId { get; set; }
+        [DataMember]
+        public int? IconSmallFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the large icon.
@@ -106,7 +122,17 @@ namespace Rock.Model
         /// <value>
         /// The large icon.
         /// </value>
-        public int? LargeIconFileId { get; set; }
+        [DataMember]
+        public int? IconLargeFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether groups of this type support taking attendance
@@ -114,6 +140,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [takes attendance]; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool TakesAttendance { get; set; }
 
         /// <summary>
@@ -122,6 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The attendance rule.
         /// </value>
+        [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
 
         /// <summary>
@@ -130,6 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The attendance print to.
         /// </value>
+        [DataMember]
         public PrintTo AttendancePrintTo { get; set; }
 
         #endregion
@@ -222,7 +251,7 @@ namespace Rock.Model
         /// The small icon.
         /// </value>
         [DataMember]
-        public virtual BinaryFile SmallIconFile { get; set; }
+        public virtual BinaryFile IconSmallFile { get; set; }
 
         /// <summary>
         /// Gets or sets the large icon.
@@ -231,7 +260,7 @@ namespace Rock.Model
         /// The large icon.
         /// </value>
         [DataMember]
-        public virtual BinaryFile LargeIconFile { get; set; }
+        public virtual BinaryFile IconLargeFile { get; set; }
 
         #endregion
 
@@ -266,8 +295,8 @@ namespace Rock.Model
         {
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.SmallIconFile ).WithMany().HasForeignKey( p => p.SmallIconFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.LargeIconFile ).WithMany().HasForeignKey( p => p.LargeIconFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
         }
     }
 

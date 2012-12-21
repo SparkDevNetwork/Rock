@@ -185,6 +185,10 @@
     <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.Designer.cs">
       <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.cs" />
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.Designer.cs">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -808,6 +812,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212201910584_HomepageMenuOrder01.resx">
       <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212211225129_CreateCheckInTables.resx">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

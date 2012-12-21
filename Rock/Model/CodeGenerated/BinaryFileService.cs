@@ -54,6 +54,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring GroupType,IconSmallFileId 
+            
+            // ignoring GroupType,IconLargeFileId 
  
             if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
