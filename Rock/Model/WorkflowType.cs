@@ -3,14 +3,14 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Model
 {
@@ -18,6 +18,7 @@ namespace Rock.Model
     /// WorkflowType POCO Entity.
     /// </summary>
     [Table( "WorkflowType" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered
     {
 
@@ -29,6 +30,7 @@ namespace Rock.Model
         /// <value>
         /// Determines whether the job is a system job..
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The is active.
         /// </value>
+        [DataMember]
         public bool? IsActive { get; set; }
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// Notes about the job..
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -63,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// The category id.
         /// </value>
+        [DataMember]
         public int? CategoryId { get; set; }
 
         /// <summary>
@@ -72,6 +78,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
@@ -80,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The file id.
         /// </value>
+        [DataMember]
         public int? FileId { get; set; }
 
         /// <summary>
@@ -90,6 +98,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string WorkTerm { get; set; }
 
         /// <summary>
@@ -98,6 +107,7 @@ namespace Rock.Model
         /// <value>
         /// The processing interval seconds.
         /// </value>
+        [DataMember]
         public int? ProcessingIntervalSeconds { get; set; }
 
         /// <summary>
@@ -106,6 +116,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is persisted; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsPersisted { get; set; }
 
         /// <summary>
@@ -114,6 +125,7 @@ namespace Rock.Model
         /// <value>
         /// The logging level.
         /// </value>
+        [DataMember]
         public WorkflowLoggingLevel LoggingLevel { get; set; }
 
         #endregion
@@ -126,6 +138,7 @@ namespace Rock.Model
         /// <value>
         /// The category.
         /// </value>
+        [DataMember]
         public virtual Category Category { get; set; }
 
         /// <summary>
@@ -134,6 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The file.
         /// </value>
+        [DataMember]
         public virtual BinaryFile File { get; set; }
 
         /// <summary>
@@ -142,21 +156,13 @@ namespace Rock.Model
         /// <value>
         /// The activity types.
         /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowActivityType> ActivityTypes
         {
             get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
             set { _activityTypes = value; }
         }
         private ICollection<WorkflowActivityType> _activityTypes;
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -171,30 +177,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowType Read( int id )
-        {
-            return Read<WorkflowType>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowType Read( Guid guid )
-        {
-            return Read<WorkflowType>( guid );
         }
 
         #endregion

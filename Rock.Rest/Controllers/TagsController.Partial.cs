@@ -46,51 +46,50 @@ namespace Rock.Rest.Controllers
         }
 
         [HttpGet]
-        public TagDto Get( int entityTypeId, int ownerId, string name )
+        public Tag Get( int entityTypeId, int ownerId, string name )
         {
             return Get( entityTypeId, ownerId, name, string.Empty, string.Empty );
         }
 
         [HttpGet]
-        public TagDto Get( int entityTypeId, int ownerId, string name, string entityQualifier )
+        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier )
         {
             return Get( entityTypeId, ownerId, name, entityQualifier, string.Empty );
         }
 
         [HttpGet]
-        public TagDto Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
+        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
-            var dto = service.QueryableDto( service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ) )
+            var tag = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
                 .Where( t => t.Name == name)
                 .FirstOrDefault();
 
-            if ( dto != null )
-                return dto;
+            if ( tag != null )
+                return tag;
             else
                 throw new HttpResponseException( HttpStatusCode.NotFound );
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId )
         {
             return AvailableNames( entityTypeId, ownerId, entityId, string.Empty, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier )
         {
             return AvailableNames( entityTypeId, ownerId, entityId, entityQualifier, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<TagDto> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier, string entityQualifierValue )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
-            var items = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
+            return service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
                 .Where( t => t.TaggedItems.Select( i => i.EntityId ).Contains( entityId ) == false )
                 .OrderBy( t => t.Name );
-            return service.QueryableDto( items );
         }
 
     }

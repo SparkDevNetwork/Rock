@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PhoneNumbers REST API
     /// </summary>
-    public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Model.PhoneNumber, Rock.Model.PhoneNumberDto>
+    public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Model.PhoneNumber>
     {
         public PhoneNumbersController() : base( new Rock.Model.PhoneNumberService() ) { } 
     }

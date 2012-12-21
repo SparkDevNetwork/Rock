@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Site Service class
     /// </summary>
-    public partial class SiteService : Service<Site, SiteDto>
+    public partial class SiteService : Service<Site>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteService"/> class
@@ -35,48 +35,6 @@ namespace Rock.Model
         /// </summary>
         public SiteService(IRepository<Site> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Site CreateNew()
-        {
-            return new Site();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<SiteDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<SiteDto> QueryableDto( IQueryable<Site> items )
-        {
-            return items.Select( m => new SiteDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Theme = m.Theme,
-                    DefaultPageId = m.DefaultPageId,
-                    FaviconUrl = m.FaviconUrl,
-                    AppleTouchIconUrl = m.AppleTouchIconUrl,
-                    FacebookAppId = m.FacebookAppId,
-                    FacebookAppSecret = m.FacebookAppSecret,
-                    LoginPageReference = m.LoginPageReference,
-                    RegistrationPageReference = m.RegistrationPageReference,
-                    ErrorPage = m.ErrorPage,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -97,6 +55,34 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class SiteExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Site to another
+        /// </summary>
+        public static void ShallowCopy( this Site source, Site target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Theme = source.Theme;
+            target.DefaultPageId = source.DefaultPageId;
+            target.FaviconUrl = source.FaviconUrl;
+            target.AppleTouchIconUrl = source.AppleTouchIconUrl;
+            target.FacebookAppId = source.FacebookAppId;
+            target.FacebookAppSecret = source.FacebookAppSecret;
+            target.LoginPageReference = source.LoginPageReference;
+            target.RegistrationPageReference = source.RegistrationPageReference;
+            target.ErrorPage = source.ErrorPage;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

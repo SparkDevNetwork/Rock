@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FinancialTransaction Service class
     /// </summary>
-    public partial class FinancialTransactionService : Service<FinancialTransaction, FinancialTransactionDto>
+    public partial class FinancialTransactionService : Service<FinancialTransaction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class
@@ -35,50 +35,6 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionService(IRepository<FinancialTransaction> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FinancialTransaction CreateNew()
-        {
-            return new FinancialTransaction();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FinancialTransactionDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FinancialTransactionDto> QueryableDto( IQueryable<FinancialTransaction> items )
-        {
-            return items.Select( m => new FinancialTransactionDto()
-                {
-                    Description = m.Description,
-                    TransactionDateTime = m.TransactionDateTime,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    BatchId = m.BatchId,
-                    CurrencyTypeValueId = m.CurrencyTypeValueId,
-                    CreditCardTypeValueId = m.CreditCardTypeValueId,
-                    Amount = m.Amount,
-                    RefundTransactionId = m.RefundTransactionId,
-                    TransactionImageId = m.TransactionImageId,
-                    TransactionCode = m.TransactionCode,
-                    PaymentGatewayId = m.PaymentGatewayId,
-                    SourceTypeValueId = m.SourceTypeValueId,
-                    Summary = m.Summary,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -99,6 +55,36 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FinancialTransactionExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this FinancialTransaction to another
+        /// </summary>
+        public static void ShallowCopy( this FinancialTransaction source, FinancialTransaction target )
+        {
+            target.Description = source.Description;
+            target.TransactionDateTime = source.TransactionDateTime;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.BatchId = source.BatchId;
+            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+            target.Amount = source.Amount;
+            target.RefundTransactionId = source.RefundTransactionId;
+            target.TransactionImageId = source.TransactionImageId;
+            target.TransactionCode = source.TransactionCode;
+            target.PaymentGatewayId = source.PaymentGatewayId;
+            target.SourceTypeValueId = source.SourceTypeValueId;
+            target.Summary = source.Summary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

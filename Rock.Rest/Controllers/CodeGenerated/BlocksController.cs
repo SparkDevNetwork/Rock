@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Blocks REST API
     /// </summary>
-    public partial class BlocksController : Rock.Rest.ApiController<Rock.Model.Block, Rock.Model.BlockDto>
+    public partial class BlocksController : Rock.Rest.ApiController<Rock.Model.Block>
     {
         public BlocksController() : base( new Rock.Model.BlockService() ) { } 
     }

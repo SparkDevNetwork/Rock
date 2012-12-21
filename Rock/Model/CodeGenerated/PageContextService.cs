@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PageContext Service class
     /// </summary>
-    public partial class PageContextService : Service<PageContext, PageContextDto>
+    public partial class PageContextService : Service<PageContext>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PageContext CreateNew()
-        {
-            return new PageContext();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PageContextDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PageContextDto> QueryableDto( IQueryable<PageContext> items )
-        {
-            return items.Select( m => new PageContextDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PageId = m.PageId,
-                    Entity = m.Entity,
-                    IdParameter = m.IdParameter,
-                    CreatedDateTime = m.CreatedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +49,27 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PageContextExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this PageContext to another
+        /// </summary>
+        public static void ShallowCopy( this PageContext source, PageContext target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PageId = source.PageId;
+            target.Entity = source.Entity;
+            target.IdParameter = source.IdParameter;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

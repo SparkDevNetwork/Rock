@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// DefinedValue Service class
     /// </summary>
-    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
+    public partial class DefinedValueService : Service<DefinedValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public DefinedValueService(IRepository<DefinedValue> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override DefinedValue CreateNew()
-        {
-            return new DefinedValue();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<DefinedValueDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<DefinedValueDto> QueryableDto( IQueryable<DefinedValue> items )
-        {
-            return items.Select( m => new DefinedValueDto()
-                {
-                    IsSystem = m.IsSystem,
-                    DefinedTypeId = m.DefinedTypeId,
-                    Order = m.Order,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -130,6 +95,27 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this DefinedValue to another
+        /// </summary>
+        public static void ShallowCopy( this DefinedValue source, DefinedValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.DefinedTypeId = source.DefinedTypeId;
+            target.Order = source.Order;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// DefinedType Service class
     /// </summary>
-    public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDto>
+    public partial class DefinedTypeService : Service<DefinedType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
@@ -35,42 +35,6 @@ namespace Rock.Model
         /// </summary>
         public DefinedTypeService(IRepository<DefinedType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override DefinedType CreateNew()
-        {
-            return new DefinedType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<DefinedTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<DefinedTypeDto> QueryableDto( IQueryable<DefinedType> items )
-        {
-            return items.Select( m => new DefinedTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    FieldTypeId = m.FieldTypeId,
-                    Order = m.Order,
-                    Category = m.Category,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -91,6 +55,28 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this DefinedType to another
+        /// </summary>
+        public static void ShallowCopy( this DefinedType source, DefinedType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.Order = source.Order;
+            target.Category = source.Category;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

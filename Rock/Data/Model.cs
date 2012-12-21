@@ -3,15 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Services;
-using System.Linq;
+using System.Runtime.Serialization;
 
-using Rock;
 using Rock.Attribute;
 using Rock.Security;
 
@@ -21,8 +17,9 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    [DataContract( IsReference = true )]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
-        where T : ISecured, new()
+        where T : Model<T>, ISecured, new()
     {
         #region ISecured implementation
 
@@ -101,7 +98,7 @@ namespace Rock.Data
             {
                 if ( _attributeCategories == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeCategories;
@@ -125,7 +122,7 @@ namespace Rock.Data
             {
                 if ( _attributes == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributes; 
@@ -142,20 +139,20 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues
+        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues
         {
             get 
             {
                 if ( _attributeValues == null && !_attributesLoaded )
                 {
-                    this.LoadAttributes();
+                    //this.LoadAttributes();
                     _attributesLoaded = true;
                 }
                 return _attributeValues; 
             }
             set { _attributeValues = value; }
         }
-        private Dictionary<string, List<Rock.Model.AttributeValueDto>> _attributeValues;
+        private Dictionary<string, List<Rock.Model.AttributeValue>> _attributeValues;
 
         #endregion
     }

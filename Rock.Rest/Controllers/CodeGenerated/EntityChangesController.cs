@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// EntityChanges REST API
     /// </summary>
-    public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Model.EntityChange, Rock.Model.EntityChangeDto>
+    public partial class EntityChangesController : Rock.Rest.ApiController<Rock.Model.EntityChange>
     {
         public EntityChangesController() : base( new Rock.Model.EntityChangeService() ) { } 
     }

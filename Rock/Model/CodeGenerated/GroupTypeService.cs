@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// GroupType Service class
     /// </summary>
-    public partial class GroupTypeService : Service<GroupType, GroupTypeDto>
+    public partial class GroupTypeService : Service<GroupType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeService"/> class
@@ -35,40 +35,6 @@ namespace Rock.Model
         /// </summary>
         public GroupTypeService(IRepository<GroupType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override GroupType CreateNew()
-        {
-            return new GroupType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupTypeDto> QueryableDto( IQueryable<GroupType> items )
-        {
-            return items.Select( m => new GroupTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Description = m.Description,
-                    DefaultGroupRoleId = m.DefaultGroupRoleId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -93,6 +59,26 @@ namespace Rock.Model
             
             // ignoring GroupTypeAssociation,ChildGroupTypeId 
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupTypeExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this GroupType to another
+        /// </summary>
+        public static void ShallowCopy( this GroupType source, GroupType target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

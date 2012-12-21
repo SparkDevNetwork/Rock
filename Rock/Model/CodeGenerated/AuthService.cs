@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Auth Service class
     /// </summary>
-    public partial class AuthService : Service<Auth, AuthDto>
+    public partial class AuthService : Service<Auth>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Auth CreateNew()
-        {
-            return new Auth();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AuthDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AuthDto> QueryableDto( IQueryable<Auth> items )
-        {
-            return items.Select( m => new AuthDto()
-                {
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Order = m.Order,
-                    Action = m.Action,
-                    AllowOrDeny = m.AllowOrDeny,
-                    SpecialRole = m.SpecialRole,
-                    PersonId = m.PersonId,
-                    GroupId = m.GroupId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AuthExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Auth to another
+        /// </summary>
+        public static void ShallowCopy( this Auth source, Auth target )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Order = source.Order;
+            target.Action = source.Action;
+            target.AllowOrDeny = source.AllowOrDeny;
+            target.SpecialRole = source.SpecialRole;
+            target.PersonId = source.PersonId;
+            target.GroupId = source.GroupId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

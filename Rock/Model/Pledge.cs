@@ -6,8 +6,9 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Model
 {
@@ -15,6 +16,7 @@ namespace Rock.Model
     /// Pledge POCO class.
     /// </summary>
     [Table("Pledge")]
+    [DataContract( IsReference = true )]
     public partial class Pledge : Model<Pledge>
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Rock.Model
         /// <value>
         /// The person id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -31,6 +34,7 @@ namespace Rock.Model
         /// <value>
         /// The fund id.
         /// </value>
+        [DataMember]
         public int? FundId { get; set; }
 
         /// <summary>
@@ -39,6 +43,7 @@ namespace Rock.Model
         /// <value>
         /// The amount.
         /// </value>
+        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -47,6 +52,7 @@ namespace Rock.Model
         /// <value>
         /// The start date.
         /// </value>
+        [DataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -55,6 +61,7 @@ namespace Rock.Model
         /// <value>
         /// The end date.
         /// </value>
+        [DataMember]
         public DateTime EndDate { get; set; }
 
         /// <summary>
@@ -63,6 +70,7 @@ namespace Rock.Model
         /// <value>
         /// The frequency type id.
         /// </value>
+        [DataMember]
         public int? FrequencyTypeValueId { get; set; }
 
         /// <summary>
@@ -71,6 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The frequency amount.
         /// </value>
+        [DataMember]
         public decimal? FrequencyAmount { get; set; }
 
         /// <summary>
@@ -79,6 +88,7 @@ namespace Rock.Model
         /// <value>
         /// The person.
         /// </value>
+        [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
@@ -87,6 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The fund.
         /// </value>
+        [DataMember]
         public virtual Fund Fund { get; set; }
 
         /// <summary>
@@ -95,26 +106,8 @@ namespace Rock.Model
         /// <value>
         /// The type of the frequency.
         /// </value>
+        [DataMember]
         public virtual DefinedValue FrequencyTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Pledge Read( int id )
-        {
-            return Read<Pledge>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -7,6 +7,8 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -15,6 +17,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "MarketingCampaignAd")]
+    [DataContract( IsReference = true )]
     public partial class MarketingCampaignAd : Model<MarketingCampaignAd>
     {
         /// <summary>
@@ -23,6 +26,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign id.
         /// </value>
+        [DataMember]
         public int MarketingCampaignId { get; set; }
 
         /// <summary>
@@ -31,6 +35,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign ad type id.
         /// </value>
+        [DataMember]
         public int MarketingCampaignAdTypeId { get; set; }
 
         /// <summary>
@@ -39,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// The priority.
         /// </value>
+        [DataMember]
         public int Priority { get; set; }
 
         /// <summary>
@@ -47,6 +53,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign ad status.
         /// </value>
+        [DataMember]
         public MarketingCampaignAdStatus MarketingCampaignAdStatus { get; set; }
 
         /// <summary>
@@ -55,6 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign status person id.
         /// </value>
+        [DataMember]
         public int? MarketingCampaignStatusPersonId { get; set; }
 
         /// <summary>
@@ -63,6 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The start date.
         /// </value>
+        [DataMember]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -71,6 +80,7 @@ namespace Rock.Model
         /// <value>
         /// The end date.
         /// </value>
+        [DataMember]
         public DateTime EndDate { get; set; }
 
         /// <summary>
@@ -80,26 +90,8 @@ namespace Rock.Model
         /// The URL.
         /// </value>
         [MaxLength(2000)]
+        [DataMember]
         public string Url { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MarketingCampaignAd Read( int id )
-        {
-            return Read<MarketingCampaignAd>( id );
-        }
 
         /// <summary>
         /// Gets or sets the marketing campaign.
@@ -107,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign.
         /// </value>
+        [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
         /// <summary>
@@ -115,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the marketing campaign ad.
         /// </value>
+        [DataMember]
         public virtual MarketingCampaignAdType MarketingCampaignAdType { get; set; }
     }
 

@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// MetricValue POCO Service class
     /// </summary>
-    public partial class MetricValueService : Service<MetricValue, MetricValueDto>
+    public partial class MetricValueService 
     {
         /// <summary>
         /// Gets MetricValues by MetricId

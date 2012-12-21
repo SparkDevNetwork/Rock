@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowAction Service class
     /// </summary>
-    public partial class WorkflowActionService : Service<WorkflowAction, WorkflowActionDto>
+    public partial class WorkflowActionService : Service<WorkflowAction>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionService"/> class
@@ -38,40 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowAction CreateNew()
-        {
-            return new WorkflowAction();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowActionDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowActionDto> QueryableDto( IQueryable<WorkflowAction> items )
-        {
-            return items.Select( m => new WorkflowActionDto()
-                {
-                    ActivityId = m.ActivityId,
-                    ActionTypeId = m.ActionTypeId,
-                    LastProcessedDateTime = m.LastProcessedDateTime,
-                    CompletedDateTime = m.CompletedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,6 +49,26 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowActionExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this WorkflowAction to another
+        /// </summary>
+        public static void ShallowCopy( this WorkflowAction source, WorkflowAction target )
+        {
+            target.ActivityId = source.ActivityId;
+            target.ActionTypeId = source.ActionTypeId;
+            target.LastProcessedDateTime = source.LastProcessedDateTime;
+            target.CompletedDateTime = source.CompletedDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

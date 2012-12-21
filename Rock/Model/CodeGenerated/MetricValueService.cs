@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MetricValue Service class
     /// </summary>
-    public partial class MetricValueService : Service<MetricValue, MetricValueDto>
+    public partial class MetricValueService : Service<MetricValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValueService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MetricValue CreateNew()
-        {
-            return new MetricValue();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MetricValueDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MetricValueDto> QueryableDto( IQueryable<MetricValue> items )
-        {
-            return items.Select( m => new MetricValueDto()
-                {
-                    IsSystem = m.IsSystem,
-                    MetricId = m.MetricId,
-                    Value = m.Value,
-                    Description = m.Description,
-                    xValue = m.xValue,
-                    isDateBased = m.isDateBased,
-                    Label = m.Label,
-                    Order = m.Order,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MetricValueExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this MetricValue to another
+        /// </summary>
+        public static void ShallowCopy( this MetricValue source, MetricValue target )
+        {
+            target.IsSystem = source.IsSystem;
+            target.MetricId = source.MetricId;
+            target.Value = source.Value;
+            target.Description = source.Description;
+            target.xValue = source.xValue;
+            target.isDateBased = source.isDateBased;
+            target.Label = source.Label;
+            target.Order = source.Order;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

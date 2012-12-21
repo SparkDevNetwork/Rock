@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Audit Service class
     /// </summary>
-    public partial class AuditService : Service<Audit, AuditDto>
+    public partial class AuditService : Service<Audit>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditService"/> class
@@ -38,43 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Audit CreateNew()
-        {
-            return new Audit();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AuditDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AuditDto> QueryableDto( IQueryable<Audit> items )
-        {
-            return items.Select( m => new AuditDto()
-                {
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Title = m.Title,
-                    AuditType = m.AuditType,
-                    Properties = m.Properties,
-                    DateTime = m.DateTime,
-                    PersonId = m.PersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,6 +49,29 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AuditExtensionMethods
+    {
+        /// <summary>
+        /// Perform a shallow copy of this Audit to another
+        /// </summary>
+        public static void ShallowCopy( this Audit source, Audit target )
+        {
+            target.EntityTypeId = source.EntityTypeId;
+            target.EntityId = source.EntityId;
+            target.Title = source.Title;
+            target.AuditType = source.AuditType;
+            target.Properties = source.Properties;
+            target.DateTime = source.DateTime;
+            target.PersonId = source.PersonId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
