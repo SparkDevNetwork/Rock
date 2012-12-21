@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// A family option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInFamily : GroupDto
+    public class CheckInFamily
     {
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        [DataMember]
+        public Group group { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInFamily" /> is selected for check-in
         /// </summary>
@@ -35,7 +44,7 @@ namespace Rock.CheckIn
         /// The members.
         /// </value>
         [DataMember]
-        public List<CheckInPerson> Members { get; set; }
+        public List<CheckInPerson> FamilyMembers { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
@@ -43,7 +52,7 @@ namespace Rock.CheckIn
         public CheckInFamily()
             : base()
         {
-            Members = new List<CheckInPerson>();
+            FamilyMembers = new List<CheckInPerson>();
         }
     }
 }

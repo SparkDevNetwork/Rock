@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// 
     /// </summary>
     [DataContract]
-    public class KioskGroup : GroupDto
+    public class KioskGroup
     {
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        [DataMember]
+        public Group Group { get; set; }
+
         /// <summary>
         /// The schedules that are currently active
         /// </summary>
@@ -26,7 +35,7 @@ namespace Rock.CheckIn
         /// The schedules.
         /// </value>
         [DataMember]
-        public List<KioskSchedule> Schedules { get; set; }
+        public List<KioskSchedule> KioskSchedules { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroup" /> class.
@@ -34,7 +43,7 @@ namespace Rock.CheckIn
         public KioskGroup()
             : base()
         {
-            Schedules = new List<KioskSchedule>();
+            KioskSchedules = new List<KioskSchedule>();
         }
 
         /// <summary>
@@ -42,9 +51,11 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="group">The group.</param>
         public KioskGroup( Group group )
-            : base( group )
+            : base()
         {
-            Schedules = new List<KioskSchedule>();
+            Group = new Group();
+            Group.CopyPropertiesFrom( group );
+            KioskSchedules = new List<KioskSchedule>();
         }
     }
 }

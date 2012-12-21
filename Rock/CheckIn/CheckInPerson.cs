@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : PersonDto
+    public class CheckInPerson 
     {
+        /// <summary>
+        /// Gets or sets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        [DataMember]
+        public Person Person { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> is selected for check-in.
         /// </summary>

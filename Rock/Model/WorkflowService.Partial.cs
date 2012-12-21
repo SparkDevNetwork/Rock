@@ -39,6 +39,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="workflow">The workflow.</param>
         /// <param name="CurrentPersonId">The current person id.</param>
+        /// <param name="errorMessages">The error messages.</param>
         public void Process( Workflow workflow, int? CurrentPersonId, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;

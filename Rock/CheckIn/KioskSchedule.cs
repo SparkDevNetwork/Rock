@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// 
     /// </summary>
     [DataContract]
-    public class KioskSchedule : ScheduleDto
+    public class KioskSchedule
     {
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public Schedule Schedule { get; set; }
+
         /// <summary>
         /// The number of people who have already arrived, and not yet departed 
         /// with an attendance record associated with the same group, location, 
@@ -43,8 +52,10 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="schedule">The schedule.</param>
         public KioskSchedule( Schedule schedule )
-            : base( schedule )
+            : base()
         {
+            Schedule = new Schedule();
+            Schedule.CopyPropertiesFrom( schedule );
         }
     }
 }

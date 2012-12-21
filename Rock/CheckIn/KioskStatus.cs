@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// The status of a check-in kiosk.  
     /// </summary>
     [DataContract]
-    public class KioskStatus : DeviceDto
+    public class KioskStatus
     {
+        /// <summary>
+        /// Gets or sets the device.
+        /// </summary>
+        /// <value>
+        /// The device.
+        /// </value>
+        [DataMember]
+        public Device Device { get; set; }
+
         /// <summary>
         /// The group types associated with this kiosk
         /// </summary>
@@ -26,7 +35,7 @@ namespace Rock.CheckIn
         /// The group types.
         /// </value>
         [DataMember]
-        public List<KioskGroupType> GroupTypes { get; set; }
+        public List<KioskGroupType> KioskGroupTypes { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has active locations.
@@ -38,7 +47,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return GroupTypes.Any( g => g.Locations.Any() );
+                return KioskGroupTypes.Any( g => g.KioskLocations.Any() );
             }
         }
 
@@ -52,7 +61,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return GroupTypes.Any( g => g.Locations.Any( l => l.IsActive ) );
+                return KioskGroupTypes.Any( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
             }
         }
 
@@ -61,7 +70,7 @@ namespace Rock.CheckIn
         /// </summary>
 	    public KioskStatus() : base()
 	    {
-            GroupTypes = new List<KioskGroupType>();
+            KioskGroupTypes = new List<KioskGroupType>();
 	    }
 
         /// <summary>
@@ -69,9 +78,11 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="device">The device.</param>
         public KioskStatus( Device device )
-            : base( device )
+            : base()
         {
-            GroupTypes = new List<KioskGroupType>();
+            Device = new Device();
+            Device.CopyPropertiesFrom( device );
+            KioskGroupTypes = new List<KioskGroupType>();
         }
     }
 }

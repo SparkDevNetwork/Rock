@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// A location option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInLocation : LocationDto
+    public class CheckInLocation 
     {
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        [DataMember]
+        public Location Location { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInLocation" /> is selected for check-in
         /// </summary>

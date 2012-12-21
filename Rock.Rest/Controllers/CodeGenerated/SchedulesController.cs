@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Schedules REST API
     /// </summary>
-    public partial class SchedulesController : Rock.Rest.ApiController<Rock.Model.Schedule, Rock.Model.ScheduleDto>
+    public partial class SchedulesController : Rock.Rest.ApiController<Rock.Model.Schedule>
     {
         public SchedulesController() : base( new Rock.Model.ScheduleService() ) { } 
     }

@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// A shedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule : ScheduleDto
+    public class CheckInSchedule 
     {
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        [DataMember]
+        public Schedule Schedule { get; set; }
+
         /// <summary>
         /// Gets or sets the the unique code for check-in labels
         /// </summary>

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock;
 using Rock.Data;
@@ -19,6 +20,7 @@ namespace Rock.Model
     /// CheckInSchedule EF Model.
     /// </summary>
     [Table("Schedule")]
+    [DataContract( IsReference = true )]
     public partial class Schedule : Model<Schedule>
     {
 
@@ -33,6 +35,7 @@ namespace Rock.Model
         [Required]
         [AlternateKey]
         [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -41,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// The frequency.
         /// </value>
+        [DataMember]
         public ScheduleFrequency Frequency { get; set; }
 
         /// <summary>
@@ -50,6 +54,7 @@ namespace Rock.Model
         /// The frequency qualifier.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string FrequencyQualifier { get; set; }
 
         /// <summary>
@@ -58,6 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The start time.
         /// </value>
+        [DataMember]
         public DateTime StartTime { get; set; }
 
         /// <summary>
@@ -66,6 +72,7 @@ namespace Rock.Model
         /// <value>
         /// The end time.
         /// </value>
+        [DataMember]
         public DateTime EndTime { get; set; }
 
         /// <summary>
@@ -74,6 +81,7 @@ namespace Rock.Model
         /// <value>
         /// The check in start time.
         /// </value>
+        [DataMember]
         public DateTime? CheckInStartTime { get; set; }
 
         /// <summary>
@@ -82,6 +90,7 @@ namespace Rock.Model
         /// <value>
         /// The check in end time.
         /// </value>
+        [DataMember]
         public DateTime? CheckInEndTime { get; set; }
 
         /// <summary>
@@ -90,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The effective start date.
         /// </value>
+        [DataMember]
         public DateTimeOffset? EffectiveStartDate { get; set; }
 
         /// <summary>
@@ -98,6 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The effective end date.
         /// </value>
+        [DataMember]
         public DateTimeOffset? EffectiveEndDate { get; set; }
 
         #endregion
@@ -114,15 +125,15 @@ namespace Rock.Model
         {
             get
             {
-            // If there is not a checkin start and end time, or the check-in start happens
-            // to be greater than the check-in end time, return null
-            if (CheckInStartTime.HasValue && 
-                CheckInEndTime.HasValue &&
-                CheckInStartTime.Value.CompareTo(CheckInEndTime.Value) < 0)
-            {
-                return true;
-            }
-            return false;
+                // If there is not a checkin start and end time, or the check-in start happens
+                // to be greater than the check-in end time, return null
+                if ( CheckInStartTime.HasValue &&
+                    CheckInEndTime.HasValue &&
+                    CheckInStartTime.Value.CompareTo( CheckInEndTime.Value ) < 0 )
+                {
+                    return true;
+                }
+                return false;
             }
         }
 
@@ -200,15 +211,6 @@ namespace Rock.Model
                 return false;
    
             }
-        }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
         }
 
         #endregion
@@ -353,30 +355,6 @@ namespace Rock.Model
         private DateTime CombineDateTime(DateTime date, DateTime time)
         {
             return date.Date.Add(time.TimeOfDay);
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Schedule Read( int id )
-        {
-            return Read<Schedule>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Schedule Read( Guid guid )
-        {
-            return Read<Schedule>( guid );
         }
 
         #endregion

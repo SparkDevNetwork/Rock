@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Attendances REST API
     /// </summary>
-    public partial class AttendancesController : Rock.Rest.ApiController<Rock.Model.Attendance, Rock.Model.AttendanceDto>
+    public partial class AttendancesController : Rock.Rest.ApiController<Rock.Model.Attendance>
     {
         public AttendancesController() : base( new Rock.Model.AttendanceService() ) { } 
     }

@@ -17,8 +17,17 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup : GroupDto
+    public class CheckInGroup 
     {
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        [DataMember]
+        public Group group { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInGroup" /> is selected for check-in
         /// </summary>

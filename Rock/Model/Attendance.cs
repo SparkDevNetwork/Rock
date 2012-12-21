@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
@@ -17,6 +18,7 @@ namespace Rock.Model
     /// CheckInAttendance EF Model.
     /// </summary>
     [Table( "Attendance" )]
+    [DataContract( IsReference = true )]
     public partial class Attendance : Model<Attendance>
     {
 
@@ -28,6 +30,7 @@ namespace Rock.Model
         /// <value>
         /// The location id.
         /// </value>
+        [DataMember]
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -36,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The shedule id.
         /// </value>
+        [DataMember]
         public int? ScheduleId { get; set; }
 
         /// <summary>
@@ -44,6 +48,7 @@ namespace Rock.Model
         /// <value>
         /// The group id.
         /// </value>
+        [DataMember]
         public int? GroupId { get; set; }
 
         /// <summary>
@@ -52,6 +57,7 @@ namespace Rock.Model
         /// <value>
         /// The person id.
         /// </value>
+        [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
@@ -60,6 +66,7 @@ namespace Rock.Model
         /// <value>
         /// The qualifier value id.
         /// </value>
+        [DataMember]
         public int? QualifierValueId { get; set; }
 
         /// <summary>
@@ -68,6 +75,7 @@ namespace Rock.Model
         /// <value>
         /// The start date time.
         /// </value>
+        [DataMember]
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -76,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// The end date time.
         /// </value>
+        [DataMember]
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
@@ -84,6 +93,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [did attend]; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool DidAttend { get; set; }
 
         /// <summary>
@@ -93,6 +103,7 @@ namespace Rock.Model
         /// The security code.
         /// </value>
         [MaxLength(10)]
+        [DataMember]
         public string SecurityCode { get; set; }
 
         /// <summary>
@@ -113,6 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The location.
         /// </value>
+        [DataMember]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -121,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
+        [DataMember]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -129,6 +142,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -137,6 +151,7 @@ namespace Rock.Model
         /// <value>
         /// The person.
         /// </value>
+        [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
@@ -145,16 +160,8 @@ namespace Rock.Model
         /// <value>
         /// The qualifier.
         /// </value>
+        [DataMember]
         public virtual DefinedValue Qualifier { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
 
         #endregion
 
@@ -182,34 +189,6 @@ namespace Rock.Model
 
             return sb.ToString().Trim();
 
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
-
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Attendance Read( int id )
-        {
-            return Read<Attendance>( id );
-        }
-
-        /// <summary>
-        /// Static method to return an object based on the GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Attendance Read( Guid guid )
-        {
-            return Read<Attendance>( guid );
         }
 
         #endregion

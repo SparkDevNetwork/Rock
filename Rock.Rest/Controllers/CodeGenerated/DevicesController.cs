@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Devices REST API
     /// </summary>
-    public partial class DevicesController : Rock.Rest.ApiController<Rock.Model.Device, Rock.Model.DeviceDto>
+    public partial class DevicesController : Rock.Rest.ApiController<Rock.Model.Device>
     {
         public DevicesController() : base( new Rock.Model.DeviceService() ) { } 
     }

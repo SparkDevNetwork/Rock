@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// GroupLocations REST API
     /// </summary>
-    public partial class GroupLocationsController : Rock.Rest.ApiController<Rock.Model.GroupLocation, Rock.Model.GroupLocationDto>
+    public partial class GroupLocationsController : Rock.Rest.ApiController<Rock.Model.GroupLocation>
     {
         public GroupLocationsController() : base( new Rock.Model.GroupLocationService() ) { } 
     }
