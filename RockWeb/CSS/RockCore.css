@@ -1,15 +1,4 @@
-/* Font Awesome */
-@font-face {
-  font-family: "FontAwesome";
-  src: url('../Assets/Fonts/fontawesome-webfont.eot');
-  src: url('../Assets/Fonts/fontawesome-webfont.eot?#iefix') format('eot'), url('../Assets/Fonts/fontawesome-webfont.woff') format('woff'), url('../Assets/Fonts/fontawesome-webfont.ttf') format('truetype'), url('../Assets/Fonts/fontawesome-webfont.svg#FontAwesome') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
 
-.btn [class^="icon-"], .btn [class*=" icon-"] {
-	line-height: 14px;
-}
 
 /* group class */
 .group:after {
@@ -20,7 +9,7 @@
     visibility: hidden;
 }
 
-/* Bootstrap Overrides */
+/* Bootstrap Overrides 
 fieldset legend 
 {
     border: 0;
@@ -49,9 +38,9 @@ table th, table td
 .controls .alert 
 {
     display: table-cell;
-}
+}*/
 
-/* forms formating */
+/* forms formating 
 ul.inputs-list 
 {
     list-style: none;
@@ -62,7 +51,7 @@ ul.inputs-list li label
 {
     display: inline;
     margin-left: 6px;
-}
+}*/
 
 /* Zone Config */
 .zone-instance.outline 
@@ -175,7 +164,7 @@ ul.inputs-list li label
     margin-top: 4px;
 }
 
-/* context help */
+/* context help 
 a.help-tip {
 	display: inline-block;
 	width: 16px;
@@ -207,7 +196,7 @@ a.help-tip:hover span {
     background:#ffffff; 
     border:1px solid #cccccc; 
     color:#6c6c6c;
-}
+}*/
 
 /* Admin Footer */
 #cms-admin-footer {
@@ -239,12 +228,12 @@ a.help-tip:hover span {
     border: 0;
 }
 
-/* Icon Buttons */
+/* Icon Buttons 
 i[class^="icon-"] 
 {
     font-size: 18px;
     color: #747474;
-}
+}*/
 
 
 
@@ -284,7 +273,7 @@ span.cke_skin_kama {
 }
 
 
-/* Login Block Style */
+/* Login Block Style 
 .login .classic-login {
     float: left;   
 }
@@ -312,13 +301,13 @@ span.cke_skin_kama {
 .login .remember {
     padding-left: .5em;
     
-}
+}*/
 
-/* Create Account Styling */
+/* Create Account Styling 
 .new-account .actions
 {
     text-align: right;
-}
+}*/
 
 /* Dialog Styling */
 #dialog 
@@ -442,6 +431,7 @@ span.cke_skin_kama {
     border: 0;
 }
 
+/* Splash Screen 
 #splash #content #content-box
 {
     overflow: hidden;
@@ -466,7 +456,7 @@ span.cke_skin_kama {
     font-size: 9px;
     color: #515151;
     word-wrap:break-word;   
-}
+}*/
 
 /* user registration styles */
 .not-me 
@@ -501,146 +491,7 @@ span.cke_skin_kama {
 
 
 
-/* filter search */
-div.filter-search {
-	border-radius: 4px;
-	border: 1px solid #747474;
-	width: 340px;
-	float: right;
-	background-color: #e3e3e4;
-	height: 28px;
-}
 
-div.filter-search input {
-	border: 0;
-	border-radius: 0;
-	background-color: inherit;
-	box-shadow: none;
-	float: left;
-	margin-left: 6px;
-	color: #666a73;
-	width: 200px
-}
-
-div.filter-search input:hover {
-	background-color: inherit;
-	color: #8b8d91;
-}
-
-div.filter-search input.focused, div.filter-search input:focus {
-	background-color: inherit;
-	box-shadow: none;
-	text-shadow: none;
-	color: #8b8d91;
-}
-
-div.filter-search input::selection {
-	background: #232a37; /* Safari */
-}
-
-div.filter-search input::-moz-selection {
-	background: #232a37; /* Firefox */
-}
-
-div.filter-search .filter {
-	color: #666a73;
-	width: 110px;
-	float: right;
-	font-size: 12px;
-	padding: 4px 8px 0 0;
-}
-    
-div.filter-search .dropdown dd, div.filter-search .dropdown dt, div.filter-search .dropdown ul, div.filter-search dl.dropdown 
-{ 
-    margin: 0px; 
-    padding: 0px; 
-}
-
-div.filter-search dl.dropdown 
-{
-    background: url("../assets/images/arrow.png") no-repeat scroll right center;
-}
-
-div.filter-search .dropdown dd  
-{
-    position: relative; 
-}
-
-div.filter-search .dropdown dt  
-{
-    display: block; 
-    padding-right: 20px;  
-    width: 94px;
-    text-align: right;
-    cursor: pointer;
-    font-weight: normal;
-    margin-top: 1px;
-    font-size: 11px;
-}
-
-div.filter-search .dropdown dd ul, div.filter-search ul.ui-autocomplete.ui-menu 
-{ 
-    background-color: rgba(90, 90, 90, 0.5);
-    border-color: rgba(0, 0, 0, 0.5);
-    border-width: 0 1px 1px 1px; 
-    border-style: solid;
-    display: none;
-    list-style: none; 
-    position: absolute; 
-    left: 0px; 
-    top: 4px; 
-    z-index: 90;
-    border-radius: 0 0 4px 4px;
-    margin-left: -3px;
-    padding: 6px 0 12px 0;
-    color: #fff;
-    overflow: hidden;
-    max-height: 440px;
-}
-
-div.filter-search .dropdown dd ul
-{
-    width: 120px;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-div.filter-search ul.ui-autocomplete.ui-menu
-{
-    width: 250px;
-}
-
-div.filter-search .dropdown dd ul li, div.filter-search ul.ui-autocomplete.ui-menu li
-{
-    display: block;
-    cursor: pointer; 
-    font-size: 11px;
-    padding: 5px 10px;
-}
-
-div.filter-search .ui-autocomplete
-{
-    max-height: 200px;
-	overflow-y: auto;
-	/* prevent horizontal scrollbar */
-	overflow-x: hidden;
-	/* add padding to account for vertical scrollbar */
-	--padding-right: 20px;
-}
-
-div.filter-search .dropdown dd ul liz, div.filter-search ul.ui-autocomplete.ui-menu li a
-{
-    text-decoration: none;
-    color: #fff;
-    font-size: 12px;
-    padding: 5px;
-}
-
-div.filter-search .dropdown dd ul li:hover, div.filter-search ul.ui-autocomplete.ui-menu li a.ui-state-hover
-{
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-}
 
 /* jQuery Scrolling Capability */
 .scroll-container 
