@@ -112,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The note.
         /// </value>
+        [DataMember]
         public string Note { get; set; }
         
         #endregion

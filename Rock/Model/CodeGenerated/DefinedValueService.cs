@@ -48,6 +48,18 @@ namespace Rock.Model
         public bool CanDelete( DefinedValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Attendance>().Queryable().Any( a => a.QualifierValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Device>().Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
             
@@ -62,6 +74,12 @@ namespace Rock.Model
             }  
             
             // ignoring GroupLocation,LocationTypeValueId 
+ 
+            if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<Metric>().Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
             {

@@ -48,6 +48,12 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Location>().Queryable().Any( a => a.ParentLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

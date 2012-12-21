@@ -79,8 +79,10 @@ namespace Rock.Model
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.DefaultGroupRoleId = source.DefaultGroupRoleId;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
-            target.SmallIconFileId = source.SmallIconFileId;
-            target.LargeIconFileId = source.LargeIconFileId;
+            target.ShowInGroupList = source.ShowInGroupList;
+            target.IconSmallFileId = source.IconSmallFileId;
+            target.IconLargeFileId = source.IconLargeFileId;
+            target.IconCssClass = source.IconCssClass;
             target.TakesAttendance = source.TakesAttendance;
             target.AttendanceRule = source.AttendanceRule;
             target.AttendancePrintTo = source.AttendancePrintTo;

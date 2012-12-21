@@ -12,7 +12,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class CheckIn : RockMigration
+    public partial class CreateCheckInTables : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -50,6 +50,26 @@ namespace Rock.Migrations
             
             CreateIndex( "dbo.Attendance", "Guid", true );
             CreateTable(
+                "dbo.Schedule",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(nullable: false, maxLength: 50),
+                        Frequency = c.Int(nullable: false),
+                        FrequencyQualifier = c.String(maxLength: 100),
+                        StartTime = c.DateTime(nullable: false),
+                        EndTime = c.DateTime(nullable: false),
+                        CheckInStartTime = c.DateTime(),
+                        CheckInEndTime = c.DateTime(),
+                        EffectiveStartDate = c.DateTimeOffset(),
+                        EffectiveEndDate = c.DateTimeOffset(),
+                        Guid = c.Guid(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id);
+            
+            CreateIndex( "dbo.Schedule", "Name", true );
+            CreateIndex( "dbo.Schedule", "Guid", true );
+            CreateTable(
                 "dbo.Device",
                 c => new
                     {
@@ -74,25 +94,22 @@ namespace Rock.Migrations
             CreateIndex( "dbo.Device", "Name", true );
             CreateIndex( "dbo.Device", "Guid", true );
             CreateTable(
-                "dbo.Schedule",
+                "dbo.GroupLocationSchedule",
                 c => new
                     {
-                        Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(nullable: false, maxLength: 50),
-                        Frequency = c.Int(nullable: false),
-                        FrequencyQualifier = c.String(maxLength: 100),
-                        StartTime = c.DateTime(nullable: false),
-                        EndTime = c.DateTime(nullable: false),
-                        CheckInStartTime = c.DateTime(),
-                        CheckInEndTime = c.DateTime(),
-                        EffectiveStartDate = c.DateTimeOffset(),
-                        EffectiveEndDate = c.DateTimeOffset(),
-                        Guid = c.Guid(nullable: false),
+                        GroupLocationId = c.Int(nullable: false),
+                        ScheduleId = c.Int(nullable: false),
                     })
-                .PrimaryKey(t => t.Id);
+                .PrimaryKey(t => new { t.GroupLocationId, t.ScheduleId })
+                .ForeignKey("dbo.GroupLocation", t => t.GroupLocationId, cascadeDelete: true)
+                .ForeignKey("dbo.Schedule", t => t.ScheduleId, cascadeDelete: true)
+                .Index(t => t.GroupLocationId)
+                .Index(t => t.ScheduleId);
             
-            CreateIndex( "dbo.Schedule", "Name", true );
-            CreateIndex( "dbo.Schedule", "Guid", true );
+            // TableName: GroupLocationSchedule
+            // The given key was not present in the dictionary.
+            // TableName: GroupLocationSchedule
+            // The given key was not present in the dictionary.
             CreateTable(
                 "dbo.DeviceLocation",
                 c => new
@@ -109,23 +126,6 @@ namespace Rock.Migrations
             // TableName: DeviceLocation
             // The given key was not present in the dictionary.
             // TableName: DeviceLocation
-            // The given key was not present in the dictionary.
-            CreateTable(
-                "dbo.GroupLocationSchedule",
-                c => new
-                    {
-                        GroupLocationId = c.Int(nullable: false),
-                        ScheduleId = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => new { t.GroupLocationId, t.ScheduleId })
-                .ForeignKey("dbo.GroupLocation", t => t.GroupLocationId, cascadeDelete: true)
-                .ForeignKey("dbo.Schedule", t => t.ScheduleId, cascadeDelete: true)
-                .Index(t => t.GroupLocationId)
-                .Index(t => t.ScheduleId);
-            
-            // TableName: GroupLocationSchedule
-            // The given key was not present in the dictionary.
-            // TableName: GroupLocationSchedule
             // The given key was not present in the dictionary.
             AddColumn("dbo.GroupLocation", "Id", c => c.Int(nullable: false, identity: true));
             AddColumn("dbo.GroupLocation", "Guid", c => c.Guid(nullable: false));
@@ -152,8 +152,10 @@ namespace Rock.Migrations
             AddColumn("dbo.GroupType", "GroupTerm", c => c.String(maxLength: 100));
             AddColumn("dbo.GroupType", "GroupMemberTerm", c => c.String(maxLength: 100));
             AddColumn("dbo.GroupType", "AllowMultipleLocations", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupType", "SmallIconFileId", c => c.Int());
-            AddColumn("dbo.GroupType", "LargeIconFileId", c => c.Int());
+            AddColumn("dbo.GroupType", "ShowInGroupList", c => c.Boolean(nullable: false));
+            AddColumn("dbo.GroupType", "IconSmallFileId", c => c.Int());
+            AddColumn("dbo.GroupType", "IconLargeFileId", c => c.Int());
+            AddColumn("dbo.GroupType", "IconCssClass", c => c.String());
             AddColumn("dbo.GroupType", "TakesAttendance", c => c.Boolean(nullable: false));
             AddColumn("dbo.GroupType", "AttendanceRule", c => c.Int(nullable: false));
             AddColumn("dbo.GroupType", "AttendancePrintTo", c => c.Int(nullable: false));
@@ -164,30 +166,31 @@ namespace Rock.Migrations
             AddForeignKey("dbo.Location", "ParentLocationId", "dbo.Location", "Id");
             AddForeignKey("dbo.Location", "LocationTypeValueId", "dbo.DefinedValue", "Id");
             AddForeignKey("dbo.Location", "PrinterDeviceId", "dbo.Device", "Id");
-            AddForeignKey("dbo.GroupType", "SmallIconFileId", "dbo.BinaryFile", "Id");
-            AddForeignKey("dbo.GroupType", "LargeIconFileId", "dbo.BinaryFile", "Id");
+            AddForeignKey("dbo.GroupType", "IconSmallFileId", "dbo.BinaryFile", "Id");
+            AddForeignKey("dbo.GroupType", "IconLargeFileId", "dbo.BinaryFile", "Id");
             CreateIndex("dbo.Location", "ParentLocationId");
             CreateIndex("dbo.Location", "LocationTypeValueId");
             CreateIndex("dbo.Location", "PrinterDeviceId");
-            CreateIndex("dbo.GroupType", "SmallIconFileId");
-            CreateIndex("dbo.GroupType", "LargeIconFileId");
+            CreateIndex("dbo.GroupType", "IconSmallFileId");
+            CreateIndex("dbo.GroupType", "IconLargeFileId");
 
             Sql( @"
     UPDATE [dbo].[Location] 
     SET [LocationPoint] = geography::STPointFromText('POINT(' + CAST([Longitude] AS VARCHAR(20)) + ' ' + CAST([Latitude] AS VARCHAR(20)) + ')', 4326)
 " );
-            DropColumn( "dbo.Location", "Latitude" );
-            DropColumn( "dbo.Location", "Longitude" );
 
-        }
+            DropColumn("dbo.Location", "Latitude");
+            DropColumn("dbo.Location", "Longitude");
+         }
         
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            AddColumn( "dbo.Location", "Longitude", c => c.Double() );
-            AddColumn( "dbo.Location", "Latitude", c => c.Double() );
+
+            AddColumn("dbo.Location", "Longitude", c => c.Double());
+            AddColumn("dbo.Location", "Latitude", c => c.Double());
 
             Sql( @"
     UPDATE [dbo].[Location] 
@@ -205,14 +208,14 @@ namespace Rock.Migrations
             RenameColumn( "dbo.Location", "GeocodeAttemptedResult", "GeocodeResult" );
             RenameColumn( "dbo.Location", "GeocodedDateTime", "GeocodeDate" );
 
-            DropIndex("dbo.GroupLocationSchedule", new[] { "ScheduleId" });
-            DropIndex("dbo.GroupLocationSchedule", new[] { "GroupLocationId" });
             DropIndex("dbo.DeviceLocation", new[] { "LocationId" });
             DropIndex("dbo.DeviceLocation", new[] { "DeviceId" });
-            DropIndex("dbo.GroupType", new[] { "LargeIconFileId" });
-            DropIndex("dbo.GroupType", new[] { "SmallIconFileId" });
+            DropIndex("dbo.GroupLocationSchedule", new[] { "ScheduleId" });
+            DropIndex("dbo.GroupLocationSchedule", new[] { "GroupLocationId" });
             DropIndex("dbo.Device", new[] { "DeviceTypeValueId" });
             DropIndex("dbo.Device", new[] { "PrinterDeviceId" });
+            DropIndex("dbo.GroupType", new[] { "IconLargeFileId" });
+            DropIndex("dbo.GroupType", new[] { "IconSmallFileId" });
             DropIndex("dbo.Location", new[] { "PrinterDeviceId" });
             DropIndex("dbo.Location", new[] { "LocationTypeValueId" });
             DropIndex("dbo.Location", new[] { "ParentLocationId" });
@@ -221,14 +224,14 @@ namespace Rock.Migrations
             DropIndex("dbo.Attendance", new[] { "GroupId" });
             DropIndex("dbo.Attendance", new[] { "ScheduleId" });
             DropIndex("dbo.Attendance", new[] { "LocationId" });
-            DropForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule");
-            DropForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation");
             DropForeignKey("dbo.DeviceLocation", "LocationId", "dbo.Location");
             DropForeignKey("dbo.DeviceLocation", "DeviceId", "dbo.Device");
-            DropForeignKey("dbo.GroupType", "LargeIconFileId", "dbo.BinaryFile");
-            DropForeignKey("dbo.GroupType", "SmallIconFileId", "dbo.BinaryFile");
+            DropForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule");
+            DropForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation");
             DropForeignKey("dbo.Device", "DeviceTypeValueId", "dbo.DefinedValue");
             DropForeignKey("dbo.Device", "PrinterDeviceId", "dbo.Device");
+            DropForeignKey("dbo.GroupType", "IconLargeFileId", "dbo.BinaryFile");
+            DropForeignKey("dbo.GroupType", "IconSmallFileId", "dbo.BinaryFile");
             DropForeignKey("dbo.Location", "PrinterDeviceId", "dbo.Device");
             DropForeignKey("dbo.Location", "LocationTypeValueId", "dbo.DefinedValue");
             DropForeignKey("dbo.Location", "ParentLocationId", "dbo.Location");
@@ -243,8 +246,10 @@ namespace Rock.Migrations
             DropColumn("dbo.GroupType", "AttendancePrintTo");
             DropColumn("dbo.GroupType", "AttendanceRule");
             DropColumn("dbo.GroupType", "TakesAttendance");
-            DropColumn("dbo.GroupType", "LargeIconFileId");
-            DropColumn("dbo.GroupType", "SmallIconFileId");
+            DropColumn("dbo.GroupType", "IconCssClass");
+            DropColumn("dbo.GroupType", "IconLargeFileId");
+            DropColumn("dbo.GroupType", "IconSmallFileId");
+            DropColumn("dbo.GroupType", "ShowInGroupList");
             DropColumn("dbo.GroupType", "AllowMultipleLocations");
             DropColumn("dbo.GroupType", "GroupMemberTerm");
             DropColumn("dbo.GroupType", "GroupTerm");
@@ -257,10 +262,10 @@ namespace Rock.Migrations
             DropColumn("dbo.Location", "ParentLocationId");
             DropColumn("dbo.GroupLocation", "Guid");
             DropColumn("dbo.GroupLocation", "Id");
-            DropTable("dbo.GroupLocationSchedule");
             DropTable("dbo.DeviceLocation");
-            DropTable("dbo.Schedule");
+            DropTable("dbo.GroupLocationSchedule");
             DropTable("dbo.Device");
+            DropTable("dbo.Schedule");
             DropTable("dbo.Attendance");
         }
     }

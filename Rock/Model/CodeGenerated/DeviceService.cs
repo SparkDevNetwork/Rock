@@ -48,6 +48,18 @@ namespace Rock.Model
         public bool CanDelete( Device item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Device>().Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Location>().Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
