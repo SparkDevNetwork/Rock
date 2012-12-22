@@ -57,6 +57,7 @@
 						</a>
 					</li>
 				</xsl:for-each>
+        <li class="divider"></li>
 			</xsl:if>
 	</xsl:template>
 </xsl:stylesheet>
