@@ -137,6 +137,14 @@ namespace Rock.Web.Cache
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -411,6 +419,7 @@ namespace Rock.Web.Cache
                 this.MenuDisplayIcon = page.MenuDisplayIcon;
                 this.MenuDisplayChildPages = page.MenuDisplayChildPages;
                 this.DisplayInNavWhen = page.DisplayInNavWhen;
+                this.IconCssClass = page.IconCssClass;
                 this.Order = page.Order;
                 this.OutputCacheDuration = page.OutputCacheDuration;
                 this.Description = page.Description;
@@ -715,6 +724,7 @@ namespace Rock.Web.Cache
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
+                    new XAttribute( "icon-css-class", this.IconCssClass ?? string.Empty ),
                     new XElement( "description", this.Description ?? "" ),
                     new XElement( "icon-url", iconUrl ) );
 
