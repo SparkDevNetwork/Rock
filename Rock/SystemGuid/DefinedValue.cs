@@ -13,6 +13,15 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Note Type
+
+        /// <summary>
+        /// Manually entered note.
+        /// </summary>
+        public static Guid NOTE_TYPE_MANUAL_NOTE { get { return new Guid( "4318E9AC-B669-4AF7-AF88-EF580FC43C6A" ); } }
+
+        #endregion
+
         #region Device Type
 
         /// <summary>

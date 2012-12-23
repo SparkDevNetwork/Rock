@@ -82,6 +82,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\KiosksController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
