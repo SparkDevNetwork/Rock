@@ -50,6 +50,7 @@
                             <Rock:ImageSelector ID="imgIcon" runat="server" />
                         </div>
                     </div>
+                    <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass"/>
                 </fieldset>
             </asp:Panel>
 

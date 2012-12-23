@@ -86,6 +86,7 @@ namespace Rock.Model
             target.MenuDisplayIcon = source.MenuDisplayIcon;
             target.MenuDisplayChildPages = source.MenuDisplayChildPages;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
+            target.IconCssClass = source.IconCssClass;
             target.Order = source.Order;
             target.OutputCacheDuration = source.OutputCacheDuration;
             target.Description = source.Description;

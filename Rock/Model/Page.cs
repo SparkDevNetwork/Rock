@@ -155,6 +155,15 @@ namespace Rock.Model
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the Order.
         /// </summary>
         /// <value>
