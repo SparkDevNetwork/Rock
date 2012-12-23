@@ -14,16 +14,23 @@ namespace Rock.SystemGuid
     public static class FieldType
     {
         /// <summary>
-        /// Gets the Plugin Manager guid
+        /// Text field type
         /// </summary>
         public static Guid TEXT { get { return new Guid( "9C204CD0-1233-41C5-818A-C5DA439445AA" ); } }
 
         /// <summary>
-        /// Gets the BOOLEAN.
+        /// Boolean field type
         /// </summary>
-        /// <value>
-        /// The BOOLEAN.
-        /// </value>
         public static Guid BOOLEAN { get { return new Guid( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A" ); } }
+
+        /// <summary>
+        /// Date field type
+        /// </summary>
+        public static Guid DATE { get { return new Guid( "6B6AA175-4758-453F-8D83-FCD8044B5F36" ); } }
+
+        /// <summary>
+        /// Defined value field type
+        /// </summary>
+        public static Guid DEFINEDVALUE { get { return new Guid( "59D5A94C-94A0-4630-B80A-BB25697D74C7" ); } }
     }
 }

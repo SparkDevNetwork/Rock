@@ -327,6 +327,22 @@ namespace Rock.Data
         public DbSet<MetricValue> MetricValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        public DbSet<Note> Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note types.
+        /// </summary>
+        /// <value>
+        /// The note types.
+        /// </value>
+        public DbSet<NoteType> NoteTypes { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>
@@ -620,6 +636,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
             modelBuilder.Configurations.Add( new MetricConfiguration() );
             modelBuilder.Configurations.Add( new MetricValueConfiguration() );
+            modelBuilder.Configurations.Add( new NoteConfiguration() );
+            modelBuilder.Configurations.Add( new NoteTypeConfiguration() );
             modelBuilder.Configurations.Add( new PageConfiguration() );
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );

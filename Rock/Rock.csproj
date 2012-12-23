@@ -136,8 +136,6 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
-    <Compile Include="Data\DtoSecured.cs" />
-    <Compile Include="Data\Dto.cs" />
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Field\Types\GroupField.cs" />
     <Compile Include="Field\Types\GroupTypesField.cs" />
@@ -189,6 +187,10 @@
     <Compile Include="Migrations\201212211225129_CreateCheckInTables.Designer.cs">
       <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212211411123_Notes.cs" />
+    <Compile Include="Migrations\201212211411123_Notes.Designer.cs">
+      <DependentUpon>201212211411123_Notes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -211,6 +213,8 @@
     <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignCampusService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignService.cs" />
+    <Compile Include="Model\CodeGenerated\NoteService.cs" />
+    <Compile Include="Model\CodeGenerated\NoteTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
@@ -230,6 +234,10 @@
     <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Model\MarketingCampaignAudience.cs" />
     <Compile Include="Model\MarketingCampaignCampus.cs" />
+    <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\NoteService.Partial.cs" />
+    <Compile Include="Model\NoteType.cs" />
+    <Compile Include="Model\NoteTypeService.Partial.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
     <Compile Include="Model\PageContext.cs" />
@@ -341,7 +349,6 @@
     <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Data\FriendlyTypeNameAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
-    <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
@@ -815,6 +822,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212211225129_CreateCheckInTables.resx">
       <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212211411123_Notes.resx">
+      <DependentUpon>201212211411123_Notes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -105,23 +105,14 @@ namespace Rock
         public static string GetFriendlyTypeName( this Type type )
         {
             Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
-
             if ( attrib != null )
             {
                 return attrib.FriendlyTypeName;
             }
             else
             {
-                string result = SplitCase( type.Name );
-                Type idtoInterface = type.GetInterface(typeof(Rock.Data.IDto).Name);
-                if ( idtoInterface != null)
-                {
-                    if ( result.EndsWith( " dto", StringComparison.InvariantCultureIgnoreCase ) )
-                    {
-                        return result.Substring( 0, result.Length - 4 );
-                    }
-                }
-                return result;
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                return entityType.FriendlyName ?? entityType.Name;
             }
         }
 
@@ -866,7 +857,7 @@ namespace Rock
 
         #endregion
 
-        #region IEntity, IDto extensions
+        #region IEntity extensions
         
         /// <summary>
         /// Removes the entity.
@@ -897,37 +888,6 @@ namespace Rock
                 list.Remove( item );
             }
 
-        }
-
-        /// <summary>
-        /// Removes the dto.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list">The list.</param>
-        /// <param name="id">The id.</param>
-        public static void RemoveDto<T>( this List<T> list, int id ) where T : Rock.Data.IDto
-        {
-            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
-            if ( item != null )
-            {
-                list.Remove( item );
-            }
-
-        }
-
-        /// <summary>
-        /// Removes the dto.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list">The list.</param>
-        /// <param name="guid">The GUID.</param>
-        public static void RemoveDto<T>( this List<T> list, Guid guid ) where T : Rock.Data.IDto
-        {
-            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
-            if ( item != null )
-            {
-                list.Remove( item );
-            }
         }
         
         #endregion

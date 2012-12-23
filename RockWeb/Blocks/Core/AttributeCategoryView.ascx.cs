@@ -113,31 +113,11 @@ namespace RockWeb.Blocks.Core
                     }
 
                     xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+
+                    xmlContent.DocumentContent = xDocument.ToString();
+                    xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
                 }
             }
         }
-
-        protected override void Render( System.Web.UI.HtmlTextWriter writer )
-        {
-            try
-            {
-                if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
-                {
-                    string xsltFile = AttributeValue( "XsltFile" );
-                    if ( !String.IsNullOrEmpty( xsltFile ) )
-                    {
-                        string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
-                        var xslt = new XslCompiledTransform();
-                        xslt.Load( xsltPath );
-                        xslt.Transform( xDocument.CreateReader(), null, writer );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                writer.Write( "Error: " + ex.Message );
-            }
-        }
-
     }
 }
