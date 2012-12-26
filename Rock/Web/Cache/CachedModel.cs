@@ -174,7 +174,7 @@ namespace Rock.Web.Cache
                 foreach ( int id in AttributeIds )
                 {
                     var attribute = AttributeCache.Read( id );
-                    if ( !attributeCategories.ContainsKey( attribute.Key ) )
+                    if ( !attributeCategories.ContainsKey( attribute.Category ) )
                         attributeCategories.Add( attribute.Category, new List<string>() );
                     attributeCategories[attribute.Category].Add( attribute.Key );
                 }
