@@ -23,6 +23,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class Block : Model<Block>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -104,7 +107,11 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Block Type.
         /// </summary>
@@ -156,6 +163,10 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Public Methods
+        
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
@@ -167,7 +178,11 @@ namespace Rock.Model
             return this.Name;
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Block Instance Configuration class.
@@ -183,6 +198,10 @@ namespace Rock.Model
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// The location of the block 
@@ -200,5 +219,7 @@ namespace Rock.Model
         /// </summary>
         Page,
     }
+
+    #endregion
 
 }

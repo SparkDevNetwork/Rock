@@ -19,7 +19,8 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
-                dynamic result = pageRoute.ToDynamic( true );
+                var result = new PageRoute();
+                result.CopyPropertiesFrom(pageRoute);
                 Assert.AreEqual( result.Guid, pageRoute.Guid );
             }
         }
@@ -30,7 +31,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
-                dynamic result = pageRoute.ToJson( true );
+                dynamic result = pageRoute.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
@@ -40,15 +41,14 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new
+                var obj = new PageRoute()
                 {
                     Route = "/some/path",
                     IsSystem = true
                 };
 
-                var json = obj.ToJSON();
-                var pageRoute = new PageRoute();
-                pageRoute.FromJson( json );
+                var json = obj.ToJson();
+                var pageRoute = PageRoute.FromJson( json );
                 Assert.AreEqual( obj.Route, pageRoute.Route );
                 Assert.AreEqual( obj.IsSystem, pageRoute.IsSystem );
             }

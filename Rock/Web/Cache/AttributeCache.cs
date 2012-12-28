@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
+using System.Runtime.Serialization;
 using System.Web.UI;
 
 using Rock.Field;
@@ -22,6 +23,7 @@ namespace Rock.Web.Cache
     /// property of this attribute object.
     /// </summary>
     [Serializable]
+    [DataContract( IsReference = true )]
     public class AttributeCache 
     {
         #region constructors
@@ -50,6 +52,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The id.
         /// </value>
+        [DataMember]
         public virtual int Id { get; set; }
 
         /// <summary>
@@ -58,6 +61,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The GUID.
         /// </value>
+        [DataMember]
         public virtual Guid Guid { get; set; }
 
         /// <summary>
@@ -66,6 +70,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -74,6 +79,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The field type id.
         /// </value>
+        [DataMember]
         public int FieldTypeId { get; set; }
 
         /// <summary>
@@ -82,6 +88,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type id.
         /// </value>
+        [DataMember]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -90,6 +97,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type qualifier column.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -98,6 +106,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type qualifier value.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -106,6 +115,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The key.
         /// </value>
+        [DataMember]
         public string Key { get; set; }
 
         /// <summary>
@@ -114,6 +124,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -122,6 +133,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The category.
         /// </value>
+        [DataMember]
         public string Category { get; set; }
 
         /// <summary>
@@ -130,6 +142,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -138,6 +151,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -146,6 +160,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is grid column; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsGridColumn { get; set; }
 
         /// <summary>
@@ -154,6 +169,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The default value.
         /// </value>
+        [DataMember]
         public string DefaultValue { get; set; }
 
         /// <summary>
@@ -162,6 +178,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is multi value; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsMultiValue { get; set; }
 
         /// <summary>
@@ -170,6 +187,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsRequired { get; set; }
 
         /// <summary>
@@ -178,6 +196,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The type of the field.
         /// </value>
+        [DataMember]
         public FieldTypeCache FieldType 
         {
             get { return FieldTypeCache.Read( FieldTypeId ); }
@@ -186,6 +205,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the qualifier values if any have been defined for the attribute
         /// </summary>
+        [DataMember]
         public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
         #endregion

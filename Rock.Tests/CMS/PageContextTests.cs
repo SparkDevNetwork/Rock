@@ -19,7 +19,8 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var pageContext = new PageContext { Guid = Guid.NewGuid() };
-                dynamic result = pageContext.ToDynamic( true );
+                var result = new PageContext();
+                result.CopyPropertiesFrom( pageContext );
                 Assert.AreEqual( result.Guid, pageContext.Guid );
             }
         }
@@ -30,7 +31,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var pageContext = new PageContext() { Guid = Guid.NewGuid() };
-                dynamic result = pageContext.ToJson( true );
+                var result = pageContext.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
@@ -40,15 +41,14 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new
+                var obj = new PageContext()
                     {
                         Guid = Guid.NewGuid(),
                         IsSystem = false
                     };
 
-                var json = obj.ToJSON();
-                var pageContext = new PageContext();
-                pageContext.FromJson( json );
+                var json = obj.ToJson();
+                var pageContext = PageContext.FromJson( json );
                 Assert.AreEqual( obj.Guid, pageContext.Guid );
                 Assert.AreEqual( obj.IsSystem, pageContext.IsSystem );
             }

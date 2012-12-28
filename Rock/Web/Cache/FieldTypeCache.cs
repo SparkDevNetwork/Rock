@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.Caching;
+using System.Runtime.Serialization;
 
 using Rock.Model;
 
@@ -16,6 +17,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [DataContract( IsReference = true )]
     public class FieldTypeCache : CachedModel<FieldType>
     {
         #region Constructors
@@ -39,6 +41,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -55,6 +59,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -63,6 +68,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The assembly.
         /// </value>
+        [DataMember]
         public string Assembly { get; set; }
 
         /// <summary>
@@ -71,11 +77,13 @@ namespace Rock.Web.Cache
         /// <value>
         /// The class.
         /// </value>
+        [DataMember]
         public string Class { get; set; }
 
         /// <summary>
         /// Gets the field 
         /// </summary>
+        [DataMember]
         public Rock.Field.IFieldType Field { get; private set; }
 
         #endregion

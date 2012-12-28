@@ -21,7 +21,8 @@ namespace Rock.Tests.Cms
             public void ShouldCopyEntity()
             {
                 var page = new Page() { Name = "SomePage" };
-                dynamic result = page.ToDynamic( true );
+                var result = new Page();
+                result.CopyPropertiesFrom(page);
                 Assert.AreEqual( result.Name, page.Name );
             }
 
@@ -30,7 +31,7 @@ namespace Rock.Tests.Cms
             {
                 var children = new List<Page>() { new Page() };
                 var parent = new Page() { Pages = children };
-                dynamic result = parent.ToDynamic( true );
+                var result = parent.Clone() as Page;
                 Assert.IsNotEmpty( result.Pages );
             }
 
@@ -42,9 +43,9 @@ namespace Rock.Tests.Cms
                 var grandchild = new Page();
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
-                dynamic result = parent.ToDynamic( true );
+                var result = parent.Clone() as Page;
                 Assert.IsNotEmpty( result.Pages );
-                Assert.IsNotEmpty( result.Pages[ 0 ].Pages );
+                Assert.IsNotEmpty( result.Pages.FirstOrDefault().Pages );
             }
 
             [Test]
@@ -52,7 +53,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { Blocks = new List<Block>() };
                 page.Blocks.Add( new Block() );
-                dynamic result = page.ToDynamic( true );
+                var result = page.Clone() as Page;
                 Assert.NotNull( result.Blocks );
                 Assert.IsNotEmpty( result.Blocks );
             }
@@ -62,7 +63,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { PageRoutes = new List<PageRoute>() };
                 page.PageRoutes.Add( new PageRoute());
-                dynamic result = page.ToDynamic( true );
+                var result = page.Clone() as Page;
                 Assert.NotNull( result.PageRoutes );
                 Assert.IsNotEmpty( result.PageRoutes );
             }
@@ -72,7 +73,7 @@ namespace Rock.Tests.Cms
             {
                 var page = new Page() { PageContexts = new List<PageContext>() };
                 page.PageContexts.Add( new PageContext() );
-                dynamic result = page.ToDynamic( true );
+                var result = page.Clone() as Page;
                 Assert.NotNull( result.PageContexts );
                 Assert.IsNotEmpty( result.PageContexts );
             }
@@ -84,7 +85,7 @@ namespace Rock.Tests.Cms
             public void ShouldNotBeEmpty()
             {
                 var page = new Page();
-                var result = page.ToJson( true );
+                var result = page.ToJson();
                 Assert.IsNotEmpty( result );
             }
 
@@ -95,7 +96,7 @@ namespace Rock.Tests.Cms
                 {
                     Title = "FooPage"
                 };
-                var result = page.ToJson( true );
+                var result = page.ToJson( );
                 const string key = "\"Title\":\"FooPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
             }
@@ -108,7 +109,7 @@ namespace Rock.Tests.Cms
                     Title = "FooPage",
                     Pages = new List<Page> { new Page { Title = "BarPage" } }
                 };
-                var result = page.ToJson( true );
+                var result = page.ToJson( );
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
                 const string key = "\"Title\":\"BarPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
@@ -122,7 +123,7 @@ namespace Rock.Tests.Cms
                 var grandchild = new Page() { Title = "Grandchild" };
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
-                var result = parent.ToJson( true );
+                var result = parent.ToJson( );
                 const string parentKey = "\"Title\":\"Parent\"";
                 const string childKey = "\"Title\":\"Child\"";
                 const string grandChildKey = "\"Title\":\"Grandchild\"";
@@ -137,15 +138,14 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new
+                var obj = new Page()
                     {
                         Name = "Foo Page",
-                        IsSystem = true
+                        IsSystem = true,
                     };
 
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                string json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.AreEqual( obj.Name, page.Name );
                 Assert.AreEqual( obj.IsSystem, page.IsSystem );
             }
@@ -153,40 +153,30 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportChildPages()
             {
-                var obj = new
-                    {
-                        Name = "Parent",
-                        Pages = new List<dynamic> { new { Name = "Child" } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Parent" };
+                obj.Pages.Add ( new Page() { Name = "Child" } );
+                
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Pages );
                 Assert.IsNotEmpty( page.Pages );
-                Assert.AreEqual( page.Pages.First().Name, obj.Pages[0].Name );
+                Assert.AreEqual( page.Pages.First().Name, obj.Pages.First().Name );
             }
 
             [Test]
             public void ShouldImportPagesRecursively()
             {
                 const string PAGE_NAME = "Child Page";
-                var obj = new
-                    {
-                        Name = "Grandparent Page",
-                        Pages = new List<dynamic>
-                            {
-                                new
-                                    {
-                                        Name = "Parent Page",
-                                        Pages = new List<dynamic> { new { Name = PAGE_NAME } }
-                                    }
-                            }
-                    };
 
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var childPage = new Page() { Name = PAGE_NAME };
+                var parentPage = new Page() { Name = "Parent Page" };
+                var grandparentPage = new Page() { Name = "Grandparent Page" };
+
+                parentPage.Pages.Add(childPage);
+                grandparentPage.Pages.Add(parentPage);
+ 
+                var json = grandparentPage.ToJson();
+                var page = Page.FromJson( json );
                 var childPages = page.Pages.First().Pages;
                 Assert.IsNotNull( childPages );
                 Assert.IsNotEmpty( childPages );
@@ -196,35 +186,25 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportBlocks()
             {
-                var obj = new
-                    {
-                        Name = "Some Page",
-                        Blocks = new List<dynamic> { new { Name = "Some Block" } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Some Page" };
+                obj.Blocks.Add(new Block() { Name = "Some Block" } );
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Blocks );
                 Assert.IsNotEmpty( page.Blocks );
-                Assert.AreEqual( page.Blocks.First().Name, obj.Blocks[0].Name );
+                Assert.AreEqual( page.Blocks.First().Name, obj.Blocks.First().Name );
             }
 
             [Test]
             public void ShouldImportPageRoutes()
             {
-                var obj = new
-                    {
-                        Name = "Some Page",
-                        PageRoutes = new List<dynamic> { new { Route = "/some/route" } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Some Page" };
+                obj.PageRoutes.Add( new PageRoute() { Route = "/some/route" } );
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.PageRoutes );
                 Assert.IsNotEmpty( page.PageRoutes );
-                Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes[0].Route );
+                Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes.First().Route );
             }
 
             [Test]
@@ -232,15 +212,10 @@ namespace Rock.Tests.Cms
             {
                 Random random = new Random();
                 var id = random.Next();
-                var obj = new
-                    {
-                        Name = "Some Page",
-                        PageContexts = new List<dynamic> { new { PageId = id } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Some Page" };
+                obj.PageContexts.Add( new PageContext() { PageId = id } );
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.PageContexts );
                 Assert.IsNotEmpty( page.PageContexts );
                 Assert.AreEqual( page.PageContexts.First().PageId, id );
@@ -249,15 +224,11 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportAttributes()
             {
-                var obj = new
-                    {
-                        Name = "Some Page",
-                        Attributes = new Dictionary<string, dynamic> { { "foobar", null } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Some Page" };
+                obj.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                obj.Attributes.Add("foobar", null);
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Attributes );
                 Assert.IsNotEmpty( page.Attributes );
                 Assert.IsNull( page.Attributes.First().Value );
@@ -266,16 +237,11 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportAttributeValues()
             {
-                var obj = new
-                    {
-                        Name = "Some Page",
-                        AttributeValues =
-                            new Dictionary<string, List<dynamic>> { { "foobar", new List<dynamic> { new { Value = "baz" } } } }
-                    };
-
-                var json = obj.ToJSON();
-                var page = new Page();
-                page.FromJson( json );
+                var obj = new Page() { Name = "Some Page" };
+                obj.AttributeValues = new Dictionary<string, List<AttributeValue>>();
+                obj.AttributeValues.Add( "foobar", new List<AttributeValue>() { new AttributeValue() { Value = "baz" } } );
+                var json = obj.ToJson();
+                var page = Page.FromJson( json );
                 Assert.IsNotNull( page.AttributeValues );
                 Assert.IsNotEmpty( page.AttributeValues );
                 Assert.AreEqual( page.AttributeValues.First().Value.First().Value, "baz" );

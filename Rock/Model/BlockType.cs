@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,6 +23,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class BlockType : Model<BlockType>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -62,7 +66,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
@@ -70,7 +78,16 @@ namespace Rock.Model
         /// Collection of Blocks.
         /// </value>
         [DataMember]
-        public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks
+        {
+            get { return _blocks ?? ( _blocks = new Collection<Block>() ); }
+            set { _blocks = value; }
+        }
+        private ICollection<Block> _blocks;
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -82,7 +99,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Block Type Configuration class.
@@ -96,4 +118,7 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
 }
