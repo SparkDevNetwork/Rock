@@ -86,6 +86,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<Note>().Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring Person,MaritalStatusValueId 
             
