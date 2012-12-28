@@ -105,8 +105,8 @@ public class ImageUploader : IHttpHandler, IRequiresSessionState
 			}
 			
 			fileService.Save( cmsFile, null );
-            
-			context.Response.Write( cmsFile.Id.ToJSON() );
+
+            context.Response.Write( cmsFile.Id.ToJson() );
 
 		}
 		catch ( Exception ex )

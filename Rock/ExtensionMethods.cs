@@ -33,21 +33,21 @@ namespace Rock
         /// </summary>
         /// <param name="obj">Object.</param>
         /// <returns></returns>
-        public static string ToJSON( this object obj )
+        public static string ToJson( this object obj )
         {
             return JsonConvert.SerializeObject( obj );
         }
 
-        /// <summary>
-        /// Converts object to JSON string
-        /// </summary>
-        /// <param name="obj">Object.</param>
-        /// <param name="recursionDepth">constrains the number of object levels to process.</param>
-        /// <returns></returns>
-        public static string ToJSON( this object obj, int recursionDepth )
-        {
-            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
-        }
+        ///// <summary>
+        ///// Converts object to JSON string
+        ///// </summary>
+        ///// <param name="obj">Object.</param>
+        ///// <param name="recursionDepth">constrains the number of object levels to process.</param>
+        ///// <returns></returns>
+        //public static string ToJSON( this object obj, int recursionDepth )
+        //{
+        //    return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
+        //}
 
         ///// <summary>
         ///// Creates a copy of the object's property as a DynamicObject.

@@ -162,15 +162,6 @@ namespace Rock.Data
         #region Methods
 
         /// <summary>
-        /// To the json.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string ToJson()
-        {
-            return JsonConvert.SerializeObject( this );
-        }
-
-        /// <summary>
         /// Clones this instance.
         /// </summary>
         /// <returns></returns>

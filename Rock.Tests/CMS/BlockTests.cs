@@ -14,54 +14,89 @@ namespace Rock.Tests.Cms
     [TestFixture]
     public class BlockTests
     {
-        public class TheExportObjectMethod
+        public class TheCopyPropertiesMethod
         {
             [Test]
-            public void ShouldCopyEntity()
+            public void ShouldCopyProperties()
             {
                 var block = new Block { Name = "Foo" };
-                dynamic result = block.ToDynamic( true );
+                var result = new Block();
+                result.CopyPropertiesFrom(block);
                 Assert.AreEqual( result.Name, block.Name );
-            }
-
-            [Test]
-            public void ShouldCopyBlock()
-            {
-                var block = new Block { BlockType = new BlockType() };
-                dynamic result = block.ToDynamic( true );
-                Assert.NotNull( result.BlockType );
             }
         }
 
-        public class TheExportJsonMethod
+        public class TheToJsonMethod
         {
             [Test]
             public void ShouldNotBeEmpty()
             {
                 var block = new Block() { Name = "Foo" };
-                var result = block.ToJson( true );
+                var result = block.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
 
-        public class TheImportJsonMethod
+        public class TheFromJsonMethod
         {
             [Test]
-            public void ShouldCopyPropertiesToEntity()
+            public void ShouldImportProperties()
             {
                 var obj = new
                 {
+                    IsSystem = true,
+                    BlockTypeId = 1,
+                    Zone = "TestZone",
+                    Order = 3,
                     Name = "FooInstance",
-                    IsSystem = true
+                    OutputCacheDuration = 0
                 };
 
-                var json = obj.ToJSON();
-                var block = new Block();
-                block.FromJson( json );
+                var json = obj.ToJson();
+                var block = Block.FromJson( json );
                 Assert.AreEqual( obj.Name, block.Name );
                 Assert.AreEqual( obj.IsSystem, block.IsSystem );
             }
 
+            [Test]
+            public void ShouldImportBlockType()
+            {
+                var obj = new
+                {
+                    IsSystem = true,
+                    BlockTypeId = 1,
+                    Zone = "TestZone",
+                    Order = 3,
+                    Name = "FooInstance",
+                    OutputCacheDuration = 0,
+                    BlockType = new
+                    {
+                        IsSystem = false,
+                        Path = "Test Path",
+                        Name = "Test Name",
+                        Description = "Test desc"
+                    }
+                };
+
+                var json = obj.ToJson();
+                var block = Block.FromJson( json );
+                var blockType = block.BlockType;
+                Assert.IsNotNull( blockType );
+                Assert.AreEqual( blockType.Name, obj.BlockType.Name );
+            }
+
+        }
+
+        public class TheCloneMethod
+        {
+            [Test]
+            public void ShouldCloneObject()
+            {
+                var block = new Block { BlockType = new BlockType() };
+                var result = block.Clone() as Block;
+                Assert.NotNull( result );
+                Assert.NotNull( result.BlockType );
+            }
         }
     }
 }

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,6 +23,7 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class Page : Model<Page>, IOrdered
     {
+
         #region Entity Properties
 
         /// <summary>
@@ -254,7 +256,12 @@ namespace Rock.Model
         /// Collection of Blocks.
         /// </value>
         [DataMember]
-        public virtual ICollection<Block> Blocks { get; set; }
+        public virtual ICollection<Block> Blocks
+        {
+            get { return _blocks ?? ( _blocks = new Collection<Block>() ); }
+            set { _blocks = value; }
+        }
+        private ICollection<Block> _blocks;
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -263,7 +270,12 @@ namespace Rock.Model
         /// Collection of Pages.
         /// </value>
         [DataMember]
-        public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Page> Pages
+        {
+            get { return _pages ?? ( _pages = new Collection<Page>() ); }
+            set { _pages = value; }
+        }
+        private ICollection<Page> _pages;
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -272,7 +284,12 @@ namespace Rock.Model
         /// Collection of Page Routes.
         /// </value>
         [DataMember]
-        public virtual ICollection<PageRoute> PageRoutes { get; set; }
+        public virtual ICollection<PageRoute> PageRoutes
+        {
+            get { return _pageRoutes ?? ( _pageRoutes = new Collection<PageRoute>() ); }
+            set { _pageRoutes = value; }
+        }
+        private ICollection<PageRoute> _pageRoutes;
 
         /// <summary>
         /// Gets or sets the Page Contexts.
@@ -281,7 +298,12 @@ namespace Rock.Model
         /// Collection of Page Contexts.
         /// </value>
         [DataMember]
-        public virtual ICollection<PageContext> PageContexts { get; set; }
+        public virtual ICollection<PageContext> PageContexts
+        {
+            get { return _pageContexts ?? ( _pageContexts = new Collection<PageContext>() ); }
+            set { _pageContexts = value; }
+        }
+        private ICollection<PageContext> _pageContexts;
 
         /// <summary>
         /// Gets the parent authority.
@@ -369,7 +391,6 @@ namespace Rock.Model
         #endregion
 
     }
-
     #region Entity Configuration
 
     /// <summary>
