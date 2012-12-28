@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error" />
+        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
 
         <asp:Panel ID="pnlMetricList" runat="server">
 
@@ -30,7 +30,7 @@
         <asp:Panel ID="pnlMetricDetails" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfIdMetric" runat="server" />
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
             <div class="row-fluid">
 
@@ -102,7 +102,7 @@
         <Rock:ModalDialog ID="modalValue" runat="server" Title="Metric Value">
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
                 <legend>
                     <asp:Literal ID="lValue" runat="server">Metric Value</asp:Literal></legend>

@@ -39,7 +39,7 @@
 
             <asp:HiddenField ID="hfId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
             <div class="row-fluid">
 
@@ -82,7 +82,7 @@
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
                 <fieldset>
                     <div class="control-group">
                         <label class="control-label">
