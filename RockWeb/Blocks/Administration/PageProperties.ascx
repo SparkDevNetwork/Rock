@@ -18,7 +18,7 @@
 
         <div class="tabContent" >
 
-            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">

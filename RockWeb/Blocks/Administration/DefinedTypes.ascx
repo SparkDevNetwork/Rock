@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
     
     <asp:Panel ID="pnlTypes" runat="server">
 
@@ -30,7 +30,7 @@
 
     <asp:Panel ID="pnlTypeDetails" runat="server" Visible="false">
         
-        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
                      
         <fieldset>
             <legend><asp:Literal ID="lType" runat="server" Text=""></asp:Literal></legend>
@@ -89,7 +89,7 @@
     <Rock:ModalDialog ID="modalAttributes" runat="server" Title="Attribute Values">
     <Content>
         <asp:HiddenField ID="hfIdAttribute" runat="server" />
-        <asp:ValidationSummary ID="valSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
         <fieldset>
             <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
             <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
@@ -106,7 +106,7 @@
     <Rock:ModalDialog ID="modalValues" runat="server" Title="Type Values">
     <Content>
         <asp:HiddenField ID="hfIdValue" runat="server" />
-        <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
         
         <fieldset>
             <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />

@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
     <asp:Panel ID="pnlList" runat="server">
 
@@ -22,7 +22,7 @@
 
         <asp:HiddenField ID="hfId" runat="server" />
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Tag</legend>
