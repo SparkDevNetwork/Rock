@@ -195,6 +195,10 @@
     <Compile Include="Migrations\201212231321417_PageIconCssClass.Designer.cs">
       <DependentUpon>201212231321417_PageIconCssClass.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212290135056_FixNotes.cs" />
+    <Compile Include="Migrations\201212290135056_FixNotes.Designer.cs">
+      <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -832,6 +836,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212231321417_PageIconCssClass.resx">
       <DependentUpon>201212231321417_PageIconCssClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212290135056_FixNotes.resx">
+      <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

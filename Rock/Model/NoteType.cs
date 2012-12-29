@@ -106,14 +106,6 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Attribute Qualifiers.
-        /// </summary>
-        /// <value>
-        /// Collection of Attribute Qualifiers.
-        /// </value>
-        public virtual ICollection<Note> Notes { get; set; }
-
         #endregion
 
         #region Public Methods
