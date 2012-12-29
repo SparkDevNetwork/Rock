@@ -24,7 +24,7 @@
 
             <asp:HiddenField ID="hfEmailTemplateId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
             <fieldset>
                 <legend>

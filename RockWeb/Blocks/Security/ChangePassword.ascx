@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlEntry" runat="server">
 
-            <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert-message error" Visible="false">
+            <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert alert-error error" Visible="false">
                 <asp:Literal ID="lInvalid" runat="server"></asp:Literal>
             </asp:Panel>
 
@@ -24,7 +24,7 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlSuccess" runat="server" Visible="false" CssClass="alert-message success">
+        <asp:Panel ID="pnlSuccess" runat="server" Visible="false" CssClass="alert alert-success success">
             <asp:Literal ID="lSuccess" runat="server"></asp:Literal>
         </asp:Panel>
 
