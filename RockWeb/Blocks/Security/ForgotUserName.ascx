@@ -12,7 +12,7 @@
             <Rock:LabeledTextBox ID="tbEmail" runat="server" LabelText="Email" Required="true" ></Rock:LabeledTextBox>
         </fieldset>
 
-        <asp:Panel ID="pnlWarning" runat="server" Visible="false" CssClass="alert-message warning">
+        <asp:Panel ID="pnlWarning" runat="server" Visible="false" CssClass="alert warning">
             <asp:Literal ID="lWarning" runat="server"></asp:Literal>
         </asp:Panel>
 
@@ -22,7 +22,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlSuccess" runat="server" Visible="false" CssClass="alert-message success">
+    <asp:Panel ID="pnlSuccess" runat="server" Visible="false" CssClass="alert alert-success success">
         <asp:Literal ID="lSuccess" runat="server"></asp:Literal>
     </asp:Panel>
 
