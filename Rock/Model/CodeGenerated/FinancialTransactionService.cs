@@ -70,7 +70,7 @@ namespace Rock.Model
         {
             target.Description = source.Description;
             target.TransactionDateTime = source.TransactionDateTime;
-            target.Entity = source.Entity;
+            target.EntityTypeId = source.EntityTypeId;
             target.EntityId = source.EntityId;
             target.BatchId = source.BatchId;
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
