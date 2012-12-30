@@ -319,7 +319,7 @@ namespace Rock.Web.Cache
                 {
                     foreach ( int id in blockIds )
                     {
-                        BlockCache block = BlockCache.Read( id );
+                        BlockCache block = BlockCache.Read( id, SiteId );
                         if ( block != null )
                         {
                             blocks.Add( block );
@@ -336,7 +336,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blocks.Add( BlockCache.Read( block, SiteId ) );
                     }
 
                     // Load Page Blocks
@@ -344,7 +344,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blocks.Add( BlockCache.Read( block, SiteId ) );
                     }
 
                 }

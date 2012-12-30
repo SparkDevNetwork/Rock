@@ -67,6 +67,15 @@ namespace RockWeb.Blocks.Administration
                     iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
                 }
 
+                // Special handling is required when the entity is a block associated with a layout to set 
+                // the site used by it's parent authority property
+                var block = iSecured as Rock.Model.Block;
+                if (block != null && block.BlockLocation == Rock.Model.BlockLocation.Layout)
+                {
+                    block.SiteCache = CurrentPage.Site;
+                    iSecured = block;
+                }
+
                 if ( iSecured != null && iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     rptActions.DataSource = iSecured.SupportedActions;
