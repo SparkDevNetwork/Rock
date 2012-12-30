@@ -131,6 +131,17 @@ namespace Rock.Model
         public virtual Page Page { get; set; }
 
         /// <summary>
+        /// Gets or sets the site cache.  This is only used by security to determine the parent authority
+        /// when the block is associated with a layout instead of a particular page.  The UI will set 
+        /// this property before calling the security dialog
+        /// </summary>
+        /// <value>
+        /// The site cache.
+        /// </value>
+        [NotMapped]
+        public virtual Rock.Web.Cache.SiteCache SiteCache { get; set; }
+
+        /// <summary>
         /// Gets the block location.
         /// </summary>
         /// <value>
@@ -159,7 +170,14 @@ namespace Rock.Model
         {
             get
             {
-                return this.Page;
+                if ( this.BlockLocation == Model.BlockLocation.Page )
+                {
+                    return this.Page;
+                }
+                else
+                {
+                    return this.SiteCache;
+                }
             }
         }
 

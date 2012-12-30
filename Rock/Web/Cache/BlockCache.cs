@@ -25,9 +25,10 @@ namespace Rock.Web.Cache
         {
         }
 
-        private BlockCache( Block block ) 
+        private BlockCache( Block block, int? siteId )
         {
             CopyFromModel( block );
+            SiteId = siteId;
         }
 
         #endregion
@@ -49,6 +50,14 @@ namespace Rock.Web.Cache
         /// The page id.
         /// </value>
         public int? PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the site id.
+        /// </summary>
+        /// <value>
+        /// The site id.
+        /// </value>
+        public int? SiteId { get; set; }
 
         /// <summary>
         /// Gets or sets the layout.
@@ -113,6 +122,24 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the <see cref="Site"/> object for the block.
+        /// </summary>
+        public SiteCache Site
+        {
+            get
+            {
+                if ( SiteId != null && SiteId.Value != 0 )
+                {
+                    return SiteCache.Read( SiteId.Value );
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the block type
         /// </summary>
         public BlockTypeCache BlockType
@@ -139,7 +166,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    return null;
+                    return this.Site;
                 }
             }
         }
@@ -206,9 +233,10 @@ namespace Rock.Web.Cache
         /// Returns Block object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The id.</param>
+        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
-        public static BlockCache Read( int id )
+        public static BlockCache Read( int id, int? siteId )
         {
             string cacheKey = BlockCache.CacheKey( id );
 
@@ -226,7 +254,7 @@ namespace Rock.Web.Cache
                 if ( blockModel != null )
                 {
                     blockModel.LoadAttributes();
-                    block = new BlockCache( blockModel );
+                    block = new BlockCache( blockModel, siteId );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, block, cachePolicy );
@@ -245,15 +273,16 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
-        public static BlockCache Read( Guid guid )
+        public static BlockCache Read( Guid guid, int? siteId )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
             if ( cacheObj != null )
             {
-                return Read((int)cacheObj);
+                return Read( (int)cacheObj, siteId );
             }
             else
             {
@@ -262,10 +291,10 @@ namespace Rock.Web.Cache
                 if ( blockModel != null )
                 {
                     blockModel.LoadAttributes();
-                    var block = new BlockCache( blockModel );
+                    var block = new BlockCache( blockModel, siteId );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( BlockCache.CacheKey(block.Id), block, cachePolicy );
+                    cache.Set( BlockCache.CacheKey( block.Id ), block, cachePolicy );
                     cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
 
                     return block;
@@ -280,9 +309,10 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Adds Block model to cache, and returns cached object
         /// </summary>
-        /// <param name="blockModel"></param>
+        /// <param name="blockModel">The block model.</param>
+        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
-        public static BlockCache Read( Block blockModel )
+        public static BlockCache Read( Block blockModel, int? siteId )
         {
             string cacheKey = BlockCache.CacheKey( blockModel.Id );
 
@@ -295,7 +325,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                block = new BlockCache( blockModel );
+                block = new BlockCache( blockModel, siteId );
 
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, block, cachePolicy );
@@ -317,6 +347,6 @@ namespace Rock.Web.Cache
 
         #endregion
 
-     }
+    }
 
 }

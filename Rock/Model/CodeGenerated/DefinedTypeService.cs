@@ -49,12 +49,6 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<DefinedValue>().Queryable().Any( a => a.DefinedTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, DefinedValue.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<NoteType>().Queryable().Any( a => a.SourcesTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, NoteType.FriendlyTypeName );
