@@ -21,6 +21,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class FinancialTransaction : Model<FinancialTransaction>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
@@ -41,14 +44,14 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity.
+        /// Gets or sets the Entity Type Id.
         /// </summary>
         /// <value>
-        /// The entity.
+        /// Entity Type Id.
         /// </value>
-        [MaxLength(50)]
-        [DataMember]
-        public string Entity { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int EntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the entity id.
@@ -56,7 +59,8 @@ namespace Rock.Model
         /// <value>
         /// The entity id.
         /// </value>
-        [DataMember]
+        [Required]
+        [DataMember( IsRequired = true )]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -151,6 +155,19 @@ namespace Rock.Model
         [DataMember]
         public string Summary { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
+
         /// <summary>
         /// Gets or sets the batch.
         /// </summary>
@@ -215,6 +232,10 @@ namespace Rock.Model
         public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
         //public virtual ICollection<Fund> Funds { get; set; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -225,7 +246,13 @@ namespace Rock.Model
         {
             return this.Amount.ToString();
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration    
+
 
     /// <summary>
     /// Transaction Configuration class.
@@ -238,11 +265,15 @@ namespace Rock.Model
         public FinancialTransactionConfiguration()
         {
             //this.HasMany(p => p.Funds).WithMany(c => c.Transactions).Map(m => { m.MapLeftKey("TransactionId"); m.MapRightKey("FundId"); m.ToTable("financialTransactionFund"); });
-            this.HasOptional(b => b.Batch).WithMany(t => t.Transactions).HasForeignKey(t => t.BatchId).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( b => b.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional(t => t.CurrencyTypeValue).WithMany().HasForeignKey(t => t.CurrencyTypeValueId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.CreditCardTypeValue).WithMany().HasForeignKey(t => t.CreditCardTypeValueId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.PaymentGateway).WithMany(g => g.Transactions).HasForeignKey(t => t.PaymentGatewayId).WillCascadeOnDelete(false);
             this.HasOptional(t => t.SourceTypeValue).WithMany().HasForeignKey(t => t.SourceTypeValueId).WillCascadeOnDelete(false);
         }
     }
+
+    #endregion
+
 }

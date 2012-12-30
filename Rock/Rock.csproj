@@ -203,6 +203,10 @@
     <Compile Include="Migrations\201212301436393_UpdateNoteBlock.Designer.cs">
       <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212301720005_FinancialTxnEntityType.cs" />
+    <Compile Include="Migrations\201212301720005_FinancialTxnEntityType.Designer.cs">
+      <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -846,6 +850,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212301436393_UpdateNoteBlock.resx">
       <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212301720005_FinancialTxnEntityType.resx">
+      <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
