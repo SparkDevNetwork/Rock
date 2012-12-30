@@ -29,6 +29,23 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            string scriptKey = "add-person-note";
+            string script = @"
+Sys.Application.add_load(function () {
+
+    $('#note-add').click(function () {
+        $('#note-entry').slideToggle(""slow"");
+    });
+
+    $('#person-notes').tinyscrollbar({ size: 150 });
+
+});";
+            if ( !this.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
+            {
+                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
+            }
+
             btnAddNote.Click += btnAddNote_Click;
         }
 
@@ -110,6 +127,10 @@ namespace RockWeb.Blocks.Core
 
         private void ShowNotes()
         {
+            tbNewNote.Text = string.Empty;
+            cbAlert.Checked = false;
+            cbPrivate.Checked = false;
+
             phNotes.Controls.Clear();
 
             var service = new NoteService();
