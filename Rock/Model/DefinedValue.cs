@@ -28,7 +28,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Defined Type Id.
         /// </summary>
@@ -38,7 +38,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int DefinedTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Order.
         /// </summary>
@@ -48,7 +48,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Name.
         /// </summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Defined Type.
         /// </summary>
@@ -100,7 +100,7 @@ namespace Rock.Model
             return this.Name;
         }
     }
-    
+
     /// <summary>
     /// Defined Value Configuration class.
     /// </summary>
@@ -111,7 +111,7 @@ namespace Rock.Model
         /// </summary>
         public DefinedValueConfiguration()
         {
-            this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete( true );
         }
     }
 }

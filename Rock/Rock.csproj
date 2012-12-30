@@ -199,6 +199,10 @@
     <Compile Include="Migrations\201212290135056_FixNotes.Designer.cs">
       <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212301436393_UpdateNoteBlock.cs" />
+    <Compile Include="Migrations\201212301436393_UpdateNoteBlock.Designer.cs">
+      <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -839,6 +843,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212290135056_FixNotes.resx">
       <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212301436393_UpdateNoteBlock.resx">
+      <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -5,22 +5,10 @@
 
 <div class="span8 person-notes-container">
     <section id="person-notes" class="person-notes scroll-container">
+
         <header class="group">
             <h4><asp:Literal ID="lTitle" runat="server"></asp:Literal></h4>
             <a id="note-add" class="note-add btn"><i class="icon-plus"></i></a>
-
-            <script>
-
-                $(document).ready(function () {
-
-                    $('#note-add').click(function () {
-                        $('#note-entry').slideToggle("slow");
-                    });
-
-                });
-
-            </script>
-
         </header>
                     
         <div id="note-entry" style="display: none;">
@@ -64,14 +52,8 @@
                 <div class="note-container-bottom"></div>
             </div>
         </div>
+
     </section>
-        
-    <script>
-        $(document).ready(function () {
-            $('#person-notes').tinyscrollbar({ size: 150 });
-        });
-    </script>
-        
 </div>
 
 </ContentTemplate>
