@@ -391,16 +391,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the value for the current user for a given key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public string GetUserValue( string key )
-        {
-            return ( (RockPage)this.Page ).GetUserValue( key );
-        }
-
-        /// <summary>
         /// Navigates to parent page.
         /// </summary>
         public void NavigateToParentPage()
@@ -440,25 +430,39 @@ namespace Rock.Web.UI
             }
         }
 
+        #region User Preferences
+
         /// <summary>
-        /// Gets the values for the current user that start with a given key.
+        /// Gets the user preference value for the current user for a given key
         /// </summary>
-        /// <param name="keyPrefix">The key prefix.</param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public Dictionary<string, string> GetUserValues( string keyPrefix )
+        public string GetUserPreference( string key )
         {
-            return ( (RockPage)this.Page ).GetUserValues( keyPrefix );
+            return ( (RockPage)this.Page ).GetUserPreference( key );
         }
 
         /// <summary>
-        /// Sets a value for the current user for a given key
+        /// Gets the preferences for the current user that start with a given key.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        /// <returns></returns>
+        public Dictionary<string, string> GetUserPreferences( string keyPrefix )
+        {
+            return ( (RockPage)this.Page ).GetUserPreferences( keyPrefix );
+        }
+
+        /// <summary>
+        /// Sets a preference for the current user for a given key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void SetUserValue( string key, string value )
+        public void SetUserPreference( string key, string value )
         {
-            ( (RockPage)this.Page ).SetUserValue( key, value );
+            ( (RockPage)this.Page ).SetUserPreference( key, value );
         }
+
+        #endregion
 
         /// <summary>
         /// Adds icons to the configuration area of a block instance.  Can be overridden to

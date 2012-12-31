@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
             BindGrid();
         }
 
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var item in items )
             {
                 ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserValue( "Category" ) == item );
+                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
                 ddlCategoryFilter.Items.Add( li );
             }
         }

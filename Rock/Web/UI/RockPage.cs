@@ -1344,16 +1344,18 @@ namespace Rock.Web.UI
 
         }
 
+        #region User Preferences
+
         /// <summary>
         /// Gets the value for the current user for a given key
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetUserValue( string key )
+        public string GetUserPreference( string key )
         {
-            var values = SessionUserValues();
+            var values = SessionUserPreferences();
             if ( values.ContainsKey( key ) )
-                foreach ( string value in SessionUserValues()[key] )
+                foreach ( string value in SessionUserPreferences()[key] )
                     return value;
             return string.Empty;
         }
@@ -1363,11 +1365,11 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="keyPrefix">The key prefix.</param>
         /// <returns></returns>
-        public Dictionary<string, string> GetUserValues( string keyPrefix )
+        public Dictionary<string, string> GetUserPreferences( string keyPrefix )
         {
             var selectedValues = new Dictionary<string,string>();
 
-            var values = SessionUserValues();
+            var values = SessionUserPreferences();
             foreach(var key in values.Where ( v => v.Key.StartsWith(keyPrefix) ) )
             {
                 string firstValue = string.Empty;
@@ -1388,44 +1390,45 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void SetUserValue( string key, string value )
+        public void SetUserPreference( string key, string value )
         {
             var newValues = new List<string>();
             newValues.Add( value );
 
-            var sessionValues = SessionUserValues();
+            var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
                 sessionValues[key] = newValues;
             else
                 sessionValues.Add( key, newValues );
 
             if ( CurrentPerson != null )
-                new PersonService().SaveUserValue( CurrentPerson, key, newValues, CurrentPersonId );
+                new PersonService().SaveUserPreference( CurrentPerson, key, newValues, CurrentPersonId );
         }
 
         /// <summary>
         /// Sessions the user values.
         /// </summary>
         /// <returns></returns>
-        private Dictionary<string, List<string>> SessionUserValues()
+        private Dictionary<string, List<string>> SessionUserPreferences()
         {
             string sessionKey = string.Format( "{0}_{1}",
                 Person.USER_VALUE_ENTITY, CurrentPersonId.HasValue ? CurrentPersonId.Value : 0 );
 
-            var userValues = Session[sessionKey] as Dictionary<string, List<string>>;
-            if ( userValues == null )
+            var userPreferences = Session[sessionKey] as Dictionary<string, List<string>>;
+            if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
-                    userValues = new PersonService().GetUserValues( CurrentPerson );
+                    userPreferences = new PersonService().GetUserPreferences( CurrentPerson );
                 else
-                    userValues = new Dictionary<string, List<string>>();
+                    userPreferences = new Dictionary<string, List<string>>();
 
-                Session[sessionKey] = userValues;
+                Session[sessionKey] = userPreferences;
             }
 
-            return userValues;
+            return userPreferences;
         }
 
+        #endregion
 
         #endregion
 

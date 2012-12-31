@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 );
             rootElement.Add( attributesElement );
 
-            foreach ( string keyAttributeId in GetUserValue( "Rock.KeyAttributes" ).SplitDelimitedValues() )
+            foreach ( string keyAttributeId in GetUserPreference( "Rock.KeyAttributes" ).SplitDelimitedValues() )
             {
                 int attributeId = 0;
                 if ( Int32.TryParse( keyAttributeId, out attributeId ) )
