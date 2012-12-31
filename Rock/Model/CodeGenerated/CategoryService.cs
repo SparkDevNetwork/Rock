@@ -80,7 +80,9 @@ namespace Rock.Model
             target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
             target.Name = source.Name;
-            target.FileId = source.FileId;
+            target.IconSmallFileId = source.IconSmallFileId;
+            target.IconLargeFileId = source.IconLargeFileId;
+            target.IconCssClass = source.IconCssClass;
             target.Id = source.Id;
             target.Guid = source.Guid;
 

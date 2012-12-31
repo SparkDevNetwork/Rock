@@ -48,12 +48,10 @@ namespace Rock.Model
         public bool CanDelete( BinaryFile item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Category>().Queryable().Any( a => a.FileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Category.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Category,IconSmallFileId 
+            
+            // ignoring Category,IconLargeFileId 
             
             // ignoring GroupType,IconSmallFileId 
             
@@ -70,10 +68,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring WorkflowType,IconSmallFileId 
-            
-            // ignoring WorkflowType,IconLargeFileId 
             return true;
         }
     }

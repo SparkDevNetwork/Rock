@@ -68,9 +68,6 @@ namespace Rock.Model
             target.Description = source.Description;
             target.CategoryId = source.CategoryId;
             target.Order = source.Order;
-            target.IconSmallFileId = source.IconSmallFileId;
-            target.IconLargeFileId = source.IconLargeFileId;
-            target.IconCssClass = source.IconCssClass;
             target.WorkTerm = source.WorkTerm;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
             target.IsPersisted = source.IsPersisted;
