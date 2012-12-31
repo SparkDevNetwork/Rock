@@ -22,6 +22,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class Group : Model<Group>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -100,37 +103,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsActive { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Groups.
-        /// </summary>
-        /// <value>
-        /// Collection of Groups.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<Group> Groups { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the Members.
-        /// </summary>
-        /// <value>
-        /// Collection of Members.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<GroupMember> Members { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group locations.
-        /// </summary>
-        /// <value>
-        /// The group locations.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<GroupLocation> GroupLocations
-        {
-            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
-            set { _groupLocations = value; }
-        }
-        private ICollection<GroupLocation> _groupLocations;
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the Parent Group.
@@ -160,15 +135,71 @@ namespace Rock.Model
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Gets or sets the Groups.
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        /// <value>
+        /// Collection of Groups.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Group> Groups
         {
-            return this.Name;
+            get { return _groups ?? ( _groups = new Collection<Group>() ); }
+            set { _groups = value; }
         }
+        private ICollection<Group> _groups;
+
+        /// <summary>
+        /// Gets or sets the Members.
+        /// </summary>
+        /// <value>
+        /// Collection of Members.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupMember> Members
+        {
+            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
+            set { _members = value; }
+        }
+        private ICollection<GroupMember> _members;
+
+        /// <summary>
+        /// Gets or sets the group locations.
+        /// </summary>
+        /// <value>
+        /// The group locations.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupLocation> GroupLocations
+        {
+            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
+            set { _groupLocations = value; }
+        }
+        private ICollection<GroupLocation> _groupLocations;
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.ParentGroup != null )
+                {
+                    return this.ParentGroup;
+                }
+                else
+                {
+                    return this.GroupType;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Determines whether [is ancestor of group] [the specified parent group id].
@@ -204,7 +235,22 @@ namespace Rock.Model
             return false;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Group Configuration class.
@@ -222,6 +268,10 @@ namespace Rock.Model
         }
     }
 
+    #endregion
+
+    #region Custom Exceptions
+
     /// <summary>
     /// 
     /// </summary>
@@ -235,4 +285,7 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
 }
