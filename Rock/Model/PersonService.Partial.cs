@@ -193,16 +193,16 @@ namespace Rock.Model
 
         #endregion
 
-        #region User Values
+        #region User Preferences
 
         /// <summary>
-        /// Saves values for a given person, and key
+        /// Saves preference for a given person, and key
         /// </summary>
         /// <param name="person"></param>
         /// <param name="key"></param>
         /// <param name="values"></param>
         /// <param name="personId"></param>
-        public void SaveUserValue(Person person, string key, List<string> values, int? personId)
+        public void SaveUserPreference(Person person, string key, List<string> values, int? personId)
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -253,12 +253,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets values for a given person, and key
+        /// Gets preference for a given person, and key
         /// </summary>
         /// <param name="person"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public List<string> GetUserValue( Person person, string key )
+        public List<string> GetUserPreference( Person person, string key )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -277,11 +277,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets all values for a given person
+        /// Gets all preferences for a given person
         /// </summary>
         /// <param name="person"></param>
         /// <returns></returns>
-        public Dictionary<string, List<string>> GetUserValues( Person person )
+        public Dictionary<string, List<string>> GetUserPreferences( Person person )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
