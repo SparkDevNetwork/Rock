@@ -70,12 +70,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<WorkflowType>().Queryable().Any( a => a.FileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, WorkflowType.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring WorkflowType,IconSmallFileId 
+            
+            // ignoring WorkflowType,IconLargeFileId 
             return true;
         }
     }

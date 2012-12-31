@@ -207,6 +207,10 @@
     <Compile Include="Migrations\201212301720005_FinancialTxnEntityType.Designer.cs">
       <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212311301028_AddWorkflowTypeIcon.cs" />
+    <Compile Include="Migrations\201212311301028_AddWorkflowTypeIcon.Designer.cs">
+      <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -853,6 +857,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212301720005_FinancialTxnEntityType.resx">
       <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212311301028_AddWorkflowTypeIcon.resx">
+      <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
