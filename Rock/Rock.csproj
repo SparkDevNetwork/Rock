@@ -211,6 +211,10 @@
     <Compile Include="Migrations\201212311301028_AddWorkflowTypeIcon.Designer.cs">
       <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201212311316295_AddCategoryIcon.cs" />
+    <Compile Include="Migrations\201212311316295_AddCategoryIcon.Designer.cs">
+      <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -860,6 +864,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212311301028_AddWorkflowTypeIcon.resx">
       <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212311316295_AddCategoryIcon.resx">
+      <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

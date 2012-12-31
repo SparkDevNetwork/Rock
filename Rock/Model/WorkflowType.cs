@@ -82,33 +82,6 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the small icon.
-        /// </summary>
-        /// <value>
-        /// The small icon.
-        /// </value>
-        [DataMember]
-        public int? IconSmallFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the large icon.
-        /// </summary>
-        /// <value>
-        /// The large icon.
-        /// </value>
-        [DataMember]
-        public int? IconLargeFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
-        /// </value>
-        [DataMember]
-        public string IconCssClass { get; set; }
-
-        /// <summary>
         /// Gets or sets the work term.
         /// </summary>
         /// <value>
@@ -160,24 +133,6 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the small icon.
-        /// </summary>
-        /// <value>
-        /// The small icon.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconSmallFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the large icon.
-        /// </summary>
-        /// <value>
-        /// The large icon.
-        /// </value>
-        [DataMember]
-        public virtual BinaryFile IconLargeFile { get; set; }
-
-        /// <summary>
         /// Gets or sets the activity types.
         /// </summary>
         /// <value>
@@ -223,8 +178,6 @@ namespace Rock.Model
         public WorkflowTypeConfiguration()
         {
             this.HasOptional( m => m.Category ).WithMany().HasForeignKey( m => m.CategoryId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
         }
     }
 
