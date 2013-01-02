@@ -32,11 +32,11 @@ namespace RockWeb.Blocks.Administration
         /// <value>
         /// The state of the marketing campaign audiences.
         /// </value>
-        private List<MarketingCampaignAudience> MarketingCampaignAudiencesState
+        private ViewStateList<MarketingCampaignAudience> MarketingCampaignAudiencesState
         {
             get
             {
-                return ViewState["MarketingCampaignAudiencesState"] as List<MarketingCampaignAudience>;
+                return ViewState["MarketingCampaignAudiencesState"] as ViewStateList<MarketingCampaignAudience>;
             }
 
             set
@@ -848,7 +848,7 @@ namespace RockWeb.Blocks.Administration
             hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
 
             // refresh from db using new service context since the above child items were saved outside of the marketingCampaign object
-            marketingCampaign = marketingCampaignService.Get( marketingCampaign.Id );
+            marketingCampaign = new MarketingCampaignService().Get( marketingCampaign.Id );
             UpdateReadonlyDetails( marketingCampaign );
 
             SetEditMode( false );
@@ -917,7 +917,7 @@ namespace RockWeb.Blocks.Administration
         {
             MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
             MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
-            MarketingCampaignAudiencesState = new List<MarketingCampaignAudience>();
+            MarketingCampaignAudiencesState = new ViewStateList<MarketingCampaignAudience>();
 
             if ( marketingCampaign == null )
             {
