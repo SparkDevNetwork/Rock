@@ -285,26 +285,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
 
                 // Add any unregistered blocks
-                foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
-                {
-                    try
-                    {
-                        Control control = LoadControl( blockType.Path );
-                        if ( control is Rock.Web.UI.RockBlock )
-                        {
-                            blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path );
-                            // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
-                            blockType.Name = System.Text.RegularExpressions.Regex.Replace( blockType.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
-                            blockType.Description = blockType.Path;
-
-                            blockTypeService.Add( blockType, CurrentPersonId );
-                            blockTypeService.Save( blockType, CurrentPersonId );
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
+                blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
 
                 ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name).ToList();
                 ddlBlockType.DataTextField = "Name";
