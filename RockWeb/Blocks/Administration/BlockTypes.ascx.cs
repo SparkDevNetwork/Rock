@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( !Page.IsPostBack )
                 {
-                    ScanForUnregisteredBlocks();
+                    new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
                     BindGrid();
                 }
             }
@@ -180,33 +180,6 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Scans for unregistered blocks.
-        /// </summary>
-        private void ScanForUnregisteredBlocks()
-        {
-            BlockTypeService blockTypeService = new BlockTypeService();
-            foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
-            {
-                try
-                {
-                    Control control = LoadControl( blockType.Path );
-                    if ( control is Rock.Web.UI.RockBlock )
-                    {
-                        blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path ).SplitCase();
-                        blockType.Description = Rock.Reflection.GetDescription( control.GetType() ) ?? string.Empty;
-
-                        blockTypeService.Add( blockType, CurrentPersonId );
-                        blockTypeService.Save( blockType, CurrentPersonId );
-                    }
-                }
-                catch
-                {
-                    //
-                }
-            }
-        }
 
         /// <summary>
         /// Binds the grid.
