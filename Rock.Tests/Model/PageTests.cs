@@ -10,7 +10,7 @@ using System.Linq;
 using NUnit.Framework;
 using Rock.Model;
 
-namespace Rock.Tests.Cms
+namespace Rock.Tests.Model
 {
     [TestFixture]
     public class PageTests
