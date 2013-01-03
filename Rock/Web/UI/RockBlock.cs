@@ -112,9 +112,9 @@ namespace Rock.Web.UI
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
-                            if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
+                            if ( !String.IsNullOrEmpty( GetAttributeValue( propertyKeyName ) ) )
                             {
-                                contextType = AttributeValue( propertyKeyName );
+                                contextType = GetAttributeValue( propertyKeyName );
                             }
                         }
                         else
@@ -343,13 +343,12 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string AttributeValue( string key )
-        {
-            if ( CurrentBlock != null &&
-                CurrentBlock.AttributeValues != null &&
-                CurrentBlock.AttributeValues.ContainsKey( key ) )
-                return CurrentBlock.AttributeValues[key][0].Value;
-
+        public string GetAttributeValue( string key )
+        {            
+            if ( CurrentBlock != null )
+            {
+                return CurrentBlock.GetAttributeValue( key );
+            }
             return null;
         }
 
@@ -406,7 +405,7 @@ namespace Rock.Web.UI
         /// <param name="itemKeyValue">The item key value.</param>
         public void NavigateToDetailPage( string itemKey, int itemKeyValue )
         {
-            string pageGuid = AttributeValue( DetailPageAttribute.Key );
+            string pageGuid = GetAttributeValue( DetailPageAttribute.Key );
 
             if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {

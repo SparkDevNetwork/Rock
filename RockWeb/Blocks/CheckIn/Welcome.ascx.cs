@@ -13,6 +13,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -46,8 +47,17 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 RefreshKioskData();
-
             }
+        }
+
+        protected void lbRefresh_Click( object sender, EventArgs e )
+        {
+            RefreshKioskData();
+        }
+
+        protected void lbSearch_Click( object sender, EventArgs e )
+        {
+            Response.Redirect( GetAttributeValue( "SearchPageUrl" ), false );
         }
 
         private void RegisterScript()
@@ -86,20 +96,15 @@ if ($ActiveWhen.text() != '')
     }});
 }}
 
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ), AttributeValue( "RefreshInterval" ) );
-            ScriptManager.RegisterStartupScript(Page, Page.GetType(), "RefreshScript", script, true );
-        }
-
-        protected void lbRefresh_Click( object sender, EventArgs e )
-        {
-            RefreshKioskData();
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ), GetAttributeValue( "RefreshInterval" ) );
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
         }
 
         // TODO: Add support for scanner
-        private void SomeScannerSearch( DefinedValue searchType, string searchValue )
+        private void SomeScannerSearch( DefinedValueCache searchType, string searchValue )
         {
             int workflowTypeId = 0;
-            if ( Int32.TryParse( AttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
+            if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
             {
                 var workflowTypeService = new WorkflowTypeService();
                 var workflowType = workflowTypeService.Get( workflowTypeId );
@@ -124,7 +129,7 @@ if ($ActiveWhen.text() != '')
                         if ( workflow.Process( out errors ) )
                         {
                             Session["CheckInWorkflow"] = workflow;
-                            Response.Redirect( AttributeValue( "FamilySelectPageUrl" ), false );
+                            Response.Redirect( GetAttributeValue( "FamilySelectPageUrl" ), false );
                         }
                         else
                         {
@@ -140,11 +145,6 @@ if ($ActiveWhen.text() != '')
             }
         }
 
-        protected void lbSearch_Click( object sender, EventArgs e )
-        {
-            Response.Redirect( AttributeValue( "SearchPageUrl" ), false );
-        }
-
         private void RefreshKioskData()
         {
             pnlNotActive.Visible = false;
@@ -156,7 +156,7 @@ if ($ActiveWhen.text() != '')
 
             if ( Session["CheckInKioskId"] == null || Session["CheckInGroupTypeIds"] == null )
             {
-                Response.Redirect( AttributeValue( "AdminPageUrl" ), false );
+                Response.Redirect( GetAttributeValue( "AdminPageUrl" ), false );
                 return;
             }
 
