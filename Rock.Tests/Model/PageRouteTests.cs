@@ -4,23 +4,24 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using NUnit.Framework;
 using Rock.Model;
 
-namespace Rock.Tests.Cms
+namespace Rock.Tests.Model
 {
     [TestFixture]
-    public class HtmlContentTests
+    public class PageRouteTests
     {
         public class TheCopyPropertiesFromMethod
         {
             [Test]
             public void ShouldCopyEntity()
             {
-                var html = new HtmlContent { Content = "Foo" };
-                var result = new HtmlContent();
-                result.CopyPropertiesFrom( html );
-                Assert.AreEqual( result.Content, html.Content );
+                var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
+                var result = new PageRoute();
+                result.CopyPropertiesFrom(pageRoute);
+                Assert.AreEqual( result.Guid, pageRoute.Guid );
             }
         }
 
@@ -29,8 +30,8 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldNotBeEmpty()
             {
-                var html = new HtmlContent { Content = "Foo" };
-                var result = html.ToJson();
+                var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
+                dynamic result = pageRoute.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
@@ -40,16 +41,16 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new HtmlContent
+                var obj = new PageRoute
                 {
-                    EntityValue = "Some Value",
-                    IsApproved = true
+                    Route = "/some/path",
+                    IsSystem = true
                 };
 
                 var json = obj.ToJson();
-                var htmlContent = HtmlContent.FromJson( json );
-                Assert.AreEqual( obj.EntityValue, htmlContent.EntityValue );
-                Assert.AreEqual( obj.IsApproved, htmlContent.IsApproved );
+                var pageRoute = PageRoute.FromJson( json );
+                Assert.AreEqual( obj.Route, pageRoute.Route );
+                Assert.AreEqual( obj.IsSystem, pageRoute.IsSystem );
             }
         }
     }
