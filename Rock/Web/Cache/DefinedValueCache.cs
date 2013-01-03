@@ -27,6 +27,7 @@ namespace Rock.Web.Cache
 
         private DefinedValueCache( DefinedValue model )
         {
+            CopyFromModel( model );
         }
 
         #endregion

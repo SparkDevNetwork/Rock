@@ -31,7 +31,9 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             string scriptKey = "add-person-note";
-            string script = @"
+            if ( !this.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
+            {
+                string script = @"
 Sys.Application.add_load(function () {
 
     $('#note-add').click(function () {
@@ -41,8 +43,6 @@ Sys.Application.add_load(function () {
     $('#person-notes').tinyscrollbar({ size: 150 });
 
 });";
-            if ( !this.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
-            {
                 this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
             }
 
