@@ -715,7 +715,7 @@ namespace Rock.Web.UI
         protected virtual void AddKendoScripts()
         {
             AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.rock.min.css" );
+            AddCSSLink( Page, "~/CSS/Kendo/kendo.bootstrap.min.css" );
 
             AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
             AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
