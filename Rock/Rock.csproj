@@ -332,6 +332,7 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
+    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />

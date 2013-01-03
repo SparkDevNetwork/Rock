@@ -8,12 +8,12 @@ using System;
 using NUnit.Framework;
 using Rock.Model;
 
-namespace Rock.Tests.Cms
+namespace Rock.Tests.Model
 {
     [TestFixture]
     public class PageRouteTests
     {
-        public class TheExportObjectMethod
+        public class TheCopyPropertiesFromMethod
         {
             [Test]
             public void ShouldCopyEntity()
@@ -25,7 +25,7 @@ namespace Rock.Tests.Cms
             }
         }
 
-        public class TheExportJsonMethod
+        public class TheToJsonMethod
         {
             [Test]
             public void ShouldNotBeEmpty()
@@ -36,12 +36,12 @@ namespace Rock.Tests.Cms
             }
         }
 
-        public class TheImportJsonMethod
+        public class TheFromJsonMethod
         {
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new PageRoute()
+                var obj = new PageRoute
                 {
                     Route = "/some/path",
                     IsSystem = true

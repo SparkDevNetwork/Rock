@@ -10,27 +10,30 @@ using System.Linq;
 using NUnit.Framework;
 using Rock.Model;
 
-namespace Rock.Tests.Cms
+namespace Rock.Tests.Model
 {
     [TestFixture]
     public class PageTests
     {
-        public class TheExportObjectMethod
+        public class TheCopyPropertiesFromMethod
         {
             [Test]
             public void ShouldCopyEntity()
             {
-                var page = new Page() { Name = "SomePage" };
+                var page = new Page { Name = "SomePage" };
                 var result = new Page();
                 result.CopyPropertiesFrom(page);
                 Assert.AreEqual( result.Name, page.Name );
             }
+        }
 
+        public class TheCloneMethod
+        {
             [Test]
             public void ShouldCopyPages()
             {
-                var children = new List<Page>() { new Page() };
-                var parent = new Page() { Pages = children };
+                var children = new List<Page> { new Page() };
+                var parent = new Page { Pages = children };
                 var result = parent.Clone() as Page;
                 Assert.IsNotEmpty( result.Pages );
             }
@@ -51,7 +54,7 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyBlocks()
             {
-                var page = new Page() { Blocks = new List<Block>() };
+                var page = new Page { Blocks = new List<Block>() };
                 page.Blocks.Add( new Block() );
                 var result = page.Clone() as Page;
                 Assert.NotNull( result.Blocks );
@@ -61,8 +64,8 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPageRoutes()
             {
-                var page = new Page() { PageRoutes = new List<PageRoute>() };
-                page.PageRoutes.Add( new PageRoute());
+                var page = new Page { PageRoutes = new List<PageRoute>() };
+                page.PageRoutes.Add( new PageRoute() );
                 var result = page.Clone() as Page;
                 Assert.NotNull( result.PageRoutes );
                 Assert.IsNotEmpty( result.PageRoutes );
@@ -71,7 +74,7 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyPageContexts()
             {
-                var page = new Page() { PageContexts = new List<PageContext>() };
+                var page = new Page { PageContexts = new List<PageContext>() };
                 page.PageContexts.Add( new PageContext() );
                 var result = page.Clone() as Page;
                 Assert.NotNull( result.PageContexts );
@@ -79,7 +82,7 @@ namespace Rock.Tests.Cms
             }
         }
 
-        public class TheExportJsonMethod
+        public class TheToJsonMethod
         {
             [Test]
             public void ShouldNotBeEmpty()
@@ -92,11 +95,11 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldExportAsJson()
             {
-                var page = new Page()
+                var page = new Page
                 {
                     Title = "FooPage"
                 };
-                var result = page.ToJson( );
+                var result = page.ToJson();
                 const string key = "\"Title\":\"FooPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
             }
@@ -104,12 +107,12 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldExportChildPages()
             {
-                var page = new Page()
+                var page = new Page
                 {
                     Title = "FooPage",
                     Pages = new List<Page> { new Page { Title = "BarPage" } }
                 };
-                var result = page.ToJson( );
+                var result = page.ToJson();
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
                 const string key = "\"Title\":\"BarPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
@@ -118,9 +121,9 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldExportChildPagesRecursively()
             {
-                var parent = new Page() { Title = "Parent" };
-                var child = new Page() { Title = "Child" };
-                var grandchild = new Page() { Title = "Grandchild" };
+                var parent = new Page { Title = "Parent" };
+                var child = new Page { Title = "Child" };
+                var grandchild = new Page { Title = "Grandchild" };
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
                 var result = parent.ToJson( );
@@ -133,16 +136,16 @@ namespace Rock.Tests.Cms
             }
         }
 
-        public class TheImportJsonMethod
+        public class TheFromJsonMethod
         {
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new Page()
-                    {
-                        Name = "Foo Page",
-                        IsSystem = true,
-                    };
+                var obj = new Page
+                {
+                    Name = "Foo Page",
+                    IsSystem = true,
+                };
 
                 string json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -153,8 +156,8 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportChildPages()
             {
-                var obj = new Page() { Name = "Parent" };
-                obj.Pages.Add ( new Page() { Name = "Child" } );
+                var obj = new Page { Name = "Parent" };
+                obj.Pages.Add ( new Page { Name = "Child" } );
                 
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -168,9 +171,9 @@ namespace Rock.Tests.Cms
             {
                 const string PAGE_NAME = "Child Page";
 
-                var childPage = new Page() { Name = PAGE_NAME };
-                var parentPage = new Page() { Name = "Parent Page" };
-                var grandparentPage = new Page() { Name = "Grandparent Page" };
+                var childPage = new Page { Name = PAGE_NAME };
+                var parentPage = new Page { Name = "Parent Page" };
+                var grandparentPage = new Page { Name = "Grandparent Page" };
 
                 parentPage.Pages.Add(childPage);
                 grandparentPage.Pages.Add(parentPage);
@@ -186,8 +189,8 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportBlocks()
             {
-                var obj = new Page() { Name = "Some Page" };
-                obj.Blocks.Add(new Block() { Name = "Some Block" } );
+                var obj = new Page { Name = "Some Page" };
+                obj.Blocks.Add(new Block { Name = "Some Block" } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Blocks );
@@ -198,8 +201,8 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportPageRoutes()
             {
-                var obj = new Page() { Name = "Some Page" };
-                obj.PageRoutes.Add( new PageRoute() { Route = "/some/route" } );
+                var obj = new Page { Name = "Some Page" };
+                obj.PageRoutes.Add( new PageRoute { Route = "/some/route" } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.PageRoutes );
@@ -212,8 +215,8 @@ namespace Rock.Tests.Cms
             {
                 Random random = new Random();
                 var id = random.Next();
-                var obj = new Page() { Name = "Some Page" };
-                obj.PageContexts.Add( new PageContext() { PageId = id } );
+                var obj = new Page { Name = "Some Page" };
+                obj.PageContexts.Add( new PageContext { PageId = id } );
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.PageContexts );
@@ -224,9 +227,12 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportAttributes()
             {
-                var obj = new Page() { Name = "Some Page" };
-                obj.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-                obj.Attributes.Add("foobar", null);
+                var obj = new Page
+                {
+                    Name = "Some Page",
+                    Attributes = new Dictionary<string, Web.Cache.AttributeCache> { { "foobar", null } }
+                };
+
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.Attributes );
@@ -237,9 +243,15 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldImportAttributeValues()
             {
-                var obj = new Page() { Name = "Some Page" };
-                obj.AttributeValues = new Dictionary<string, List<AttributeValue>>();
-                obj.AttributeValues.Add( "foobar", new List<AttributeValue>() { new AttributeValue() { Value = "baz" } } );
+                var obj = new Page
+                {
+                    Name = "Some Page",
+                    AttributeValues = new Dictionary<string, List<AttributeValue>>
+                    {
+                        { "foobar", new List<AttributeValue> { new AttributeValue { Value = "baz" } } }
+                    }
+                };
+
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
                 Assert.IsNotNull( page.AttributeValues );
