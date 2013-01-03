@@ -12,35 +12,35 @@ namespace Rock.Tests.Cms
     [TestFixture]
     public class HtmlContentTests
     {
-        public class TheExportObjectMethod
+        public class TheCopyPropertiesFromMethod
         {
             [Test]
             public void ShouldCopyEntity()
             {
-                var html = new HtmlContent() { Content = "Foo" };
+                var html = new HtmlContent { Content = "Foo" };
                 var result = new HtmlContent();
                 result.CopyPropertiesFrom( html );
                 Assert.AreEqual( result.Content, html.Content );
             }
         }
 
-        public class TheExportJsonMethod
+        public class TheToJsonMethod
         {
             [Test]
             public void ShouldNotBeEmpty()
             {
-                var html = new HtmlContent() { Content = "Foo" };
+                var html = new HtmlContent { Content = "Foo" };
                 var result = html.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
 
-        public class TheImportJsonMethod
+        public class TheFromJsonMethod
         {
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new HtmlContent()
+                var obj = new HtmlContent
                 {
                     EntityValue = "Some Value",
                     IsApproved = true
