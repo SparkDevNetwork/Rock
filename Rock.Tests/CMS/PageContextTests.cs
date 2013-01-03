@@ -13,7 +13,7 @@ namespace Rock.Tests.Cms
     [TestFixture]
     public class PageContextTests
     {
-        public class TheExportObjectMethod
+        public class TheCopyPropertiesFromMethod
         {
             [Test]
             public void ShouldCopyEntity()
@@ -25,27 +25,27 @@ namespace Rock.Tests.Cms
             }
         }
 
-        public class TheExportJsonMethod
+        public class TheToJsonMethod
         {
             [Test]
             public void ShouldNotBeEmpty()
             {
-                var pageContext = new PageContext() { Guid = Guid.NewGuid() };
+                var pageContext = new PageContext { Guid = Guid.NewGuid() };
                 var result = pageContext.ToJson();
                 Assert.IsNotEmpty( result );
             }
         }
 
-        public class TheImportJsonMethod
+        public class TheFromJsonMethod
         {
             [Test]
             public void ShouldCopyPropertiesToEntity()
             {
-                var obj = new PageContext()
-                    {
-                        Guid = Guid.NewGuid(),
-                        IsSystem = false
-                    };
+                var obj = new PageContext
+                {
+                    Guid = Guid.NewGuid(),
+                    IsSystem = false
+                };
 
                 var json = obj.ToJson();
                 var pageContext = PageContext.FromJson( json );

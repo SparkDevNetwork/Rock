@@ -4,8 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 using Rock.Model;
 
@@ -31,7 +29,7 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldNotBeEmpty()
             {
-                var block = new Block() { Name = "Foo" };
+                var block = new Block { Name = "Foo" };
                 var result = block.ToJson();
                 Assert.IsNotEmpty( result );
             }
@@ -69,8 +67,7 @@ namespace Rock.Tests.Cms
                     Order = 3,
                     Name = "FooInstance",
                     OutputCacheDuration = 0,
-                    BlockType = new
-                    {
+                    BlockType = new {
                         IsSystem = false,
                         Path = "Test Path",
                         Name = "Test Name",
