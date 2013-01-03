@@ -23,7 +23,7 @@ namespace Rock.CheckIn
         // Locking object
         private static readonly Object obj = new object();
 
-        private static int _cacheSeconds = 30;
+        private static int _cacheSeconds = 60;
         private static DateTimeOffset _lastCached { get; set; }
         private static Dictionary<int, KioskStatus> _kiosks;
 
@@ -38,7 +38,7 @@ namespace Rock.CheckIn
                 string value = globalAttributes.GetValue( "KioskCacheExpiration" );
 
                 if ( !Int32.TryParse( value, out _cacheSeconds ) )
-                    _cacheSeconds = 30;
+                    _cacheSeconds = 60;
 
                 RefreshCache();
             }
@@ -57,13 +57,24 @@ namespace Rock.CheckIn
                 {
                     RefreshCache();
                 }
+                else
+                {
+                    // Get the inactive kiosks
+                    var inactiveKiosk = _kiosks.Where( k => k.Value.KioskGroupTypes.Count > 0 && !k.Value.HasLocations ).Select( k => k.Value );
+
+                    // If any of the currently inactive kiosks have a next active time prior to the current time, force a refresh the cache.
+                    if (inactiveKiosk.Any( k => k.KioskGroupTypes.Select( g => g.NextActiveTime).Min().CompareTo(DateTimeOffset.Now) < 0))
+                    {
+                        RefreshCache();
+                    }
+                }
+
 
                 if ( _kiosks.ContainsKey( kioskId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
                     string json = JsonConvert.SerializeObject( _kiosks[kioskId] );
-                    KioskStatus kioskStatus = JsonConvert.DeserializeObject( json, typeof( KioskStatus ) ) as KioskStatus;
-                    return kioskStatus;
+                    return JsonConvert.DeserializeObject( json, typeof( KioskStatus ) ) as KioskStatus;
                 }
             }
 

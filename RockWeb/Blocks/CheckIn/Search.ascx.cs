@@ -16,29 +16,26 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Welcome screen" )]
-    [TextField( 0, "Admin Page Url", "", "The url of the Check-In admin page", false, "~/checkin" )]
-    [TextField( 1, "Search Page Url", "", "The url of the Check-In admin page", false, "~/checkin/search" )]
+    [Description( "Check-In Search screen" )]
+    [TextField( 1, "Welcome Page Url", "", "The url of the Check-In welcome page", false, "~/checkin/welcome" )]
     [TextField( 2, "Family Select Page Url", "", "The url of the Check-In admin page", false, "~/checkin/selectfamily" )]
     [IntegerField( 3, "Workflow Type Id", "0", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in" )]
-    [IntegerField( 4, "Refresh Interval", "10", "RefreshInterval", "", "How often (seconds) should page automatically query server for new check-in data" )]
-    public partial class Welcome : Rock.Web.UI.RockBlock
+    public partial class Search : Rock.Web.UI.RockBlock
     {
         private KioskStatus _kiosk;
-
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/jquery.countdown.min.js" );
-
-            RegisterScript();
-        }
 
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack )
             {
+                CurrentPage.AddScriptLink( this.Page, "~/scripts/jquery.countdown.min" );
+
+                string script = string.Format( @"
+Sys.Application.add_load(function () {{
+    window.setInterval(function() {{
+    }}, 1000);
+}});", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "checkInWelcomeInterval", script, true );
 
                 if ( Session["CheckInWorkflow"] != null )
                 {
@@ -46,48 +43,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 RefreshKioskData();
-
             }
-        }
-
-        private void RegisterScript()
-        {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
-            string script = string.Format( @"
-
-var timeout = window.setTimeout(refreshKiosk, {1}000);
-
-var $ActiveWhen = $('.active-when');
-var $CountdownTimer = $('.countdown-timer');
-
-function refreshKiosk() {{
-    window.clearTimeout(timeout);
-    {0};
-}}
-
-function clearCountdown() {{
-    if ($ActiveWhen.text() != '')
-    {{
-        $ActiveWhen.text('');
-        refreshKiosk();
-    }}
-}}
-
-if ($ActiveWhen.text() != '')
-{{
-    var timeActive = new Date($ActiveWhen.text());
-    $CountdownTimer.countdown({{
-        until: timeActive, 
-        compact:true, 
-        layout:'{{dn}}{{dl}} {{hnn}}{{sep}}{{mnn}}{{sep}}{{snn}}',
-        onExpiry: clearCountdown
-    }});
-}}
-
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ), AttributeValue( "RefreshInterval" ) );
-            ScriptManager.RegisterStartupScript(Page, Page.GetType(), "RefreshScript", script, true );
         }
 
         protected void lbRefresh_Click( object sender, EventArgs e )
@@ -152,8 +108,6 @@ if ($ActiveWhen.text() != '')
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
 
-            lblActiveWhen.Text = string.Empty;
-
             if ( Session["CheckInKioskId"] == null || Session["CheckInGroupTypeIds"] == null )
             {
                 Response.Redirect( AttributeValue( "AdminPageUrl" ), false );
@@ -181,7 +135,13 @@ if ($ActiveWhen.text() != '')
             else if ( !_kiosk.HasLocations )
             {
                 DateTimeOffset activeAt = _kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
-                lblActiveWhen.Text = activeAt.ToString();
+                lblTimeUntilActive.Text = activeAt.Subtract( DateTimeOffset.Now ).ToString();
+                string script = string.Format( @"
+Sys.Application.add_load(function () {{
+    var timeActive = new Date({0});
+    $('.coundown-timer').countdown({{until: timeActive, compact:true, layout:'{{dn}}{{dl}} {{hnn}}{{sep}}{{mnn}}{{sep}}{{snn}}'}});
+}});", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "checkInWelcomeInterval", script, true );
                 pnlNotActiveYet.Visible = true;
             }
             else if ( !_kiosk.HasActiveLocations )

@@ -9,7 +9,7 @@ using System.Linq;
 using NUnit.Framework;
 using Rock.Model;
 
-namespace Rock.Tests.Cms
+namespace Rock.Tests.Model
 {
     [TestFixture]
     public class BlockTypeTests
@@ -19,7 +19,7 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldCopyProperties()
             {
-                var blockType = new BlockType() {Name = "some block type"};
+                var blockType = new BlockType {Name = "some block type"};
                 var result = new BlockType();
                 result.CopyPropertiesFrom( blockType );
                 Assert.AreEqual( result.Name, blockType.Name );
@@ -31,7 +31,7 @@ namespace Rock.Tests.Cms
             [Test]
             public void ShouldNotBeEmpty()
             {
-                var blockType = new BlockType() { Name = "some block type" };
+                var blockType = new BlockType { Name = "some block type" };
                 var result = blockType.ToJson();
                 Assert.IsNotEmpty( result );
             }
@@ -65,15 +65,14 @@ namespace Rock.Tests.Cms
                     Path = "Test Path",
                     Name = "Test Name",
                     Description = "Test desc",
-                    Blocks = new List<dynamic> { new 
-                    {
-                        IsSystem = true,
-                        BlockTypeId = 1,
-                        Zone = "TestZone",
-                        Order = 3,
-                        Name = "FooInstance",
-                        OutputCacheDuration = 0
-                    }
+                    Blocks = new List<dynamic> { new {
+                            IsSystem = true,
+                            BlockTypeId = 1,
+                            Zone = "TestZone",
+                            Order = 3,
+                            Name = "FooInstance",
+                            OutputCacheDuration = 0
+                        }
                     }
                 };
 

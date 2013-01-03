@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,7 +17,8 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [TextField(0, "Welcome Page Url", "", "The url of the Check-In welcome page", false, "~/checkin/welcome")]
+    [Description( "Check-In Administration screen" )]
+    [TextField( 0, "Welcome Page Url", "", "The url of the Check-In welcome page", false, "~/checkin/welcome" )]
     public partial class Admin : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
