@@ -320,6 +320,18 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroups.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PurgeInvalidPeople.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroupTypes.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
@@ -870,9 +882,7 @@
       <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Workflow\Action\CheckIn\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
