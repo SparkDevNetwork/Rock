@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
 
             xmlContent.DocumentContent = xDocument.ToString();
-            xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
+            xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
         }
     }
 }

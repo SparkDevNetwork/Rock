@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
-                _entityTypeName = AttributeValue( "DefinedType" );
+                _entityTypeName = GetAttributeValue( "DefinedType" );
                 _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( _entityTypeName );
                 _entityQualifier = "DefinedTypeId";
                 _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );

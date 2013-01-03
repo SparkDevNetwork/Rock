@@ -19,6 +19,14 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Save Attendance" )]
     public class SaveAttendance : ActionComponent
     {
+        /// <summary>
+        /// Executes the specified workflow.
+        /// </summary>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
             throw new NotImplementedException();

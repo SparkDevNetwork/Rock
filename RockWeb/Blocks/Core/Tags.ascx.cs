@@ -22,11 +22,11 @@ namespace RockWeb.Blocks.Core
     {
         protected void Page_Load( object sender, EventArgs e )
         {
-            string entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+            string entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
                 entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
 
-            string entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+            string entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
                 entityQualifierValue = PageParameter( "EntityQualifierValue" );
 

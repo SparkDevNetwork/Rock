@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -43,7 +44,7 @@ namespace Rock.CheckIn
         /// The type of the search.
         /// </value>
         [DataMember]
-        public DefinedValue SearchType { get; set; }
+        public DefinedValueCache SearchType { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user

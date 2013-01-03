@@ -41,12 +41,12 @@ namespace RockWeb.Blocks.Cms
         private void TransformXml()
         {
             XslCompiledTransform xslTransformer = new XslCompiledTransform();
-            xslTransformer.Load( Server.MapPath( AttributeValue("XSLTFile") ) );
+            xslTransformer.Load( Server.MapPath( GetAttributeValue("XSLTFile") ) );
 
             Rock.Web.Cache.PageCache rootPage;
-            if ( AttributeValue( ROOT_PAGE ) != string.Empty )
+            if ( GetAttributeValue( ROOT_PAGE ) != string.Empty )
             {
-                int pageId = Convert.ToInt32( AttributeValue( ROOT_PAGE ) );
+                int pageId = Convert.ToInt32( GetAttributeValue( ROOT_PAGE ) );
                 if ( pageId == -1 )
                     rootPage = CurrentPage;
                 else
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Cms
             else
                 rootPage = CurrentPage;
 
-            int levelsDeep = Convert.ToInt32( AttributeValue( NUM_LEVELS ) );
+            int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
 
             XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson );
 

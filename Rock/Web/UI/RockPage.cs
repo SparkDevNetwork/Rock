@@ -688,25 +688,18 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns the current page's value(s) for the selected attribute
-        /// If the attribute doesn't exist an empty string is returned.  If there
-        /// is more than one value for the attribute, the values are returned delimited
-        /// by a bar character (|).
+        /// Returns the current page's first value for the selected attribute
+        /// If the attribute doesn't exist, null is returned
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string AttributeValue( string key )
+        public string GetAttributeValue( string key )
         {
-            if ( CurrentPage == null )
-                return string.Empty;
-
-            if ( CurrentPage.AttributeValues == null )
-                return string.Empty;
-
-            if ( !CurrentPage.AttributeValues.ContainsKey( key ) )
-                return string.Empty;
-
-            return string.Join( "|", CurrentPage.AttributeValues[key] );
+            if ( CurrentPage != null )
+            {
+                return CurrentPage.GetAttributeValue( key );
+            }
+            return null;
         }
 
         /// <summary>

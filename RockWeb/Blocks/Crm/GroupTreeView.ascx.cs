@@ -40,22 +40,22 @@ namespace RockWeb.Blocks.Crm
             GroupService groupService = new GroupService();
             var qry = groupService.Queryable();
 
-            List<int> groupTypeIds = AttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
             if ( groupTypeIds.Count > 0 )
             {
                 qry = qry.Where( a => groupTypeIds.Contains( a.GroupTypeId ) );
             }
 
-            if ( AttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+            if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            ltlTreeViewTitle.Text = AttributeValue( "TreeviewTitle" );
+            ltlTreeViewTitle.Text = GetAttributeValue( "TreeviewTitle" );
 
             List<Group> allGroupItems = qry.ToList();
 
-            string rootGroupTypeId = AttributeValue( "GroupType" );
+            string rootGroupTypeId = GetAttributeValue( "GroupType" );
 
             WebControl treeviewList = new WebControl( HtmlTextWriterTag.Ul ) { ID = "treeviewGroups" };
 

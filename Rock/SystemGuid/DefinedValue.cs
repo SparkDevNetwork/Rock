@@ -13,12 +13,18 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region Note Type
+        #region CheckIn Search Type
 
         /// <summary>
-        /// Manually entered note.
+        /// Phone number search type
+        /// 
         /// </summary>
-        public static Guid NOTE_TYPE_MANUAL_NOTE { get { return new Guid( "4318E9AC-B669-4AF7-AF88-EF580FC43C6A" ); } }
+        public static Guid CHECKIN_SEARCH_TYPE_PHONE_NUMBER { get { return new Guid( "F3F66040-C50F-4D13-9652-780305FFFE23" ); } }
+
+        /// <summary>
+        /// Barcode Search Type
+        /// </summary>
+        public static Guid CHECKIN_SEARCH_TYPE_BARCODE { get { return new Guid( "9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE" ); } }
 
         #endregion
 
@@ -30,22 +36,31 @@ namespace Rock.SystemGuid
         public static Guid DEVICE_TYPE_CHECKIN_KIOSK { get { return new Guid( "BC809626-1389-4543-B8BB-6FAC79C27AFD" ); } }
 
         /// <summary>
-        /// Check-in Kiosk device type
+        /// Giving Kiosk device type
         /// </summary>
         public static Guid DEVICE_TYPE_GIVING_KIOSK { get { return new Guid( "64A1DBE5-10AD-42F1-A9BA-646A781D4112" ); } }
 
         /// <summary>
-        /// Check-in Kiosk device type
+        /// Printer device type
         /// </summary>
         public static Guid DEVICE_TYPE_PRINTER { get { return new Guid( "8284B128-E73B-4863-9FC2-43E6827B65E6" ); } }
 
         /// <summary>
-        /// Check-in Kiosk device type
+        /// Digital signage device type
         /// </summary>
         public static Guid DEVICE_TYPE_DIGITAL_SIGNAGE { get { return new Guid( "01B585B1-389D-4C86-A9DA-267A8564699D" ); } }
 
         #endregion
-        
+
+        #region Note Type
+
+        /// <summary>
+        /// Manually entered note.
+        /// </summary>
+        public static Guid NOTE_TYPE_MANUAL_NOTE { get { return new Guid( "4318E9AC-B669-4AF7-AF88-EF580FC43C6A" ); } }
+
+        #endregion
+
         #region Person Phone Type
 
         /// <summary>

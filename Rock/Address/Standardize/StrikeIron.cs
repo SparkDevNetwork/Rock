@@ -40,8 +40,8 @@ namespace Rock.Address.Standardize
             if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValue("UserID");
-                registeredUser.Password = AttributeValue("Password");
+                registeredUser.UserID = GetAttributeValue("UserID");
+                registeredUser.Password = GetAttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
