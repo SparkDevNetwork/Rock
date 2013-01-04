@@ -36,7 +36,7 @@ namespace Rock.Address.Geocode
         {
             if ( location != null )
             {
-                string licenseKey = AttributeValue("LicenseKey");
+                string licenseKey = GetAttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
                 Location_V3 location_match = client.GetBestMatch_V3(

@@ -33,11 +33,11 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
             
-            string entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+            string entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
                 entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
 
-            string entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+            string entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
                 entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
                 {
                     var rootElement = new XElement( "root" );
 
-                    foreach ( string category in AttributeValue( "AttributeCategories" ).SplitDelimitedValues( false ) )
+                    foreach ( string category in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues( false ) )
                     {
                         if ( cachedAttributes.ContainsKey( category ) )
                         {
@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Core
                     xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
 
                     xmlContent.DocumentContent = xDocument.ToString();
-                    xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
+                    xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
                 }
             }
         }

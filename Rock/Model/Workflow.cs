@@ -339,6 +339,7 @@ namespace Rock.Model
             workflow.Status = "Activated";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = DateTime.Now;
+            Rock.Attribute.Helper.LoadAttributes( workflow );
 
             workflow.AddSystemLogEntry( "Activated" );
 
