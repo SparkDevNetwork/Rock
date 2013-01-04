@@ -14,9 +14,9 @@ namespace RockWeb.Blocks.Cms
     {
         protected override void OnInit( EventArgs e )
         {
-            if ( !string.IsNullOrEmpty( AttributeValue( "Url" ) ) )
+            if ( !string.IsNullOrEmpty( GetAttributeValue( "Url" ) ) )
             {
-                Response.Redirect( AttributeValue( "Url" ), false );
+                Response.Redirect( GetAttributeValue( "Url" ), false );
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
