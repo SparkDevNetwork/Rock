@@ -41,8 +41,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit(e);
 
-            _supportVersioning = bool.Parse( AttributeValue( "SupportVersions" ) ?? "false" );
-            _requireApproval = bool.Parse( AttributeValue( "RequireApproval" ) ?? "false" );
+            _supportVersioning = bool.Parse( GetAttributeValue( "SupportVersions" ) ?? "false" );
+            _requireApproval = bool.Parse( GetAttributeValue( "RequireApproval" ) ?? "false" );
 
             mpeContent.OnOkScript = string.Format( "saveHtmlContent_{0}();", CurrentBlock.Id );
 
@@ -127,8 +127,8 @@ namespace RockWeb.Blocks.Cms
 
         void HtmlContent_AttributesUpdated( object sender, EventArgs e )
         {
-            lPreText.Text = AttributeValue( "PreText" );
-            lPostText.Text = AttributeValue( "PostText" );
+            lPreText.Text = GetAttributeValue( "PreText" );
+            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
@@ -274,16 +274,16 @@ namespace RockWeb.Blocks.Cms
 
                 // cache content
                 int cacheDuration = 0;
-                if ( Int32.TryParse( AttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
+                if ( Int32.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration ) && cacheDuration > 0 )
                     AddCacheItem( entityValue, html, cacheDuration );
             }
             else
                 html = cachedContent;
 
             // add content to the content window
-            lPreText.Text = AttributeValue( "PreText" );
+            lPreText.Text = GetAttributeValue( "PreText" );
             lHtmlContent.Text = html;
-            lPostText.Text = AttributeValue( "PostText" );
+            lPostText.Text = GetAttributeValue( "PostText" );
         }
 
         private void BindGrid()
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Cms
         {
             string entityValue = string.Empty;
 
-            string contextParameter = AttributeValue( "ContextParameter" );
+            string contextParameter = GetAttributeValue( "ContextParameter" );
             if ( !string.IsNullOrEmpty( contextParameter ) )
                 entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
 

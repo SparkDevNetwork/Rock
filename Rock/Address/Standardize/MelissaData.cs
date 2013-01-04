@@ -34,7 +34,7 @@ namespace Rock.Address.Standardize
             if ( location != null )
             {
                 var requestArray = new RequestArray();
-                requestArray.CustomerID = AttributeValue("CustomerId");
+                requestArray.CustomerID = GetAttributeValue("CustomerId");
                 requestArray.OptAddressParsed = "True";
 
                 RequestArrayRecord requestAddress = new RequestArrayRecord();

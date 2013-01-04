@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
 
             _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
-            Type containerType = Type.GetType( AttributeValue( "ComponentContainer" ) );
+            Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );

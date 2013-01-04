@@ -106,8 +106,6 @@ namespace Rock.Data
 
         #region IHasAttributes implementation
 
-        private bool _attributesLoaded = false;
-
         // Note: For complex/non-entity types, we'll need to decorate some classes with the IgnoreProperties attribute
         // to tell WCF Data Services not to worry about the associated properties.
 
@@ -117,20 +115,7 @@ namespace Rock.Data
         /// <value>
         /// The attribute categories.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories
-        {
-            get
-            {
-                if ( _attributeCategories == null && !_attributesLoaded )
-                {
-                    //this.LoadAttributes();
-                    _attributesLoaded = true;
-                }
-                return _attributeCategories;
-            }
-            set { _attributeCategories = value; }
-        }
-        private SortedDictionary<string, List<string>> _attributeCategories;
+        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
@@ -142,20 +127,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
-        {
-            get 
-            {
-                if ( _attributes == null && !_attributesLoaded )
-                {
-                    //this.LoadAttributes();
-                    _attributesLoaded = true;
-                }
-                return _attributes; 
-            }
-            set { _attributes = value; }
-        }
-        private Dictionary<string, Rock.Web.Cache.AttributeCache> _attributes;
+        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
@@ -166,21 +138,42 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues
-        {
-            get 
-            {
-                if ( _attributeValues == null && !_attributesLoaded )
-                {
-                    //this.LoadAttributes();
-                    _attributesLoaded = true;
-                }
-                return _attributeValues; 
-            }
-            set { _attributeValues = value; }
-        }
-        private Dictionary<string, List<Rock.Model.AttributeValue>> _attributeValues;
+        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
+        /// <summary>
+        /// Gets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                if ( this.AttributeValues[key].Count == 0 )
+                {
+                    this.AttributeValues[key].Add(new AttributeValue());
+                }
+                this.AttributeValues[key][0].Value = value;
+            }
+        }
+        
         #endregion
-    }
+   }
 }

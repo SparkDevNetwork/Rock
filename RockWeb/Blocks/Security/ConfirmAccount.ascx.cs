@@ -68,9 +68,9 @@ namespace RockWeb.Blocks.Security
 
             if (!Page.IsPostBack)
             {
-                lDeleted.Text = AttributeValue( "DeletedCaption" );
+                lDeleted.Text = GetAttributeValue( "DeletedCaption" );
 
-                string invalidCaption = AttributeValue( "InvalidCaption" );
+                string invalidCaption = GetAttributeValue( "InvalidCaption" );
                 if ( invalidCaption.Contains( "{0}" ) )
                     invalidCaption = string.Format( invalidCaption, ResolveUrl( "~/NewAccount" ) );
                 lInvalid.Text = invalidCaption;
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Security
 
                 Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
-                string caption = AttributeValue( "ConfirmedCaption" );
+                string caption = GetAttributeValue( "ConfirmedCaption" );
                 if ( caption.Contains( "{0}" ) )
                     caption = string.Format( caption, user.Person.FirstName );
                 lConfirmed.Text = caption;
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "ResetPasswordCaption" );
+                string caption = GetAttributeValue( "ResetPasswordCaption" );
                 if ( caption.Contains( "{1}" ) )
                     caption = string.Format( caption, user.Person.FirstName, user.UserName );
                 else if (caption.Contains( "{0}"))
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "PasswordResetCaption" );
+                string caption = GetAttributeValue( "PasswordResetCaption" );
                 if ( caption.Contains( "{1}" ) )
                     caption = string.Format( caption, user.Person.FirstName, user.UserName );
                 else if ( caption.Contains( "{0}" ) )
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "DeleteCaption" );
+                string caption = GetAttributeValue( "DeleteCaption" );
                 if ( caption.Contains( "{0}" ) )
                     caption = string.Format( caption, user.UserName );
                 lDelete.Text = caption;

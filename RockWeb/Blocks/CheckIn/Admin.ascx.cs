@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.CheckIn
             Session["CheckInKioskId"] = Int32.Parse( ddlKiosk.SelectedValue );
             Session["CheckInGroupTypeIds"] = groupTypeIds;
 
-            Response.Redirect( AttributeValue("WelcomePageUrl"), false );
+            Response.Redirect( GetAttributeValue("WelcomePageUrl"), false );
         }
 
         private void BindGroupTypes()

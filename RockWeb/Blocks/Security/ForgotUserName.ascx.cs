@@ -30,9 +30,9 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                lCaption.Text = AttributeValue( "HeadingCaption" );
-                lWarning.Text = AttributeValue( "InvalidEmailCaption" );
-                lSuccess.Text = AttributeValue( "SuccessCaption" );
+                lCaption.Text = GetAttributeValue( "HeadingCaption" );
+                lWarning.Text = GetAttributeValue( "InvalidEmailCaption" );
+                lSuccess.Text = GetAttributeValue( "SuccessCaption" );
             }
         }
 

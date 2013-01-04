@@ -104,7 +104,7 @@ Sys.Application.add_load(function () {
 
         private void GetNoteType()
         {
-            string noteTypeName = AttributeValue( "NoteType" );
+            string noteTypeName = GetAttributeValue( "NoteType" );
 
             var service = new NoteTypeService();
             noteType = service.Get( contextEntity.TypeId, noteTypeName );

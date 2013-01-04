@@ -71,19 +71,38 @@ namespace Rock.Extension
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
-        /// Gets the first value for an Attributes
+        /// Gets the first value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string AttributeValue( string key )
+        public string GetAttributeValue( string key )
         {
             if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) )
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
                 return this.AttributeValues[key][0].Value;
-
+            }
             return null;
         }
 
+        /// <summary>
+        /// Sets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                if ( this.AttributeValues[key].Count == 0 )
+                {
+                    this.AttributeValues[key].Add( new Rock.Model.AttributeValue() );
+                }
+                this.AttributeValues[key][0].Value = value;
+            }
+        }
 
         /// <summary>
         /// Gets the order.

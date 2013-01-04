@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Crm
             var groupTypeQry = groupTypeService.Queryable();
 
             // limit GroupType selection to what Block Attributes allow
-            List<int> groupTypeIds = AttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
             if ( groupTypeIds.Count > 0 )
             {
                 groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
@@ -234,7 +234,7 @@ namespace RockWeb.Blocks.Crm
             btnSave.Visible = !readOnly;
 
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
-            if ( AttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+            if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
             {
                 cbIsSecurityRole.Enabled = false;
                 cbIsSecurityRole.Checked = true;
