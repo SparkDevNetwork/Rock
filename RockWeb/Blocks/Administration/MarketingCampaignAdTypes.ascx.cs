@@ -30,11 +30,11 @@ namespace RockWeb.Blocks.Administration
         /// <value>
         /// The state of the attributes.
         /// </value>
-        private List<Attribute> AttributesState
+        private ViewStateList<Attribute> AttributesState
         {
             get
             {
-                return ViewState["AttributesState"] as List<Attribute>;
+                return ViewState["AttributesState"] as ViewStateList<Attribute>;
             }
 
             set
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Administration
         protected void gMarketingCampaignAdAttributeType_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributesState.RemoveEntity<Attribute>( attributeGuid );
+            AttributesState.RemoveEntity( attributeGuid );
 
             BindMarketingCampaignAdAttributeTypeGrid();
         }
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            AttributesState.RemoveEntity<Attribute>( attribute.Guid );
+            AttributesState.RemoveEntity( attribute.Guid );
             AttributesState.Add( attribute );
 
             pnlDetails.Visible = true;
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Administration
             MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
             MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
             bool readOnly = false;
-            AttributesState = new List<Attribute>();
+            AttributesState = new ViewStateList<Attribute>();
 
             if ( marketingCampaignAdType != null )
             {
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Administration
                     .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
                     && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
 
-                AttributesState = qry.ToList();
+                AttributesState.AddAll( qry.ToList()  );
 
                 readOnly = marketingCampaignAdType.IsSystem;
 

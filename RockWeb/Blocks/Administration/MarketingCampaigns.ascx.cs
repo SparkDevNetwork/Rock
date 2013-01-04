@@ -936,10 +936,7 @@ namespace RockWeb.Blocks.Administration
             ddlContactPerson.SelectedValue = ( marketingCampaign.ContactPersonId ?? None.Id ).ToString();
             ddlEventGroup.SelectedValue = ( marketingCampaign.EventGroupId ?? None.Id ).ToString();
 
-            foreach ( var audience in marketingCampaign.MarketingCampaignAudiences )
-            {
-                MarketingCampaignAudiencesState.Add( audience.Clone() as MarketingCampaignAudience );
-            }
+            MarketingCampaignAudiencesState.AddAll( marketingCampaign.MarketingCampaignAudiences.ToList() );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
 
