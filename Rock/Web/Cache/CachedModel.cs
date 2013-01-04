@@ -251,6 +251,40 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                if ( this.AttributeValues[key].Count == 0 )
+                {
+                    this.AttributeValues[key].Add( new AttributeValue() );
+                }
+                this.AttributeValues[key][0].Value = value;
+            }
+        }
+
+        /// <summary>
         /// Reloads the attribute values.
         /// </summary>
         public virtual void ReloadAttributeValues()

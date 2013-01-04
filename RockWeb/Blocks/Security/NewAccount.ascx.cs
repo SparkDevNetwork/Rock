@@ -63,9 +63,9 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
             
-            lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
-            lSentLoginCaption.Text = AttributeValue( "SentLoginCaption" );
-            lConfirmCaption.Text = AttributeValue( "ConfirmCaption" );
+            lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
+            lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
+            lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
         }
 
         protected override void OnLoad( System.EventArgs e )
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Security
         {
             bool displayed = false;
 
-            if ( Convert.ToBoolean( AttributeValue( "Duplicates" ) ) )
+            if ( Convert.ToBoolean( GetAttributeValue( "Duplicates" ) ) )
             {
                 PersonService personService = new PersonService();
                 var matches = personService.
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Security
         {
             hfSendPersonId.Value = personId.ToString();
 
-            lExistingAccountCaption.Text = AttributeValue( "ExistingAccountCaption" );
+            lExistingAccountCaption.Text = GetAttributeValue( "ExistingAccountCaption" );
             if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
             {
                 PersonService personService = new PersonService();
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Security
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
                     email.Send( recipients );
 
-                    lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
+                    lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
                     if ( lSuccessCaption.Text.Contains( "{0}" ) )
                         lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
 

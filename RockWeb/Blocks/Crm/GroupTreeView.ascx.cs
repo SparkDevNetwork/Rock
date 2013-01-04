@@ -37,8 +37,8 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnLoad( e );
 
-            hfLimitToSecurityRoleGroups.Value = AttributeValue( "LimittoSecurityRoleGroups" );
-            hfRootGroupId.Value = AttributeValue( "Group" );
+            hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
+            hfRootGroupId.Value = GetAttributeValue( "Group" );
 
             string[] eventArgs = (Request.Form["__EVENTARGUMENT"] ?? string.Empty).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
             if ( eventArgs.Length == 2 )

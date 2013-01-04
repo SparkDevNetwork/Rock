@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             int GroupTypeId = 0;
 
-            if ( !Int32.TryParse( AttributeValue( "GroupType" ), out GroupTypeId ) )
+            if ( !Int32.TryParse( GetAttributeValue( "GroupType" ), out GroupTypeId ) )
                 GroupTypeId = 0;
 
             if ( GroupTypeId == 0 )
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .FirstOrDefault();
 
             var filterRoles = new List<int>();
-            foreach ( string stringRoleId in AttributeValue( "GroupRoleFilter" ).SplitDelimitedValues() )
+            foreach ( string stringRoleId in GetAttributeValue( "GroupRoleFilter" ).SplitDelimitedValues() )
             {
                 int roleId = 0;
                 if ( Int32.TryParse( stringRoleId, out roleId ) )
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupElement.Add( membersElement );
 
                 bool includeSelf = false;
-                if ( !Boolean.TryParse( AttributeValue( "IncludeSelf" ), out includeSelf ) )
+                if ( !Boolean.TryParse( GetAttributeValue( "IncludeSelf" ), out includeSelf ) )
                 {
                     includeSelf = false;
                 }
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         ) );
                 }
 
-                if ( Convert.ToBoolean( AttributeValue( "IncludeLocations" ) ) )
+                if ( Convert.ToBoolean( GetAttributeValue( "IncludeLocations" ) ) )
                 {
                     var locationsElement = new XElement( "locations" );
                     groupElement.Add( locationsElement );
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), groupsElement );
 
                 xmlContent.DocumentContent = xDocument.ToString();
-                xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
+                xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
             }
         }
     }
