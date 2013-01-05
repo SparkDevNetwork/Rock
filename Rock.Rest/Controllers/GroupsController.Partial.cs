@@ -57,13 +57,30 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            var groupNameQry = from a in qry
-                select new GroupName { Id = a.Id, Name = a.Name };
+            List<Group> groupList = qry.ToList();
+            List<GroupName> groupNameList = new List<GroupName>();
 
-            List<GroupName> result = groupNameQry.ToList();
-            
+
+            var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+            string imageUrlFormat = appPath + "/Image.ashx?id={0}&width=25&height=5";
+
+            GroupTypeService groupTypeService = new GroupTypeService();
+
+            foreach ( var group in groupList )
+            {
+                group.GroupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
+                groupNameList.Add( new GroupName
+                {
+                    Id = group.Id,
+                    Name = group.Name,
+                    GroupTypeIconCssClass = group.GroupType.IconCssClass,
+                    GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty
+                } );
+            }
+
+
             // try to quickly figure out which items have Children
-            List<int> resultIds = result.Select( a => a.Id ).ToList();
+            List<int> resultIds = groupNameList.Select( a => a.Id ).ToList();
 
             var qryHasChildren = from x in Get().Select( a => a.ParentGroupId )
                                  where resultIds.Contains( x.Value )
@@ -71,12 +88,12 @@ namespace Rock.Rest.Controllers
 
             var qryHasChildrenList = qryHasChildren.ToList();
 
-            foreach ( var g in result )
+            foreach ( var g in groupNameList )
             {
                 g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
             }
 
-            return result.AsQueryable();
+            return groupNameList.AsQueryable();
         }
     }
 
@@ -92,7 +109,7 @@ namespace Rock.Rest.Controllers
         /// The id.
         /// </value>
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -100,6 +117,22 @@ namespace Rock.Rest.Controllers
         /// The name.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The group type icon CSS class.
+        /// </value>
+        public string GroupTypeIconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type icon small id.
+        /// </summary>
+        /// <value>
+        /// The group type icon small id.
+        /// </value>
+        public string GroupTypeIconSmallUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has children.

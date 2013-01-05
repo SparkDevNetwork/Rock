@@ -40,12 +40,12 @@ namespace RockWeb.Blocks.Crm
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
 
-            string[] eventArgs = (Request.Form["__EVENTARGUMENT"] ?? string.Empty).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+            string[] eventArgs = ( Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
             if ( eventArgs.Length == 2 )
             {
                 if ( eventArgs[0] == "groupId" )
                 {
-                    groupItem_Click(eventArgs[1]);
+                    groupItem_Click( eventArgs[1] );
                 }
             }
         }

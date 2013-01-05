@@ -14,14 +14,11 @@
         <script>
             function onSelect(e) {
                 var groupId = this.dataItem(e.node).id;
-
-                $('.console').text("Selected: " + this.text(e.node) + ", " + groupId);
-
                 __doPostBack('<%= upGroupType.ClientID %>', 'groupId=' + groupId);
             }
 
             function onNavigate(e) {
-                $('.console').text("Navigate " + this.text(e.node));
+                //
             }
 
             var restUrl = "<%=ResolveUrl( "~/api/groups/getchildren/" ) %>";
@@ -46,8 +43,10 @@
             });
 
             $('.groupTreeview').kendoTreeView({
+                template: "<i class='#= item.GroupTypeIconCssClass #'></i> #= item.Name #",
                 dataSource: groupList,
                 dataTextField: 'Name',
+                dataImageUrlField: 'GroupTypeIconSmallUrl',
                 select: onSelect,
                 navigate: onNavigate
             });
