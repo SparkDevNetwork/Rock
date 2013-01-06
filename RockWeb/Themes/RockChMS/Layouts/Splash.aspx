@@ -13,13 +13,13 @@
     <meta name="viewport" content="width=device-width" />
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Css/rock-core.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
 
 </head>
@@ -28,7 +28,7 @@
     <form id="form1" runat="server">
 
             <div id="content">
-                <h1>Rock ChMS</h1>
+                <img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" />
                 
                 <div id="content-box" class="group">
                     <Rock:Zone ID="Content" runat="server" />

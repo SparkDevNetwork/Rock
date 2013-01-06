@@ -13,12 +13,15 @@
 // 3. Components
 // 4. Header and Nav
 // 5. Footer
+// 6. Layout Specific Styles
 
 //
 // Variables
 // --------------------------------------------------
 @import "./rock-global-variables.less";
 @import "./rock-bootstrap-variables.less";
+@import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
+
 //
 // 1. Bootstrap Overides
 //
@@ -242,4 +245,50 @@ body {  background-image: url('../Assets/Images/light-texture.png');
 	color: @rockCalloutColor;
 }
 
+//
+// 6. Layout Spefic Styles
+//
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+#splash {
+    background-image: url('../Assets/Images/header-texture.png');
+}
+
+#splash .pageheader-logo {
+    height: 45px;
+	width: 127.57px
+}
+
+#splash #content {
+    width: 550px;
+    margin: 5% auto 0 auto;
+}
+
+body#splash #content-box {
+    background-image: url('../Assets/Images/light-texture.png');
+    .border-radius(@baseBorderRadius);
+}
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+  #splash #content-box {
+    background-image: url('../Assets/Images/light-texture@2x.png');
+    background-size: 256px 256px;
+  }
+
+  #splash {
+    background-image: url('../Assets/Images/header-texture.png');
+    background-size: 210px 163px;
+  }
+}
+
+// special styles for the login control 
+#splash .login fieldset {
+    padding: 15px;
+}
+
+#splash .login .form-actions {
+    .border-radius(@baseBorderRadius);
+}
+
+
 @import "./rock-theme-responsive.less";
+
