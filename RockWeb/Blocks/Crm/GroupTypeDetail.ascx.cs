@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Crm
             ddlDefaultGroupRole.DataSource = groupRoles;
             ddlDefaultGroupRole.DataBind();
 
-            ddlAttendanceRule.BindToEnum( typeof(Rock.Model.AttendanceRule) );
+            ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
             ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
         }
 
@@ -183,13 +183,13 @@ namespace RockWeb.Blocks.Crm
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
             }
 
             if ( groupType.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( GroupType.FriendlyTypeName );
             }
 
             if ( readOnly )
