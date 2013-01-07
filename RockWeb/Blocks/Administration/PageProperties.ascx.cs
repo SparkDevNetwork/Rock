@@ -233,12 +233,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
-                string script = @"
-if ( window.parent.closeModal != null)
-{
-    window.parent.closeModal();
-}
-";
+                string script = "if ( typeof window.parent.closeModal === 'function' ) window.parent.closeModal();";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
