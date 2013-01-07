@@ -19,6 +19,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ImageSelector runat=server></{0}:ImageSelector>" )]
     public class ImageSelector : CompositeControl
     {
+        private Label label;
         private Image image;
         private HiddenField hiddenField;
         private FileUpload fileUpload;
@@ -41,11 +42,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
- 
+
                 int id = 0;
-                if (Int32.TryParse(hiddenField.Value, out id))
+                if ( Int32.TryParse( hiddenField.Value, out id ) )
                 {
-                    return id;
+                    if ( id > 0 )
+                    {
+                        return id;
+                    }
                 }
                 return null;
             }
@@ -54,6 +58,32 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 hiddenField.Value = value.HasValue ? value.Value.ToString() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string LabelText
+        {
+            get
+            {
+                EnsureChildControls();
+                return label.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                label.Text = value;
             }
         }
 
@@ -117,7 +147,7 @@ namespace Rock.Web.UI.Controls
                             hiddenField.ClientID,
                             image.ClientID,
                             htmlAnchor.ClientID,
-                            ResolveUrl("~"));
+                            ResolveUrl( "~" ) );
 
             ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
@@ -128,6 +158,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.AddCssClass( "control-label" );
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
             writer.AddAttribute( "class", "rock-image" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -150,6 +189,10 @@ namespace Rock.Web.UI.Controls
             fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
             fileUpload.RenderControl( writer );
             writer.RenderEndTag();
+            
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
 
             writer.RenderEndTag();
         }
@@ -159,9 +202,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            label = new Label();
+            Controls.Add( label );
+            
             image = new Image();
             image.ID = "img";
             Controls.Add( image );
+
+            label.AssociatedControlID = image.ID;
 
             hiddenField = new HiddenField();
             hiddenField.ID = "hf";

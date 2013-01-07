@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
-
+ 
 using Newtonsoft.Json;
 
 using Rock.Model;
@@ -112,7 +112,7 @@ namespace Rock
             else
             {
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
-                return entityType.FriendlyName ?? entityType.Name;
+                return entityType.FriendlyName ?? SplitCase(type.Name);
             }
         }
 
