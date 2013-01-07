@@ -226,5 +226,32 @@ namespace Rock.Web.UI.Controls
             return new ControlCollection( this );
         }
 
+        /// <summary>
+        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
+        /// </summary>
+        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
+        /// <returns></returns>
+        public int? SelectedValueAsInt(bool NoneAsNull = true)
+        {
+            if ( NoneAsNull )
+            {
+                if ( this.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
+                {
+                    return null;
+                }
+            }
+
+            return int.Parse(this.SelectedValue);
+        }
+
+        /// <summary>
+        /// Selecteds the value as enum.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T SelectedValueAsEnum<T>()
+        {
+            return (T)System.Enum.Parse( typeof(T), this.SelectedValue );
+        }
     }
 }
