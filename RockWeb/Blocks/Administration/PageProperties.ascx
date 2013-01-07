@@ -82,6 +82,25 @@
             </asp:Panel>
 
             <asp:PlaceHolder id="phAttributes" runat="server" />
+            
+            <asp:PlaceHolder ID="phImportExport" runat="server">
+                <div class="row">
+                    <div class="span6">
+                        <fieldset>
+                            <legend>Export Pages</legend>
+                            <asp:CheckBox runat="server" ID="cbExportChildren" />
+                            <asp:Button runat="server" ID="btnExport" />
+                        </fieldset>
+                    </div>
+                    <div class="span6">
+                        <fieldset>
+                            <legend>Import Pages</legend>
+                            <asp:FileUpload runat="server" ID="fuImport" />
+                            <asp:Button runat="server" ID="btnImport" Text="Import" />
+                        </fieldset>
+                    </div>
+                </div>
+            </asp:PlaceHolder>
 
         </div>
 
