@@ -225,8 +225,6 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            this.LoadAttributes();
-
             DateTime processStartTime = DateTime.Now;
 
             while ( ProcessActivity( processStartTime, entity, out errorMessages )
@@ -339,7 +337,7 @@ namespace Rock.Model
             workflow.Status = "Activated";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = DateTime.Now;
-            Rock.Attribute.Helper.LoadAttributes( workflow );
+            workflow.LoadAttributes();
 
             workflow.AddSystemLogEntry( "Activated" );
 
@@ -347,7 +345,7 @@ namespace Rock.Model
             {
                 if ( activityType.IsActivatedWithWorkflow)
                 {
-                    workflow.Activities.Add( WorkflowActivity.Activate(activityType, workflow) );
+                    WorkflowActivity.Activate(activityType, workflow);
                 }
             }
 

@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 
+using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
@@ -106,6 +107,9 @@ if ($ActiveWhen.text() != '')
             int workflowTypeId = 0;
             if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
             {
+
+                RefreshKioskData(); 
+                
                 var workflowTypeService = new WorkflowTypeService();
                 var workflowType = workflowTypeService.Get( workflowTypeId );
 
@@ -119,8 +123,8 @@ if ($ActiveWhen.text() != '')
                     checkInState.CheckIn.SearchType = searchType;
                     checkInState.CheckIn.SearchValue = searchValue;
 
-                    //workflow.AttributeValues["CheckInState"]  = checkInState;
-
+                    workflow.SetAttributeValue( "CheckInState", checkInState.ToJson() );
+                    
                     var activityType = workflowType.ActivityTypes.Where( a => a.Name == "Family Search" ).FirstOrDefault();
                     if ( activityType != null )
                     {

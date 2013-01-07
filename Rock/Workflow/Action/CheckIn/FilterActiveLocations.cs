@@ -17,7 +17,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Removes any locations that are not active")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]
-    public class FilterActiveLocations : ActionComponent
+    public class FilterActiveLocations : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -29,7 +29,13 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            throw new NotImplementedException();
+            var checkInState = GetCheckInState( action, out errorMessages );
+            if ( checkInState != null )
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

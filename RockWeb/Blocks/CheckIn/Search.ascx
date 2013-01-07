@@ -2,9 +2,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-    <span style="display:none">
-        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
-    </span>
+    <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <fieldset>
     <legend>Search</legend>
@@ -15,8 +13,8 @@
 
     <div class="actions">
         <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" />
-        <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Search" />
-        <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Search" />
+        <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+        <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
     </div>
 
 </ContentTemplate>
