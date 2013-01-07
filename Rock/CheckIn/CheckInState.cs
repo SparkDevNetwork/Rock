@@ -9,6 +9,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
+using Newtonsoft.Json;
+
 namespace Rock.CheckIn
 {
     /// <summary>
@@ -43,6 +45,17 @@ namespace Rock.CheckIn
         {
             Kiosk = kioskStatus;
             CheckIn = new CheckInStatus();
+        }
+
+        /// <summary>
+        /// Creates a new CheckInState object Froms a json string.
+        /// </summary>
+        /// <param name="json">The json.</param>
+        /// <returns></returns>
+        public static CheckInState FromJson( string json )
+        {
+            return JsonConvert.DeserializeObject( json, typeof( CheckInState ) ) as CheckInState;
+          
         }
     }
 }

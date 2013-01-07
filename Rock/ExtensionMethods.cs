@@ -232,6 +232,16 @@ namespace Rock
             return pluralizationService.Pluralize( str );
         }
 
+        /// <summary>
+        /// Removes any non-numeric characters
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string AsNumeric( this string str )
+        {
+            return Regex.Replace( str, @"[^0-9]", "" );
+        }
+
         #endregion
 
         #region Int Extensions

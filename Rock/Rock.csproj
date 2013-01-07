@@ -320,6 +320,7 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
+    <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />

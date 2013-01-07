@@ -17,7 +17,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Loads the schedules available for each group")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Schedules" )]
-    public class LoadSchedules : ActionComponent
+    public class LoadSchedules : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -29,7 +29,13 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            throw new NotImplementedException();
+            var checkInState = GetCheckInState( action, out errorMessages );
+            if ( checkInState != null )
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

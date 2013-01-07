@@ -49,7 +49,7 @@ namespace Rock.Workflow.Action
 
             if (activityType != null)
             {
-                workflow.Activities.Add( WorkflowActivity.Activate( activityType, workflow ) );
+                WorkflowActivity.Activate( activityType, workflow );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
                 return true;
             }

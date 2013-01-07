@@ -329,8 +329,7 @@ namespace RockWeb.Blocks.Administration
         {
             MarketingCampaignAd temp = new MarketingCampaignAd();
             temp.MarketingCampaignAdTypeId = marketingAdTypeId;
-
-            Rock.Attribute.Helper.LoadAttributes( temp );
+            temp.LoadAttributes();
             return temp.Attributes.Values.ToList();
         }
 

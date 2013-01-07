@@ -18,6 +18,7 @@ namespace Rock.Web.Cache
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
+    [DataContract(IsReference=true)]
     public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
@@ -27,6 +28,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The id.
         /// </value>
+        [DataMember]
         public virtual int Id { get; set; }
 
         /// <summary>
@@ -35,6 +37,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The GUID.
         /// </value>
+        [DataMember]
         public virtual Guid Guid { get; set; }
 
         /// <summary>
@@ -224,11 +227,13 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The attribute ids
         /// </summary>
+        [DataMember]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
+        [DataMember]
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>

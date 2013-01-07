@@ -9,6 +9,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Newtonsoft.Json;
+
+using Rock.CheckIn;
+using Rock.Model;
+
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -17,7 +22,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Finds families based on a given search critieria (i.e. phone, barcode, etc)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Find Families" )]
-    public class FindFamilies : ActionComponent
+    public class FindFamilies : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -29,7 +34,50 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            throw new NotImplementedException();
+            var checkInState = GetCheckInState( action, out errorMessages );
+            if (checkInState != null)
+            {
+                if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) )
+                {
+                    var personService = new PersonService();
+                    foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
+                    {
+                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY ).Select( m => m.Group ) )
+                        {
+                            CheckInFamily family = checkInState.CheckIn.Families.Where( f => f.group.Id == group.Id ).FirstOrDefault();
+                            if ( family == null )
+                            {
+                                family = new CheckInFamily();
+                                family.group = new Group();
+                                family.group.CopyPropertiesFrom( group );
+                                checkInState.CheckIn.Families.Add( family );
+                            }
+
+                            var familyMember = new CheckInPerson();
+                            familyMember.Person = new Person();
+                            familyMember.Person.CopyPropertiesFrom( person );
+                            family.FamilyMembers.Add( familyMember );
+                        }
+                    }
+
+                    if ( checkInState.CheckIn.Families.Count > 0 )
+                    {
+                        SetCheckInState( action, checkInState );
+                        return true;
+                    }
+                    else
+                    {
+                        errorMessages.Add( "There are not any families with the selected phone number" );
+                    }
+
+                }
+                else
+                {
+                    errorMessages.Add( "Invalid Search Type" );
+                }
+            }
+
+            return false;
         }
     }
 }
