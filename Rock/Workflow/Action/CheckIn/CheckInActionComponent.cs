@@ -48,6 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// Sets the state of the check in.
         /// </summary>
         /// <param name="action">The action.</param>
+        /// <param name="checkInState">State of the check in.</param>
         protected void SetCheckInState ( Model.WorkflowAction action, CheckInState checkInState)
         {
             string stateString = checkInState.ToJson();

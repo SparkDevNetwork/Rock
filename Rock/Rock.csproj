@@ -122,6 +122,9 @@
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="CheckIn\CheckInBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="CheckIn\CheckInFamily.cs" />
     <Compile Include="CheckIn\CheckInGroup.cs" />
     <Compile Include="CheckIn\CheckInGroupType.cs" />

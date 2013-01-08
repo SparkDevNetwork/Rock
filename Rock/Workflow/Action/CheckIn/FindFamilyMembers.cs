@@ -9,6 +9,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.CheckIn;
+using Rock.Model;
+
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -32,7 +35,31 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
-                return true;
+                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    var service = new GroupMemberService();
+                    foreach ( var groupMember in service.GetByGroupId( family.Group.Id ) )
+                    {
+                        var familyMember = family.FamilyMembers.Where( m => m.Person.Id == groupMember.PersonId).FirstOrDefault();
+                        if (familyMember == null)
+                        {
+                            familyMember = new CheckInPerson();
+                            familyMember.Person = new Person();
+                            familyMember.Person.CopyPropertiesFrom(groupMember.Person);
+                            family.FamilyMembers.Add(familyMember);
+                        }
+                    }
+
+                    SetCheckInState( action, checkInState );
+                    return true;
+                }
+                else
+                {
+                    errorMessages.Add( "There is not a family that is selected" );
+                }
+
+                return false;
             }
 
             return false;
