@@ -2,6 +2,8 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
+    <Rock:ModalAlert ID="maWarning" runat="server" />
+
     <span style="display:none">
         <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
         <asp:Label ID="lblActiveWhen" runat="server" CssClass="active-when" />

@@ -44,19 +44,14 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY ).Select( m => m.Group ) )
                         {
-                            CheckInFamily family = checkInState.CheckIn.Families.Where( f => f.group.Id == group.Id ).FirstOrDefault();
+                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
                             if ( family == null )
                             {
                                 family = new CheckInFamily();
-                                family.group = new Group();
-                                family.group.CopyPropertiesFrom( group );
+                                family.Group = new Group();
+                                family.Group.CopyPropertiesFrom( group );
                                 checkInState.CheckIn.Families.Add( family );
                             }
-
-                            var familyMember = new CheckInPerson();
-                            familyMember.Person = new Person();
-                            familyMember.Person.CopyPropertiesFrom( person );
-                            family.FamilyMembers.Add( familyMember );
                         }
                     }
 
