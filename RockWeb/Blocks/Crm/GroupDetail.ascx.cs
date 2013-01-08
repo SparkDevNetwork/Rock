@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns(int currentGroupId)
+        private void LoadDropDowns( int currentGroupId )
         {
             GroupTypeService groupTypeService = new GroupTypeService();
             var groupTypeQry = groupTypeService.Queryable();
@@ -181,9 +181,9 @@ namespace RockWeb.Blocks.Crm
             pnlDetails.Visible = true;
             Group group = null;
 
-            if (!itemKeyValue.Equals(0))
+            if ( !itemKeyValue.Equals( 0 ) )
             {
-                group = new GroupService().Get(itemKeyValue);
+                group = new GroupService().Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
             }
             else
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Crm
             hfGroupId.Value = group.Id.ToString();
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
-            ddlGroupType.SetValue(group.GroupTypeId);
+            ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
             ddlCampus.SetValue( group.CampusId );
             cbIsSecurityRole.Checked = group.IsSecurityRole;
@@ -206,24 +206,24 @@ namespace RockWeb.Blocks.Crm
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if (!IsUserAuthorized("Edit"))
+            if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
             }
 
-            if (group.IsSystem)
+            if ( group.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
             }
-            
+
             if ( readOnly )
             {
                 lActionTitle.Text = ActionTitle.View( Group.FriendlyTypeName );
                 btnCancel.Text = "Close";
             }
-            
+
             ddlGroupType.Enabled = !readOnly;
             ddlParentGroup.Enabled = !readOnly;
             ddlCampus.Enabled = !readOnly;
