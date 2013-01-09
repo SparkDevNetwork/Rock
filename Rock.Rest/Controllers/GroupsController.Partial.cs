@@ -62,7 +62,7 @@ namespace Rock.Rest.Controllers
 
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = appPath + "/Image.ashx?id={0}&width=25&height=5";
+            string imageUrlFormat = appPath + "/Image.ashx?id={0}&width=25&height=25";
 
             GroupTypeService groupTypeService = new GroupTypeService();
 
