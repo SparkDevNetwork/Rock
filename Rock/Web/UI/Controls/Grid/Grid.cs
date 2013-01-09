@@ -354,7 +354,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table";
+            base.CssClass = "grid-table table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
