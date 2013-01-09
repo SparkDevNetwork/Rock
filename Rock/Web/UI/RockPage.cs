@@ -413,8 +413,6 @@ namespace Rock.Web.UI
                             AddConfigElements();
                     }
 
-                    AddKendoScripts();
-
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
@@ -703,17 +701,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Adds the kendo scripts.
-        /// </summary>
-        protected virtual void AddKendoScripts()
-        {
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.bootstrap.min.css" );
-
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.web.min.js" );
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         public List<RockBlock> RockBlocks
@@ -775,9 +762,6 @@ namespace Rock.Web.UI
         {
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
-            
-            // add the scripts for RockGrid
-            AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
 
             AddBlockMove();
             // Add Zone Wrappers
