@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public partial class MarketingCampaignAdTypes : RockBlock
+    public partial class MarketingCampaignAdTypeDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States
 
@@ -55,19 +55,11 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
-            {
-                gMarketingCampaignAdType.DataKeyNames = new string[] { "id" };
-                gMarketingCampaignAdType.Actions.IsAddEnabled = true;
-                gMarketingCampaignAdType.Actions.AddClick += gMarketingCampaignAdType_Add;
-                gMarketingCampaignAdType.GridRebind += gMarketingCampaignAdType_GridRebind;
-
-                gMarketingCampaignAdAttributeTypes.DataKeyNames = new string[] { "Guid" };
-                gMarketingCampaignAdAttributeTypes.Actions.IsAddEnabled = true;
-                gMarketingCampaignAdAttributeTypes.Actions.AddClick += gMarketingCampaignAdAttributeType_Add;
-                gMarketingCampaignAdAttributeTypes.GridRebind += gMarketingCampaignAdAttributeType_GridRebind;
-                gMarketingCampaignAdAttributeTypes.EmptyDataText = Server.HtmlEncode( None.Text );
-            }
+            gMarketingCampaignAdAttributeTypes.DataKeyNames = new string[] { "Guid" };
+            gMarketingCampaignAdAttributeTypes.Actions.IsAddEnabled = true;
+            gMarketingCampaignAdAttributeTypes.Actions.AddClick += gMarketingCampaignAdAttributeType_Add;
+            gMarketingCampaignAdAttributeTypes.GridRebind += gMarketingCampaignAdAttributeType_GridRebind;
+            gMarketingCampaignAdAttributeTypes.EmptyDataText = Server.HtmlEncode( None.Text );
         }
 
         /// <summary>
@@ -76,84 +68,20 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            nbWarning.Visible = false;
+            base.OnLoad( e );
 
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( !Page.IsPostBack )
             {
-                if ( !Page.IsPostBack )
+                string itemId = PageParameter( "marketingCampaignAdTypeId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    BindGrid();
-                    LoadDropDowns();
+                    ShowDetail( "marketingCampaignAdTypeId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
                 }
             }
-            else
-            {
-                gMarketingCampaignAdType.Visible = false;
-                nbWarning.Text = WarningMessage.NotAuthorizedToEdit( MarketingCampaignAdType.FriendlyTypeName );
-                nbWarning.Visible = true;
-            }
-
-            base.OnLoad( e );
-        }
-        #endregion
-
-        #region Grid Events (main grid)
-
-        /// <summary>
-        /// Handles the Add event of the gMarketingCampaignAdType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gMarketingCampaignAdType_Add( object sender, EventArgs e )
-        {
-            ShowEdit( 0 );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gMarketingCampaignAdType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gMarketingCampaignAdType_Edit( object sender, RowEventArgs e )
-        {
-            ShowEdit( (int)e.RowKeyValue );
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gMarketingCampaignAdType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gMarketingCampaignAdType_Delete( object sender, RowEventArgs e )
-        {
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-            int marketingCampaignAdTypeId = (int)e.RowKeyValue;
-            MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
-
-            string errorMessage;
-            if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
-            {
-                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                return;
-            }
-
-            if ( CurrentBlock != null )
-            {
-                marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonId );
-                marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonId );
-            }
-
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gMarketingCampaignAdType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gMarketingCampaignAdType_GridRebind( object sender, EventArgs e )
-        {
-            BindGrid();
         }
 
         #endregion
@@ -188,7 +116,6 @@ namespace RockWeb.Blocks.Administration
         protected void gMarketingCampaignAdAttributeType_ShowEdit( Guid attributeGuid )
         {
             pnlDetails.Visible = false;
-            pnlList.Visible = false;
             pnlAdTypeAttribute.Visible = true;
 
             if ( attributeGuid != Guid.Empty )
@@ -271,7 +198,6 @@ namespace RockWeb.Blocks.Administration
             AttributesState.Add( attribute );
 
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
             pnlAdTypeAttribute.Visible = false;
 
             BindMarketingCampaignAdAttributeTypeGrid();
@@ -285,7 +211,6 @@ namespace RockWeb.Blocks.Administration
         protected void btnCancelAttribute_Click( object sender, EventArgs e )
         {
             pnlDetails.Visible = true;
-            pnlList.Visible = false;
             pnlAdTypeAttribute.Visible = false;
         }
 
@@ -309,8 +234,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -398,34 +322,12 @@ namespace RockWeb.Blocks.Administration
                 }
             } );
 
-            BindGrid();
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
+            NavigateToParentPage();
         }
 
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        private void BindGrid()
-        {
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-            SortProperty sortProperty = gMarketingCampaignAdType.SortProperty;
-
-            if ( sortProperty != null )
-            {
-                gMarketingCampaignAdType.DataSource = marketingCampaignAdTypeService.Queryable().Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gMarketingCampaignAdType.DataSource = marketingCampaignAdTypeService.Queryable().OrderBy( p => p.Name ).ToList();
-            }
-
-            gMarketingCampaignAdType.DataBind();
-        }
 
         /// <summary>
         /// Loads the drop downs.
@@ -442,58 +344,76 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Shows the edit.
+        /// Shows the detail.
         /// </summary>
-        /// <param name="marketingCampaignAdTypeId">The marketing campaign ad type id.</param>
-        protected void ShowEdit( int marketingCampaignAdTypeId )
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue )
         {
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
-
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-            MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
-            bool readOnly = false;
-            AttributesState = new ViewStateList<Attribute>();
-
-            if ( marketingCampaignAdType != null )
+            if ( !itemKey.Equals( "marketingCampaignAdTypeId" ) )
             {
-                hfMarketingCampaignAdTypeId.Value = marketingCampaignAdType.Id.ToString();
-                tbName.Text = marketingCampaignAdType.Name;
-                ddlDateRangeType.SelectedValue = ( (int)marketingCampaignAdType.DateRangeType ).ToString();
+                return;
+            }
 
-                AttributeService attributeService = new AttributeService();
+            pnlDetails.Visible = true;
+            MarketingCampaignAdType marketingCampaignAdType = null;
 
-                var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
-                    .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-                    && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
-
-                AttributesState.AddAll( qry.ToList()  );
-
-                readOnly = marketingCampaignAdType.IsSystem;
-
-                if ( marketingCampaignAdType.IsSystem )
-                {
-                    lActionTitle.Text = ActionTitle.View( MarketingCampaignAdType.FriendlyTypeName );
-                    btnCancel.Text = "Close";
-                }
-                else
-                {
-                    lActionTitle.Text = ActionTitle.Edit( MarketingCampaignAdType.FriendlyTypeName );
-                    btnCancel.Text = "Cancel";
-                }
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( itemKeyValue );
+                lActionTitle.Text = ActionTitle.Edit( MarketingCampaignAdType.FriendlyTypeName );
             }
             else
             {
+                marketingCampaignAdType = new MarketingCampaignAdType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( MarketingCampaignAdType.FriendlyTypeName );
-
-                hfMarketingCampaignAdTypeId.Value = 0.ToString();
-                tbName.Text = string.Empty;
             }
 
-            iconIsSystem.Visible = readOnly;
-            btnSave.Visible = !readOnly;
+            LoadDropDowns();
 
+            // load data into UI controls
+            AttributesState = new ViewStateList<Attribute>();
+
+            hfMarketingCampaignAdTypeId.Value = marketingCampaignAdType.Id.ToString();
+            tbName.Text = marketingCampaignAdType.Name;
+            ddlDateRangeType.SetValue( (int)marketingCampaignAdType.DateRangeType );
+
+            AttributeService attributeService = new AttributeService();
+
+            var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
+
+            AttributesState.AddAll( qry.ToList() );
             BindMarketingCampaignAdAttributeTypeGrid();
+
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( MarketingCampaignAdType.FriendlyTypeName );
+            }
+
+            if ( marketingCampaignAdType.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( MarketingCampaignAdType.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                lActionTitle.Text = ActionTitle.View( MarketingCampaignAdType.FriendlyTypeName );
+                btnCancel.Text = "Close";
+            }
+
+            tbName.ReadOnly = readOnly;
+            ddlDateRangeType.Enabled = !readOnly;
+            gMarketingCampaignAdAttributeTypes.Enabled = !readOnly;
+
+            btnSave.Visible = !readOnly;
         }
 
         #endregion
