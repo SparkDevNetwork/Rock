@@ -1,10 +1,32 @@
-﻿/* bootstrap override */
-.table-bordered th, 
-.table-bordered td 
-{
-    border-left: 0;
+﻿
+.table-bordered th {
+	background: #E9E9E9;
+	background:-moz-linear-gradient(top, #FAFAFA 0%, #E9E9E9 100%); /* FF3.6+ */
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#FAFAFA), color-stop(100%,#E9E9E9)); /* Chrome,Safari4+ */
+	background:-webkit-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* Chrome10+,Safari5.1+ */
+	background:-o-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* Opera11.10+ */
+	background:-ms-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* IE10+ */
+	background:linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9')";
+	
+	font-size: 10px;
+	color: #444;
+	text-transform: uppercase;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+/* bootstrap override */
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th
 {
@@ -12,7 +34,7 @@
 }
 
 /* custom grid items */
-.grid-table.table-bordered
+/*.grid-table.table-bordered
 {
     border-collapse: separate;
     border-color: #CCCCCC;
@@ -51,7 +73,7 @@
 {
     background-color: #8b8b8b;
     
-}
+} */
 
 .grid-table thead th.ascending a::before
 {
@@ -67,7 +89,7 @@
 	font-family: FontAwesome; 
 }
 
-.grid-table thead th a
+/*.grid-table thead th a
 {
     color: #fff;
     display: block;
@@ -82,7 +104,7 @@
 .grid-table tbody tr:nth-child(even) 
 {
 	background: #d2d2d2; 
-}
+}*/
 
 .grid-icon-cell
 {
@@ -235,17 +257,18 @@
 .grid-filter 
 {
     background-color: #dadada;
+
     border-radius: 4px 4px 4px 4px;
     border-width: 1px;
-    border-color: #c4c4c4;
+    border-color: #ddd;
     border-style: solid;
     margin-top: 24px;
     padding: 0 0 12px 6px;
 }
 
 .grid-filter header {
+    background: -moz-linear-gradient(center top , #FAFAFA 0%, #E9E9E9 100%) repeat scroll 0 0 transparent;
     margin: 0 0 -4px -6px;
-    background-color: #c3c3c3;
     border-radius: 4px 4px 0 0;
     padding: 4px;
     cursor: pointer;
