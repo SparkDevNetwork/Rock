@@ -15,6 +15,7 @@ namespace Rock.Constants
         /// Duplicates the found message.
         /// </summary>
         /// <param name="nameFieldname">The name fieldname.</param>
+        /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
         public static string DuplicateFoundMessage( string nameFieldname, string itemFriendlyName )
         {
