@@ -7,16 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
- 
 using Newtonsoft.Json;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -111,8 +109,15 @@ namespace Rock
             }
             else
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
-                return entityType.FriendlyName ?? SplitCase(type.Name);
+                if ( typeof(IEntity).IsAssignableFrom(type) )
+                {
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    return entityType.FriendlyName ?? SplitCase( type.Name );
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
         }
 
