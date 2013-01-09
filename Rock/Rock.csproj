@@ -218,6 +218,10 @@
     <Compile Include="Migrations\201212311316295_AddCategoryIcon.Designer.cs">
       <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.cs" />
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.Designer.cs">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -884,6 +888,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212311316295_AddCategoryIcon.resx">
       <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301090032138_ListDetailSweep02.resx">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
