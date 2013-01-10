@@ -230,6 +230,10 @@
     <Compile Include="Migrations\201301102215432_AddDeceasedFlag.Designer.cs">
       <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.cs" />
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.Designer.cs">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -283,6 +287,7 @@
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
+    <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\UserLoginService.Partial.cs" />
@@ -906,6 +911,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301102215432_AddDeceasedFlag.resx">
       <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102317461_AddPrayerRequest.resx">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
