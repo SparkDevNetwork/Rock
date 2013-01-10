@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Administration
             // Clean up staging area?
         }
 
-        protected void btnImportClick( object sender, EventArgs e )
+        protected void btnImport_Click( object sender, EventArgs e )
         {
             // var bytes = fuImport.FileBytes
 
