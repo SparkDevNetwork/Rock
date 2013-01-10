@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    public partial class OneTimeGift : RockBlock
+    public partial class RecurringGift : RockBlock
     {
         #region Control Methods
 
