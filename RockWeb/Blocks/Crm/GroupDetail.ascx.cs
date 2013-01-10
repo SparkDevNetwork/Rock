@@ -154,7 +154,14 @@ namespace RockWeb.Blocks.Crm
             ddlGroupType.DataBind();
 
             GroupService groupService = new GroupService();
-            List<Group> groups = groupService.Queryable().Where( g => g.Id != currentGroupId ).OrderBy( a => a.Name ).ToList();
+
+            // optimization to only fetch Id, Name from db
+            var qryGroup = from g in groupService.Queryable()
+                           where g.Id != currentGroupId
+                           orderby g.Name
+                           select new { Id = g.Id, Name = g.Name };
+            List<Group> groups = qryGroup.ToList().ConvertAll<Group>( a => new Group { Id = a.Id, Name = a.Name } );
+
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlParentGroup.DataSource = groups;
             ddlParentGroup.DataBind();
@@ -192,14 +199,9 @@ namespace RockWeb.Blocks.Crm
                 lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
             }
 
-            LoadDropDowns( group.Id );
-
             hfGroupId.Value = group.Id.ToString();
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
-            ddlGroupType.SetValue( group.GroupTypeId );
-            ddlParentGroup.SetValue( group.ParentGroupId );
-            ddlCampus.SetValue( group.CampusId );
             cbIsSecurityRole.Checked = group.IsSecurityRole;
 
             // render UI based on Authorized and IsSystem
@@ -232,6 +234,20 @@ namespace RockWeb.Blocks.Crm
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             btnSave.Visible = !readOnly;
+
+            if ( readOnly )
+            {
+                ddlGroupType.SetReadOnlyValue( group.GroupType.Name );
+                ddlParentGroup.SetReadOnlyValue( group.ParentGroup != null ? group.ParentGroup.Name : None.Text );
+                ddlCampus.SetReadOnlyValue( group.Campus != null ? group.Campus.Name : None.Text );
+            }
+            else
+            {
+                LoadDropDowns( group.Id );
+                ddlGroupType.SetValue( group.GroupTypeId );
+                ddlParentGroup.SetValue( group.ParentGroupId );
+                ddlCampus.SetValue( group.CampusId );
+            }
 
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )

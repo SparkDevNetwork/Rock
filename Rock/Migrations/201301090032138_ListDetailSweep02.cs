@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class ListDetailSweep02 : RockMigration
+    public partial class ListDetailSweep02 : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -52,6 +52,7 @@ namespace Rock.Migrations
             DeleteBlock( "16011084-CB78-4E9E-9A78-40FB13BA2C40" );
             DeleteBlockType( "9373F86E-88C8-40E8-9D70-AE6CFC5DD980" );
             DeleteBlockType( "7C70D1F6-78BB-4196-8A35-276DD06F8AFE" );
-            DeletePage( "36826974-C613-48F2-877E-460C4EC90CCE" );        }
+            DeletePage( "36826974-C613-48F2-877E-460C4EC90CCE" );
+        }
     }
 }

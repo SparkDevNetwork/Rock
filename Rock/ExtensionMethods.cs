@@ -599,6 +599,17 @@ namespace Rock
         }
 
         /// <summary>
+        /// Sets the read only value.
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
+        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add( value );
+        }
+
+        /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="ddl">The DDL.</param>
