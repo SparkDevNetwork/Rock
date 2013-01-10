@@ -70,18 +70,31 @@ namespace Rock.Model
     public static class FieldTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another FieldType entity
+        /// Clones this FieldType object to a new FieldType object
         /// </summary>
-        public static void CopyPropertiesFrom( this FieldType target, FieldType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static FieldType Clone( this FieldType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Assembly = source.Assembly;
-            target.Class = source.Class;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as FieldType;
+            }
+            else
+            {
+                var target = new FieldType();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Assembly = source.Assembly;
+                target.Class = source.Class;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

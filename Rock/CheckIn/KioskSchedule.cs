@@ -54,8 +54,7 @@ namespace Rock.CheckIn
         public KioskSchedule( Schedule schedule )
             : base()
         {
-            Schedule = new Schedule();
-            Schedule.CopyPropertiesFrom( schedule );
+            Schedule = schedule.Clone( false );
         }
     }
 }

@@ -80,8 +80,7 @@ namespace Rock.CheckIn
         public KioskStatus( Device device )
             : base()
         {
-            Device = new Device();
-            Device.CopyPropertiesFrom( device );
+            Device = device.Clone( false );
             KioskGroupTypes = new List<KioskGroupType>();
         }
     }

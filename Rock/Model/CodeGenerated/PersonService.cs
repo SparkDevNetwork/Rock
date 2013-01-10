@@ -98,37 +98,51 @@ namespace Rock.Model
     public static class PersonExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Person entity
+        /// Clones this Person object to a new Person object
         /// </summary>
-        public static void CopyPropertiesFrom( this Person target, Person source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Person Clone( this Person source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.RecordTypeValueId = source.RecordTypeValueId;
-            target.RecordStatusValueId = source.RecordStatusValueId;
-            target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
-            target.PersonStatusValueId = source.PersonStatusValueId;
-            target.TitleValueId = source.TitleValueId;
-            target.GivenName = source.GivenName;
-            target.NickName = source.NickName;
-            target.LastName = source.LastName;
-            target.SuffixValueId = source.SuffixValueId;
-            target.PhotoId = source.PhotoId;
-            target.BirthDay = source.BirthDay;
-            target.BirthMonth = source.BirthMonth;
-            target.BirthYear = source.BirthYear;
-            target.Gender = source.Gender;
-            target.MaritalStatusValueId = source.MaritalStatusValueId;
-            target.AnniversaryDate = source.AnniversaryDate;
-            target.GraduationDate = source.GraduationDate;
-            target.Email = source.Email;
-            target.IsEmailActive = source.IsEmailActive;
-            target.EmailNote = source.EmailNote;
-            target.DoNotEmail = source.DoNotEmail;
-            target.SystemNote = source.SystemNote;
-            target.ViewedCount = source.ViewedCount;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Person;
+            }
+            else
+            {
+                var target = new Person();
+                target.IsSystem = source.IsSystem;
+                target.RecordTypeValueId = source.RecordTypeValueId;
+                target.RecordStatusValueId = source.RecordStatusValueId;
+                target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
+                target.PersonStatusValueId = source.PersonStatusValueId;
+                target.IsDeceased = source.IsDeceased;
+                target.TitleValueId = source.TitleValueId;
+                target.GivenName = source.GivenName;
+                target.NickName = source.NickName;
+                target.LastName = source.LastName;
+                target.SuffixValueId = source.SuffixValueId;
+                target.PhotoId = source.PhotoId;
+                target.BirthDay = source.BirthDay;
+                target.BirthMonth = source.BirthMonth;
+                target.BirthYear = source.BirthYear;
+                target.Gender = source.Gender;
+                target.MaritalStatusValueId = source.MaritalStatusValueId;
+                target.AnniversaryDate = source.AnniversaryDate;
+                target.GraduationDate = source.GraduationDate;
+                target.Email = source.Email;
+                target.IsEmailActive = source.IsEmailActive;
+                target.EmailNote = source.EmailNote;
+                target.DoNotEmail = source.DoNotEmail;
+                target.SystemNote = source.SystemNote;
+                target.ViewedCount = source.ViewedCount;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

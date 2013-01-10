@@ -58,19 +58,32 @@ namespace Rock.Model
     public static class ServiceLogExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another ServiceLog entity
+        /// Clones this ServiceLog object to a new ServiceLog object
         /// </summary>
-        public static void CopyPropertiesFrom( this ServiceLog target, ServiceLog source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static ServiceLog Clone( this ServiceLog source, bool deepCopy )
         {
-            target.Time = source.Time;
-            target.Input = source.Input;
-            target.Type = source.Type;
-            target.Name = source.Name;
-            target.Result = source.Result;
-            target.Success = source.Success;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as ServiceLog;
+            }
+            else
+            {
+                var target = new ServiceLog();
+                target.Time = source.Time;
+                target.Input = source.Input;
+                target.Type = source.Type;
+                target.Name = source.Name;
+                target.Result = source.Result;
+                target.Success = source.Success;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

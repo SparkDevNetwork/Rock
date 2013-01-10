@@ -231,18 +231,31 @@ namespace Rock.CodeGeneration
     public static class {0}ExtensionMethods
     {{
         /// <summary>
-        /// Copies all the entity properties from another {0} entity
+        /// Clones this {0} object to a new {0} object
         /// </summary>
-        public static void CopyPropertiesFrom( this {0} target, {0} source )
+        /// <param name=""source"">The source.</param>
+        /// <param name=""deepCopy"">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static {0} Clone( this {0} source, bool deepCopy )
         {{
+            if (deepCopy)
+            {{
+                return source.Clone() as {0};
+            }}
+            else
+            {{
+                var target = new {0}();
 ", type.Name);
 
             foreach ( var property in properties )
             {
-                sb.AppendFormat( "            target.{0} = source.{0};" + Environment.NewLine, property.Key );
+                sb.AppendFormat( "                target.{0} = source.{0};" + Environment.NewLine, property.Key );
             }
             
             sb.Append( @"
+            
+                return target;
+            }
         }
     }
 " );

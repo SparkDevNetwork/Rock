@@ -53,8 +53,7 @@ namespace Rock.CheckIn
         public KioskGroup( Group group )
             : base()
         {
-            Group = new Group();
-            Group.CopyPropertiesFrom( group );
+            Group = group.Clone( false );
             KioskSchedules = new List<KioskSchedule>();
         }
     }

@@ -18,8 +18,7 @@ namespace Rock.Tests.Model
             public void ShouldCopyEntity()
             {
                 var html = new HtmlContent { Content = "Foo" };
-                var result = new HtmlContent();
-                result.CopyPropertiesFrom( html );
+                var result = html.Clone( false );
                 Assert.AreEqual( result.Content, html.Content );
             }
         }

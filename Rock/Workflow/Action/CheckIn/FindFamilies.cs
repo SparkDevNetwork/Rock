@@ -48,8 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
                             if ( family == null )
                             {
                                 family = new CheckInFamily();
-                                family.Group = new Group();
-                                family.Group.CopyPropertiesFrom( group );
+                                family.Group = group.Clone( false );
                                 checkInState.CheckIn.Families.Add( family );
                             }
                         }

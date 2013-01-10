@@ -21,8 +21,7 @@ namespace Rock.Tests.Model
             public void ShouldCopyEntity()
             {
                 var page = new Page { Name = "SomePage" };
-                var result = new Page();
-                result.CopyPropertiesFrom(page);
+                var result = page.Clone( false );
                 Assert.AreEqual( result.Name, page.Name );
             }
         }

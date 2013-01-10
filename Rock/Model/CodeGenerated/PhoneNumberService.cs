@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class PhoneNumberExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PhoneNumber entity
+        /// Clones this PhoneNumber object to a new PhoneNumber object
         /// </summary>
-        public static void CopyPropertiesFrom( this PhoneNumber target, PhoneNumber source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PhoneNumber Clone( this PhoneNumber source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.PersonId = source.PersonId;
-            target.Number = source.Number;
-            target.Extension = source.Extension;
-            target.NumberTypeValueId = source.NumberTypeValueId;
-            target.IsMessagingEnabled = source.IsMessagingEnabled;
-            target.IsUnlisted = source.IsUnlisted;
-            target.Description = source.Description;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PhoneNumber;
+            }
+            else
+            {
+                var target = new PhoneNumber();
+                target.IsSystem = source.IsSystem;
+                target.PersonId = source.PersonId;
+                target.Number = source.Number;
+                target.Extension = source.Extension;
+                target.NumberTypeValueId = source.NumberTypeValueId;
+                target.IsMessagingEnabled = source.IsMessagingEnabled;
+                target.IsUnlisted = source.IsUnlisted;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

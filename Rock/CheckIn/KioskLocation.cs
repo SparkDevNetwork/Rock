@@ -53,8 +53,7 @@ namespace Rock.CheckIn
         public KioskLocation( Location location )
             : base()
         {
-            Location = new Location();
-            Location.CopyPropertiesFrom( location );
+            Location = location.Clone( false );
             KioskGroups = new List<KioskGroup>();
         }
     }
