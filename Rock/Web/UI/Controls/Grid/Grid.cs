@@ -606,7 +606,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
+            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
             UseAccessibleHeader = true;
 
@@ -649,7 +649,7 @@ namespace Rock.Web.UI.Controls
                 this.Actions.IsExcelExportEnabled = false;
 
                 this.RemoveCssClass( "table-bordered" );
-                this.RemoveCssClass( "table-stripped" );
+                this.RemoveCssClass( "table-striped" );
                 this.RemoveCssClass( "table-hover" );
                 this.RemoveCssClass( "table-full" );
                 this.AddCssClass( "table-condensed" );
@@ -660,7 +660,7 @@ namespace Rock.Web.UI.Controls
                 this.RemoveCssClass( "table-condensed" );
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
-                this.AddCssClass( "table-stripped" );
+                this.AddCssClass( "table-striped" );
                 this.AddCssClass( "table-hover" );
                 this.AddCssClass( "table-full" );
             }
@@ -795,6 +795,7 @@ namespace Rock.Web.UI.Controls
 
                 TableCell cell = new TableCell();
                 cell.ColumnSpan = this.Columns.Count;
+                cell.CssClass = "grid-footer";
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );

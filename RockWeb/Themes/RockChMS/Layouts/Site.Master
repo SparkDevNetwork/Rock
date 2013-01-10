@@ -16,7 +16,6 @@
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Css/rock-core.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
