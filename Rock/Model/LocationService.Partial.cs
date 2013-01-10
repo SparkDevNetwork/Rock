@@ -14,16 +14,18 @@ namespace Rock.Model
     /// <summary>
     /// Location POCO Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService 
     {
         /// <summary>
-        /// Gets Location by Raw
+        /// Gets Location by Full Address
         /// </summary>
-        /// <param name="raw">Raw.</param>
-        /// <returns>Location object.</returns>
-        public Location GetByRaw( string raw )
+        /// <param name="fullAddress">Full Address.</param>
+        /// <returns>
+        /// Location object.
+        /// </returns>
+        public Location GetByFullAddress( string fullAddress )
         {
-            return Repository.FirstOrDefault( t => ( t.Raw == raw || ( raw == null && t.Raw == null ) ) );
+            return Repository.FirstOrDefault( t => ( t.FullAddress == fullAddress || ( fullAddress == null && t.FullAddress == null ) ) );
         }
         
         /// <summary>
@@ -38,21 +40,6 @@ namespace Rock.Model
         public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
         {
             return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
-        }
-
-        /// <summary>
-        /// Standardizes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Standardize(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Standardize( locationModel, personId );
-
-            return locationModel;
         }
 
         /// <summary>
@@ -86,29 +73,14 @@ namespace Rock.Model
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        location.StandardizeService = service.Value.Metadata.ComponentName;
-                        location.StandardizeResult = result;
-                        location.StandardizeDate = DateTime.Now;
+                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.StandardizeAttemptedResult = result;
+                        location.StandardizedDateTime = DateTime.Now;
                         break;
                     }
                 }
 
-            location.StandardizeAttempt = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Geocodes the specified location.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        public Location Geocode(LocationDto location, int? personId)
-        {
-            Location locationModel = GetByLocationDto(location, personId);
-
-            Geocode( locationModel, personId );
-
-            return locationModel;
+            location.StandardizeAttemptedDateTime = DateTime.Now;
         }
 
         /// <summary>
@@ -143,14 +115,14 @@ namespace Rock.Model
                     // If succesful, set the results and stop processing
                     if ( success )
                     {
-                        location.GeocodeService = service.Value.Metadata.ComponentName;
-                        location.GeocodeResult = result;
-                        location.GeocodeDate = DateTime.Now;
+                        location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
+                        location.GeocodeAttemptedResult = result;
+                        location.GeocodedDateTime = DateTime.Now;
                         break;
                     }
                 }
 
-            location.GeocodeAttempt = DateTime.Now;
+            location.GeocodeAttemptedDateTime = DateTime.Now;
         }
 
         /// <summary>
@@ -161,11 +133,11 @@ namespace Rock.Model
         /// <param name="location">The location.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        private Location GetByLocationDto(LocationDto location, int? personId)
+        private Location GetByLocation(Location location, int? personId)
         {
-            string raw = location.Raw;
+            string address = location.FullAddress;
 
-            Location locationModel = GetByRaw( raw );
+            Location locationModel = GetByFullAddress( address );
 
             if ( locationModel == null )
                 locationModel = GetByStreet1AndStreet2AndCityAndStateAndZip(
@@ -174,7 +146,7 @@ namespace Rock.Model
             if ( locationModel == null )
             {
                 locationModel = new Model.Location();
-                locationModel.Raw = raw;
+                locationModel.FullAddress = address;
                 locationModel.Street1 = location.Street1;
                 locationModel.Street2 = location.Street2;
                 locationModel.City = location.City;

@@ -6,10 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,6 +19,7 @@ namespace Rock.Model
     /// Activity POCO Entity.
     /// </summary>
     [Table( "WorkflowActivity" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowActivity : Model<WorkflowActivity>
     {
 
@@ -29,6 +31,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow id.
         /// </value>
+        [DataMember]
         public int WorkflowId { get; set; }
 
         /// <summary>
@@ -37,6 +40,7 @@ namespace Rock.Model
         /// <value>
         /// The activity type id.
         /// </value>
+        [DataMember]
         public int ActivityTypeId { get; set; }
 
         /// <summary>
@@ -45,6 +49,7 @@ namespace Rock.Model
         /// <value>
         /// The activated date time.
         /// </value>
+        [DataMember]
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary>
@@ -53,6 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The last processed date time.
         /// </value>
+        [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
@@ -61,6 +67,7 @@ namespace Rock.Model
         /// <value>
         /// The completed date time.
         /// </value>
+        [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
         #endregion
@@ -73,6 +80,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
+        [DataMember]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -81,6 +89,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the activity.
         /// </value>
+        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -103,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The activities.
         /// </value>
+        [DataMember]
         public virtual ICollection<WorkflowAction> Actions
         {
             get { return _actions ?? ( _actions = new Collection<WorkflowAction>() ); }
@@ -140,15 +150,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Public Methods
@@ -157,24 +158,22 @@ namespace Rock.Model
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        /// <param name="dto">The dto.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        internal virtual bool Process( IDto dto, out List<string> errorMessages )
+        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
             this.LastProcessedDateTime = DateTime.Now;
-
-            this.LoadAttributes();
 
             errorMessages = new List<string>();
 
             foreach ( var action in this.ActiveActions )
             {
                 List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( dto, out actionErrorMessages );
-                errorMessages.Concat( actionErrorMessages );
+                bool actionSuccess = action.Process( entity, out actionErrorMessages );
+                errorMessages.AddRange( actionErrorMessages );
 
                 // If action was not successful, exit
                 if ( !actionSuccess )
@@ -261,12 +260,13 @@ namespace Rock.Model
         /// <param name="activityType">Type of the activity.</param>
         /// <param name="workflow">The workflow.</param>
         /// <returns></returns>
-        internal static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
+        public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityType = activityType;
             activity.ActivatedDateTime = DateTime.Now;
+            activity.LoadAttributes();
 
             activity.AddSystemLogEntry( "Activated" );
 
@@ -275,27 +275,9 @@ namespace Rock.Model
                 activity.Actions.Add( WorkflowAction.Activate(actionType, activity) );
             }
 
+            workflow.Activities.Add( activity );
+
             return activity;
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowActivity Read( int id )
-        {
-            return Read<WorkflowActivity>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowActivity Read( Guid guid )
-        {
-            return Read<WorkflowActivity>( guid );
         }
 
         #endregion

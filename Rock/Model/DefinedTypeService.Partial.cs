@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Defined Type POCO Service class
     /// </summary>
-    public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDto>
+    public partial class DefinedTypeService 
     {
         /// <summary>
         /// Gets Defined Types by Field Type Id

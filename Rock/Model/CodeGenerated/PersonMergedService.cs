@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PersonMerged Service class
     /// </summary>
-    public partial class PersonMergedService : Service<PersonMerged, PersonMergedDto>
+    public partial class PersonMergedService : Service<PersonMerged>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonMergedService"/> class
@@ -38,38 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PersonMerged CreateNew()
-        {
-            return new PersonMerged();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonMergedDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonMergedDto> QueryableDto( IQueryable<PersonMerged> items )
-        {
-            return items.Select( m => new PersonMergedDto()
-                {
-                    CurrentId = m.CurrentId,
-                    CurrentGuid = m.CurrentGuid,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -81,6 +49,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonMergedExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another PersonMerged entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this PersonMerged target, PersonMerged source )
+        {
+            target.CurrentId = source.CurrentId;
+            target.CurrentGuid = source.CurrentGuid;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

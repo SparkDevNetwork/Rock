@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ServiceJobs REST API
     /// </summary>
-    public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Model.ServiceJob, Rock.Model.ServiceJobDto>
+    public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Model.ServiceJob>
     {
         public ServiceJobsController() : base( new Rock.Model.ServiceJobService() ) { } 
     }

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FinancialBatch Service class
     /// </summary>
-    public partial class FinancialBatchService : Service<FinancialBatch, FinancialBatchDto>
+    public partial class FinancialBatchService : Service<FinancialBatch>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
@@ -35,43 +35,6 @@ namespace Rock.Model
         /// </summary>
         public FinancialBatchService(IRepository<FinancialBatch> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FinancialBatch CreateNew()
-        {
-            return new FinancialBatch();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FinancialBatchDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FinancialBatchDto> QueryableDto( IQueryable<FinancialBatch> items )
-        {
-            return items.Select( m => new FinancialBatchDto()
-                {
-                    Name = m.Name,
-                    BatchDate = m.BatchDate,
-                    IsClosed = m.IsClosed,
-                    CampusId = m.CampusId,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    ForeignReference = m.ForeignReference,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -92,6 +55,29 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FinancialBatchExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another FinancialBatch entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this FinancialBatch target, FinancialBatch source )
+        {
+            target.Name = source.Name;
+            target.BatchDate = source.BatchDate;
+            target.IsClosed = source.IsClosed;
+            target.CampusId = source.CampusId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.ForeignReference = source.ForeignReference;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

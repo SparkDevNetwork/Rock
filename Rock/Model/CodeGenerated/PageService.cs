@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Page Service class
     /// </summary>
-    public partial class PageService : Service<Page, PageDto>
+    public partial class PageService : Service<Page>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageService"/> class
@@ -35,53 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PageService(IRepository<Page> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Page CreateNew()
-        {
-            return new Page();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PageDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PageDto> QueryableDto( IQueryable<Page> items )
-        {
-            return items.Select( m => new PageDto()
-                {
-                    Name = m.Name,
-                    ParentPageId = m.ParentPageId,
-                    Title = m.Title,
-                    IsSystem = m.IsSystem,
-                    SiteId = m.SiteId,
-                    Layout = m.Layout,
-                    RequiresEncryption = m.RequiresEncryption,
-                    EnableViewState = m.EnableViewState,
-                    MenuDisplayDescription = m.MenuDisplayDescription,
-                    MenuDisplayIcon = m.MenuDisplayIcon,
-                    MenuDisplayChildPages = m.MenuDisplayChildPages,
-                    DisplayInNavWhen = m.DisplayInNavWhen,
-                    Order = m.Order,
-                    OutputCacheDuration = m.OutputCacheDuration,
-                    Description = m.Description,
-                    IconFileId = m.IconFileId,
-                    IncludeAdminFooter = m.IncludeAdminFooter,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -108,6 +61,40 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PageExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Page entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Page target, Page source )
+        {
+            target.Name = source.Name;
+            target.ParentPageId = source.ParentPageId;
+            target.Title = source.Title;
+            target.IsSystem = source.IsSystem;
+            target.SiteId = source.SiteId;
+            target.Layout = source.Layout;
+            target.RequiresEncryption = source.RequiresEncryption;
+            target.EnableViewState = source.EnableViewState;
+            target.MenuDisplayDescription = source.MenuDisplayDescription;
+            target.MenuDisplayIcon = source.MenuDisplayIcon;
+            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
+            target.DisplayInNavWhen = source.DisplayInNavWhen;
+            target.IconCssClass = source.IconCssClass;
+            target.Order = source.Order;
+            target.OutputCacheDuration = source.OutputCacheDuration;
+            target.Description = source.Description;
+            target.IconFileId = source.IconFileId;
+            target.IncludeAdminFooter = source.IncludeAdminFooter;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId );
+                BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
 
                 if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad( EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
 
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
+            BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
             if ( Page.IsValid )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
@@ -102,7 +102,12 @@ namespace RockWeb.Blocks.Administration
                     Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }
 
-                string script = "window.parent.closeModal()";
+                string script = @"
+if ( window.parent.closeModal != null)
+{
+    window.parent.closeModal();
+}
+";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
             else

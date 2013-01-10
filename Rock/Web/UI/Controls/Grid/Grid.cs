@@ -428,10 +428,10 @@ namespace Rock.Web.UI.Controls
             }
 
             // add author info
-            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
-            if ( user != null )
+            Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+            if ( userLogin != null )
             {
-                excel.Workbook.Properties.Author = user.Person.FullName;
+                excel.Workbook.Properties.Author = userLogin.Person.FullName;
             }
             else
             {
@@ -843,6 +843,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
         protected override void OnRowCommand( GridViewCommandEventArgs e )
         {
+        	base.OnRowCommand( e );
+        	
             if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = Int32.Parse( e.CommandArgument.ToString() );

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Location Service class
     /// </summary>
-    public partial class LocationService : Service<Location, LocationDto>
+    public partial class LocationService : Service<Location>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationService"/> class
@@ -38,54 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Location CreateNew()
-        {
-            return new Location();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<LocationDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<LocationDto> QueryableDto( IQueryable<Location> items )
-        {
-            return items.Select( m => new LocationDto()
-                {
-                    Raw = m.Raw,
-                    Street1 = m.Street1,
-                    Street2 = m.Street2,
-                    City = m.City,
-                    State = m.State,
-                    Country = m.Country,
-                    Zip = m.Zip,
-                    Latitude = m.Latitude,
-                    Longitude = m.Longitude,
-                    ParcelId = m.ParcelId,
-                    StandardizeAttempt = m.StandardizeAttempt,
-                    StandardizeService = m.StandardizeService,
-                    StandardizeResult = m.StandardizeResult,
-                    StandardizeDate = m.StandardizeDate,
-                    GeocodeAttempt = m.GeocodeAttempt,
-                    GeocodeService = m.GeocodeService,
-                    GeocodeResult = m.GeocodeResult,
-                    GeocodeDate = m.GeocodeDate,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -96,7 +48,52 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Location>().Queryable().Any( a => a.ParentLocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class LocationExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Location entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Location target, Location source )
+        {
+            target.ParentLocationId = source.ParentLocationId;
+            target.Name = source.Name;
+            target.IsActive = source.IsActive;
+            target.LocationPoint = source.LocationPoint;
+            target.Perimeter = source.Perimeter;
+            target.LocationTypeValueId = source.LocationTypeValueId;
+            target.Street1 = source.Street1;
+            target.Street2 = source.Street2;
+            target.City = source.City;
+            target.State = source.State;
+            target.Country = source.Country;
+            target.Zip = source.Zip;
+            target.FullAddress = source.FullAddress;
+            target.AssessorParcelId = source.AssessorParcelId;
+            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+            target.StandardizedDateTime = source.StandardizedDateTime;
+            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+            target.GeocodedDateTime = source.GeocodedDateTime;
+            target.PrinterDeviceId = source.PrinterDeviceId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

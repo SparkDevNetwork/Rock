@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityType Service class
     /// </summary>
-    public partial class EntityTypeService : Service<EntityType, EntityTypeDto>
+    public partial class EntityTypeService : Service<EntityType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityTypeService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public EntityTypeService(IRepository<EntityType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EntityType CreateNew()
-        {
-            return new EntityType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EntityTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EntityTypeDto> QueryableDto( IQueryable<EntityType> items )
-        {
-            return items.Select( m => new EntityTypeDto()
-                {
-                    Name = m.Name,
-                    AssemblyName = m.AssemblyName,
-                    FriendlyName = m.FriendlyName,
-                    IsEntity = m.IsEntity,
-                    IsSecured = m.IsSecured,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -114,6 +79,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<NoteType>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, NoteType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Tag>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
@@ -126,6 +103,27 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EntityTypeExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another EntityType entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
+        {
+            target.Name = source.Name;
+            target.AssemblyName = source.AssemblyName;
+            target.FriendlyName = source.FriendlyName;
+            target.IsEntity = source.IsEntity;
+            target.IsSecured = source.IsSecured;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

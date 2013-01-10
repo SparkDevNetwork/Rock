@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// BinaryFile Service class
     /// </summary>
-    public partial class BinaryFileService : Service<BinaryFile, BinaryFileDto>
+    public partial class BinaryFileService : Service<BinaryFile>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override BinaryFile CreateNew()
-        {
-            return new BinaryFile();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BinaryFileDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BinaryFileDto> QueryableDto( IQueryable<BinaryFile> items )
-        {
-            return items.Select( m => new BinaryFileDto()
-                {
-                    IsTemporary = m.IsTemporary,
-                    IsSystem = m.IsSystem,
-                    Data = m.Data,
-                    Url = m.Url,
-                    FileName = m.FileName,
-                    MimeType = m.MimeType,
-                    LastModifiedTime = m.LastModifiedTime,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,12 +48,14 @@ namespace Rock.Model
         public bool CanDelete( BinaryFile item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Category>().Queryable().Any( a => a.FileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Category.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Category,IconSmallFileId 
+            
+            // ignoring Category,IconLargeFileId 
+            
+            // ignoring GroupType,IconSmallFileId 
+            
+            // ignoring GroupType,IconLargeFileId 
  
             if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
@@ -104,13 +68,31 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<WorkflowType>().Queryable().Any( a => a.FileId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, WorkflowType.FriendlyTypeName );
-                return false;
-            }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class BinaryFileExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another BinaryFile entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
+        {
+            target.IsTemporary = source.IsTemporary;
+            target.IsSystem = source.IsSystem;
+            target.Data = source.Data;
+            target.Url = source.Url;
+            target.FileName = source.FileName;
+            target.MimeType = source.MimeType;
+            target.LastModifiedTime = source.LastModifiedTime;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// Workflow POCO Service class
     /// </summary>
-    public partial class WorkflowService : Service<Workflow, WorkflowDto>
+    public partial class WorkflowService 
     {
         /// <summary>
         /// Activates a new worflow instance
@@ -39,12 +39,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="workflow">The workflow.</param>
         /// <param name="CurrentPersonId">The current person id.</param>
-        public void Process( Workflow workflow, int? CurrentPersonId )
+        /// <param name="errorMessages">The error messages.</param>
+        public void Process( Workflow workflow, int? CurrentPersonId, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
             this.Save( workflow, null );
 
-            workflow.Process();
+            workflow.Process(out errorMessages);
 
             workflow.IsProcessing = false;
             this.Save( workflow, null );

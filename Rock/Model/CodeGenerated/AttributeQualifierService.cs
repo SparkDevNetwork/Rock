@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// AttributeQualifier Service class
     /// </summary>
-    public partial class AttributeQualifierService : Service<AttributeQualifier, AttributeQualifierDto>
+    public partial class AttributeQualifierService : Service<AttributeQualifier>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeQualifierService"/> class
@@ -38,40 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override AttributeQualifier CreateNew()
-        {
-            return new AttributeQualifier();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AttributeQualifierDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AttributeQualifierDto> QueryableDto( IQueryable<AttributeQualifier> items )
-        {
-            return items.Select( m => new AttributeQualifierDto()
-                {
-                    IsSystem = m.IsSystem,
-                    AttributeId = m.AttributeId,
-                    Key = m.Key,
-                    Value = m.Value,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,6 +49,26 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeQualifierExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another AttributeQualifier entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this AttributeQualifier target, AttributeQualifier source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.AttributeId = source.AttributeId;
+            target.Key = source.Key;
+            target.Value = source.Value;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

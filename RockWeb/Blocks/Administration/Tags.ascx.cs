@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
             {
                 var requiredContext = base.ContextTypesRequired;
 
-                if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
+                if ( !Convert.ToBoolean( GetAttributeValue( "GlobalTags" ) ) )
                     requiredContext.Add( "Rock.Model.Person" );
 
                 return requiredContext;
@@ -58,30 +58,30 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                string entityType = AttributeValue( "Entity" );
+                string entityType = GetAttributeValue( "Entity" );
                 if ( string.IsNullOrWhiteSpace( entityType ) )
                 {
                     entityType = PageParameter( "Entity" );
                 }
 
-                if ( string.IsNullOrWhiteSpace( AttributeValue( "Entity" ) ) )
+                if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Entity" ) ) )
                 {
                     throw new Exception( "Entity is required" );
                 }
 
                 _entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
 
-                _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+                _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
                 if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
                     _entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
 
-                _entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+                _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
                 _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
-                if ( !Convert.ToBoolean( AttributeValue( "GlobalTags" ) ) )
+                if ( !Convert.ToBoolean( GetAttributeValue( "GlobalTags" ) ) )
                 {
                     Rock.Data.IEntity model = CurrentPage.GetCurrentContext( "Rock.Model.Person" );
                     if ( model != null )

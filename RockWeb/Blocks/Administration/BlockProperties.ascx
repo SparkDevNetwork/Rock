@@ -2,11 +2,11 @@
 
 <div class="admin-dialog">
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
     <asp:PlaceHolder ID="phContent" runat="server">
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
         <fieldset>
             <legend>Settings</legend>
@@ -16,7 +16,7 @@
 
         <asp:placeholder id="phAttributes" runat="server"></asp:placeholder>
 
-        <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
     </asp:PlaceHolder>
 

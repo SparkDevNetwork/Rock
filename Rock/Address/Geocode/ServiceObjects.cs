@@ -6,6 +6,9 @@
 
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Spatial;
+
+using Rock;
 using Rock.Attribute;
 using Rock.ServiceObjects.GeoCoder;
 using Rock.Web.UI;
@@ -33,7 +36,7 @@ namespace Rock.Address.Geocode
         {
             if ( location != null )
             {
-                string licenseKey = AttributeValue("LicenseKey");
+                string licenseKey = GetAttributeValue("LicenseKey");
 
                 var client = new DOTSGeoCoderSoapClient();
                 Location_V3 location_match = client.GetBestMatch_V3(
@@ -49,8 +52,9 @@ namespace Rock.Address.Geocode
 
                 if ( location_match.Level == "S" || location_match.Level == "P" )
                 {
-                    location.Latitude = double.Parse( location_match.Latitude );
-                    location.Longitude = double.Parse( location_match.Longitude );
+                    double latitude = double.Parse( location_match.Latitude );
+                    double longitude = double.Parse( location_match.Longitude );
+                    location.SetLocationPointFromLatLong(latitude, longitude);
 
                     return true;
                 }

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PersonMergeds REST API
     /// </summary>
-    public partial class PersonMergedsController : Rock.Rest.ApiController<Rock.Model.PersonMerged, Rock.Model.PersonMergedDto>
+    public partial class PersonMergedsController : Rock.Rest.ApiController<Rock.Model.PersonMerged>
     {
         public PersonMergedsController() : base( new Rock.Model.PersonMergedService() ) { } 
     }

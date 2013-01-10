@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PhoneNumber Service class
     /// </summary>
-    public partial class PhoneNumberService : Service<PhoneNumber, PhoneNumberDto>
+    public partial class PhoneNumberService : Service<PhoneNumber>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PhoneNumber CreateNew()
-        {
-            return new PhoneNumber();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PhoneNumberDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PhoneNumberDto> QueryableDto( IQueryable<PhoneNumber> items )
-        {
-            return items.Select( m => new PhoneNumberDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PersonId = m.PersonId,
-                    Number = m.Number,
-                    Extension = m.Extension,
-                    NumberTypeValueId = m.NumberTypeValueId,
-                    IsMessagingEnabled = m.IsMessagingEnabled,
-                    IsUnlisted = m.IsUnlisted,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PhoneNumberExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another PhoneNumber entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this PhoneNumber target, PhoneNumber source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.PersonId = source.PersonId;
+            target.Number = source.Number;
+            target.Extension = source.Extension;
+            target.NumberTypeValueId = source.NumberTypeValueId;
+            target.IsMessagingEnabled = source.IsMessagingEnabled;
+            target.IsUnlisted = source.IsUnlisted;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

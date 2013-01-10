@@ -15,6 +15,22 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class GroupRole
     {
+        #region Family Members
+
+        /// <summary>
+        /// Gets the adult family member role
+        /// </summary>
+        public static Guid GROUPROLE_FAMILY_MEMBER_ADULT { get { return new Guid( "2639F9A5-2AAE-4E48-A8C3-4FFE86681E42" ); } }
+        
+        /// <summary>
+        /// Gets the child family member role
+        /// </summary>
+        public static Guid GROUPROLE_FAMILY_MEMBER_CHILD { get { return new Guid( "C8B1814F-6AA7-4055-B2D7-48FE20429CB9" ); } }
+
+        #endregion
+
+        #region Known Relationships
+
         /// <summary>
         /// Gets the Known Relationships owner role.
         /// </summary>
@@ -22,6 +38,10 @@ namespace Rock.SystemGuid
         /// The role Guid
         /// </value>
         public static Guid GROUPROLE_KNOWN_RELATIONSHIPS_OWNER { get { return new Guid( "7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42" ); } }
+
+        #endregion
+
+        #region Implied Relationships
 
         /// <summary>
         /// Gets the Implied Relationships owner role.
@@ -38,5 +58,8 @@ namespace Rock.SystemGuid
         /// The role Guid.
         /// </value>
         public static Guid GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED { get { return new Guid( "FEA75948-97CB-4DE9-8A0D-43FA2646F55B" ); } }
+
+        #endregion
+
     }
 }

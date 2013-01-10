@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// WorkflowActivityTypes REST API
     /// </summary>
-    public partial class WorkflowActivityTypesController : Rock.Rest.ApiController<Rock.Model.WorkflowActivityType, Rock.Model.WorkflowActivityTypeDto>
+    public partial class WorkflowActivityTypesController : Rock.Rest.ApiController<Rock.Model.WorkflowActivityType>
     {
         public WorkflowActivityTypesController() : base( new Rock.Model.WorkflowActivityTypeService() ) { } 
     }

@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Entity Change Service class
     /// </summary>
-    public partial class EntityChangeService : Service<EntityChange, EntityChangeDto>
+    public partial class EntityChangeService 
     {
         /// <summary>
         /// Gets Entity Changes by Change Set

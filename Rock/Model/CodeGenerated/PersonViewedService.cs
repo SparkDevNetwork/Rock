@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PersonViewed Service class
     /// </summary>
-    public partial class PersonViewedService : Service<PersonViewed, PersonViewedDto>
+    public partial class PersonViewedService : Service<PersonViewed>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PersonViewed CreateNew()
-        {
-            return new PersonViewed();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonViewedDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonViewedDto> QueryableDto( IQueryable<PersonViewed> items )
-        {
-            return items.Select( m => new PersonViewedDto()
-                {
-                    ViewerPersonId = m.ViewerPersonId,
-                    TargetPersonId = m.TargetPersonId,
-                    ViewDateTime = m.ViewDateTime,
-                    IpAddress = m.IpAddress,
-                    Source = m.Source,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +49,27 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonViewedExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another PersonViewed entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
+        {
+            target.ViewerPersonId = source.ViewerPersonId;
+            target.TargetPersonId = source.TargetPersonId;
+            target.ViewDateTime = source.ViewDateTime;
+            target.IpAddress = source.IpAddress;
+            target.Source = source.Source;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

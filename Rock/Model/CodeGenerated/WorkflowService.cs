@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Workflow Service class
     /// </summary>
-    public partial class WorkflowService : Service<Workflow, WorkflowDto>
+    public partial class WorkflowService : Service<Workflow>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Workflow CreateNew()
-        {
-            return new Workflow();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowDto> QueryableDto( IQueryable<Workflow> items )
-        {
-            return items.Select( m => new WorkflowDto()
-                {
-                    WorkflowTypeId = m.WorkflowTypeId,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Status = m.Status,
-                    IsProcessing = m.IsProcessing,
-                    ActivatedDateTime = m.ActivatedDateTime,
-                    LastProcessedDateTime = m.LastProcessedDateTime,
-                    CompletedDateTime = m.CompletedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Workflow entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Workflow target, Workflow source )
+        {
+            target.WorkflowTypeId = source.WorkflowTypeId;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Status = source.Status;
+            target.IsProcessing = source.IsProcessing;
+            target.ActivatedDateTime = source.ActivatedDateTime;
+            target.LastProcessedDateTime = source.LastProcessedDateTime;
+            target.CompletedDateTime = source.CompletedDateTime;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

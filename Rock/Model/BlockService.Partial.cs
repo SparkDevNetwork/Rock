@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Block POCO Service class
     /// </summary>
-    public partial class BlockService : Service<Block, BlockDto>
+    public partial class BlockService 
     {
         /// <summary>
         /// Gets Blocks by Block Type Id

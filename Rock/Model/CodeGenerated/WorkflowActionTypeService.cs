@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowActionType Service class
     /// </summary>
-    public partial class WorkflowActionTypeService : Service<WorkflowActionType, WorkflowActionTypeDto>
+    public partial class WorkflowActionTypeService : Service<WorkflowActionType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionTypeService"/> class
@@ -35,42 +35,6 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActionTypeService(IRepository<WorkflowActionType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowActionType CreateNew()
-        {
-            return new WorkflowActionType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowActionTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowActionTypeDto> QueryableDto( IQueryable<WorkflowActionType> items )
-        {
-            return items.Select( m => new WorkflowActionTypeDto()
-                {
-                    ActivityTypeId = m.ActivityTypeId,
-                    Name = m.Name,
-                    Order = m.Order,
-                    EntityTypeId = m.EntityTypeId,
-                    IsActionCompletedOnSuccess = m.IsActionCompletedOnSuccess,
-                    IsActivityCompletedOnSuccess = m.IsActivityCompletedOnSuccess,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -91,6 +55,28 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowActionTypeExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another WorkflowActionType entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this WorkflowActionType target, WorkflowActionType source )
+        {
+            target.ActivityTypeId = source.ActivityTypeId;
+            target.Name = source.Name;
+            target.Order = source.Order;
+            target.EntityTypeId = source.EntityTypeId;
+            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
+            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -52,14 +52,14 @@ namespace Rock.Jobs
             int userExpireHours = Int32.Parse( dataMap.GetString( "HoursKeepUnconfirmedAccounts" ) );
             DateTime userAccountExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1,0,0 ) );
 
-            UserService userService = new UserService();
+            var userLoginService = new UserLoginService();
 
-            foreach (var user in userService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
+            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
             {
-                userService.Delete( user, null );
+                userLoginService.Delete( user, null );
             }
 
-            userService.Save( null, null );
+            userLoginService.Save( null, null );
 
             // purge exception log
             int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );

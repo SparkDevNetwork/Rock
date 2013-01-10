@@ -3,9 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -14,8 +17,12 @@ namespace Rock.Model
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "GroupRole" )]
+    [DataContract( IsReference = true )]
     public partial class GroupRole : Model<GroupRole>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -23,6 +30,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -31,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// Group Type Id.
         /// </value>
+        [DataMember]
         public int? GroupTypeId { get; set; }
 
         /// <summary>
@@ -41,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -49,6 +59,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
         /// <summary>
@@ -57,6 +68,7 @@ namespace Rock.Model
         /// <value>
         /// The sort order.
         /// </value>
+        [DataMember( IsRequired = true )]
         public int? SortOrder { get; set; }
 
         /// <summary>
@@ -65,6 +77,7 @@ namespace Rock.Model
         /// <value>
         /// The max count.
         /// </value>
+        [DataMember]
         public int? MaxCount { get; set; }
 
         /// <summary>
@@ -73,26 +86,21 @@ namespace Rock.Model
         /// <value>
         /// The min count.
         /// </value>
+        [DataMember]
         public int? MinCount { get; set; }
 
         /// <summary>
-        /// Gets the dto.
+        /// Is this role a leader of the group
         /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
+        /// <value>
+        /// The is leader.
+        /// </value>
+        [DataMember]
+        public bool IsLeader { get; set; }
 
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static GroupRole Read( int id )
-        {
-            return Read<GroupRole>( id );
-        }
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the Group Type.
@@ -100,7 +108,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
+        [DataMember]
         public virtual GroupType GroupType { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -112,7 +125,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Group Role Configuration class.
@@ -127,4 +145,7 @@ namespace Rock.Model
             this.HasRequired( p => p.GroupType ).WithMany( p => p.Roles ).HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

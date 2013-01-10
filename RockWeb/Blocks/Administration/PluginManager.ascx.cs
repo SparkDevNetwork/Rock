@@ -191,12 +191,6 @@ namespace RockWeb.Blocks.Administration
 
                 lblAuthors.Text = string.Join( ",", package.Authors );
 
-                if ( package.IconUrl == null )
-                {
-                    // TODO: change to "http://quarry.rockchms.com/Content/Images/Quarry/packageDefaultIcon-80x80.png";
-                    imgIcon.Src = "http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png";
-                }
-
                 if ( package.ProjectUrl != null )
                 {
                     link.Visible = true;

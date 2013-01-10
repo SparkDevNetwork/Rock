@@ -35,10 +35,10 @@ namespace RockWeb.Blocks.Group
             // Add the neccessary CSS and Scripts required for video field types
             Rock.Field.Types.Video.AddLinks( this.Page );
 
-            if ( !Int32.TryParse( AttributeValue( "GroupLevels" ), out _levels ) )
+            if ( !Int32.TryParse( GetAttributeValue( "GroupLevels" ), out _levels ) )
                 _levels = int.MaxValue;
-            _videoAttributeKey = AttributeValue( "VideoAttributeKey" );
-            _durationAttributeKey = AttributeValue( "DurationAttributeKey" );
+            _videoAttributeKey = GetAttributeValue( "VideoAttributeKey" );
+            _durationAttributeKey = GetAttributeValue( "DurationAttributeKey" );
 
             // Build the content tree
             BuildHierarchy();
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Group
             phTreeView.Controls.Clear();
 
             int groupId = 0;
-            if ( Int32.TryParse( AttributeValue( "GroupId" ), out groupId ) )
+            if ( Int32.TryParse( GetAttributeValue( "GroupId" ), out groupId ) )
             {
                 var parentGroup = groupService.Get( groupId );
                 if ( parentGroup != null )
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Group
                     if ( Int32.TryParse( lb.Attributes["group"], out groupId ) )
                     {
                         int roleId = 0;
-                        if ( !Int32.TryParse( AttributeValue( "GroupRole" ), out roleId ) )
+                        if ( !Int32.TryParse( GetAttributeValue( "GroupRole" ), out roleId ) )
                             roleId = 0;
 
                         var group = groupService.Get( groupId );

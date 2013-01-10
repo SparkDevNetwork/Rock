@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignAd Service class
     /// </summary>
-    public partial class MarketingCampaignAdService : Service<MarketingCampaignAd, MarketingCampaignAdDto>
+    public partial class MarketingCampaignAdService : Service<MarketingCampaignAd>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignAdService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignAd CreateNew()
-        {
-            return new MarketingCampaignAd();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignAdDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignAdDto> QueryableDto( IQueryable<MarketingCampaignAd> items )
-        {
-            return items.Select( m => new MarketingCampaignAdDto()
-                {
-                    MarketingCampaignId = m.MarketingCampaignId,
-                    MarketingCampaignAdTypeId = m.MarketingCampaignAdTypeId,
-                    Priority = m.Priority,
-                    MarketingCampaignAdStatus = m.MarketingCampaignAdStatus,
-                    MarketingCampaignStatusPersonId = m.MarketingCampaignStatusPersonId,
-                    StartDate = m.StartDate,
-                    EndDate = m.EndDate,
-                    Url = m.Url,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,30 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignAdExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another MarketingCampaignAd entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this MarketingCampaignAd target, MarketingCampaignAd source )
+        {
+            target.MarketingCampaignId = source.MarketingCampaignId;
+            target.MarketingCampaignAdTypeId = source.MarketingCampaignAdTypeId;
+            target.Priority = source.Priority;
+            target.MarketingCampaignAdStatus = source.MarketingCampaignAdStatus;
+            target.MarketingCampaignStatusPersonId = source.MarketingCampaignStatusPersonId;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.Url = source.Url;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
