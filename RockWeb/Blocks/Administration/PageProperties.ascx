@@ -87,16 +87,16 @@
                 <div class="row">
                     <div class="span6">
                         <fieldset>
-                            <legend>Export Pages</legend>
-                            <asp:CheckBox runat="server" ID="cbExportChildren" />
-                            <asp:Button runat="server" ID="btnExport" />
+                            <legend>Import Pages</legend>
+                            <asp:FileUpload runat="server" ID="fuImport" />
+                            <asp:Button runat="server" ID="btnImport" Text="Import" OnClick="btnImport_Click" />
                         </fieldset>
                     </div>
                     <div class="span6">
                         <fieldset>
-                            <legend>Import Pages</legend>
-                            <asp:FileUpload runat="server" ID="fuImport" />
-                            <asp:Button runat="server" ID="btnImport" Text="Import" />
+                            <legend>Export Pages</legend>
+                            <asp:CheckBox runat="server" ID="cbExportChildren" />
+                            <asp:Button runat="server" ID="btnExport" OnClick="btnExport_Click" />
                         </fieldset>
                     </div>
                 </div>
