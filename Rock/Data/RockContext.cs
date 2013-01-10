@@ -423,6 +423,14 @@ namespace Rock.Data
         public DbSet<Pledge> Pledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the prayer requests.
+        /// </summary>
+        /// <value>
+        /// The prayer requests.
+        /// </value>
+        public DbSet<PrayerRequest> PrayerRequests { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -648,6 +656,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

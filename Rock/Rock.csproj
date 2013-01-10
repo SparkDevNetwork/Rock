@@ -267,6 +267,7 @@
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
+    <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\UserLoginService.Partial.cs" />
