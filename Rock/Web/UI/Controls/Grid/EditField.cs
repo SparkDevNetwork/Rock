@@ -7,6 +7,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -23,7 +24,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell edit";
         }
 
         /// <summary>
@@ -95,7 +95,13 @@ namespace Rock.Web.UI.Controls
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
+                lbEdit.CssClass = "btn btn-mini";
                 lbEdit.ToolTip = "Edit";
+                
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "icon-edit" );
+                lbEdit.Controls.Add( buttonIcon );
+
                 lbEdit.Click += lbEdit_Click;
                 cell.Controls.Add( lbEdit );
             }
