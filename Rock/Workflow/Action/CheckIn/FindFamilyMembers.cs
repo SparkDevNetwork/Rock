@@ -41,12 +41,13 @@ namespace Rock.Workflow.Action.CheckIn
                     var service = new GroupMemberService();
                     foreach ( var groupMember in service.GetByGroupId( family.Group.Id ) )
                     {
-                        var familyMember = family.FamilyMembers.Where( m => m.Person.Id == groupMember.PersonId).FirstOrDefault();
-                        if (familyMember == null)
+                        var person = family.People.Where( m => m.Person.Id == groupMember.PersonId).FirstOrDefault();
+                        if ( person == null )
                         {
-                            familyMember = new CheckInPerson();
-                            familyMember.Person = groupMember.Person.Clone( false );
-                            family.FamilyMembers.Add(familyMember);
+                            person = new CheckInPerson();
+                            person.Person = groupMember.Person.Clone( false );
+                            person.FamilyMember = true;
+                            family.People.Add( person );
                         }
                     }
 
