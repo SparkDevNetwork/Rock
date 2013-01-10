@@ -242,8 +242,8 @@
 
                                 <div class="text">
                             
-                                    <input type="text" class="span5" placeholder="First Name" />
-                                    <input type="text" class="span5" placeholder="Last Name" />
+                                    <input type="text" class="span8" placeholder="Name on Card" />
+                                    
                         
                                 </div>
 
