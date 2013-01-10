@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// DefinedType Service class
     /// </summary>
-    public partial class DefinedTypeService : Service<DefinedType, DefinedTypeDto>
+    public partial class DefinedTypeService : Service<DefinedType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
@@ -38,42 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override DefinedType CreateNew()
-        {
-            return new DefinedType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<DefinedTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<DefinedTypeDto> QueryableDto( IQueryable<DefinedType> items )
-        {
-            return items.Select( m => new DefinedTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    FieldTypeId = m.FieldTypeId,
-                    Order = m.Order,
-                    Category = m.Category,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -85,12 +49,34 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<DefinedValue>().Queryable().Any( a => a.DefinedTypeId == item.Id ) )
+            if ( new Service<NoteType>().Queryable().Any( a => a.SourcesTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, DefinedValue.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, NoteType.FriendlyTypeName );
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedTypeExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another DefinedType entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this DefinedType target, DefinedType source )
+        {
+            target.IsSystem = source.IsSystem;
+            target.FieldTypeId = source.FieldTypeId;
+            target.Order = source.Order;
+            target.Category = source.Category;
+            target.Name = source.Name;
+            target.Description = source.Description;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Person Viewed POCO Entity.
     /// </summary>
     [Table( "PersonViewed" )]
+    [DataContract( IsReference = true )]
     public partial class PersonViewed : Model<PersonViewed>
     {
         /// <summary>
@@ -24,6 +26,7 @@ namespace Rock.Model
         /// <value>
         /// Viewer Person Id.
         /// </value>
+        [DataMember]
         public int? ViewerPersonId { get; set; }
         
         /// <summary>
@@ -32,6 +35,7 @@ namespace Rock.Model
         /// <value>
         /// Target Person Id.
         /// </value>
+        [DataMember]
         public int? TargetPersonId { get; set; }
         
         /// <summary>
@@ -40,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// View Date Time.
         /// </value>
+        [DataMember]
         public DateTime? ViewDateTime { get; set; }
         
         /// <summary>
@@ -49,6 +54,7 @@ namespace Rock.Model
         /// Ip Address.
         /// </value>
         [MaxLength( 25 )]
+        [DataMember]
         public string IpAddress { get; set; }
         
         /// <summary>
@@ -58,6 +64,7 @@ namespace Rock.Model
         /// Source.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string Source { get; set; }
         
         /// <summary>
@@ -66,6 +73,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Person ViewerPerson { get; set; }
         
         /// <summary>
@@ -74,26 +82,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Person TargetPerson { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PersonViewed Read( int id )
-        {
-            return Read<PersonViewed>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

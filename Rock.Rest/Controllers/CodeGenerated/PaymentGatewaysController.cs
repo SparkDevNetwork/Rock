@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PaymentGateways REST API
     /// </summary>
-    public partial class PaymentGatewaysController : Rock.Rest.ApiController<Rock.Model.PaymentGateway, Rock.Model.PaymentGatewayDto>
+    public partial class PaymentGatewaysController : Rock.Rest.ApiController<Rock.Model.PaymentGateway>
     {
         public PaymentGatewaysController() : base( new Rock.Model.PaymentGatewayService() ) { } 
     }

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// EmailTemplates REST API
     /// </summary>
-    public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Model.EmailTemplate, Rock.Model.EmailTemplateDto>
+    public partial class EmailTemplatesController : Rock.Rest.ApiController<Rock.Model.EmailTemplate>
     {
         public EmailTemplatesController() : base( new Rock.Model.EmailTemplateService() ) { } 
     }

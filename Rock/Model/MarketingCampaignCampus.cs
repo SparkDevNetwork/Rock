@@ -3,10 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Model;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -15,6 +15,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "MarketingCampaignCampus")]
+    [DataContract( IsReference = true )]
     public partial class MarketingCampaignCampus : Model<MarketingCampaignCampus>
     {
         /// <summary>
@@ -23,6 +24,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign id.
         /// </value>
+        [DataMember]
         public int MarketingCampaignId { get; set; }
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace Rock.Model
         /// <value>
         /// The campus id.
         /// </value>
+        [DataMember]
         public int CampusId { get; set; }
 
         /// <summary>
@@ -39,6 +42,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign.
         /// </value>
+        [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
         /// <summary>
@@ -47,26 +51,9 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
+        [DataMember]
         public virtual Campus Campus { get; set; }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Reads the specified id.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static MarketingCampaignCampus Read( int id )
-        {
-            return Read<MarketingCampaignCampus>( id );
-        }
     }
 
     /// <summary>

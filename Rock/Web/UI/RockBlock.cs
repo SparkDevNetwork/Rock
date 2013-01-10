@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
 using System.Web;
@@ -100,7 +101,7 @@ namespace Rock.Web.UI
                     _contextTypesRequired = new List<string>();
 
                     int properties = 0;
-                    foreach(var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true))
+                    foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
                         var contextAttribute = (ContextAwareAttribute)attribute;
                         string contextType = string.Empty;
@@ -111,9 +112,9 @@ namespace Rock.Web.UI
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                             properties++;
 
-                            if ( !String.IsNullOrEmpty( AttributeValue( propertyKeyName ) ) )
+                            if ( !String.IsNullOrEmpty( GetAttributeValue( propertyKeyName ) ) )
                             {
-                                contextType = AttributeValue( propertyKeyName );
+                                contextType = GetAttributeValue( propertyKeyName );
                             }
                         }
                         else
@@ -342,13 +343,12 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string AttributeValue( string key )
-        {
-            if ( CurrentBlock != null &&
-                CurrentBlock.AttributeValues != null &&
-                CurrentBlock.AttributeValues.ContainsKey( key ) )
-                return CurrentBlock.AttributeValues[key][0].Value;
-
+        public string GetAttributeValue( string key )
+        {            
+            if ( CurrentBlock != null )
+            {
+                return CurrentBlock.GetAttributeValue( key );
+            }
             return null;
         }
 
@@ -390,16 +390,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the value for the current user for a given key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public string GetUserValue( string key )
-        {
-            return ( (RockPage)this.Page ).GetUserValue( key );
-        }
-
-        /// <summary>
         /// Navigates to parent page.
         /// </summary>
         public void NavigateToParentPage()
@@ -415,36 +405,63 @@ namespace Rock.Web.UI
         /// <param name="itemKeyValue">The item key value.</param>
         public void NavigateToDetailPage( string itemKey, int itemKeyValue )
         {
-            string pageGuid = AttributeValue( DetailPageAttribute.Key );
+            string pageGuid = GetAttributeValue( DetailPageAttribute.Key );
 
-            Rock.Model.Page page = new PageService().Get( new Guid(pageGuid) );
-
-            if ( page != null )
+            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
-                Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
-                Context.ApplicationInstance.CompleteRequest();
+                Rock.Model.Page page = new PageService().Get( new Guid( pageGuid ) );
+                if ( page != null )
+                {
+                    if ( page.Guid.Equals( CurrentPage.Guid ) )
+                    {
+                        RockPage rockPage = this.RockPage();
+                        foreach ( IDetailBlock detailBlock in rockPage.RockBlocks.Where( a => a is IDetailBlock ) )
+                        {
+                            detailBlock.ShowDetail( itemKey, itemKeyValue );
+                        }
+                    }
+                    else
+                    {
+                        Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
+                        Context.ApplicationInstance.CompleteRequest();
+                    }
+                }
             }
         }
 
+        #region User Preferences
+
         /// <summary>
-        /// Gets the values for the current user that start with a given key.
+        /// Gets the user preference value for the current user for a given key
         /// </summary>
-        /// <param name="keyPrefix">The key prefix.</param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public Dictionary<string, string> GetUserValues( string keyPrefix )
+        public string GetUserPreference( string key )
         {
-            return ( (RockPage)this.Page ).GetUserValues( keyPrefix );
+            return ( (RockPage)this.Page ).GetUserPreference( key );
         }
 
         /// <summary>
-        /// Sets a value for the current user for a given key
+        /// Gets the preferences for the current user that start with a given key.
+        /// </summary>
+        /// <param name="keyPrefix">The key prefix.</param>
+        /// <returns></returns>
+        public Dictionary<string, string> GetUserPreferences( string keyPrefix )
+        {
+            return ( (RockPage)this.Page ).GetUserPreferences( keyPrefix );
+        }
+
+        /// <summary>
+        /// Sets a preference for the current user for a given key
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public void SetUserValue( string key, string value )
+        public void SetUserPreference( string key, string value )
         {
-            ( (RockPage)this.Page ).SetUserValue( key, value );
+            ( (RockPage)this.Page ).SetUserPreference( key, value );
         }
+
+        #endregion
 
         /// <summary>
         /// Adds icons to the configuration area of a block instance.  Can be overridden to
@@ -483,9 +500,11 @@ namespace Rock.Web.UI
 
                 // Icon to display block properties
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
+                aAttributes.ID = "aBlockProperties";
+                aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) );
+                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aBlockProperties'), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -498,10 +517,12 @@ namespace Rock.Web.UI
             {
                 // Security
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
+                aSecureBlock.ID = "aSecureBlock";
+                aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security",
-                    Security.Authorization.EncodeEntityTypeName( CurrentBlock.GetType() ), CurrentBlock.Id ) ) );
+                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($('#aSecureBlock'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
+                    Security.Authorization.EncodeEntityTypeName( typeof(Block) ), CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -530,7 +551,7 @@ namespace Rock.Web.UI
                 aDeleteBlock.Controls.Add( iDeleteBlock );
                 iDeleteBlock.Attributes.Add( "class", "icon-remove-circle" );
             }
-            
+
             return configControls;
         }
 
@@ -539,7 +560,7 @@ namespace Rock.Web.UI
         /// </summary>
         protected virtual void ContentUpdated()
         {
-            CurrentPage.BlockContentUpdated(this);
+            CurrentPage.BlockContentUpdated( this );
         }
 
         #endregion
@@ -551,7 +572,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read("Rock.Model.Block").Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

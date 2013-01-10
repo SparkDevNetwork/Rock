@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignCampus Service class
     /// </summary>
-    public partial class MarketingCampaignCampusService : Service<MarketingCampaignCampus, MarketingCampaignCampusDto>
+    public partial class MarketingCampaignCampusService : Service<MarketingCampaignCampus>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignCampusService"/> class
@@ -38,38 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignCampus CreateNew()
-        {
-            return new MarketingCampaignCampus();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignCampusDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignCampusDto> QueryableDto( IQueryable<MarketingCampaignCampus> items )
-        {
-            return items.Select( m => new MarketingCampaignCampusDto()
-                {
-                    MarketingCampaignId = m.MarketingCampaignId,
-                    CampusId = m.CampusId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -81,6 +49,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignCampusExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another MarketingCampaignCampus entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this MarketingCampaignCampus target, MarketingCampaignCampus source )
+        {
+            target.MarketingCampaignId = source.MarketingCampaignId;
+            target.CampusId = source.CampusId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

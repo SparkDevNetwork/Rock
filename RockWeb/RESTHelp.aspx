@@ -1,8 +1,8 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="RESTHelp.aspx.cs" Inherits="RESTHelp" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <style>
+<head id="Head1" runat="server">
+    <style type="text/css">
         BODY
         {
             background-color: white;
@@ -84,19 +84,11 @@
 <body>
     <form id="form1" runat="server">
     <div id="content">
-        <p class="heading1">Rock WCF Service Routes</p>
-        <p>This page lists the service routes in the Rock API</p>
+        <p class="heading1">Rock Web API Descriptions</p>
         <asp:GridView ID="gvRoutes" runat="server" AutoGenerateColumns="false" BorderWidth="0">
             <Columns>
-                <asp:BoundField 
-                    HeaderText="Uri" 
-                    DataField="Url" />
-                <asp:HyperLinkField 
-                    HeaderText="Help Url" 
-                    DataTextField="Url"
-                    DataNavigateUrlFields="Url"
-                    DataTextFormatString="{0}/help"
-                    DataNavigateUrlFormatString="~/{0}/help" />
+                <asp:BoundField DataField="RelativePath" HeaderText="RelativePath" />
+                <asp:BoundField DataField="HttpMethod" HeaderText="HttpMethod" HtmlEncode="false"/>
             </Columns>
         </asp:GridView>
     </div>

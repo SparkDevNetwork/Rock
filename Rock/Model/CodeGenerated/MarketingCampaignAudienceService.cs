@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignAudience Service class
     /// </summary>
-    public partial class MarketingCampaignAudienceService : Service<MarketingCampaignAudience, MarketingCampaignAudienceDto>
+    public partial class MarketingCampaignAudienceService : Service<MarketingCampaignAudience>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignAudienceService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignAudience CreateNew()
-        {
-            return new MarketingCampaignAudience();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignAudienceDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignAudienceDto> QueryableDto( IQueryable<MarketingCampaignAudience> items )
-        {
-            return items.Select( m => new MarketingCampaignAudienceDto()
-                {
-                    MarketingCampaignId = m.MarketingCampaignId,
-                    AudienceTypeValueId = m.AudienceTypeValueId,
-                    IsPrimary = m.IsPrimary,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -82,6 +49,25 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignAudienceExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another MarketingCampaignAudience entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this MarketingCampaignAudience target, MarketingCampaignAudience source )
+        {
+            target.MarketingCampaignId = source.MarketingCampaignId;
+            target.AudienceTypeValueId = source.AudienceTypeValueId;
+            target.IsPrimary = source.IsPrimary;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }

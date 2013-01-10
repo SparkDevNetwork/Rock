@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Auth POCO Service class
     /// </summary>
-    public partial class AuthService : Service<Auth, AuthDto>
+    public partial class AuthService 
     {
         /// <summary>
         /// Gets Auths by Entity Type And Entity Id

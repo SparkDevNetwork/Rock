@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Attribute Qualifier POCO Service class
     /// </summary>
-    public partial class AttributeQualifierService : Service<AttributeQualifier, AttributeQualifierDto>
+    public partial class AttributeQualifierService
     {
         /// <summary>
         /// Gets Attribute Qualifiers by Attribute Id

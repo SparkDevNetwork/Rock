@@ -30,9 +30,9 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                lCaption.Text = AttributeValue( "HeadingCaption" );
-                lWarning.Text = AttributeValue( "InvalidEmailCaption" );
-                lSuccess.Text = AttributeValue( "SuccessCaption" );
+                lCaption.Text = GetAttributeValue( "HeadingCaption" );
+                lWarning.Text = GetAttributeValue( "InvalidEmailCaption" );
+                lSuccess.Text = GetAttributeValue( "SuccessCaption" );
             }
         }
 
@@ -47,17 +47,17 @@ namespace RockWeb.Blocks.Security
 
             var personDictionaries = new List<IDictionary<string, object>>();
 
-            PersonService personService = new PersonService();
-            UserService userService = new UserService();
+            var personService = new PersonService();
+            var userLoginService = new UserLoginService();
 
             foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
             {
                 var users = new List<IDictionary<string,object>>();
-                foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
+                foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
                     {
-                        var userDictionary = new UserLoginDto( user ).ToDictionary();
+                        var userDictionary = user.ToDictionary();
                         userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
                         users.Add(userDictionary);
                     }
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Security
 
                 if (users.Count > 0)
                 {
-                    IDictionary<string,object> personDictionary = new PersonDto(person).ToDictionary();
+                    IDictionary<string,object> personDictionary = person.ToDictionary();
                     personDictionary.Add("FirstName", person.FirstName);
                     personDictionary.Add("Users", users.ToArray());
                     personDictionaries.Add( personDictionary );

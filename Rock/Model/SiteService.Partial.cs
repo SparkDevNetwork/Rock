@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Site POCO Service class
     /// </summary>
-    public partial class SiteService : Service<Site, SiteDto>
+    public partial class SiteService 
     {
         /// <summary>
         /// Gets Sites by Default Page Id

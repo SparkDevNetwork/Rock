@@ -15,11 +15,11 @@ namespace Rock.Constants
         /// Duplicates the found message.
         /// </summary>
         /// <param name="nameFieldname">The name fieldname.</param>
-        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
-        public static string DuplicateFoundMessage( string nameFieldname, string itemFieldName )
+        public static string DuplicateFoundMessage( string nameFieldname, string itemFriendlyName )
         {
-            return string.Format( "This {0} is already being used by another {1}.", nameFieldname.ToLower(), itemFieldName.ToLower() );
+            return string.Format( "This {0} is already being used by another {1}.", nameFieldname.ToLower(), itemFriendlyName.ToLower() );
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Rock.Constants
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <returns></returns>
-        public static string NotAuthorizedToEdit( string itemFieldName)
+        public static string NotAuthorizedToEdit( string itemFieldName )
         {
             return string.Format( "You are not authorized to edit {0}.", itemFieldName.Pluralize().ToLower() );
         }
@@ -86,6 +86,20 @@ namespace Rock.Constants
         /// 
         /// </summary>
         public const string TextHtml = "&lt;none&gt;";
+
+        /// <summary>
+        /// Gets the list item.
+        /// </summary>
+        /// <value>
+        /// The list item.
+        /// </value>
+        public static System.Web.UI.WebControls.ListItem ListItem
+        {
+            get
+            {
+                return new System.Web.UI.WebControls.ListItem( None.Text, None.IdValue );
+            }
+        }
     }
 
     /// <summary>
@@ -117,31 +131,57 @@ namespace Rock.Constants
         /// <summary>
         /// Adds the specified item field name.
         /// </summary>
-        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
-        public static string Add( string itemFieldName )
+        public static string Add( string itemFriendlyName )
         {
-            return string.Format( "Add {0}", itemFieldName );
+            return string.Format( "Add {0}", itemFriendlyName );
         }
 
         /// <summary>
         /// Edits the specified item field name.
         /// </summary>
-        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
-        public static string Edit( string itemFieldName )
+        public static string Edit( string itemFriendlyName )
         {
-            return string.Format( "Edit {0}", itemFieldName );
+            return string.Format( "Edit {0}", itemFriendlyName );
         }
 
         /// <summary>
         /// Views the specified item field name.
         /// </summary>
-        /// <param name="itemFieldName">Name of the item field.</param>
+        /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
-        public static string View( string itemFieldName )
+        public static string View( string itemFriendlyName )
         {
-            return string.Format( "View {0}", itemFieldName );
+            return string.Format( "View {0}", itemFriendlyName );
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EditModeMessage
+    {
+        /// <summary>
+        /// Reads the only system.
+        /// </summary>
+        /// <param name="itemFriendlyName">Name of the item friendly.</param>
+        /// <returns></returns>
+        public static string ReadOnlySystem( string itemFriendlyName )
+        {
+            return string.Format( "INFO: This is a read-only system {0}.", itemFriendlyName.ToLower() );
+        }
+
+        /// <summary>
+        /// Reads the only edit action not allowed.
+        /// </summary>
+        /// <param name="itemFriendlyName">Name of the item field.</param>
+        /// <returns></returns>
+        public static string ReadOnlyEditActionNotAllowed( string itemFriendlyName )
+        {
+            return string.Format( "INFO: You do not have access to edit this {0}.", itemFriendlyName.ToLower() );
         }
     }
 }

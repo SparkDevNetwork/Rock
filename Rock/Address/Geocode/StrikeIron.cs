@@ -35,8 +35,8 @@ namespace Rock.Address.Geocode
             if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValue("UserID");
-                registeredUser.Password = AttributeValue("Password");
+                registeredUser.UserID = GetAttributeValue("UserID");
+                registeredUser.Password = GetAttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
@@ -67,8 +67,7 @@ namespace Rock.Address.Geocode
 
                         if ( usAddress != null && usAddress.GeoCode != null )
                         {
-                            location.Latitude = usAddress.GeoCode.Latitude;
-                            location.Longitude = usAddress.GeoCode.Longitude;
+                            location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
 
                             return true;
                         }

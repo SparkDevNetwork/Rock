@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// HtmlContents REST API
     /// </summary>
-    public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Model.HtmlContent, Rock.Model.HtmlContentDto>
+    public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Model.HtmlContent>
     {
         public HtmlContentsController() : base( new Rock.Model.HtmlContentService() ) { } 
     }

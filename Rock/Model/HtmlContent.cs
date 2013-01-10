@@ -4,11 +4,13 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -17,7 +19,8 @@ namespace Rock.Model
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "HtmlContent" )]
-    public partial class HtmlContent : Model<HtmlContent>, IExportable
+    [DataContract( IsReference = true )]
+    public partial class HtmlContent : Model<HtmlContent>
     {
         /// <summary>
         /// Gets or sets the Block Id.
@@ -26,6 +29,7 @@ namespace Rock.Model
         /// Block Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int BlockId { get; set; }
         
         /// <summary>
@@ -35,6 +39,7 @@ namespace Rock.Model
         /// Entity Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityValue { get; set; }
         
         /// <summary>
@@ -44,6 +49,7 @@ namespace Rock.Model
         /// Version.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Version { get; set; }
         
         /// <summary>
@@ -53,6 +59,7 @@ namespace Rock.Model
         /// Content.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public string Content { get; set; }
         
         /// <summary>
@@ -62,6 +69,7 @@ namespace Rock.Model
         /// Approved.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsApproved { get; set; }
         
         /// <summary>
@@ -70,6 +78,7 @@ namespace Rock.Model
         /// <value>
         /// Approved By Person Id.
         /// </value>
+        [DataMember]
         public int? ApprovedByPersonId { get; set; }
         
         /// <summary>
@@ -78,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// Approved Date Time.
         /// </value>
+        [DataMember]
         public DateTime? ApprovedDateTime { get; set; }
         
         /// <summary>
@@ -86,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// Start Date Time.
         /// </value>
+        [DataMember]
         public DateTime? StartDateTime { get; set; }
         
         /// <summary>
@@ -94,6 +105,7 @@ namespace Rock.Model
         /// <value>
         /// Expire Date Time.
         /// </value>
+        [DataMember]
         public DateTime? ExpireDateTime { get; set; }
         
         /// <summary>
@@ -102,6 +114,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Block"/> object.
         /// </value>
+        [DataMember]
         public virtual Block Block { get; set; }
         
         /// <summary>
@@ -110,26 +123,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.Person"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.Person ApprovedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static HtmlContent Read( int id )
-        {
-            return Read<HtmlContent>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -142,32 +137,6 @@ namespace Rock.Model
             return Content;
         }
 
-        /// <summary>
-        /// Exports the object as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the object.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return this.ToDynamic();
-        }
-
-        /// <summary>
-        /// Imports the data.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson(string data)
-        {
-            JsonConvert.PopulateObject( data, this );
-        }
     }
 
     /// <summary>
@@ -180,7 +149,7 @@ namespace Rock.Model
         /// </summary>
         public HtmlContentConfiguration()
         {
-            this.HasRequired( p => p.Block ).WithMany( p => p.HtmlContents ).HasForeignKey( p => p.BlockId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.Block ).WithMany().HasForeignKey( p => p.BlockId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
         }
     }

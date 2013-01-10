@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Auths REST API
     /// </summary>
-    public partial class AuthsController : Rock.Rest.ApiController<Rock.Model.Auth, Rock.Model.AuthDto>
+    public partial class AuthsController : Rock.Rest.ApiController<Rock.Model.Auth>
     {
         public AuthsController() : base( new Rock.Model.AuthService() ) { } 
     }

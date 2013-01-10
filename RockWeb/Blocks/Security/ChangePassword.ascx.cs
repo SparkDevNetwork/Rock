@@ -39,15 +39,15 @@ namespace RockWeb.Blocks.Security
 
         protected void btnChange_Click( object sender, EventArgs e )
         {
-            UserService userService = new UserService();
-            UserLogin user = userService.GetByUserName( tbUserName.Text );
-            if ( user != null )
+            var userLoginService = new UserLoginService();
+            var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+            if ( userLogin != null )
             {
-                if ( userService.ChangePassword( user, tbOldPassword.Text, tbPassword.Text ) )
+                if ( userLoginService.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text ) )
                 {
-                    userService.Save( user, CurrentPersonId );
+                    userLoginService.Save( userLogin, CurrentPersonId );
 
-                    lSuccess.Text = AttributeValue( "SuccessCaption" );
+                    lSuccess.Text = GetAttributeValue( "SuccessCaption" );
                     pnlEntry.Visible = false;
                     pnlSuccess.Visible = true;
                 }
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Security
 
         private void DisplayError( string message )
         {
-            lInvalid.Text = AttributeValue( message );
+            lInvalid.Text = GetAttributeValue( message );
             pnlInvalid.Visible = true;
         }
 

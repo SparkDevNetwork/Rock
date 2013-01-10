@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AttributeQualifiers REST API
     /// </summary>
-    public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Model.AttributeQualifier, Rock.Model.AttributeQualifierDto>
+    public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Model.AttributeQualifier>
     {
         public AttributeQualifiersController() : base( new Rock.Model.AttributeQualifierService() ) { } 
     }

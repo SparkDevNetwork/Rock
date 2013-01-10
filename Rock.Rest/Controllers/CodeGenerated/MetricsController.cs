@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// Metrics REST API
     /// </summary>
-    public partial class MetricsController : Rock.Rest.ApiController<Rock.Model.Metric, Rock.Model.MetricDto>
+    public partial class MetricsController : Rock.Rest.ApiController<Rock.Model.Metric>
     {
         public MetricsController() : base( new Rock.Model.MetricService() ) { } 
     }

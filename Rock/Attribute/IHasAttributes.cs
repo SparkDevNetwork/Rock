@@ -43,6 +43,20 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute values.
         /// </value>
-        Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
+        Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        string GetAttributeValue( string key );
+
+        /// <summary>
+        /// Sets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        void SetAttributeValue( string key, string value );
     }
 }

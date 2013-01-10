@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
     <Rock:GridFilter ID="rFilter" runat="server">
         <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
@@ -24,7 +24,7 @@
     <Rock:ModalDialog id="modalDetails" runat="server" Title="Attribute" >
     <Content>
         <asp:HiddenField ID="hfId" runat="server" />
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
         <fieldset>
             <div class="control-group">
                 <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>

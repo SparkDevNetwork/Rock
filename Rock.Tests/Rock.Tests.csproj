@@ -59,12 +59,16 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cms\BlockTests.cs" />
-    <Compile Include="Cms\BlockTypeTests.cs" />
-    <Compile Include="Cms\HtmlContentTests.cs" />
-    <Compile Include="Cms\PageContextTests.cs" />
-    <Compile Include="Cms\PageRouteTests.cs" />
-    <Compile Include="Cms\PageTests.cs" />
+    <Compile Include="Model\BlockTests.cs" />
+    <Compile Include="Model\BlockTypeTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\HtmlContentTests.cs" />
+    <Compile Include="Model\PageContextTests.cs" />
+    <Compile Include="Model\PageRouteTests.cs" />
+    <Compile Include="Model\PageTests.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Fakes\FakeEntityTypeRepository.cs" />
     <Compile Include="Fakes\FakeRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

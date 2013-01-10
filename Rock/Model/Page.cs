@@ -3,13 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Dynamic;
-using System.Linq;
+using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
@@ -21,8 +20,10 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    public partial class Page : Model<Page>, IOrdered, IExportable
+    [DataContract( IsReference = true )]
+    public partial class Page : Model<Page>, IOrdered
     {
+
         #region Entity Properties
 
         /// <summary>
@@ -34,6 +35,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [TrackChanges]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// Parent Page Id.
         /// </value>
+        [DataMember]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -51,6 +54,7 @@ namespace Rock.Model
         /// Title.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Title { get; set; }
 
         /// <summary>
@@ -60,6 +64,7 @@ namespace Rock.Model
         /// IsSystem.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -68,6 +73,7 @@ namespace Rock.Model
         /// <value>
         /// Site Id.
         /// </value>
+        [DataMember]
         public int? SiteId { get; set; }
 
         /// <summary>
@@ -77,6 +83,7 @@ namespace Rock.Model
         /// Layout.
         /// </value>
         [MaxLength( 100 )]
+        [DataMember]
         public string Layout { get; set; }
 
         /// <summary>
@@ -86,6 +93,7 @@ namespace Rock.Model
         /// Requires Encryption.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -95,6 +103,7 @@ namespace Rock.Model
         /// Enable View State.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool EnableViewState
         {
             get { return _enableViewState; }
@@ -109,6 +118,7 @@ namespace Rock.Model
         /// Menu Display Description.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayDescription { get; set; }
 
         /// <summary>
@@ -118,6 +128,7 @@ namespace Rock.Model
         /// Menu Display Icon.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayIcon { get; set; }
 
         /// <summary>
@@ -127,6 +138,7 @@ namespace Rock.Model
         /// Menu Display Child Pages.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
@@ -141,7 +153,17 @@ namespace Rock.Model
         /// Enum[DisplayInNavWhen].
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -150,6 +172,7 @@ namespace Rock.Model
         /// Order.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
@@ -159,6 +182,7 @@ namespace Rock.Model
         /// Output Cache Duration.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
@@ -167,6 +191,7 @@ namespace Rock.Model
         /// <value>
         /// Description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -175,6 +200,7 @@ namespace Rock.Model
         /// <value>
         /// Icon Url.
         /// </value>
+        [DataMember]
         public int? IconFileId { get; set; }
 
         /// <summary>
@@ -184,6 +210,7 @@ namespace Rock.Model
         /// Include Admin Footer.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IncludeAdminFooter
         {
             get { return _includeAdminFooter; }
@@ -201,6 +228,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
+        [DataMember]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -209,6 +237,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
+        [DataMember]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -217,6 +246,7 @@ namespace Rock.Model
         /// <value>
         /// The icon file.
         /// </value>
+        [DataMember]
         public virtual BinaryFile IconFile { get; set; }
 
         /// <summary>
@@ -225,7 +255,13 @@ namespace Rock.Model
         /// <value>
         /// Collection of Blocks.
         /// </value>
-        public virtual ICollection<Block> Blocks { get; set; }
+        [DataMember]
+        public virtual ICollection<Block> Blocks
+        {
+            get { return _blocks ?? ( _blocks = new Collection<Block>() ); }
+            set { _blocks = value; }
+        }
+        private ICollection<Block> _blocks;
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -233,7 +269,13 @@ namespace Rock.Model
         /// <value>
         /// Collection of Pages.
         /// </value>
-        public virtual ICollection<Page> Pages { get; set; }
+        [DataMember]
+        public virtual ICollection<Page> Pages
+        {
+            get { return _pages ?? ( _pages = new Collection<Page>() ); }
+            set { _pages = value; }
+        }
+        private ICollection<Page> _pages;
 
         /// <summary>
         /// Gets or sets the Page Routes.
@@ -241,7 +283,13 @@ namespace Rock.Model
         /// <value>
         /// Collection of Page Routes.
         /// </value>
-        public virtual ICollection<PageRoute> PageRoutes { get; set; }
+        [DataMember]
+        public virtual ICollection<PageRoute> PageRoutes
+        {
+            get { return _pageRoutes ?? ( _pageRoutes = new Collection<PageRoute>() ); }
+            set { _pageRoutes = value; }
+        }
+        private ICollection<PageRoute> _pageRoutes;
 
         /// <summary>
         /// Gets or sets the Page Contexts.
@@ -249,15 +297,13 @@ namespace Rock.Model
         /// <value>
         /// Collection of Page Contexts.
         /// </value>
-        public virtual ICollection<PageContext> PageContexts { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Sites.
-        /// </summary>
-        /// <value>
-        /// Collection of Sites.
-        /// </value>
-        public virtual ICollection<Site> Sites { get; set; }
+        [DataMember]
+        public virtual ICollection<PageContext> PageContexts
+        {
+            get { return _pageContexts ?? ( _pageContexts = new Collection<PageContext>() ); }
+            set { _pageContexts = value; }
+        }
+        private ICollection<PageContext> _pageContexts;
 
         /// <summary>
         /// Gets the parent authority.
@@ -327,47 +373,9 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Exports the Page as JSON.
-        /// </summary>
-        /// <returns></returns>
-        public string ExportJson()
-        {
-            return ExportObject().ToJSON();
-        }
-
-        /// <summary>
-        /// Exports the Page.
-        /// </summary>
-        /// <returns></returns>
-        public object ExportObject()
-        {
-            return ExportPagesRecursive( this );
-        }
-
-        /// <summary>
-        /// Imports the object from JSON.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        public void ImportJson( string data )
-        {
-            JsonConvert.PopulateObject( data, this );
-            var obj = JsonConvert.DeserializeObject( data, typeof( ExpandoObject ) );
-            ImportPagesRecursive( obj, this );
-        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
@@ -382,130 +390,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Static Methods
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Page Read( int id )
-        {
-            return Read<Page>( id );
-        }
-
-        /// <summary>
-        /// Recursivly adds collections of child pages to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        public static dynamic ExportPagesRecursive( Page page )
-        {
-            dynamic exportPage = new PageDto( page ).ToDynamic();
-            exportPage.AuthRoles = Security.Authorization.FindAuthRules(page).Select( r => r.ToDynamic() );
-            exportPage.Attributes = page.Attributes.Select( a => a.ToDynamic() );
-            exportPage.AttributeValues = page.AttributeValues.Select( a => a.ToDynamic() );
-            ExportBlocks( page, exportPage );
-            ExportPageRoutes( page, exportPage );
-            ExportPageContexts( page, exportPage );
-
-            if ( page.Pages == null )
-            {
-                return exportPage;
-            }
-
-            exportPage.Pages = new List<dynamic>();
-
-            foreach ( var childPage in page.Pages )
-            {
-                exportPage.Pages.Add( ExportPagesRecursive( childPage ) );
-            }
-
-            return exportPage;
-        }
-
-        /// <summary>
-        /// Maps the blocks to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="exportPage">The export page.</param>
-        private static void ExportBlocks( Page page, dynamic exportPage )
-        {
-            if ( page.Blocks == null )
-            {
-                return;
-            }
-
-            exportPage.Blocks = new List<dynamic>();
-
-            foreach ( var block in page.Blocks )
-            {
-                exportPage.Blocks.Add( block.ExportObject() );
-            }
-        }
-
-        /// <summary>
-        /// Maps the page routes to object graph for export.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="exportPage">The export page.</param>
-        private static void ExportPageRoutes( Page page, dynamic exportPage )
-        {
-            if ( page.PageRoutes == null )
-            {
-                return;
-            }
-
-            exportPage.PageRoutes = new List<dynamic>();
-
-            foreach ( var pageRoute in page.PageRoutes )
-            {
-                exportPage.PageRoutes.Add( pageRoute.ExportObject() );
-            }
-        }
-
-        private static void ExportPageContexts( Page page, dynamic exportPage )
-        {
-            if ( page.PageContexts == null )
-            {
-                return;
-            }
-
-            exportPage.PageContexts = new List<dynamic>();
-
-            foreach ( var pageContext in page.PageContexts )
-            {
-                exportPage.PageContexts.Add( pageContext.ExportObject() );
-            }
-        }
-
-        private static void ImportPagesRecursive( dynamic data, Page page )
-        {
-            var dict = data as IDictionary<string, object> ?? new Dictionary<string, object>();
-            page.Pages = new List<Page>();
-
-            if ( !dict.ContainsKey( "Pages" ) )
-            {
-                return;
-            }
-
-            foreach ( var p in data.Pages )
-            {
-                var newPage = ( (object) p ).ToModel<Page>();
-                var newDict = p as IDictionary<string, object>;
-                page.Pages.Add( newPage );
-
-                if ( newDict.ContainsKey( "Pages" ) )
-                {
-                    ImportPagesRecursive( p, newPage );
-                }
-            }
-        }
-
-        #endregion
-
     }
-
     #region Entity Configuration
 
     /// <summary>

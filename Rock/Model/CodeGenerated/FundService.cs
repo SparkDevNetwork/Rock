@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Fund Service class
     /// </summary>
-    public partial class FundService : Service<Fund, FundDto>
+    public partial class FundService : Service<Fund>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FundService"/> class
@@ -35,50 +35,6 @@ namespace Rock.Model
         /// </summary>
         public FundService(IRepository<Fund> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Fund CreateNew()
-        {
-            return new Fund();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FundDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FundDto> QueryableDto( IQueryable<Fund> items )
-        {
-            return items.Select( m => new FundDto()
-                {
-                    Name = m.Name,
-                    PublicName = m.PublicName,
-                    Description = m.Description,
-                    ParentFundId = m.ParentFundId,
-                    IsTaxDeductible = m.IsTaxDeductible,
-                    Order = m.Order,
-                    IsActive = m.IsActive,
-                    StartDate = m.StartDate,
-                    EndDate = m.EndDate,
-                    IsPledgable = m.IsPledgable,
-                    GlCode = m.GlCode,
-                    FundTypeValueId = m.FundTypeValueId,
-                    Entity = m.Entity,
-                    EntityId = m.EntityId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -105,6 +61,36 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FundExtensionMethods
+    {
+        /// <summary>
+        /// Copies all the entity properties from another Fund entity
+        /// </summary>
+        public static void CopyPropertiesFrom( this Fund target, Fund source )
+        {
+            target.Name = source.Name;
+            target.PublicName = source.PublicName;
+            target.Description = source.Description;
+            target.ParentFundId = source.ParentFundId;
+            target.IsTaxDeductible = source.IsTaxDeductible;
+            target.Order = source.Order;
+            target.IsActive = source.IsActive;
+            target.StartDate = source.StartDate;
+            target.EndDate = source.EndDate;
+            target.IsPledgable = source.IsPledgable;
+            target.GlCode = source.GlCode;
+            target.FundTypeValueId = source.FundTypeValueId;
+            target.Entity = source.Entity;
+            target.EntityId = source.EntityId;
+            target.Id = source.Id;
+            target.Guid = source.Guid;
+
         }
     }
 }
