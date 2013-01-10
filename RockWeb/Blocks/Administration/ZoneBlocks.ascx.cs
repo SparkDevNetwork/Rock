@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Administration
             _page = Rock.Web.Cache.PageCache.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
-            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", CurrentPage.Layout );
+            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", _page.Layout );
 
             // TODO: Managing layout block instances should probably be controlled by site security
             if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )

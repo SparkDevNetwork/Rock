@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdTypes.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaignAdTypes" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignAdTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaignAdTypeDetail" %>
 
 <asp:UpdatePanel ID="upMarketingCampaignAdType" runat="server">
     <ContentTemplate>
@@ -13,17 +13,6 @@
                 }
             }
         </script>
-        <asp:Panel ID="pnlList" runat="server">
-            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaignAdType" runat="server" AllowSorting="true" OnRowSelected="gMarketingCampaignAdType_Edit">
-                <Columns>
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:DeleteField OnClick="gMarketingCampaignAdType_Delete" />
-                </Columns>
-            </Rock:Grid>
-        </asp:Panel>
-
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfMarketingCampaignAdTypeId" runat="server" />
@@ -32,9 +21,11 @@
 
             <fieldset>
                 <legend>
-                    <i id="iconIsSystem" runat="server" class="icon-eye-open"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
+
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAdType, Rock" PropertyName="Name" />

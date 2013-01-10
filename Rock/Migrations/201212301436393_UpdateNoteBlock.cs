@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class UpdateNoteBlock : RockMigration
+    public partial class UpdateNoteBlock : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

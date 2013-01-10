@@ -53,28 +53,28 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            string entityTypeName = AttributeValue( "Entity" );
+            string entityTypeName = GetAttributeValue( "Entity" );
             if ( string.IsNullOrWhiteSpace( entityTypeName ) )
             {
                 entityTypeName = PageParameter( "Entity" );
             }
             _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( entityTypeName );
 
-            _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+            _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
             {
                 _entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
             }
 
-            _entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+            _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
             {
                 _entityQualifierValue = PageParameter( "EntityQualifierValue" );
             }
 
-            _displayValueEdit = Convert.ToBoolean( AttributeValue( "SetValues" ) );
+            _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "SetValues" ) );
 
-            string entityIdString = AttributeValue( "EntityId" );
+            string entityIdString = GetAttributeValue( "EntityId" );
             if ( string.IsNullOrWhiteSpace( entityIdString ) )
             {
                 entityIdString = PageParameter( "EntityId" );

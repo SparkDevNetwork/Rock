@@ -5,19 +5,21 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [TextField(0, "Welcome Page Url", "", "The url of the Check-In welcome page", false, "~/checkin/welcome")]
-    public partial class Admin : Rock.Web.UI.RockBlock
+    [Description( "Check-In Administration block" )]
+    public partial class Admin : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
         {
@@ -28,9 +30,9 @@ namespace RockWeb.Blocks.CheckIn
                 ddlKiosk.DataBind();
                 ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
-                if ( Session["CheckInKioskId"] != null )
+                if ( CurrentKioskId.HasValue )
                 {
-                    ListItem item = ddlKiosk.Items.FindByValue( Session["CheckInKioskId"].ToString() );
+                    ListItem item = ddlKiosk.Items.FindByValue( CurrentKioskId.Value.ToString() );
                     if ( item != null )
                     {
                         item.Selected = true;
@@ -62,10 +64,13 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            Session["CheckInKioskId"] = Int32.Parse( ddlKiosk.SelectedValue );
-            Session["CheckInGroupTypeIds"] = groupTypeIds;
+            CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
+            CurrentGroupTypeIds = groupTypeIds;
+            CurrentCheckInState = null;
+            CurrentWorkflow = null;
+            SaveState();
 
-            Response.Redirect( AttributeValue("WelcomePageUrl"), false );
+            GoToWelcomePage();
         }
 
         private void BindGroupTypes()
@@ -81,9 +86,9 @@ namespace RockWeb.Blocks.CheckIn
                     cblGroupTypes.DataBind();
                 }
 
-                if ( Session["CheckInGroupTypeIds"] != null )
+                if ( CurrentGroupTypeIds != null )
                 {
-                    foreach ( int id in Session["CheckInGroupTypeIds"] as List<int> )
+                    foreach ( int id in CurrentGroupTypeIds )
                     {
                         ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
                         if ( item != null )

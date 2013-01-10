@@ -58,7 +58,7 @@ namespace Rock.Data
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
-        public IQueryable<T> Queryable()
+        public virtual IQueryable<T> Queryable()
         {
             return _repository.AsQueryable();
         }
@@ -68,7 +68,7 @@ namespace Rock.Data
         /// with eager loading of properties specified in includes
         /// </summary>
         /// <returns></returns>
-        public IQueryable<T> Queryable( string includes )
+        public virtual IQueryable<T> Queryable( string includes )
         {
             return _repository.AsQueryable( includes );
         }
@@ -78,7 +78,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public T Get( int id )
+        public virtual T Get( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
@@ -88,7 +88,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public T Get( Guid guid )
+        public virtual T Get( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
         }
@@ -97,7 +97,7 @@ namespace Rock.Data
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>
-        public bool TryGet( int id, out T item )
+        public virtual bool TryGet( int id, out T item )
         {
             item = Get( id );
             if ( item == null )
@@ -123,7 +123,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="publicKey">The public key.</param>
         /// <returns></returns>
-        public T GetByPublicKey( string publicKey )
+        public virtual T GetByPublicKey( string publicKey )
         {
             try
             {

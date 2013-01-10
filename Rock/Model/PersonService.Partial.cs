@@ -16,94 +16,183 @@ namespace Rock.Model
     /// </summary>
     public partial class PersonService 
     {
+        /// <summary>
+        /// Gets a queryable list of people
+        /// </summary>
+        /// <returns></returns>
+        public override IQueryable<Person> Queryable()
+        {
+            return Queryable( false );
+        }
+
+        /// <summary>
+        /// Gets a queryable list of people
+        /// </summary>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IQueryable<Person> Queryable( bool includeDeceased )
+        {
+            return base.Repository.AsQueryable().Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+        }
+
+        /// <summary>
+        /// Gets a list of all people with eager loading of properties specfied in includes
+        /// </summary>
+        /// <param name="includes">The includes.</param>
+        /// <returns></returns>
+        public override IQueryable<Person> Queryable( string includes )
+        {
+            return Queryable( includes, false );
+        }
+
+        /// <summary>
+        /// Gets a list of all people with eager loading of properties specfied in includes
+        /// </summary>
+        /// <param name="includes">The includes.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IQueryable<Person> Queryable( string includes, bool includeDeceased )
+        {
+            return base.Repository.AsQueryable( includes ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+        }
+
         #region Get People
 
         /// <summary>
         /// Gets People by Email
         /// </summary>
         /// <param name="email">Email.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByEmail( string email )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.Email == email || ( email == null && t.Email == null ) ) );
+            return Repository.Find( t => 
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value) &&
+                ( t.Email == email || ( email == null && t.Email == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Marital Status Id
         /// </summary>
         /// <param name="maritalStatusId">Marital Status Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.MaritalStatusValueId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.MaritalStatusValueId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Person Status Id
         /// </summary>
         /// <param name="personStatusId">Person Status Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByPersonStatusId( int? personStatusId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByPersonStatusId( int? personStatusId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.PersonStatusValueId == personStatusId || ( personStatusId == null && t.PersonStatusValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.PersonStatusValueId == personStatusId || ( personStatusId == null && t.PersonStatusValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Record Status Id
         /// </summary>
         /// <param name="recordStatusId">Record Status Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.RecordStatusValueId == recordStatusId || ( recordStatusId == null && t.RecordStatusValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.RecordStatusValueId == recordStatusId || ( recordStatusId == null && t.RecordStatusValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Record Status Reason Id
         /// </summary>
         /// <param name="recordStatusReasonId">Record Status Reason Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.RecordStatusReasonValueId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.RecordStatusReasonValueId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Record Type Id
         /// </summary>
         /// <param name="recordTypeId">Record Type Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.RecordTypeValueId == recordTypeId || ( recordTypeId == null && t.RecordTypeValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.RecordTypeValueId == recordTypeId || ( recordTypeId == null && t.RecordTypeValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Suffix Id
         /// </summary>
         /// <param name="suffixId">Suffix Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetBySuffixId( int? suffixId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetBySuffixId( int? suffixId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.SuffixValueId == suffixId || ( suffixId == null && t.SuffixValueId == null ) ) );
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.SuffixValueId == suffixId || ( suffixId == null && t.SuffixValueId == null ) )
+            );
         }
-        
+
         /// <summary>
         /// Gets People by Title Id
         /// </summary>
         /// <param name="titleId">Title Id.</param>
-        /// <returns>An enumerable list of Person objects.</returns>
-        public IEnumerable<Person> GetByTitleId( int? titleId )
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// An enumerable list of Person objects.
+        /// </returns>
+        public IEnumerable<Person> GetByTitleId( int? titleId, bool includeDeceased = false )
         {
-            return Repository.Find( t => ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) ) );
+            return Repository.Find( t => 
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
+                ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) ) 
+            );
         }
 
         /// <summary>
         /// Gets a list of people with a matching full name
         /// </summary>
         /// <param name="fullName">The full name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
-        public IQueryable<Person> GetByFullName( string fullName )
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
         {
             string firstName = string.Empty;
             string lastName = string.Empty;
@@ -116,10 +205,26 @@ namespace Rock.Model
             else
                 lastName = fullName;
 
-            return Queryable().
+            return Queryable(includeDeceased).
                     Where( p => p.LastName.ToLower().StartsWith( lastName.ToLower() ) &&
                         ( p.NickName.ToLower().StartsWith( firstName.ToLower() ) ||
                         p.GivenName.StartsWith( firstName.ToLower() ) ) );
+        }
+
+        /// <summary>
+        /// Gets a list of people with a phone number that contains the specified partial number.
+        /// </summary>
+        /// <param name="partialPhoneNumber">The partial phone number.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        {
+            string numericPhone = partialPhoneNumber.AsNumeric();
+
+            return Repository.Find( p =>
+                ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
+                p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
+            );
         }
 
         #endregion

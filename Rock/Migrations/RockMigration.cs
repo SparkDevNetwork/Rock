@@ -260,10 +260,11 @@ namespace Rock.Migrations
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="name">The name.</param>
+        /// <param name="layout">The layout.</param>
         /// <param name="zone">The zone.</param>
-        /// <param name="guid">The GUID.</param>
         /// <param name="order">The order.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string zone, string guid, int order = 0 )
+        /// <param name="guid">The GUID.</param>
+        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid)
         {
             var sb = new StringBuilder();
 
@@ -292,7 +293,7 @@ namespace Rock.Migrations
                     [Order],[Name],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,NULL,@BlockTypeId,'{1}',
+                    1,@PageId,'{5}',@BlockTypeId,'{1}',
                     {2},'{3}',0,
                     '{4}')
                 SET @BlockId = SCOPE_IDENTITY()
@@ -301,7 +302,8 @@ namespace Rock.Migrations
                     zone,
                     order,
                     name,
-                    guid );
+                    guid,
+                    layout);
 
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )

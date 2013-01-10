@@ -50,7 +50,7 @@ namespace Rock.Security.ExternalAuthentication
             var redirectUri = new Uri( GetRedirectUrl( request ));
 
             dynamic parameters = new ExpandoObject();
-            parameters.client_id = AttributeValue( "AppID" );
+            parameters.client_id = GetAttributeValue( "AppID" );
             parameters.display = "popup";
             parameters.redirect_uri = redirectUri.AbsoluteUri;
             parameters.scope = "user_birthday,email,read_stream,read_friendlists";
@@ -80,8 +80,8 @@ namespace Rock.Security.ExternalAuthentication
                     var redirectUri = new Uri( GetRedirectUrl( request ) );
 
                     dynamic parameters = new ExpandoObject();
-                    parameters.client_id = AttributeValue( "AppID" );
-                    parameters.client_secret = AttributeValue( "AppSecret" );
+                    parameters.client_id = GetAttributeValue( "AppID" );
+                    parameters.client_secret = GetAttributeValue( "AppSecret" );
                     parameters.redirect_uri = redirectUri.AbsoluteUri; 
                     parameters.code = oAuthResult.Code;
 

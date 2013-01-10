@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.Caching;
+using System.Runtime.Serialization;
 
 using Rock.Model;
 using Rock.Security;
@@ -17,6 +18,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
+    [DataContract( IsReference = true )]
     public class DefinedValueCache : CachedModel<DefinedValue>
     {
         #region Constructors
@@ -27,6 +29,7 @@ namespace Rock.Web.Cache
 
         private DefinedValueCache( DefinedValue model )
         {
+            CopyFromModel( model );
         }
 
         #endregion
@@ -39,6 +42,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -47,6 +51,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The defined type id.
         /// </value>
+        [DataMember]
         public int DefinedTypeId { get; set; }
 
         /// <summary>
@@ -55,6 +60,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -63,6 +69,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -71,6 +78,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>

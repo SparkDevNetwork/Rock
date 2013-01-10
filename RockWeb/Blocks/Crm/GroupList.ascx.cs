@@ -44,13 +44,13 @@ namespace RockWeb.Blocks.Crm
             gGroups.GridRebind += gGroups_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" ) && AttributeValue( "ShowEdit" ).FromTrueFalse();
+            bool canAddEditDelete = IsUserAuthorized( "Edit" ) && GetAttributeValue( "ShowEdit" ).FromTrueFalse();
             gGroups.Actions.IsAddEnabled = canAddEditDelete;
             gGroups.IsDeleteEnabled = canAddEditDelete;
 
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["Members.Count"].Visible = AttributeValue( "ShowUserCount" ).FromTrueFalse();
-            boundFields["Description"].Visible = AttributeValue( "ShowDescription" ).FromTrueFalse();
+            boundFields["Members.Count"].Visible = GetAttributeValue( "ShowUserCount" ).FromTrueFalse();
+            boundFields["Description"].Visible = GetAttributeValue( "ShowDescription" ).FromTrueFalse();
         }
 
         /// <summary>
@@ -159,13 +159,13 @@ namespace RockWeb.Blocks.Crm
             SortProperty sortProperty = gGroups.SortProperty;
             var qry = groupService.Queryable();
 
-            List<int> groupTypeIds = AttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
             if ( groupTypeIds.Count > 0 )
             {
                 qry = qry.Where( a => groupTypeIds.Contains( a.GroupTypeId ) );
             }
 
-            if ( AttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+            if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
             }
