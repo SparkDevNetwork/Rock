@@ -19,7 +19,6 @@
                 <asp:TemplateField HeaderText="Date" />
                 <asp:TemplateField HeaderText="Fund" />
                 <asp:TemplateField HeaderText="Payment Method" />
-                <asp:TemplateField HeaderText="Description" />
                 <asp:TemplateField HeaderText="Amount" />
             </Columns>
         </Rock:Grid>
