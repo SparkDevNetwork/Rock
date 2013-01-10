@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Security
                 {
                     userLoginService.Save( userLogin, CurrentPersonId );
 
-                    lSuccess.Text = AttributeValue( "SuccessCaption" );
+                    lSuccess.Text = GetAttributeValue( "SuccessCaption" );
                     pnlEntry.Visible = false;
                     pnlSuccess.Visible = true;
                 }
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Security
 
         private void DisplayError( string message )
         {
-            lInvalid.Text = AttributeValue( message );
+            lInvalid.Text = GetAttributeValue( message );
             pnlInvalid.Visible = true;
         }
 

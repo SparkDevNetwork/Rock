@@ -120,6 +120,9 @@ namespace RockWeb.Blocks.Crm
             groupRoles.Insert( 0, new GroupRole { Id = None.Id, Name = None.Text } );
             ddlDefaultGroupRole.DataSource = groupRoles;
             ddlDefaultGroupRole.DataBind();
+
+            ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
+            ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
         }
 
         /// <summary>
@@ -158,7 +161,18 @@ namespace RockWeb.Blocks.Crm
             hfGroupTypeId.Value = groupType.Id.ToString();
             tbName.Text = groupType.Name;
             tbDescription.Text = groupType.Description;
+            tbGroupTerm.Text = groupType.GroupTerm;
+            tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
             ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
+            cbShowInGroupList.Checked = groupType.ShowInGroupList;
+            tbIconCssClass.Text = groupType.IconCssClass;
+            imgIconSmall.ImageId = groupType.IconSmallFileId;
+            imgIconLarge.ImageId = groupType.IconLargeFileId;
+
+            cbTakesAttendance.Checked = groupType.TakesAttendance;
+            ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
+            ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
+            cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
             groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
 
@@ -169,13 +183,13 @@ namespace RockWeb.Blocks.Crm
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
             }
 
             if ( groupType.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( GroupType.FriendlyTypeName );
             }
 
             if ( readOnly )
@@ -424,16 +438,19 @@ namespace RockWeb.Blocks.Crm
             }
 
             groupType.Name = tbName.Text;
-            if ( ddlDefaultGroupRole.SelectedValue.Equals( None.Id.ToString() ) )
-            {
-                groupType.DefaultGroupRoleId = null;
-            }
-            else
-            {
-                groupType.DefaultGroupRoleId = int.Parse( ddlDefaultGroupRole.SelectedValue );
-            }
 
             groupType.Description = tbDescription.Text;
+            groupType.GroupTerm = tbGroupTerm.Text;
+            groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
+            groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
+            groupType.ShowInGroupList = cbShowInGroupList.Checked;
+            groupType.IconCssClass = tbIconCssClass.Text;
+            groupType.IconSmallFileId = imgIconSmall.ImageId;
+            groupType.IconLargeFileId = imgIconLarge.ImageId;
+            groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
+            groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
             groupType.ChildGroupTypes.Clear();

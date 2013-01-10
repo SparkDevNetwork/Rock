@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class GroupBlockAttributes : RockMigration
+    public partial class GroupBlockAttributes : RockMigration_2
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

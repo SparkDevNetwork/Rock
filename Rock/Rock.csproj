@@ -122,6 +122,9 @@
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="CheckIn\CheckInBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="CheckIn\CheckInFamily.cs" />
     <Compile Include="CheckIn\CheckInGroup.cs" />
     <Compile Include="CheckIn\CheckInGroupType.cs" />
@@ -215,7 +218,16 @@
     <Compile Include="Migrations\201212311316295_AddCategoryIcon.Designer.cs">
       <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\RockMigration.cs">
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.cs" />
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.Designer.cs">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301092105309_GroupViewer01.cs" />
+    <Compile Include="Migrations\201301092105309_GroupViewer01.Designer.cs">
+      <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\RockMigration_1.cs">
@@ -320,6 +332,19 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
+    <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroups.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PurgeInvalidPeople.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroupTypes.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
@@ -869,10 +894,14 @@
     <EmbeddedResource Include="Migrations\201212311316295_AddCategoryIcon.resx">
       <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301090032138_ListDetailSweep02.resx">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301092105309_GroupViewer01.resx">
+      <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Workflow\Action\CheckIn\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -886,7 +915,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>65463</DevelopmentServerPort>
+          <DevelopmentServerPort>60512</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

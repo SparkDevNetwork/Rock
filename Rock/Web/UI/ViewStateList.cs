@@ -77,6 +77,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Removes the entity.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void RemoveEntity( Guid guid )
+        {
+            var list = GetList().ToList();
+            list.RemoveEntity( guid );
+            internalListJson = list.ToJson();
+        }
+
+        /// <summary>
         /// Adds the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +95,17 @@ namespace Rock.Web.UI
         {
             var list = GetList().ToList();
             list.Add( item as T );
+            internalListJson = list.ToJson();
+        }
+
+        /// <summary>
+        /// Adds all.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        public void AddAll( List<T> items )
+        {
+            var list = GetList().ToList();
+            items.ForEach( a => list.Add( a as T ) );
             internalListJson = list.ToJson();
         }
     }

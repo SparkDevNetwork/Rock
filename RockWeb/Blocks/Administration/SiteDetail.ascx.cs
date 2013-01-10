@@ -207,13 +207,13 @@ namespace RockWeb.Blocks.Administration
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Site.FriendlyTypeName );
             }
 
             if ( site.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Rock.Model.Site.FriendlyTypeName );
             }
 
             if ( readOnly )

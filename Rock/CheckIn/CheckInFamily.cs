@@ -26,7 +26,7 @@ namespace Rock.CheckIn
         /// The group.
         /// </value>
         [DataMember]
-        public Group group { get; set; }
+        public Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInFamily" /> is selected for check-in
@@ -53,6 +53,17 @@ namespace Rock.CheckIn
             : base()
         {
             FamilyMembers = new List<CheckInPerson>();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group != null ? Group.ToString() : string.Empty;
         }
     }
 }

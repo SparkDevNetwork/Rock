@@ -122,6 +122,18 @@ namespace Rock.Model
                         p.GivenName.StartsWith( firstName.ToLower() ) ) );
         }
 
+        /// <summary>
+        /// Gets a list of people with a phone number that contains the specified partial number.
+        /// </summary>
+        /// <param name="partialPhoneNumber">The partial phone number.</param>
+        /// <returns></returns>
+        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber )
+        {
+            string numericPhone = partialPhoneNumber.AsNumeric();
+
+            return Repository.Find( p => p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
+        }
+
         #endregion
 
         #region Get Person

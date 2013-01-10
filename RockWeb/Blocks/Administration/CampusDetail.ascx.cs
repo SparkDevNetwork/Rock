@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             pnlDetails.Visible = true;
-            
+
             // Load depending on Add(0) or Edit
             Campus campus = null;
             if ( !itemKeyValue.Equals( 0 ) )
@@ -139,13 +139,13 @@ namespace RockWeb.Blocks.Administration
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Campus.FriendlyTypeName );
             }
 
             if ( campus.IsSystem )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Campus.FriendlyTypeName );
             }
 
             if ( readOnly )
