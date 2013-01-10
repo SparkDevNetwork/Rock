@@ -23,7 +23,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell bool";
         }
 
         /// <summary>
@@ -46,8 +45,10 @@ namespace Rock.Web.UI.Controls
                     boolValue = intValue != 0;
             }
 
-            return string.Format( "<span class=\"{0}\">{1}</span>", 
-                boolValue.ToString().ToLower(), ( boolValue ? " " : "" ) );
+            if ( boolValue )
+                return "<i class=\".icon-ok\"></i>";
+            else
+                return "oh my";
         }
     }
 }

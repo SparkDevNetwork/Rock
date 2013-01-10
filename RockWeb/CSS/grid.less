@@ -1,14 +1,6 @@
 ﻿
 .table-bordered th, .grid-table tfoot td.grid-footer  {
-	background: #E9E9E9;
-	background:-moz-linear-gradient(top, #FAFAFA 0%, #E9E9E9 100%); /* FF3.6+ */
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,#FAFAFA), color-stop(100%,#E9E9E9)); /* Chrome,Safari4+ */
-	background:-webkit-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* Chrome10+,Safari5.1+ */
-	background:-o-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* Opera11.10+ */
-	background:-ms-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* IE10+ */
-	background:linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9');
-	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9')";
+	.header-gradient();
 	
 	font-size: 10px;
 	color: #444;
@@ -38,49 +30,6 @@
 	font-family: FontAwesome; 
 }
 
-.grid-icon-cell
-{
-	width: 25px;
-	vertical-align: middle;
-	font-family: FontAwesome;
-	font-size: 18px;
-}
-
-.grid-icon-cell a, .grid-icon-cell span
-{
-	overflow: hidden;
-    display: block;
-    height: 16px;
-    width: 16px;
-    background-repeat: no-repeat;
-    color: 	#7c7c7c;
-    text-decoration: none;
-}
-
-.grid-icon-cell a:hover 
-{
-    text-decoration: none;   
-}
-
-.grid-icon-cell.delete a:before
-{ 
-    content: "\f057";
-}
-
-.grid-icon-cell.edit a:before
-{
-    content: "\f044";
-}
-
-.grid-icon-cell.edit-value a:before
-{
-    content: "\f022";
-}
-
-.grid-icon-cell.security a:before
-{
-    content: "\f023";
-}
 
 .grid-icon-cell.reorder a:before
 {
@@ -102,6 +51,12 @@
 .grid-table tfoot td 
 {
     background: #fff;
+    text-align: right;
+}
+
+.grid-table tfoot td .btn
+{
+    margin-left: 8px;
 }
 
 .grid-table tfoot tr:last-child td 
@@ -109,29 +64,6 @@
     border-radius: 0 0 4px 4px;
 }
 
-.grid-table tfoot .grid-actions
-{
-	height: 20px;
-    padding: 0;
-	padding-top: 4px;
-}
-
-.grid-table tfoot .grid-actions a
-{
-	float: right;
-	overflow: hidden;
-    display: block;
-    width: 16px;
-    background-repeat: no-repeat;
-    margin-left: 4px;
-    background-color: transparent;
-    background-image: none;
-}
-
-.grid-table tfoot .grid-actions a:hover
-{
-    text-decoration: none;
-}
 
 .grid-table tfoot .pagination {
     height: 20px;
@@ -140,7 +72,6 @@
 
 .grid-table tfoot .pagination .page-navigation 
 {
-    float: left;
     width: 45%;
 }
 
