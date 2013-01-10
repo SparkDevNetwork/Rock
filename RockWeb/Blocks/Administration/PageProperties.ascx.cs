@@ -13,6 +13,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -236,6 +237,42 @@ namespace RockWeb.Blocks.Administration
                 string script = "if ( typeof window.parent.closeModal === 'function' ) window.parent.closeModal();";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
+        }
+
+        protected void btnExport_Click( object sender, EventArgs e )
+        {
+            // Generate the JSON from model data
+            var pageService = new PageService();
+            var page = pageService.Get( _page.Guid );
+            var json = page.ToJson();
+
+            // Create a temp directory to hold package contents in staging area
+
+            // Write the contents from `json` into an `export.json` file in staging area
+
+            // Grab corresponding block code files and replicate their underlying directory in staging area
+
+            // Generate the `.nuspec` file with some default values (file names, etc)
+
+            // Use NuGet API to generate the `.nupak` file
+
+            // Clean up staging area?
+        }
+
+        protected void btnImportClick( object sender, EventArgs e )
+        {
+            // var bytes = fuImport.FileBytes
+
+            // Read in `.nupak` file, validate/interrogate contents
+
+            // Unzip valid file into root directory (root packages directory?)
+
+            // Read `export.json` file contents and use
+            var page = Rock.Model.Page.FromJson( "" );
+            var pageService = new PageService();
+            pageService.Save( page, CurrentPerson.Id );
+
+            // Save copy of `.nupak` file to `ImortedPackages` folder?
         }
 
         #endregion
