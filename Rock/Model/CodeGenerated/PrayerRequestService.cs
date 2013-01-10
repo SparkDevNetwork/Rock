@@ -48,12 +48,6 @@ namespace Rock.Model
         public bool CanDelete( PrayerRequest item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<PrayerOffered>().Queryable().Any( a => a.PrayerRequestId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PrayerRequest.FriendlyTypeName, PrayerOffered.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }

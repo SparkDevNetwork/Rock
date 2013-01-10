@@ -108,7 +108,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [DataMember]
-        public DateTime ExpirationDate { get; set; }
+        public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
         /// Gets or sets the group id.
@@ -198,7 +198,7 @@ namespace Rock.Model
         /// The date the request was approved.
         /// </value>
         [DataMember]
-        public DateTime ApprovedOnDate { get; set; }
+        public DateTime? ApprovedOnDate { get; set; }
 
         #region Virtual Properties
         /// <summary>
@@ -262,20 +262,6 @@ namespace Rock.Model
                 return string.Format( "{0}, {1}", LastName, FirstName );
             }
         }
-
-        /// <summary>
-        /// Gets or sets the prayers offered.
-        /// </summary>
-        /// <value>
-        /// Collection of prayers offered.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<Note> PrayerComments
-        {
-            get { return _prayerComments ?? ( _prayerComments = new Collection<Note>() ); }
-            set { _prayerComments = value; }
-        }
-        private ICollection<Note> _prayerComments;
 
         #endregion
 
