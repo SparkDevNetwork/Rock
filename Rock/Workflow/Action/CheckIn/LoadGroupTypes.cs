@@ -9,6 +9,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.CheckIn;
+using Rock.Model;
+
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -32,6 +35,25 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
+                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    foreach ( var familyMember in family.FamilyMembers )
+                    {
+                        foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes )
+                        {
+                            if ( !familyMember.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                            {
+                                var checkinGroupType = new CheckInGroupType();
+                                checkinGroupType.GroupType = new GroupType();
+                                checkinGroupType.GroupType.CopyPropertiesFrom( kioskGroupType.GroupType );
+                                familyMember.GroupTypes.Add( checkinGroupType );
+                            }
+                        }
+                    }
+                }
+
+                SetCheckInState( action, checkInState );
                 return true;
             }
 
