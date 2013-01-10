@@ -8,11 +8,18 @@ declare
   @groupName nvarchar(100),
   @groupDescription nvarchar(max),
   @groupGuid nvarchar(max),
-  @groupCount int = 0,
-  @childGroupCount int = 0,
-  @childChildGroupCount int = 0
+  @regionCounter int = 0,
+  @maxRegions int = 10,  
+  @areaCounter int = 0,
+  @maxAreasPerRegion int = 25,
+  @groupCounter int = 0,
+  @maxGroupsPerArea int = 50
 
 begin
+
+select CONCAT('adding ', @maxRegions, ' group regions');
+select CONCAT('adding ', @maxRegions*@maxAreasPerRegion, ' group areas');
+select CONCAT('adding ', @maxRegions*@maxAreasPerRegion*@maxGroupsPerArea, ' groups');
 
 INSERT INTO [dbo].[GroupType]
            ([IsSystem]
@@ -61,49 +68,49 @@ select @groupTypeId = @@IDENTITY
 select @campusId = null;
 
 -- NG regions
-while @groupCount < 10
+while @regionCounter < @maxRegions
     begin
         select @groupGuid = NEWID();
-        select @groupName = 'Region ' + REPLACE(str(@groupCount, 2), ' ', '0');
+        select @groupName = 'Region ' + REPLACE(str(@regionCounter, 2), ' ', '0');
         select @groupDescription = 'Description of ' + @groupName;
         
         INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
                             VALUES (0,null,@regionGroupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
 
         select @regionGroupId = @@IDENTITY;
-        select @childGroupCount = 0
+        select @areaCounter = 0
 
         -- NG areas 
-        while @childGroupCount < 25
+        while @areaCounter < @maxAreasPerRegion
             begin
                 select @groupGuid = NEWID();
-                select @groupName = 'Area ' + REPLACE(str(@groupCount, 2), ' ', '0') + REPLACE(str(@childGroupCount, 2), ' ', '0');
+                select @groupName = 'Area ' + REPLACE(str(@regionCounter, 2), ' ', '0') + REPLACE(str(@areaCounter, 2), ' ', '0');
                 select @groupDescription = 'Description of ' + @groupName;
         
                 INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
                                     VALUES (0,@regionGroupId,@areaGroupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
 
                 select @areaGroupId = @@IDENTITY;
-                select @childChildGroupCount = 0
+                select @groupCounter = 0
         
                 -- NG groups
-                while @childChildGroupCount < 5
+                while @groupCounter < @maxGroupsPerArea
                     begin
                         select @groupGuid = NEWID();
-                        select @groupName = 'Group ' + REPLACE(str(@groupCount, 2), ' ', '0') + REPLACE(str(@childGroupCount, 2), ' ', '0') + REPLACE(str(@childChildGroupCount, 2), ' ', '0');
+                        select @groupName = 'Group ' + REPLACE(str(@regionCounter, 2), ' ', '0') + REPLACE(str(@areaCounter, 2), ' ', '0') + REPLACE(str(@groupCounter, 2), ' ', '0');
                         select @groupDescription = 'Description of ' + @groupName;
         
                         INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
                                             VALUES (0,@areaGroupId,@groupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
        
-                        set @childChildGroupCount += 1;
+                        set @groupCounter += 1;
                     end;
        
-                set @childGroupCount += 1;
+                set @areaCounter += 1;
             end;
         
        
-        set @groupCount += 1;
+        set @regionCounter += 1;
     end;
 
 end

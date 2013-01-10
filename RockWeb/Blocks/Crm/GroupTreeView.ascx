@@ -14,11 +14,26 @@
         <script>
             function onSelect(e) {
                 var groupId = this.dataItem(e.node).id;
+                showGroupDetails(groupId);
+            }
+
+            function showGroupDetails(groupId) {
                 __doPostBack('<%= upGroupType.ClientID %>', 'groupId=' + groupId);
             }
 
-            function onNavigate(e) {
-                //
+            function onDataBound(e) {
+                // automatically select the first item in the treeview if there isn't one currently selected
+                var treeViewData = $('.groupTreeview').data("kendoTreeView");
+                var selectedNode = treeViewData.select();
+                var nodeData = this.dataItem(selectedNode);
+                if (!nodeData) {
+                    var firstItem = treeViewData.root[0].firstChild;
+                    var firstDataItem = this.dataItem(firstItem);
+                    if (firstDataItem) {
+                        treeViewData.select(firstItem);
+                        showGroupDetails(firstDataItem.id);
+                    }
+                }
             }
 
             var restUrl = "<%=ResolveUrl( "~/api/groups/getchildren/" ) %>";
@@ -48,7 +63,7 @@
                 dataTextField: 'Name',
                 dataImageUrlField: 'GroupTypeIconSmallUrl',
                 select: onSelect,
-                navigate: onNavigate
+                dataBound: onDataBound
             });
         </script>
     </ContentTemplate>
