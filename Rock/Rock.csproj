@@ -226,6 +226,10 @@
     <Compile Include="Migrations\201301092105309_GroupViewer01.Designer.cs">
       <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.cs" />
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.Designer.cs">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -899,6 +903,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301092105309_GroupViewer01.resx">
       <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102215432_AddDeceasedFlag.resx">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

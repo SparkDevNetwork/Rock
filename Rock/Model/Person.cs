@@ -72,7 +72,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersonStatusValueId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets whether the person is deceased.
+        /// </summary>
+        /// <value>
+        /// deceased.
+        /// </value>
+        [DataMember]
+        public bool? IsDeceased 
+        {
+            get 
+            {
+                return _isDeceased;
+            }
+            set
+            {
+                if ( value.HasValue )
+                {
+                    _isDeceased = value.Value;
+                }
+                else
+                {
+                    _isDeceased = false;
+                }
+            }
+        }
+        private bool _isDeceased = false;
+
         /// <summary>
         /// Gets or sets the Title Id.
         /// </summary>
