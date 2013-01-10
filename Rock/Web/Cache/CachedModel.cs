@@ -18,6 +18,7 @@ namespace Rock.Web.Cache
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
+    [DataContract(IsReference=true)]
     public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
@@ -27,6 +28,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The id.
         /// </value>
+        [DataMember]
         public virtual int Id { get; set; }
 
         /// <summary>
@@ -35,6 +37,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The GUID.
         /// </value>
+        [DataMember]
         public virtual Guid Guid { get; set; }
 
         /// <summary>
@@ -224,11 +227,13 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The attribute ids
         /// </summary>
+        [DataMember]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
+        [DataMember]
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
@@ -247,6 +252,40 @@ namespace Rock.Web.Cache
                 {
                     Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personId );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the first value of an attribute key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                if ( this.AttributeValues[key].Count == 0 )
+                {
+                    this.AttributeValues[key].Add( new AttributeValue() );
+                }
+                this.AttributeValues[key][0].Value = value;
             }
         }
 

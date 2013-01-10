@@ -84,8 +84,7 @@
 <body>
     <form id="form1" runat="server">
     <div id="content">
-        <p class="heading1">Rock WCF Service Routes</p>
-        <p>This page lists the service routes in the Rock API</p>
+        <p class="heading1">Rock Web API Descriptions</p>
         <asp:GridView ID="gvRoutes" runat="server" AutoGenerateColumns="false" BorderWidth="0">
             <Columns>
                 <asp:BoundField DataField="RelativePath" HeaderText="RelativePath" />

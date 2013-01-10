@@ -413,8 +413,6 @@ namespace Rock.Web.UI
                             AddConfigElements();
                     }
 
-                    AddKendoScripts();
-
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
@@ -688,42 +686,18 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns the current page's value(s) for the selected attribute
-        /// If the attribute doesn't exist an empty string is returned.  If there
-        /// is more than one value for the attribute, the values are returned delimited
-        /// by a bar character (|).
+        /// Returns the current page's first value for the selected attribute
+        /// If the attribute doesn't exist, null is returned
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string AttributeValue( string key )
+        public string GetAttributeValue( string key )
         {
-            if ( CurrentPage == null )
-                return string.Empty;
-
-            if ( CurrentPage.AttributeValues == null )
-                return string.Empty;
-
-            if ( !CurrentPage.AttributeValues.ContainsKey( key ) )
-                return string.Empty;
-
-            return string.Join( "|", CurrentPage.AttributeValues[key] );
-        }
-
-        /// <summary>
-        /// Adds the kendo scripts.
-        /// </summary>
-        protected virtual void AddKendoScripts()
-        {
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.common.min.css" );
-            AddCSSLink( Page, "~/CSS/Kendo/kendo.bootstrap.min.css" );
-
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.core.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.upload.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.fx.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.popup.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.calendar.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.datepicker.min.js" );
-            AddScriptLink( Page, "~/scripts/Kendo/kendo.treeview.min.js" );
+            if ( CurrentPage != null )
+            {
+                return CurrentPage.GetAttributeValue( key );
+            }
+            return null;
         }
 
         /// <summary>
@@ -788,9 +762,6 @@ namespace Rock.Web.UI
         {
             // Add the page admin script
             AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
-            
-            // add the scripts for RockGrid
-            AddScriptLink( Page, "~/Scripts/Rock/grid.js" );
 
             AddBlockMove();
             // Add Zone Wrappers

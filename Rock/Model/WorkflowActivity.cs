@@ -167,15 +167,13 @@ namespace Rock.Model
 
             this.LastProcessedDateTime = DateTime.Now;
 
-            this.LoadAttributes();
-
             errorMessages = new List<string>();
 
             foreach ( var action in this.ActiveActions )
             {
                 List<string> actionErrorMessages;
                 bool actionSuccess = action.Process( entity, out actionErrorMessages );
-                errorMessages.Concat( actionErrorMessages );
+                errorMessages.AddRange( actionErrorMessages );
 
                 // If action was not successful, exit
                 if ( !actionSuccess )
@@ -268,6 +266,7 @@ namespace Rock.Model
             activity.Workflow = workflow;
             activity.ActivityType = activityType;
             activity.ActivatedDateTime = DateTime.Now;
+            activity.LoadAttributes();
 
             activity.AddSystemLogEntry( "Activated" );
 
@@ -275,6 +274,8 @@ namespace Rock.Model
             {
                 activity.Actions.Add( WorkflowAction.Activate(actionType, activity) );
             }
+
+            workflow.Activities.Add( activity );
 
             return activity;
         }
