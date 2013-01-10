@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    foreach ( var familyMember in family.FamilyMembers )
+                    foreach ( var familyMember in family.People )
                     {
                         foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes )
                         {

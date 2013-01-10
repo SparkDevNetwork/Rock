@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.CheckIn
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
-                        if ( family.FamilyMembers.Count == 1 )
+                        if ( family.People.Count == 1 )
                         {
                             if ( UserBackedUp )
                             {
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.CheckIn
                             }
                             else
                             {
-                                foreach ( var familyMember in family.FamilyMembers )
+                                foreach ( var familyMember in family.People )
                                 {
                                     familyMember.Selected = true;
                                 }
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            foreach ( var familyMember in family.FamilyMembers )
+                            foreach ( var familyMember in family.People )
                             {
                                 lbMembers.Items.Add( new ListItem( familyMember.ToString(), familyMember.Person.Id.ToString() ) );
                             }
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( family != null )
                     {
                         int id = Int32.Parse( lbMembers.SelectedItem.Value );
-                        var familyMember = family.FamilyMembers.Where( m => m.Person.Id == id ).FirstOrDefault();
+                        var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
                         if ( familyMember != null )
                         {
                             familyMember.Selected = true;
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.CheckIn
             foreach ( var family in CurrentCheckInState.CheckIn.Families )
             {
                 family.Selected = false;
-                family.FamilyMembers = new List<CheckInPerson>();
+                family.People = new List<CheckInPerson>();
             }
 
             SaveState();
