@@ -8,10 +8,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
 {
@@ -49,7 +49,7 @@ namespace Rock.Workflow.Action
 
             if (activityType != null)
             {
-                workflow.Activities.Add( WorkflowActivity.Activate( activityType, workflow ) );
+                WorkflowActivity.Activate( activityType, workflow );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
                 return true;
             }

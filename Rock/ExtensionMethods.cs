@@ -7,16 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -111,8 +109,15 @@ namespace Rock
             }
             else
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
-                return entityType.FriendlyName ?? entityType.Name;
+                if ( typeof(IEntity).IsAssignableFrom(type) )
+                {
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    return entityType.FriendlyName ?? SplitCase( type.Name );
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
         }
 
@@ -230,6 +235,16 @@ namespace Rock
         {
             var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
             return pluralizationService.Pluralize( str );
+        }
+
+        /// <summary>
+        /// Removes any non-numeric characters
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string AsNumeric( this string str )
+        {
+            return Regex.Replace( str, @"[^0-9]", "" );
         }
 
         #endregion
@@ -581,6 +596,17 @@ namespace Rock
                     ddl.SelectedIndex = 0;
             }
 
+        }
+
+        /// <summary>
+        /// Sets the read only value.
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
+        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add( value );
         }
 
         /// <summary>

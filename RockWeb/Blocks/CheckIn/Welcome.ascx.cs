@@ -6,151 +6,138 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
 
-using Rock.CheckIn;
-using Rock.Constants;
+using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Model;
-using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [TextField( 0, "Admin Page Url", "", "The url of the Check-In admin page", false, "~/checkin" )]
-    [TextField( 1, "Search Page Url", "", "The url of the Check-In admin page", false, "~/checkin/search" )]
-    [TextField( 2, "Family Select Page Url", "", "The url of the Check-In admin page", false, "~/checkin/selectfamily" )]
-    [IntegerField( 3, "Workflow Type Id", "0", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in" )]
-    public partial class Welcome : Rock.Web.UI.RockBlock
+    [Description( "Check-In Welcome block" )]
+    [IntegerField( 11, "Refresh Interval", "10", "RefreshInterval", "", "How often (seconds) should page automatically query server for new check-in data" )]
+    public partial class Welcome : CheckInBlock
     {
-        private KioskStatus _kiosk;
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            if ( CurrentCheckInState == null)
+            {
+                GoToAdminPage();
+                return;
+            }
+
+            CurrentPage.AddScriptLink( this.Page, "~/scripts/jquery.countdown.min.js" );
+
+            RegisterScript();
+        }
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && CurrentCheckInState != null )
             {
-                CurrentPage.AddScriptLink( this.Page, "~/scripts/jquery.countdown.min" );
-
-                string script = string.Format( @"
-Sys.Application.add_load(function () {{
-    window.setInterval(function() {{
-    }}, 1000);
-}});", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "checkInWelcomeInterval", script, true );
-
-                if ( Session["CheckInWorkflow"] != null )
-                {
-                    Session.Remove( "CheckInWorkflow" );
-                }
-
-                RefreshKioskData();
+                CurrentWorkflow = null;
+                SaveState();
+                RefreshView();
             }
         }
 
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
-            RefreshKioskData();
-        }
-
-        // TODO: Add support for scanner
-        private void SomeScannerSearch( DefinedValue searchType, string searchValue )
-        {
-            int workflowTypeId = 0;
-            if ( Int32.TryParse( AttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
-            {
-                var workflowTypeService = new WorkflowTypeService();
-                var workflowType = workflowTypeService.Get( workflowTypeId );
-
-                if ( workflowType != null )
-                {
-                    var workflow = Workflow.Activate( workflowType, _kiosk.Device.Name );
-
-                    var checkInState = new CheckInState( _kiosk );
-                    checkInState.CheckIn.UserEnteredSearch = false;
-                    checkInState.CheckIn.ConfirmSingleFamily = false;
-                    checkInState.CheckIn.SearchType = searchType;
-                    checkInState.CheckIn.SearchValue = searchValue;
-
-                    //workflow.AttributeValues["CheckInState"]  = checkInState;
-
-                    var activityType = workflowType.ActivityTypes.Where( a => a.Name == "Family Search" ).FirstOrDefault();
-                    if ( activityType != null )
-                    {
-                        WorkflowActivity.Activate( activityType, workflow );
-                        var errors = new List<string>();
-                        if ( workflow.Process( out errors ) )
-                        {
-                            Session["CheckInWorkflow"] = workflow;
-                            Response.Redirect( AttributeValue( "FamilySelectPageUrl" ), false );
-                        }
-                        else
-                        {
-                            //TODO: Display errors
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception( "Workflow type does not have a 'Family Search' activity type" );
-                    }
-
-                }
-            }
+            RefreshView();
         }
 
         protected void lbSearch_Click( object sender, EventArgs e )
         {
-            Response.Redirect( AttributeValue( "SearchPageUrl" ), false );
+            GoToSearchPage();
         }
 
-        private void RefreshKioskData()
+        private void RegisterScript()
+        {
+            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
+            // everytime the setting is set which is why the clearCountdown method is used to prevent 
+            // a plethora of partial postbacks occurring when the countdown expires.
+            string script = string.Format( @"
+
+var timeout = window.setTimeout(refreshKiosk, {1}000);
+
+var $ActiveWhen = $('.active-when');
+var $CountdownTimer = $('.countdown-timer');
+
+function refreshKiosk() {{
+    window.clearTimeout(timeout);
+    {0};
+}}
+
+function clearCountdown() {{
+    if ($ActiveWhen.text() != '')
+    {{
+        $ActiveWhen.text('');
+        refreshKiosk();
+    }}
+}}
+
+if ($ActiveWhen.text() != '')
+{{
+    var timeActive = new Date($ActiveWhen.text());
+    $CountdownTimer.countdown({{
+        until: timeActive, 
+        compact:true, 
+        layout:'{{dn}}{{dl}} {{hnn}}{{sep}}{{mnn}}{{sep}}{{snn}}',
+        onExpiry: clearCountdown
+    }});
+}}
+
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ), GetAttributeValue( "RefreshInterval" ) );
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
+        }
+
+        // TODO: Add support for scanner
+        private void SomeScannerSearch( DefinedValueCache searchType, string searchValue )
+        {
+            CurrentCheckInState.CheckIn.UserEnteredSearch = false;
+            CurrentCheckInState.CheckIn.ConfirmSingleFamily = false;
+            CurrentCheckInState.CheckIn.SearchType = searchType;
+            CurrentCheckInState.CheckIn.SearchValue = searchValue;
+
+            var errors = new List<string>();
+            if (ProcessActivity("Family Search", out errors))
+            {
+                SaveState();
+                GoToFamilySelectPage();
+            }
+            else
+            {
+                string errorMsg = "<ul><li>" + errors.AsDelimited("</li><li>") + "</li></ul>";
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
+        }
+
+        private void RefreshView()
         {
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
             pnlClosed.Visible = false;
             pnlActive.Visible = false;
 
-            if ( Session["CheckInKioskId"] == null || Session["CheckInGroupTypeIds"] == null )
-            {
-                Response.Redirect( AttributeValue( "AdminPageUrl" ), false );
-                return;
-            }
+            lblActiveWhen.Text = string.Empty;
 
-            int kioskId = (int)Session["CheckInKioskId"];
-            var groupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
-
-            _kiosk = KioskCache.GetKiosk( kioskId );
-
-            // Remove any group types that were not selected in the admin configuration
-            foreach ( var kioskGroupType in _kiosk.KioskGroupTypes.ToList() )
-            {
-                if ( !groupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
-                {
-                    _kiosk.KioskGroupTypes.Remove( kioskGroupType );
-                }
-            }
-
-            if ( _kiosk.KioskGroupTypes.Count == 0 )
+            if (CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
             {
                 pnlNotActive.Visible = true;
             }
-            else if ( !_kiosk.HasLocations )
+            else if ( !CurrentCheckInState.Kiosk.HasLocations )
             {
-                DateTimeOffset activeAt = _kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
-                lblTimeUntilActive.Text = activeAt.Subtract( DateTimeOffset.Now ).ToString();
-                string script = string.Format( @"
-Sys.Application.add_load(function () {{
-    var timeActive = new Date({0});
-    $('.coundown-timer').countdown({{until: timeActive, compact:true, layout:'{{dn}}{{dl}} {{hnn}}{{sep}}{{mnn}}{{sep}}{{snn}}'}});
-}});", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "checkInWelcomeInterval", script, true );
+                DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                lblActiveWhen.Text = activeAt.ToString();
                 pnlNotActiveYet.Visible = true;
             }
-            else if ( !_kiosk.HasActiveLocations )
+            else if ( !CurrentCheckInState.Kiosk.HasActiveLocations )
             {
                 pnlClosed.Visible = true;
             }
@@ -158,7 +145,6 @@ Sys.Application.add_load(function () {{
             {
                 pnlActive.Visible = true;
             }
-
         }
     }
 }

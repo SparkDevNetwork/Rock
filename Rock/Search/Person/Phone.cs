@@ -33,8 +33,8 @@ namespace Rock.Search.Person
         {
             get
             {
-                if ( !String.IsNullOrWhiteSpace( AttributeValue( "SearchLabel" ) ) )
-                    return AttributeValue( "SearchLabel" );
+                if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "SearchLabel" ) ) )
+                    return GetAttributeValue( "SearchLabel" );
                 else
                     return "Phone";
             }
@@ -47,8 +47,8 @@ namespace Rock.Search.Person
         {
             get
             {
-                if ( !String.IsNullOrWhiteSpace( AttributeValue( "ResultURL" ) ) )
-                    return AttributeValue( "ResultURL" );
+                if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "ResultURL" ) ) )
+                    return GetAttributeValue( "ResultURL" );
                 else
                     return string.Empty;
             }

@@ -1,23 +1,14 @@
 ﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
-<asp:Content ID="ctTwoColumnLeft" ContentPlaceHolderID="main" runat="server">
-
-    <script type="text/javascript">
-
-        Sys.Application.add_load(function () {
-            $('a.brand').attr('href', rock.baseUrl);
-        });
-
-    </script>
-
-
+<asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+    
     <div id="page-frame">
         <header id="page-header" class="navbar navbar-fixed-top">
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span3">
-                        <a class="brand">Rock ChMS</a>
+                        <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" Text="Rock ChMS" />
                     </div>
                     <div class="span9">
                         <div class="content pull-right">
@@ -29,7 +20,7 @@
                 <div class="row-fluid">
                     <div class="span12">
                         <Rock:Zone ID="Menu" runat="server" />
-                        <a href="#" id="header-lock">Lock</a>
+                        <a href="" id="header-lock">Lock</a>
                     </div>
                 </div>
             </div>
@@ -40,8 +31,7 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span3">
-                        <h1>
-                            <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+                        <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
                     </div>
                     <div class="span9">
                         <Rock:Zone ID="PageTitleBar" runat="server" />
@@ -53,11 +43,13 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
-                    <%-- Content Area --%>
 
+                    <%-- Content Area --%>
+                    
                     <div id="group-viewer" class="row-fluid">
-                        <div id="splitter">
-                            <div class="span3">
+                        <a href="#" onclick="javascript: $('#leftContentDiv').toggle(500);" >hide/show</a>
+                        <div id="vertical">
+                            <div id="leftContentDiv" class="span3" style="border-right: 1px solid #808080">
                                 <Rock:Zone ID="LeftContent" runat="server" />
                             </div>
                             <div class="span9">
@@ -65,7 +57,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <%-- End Content Area --%>
                 </div>
@@ -86,6 +77,21 @@
     </div>
 
     <script>
+        /*  kendoSplitter (not ready)
+        $(document).ready(function () {
+
+            
+            var splitter = $("#vertical");
+
+            splitter.kendoSplitter({
+                panes: [
+                    { size: "300px", collapsible: true, scrollable: false },
+                    { scrollable: false }
+                ]
+            });
+            
+        });
+        */
 
         /* script to manage header lock */
         $(document).ready(function () {

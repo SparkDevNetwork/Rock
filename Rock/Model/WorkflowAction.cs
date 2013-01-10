@@ -220,6 +220,7 @@ namespace Rock.Model
             var action = new WorkflowAction();
             action.Activity = activity;
             action.ActionType = actionType;
+            action.LoadAttributes();
 
             action.AddSystemLogEntry( "Activated" );
 

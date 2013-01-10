@@ -2,7 +2,12 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-    <span style="display:none"><asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton></span>
+    <Rock:ModalAlert ID="maWarning" runat="server" />
+
+    <span style="display:none">
+        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
+        <asp:Label ID="lblActiveWhen" runat="server" CssClass="active-when" />
+    </span>
 
     <asp:Panel ID="pnlNotActive" runat="server">
         <h2>Not Active</h2>
@@ -11,7 +16,7 @@
 
     <asp:Panel ID="pnlNotActiveYet" runat="server">
         <h2>Not Active Yet</h2>
-        <p>This kiosk is not active yet.  Countdown until active: <asp:label CssClass="countdown-timer" ID="lblTimeUntilActive" runat="server"></asp:label> </p>
+        <p>This kiosk is not active yet.  Countdown until active: <span class="countdown-timer"></span>  </p>
         <asp:HiddenField ID="hfActiveTime" runat="server" />
     </asp:Panel>
 
