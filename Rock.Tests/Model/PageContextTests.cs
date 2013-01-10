@@ -19,8 +19,7 @@ namespace Rock.Tests.Model
             public void ShouldCopyEntity()
             {
                 var pageContext = new PageContext { Guid = Guid.NewGuid() };
-                var result = new PageContext();
-                result.CopyPropertiesFrom( pageContext );
+                var result = pageContext.Clone( false );
                 Assert.AreEqual( result.Guid, pageContext.Guid );
             }
         }

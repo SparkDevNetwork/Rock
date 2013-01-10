@@ -20,8 +20,7 @@ namespace Rock.Tests.Model
             public void ShouldCopyProperties()
             {
                 var blockType = new BlockType {Name = "some block type"};
-                var result = new BlockType();
-                result.CopyPropertiesFrom( blockType );
+                var result = blockType.Clone( false );
                 Assert.AreEqual( result.Name, blockType.Name );
             }
         }

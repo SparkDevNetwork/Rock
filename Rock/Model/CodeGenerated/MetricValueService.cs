@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class MetricValueExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another MetricValue entity
+        /// Clones this MetricValue object to a new MetricValue object
         /// </summary>
-        public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MetricValue Clone( this MetricValue source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.MetricId = source.MetricId;
-            target.Value = source.Value;
-            target.Description = source.Description;
-            target.xValue = source.xValue;
-            target.isDateBased = source.isDateBased;
-            target.Label = source.Label;
-            target.Order = source.Order;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as MetricValue;
+            }
+            else
+            {
+                var target = new MetricValue();
+                target.IsSystem = source.IsSystem;
+                target.MetricId = source.MetricId;
+                target.Value = source.Value;
+                target.Description = source.Description;
+                target.xValue = source.xValue;
+                target.isDateBased = source.isDateBased;
+                target.Label = source.Label;
+                target.Order = source.Order;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

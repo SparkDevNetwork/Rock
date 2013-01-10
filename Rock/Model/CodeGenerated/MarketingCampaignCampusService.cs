@@ -58,15 +58,28 @@ namespace Rock.Model
     public static class MarketingCampaignCampusExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another MarketingCampaignCampus entity
+        /// Clones this MarketingCampaignCampus object to a new MarketingCampaignCampus object
         /// </summary>
-        public static void CopyPropertiesFrom( this MarketingCampaignCampus target, MarketingCampaignCampus source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaignCampus Clone( this MarketingCampaignCampus source, bool deepCopy )
         {
-            target.MarketingCampaignId = source.MarketingCampaignId;
-            target.CampusId = source.CampusId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaignCampus;
+            }
+            else
+            {
+                var target = new MarketingCampaignCampus();
+                target.MarketingCampaignId = source.MarketingCampaignId;
+                target.CampusId = source.CampusId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

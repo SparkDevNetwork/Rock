@@ -58,22 +58,35 @@ namespace Rock.Model
     public static class HtmlContentExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another HtmlContent entity
+        /// Clones this HtmlContent object to a new HtmlContent object
         /// </summary>
-        public static void CopyPropertiesFrom( this HtmlContent target, HtmlContent source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static HtmlContent Clone( this HtmlContent source, bool deepCopy )
         {
-            target.BlockId = source.BlockId;
-            target.EntityValue = source.EntityValue;
-            target.Version = source.Version;
-            target.Content = source.Content;
-            target.IsApproved = source.IsApproved;
-            target.ApprovedByPersonId = source.ApprovedByPersonId;
-            target.ApprovedDateTime = source.ApprovedDateTime;
-            target.StartDateTime = source.StartDateTime;
-            target.ExpireDateTime = source.ExpireDateTime;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as HtmlContent;
+            }
+            else
+            {
+                var target = new HtmlContent();
+                target.BlockId = source.BlockId;
+                target.EntityValue = source.EntityValue;
+                target.Version = source.Version;
+                target.Content = source.Content;
+                target.IsApproved = source.IsApproved;
+                target.ApprovedByPersonId = source.ApprovedByPersonId;
+                target.ApprovedDateTime = source.ApprovedDateTime;
+                target.StartDateTime = source.StartDateTime;
+                target.ExpireDateTime = source.ExpireDateTime;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

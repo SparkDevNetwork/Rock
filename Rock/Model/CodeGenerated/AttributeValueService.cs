@@ -58,18 +58,31 @@ namespace Rock.Model
     public static class AttributeValueExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another AttributeValue entity
+        /// Clones this AttributeValue object to a new AttributeValue object
         /// </summary>
-        public static void CopyPropertiesFrom( this AttributeValue target, AttributeValue source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static AttributeValue Clone( this AttributeValue source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.AttributeId = source.AttributeId;
-            target.EntityId = source.EntityId;
-            target.Order = source.Order;
-            target.Value = source.Value;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as AttributeValue;
+            }
+            else
+            {
+                var target = new AttributeValue();
+                target.IsSystem = source.IsSystem;
+                target.AttributeId = source.AttributeId;
+                target.EntityId = source.EntityId;
+                target.Order = source.Order;
+                target.Value = source.Value;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

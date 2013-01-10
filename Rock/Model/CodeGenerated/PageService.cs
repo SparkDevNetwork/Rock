@@ -70,31 +70,44 @@ namespace Rock.Model
     public static class PageExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Page entity
+        /// Clones this Page object to a new Page object
         /// </summary>
-        public static void CopyPropertiesFrom( this Page target, Page source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Page Clone( this Page source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.ParentPageId = source.ParentPageId;
-            target.Title = source.Title;
-            target.IsSystem = source.IsSystem;
-            target.SiteId = source.SiteId;
-            target.Layout = source.Layout;
-            target.RequiresEncryption = source.RequiresEncryption;
-            target.EnableViewState = source.EnableViewState;
-            target.MenuDisplayDescription = source.MenuDisplayDescription;
-            target.MenuDisplayIcon = source.MenuDisplayIcon;
-            target.MenuDisplayChildPages = source.MenuDisplayChildPages;
-            target.DisplayInNavWhen = source.DisplayInNavWhen;
-            target.IconCssClass = source.IconCssClass;
-            target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
-            target.Description = source.Description;
-            target.IconFileId = source.IconFileId;
-            target.IncludeAdminFooter = source.IncludeAdminFooter;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Page;
+            }
+            else
+            {
+                var target = new Page();
+                target.Name = source.Name;
+                target.ParentPageId = source.ParentPageId;
+                target.Title = source.Title;
+                target.IsSystem = source.IsSystem;
+                target.SiteId = source.SiteId;
+                target.Layout = source.Layout;
+                target.RequiresEncryption = source.RequiresEncryption;
+                target.EnableViewState = source.EnableViewState;
+                target.MenuDisplayDescription = source.MenuDisplayDescription;
+                target.MenuDisplayIcon = source.MenuDisplayIcon;
+                target.MenuDisplayChildPages = source.MenuDisplayChildPages;
+                target.DisplayInNavWhen = source.DisplayInNavWhen;
+                target.IconCssClass = source.IconCssClass;
+                target.Order = source.Order;
+                target.OutputCacheDuration = source.OutputCacheDuration;
+                target.Description = source.Description;
+                target.IconFileId = source.IconFileId;
+                target.IncludeAdminFooter = source.IncludeAdminFooter;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

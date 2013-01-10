@@ -45,8 +45,7 @@ namespace Rock.Workflow.Action.CheckIn
                             if ( !familyMember.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                             {
                                 var checkinGroupType = new CheckInGroupType();
-                                checkinGroupType.GroupType = new GroupType();
-                                checkinGroupType.GroupType.CopyPropertiesFrom( kioskGroupType.GroupType );
+                                checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
                                 familyMember.GroupTypes.Add( checkinGroupType );
                             }
                         }

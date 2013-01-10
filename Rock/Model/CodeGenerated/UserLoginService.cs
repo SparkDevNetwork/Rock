@@ -58,29 +58,42 @@ namespace Rock.Model
     public static class UserLoginExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another UserLogin entity
+        /// Clones this UserLogin object to a new UserLogin object
         /// </summary>
-        public static void CopyPropertiesFrom( this UserLogin target, UserLogin source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static UserLogin Clone( this UserLogin source, bool deepCopy )
         {
-            target.ServiceType = source.ServiceType;
-            target.ServiceName = source.ServiceName;
-            target.UserName = source.UserName;
-            target.Password = source.Password;
-            target.IsConfirmed = source.IsConfirmed;
-            target.LastActivityDate = source.LastActivityDate;
-            target.LastLoginDate = source.LastLoginDate;
-            target.LastPasswordChangedDate = source.LastPasswordChangedDate;
-            target.CreationDate = source.CreationDate;
-            target.IsOnLine = source.IsOnLine;
-            target.IsLockedOut = source.IsLockedOut;
-            target.LastLockedOutDate = source.LastLockedOutDate;
-            target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
-            target.FailedPasswordAttemptWindowStart = source.FailedPasswordAttemptWindowStart;
-            target.ApiKey = source.ApiKey;
-            target.PersonId = source.PersonId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as UserLogin;
+            }
+            else
+            {
+                var target = new UserLogin();
+                target.ServiceType = source.ServiceType;
+                target.ServiceName = source.ServiceName;
+                target.UserName = source.UserName;
+                target.Password = source.Password;
+                target.IsConfirmed = source.IsConfirmed;
+                target.LastActivityDate = source.LastActivityDate;
+                target.LastLoginDate = source.LastLoginDate;
+                target.LastPasswordChangedDate = source.LastPasswordChangedDate;
+                target.CreationDate = source.CreationDate;
+                target.IsOnLine = source.IsOnLine;
+                target.IsLockedOut = source.IsLockedOut;
+                target.LastLockedOutDate = source.LastLockedOutDate;
+                target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
+                target.FailedPasswordAttemptWindowStart = source.FailedPasswordAttemptWindowStart;
+                target.ApiKey = source.ApiKey;
+                target.PersonId = source.PersonId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

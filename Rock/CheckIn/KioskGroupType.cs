@@ -66,8 +66,7 @@ namespace Rock.CheckIn
         public KioskGroupType( GroupType groupType )
             : base()
         {
-            GroupType = new GroupType();
-            GroupType.CopyPropertiesFrom( groupType );
+            GroupType = groupType.Clone( false );
             KioskLocations = new List<KioskLocation>();
         }
     }
