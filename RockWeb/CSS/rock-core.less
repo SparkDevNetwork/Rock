@@ -85,7 +85,10 @@
 .config-bar  a i[class^="icon-"] {
     float: left;
     margin-left: 5px;
-    margin-top: 7px;
+    margin-top: 3px;
+    font-size: 18px;
+    color: @rockSecondaryTextColor;
+    margin-right: 10px;
 }
 
 .block-configuration-bar {
@@ -99,9 +102,10 @@
     position: absolute;
 }
 
-.block-configuration-bar a i
+.block-configuration-bar .btn
 {
-    margin-right: 12px;   
+    margin-right: 12px;
+    color: @rockSecondaryTextColor;   
 }
 
 .block-configuration-bar span {
@@ -456,11 +460,31 @@ span.cke_skin_kama {
     display: none; 
 }
 
-/* page list as blocks */
-.page-list-as-blocks h1 
+/* widget wrapper*/
+.widget
 {
-    font-size: 16px;   
+    background-color: @rockWidgetBackground;
+    border: 1px solid @tableBorder;
+    border-radius: @baseBorderRadius;
 }
+
+.widget h3 
+{
+    font-size: 15px;  
+    line-height: 15px;
+    margin: 0 0 6px 0;
+}
+
+.widget header
+{
+    .header-gradient ();
+    padding: 6px;
+    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
+    border-bottom: 1px solid @tableBorder;
+    margin-bottom: 24px;
+}
+
+/* page list as blocks */
 
 .page-list-as-blocks ul 
 {
@@ -469,23 +493,34 @@ span.cke_skin_kama {
 
 .page-list-as-blocks li 
 {
-    background-color: #D6D6D6;
+    background-color: @rockPageTitleBackground;
     border-radius: 6px 6px 6px 6px;
     border: 1px solid #bbb;
     float: left;
-    margin: 0 12px 12px 0;
-    width: 330px;
+    margin: 0 2% 12px 2%;
+    width: 20%;
+    overflow: hidden;
+    color: @rockSecondaryTextColor;
+    text-align: center;
 }
 
+    
 .page-list-as-blocks li a 
 {
     display: block;
     color: inherit;
-    height: 80px;
+    height: 75px;
     padding: 12px;
+}
+
+.page-list-as-blocks li a:hover
+{
+    text-decoration: none;
 }
 
 .page-list-as-blocks h4
 {
     margin-top: 0;
+    font-size: 14px;
+    margin: 6px 0;
 }

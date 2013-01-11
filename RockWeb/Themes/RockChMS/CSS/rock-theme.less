@@ -105,9 +105,9 @@ body {  background-image: url('../Assets/Images/light-texture.png');
 	font-size: 11px;
 }
 
-.pagenav-item i {
+.pagenav-item i[class^='icon-'] {
 	display: block;
-	margin: auto auto;
+	margin: 6px auto 2px;
 	font-size: 18px;
 }
 
@@ -251,10 +251,12 @@ body {  background-image: url('../Assets/Images/light-texture.png');
 	color: @rockCalloutColor;
 }
 
-//
-// 6. Layout Spefic Styles
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// // 6. Layout Spefic Styles // // < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+
+.body-content
+{
+    margin-bottom: 24px;
+}
 
 #splash {
     background-image: url('../Assets/Images/header-texture.png');
