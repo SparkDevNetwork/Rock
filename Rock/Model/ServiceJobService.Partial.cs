@@ -17,7 +17,7 @@ namespace Rock.Model
     /// <summary>
     /// Job POCO Service class
     /// </summary>
-    public partial class ServiceJobService : Service<ServiceJob, ServiceJobDto>
+    public partial class ServiceJobService 
     {
         /// <summary>
         /// Gets the active jobs.
@@ -60,7 +60,7 @@ namespace Rock.Model
 
             JobDataMap map = new JobDataMap();
 
-            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValueDto>> attrib in job.AttributeValues )
+            foreach ( KeyValuePair<string, List<Rock.Model.AttributeValue>> attrib in job.AttributeValues )
             {
                 map.Add( attrib.Key, attrib.Value[0].Value );
             }

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Administration
         {
             try
             {
-                _entityTypeName = AttributeValue( "DefinedType" );
+                _entityTypeName = GetAttributeValue( "DefinedType" );
                 _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( _entityTypeName );
                 _entityQualifier = "DefinedTypeId";
                 _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void tFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            tFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
+            tFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
 
             rGridType_Bind();
         }

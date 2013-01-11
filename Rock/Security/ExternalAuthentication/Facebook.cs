@@ -50,7 +50,7 @@ namespace Rock.Security.ExternalAuthentication
             var redirectUri = new Uri( GetRedirectUrl( request ));
 
             dynamic parameters = new ExpandoObject();
-            parameters.client_id = AttributeValue( "AppID" );
+            parameters.client_id = GetAttributeValue( "AppID" );
             parameters.display = "popup";
             parameters.redirect_uri = redirectUri.AbsoluteUri;
             parameters.scope = "user_birthday,email,read_stream,read_friendlists";
@@ -80,8 +80,8 @@ namespace Rock.Security.ExternalAuthentication
                     var redirectUri = new Uri( GetRedirectUrl( request ) );
 
                     dynamic parameters = new ExpandoObject();
-                    parameters.client_id = AttributeValue( "AppID" );
-                    parameters.client_secret = AttributeValue( "AppSecret" );
+                    parameters.client_id = GetAttributeValue( "AppID" );
+                    parameters.client_secret = GetAttributeValue( "AppSecret" );
                     parameters.redirect_uri = redirectUri.AbsoluteUri; 
                     parameters.code = oAuthResult.Code;
 
@@ -94,8 +94,8 @@ namespace Rock.Security.ExternalAuthentication
                     string facebookId = "FACEBOOK_" + me.id.ToString();
 
                     // query for matching id in the user table 
-                    UserService userService = new UserService();
-                    var user = userService.GetByUserName( facebookId );
+                    var userLoginService = new UserLoginService();
+                    var user = userLoginService.GetByUserName( facebookId );
 
                     // if not user was found see if we can find a match in the person table
                     if ( user == null )
@@ -152,7 +152,7 @@ namespace Rock.Security.ExternalAuthentication
                                 personService.Save( person, null );
                             }
 
-                            user = userService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
+                            user = userLoginService.Create( person, AuthenticationServiceType.External, this.GetType().FullName, facebookId, "fb", true, person.Id );
                         }
                         catch ( Exception ex )
                         {

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// PageContexts REST API
     /// </summary>
-    public partial class PageContextsController : Rock.Rest.ApiController<Rock.Model.PageContext, Rock.Model.PageContextDto>
+    public partial class PageContextsController : Rock.Rest.ApiController<Rock.Model.PageContext>
     {
         public PageContextsController() : base( new Rock.Model.PageContextService() ) { } 
     }

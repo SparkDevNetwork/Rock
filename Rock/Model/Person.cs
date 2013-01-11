@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
@@ -18,6 +19,7 @@ namespace Rock.Model
     /// Person POCO Entity.
     /// </summary>
     [Table( "Person" )]
+    [DataContract( IsReference = true )]
     public partial class Person : Model<Person>
     {
         /// <summary>
@@ -32,6 +34,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -40,6 +43,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? RecordTypeValueId { get; set; }
         
         /// <summary>
@@ -48,6 +52,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? RecordStatusValueId { get; set; }
         
         /// <summary>
@@ -56,6 +61,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? RecordStatusReasonValueId { get; set; }
         
         /// <summary>
@@ -64,14 +70,43 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? PersonStatusValueId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets whether the person is deceased.
+        /// </summary>
+        /// <value>
+        /// deceased.
+        /// </value>
+        [DataMember]
+        public bool? IsDeceased 
+        {
+            get 
+            {
+                return _isDeceased;
+            }
+            set
+            {
+                if ( value.HasValue )
+                {
+                    _isDeceased = value.Value;
+                }
+                else
+                {
+                    _isDeceased = false;
+                }
+            }
+        }
+        private bool _isDeceased = false;
+
         /// <summary>
         /// Gets or sets the Title Id.
         /// </summary>
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? TitleValueId { get; set; }
         
         /// <summary>
@@ -81,6 +116,7 @@ namespace Rock.Model
         /// Given Name.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string GivenName { get; set; }
 
         /// <summary>
@@ -91,6 +127,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [TrackChanges]
+        [DataMember]
         public string NickName { get; set; }
 
         /// <summary>
@@ -101,6 +138,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [TrackChanges]
+        [DataMember]
         public string LastName { get; set; }
         
         /// <summary>
@@ -109,6 +147,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? SuffixValueId { get; set; }
         
         /// <summary>
@@ -117,6 +156,7 @@ namespace Rock.Model
         /// <value>
         /// Photo Id.
         /// </value>
+        [DataMember]
         public int? PhotoId { get; set; }
         
         /// <summary>
@@ -125,6 +165,7 @@ namespace Rock.Model
         /// <value>
         /// Birth Day.
         /// </value>
+        [DataMember]
         public int? BirthDay { get; set; }
         
         /// <summary>
@@ -133,6 +174,7 @@ namespace Rock.Model
         /// <value>
         /// Birth Month.
         /// </value>
+        [DataMember]
         public int? BirthMonth { get; set; }
         
         /// <summary>
@@ -141,6 +183,7 @@ namespace Rock.Model
         /// <value>
         /// Birth Year.
         /// </value>
+        [DataMember]
         public int? BirthYear { get; set; }
         
         /// <summary>
@@ -150,6 +193,7 @@ namespace Rock.Model
         /// Enum[Gender].
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -158,6 +202,7 @@ namespace Rock.Model
         /// <value>
         /// .
         /// </value>
+        [DataMember]
         public int? MaritalStatusValueId { get; set; }
         
         /// <summary>
@@ -166,6 +211,7 @@ namespace Rock.Model
         /// <value>
         /// Anniversary Date.
         /// </value>
+        [DataMember]
         public DateTime? AnniversaryDate { get; set; }
         
         /// <summary>
@@ -174,6 +220,7 @@ namespace Rock.Model
         /// <value>
         /// Graduation Date.
         /// </value>
+        [DataMember]
         public DateTime? GraduationDate { get; set; }
         
         /// <summary>
@@ -183,6 +230,7 @@ namespace Rock.Model
         /// Email.
         /// </value>
         [MaxLength( 75 )]
+        [DataMember]
         public string Email { get; set; }
         
         /// <summary>
@@ -191,6 +239,7 @@ namespace Rock.Model
         /// <value>
         /// Email Is Active.
         /// </value>
+        [DataMember]
         public bool? IsEmailActive { get; set; }
         
         /// <summary>
@@ -200,6 +249,7 @@ namespace Rock.Model
         /// Email Note.
         /// </value>
         [MaxLength( 250 )]
+        [DataMember]
         public string EmailNote { get; set; }
         
         /// <summary>
@@ -209,6 +259,7 @@ namespace Rock.Model
         /// Do Not Email.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool DoNotEmail { get; set; }
         
         /// <summary>
@@ -218,6 +269,7 @@ namespace Rock.Model
         /// System Note.
         /// </value>
         [MaxLength( 1000 )]
+        [DataMember]
         public string SystemNote { get; set; }
         
         /// <summary>
@@ -226,33 +278,16 @@ namespace Rock.Model
         /// <value>
         /// Viewed Count.
         /// </value>
+        [DataMember]
         public int? ViewedCount { get; set; }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Person Read( int id )
-        {
-            return Read<Person>( id );
-        }
-        
         /// <summary>
         /// Gets or sets the Users.
         /// </summary>
         /// <value>
         /// Collection of Users.
         /// </value>
+        [DataMember]
         public virtual ICollection<Model.UserLogin> Users { get; set; }
         
         /// <summary>
@@ -261,6 +296,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Email Templates.
         /// </value>
+        [DataMember]
         public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
         
         /// <summary>
@@ -269,6 +305,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Phone Numbers.
         /// </value>
+        [DataMember]
         public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
         
         /// <summary>
@@ -277,6 +314,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Members.
         /// </value>
+        [DataMember]
         public virtual ICollection<Model.GroupMember> Members { get; set; }
 
         /// <summary>
@@ -285,6 +323,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of Pledges.
         /// </value>
+        [DataMember]
         public virtual ICollection<Model.Pledge> Pledges { get; set; }
 
         /// <summary>
@@ -293,6 +332,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of PersonAccountLookups.
         /// </value>
+        [DataMember]
         public virtual ICollection<Model.PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
@@ -301,6 +341,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue MaritalStatusValue { get; set; }
         
         /// <summary>
@@ -309,6 +350,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue PersonStatusValue { get; set; }
         
         /// <summary>
@@ -317,6 +359,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue RecordStatusValue { get; set; }
         
         /// <summary>
@@ -325,6 +368,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue RecordStatusReasonValue { get; set; }
         
         /// <summary>
@@ -333,6 +377,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue RecordTypeValue { get; set; }
         
         /// <summary>
@@ -341,6 +386,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue SuffixValue { get; set; }
         
         /// <summary>
@@ -349,11 +395,13 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Model.DefinedValue"/> object.
         /// </value>
+        [DataMember]
         public virtual Model.DefinedValue TitleValue { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
+        [DataMember]
         public virtual Model.BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -396,6 +444,7 @@ namespace Rock.Model
         /// The birth date.
         /// </value>
         [NotMapped]
+        [DataMember]
         public virtual DateTime? BirthDate
         {
             // notes

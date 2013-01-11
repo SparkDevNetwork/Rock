@@ -14,10 +14,10 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    [IntegerField( 0, "Group Type", "0", null, "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed")]
+    [IntegerField( 0, "Group Type", "0", null, "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed" )]
     [TextField( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
-    [BooleanField( 2, "Include Self", false, null, "Behavior", "Should the current person be included in list of group members?")]
-    [BooleanField( 3, "Include Locations", false, null, "Behavior", "Should locations be included?")]
+    [BooleanField( 2, "Include Self", false, null, "Behavior", "Should the current person be included in list of group members?" )]
+    [BooleanField( 3, "Include Locations", false, null, "Behavior", "Should locations be included?" )]
     [TextField( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             int GroupTypeId = 0;
 
-            if ( !Int32.TryParse( AttributeValue( "GroupType" ), out GroupTypeId ) )
+            if ( !Int32.TryParse( GetAttributeValue( "GroupType" ), out GroupTypeId ) )
                 GroupTypeId = 0;
 
             if ( GroupTypeId == 0 )
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     .FirstOrDefault();
 
             var filterRoles = new List<int>();
-            foreach ( string stringRoleId in AttributeValue( "GroupRoleFilter" ).SplitDelimitedValues() )
+            foreach ( string stringRoleId in GetAttributeValue( "GroupRoleFilter" ).SplitDelimitedValues() )
             {
                 int roleId = 0;
                 if ( Int32.TryParse( stringRoleId, out roleId ) )
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Name = m.Group.Name,
                     Role = m.GroupRole.Name,
                     Type = m.Group.GroupType.Name,
-                    Locations = m.Group.Locations,
+                    GroupLocations = m.Group.GroupLocations,
                 }
                     ) )
             {
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     new XAttribute( "name", group.Name ),
                     new XAttribute( "role", group.Role ),
                     new XAttribute( "type", group.Type ),
-                    new XAttribute( "class-name", group.Type.ToLower().Replace(' ', '-') )
+                    new XAttribute( "class-name", group.Type.ToLower().Replace( ' ', '-' ) )
                     );
                 groupsElement.Add( groupElement );
 
@@ -80,16 +80,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupElement.Add( membersElement );
 
                 bool includeSelf = false;
-                if (!Boolean.TryParse(AttributeValue("IncludeSelf"), out includeSelf))
+                if ( !Boolean.TryParse( GetAttributeValue( "IncludeSelf" ), out includeSelf ) )
                 {
                     includeSelf = false;
                 }
 
                 int groupId = group.Id;
                 foreach ( dynamic member in memberService.Queryable()
-                    .Where( m => 
-                        m.GroupId == groupId && 
-                        (includeSelf || m.PersonId != Person.Id ))
+                    .Where( m =>
+                        m.GroupId == groupId &&
+                        ( includeSelf || m.PersonId != Person.Id ) )
                     .Select( m => new
                     {
                         Id = m.PersonId,
@@ -110,32 +110,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         ) );
                 }
 
-                if ( Convert.ToBoolean( AttributeValue( "IncludeLocations" ) ) )
+                if ( Convert.ToBoolean( GetAttributeValue( "IncludeLocations" ) ) )
                 {
                     var locationsElement = new XElement( "locations" );
                     groupElement.Add( locationsElement );
 
-                    foreach ( GroupLocation location in group.Locations )
+                    foreach ( GroupLocation groupLocation in group.GroupLocations )
                     {
                         var locationElement = new XElement( "location",
-                            new XAttribute( "id", location.LocationId.ToString() ),
-                            new XAttribute( "type", location.LocationTypeValueId.HasValue ?
-                                Rock.Web.Cache.DefinedValueCache.Read( location.LocationTypeValueId.Value ).Name : "Unknown" ) );
-                        if ( location.Location != null )
+                            new XAttribute( "id", groupLocation.LocationId.ToString() ),
+                            new XAttribute( "type", groupLocation.LocationTypeValueId.HasValue ?
+                                Rock.Web.Cache.DefinedValueCache.Read( groupLocation.LocationTypeValueId.Value ).Name : "Unknown" ) );
+                        if ( groupLocation.Location != null )
                         {
                             var addressElement = new XElement( "address" );
-                            if ( !String.IsNullOrWhiteSpace( location.Location.Street1 ) )
+                            if ( !String.IsNullOrWhiteSpace( groupLocation.Location.Street1 ) )
                             {
-                                addressElement.Add( new XAttribute( "street1", location.Location.Street1 ) );
+                                addressElement.Add( new XAttribute( "street1", groupLocation.Location.Street1 ) );
                             }
-                            if ( !String.IsNullOrWhiteSpace( location.Location.Street2 ) )
+                            if ( !String.IsNullOrWhiteSpace( groupLocation.Location.Street2 ) )
                             {
-                                addressElement.Add( new XAttribute( "street2", location.Location.Street2 ) );
+                                addressElement.Add( new XAttribute( "street2", groupLocation.Location.Street2 ) );
                             }
                             addressElement.Add(
-                                new XAttribute( "city", location.Location.City ),
-                                new XAttribute( "state", location.Location.State ),
-                                new XAttribute( "zip", location.Location.Zip ) );
+                                new XAttribute( "city", groupLocation.Location.City ),
+                                new XAttribute( "state", groupLocation.Location.State ),
+                                new XAttribute( "zip", groupLocation.Location.Zip ) );
                             locationElement.Add( addressElement );
                         }
                         locationsElement.Add( locationElement );
@@ -143,28 +143,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), groupsElement );
-            }
-        }
 
-        protected override void Render( System.Web.UI.HtmlTextWriter writer )
-        {
-            try
-            {
-                if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
-                {
-                    string xsltFile = AttributeValue( "XsltFile" );
-                    if ( !String.IsNullOrEmpty( xsltFile ) )
-                    {
-                        string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
-                        var xslt = new XslCompiledTransform();
-                        xslt.Load( xsltPath );
-                        xslt.Transform( xDocument.CreateReader(), null, writer );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                writer.Write( "Error: " + ex.Message );
+                xmlContent.DocumentContent = xDocument.ToString();
+                xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
             }
         }
     }

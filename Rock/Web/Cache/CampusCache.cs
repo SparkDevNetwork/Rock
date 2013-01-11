@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
+using Rock.Model;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -15,10 +17,71 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class CampusCache : Rock.Model.CampusDto
+    public class CampusCache : CachedModel<Campus>
     {
-        private CampusCache() : base() { }
-        private CampusCache( Rock.Model.Campus model ) : base( model) { }
+        #region Constructors
+
+        private CampusCache() 
+        {
+        }
+
+        private CampusCache( Campus campus )
+        {
+            CopyFromModel( campus );
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is system.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
+        {
+            base.CopyFromModel( model );
+
+            if ( model is Campus )
+            {
+                var campus = (Campus)model;
+                this.IsSystem = campus.IsSystem;
+                this.Name = campus.Name;
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
 
         #region Static Methods
 
@@ -30,29 +93,6 @@ namespace Rock.Web.Cache
         public static string CacheKey( int id )
         {
             return string.Format( "Rock:Campus:{0}", id );
-        }
-
-        /// <summary>
-        /// Adds Campus model to cache, and returns cached object
-        /// </summary>
-        /// <param name="campusModel"></param>
-        /// <returns></returns>
-        public static CampusCache Read( Rock.Model.Campus campusModel )
-        {
-            string cacheKey = CampusCache.CacheKey( campusModel.Id );
-
-            ObjectCache cache = MemoryCache.Default;
-            CampusCache campus = cache[cacheKey] as CampusCache;
-
-            if ( campus != null )
-                return campus;
-            else
-            {
-                campus = CampusCache.CopyModel( campusModel );
-                cache.Set( cacheKey, campus, new CacheItemPolicy() );
-
-                return campus;
-            }
         }
 
         /// <summary>
@@ -69,33 +109,92 @@ namespace Rock.Web.Cache
             CampusCache campus = cache[cacheKey] as CampusCache;
 
             if ( campus != null )
+            {
                 return campus;
+            }
             else
             {
-                Rock.Model.CampusService campusService = new Rock.Model.CampusService();
-                Rock.Model.Campus campusModel = campusService.Get( id );
+                CampusService campusService = new CampusService();
+                Campus campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
                     campusModel.LoadAttributes();
+                    campus = new CampusCache( campusModel );
 
-                    campus = CampusCache.CopyModel( campusModel );
- 
-                    cache.Set( cacheKey, campus, new CacheItemPolicy() );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, campus, cachePolicy );
+                    cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
+                    
+                    return campus;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static CampusCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var campusService = new CampusService();
+                var campusModel = campusService.Get( guid );
+                if ( campusModel != null )
+                {
+                    campusModel.LoadAttributes();
+                    var campus = new CampusCache( campusModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( CampusCache.CacheKey( campus.Id ), campus, cachePolicy );
+                    cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
 
                     return campus;
                 }
                 else
+                {
                     return null;
-
+                }
             }
         }
-
-        // Copies the Model object to the Cached object
-        private static CampusCache CopyModel( Rock.Model.Campus campusModel )
+        /// <summary>
+        /// Adds Campus model to cache, and returns cached object
+        /// </summary>
+        /// <param name="campusModel"></param>
+        /// <returns></returns>
+        public static CampusCache Read( Campus campusModel )
         {
-            // Creates new object by copying properties of model
-            var campus = new Rock.Web.Cache.CampusCache(campusModel);
-            return campus;
+            string cacheKey = CampusCache.CacheKey( campusModel.Id );
+
+            ObjectCache cache = MemoryCache.Default;
+            CampusCache campus = cache[cacheKey] as CampusCache;
+
+            if ( campus != null )
+            {
+                return campus;
+            }
+            else
+            {
+                campus = new CampusCache( campusModel );
+                
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, campus, cachePolicy );
+                cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
+                
+                return campus;
+            }
         }
 
         /// <summary>

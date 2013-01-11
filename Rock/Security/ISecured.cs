@@ -3,9 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System.Collections.Generic;
-using System.Linq;
+
+using Rock.Model;
 
 namespace Rock.Security
 {
@@ -62,8 +62,24 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-
         bool IsAllowedByDefault( string action );
-        
+
+        /// <summary>
+        /// Determines whether the specified action is private (Only the current user has access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsPrivate( string action, Person person );
+
+        /// <summary>
+        /// Makes the action on the current entity private (Only the current user will have access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The current person id.</param>
+        void MakePrivate( string action, Person person, int? personId );
     }
 }

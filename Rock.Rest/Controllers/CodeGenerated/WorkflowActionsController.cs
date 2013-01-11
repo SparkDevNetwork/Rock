@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// WorkflowActions REST API
     /// </summary>
-    public partial class WorkflowActionsController : Rock.Rest.ApiController<Rock.Model.WorkflowAction, Rock.Model.WorkflowActionDto>
+    public partial class WorkflowActionsController : Rock.Rest.ApiController<Rock.Model.WorkflowAction>
     {
         public WorkflowActionsController() : base( new Rock.Model.WorkflowActionService() ) { } 
     }

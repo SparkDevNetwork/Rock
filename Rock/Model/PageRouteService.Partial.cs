@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Page Route POCO Service class
     /// </summary>
-    public partial class PageRouteService : Service<PageRoute, PageRouteDto>
+    public partial class PageRouteService
     {
         /// <summary>
         /// Gets Page Routes by Page Id

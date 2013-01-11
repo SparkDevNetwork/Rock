@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// Attribute Qualifier POCO Entity.
     /// </summary>
     [Table( "AttributeQualifier" )]
+    [DataContract( IsReference = true )]
     public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
@@ -34,6 +36,7 @@ namespace Rock.Model
         /// Attribute Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int AttributeId { get; set; }
         
         /// <summary>
@@ -44,6 +47,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         public string Key { get; set; }
         
         /// <summary>
@@ -52,6 +56,7 @@ namespace Rock.Model
         /// <value>
         /// Value.
         /// </value>
+        [DataMember]
         public string Value { get; set; }
         
         /// <summary>
@@ -60,26 +65,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Attribute"/> object.
         /// </value>
+        [DataMember]
         public virtual Attribute Attribute { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static AttributeQualifier Read( int id )
-        {
-            return Read<AttributeQualifier>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

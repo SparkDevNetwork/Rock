@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowActivity Service class
     /// </summary>
-    public partial class WorkflowActivityService : Service<WorkflowActivity, WorkflowActivityDto>
+    public partial class WorkflowActivityService : Service<WorkflowActivity>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActivityService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override WorkflowActivity CreateNew()
-        {
-            return new WorkflowActivity();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowActivityDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowActivityDto> QueryableDto( IQueryable<WorkflowActivity> items )
-        {
-            return items.Select( m => new WorkflowActivityDto()
-                {
-                    WorkflowId = m.WorkflowId,
-                    ActivityTypeId = m.ActivityTypeId,
-                    ActivatedDateTime = m.ActivatedDateTime,
-                    LastProcessedDateTime = m.LastProcessedDateTime,
-                    CompletedDateTime = m.CompletedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -84,6 +49,40 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowActivityExtensionMethods
+    {
+        /// <summary>
+        /// Clones this WorkflowActivity object to a new WorkflowActivity object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static WorkflowActivity Clone( this WorkflowActivity source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as WorkflowActivity;
+            }
+            else
+            {
+                var target = new WorkflowActivity();
+                target.WorkflowId = source.WorkflowId;
+                target.ActivityTypeId = source.ActivityTypeId;
+                target.ActivatedDateTime = source.ActivatedDateTime;
+                target.LastProcessedDateTime = source.LastProcessedDateTime;
+                target.CompletedDateTime = source.CompletedDateTime;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

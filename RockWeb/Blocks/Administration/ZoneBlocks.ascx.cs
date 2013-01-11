@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Administration
             _page = Rock.Web.Cache.PageCache.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
 
-            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", CurrentPage.Layout );
+            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", _page.Layout );
 
             // TODO: Managing layout block instances should probably be controlled by site security
             if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
@@ -285,26 +285,7 @@ namespace RockWeb.Blocks.Administration
                 Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
 
                 // Add any unregistered blocks
-                foreach ( Rock.Model.BlockType blockType in blockTypeService.GetUnregisteredBlocks( Request.MapPath( "~" ) ) )
-                {
-                    try
-                    {
-                        Control control = LoadControl( blockType.Path );
-                        if ( control is Rock.Web.UI.RockBlock )
-                        {
-                            blockType.Name = Path.GetFileNameWithoutExtension( blockType.Path );
-                            // Split the name on intercapped changes (ie, "HelloWorld" becomes "Hello World")
-                            blockType.Name = System.Text.RegularExpressions.Regex.Replace( blockType.Name, "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 " );
-                            blockType.Description = blockType.Path;
-
-                            blockTypeService.Add( blockType, CurrentPersonId );
-                            blockTypeService.Save( blockType, CurrentPersonId );
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
+                blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
 
                 ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name).ToList();
                 ddlBlockType.DataTextField = "Name";

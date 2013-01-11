@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// FieldType Service class
     /// </summary>
-    public partial class FieldTypeService : Service<FieldType, FieldTypeDto>
+    public partial class FieldTypeService : Service<FieldType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypeService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public FieldTypeService(IRepository<FieldType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override FieldType CreateNew()
-        {
-            return new FieldType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<FieldTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<FieldTypeDto> QueryableDto( IQueryable<FieldType> items )
-        {
-            return items.Select( m => new FieldTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Assembly = m.Assembly,
-                    Class = m.Class,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -96,6 +61,40 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class FieldTypeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this FieldType object to a new FieldType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static FieldType Clone( this FieldType source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as FieldType;
+            }
+            else
+            {
+                var target = new FieldType();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Assembly = source.Assembly;
+                target.Class = source.Class;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

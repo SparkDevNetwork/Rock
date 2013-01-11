@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// UserLogins REST API
     /// </summary>
-    public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Model.UserLogin, Rock.Model.UserLoginDto>
+    public partial class UserLoginsController : Rock.Rest.ApiController<Rock.Model.UserLogin>
     {
         public UserLoginsController() : base( new Rock.Model.UserLoginService() ) { } 
     }

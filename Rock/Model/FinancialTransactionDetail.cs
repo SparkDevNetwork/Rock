@@ -3,11 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using Rock.Model;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +16,7 @@ namespace Rock.Model
     /// TransactionDetail POCO class.
     /// </summary>
     [Table("FinancialTransactionDetail")]
+    [DataContract( IsReference = true )]
     public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>
     {
         /// <summary>
@@ -24,6 +25,7 @@ namespace Rock.Model
         /// <value>
         /// The transaction id.
         /// </value>
+        [DataMember]
         public int? TransactionId { get; set; }
 
         /// <summary>
@@ -33,6 +35,7 @@ namespace Rock.Model
         /// The entity.
         /// </value>
         [MaxLength(50)]
+        [DataMember]
         public string Entity { get; set; }
 
         /// <summary>
@@ -41,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// The entity id.
         /// </value>
+        [DataMember]
         public string EntityId { get; set; }
 
         /// <summary>
@@ -49,6 +53,7 @@ namespace Rock.Model
         /// <value>
         /// The amount.
         /// </value>
+        [DataMember]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -58,6 +63,7 @@ namespace Rock.Model
         /// The summary.
         /// </value>
         [MaxLength(500)]
+        [DataMember]
         public string Summary { get; set; }
 
         /// <summary>
@@ -66,26 +72,8 @@ namespace Rock.Model
         /// <value>
         /// The transaction.
         /// </value>
+        [DataMember]
         public virtual FinancialTransaction Transaction { get; set; }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static FinancialTransactionDetail Read( int id )
-        {
-            return Read<FinancialTransactionDetail>( id );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

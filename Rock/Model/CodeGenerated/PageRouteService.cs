@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PageRoute Service class
     /// </summary>
-    public partial class PageRouteService : Service<PageRoute, PageRouteDto>
+    public partial class PageRouteService : Service<PageRoute>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PageRouteService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PageRoute CreateNew()
-        {
-            return new PageRoute();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PageRouteDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PageRouteDto> QueryableDto( IQueryable<PageRoute> items )
-        {
-            return items.Select( m => new PageRouteDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PageId = m.PageId,
-                    Route = m.Route,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -82,6 +49,38 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PageRouteExtensionMethods
+    {
+        /// <summary>
+        /// Clones this PageRoute object to a new PageRoute object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PageRoute Clone( this PageRoute source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as PageRoute;
+            }
+            else
+            {
+                var target = new PageRoute();
+                target.IsSystem = source.IsSystem;
+                target.PageId = source.PageId;
+                target.Route = source.Route;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

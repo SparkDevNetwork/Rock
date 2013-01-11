@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Group Service class
     /// </summary>
-    public partial class GroupService : Service<Group, GroupDto>
+    public partial class GroupService : Service<Group>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupService"/> class
@@ -35,44 +35,6 @@ namespace Rock.Model
         /// </summary>
         public GroupService(IRepository<Group> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Group CreateNew()
-        {
-            return new Group();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupDto> QueryableDto( IQueryable<Group> items )
-        {
-            return items.Select( m => new GroupDto()
-                {
-                    IsSystem = m.IsSystem,
-                    ParentGroupId = m.ParentGroupId,
-                    GroupTypeId = m.GroupTypeId,
-                    CampusId = m.CampusId,
-                    Name = m.Name,
-                    Description = m.Description,
-                    IsSecurityRole = m.IsSecurityRole,
-                    IsActive = m.IsActive,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -99,6 +61,43 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Group object to a new Group object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Group Clone( this Group source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Group;
+            }
+            else
+            {
+                var target = new Group();
+                target.IsSystem = source.IsSystem;
+                target.ParentGroupId = source.ParentGroupId;
+                target.GroupTypeId = source.GroupTypeId;
+                target.CampusId = source.CampusId;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.IsSecurityRole = source.IsSecurityRole;
+                target.IsActive = source.IsActive;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

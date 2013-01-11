@@ -77,14 +77,14 @@ namespace Rock.Web.UI.Validation
                     int intValue;
                     if ( !int.TryParse( value, out intValue ) )
                     {
-                        ErrorMessage = "Value must be an integer";
+                        ErrorMessage = string.Format( "{0} must be an whole number", PropertyName );
                         return false;
                     }
                     else
                     {
                         if ( intValue < 0 )
                         {
-                            ErrorMessage = "Value cannot be negative";
+                            ErrorMessage = string.Format( "{0} cannot be negative", PropertyName );
                             return false;
                         }
                     }
@@ -109,15 +109,15 @@ namespace Rock.Web.UI.Validation
                     {
                         if ( attribute is MaxLengthAttribute )
                         {
-                            ErrorMessage = "Max length is " + ( attribute as MaxLengthAttribute ).Length.ToString();
+                            ErrorMessage = string.Format( "{0} can't be longer than {1}", PropertyName, ( attribute as MaxLengthAttribute ).Length.ToString() );
                         }
                         else if ( attribute is RequiredAttribute )
                         {
-                            ErrorMessage = "Value is required";
+                            ErrorMessage = string.Format( "A value for {0} is required", PropertyName ); //property.Name );
                         }
                         else
                         {
-                            ErrorMessage = "Invalid value";
+                            ErrorMessage = string.Format( "Invalid value for {0}", PropertyName );
                         }
                     }
 

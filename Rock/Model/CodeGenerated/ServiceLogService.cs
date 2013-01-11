@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// ServiceLog Service class
     /// </summary>
-    public partial class ServiceLogService : Service<ServiceLog, ServiceLogDto>
+    public partial class ServiceLogService : Service<ServiceLog>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceLogService"/> class
@@ -38,42 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override ServiceLog CreateNew()
-        {
-            return new ServiceLog();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<ServiceLogDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<ServiceLogDto> QueryableDto( IQueryable<ServiceLog> items )
-        {
-            return items.Select( m => new ServiceLogDto()
-                {
-                    Time = m.Time,
-                    Input = m.Input,
-                    Type = m.Type,
-                    Name = m.Name,
-                    Result = m.Result,
-                    Success = m.Success,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -85,6 +49,41 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class ServiceLogExtensionMethods
+    {
+        /// <summary>
+        /// Clones this ServiceLog object to a new ServiceLog object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static ServiceLog Clone( this ServiceLog source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as ServiceLog;
+            }
+            else
+            {
+                var target = new ServiceLog();
+                target.Time = source.Time;
+                target.Input = source.Input;
+                target.Type = source.Type;
+                target.Name = source.Name;
+                target.Result = source.Result;
+                target.Success = source.Success;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

@@ -40,8 +40,8 @@ namespace Rock.Address.Standardize
             if ( location != null )
             {
                 var registeredUser = new RegisteredUser();
-                registeredUser.UserID = AttributeValue("UserID");
-                registeredUser.Password = AttributeValue("Password");
+                registeredUser.UserID = GetAttributeValue("UserID");
+                registeredUser.Password = GetAttributeValue("Password");
 
                 var licenseInfo = new LicenseInfo();
                 licenseInfo.RegisteredUser = registeredUser;
@@ -80,12 +80,11 @@ namespace Rock.Address.Standardize
 
                             if ( usAddress.GeoCode != null )
                             {
-                                location.GeocodeService = "StrikeIron";
-                                location.GeocodeResult = "200";
-                                location.GeocodeDate = DateTime.Now;
+                                location.GeocodeAttemptedServiceType = "StrikeIron";
+                                location.GeocodeAttemptedResult = "200";
+                                location.GeocodedDateTime = DateTime.Now;
 
-                                location.Latitude = usAddress.GeoCode.Latitude;
-                                location.Longitude = usAddress.GeoCode.Longitude;
+                                location.SetLocationPointFromLatLong( usAddress.GeoCode.Latitude, usAddress.GeoCode.Longitude );
                             }
 
                             return true;

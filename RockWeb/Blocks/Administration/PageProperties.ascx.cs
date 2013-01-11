@@ -122,6 +122,7 @@ namespace RockWeb.Blocks.Administration
                 cbMenuDescription.Checked = _page.MenuDisplayDescription;
                 cbMenuIcon.Checked = _page.MenuDisplayIcon;
                 cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
+                tbIconCssClass.Text = _page.IconCssClass;
                 cbRequiresEncryption.Checked = _page.RequiresEncryption;
                 cbEnableViewState.Checked = _page.EnableViewState;
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
@@ -190,6 +191,7 @@ namespace RockWeb.Blocks.Administration
                     page.MenuDisplayIcon = cbMenuIcon.Checked;
                     page.IconFileId = imgIcon.ImageId;
                     page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+                    page.IconCssClass = tbIconCssClass.Text;
                     page.RequiresEncryption = cbRequiresEncryption.Checked;
                     page.EnableViewState = cbEnableViewState.Checked;
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
@@ -231,7 +233,12 @@ namespace RockWeb.Blocks.Administration
                     Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
-                string script = "window.parent.closeModal()";
+                string script = @"
+if ( window.parent.closeModal != null)
+{
+    window.parent.closeModal();
+}
+";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }

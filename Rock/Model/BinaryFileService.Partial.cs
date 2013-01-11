@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// File POCO Service class
     /// </summary>
-    public partial class BinaryFileService : Service<BinaryFile, BinaryFileDto>
+    public partial class BinaryFileService 
     {
         /// <summary>
         /// Saves the specified item.

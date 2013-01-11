@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -82,9 +82,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
+    <Compile Include="Controllers\GroupsController.Partial.cs" />
+    <Compile Include="Controllers\KiosksController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\UsersController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DevicesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupLocationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />
@@ -144,8 +151,11 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />
+    <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
+    <Compile Include="Controllers\TagsController.Partial.cs" />
+    <Compile Include="Controllers\UserLoginsController.Partial.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />

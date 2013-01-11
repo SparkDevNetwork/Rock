@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Audit Service class
     /// </summary>
-    public partial class AuditService : Service<Audit, AuditDto>
+    public partial class AuditService : Service<Audit>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditService"/> class
@@ -38,43 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Audit CreateNew()
-        {
-            return new Audit();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AuditDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AuditDto> QueryableDto( IQueryable<Audit> items )
-        {
-            return items.Select( m => new AuditDto()
-                {
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Title = m.Title,
-                    AuditType = m.AuditType,
-                    Properties = m.Properties,
-                    DateTime = m.DateTime,
-                    PersonId = m.PersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,6 +49,42 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AuditExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Audit object to a new Audit object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Audit Clone( this Audit source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Audit;
+            }
+            else
+            {
+                var target = new Audit();
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
+                target.Title = source.Title;
+                target.AuditType = source.AuditType;
+                target.Properties = source.Properties;
+                target.DateTime = source.DateTime;
+                target.PersonId = source.PersonId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

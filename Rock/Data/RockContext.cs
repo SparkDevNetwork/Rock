@@ -23,6 +23,14 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
+        /// Gets or sets the attendances.
+        /// </summary>
+        /// <value>
+        /// The attendances.
+        /// </value>
+        public DbSet<Attendance> Attendances { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -117,6 +125,14 @@ namespace Rock.Data
         /// the Defined Values.
         /// </value>
         public DbSet<DefinedValue> DefinedValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the devices.
+        /// </summary>
+        /// <value>
+        /// The devices.
+        /// </value>
+        public DbSet<Device> Devices { get; set; }
 
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -311,6 +327,22 @@ namespace Rock.Data
         public DbSet<MetricValue> MetricValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        /// <value>
+        /// The notes.
+        /// </value>
+        public DbSet<Note> Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the note types.
+        /// </summary>
+        /// <value>
+        /// The note types.
+        /// </value>
+        public DbSet<NoteType> NoteTypes { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Pages.
         /// </summary>
         /// <value>
@@ -389,6 +421,22 @@ namespace Rock.Data
         /// The pledges.
         /// </value>
         public DbSet<Pledge> Pledges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the prayer requests.
+        /// </summary>
+        /// <value>
+        /// The prayer requests.
+        /// </value>
+        public DbSet<PrayerRequest> PrayerRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedules.
+        /// </summary>
+        /// <value>
+        /// The schedules.
+        /// </value>
+        public DbSet<Schedule> Schedules { get; set; }
 
         /// <summary>
         /// Gets or sets the Jobs.
@@ -558,10 +606,7 @@ namespace Rock.Data
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
-            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
+            modelBuilder.Configurations.Add( new AttendanceConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
@@ -574,6 +619,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
+            modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
             modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
@@ -598,6 +644,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
             modelBuilder.Configurations.Add( new MetricConfiguration() );
             modelBuilder.Configurations.Add( new MetricValueConfiguration() );
+            modelBuilder.Configurations.Add( new NoteConfiguration() );
+            modelBuilder.Configurations.Add( new NoteTypeConfiguration() );
             modelBuilder.Configurations.Add( new PageConfiguration() );
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
@@ -608,6 +656,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
+            modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
             modelBuilder.Configurations.Add( new SiteConfiguration() );
@@ -616,6 +666,10 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new TaggedItemConfiguration() );
             modelBuilder.Configurations.Add( new UserLoginConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
+            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
             modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );

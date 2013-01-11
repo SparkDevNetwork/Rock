@@ -16,53 +16,48 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
-    public abstract class ApiController<T, D> : ApiController
-        where T : Rock.Data.Entity<T>
-        where D : Rock.Data.IDto, new()
+    public abstract class ApiController<T> : ApiController 
+        where T : Rock.Data.Entity<T>, new()
     {
-        private Service<T, D> _service;
+        private Service<T> _service;
 
-        public ApiController( Service<T, D> service )
+        public ApiController( Service<T> service )
         {
             _service = service;
+            _service.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
         }
 
         // GET api/<controller>
         [Queryable]
-        public virtual IQueryable<D> Get()
+        public virtual IQueryable<T> Get()
         {
-            return _service.QueryableDto();
+            return _service.Queryable();
         }
 
         // GET api/<controller>/5
-        public virtual D Get( int id )
+        public virtual T Get( int id )
         {
             T model;
             if ( !_service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
-            var dto = new D();
-            dto.CopyFromModel( model );
-            return dto;
+            return model;
         }
 
         // POST api/<controller> (insert)
         [Authenticate]
-        public virtual HttpResponseMessage Post( [FromBody]D value )
+        public virtual HttpResponseMessage Post( [FromBody]T value )
         {
             var user = CurrentUser();
             if ( user != null )
             {
-                T model = _service.CreateNew();
-                _service.Add( model, null );
+                _service.Add( value, null );
 
-                value.CopyToModel( model );
-
-                if ( !model.IsValid )
+                if ( !value.IsValid )
                     return ControllerContext.Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
-                        String.Join( ",", model.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
+                        String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-                _service.Save( model, user.PersonId );
+                _service.Save( value, user.PersonId );
 
                 var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
                 // TODO set response.Headers.Location as per REST POST convention
@@ -75,20 +70,18 @@ namespace Rock.Rest
 
         // PUT api/<controller>/5  (update)
         [Authenticate]
-        public virtual void Put( int id, [FromBody]D value )
+        public virtual void Put( int id, [FromBody]T value )
         {
             var user = CurrentUser();
             if ( user != null )
             {
-                var service = new Service<T, D>();
-                T model;
-                if ( !service.TryGet( id, out model ) )
+                T existingModel;
+                if ( !_service.TryGet( id, out existingModel ) )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                value.CopyToModel( model );
-
-                if ( model.IsValid )
-                    service.Save( model, user.PersonId );
+                _service.Attach( value );
+                if ( value.IsValid )
+                    _service.Save( value, user.PersonId );
                 else
 
                     throw new HttpResponseException( HttpStatusCode.BadRequest );
@@ -120,11 +113,11 @@ namespace Rock.Rest
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userService = new Rock.Model.UserService();
-                var user = userService.GetByUserName( principal.Identity.Name );
+                var userLoginService = new Rock.Model.UserLoginService();
+                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
-                if ( user != null )
-                    return user;
+                if ( userLogin != null )
+                    return userLogin;
             }
 
             return null;

@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// TaggedItems REST API
     /// </summary>
-    public partial class TaggedItemsController : Rock.Rest.ApiController<Rock.Model.TaggedItem, Rock.Model.TaggedItemDto>
+    public partial class TaggedItemsController : Rock.Rest.ApiController<Rock.Model.TaggedItem>
     {
         public TaggedItemsController() : base( new Rock.Model.TaggedItemService() ) { } 
     }

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaign Service class
     /// </summary>
-    public partial class MarketingCampaignService : Service<MarketingCampaign, MarketingCampaignDto>
+    public partial class MarketingCampaignService : Service<MarketingCampaign>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignService"/> class
@@ -38,42 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaign CreateNew()
-        {
-            return new MarketingCampaign();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignDto> QueryableDto( IQueryable<MarketingCampaign> items )
-        {
-            return items.Select( m => new MarketingCampaignDto()
-                {
-                    Title = m.Title,
-                    ContactPersonId = m.ContactPersonId,
-                    ContactEmail = m.ContactEmail,
-                    ContactPhoneNumber = m.ContactPhoneNumber,
-                    ContactFullName = m.ContactFullName,
-                    EventGroupId = m.EventGroupId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -85,6 +49,41 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignExtensionMethods
+    {
+        /// <summary>
+        /// Clones this MarketingCampaign object to a new MarketingCampaign object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaign Clone( this MarketingCampaign source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaign;
+            }
+            else
+            {
+                var target = new MarketingCampaign();
+                target.Title = source.Title;
+                target.ContactPersonId = source.ContactPersonId;
+                target.ContactEmail = source.ContactEmail;
+                target.ContactPhoneNumber = source.ContactPhoneNumber;
+                target.ContactFullName = source.ContactFullName;
+                target.EventGroupId = source.EventGroupId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

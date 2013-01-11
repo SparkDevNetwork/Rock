@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-massage error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
     
     <asp:Panel ID="pnlTypes" runat="server">
 
@@ -11,7 +11,7 @@
             <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="true" />            
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridType" runat="server" AllowSorting="true" RowItemText="setting" OnEditRow="rGridType_Edit" EmptyDataText="No Defined Types Found">
+        <Rock:Grid ID="rGridType" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGridType_Edit" EmptyDataText="No Defined Types Found">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -30,7 +30,7 @@
 
     <asp:Panel ID="pnlTypeDetails" runat="server" Visible="false">
         
-        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
                      
         <fieldset>
             <legend><asp:Literal ID="lType" runat="server" Text=""></asp:Literal></legend>
@@ -49,7 +49,7 @@
     
     <asp:Panel ID="pnlAttributes" runat="server" Visible="false">
   
-        <Rock:Grid ID="rGridAttribute" runat="server" AllowSorting="true" RowItemText="setting" OnEditRow="rGridAttribute_Edit" ShowHeader="true" EmptyDataText="No Attributes Found">
+        <Rock:Grid ID="rGridAttribute" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGridAttribute_Edit" ShowHeader="true" EmptyDataText="No Attributes Found">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -72,7 +72,7 @@
             <asp:Literal ID="valueCaption" runat="server" Text="Defined Values"></asp:Literal>
         </label>
                 
-        <Rock:Grid ID="rGridValue" runat="server" ShowHeader="true" RowItemText="setting" OnEditRow="rGridValue_Edit" AllowSorting="true" EmptyDataText="No Defined Values Found" >
+        <Rock:Grid ID="rGridValue" runat="server" ShowHeader="true" RowItemText="setting" OnRowSelected="rGridValue_Edit" AllowSorting="true" EmptyDataText="No Defined Values Found" >
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id"/>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name"/>
@@ -89,7 +89,7 @@
     <Rock:ModalDialog ID="modalAttributes" runat="server" Title="Attribute Values">
     <Content>
         <asp:HiddenField ID="hfIdAttribute" runat="server" />
-        <asp:ValidationSummary ID="valSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryAttribute" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
         <fieldset>
             <Rock:DataTextBox ID="tbAttributeKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
             <Rock:DataTextBox ID="tbAttributeName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
@@ -106,7 +106,7 @@
     <Rock:ModalDialog ID="modalValues" runat="server" Title="Type Values">
     <Content>
         <asp:HiddenField ID="hfIdValue" runat="server" />
-        <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
         
         <fieldset>
             <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />

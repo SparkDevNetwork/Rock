@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Workflow Service class
     /// </summary>
-    public partial class WorkflowService : Service<Workflow, WorkflowDto>
+    public partial class WorkflowService : Service<Workflow>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowService"/> class
@@ -38,44 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Workflow CreateNew()
-        {
-            return new Workflow();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<WorkflowDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<WorkflowDto> QueryableDto( IQueryable<Workflow> items )
-        {
-            return items.Select( m => new WorkflowDto()
-                {
-                    WorkflowTypeId = m.WorkflowTypeId,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Status = m.Status,
-                    IsProcessing = m.IsProcessing,
-                    ActivatedDateTime = m.ActivatedDateTime,
-                    LastProcessedDateTime = m.LastProcessedDateTime,
-                    CompletedDateTime = m.CompletedDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -87,6 +49,43 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class WorkflowExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Workflow object to a new Workflow object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Workflow Clone( this Workflow source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Workflow;
+            }
+            else
+            {
+                var target = new Workflow();
+                target.WorkflowTypeId = source.WorkflowTypeId;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Status = source.Status;
+                target.IsProcessing = source.IsProcessing;
+                target.ActivatedDateTime = source.ActivatedDateTime;
+                target.LastProcessedDateTime = source.LastProcessedDateTime;
+                target.CompletedDateTime = source.CompletedDateTime;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

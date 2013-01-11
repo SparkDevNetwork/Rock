@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// HtmlContent Service class
     /// </summary>
-    public partial class HtmlContentService : Service<HtmlContent, HtmlContentDto>
+    public partial class HtmlContentService : Service<HtmlContent>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentService"/> class
@@ -38,45 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override HtmlContent CreateNew()
-        {
-            return new HtmlContent();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<HtmlContentDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<HtmlContentDto> QueryableDto( IQueryable<HtmlContent> items )
-        {
-            return items.Select( m => new HtmlContentDto()
-                {
-                    BlockId = m.BlockId,
-                    EntityValue = m.EntityValue,
-                    Version = m.Version,
-                    Content = m.Content,
-                    IsApproved = m.IsApproved,
-                    ApprovedByPersonId = m.ApprovedByPersonId,
-                    ApprovedDateTime = m.ApprovedDateTime,
-                    StartDateTime = m.StartDateTime,
-                    ExpireDateTime = m.ExpireDateTime,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -88,6 +49,44 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class HtmlContentExtensionMethods
+    {
+        /// <summary>
+        /// Clones this HtmlContent object to a new HtmlContent object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static HtmlContent Clone( this HtmlContent source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as HtmlContent;
+            }
+            else
+            {
+                var target = new HtmlContent();
+                target.BlockId = source.BlockId;
+                target.EntityValue = source.EntityValue;
+                target.Version = source.Version;
+                target.Content = source.Content;
+                target.IsApproved = source.IsApproved;
+                target.ApprovedByPersonId = source.ApprovedByPersonId;
+                target.ApprovedDateTime = source.ApprovedDateTime;
+                target.StartDateTime = source.StartDateTime;
+                target.ExpireDateTime = source.ExpireDateTime;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

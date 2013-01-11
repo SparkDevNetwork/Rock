@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using Rock.Model;
+
 namespace Rock.Security
 {
     /// <summary>
@@ -86,6 +88,30 @@ namespace Rock.Security
         public bool IsAllowedByDefault( string action )
         {
             return action == "View";
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is private (Only the current user has access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsPrivate( string action, Person person )
+        {
+            return Security.Authorization.IsPrivate( this, action, person );
+        }
+
+        /// <summary>
+        /// Makes the action on the current entity private (Only the current user will have access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The current person id.</param>
+        public virtual void MakePrivate( string action, Person person, int? personId )
+        {
+            Security.Authorization.MakePrivate( this, action, person, personId );
         }
 
         /// <summary>

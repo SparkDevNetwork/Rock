@@ -40,12 +40,13 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpPut]
         [Authenticate]
-        public void Move( int id, BlockDto block )
+        public void Move( int id, Block block )
         {
             var user = CurrentUser();
             if ( user != null )
             {
                 var service = new BlockService();
+                block.Id = id;
                 Block model;
                 if ( !service.TryGet( id, out model ) )
                     throw new HttpResponseException( HttpStatusCode.NotFound );
@@ -53,21 +54,23 @@ namespace Rock.Rest.Controllers
                 if ( !model.IsAuthorized( "Edit", user.Person ) )
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
+                if ( model.Layout != null && model.Layout != block.Layout )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
+
+                if ( block.Layout != null )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout );
+                else
+                {
+                    var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
+                    page.FlushBlocks();
+                }
+
+                model.Zone = block.Zone;
+                model.PageId = block.PageId;
+                model.Layout = block.Layout;
+
                 if ( model.IsValid )
                 {
-                    if ( model.Layout != null && model.Layout != block.Layout )
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
-
-                    if (block.Layout != null)
-                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout);
-                    else
-                    {
-                        var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
-                        page.FlushBlocks();
-                    }
-
-                    block.CopyToModel( model );
-
                     service.Move( model );
                     service.Save( model, user.PersonId );
                 }

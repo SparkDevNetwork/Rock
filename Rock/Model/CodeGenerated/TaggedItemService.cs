@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// TaggedItem Service class
     /// </summary>
-    public partial class TaggedItemService : Service<TaggedItem, TaggedItemDto>
+    public partial class TaggedItemService : Service<TaggedItem>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TaggedItemService"/> class
@@ -38,39 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override TaggedItem CreateNew()
-        {
-            return new TaggedItem();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<TaggedItemDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<TaggedItemDto> QueryableDto( IQueryable<TaggedItem> items )
-        {
-            return items.Select( m => new TaggedItemDto()
-                {
-                    IsSystem = m.IsSystem,
-                    TagId = m.TagId,
-                    EntityId = m.EntityId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -82,6 +49,38 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class TaggedItemExtensionMethods
+    {
+        /// <summary>
+        /// Clones this TaggedItem object to a new TaggedItem object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static TaggedItem Clone( this TaggedItem source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as TaggedItem;
+            }
+            else
+            {
+                var target = new TaggedItem();
+                target.IsSystem = source.IsSystem;
+                target.TagId = source.TagId;
+                target.EntityId = source.EntityId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

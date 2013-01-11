@@ -119,11 +119,29 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
-    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
-    <Compile Include="Data\DtoSecured.cs" />
-    <Compile Include="Data\Dto.cs" />
-    <Compile Include="Field\Types\GroupTypeField.cs" />
+    <Compile Include="CheckIn\CheckInBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CheckIn\CheckInFamily.cs" />
+    <Compile Include="CheckIn\CheckInGroup.cs" />
+    <Compile Include="CheckIn\CheckInGroupType.cs" />
+    <Compile Include="CheckIn\CheckInLocation.cs" />
+    <Compile Include="CheckIn\CheckInPerson.cs" />
+    <Compile Include="CheckIn\CheckInSchedule.cs" />
+    <Compile Include="CheckIn\CheckInState.cs" />
+    <Compile Include="CheckIn\CheckInStatus.cs" />
+    <Compile Include="CheckIn\KioskGroup.cs" />
+    <Compile Include="CheckIn\KioskGroupType.cs" />
+    <Compile Include="CheckIn\KioskLocation.cs" />
+    <Compile Include="CheckIn\KioskSchedule.cs" />
+    <Compile Include="CheckIn\KioskStatus.cs" />
+    <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Data\NotExportable.cs" />
+    <Compile Include="Field\Types\GroupField.cs" />
+    <Compile Include="Field\Types\GroupTypesField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -156,70 +174,120 @@
     <Compile Include="Migrations\201212110027467_GroupBlockAttributes.Designer.cs">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\RockMigration.cs">
+    <Compile Include="Migrations\201212131758268_GroupTypeField.cs" />
+    <Compile Include="Migrations\201212131758268_GroupTypeField.Designer.cs">
+      <DependentUpon>201212131758268_GroupTypeField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212182319401_ListDetailSweep01.cs" />
+    <Compile Include="Migrations\201212182319401_ListDetailSweep01.Designer.cs">
+      <DependentUpon>201212182319401_ListDetailSweep01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.cs" />
+    <Compile Include="Migrations\201212201910584_HomepageMenuOrder01.Designer.cs">
+      <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.cs" />
+    <Compile Include="Migrations\201212211225129_CreateCheckInTables.Designer.cs">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212211411123_Notes.cs" />
+    <Compile Include="Migrations\201212211411123_Notes.Designer.cs">
+      <DependentUpon>201212211411123_Notes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212231321417_PageIconCssClass.cs" />
+    <Compile Include="Migrations\201212231321417_PageIconCssClass.Designer.cs">
+      <DependentUpon>201212231321417_PageIconCssClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212290135056_FixNotes.cs" />
+    <Compile Include="Migrations\201212290135056_FixNotes.Designer.cs">
+      <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212301436393_UpdateNoteBlock.cs" />
+    <Compile Include="Migrations\201212301436393_UpdateNoteBlock.Designer.cs">
+      <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212301720005_FinancialTxnEntityType.cs" />
+    <Compile Include="Migrations\201212301720005_FinancialTxnEntityType.Designer.cs">
+      <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212311301028_AddWorkflowTypeIcon.cs" />
+    <Compile Include="Migrations\201212311301028_AddWorkflowTypeIcon.Designer.cs">
+      <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201212311316295_AddCategoryIcon.cs" />
+    <Compile Include="Migrations\201212311316295_AddCategoryIcon.Designer.cs">
+      <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.cs" />
+    <Compile Include="Migrations\201301090032138_ListDetailSweep02.Designer.cs">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301092105309_GroupViewer01.cs" />
+    <Compile Include="Migrations\201301092105309_GroupViewer01.Designer.cs">
+      <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.cs" />
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.Designer.cs">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.cs" />
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.Designer.cs">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\RockMigration_1.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\AuthService.Partial.cs" />
-    <Compile Include="Model\BlockDto.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\AuthDTO.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
-    <Compile Include="Model\CodeGenerated\BinaryFileDto.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
-    <Compile Include="Model\CodeGenerated\BlockDto.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
-    <Compile Include="Model\CodeGenerated\BlockTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\HtmlContentDto.cs" />
+    <Compile Include="Model\CodeGenerated\DeviceService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignCampusDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignDto.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignService.cs" />
-    <Compile Include="Model\CodeGenerated\PageContextDto.cs" />
+    <Compile Include="Model\CodeGenerated\NoteService.cs" />
+    <Compile Include="Model\CodeGenerated\NoteTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
-    <Compile Include="Model\CodeGenerated\PageDto.cs" />
-    <Compile Include="Model\CodeGenerated\PageRouteDto.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
-    <Compile Include="Model\CodeGenerated\SiteDomainDto.cs" />
+    <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
-    <Compile Include="Model\CodeGenerated\SiteDTO.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\CodeGenerated\UserLoginDto.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActionDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActionService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActionTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActivityDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActivityTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
+    <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
-    <Compile Include="Model\MarketingCampaignAdDto.partial.cs" />
     <Compile Include="Model\MarketingCampaignAdType.cs" />
     <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Model\MarketingCampaignAudience.cs" />
-    <Compile Include="Model\MarketingCampaignAudienceDto.partial.cs" />
     <Compile Include="Model\MarketingCampaignCampus.cs" />
+    <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\NoteService.Partial.cs" />
+    <Compile Include="Model\NoteType.cs" />
+    <Compile Include="Model\NoteTypeService.Partial.cs" />
     <Compile Include="Model\PageContextService.Partial.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
+    <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\UserLoginService.Partial.cs" />
@@ -227,36 +295,24 @@
     <Compile Include="Communication\IEmailProvider.cs" />
     <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeDto.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeQualifierDto.cs" />
     <Compile Include="Model\CodeGenerated\AttributeQualifierService.cs" />
     <Compile Include="Model\AttributeQualifierService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AttributeService.cs" />
     <Compile Include="Model\AttributeService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\AttributeValueDto.cs" />
     <Compile Include="Model\CodeGenerated\AttributeValueService.cs" />
     <Compile Include="Model\AttributeValueService.Partial.cs" />
     <Compile Include="Model\Audit.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\AuditDto.cs" />
     <Compile Include="Model\CodeGenerated\AuditService.cs" />
-    <Compile Include="Model\CodeGenerated\CategoryDto.cs" />
     <Compile Include="Model\CodeGenerated\CategoryService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\EntityTypeService.cs" />
-    <Compile Include="Model\EntityTypeDto.Partial.cs" />
     <Compile Include="Field\Types\HtmlField.cs" />
     <Compile Include="Field\Types\MemoField.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialBatchDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDto.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
-    <Compile Include="Model\CodeGenerated\PaymentGatewayDto.cs" />
     <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
-    <Compile Include="Model\CodeGenerated\PersonAccountDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
@@ -274,17 +330,31 @@
     <Compile Include="Migrations\201212041823461_RockModel.Designer.cs">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\CodeGenerated\ServiceJobDto.cs" />
+    <Compile Include="Model\Attendance.cs" />
+    <Compile Include="Model\Schedule.cs" />
+    <Compile Include="Model\Device.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowTriggerDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
-    <Compile Include="Model\CodeGenerated\MetricDto.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\IDetailBlock.cs" />
+    <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroups.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadLocations.cs" />
+    <Compile Include="Workflow\Action\CheckIn\PurgeInvalidPeople.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />
+    <Compile Include="Workflow\Action\CheckIn\LoadGroupTypes.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
+    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -293,22 +363,15 @@
     <Compile Include="Model\TaggedItemService.Partial.cs" />
     <Compile Include="Model\TagService.Partial.cs" />
     <Compile Include="Model\Tag.cs" />
-    <Compile Include="Model\CodeGenerated\TagDto.cs" />
     <Compile Include="Model\TaggedItem.cs" />
-    <Compile Include="Model\CodeGenerated\DefinedTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\DefinedTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\DefinedValueDto.cs" />
     <Compile Include="Model\CodeGenerated\DefinedValueService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityChangeDto.cs" />
     <Compile Include="Model\CodeGenerated\EntityChangeService.cs" />
-    <Compile Include="Model\CodeGenerated\ExceptionLogDto.cs" />
     <Compile Include="Model\CodeGenerated\ExceptionLogService.cs" />
-    <Compile Include="Model\CodeGenerated\FieldTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\FieldTypeService.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\CodeGenerated\MetricValueDto.cs" />
     <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
     <Compile Include="Model\Metric.cs" />
     <Compile Include="Model\DefinedTypeService.Partial.cs" />
@@ -319,45 +382,34 @@
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\MetricValueService.Partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
-    <Compile Include="Model\CodeGenerated\ServiceLogDto.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
-    <Compile Include="Model\CodeGenerated\TaggedItemDto.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
-    <Compile Include="Model\CodeGenerated\LocationDto.cs" />
     <Compile Include="Model\CodeGenerated\LocationService.cs" />
     <Compile Include="Model\GroupTypeLocationType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\Campus.cs" />
-    <Compile Include="Model\CodeGenerated\CampusDto.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
-    <Compile Include="Model\CodeGenerated\EmailTemplateDto.cs" />
     <Compile Include="Model\CodeGenerated\EmailTemplateService.cs" />
     <Compile Include="Model\EmailTemplateService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\PersonDto.cs" />
-    <Compile Include="Model\CodeGenerated\PersonMergedDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonMergedService.cs" />
     <Compile Include="Model\CodeGenerated\PersonService.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
     <Compile Include="Model\PersonMergedService.Partial.cs" />
     <Compile Include="Model\PersonMerged.cs" />
     <Compile Include="Model\PersonViewed.cs" />
-    <Compile Include="Model\CodeGenerated\PersonViewedDto.cs" />
     <Compile Include="Model\CodeGenerated\PersonViewedService.cs" />
     <Compile Include="Model\PersonViewedService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\PhoneNumberDto.cs" />
     <Compile Include="Model\CodeGenerated\PhoneNumberService.cs" />
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\DiscService.cs" />
     <Compile Include="Data\AlternateKeyAttribute.cs" />
     <Compile Include="Data\FriendlyTypeNameAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
-    <Compile Include="Data\IDto.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Data\IExportable.cs" />
     <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RockTransactionScope.cs" />
@@ -421,7 +473,6 @@
     <Compile Include="Model\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\FundDto.cs" />
     <Compile Include="Model\CodeGenerated\FundService.cs" />
     <Compile Include="Model\PaymentGateway.cs">
       <SubType>Code</SubType>
@@ -432,7 +483,6 @@
     <Compile Include="Model\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\PledgeDto.cs" />
     <Compile Include="Model\CodeGenerated\PledgeService.cs" />
     <Compile Include="Model\FinancialTransaction.cs">
       <SubType>Code</SubType>
@@ -446,19 +496,15 @@
     <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupDto.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
     <Compile Include="Model\GroupRole.cs" />
     <Compile Include="Model\GroupRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
-    <Compile Include="Model\CodeGenerated\GroupTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
     <Compile Include="Model\GroupMember.cs" />
-    <Compile Include="Model\CodeGenerated\GroupMemberDto.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
@@ -520,11 +566,8 @@
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowDto.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowLogDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowLogService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowTypeDto.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.cs" />
     <Compile Include="Model\WorkflowLog.cs" />
     <Compile Include="Model\Workflow.cs" />
@@ -827,6 +870,51 @@
     <EmbeddedResource Include="Migrations\201212110027467_GroupBlockAttributes.resx">
       <DependentUpon>201212110027467_GroupBlockAttributes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212131758268_GroupTypeField.resx">
+      <DependentUpon>201212131758268_GroupTypeField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212182319401_ListDetailSweep01.resx">
+      <DependentUpon>201212182319401_ListDetailSweep01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212201910584_HomepageMenuOrder01.resx">
+      <DependentUpon>201212201910584_HomepageMenuOrder01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212211225129_CreateCheckInTables.resx">
+      <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212211411123_Notes.resx">
+      <DependentUpon>201212211411123_Notes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212231321417_PageIconCssClass.resx">
+      <DependentUpon>201212231321417_PageIconCssClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212290135056_FixNotes.resx">
+      <DependentUpon>201212290135056_FixNotes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212301436393_UpdateNoteBlock.resx">
+      <DependentUpon>201212301436393_UpdateNoteBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212301720005_FinancialTxnEntityType.resx">
+      <DependentUpon>201212301720005_FinancialTxnEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212311301028_AddWorkflowTypeIcon.resx">
+      <DependentUpon>201212311301028_AddWorkflowTypeIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201212311316295_AddCategoryIcon.resx">
+      <DependentUpon>201212311316295_AddCategoryIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301090032138_ListDetailSweep02.resx">
+      <DependentUpon>201301090032138_ListDetailSweep02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301092105309_GroupViewer01.resx">
+      <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102215432_AddDeceasedFlag.resx">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102317461_AddPrayerRequest.resx">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
@@ -842,7 +930,7 @@
         <WebProjectProperties>
           <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>65463</DevelopmentServerPort>
+          <DevelopmentServerPort>60512</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>
           </IISUrl>

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignAdType Service class
     /// </summary>
-    public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType, MarketingCampaignAdTypeDto>
+    public partial class MarketingCampaignAdTypeService : Service<MarketingCampaignAdType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignAdTypeService"/> class
@@ -35,39 +35,6 @@ namespace Rock.Model
         /// </summary>
         public MarketingCampaignAdTypeService(IRepository<MarketingCampaignAdType> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignAdType CreateNew()
-        {
-            return new MarketingCampaignAdType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignAdTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignAdTypeDto> QueryableDto( IQueryable<MarketingCampaignAdType> items )
-        {
-            return items.Select( m => new MarketingCampaignAdTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Name = m.Name,
-                    DateRangeType = m.DateRangeType,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -88,6 +55,38 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignAdTypeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this MarketingCampaignAdType object to a new MarketingCampaignAdType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAdType Clone( this MarketingCampaignAdType source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaignAdType;
+            }
+            else
+            {
+                var target = new MarketingCampaignAdType();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.DateRangeType = source.DateRangeType;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

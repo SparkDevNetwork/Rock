@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Metric Service class
     /// </summary>
-    public partial class MetricService : Service<Metric, MetricDto>
+    public partial class MetricService : Service<Metric>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricService"/> class
@@ -38,49 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Metric CreateNew()
-        {
-            return new Metric();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MetricDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MetricDto> QueryableDto( IQueryable<Metric> items )
-        {
-            return items.Select( m => new MetricDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Type = m.Type,
-                    Category = m.Category,
-                    Title = m.Title,
-                    Subtitle = m.Subtitle,
-                    Description = m.Description,
-                    MinValue = m.MinValue,
-                    MaxValue = m.MaxValue,
-                    CollectionFrequencyValueId = m.CollectionFrequencyValueId,
-                    LastCollected = m.LastCollected,
-                    Source = m.Source,
-                    SourceSQL = m.SourceSQL,
-                    Order = m.Order,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -92,6 +49,48 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MetricExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Metric object to a new Metric object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Metric Clone( this Metric source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Metric;
+            }
+            else
+            {
+                var target = new Metric();
+                target.IsSystem = source.IsSystem;
+                target.Type = source.Type;
+                target.Category = source.Category;
+                target.Title = source.Title;
+                target.Subtitle = source.Subtitle;
+                target.Description = source.Description;
+                target.MinValue = source.MinValue;
+                target.MaxValue = source.MaxValue;
+                target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
+                target.LastCollected = source.LastCollected;
+                target.Source = source.Source;
+                target.SourceSQL = source.SourceSQL;
+                target.Order = source.Order;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

@@ -63,9 +63,9 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
             
-            lFoundDuplicateCaption.Text = AttributeValue( "FoundDuplicateCaption" );
-            lSentLoginCaption.Text = AttributeValue( "SentLoginCaption" );
-            lConfirmCaption.Text = AttributeValue( "ConfirmCaption" );
+            lFoundDuplicateCaption.Text = GetAttributeValue( "FoundDuplicateCaption" );
+            lSentLoginCaption.Text = GetAttributeValue( "SentLoginCaption" );
+            lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" );
         }
 
         protected override void OnLoad( System.EventArgs e )
@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.Security
 
             if ( Page.IsValid )
             {
-                Rock.Model.UserService userService = new Rock.Model.UserService();
-                Rock.Model.UserLogin user = userService.GetByUserName( tbUserName.Text );
-                if ( user == null )
+                var userLoginService = new Rock.Model.UserLoginService();
+                var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+                if ( userLogin == null )
                     DisplayDuplicates( Direction.Forward );
                 else
                     ShowErrorMessage( "Username already exists" );
@@ -151,9 +151,9 @@ namespace RockWeb.Blocks.Security
             int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
             if ( personId > 0 )
             {
-                Rock.Model.UserService userService = new Rock.Model.UserService();
-                var users = userService.GetByPersonId(personId).ToList();
-                if (users.Count > 0)
+                var userLoginService = new Rock.Model.UserLoginService();
+                var userLogins = userLoginService.GetByPersonId(personId).ToList();
+                if (userLogins.Count > 0)
                     DisplaySendLogin( personId, Direction.Forward );
                 else
                     DisplayConfirmation( personId );
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Security
         {
             bool displayed = false;
 
-            if ( Convert.ToBoolean( AttributeValue( "Duplicates" ) ) )
+            if ( Convert.ToBoolean( GetAttributeValue( "Duplicates" ) ) )
             {
                 PersonService personService = new PersonService();
                 var matches = personService.
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Security
         {
             hfSendPersonId.Value = personId.ToString();
 
-            lExistingAccountCaption.Text = AttributeValue( "ExistingAccountCaption" );
+            lExistingAccountCaption.Text = GetAttributeValue( "ExistingAccountCaption" );
             if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
             {
                 PersonService personService = new PersonService();
@@ -271,12 +271,12 @@ namespace RockWeb.Blocks.Security
                     var personDictionaries = new List<IDictionary<string, object>>();
 
                     var users = new List<IDictionary<string, object>>();
-                    UserService userService = new UserService();
-                    foreach ( UserLogin user in userService.GetByPersonId( person.Id ) )
+                    var userLoginService = new UserLoginService();
+                    foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                     {
                         if ( user.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            var userDictionary = new UserLoginDto( user ).ToDictionary();
+                            var userDictionary = user.ToDictionary();
                             userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
                             users.Add( userDictionary );
                         }
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Security
 
                     if ( users.Count > 0 )
                     {
-                        IDictionary<string, object> personDictionary = new PersonDto( person ).ToDictionary();
+                        IDictionary<string, object> personDictionary = person.ToDictionary();
                         personDictionary.Add( "FirstName", person.FirstName );
                         personDictionary.Add( "Users", users.ToArray() );
                         personDictionaries.Add( personDictionary );
@@ -317,11 +317,11 @@ namespace RockWeb.Blocks.Security
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                var personDictionary = new PersonDto( person ).ToDictionary();
+                var personDictionary = person.ToDictionary();
                 personDictionary.Add( "FirstName", person.FirstName );
                 mergeObjects.Add( "Person", personDictionary );
 
-                mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
+                mergeObjects.Add( "User", user.ToDictionary() );
 
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
@@ -350,11 +350,11 @@ namespace RockWeb.Blocks.Security
                     var mergeObjects = new Dictionary<string, object>();
                     mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
-                    var personDictionary = new PersonDto( person ).ToDictionary();
+                    var personDictionary = person.ToDictionary();
                     personDictionary.Add("FirstName", person.FirstName);
                     mergeObjects.Add( "Person", personDictionary );
 
-                    mergeObjects.Add( "User", new UserLoginDto( user ).ToDictionary() );
+                    mergeObjects.Add( "User", user.ToDictionary() );
 
                     var recipients = new Dictionary<string, Dictionary<string, object>>();
                     recipients.Add( person.Email, mergeObjects );
@@ -362,7 +362,7 @@ namespace RockWeb.Blocks.Security
                     Email email = new Email( Rock.SystemGuid.EmailTemplate.SECURITY_ACCOUNT_CREATED );
                     email.Send( recipients );
 
-                    lSuccessCaption.Text = AttributeValue( "SuccessCaption" );
+                    lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
                     if ( lSuccessCaption.Text.Contains( "{0}" ) )
                         lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
 
@@ -440,8 +440,8 @@ namespace RockWeb.Blocks.Security
 
         private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
-            Rock.Model.UserService userService = new Rock.Model.UserService();
-            return userService.Create( person, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
+            var userLoginService = new Rock.Model.UserLoginService();
+            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", tbUserName.Text, Password, confirmed, CurrentPersonId );
         }
 
         #endregion

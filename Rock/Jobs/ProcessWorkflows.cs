@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Web;
 using System.IO;
 
@@ -54,7 +55,8 @@ namespace Rock.Jobs
                 if ( !workflow.LastProcessedDateTime.HasValue ||
                     DateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
                 {
-                    service.Process( workflow, null );
+                    var errorMessages = new List<string>();
+                    service.Process( workflow, null, out errorMessages );
                 }
             }
         }

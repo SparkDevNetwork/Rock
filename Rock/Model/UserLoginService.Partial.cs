@@ -18,7 +18,7 @@ namespace Rock.Model
     /// <summary>
     /// User POCO Service class
     /// </summary>
-    public partial class UserService : Service<UserLogin, UserLoginDto>
+    public partial class UserLoginService 
     {
         /// <summary>
         /// Gets Users by Api Key
@@ -296,8 +296,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    UserService userService = new UserService();
-                    UserLogin user = userService.GetByUserName( userName );
+                    var userLoginService = new UserLoginService();
+                    UserLogin user = userLoginService.GetByUserName( userName );
 
                     if ( user != null && userIsOnline )
                     {

@@ -23,16 +23,166 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class PageCache : PageDto, Rock.Attribute.IHasAttributes
+    public class PageCache : CachedModel<Page>
     {
         #region Constructors
 
-        private PageCache() : base() { }
-        private PageCache( Rock.Model.Page page ) : base( page ) { }
+        private PageCache()
+        {
+        }
+
+        private PageCache( Page page )
+        {
+            CopyFromModel( page );
+        }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent page id.
+        /// </summary>
+        /// <value>
+        /// The parent page id.
+        /// </value>
+        public int? ParentPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is system.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the site id.
+        /// </summary>
+        /// <value>
+        /// The site id.
+        /// </value>
+        public int? SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the layout.
+        /// </summary>
+        /// <value>
+        /// The layout.
+        /// </value>
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires encryption].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable view state].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable view state]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableViewState { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [menu display description].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [menu display description]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MenuDisplayDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [menu display icon].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [menu display icon]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MenuDisplayIcon { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [menu display child pages].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [menu display child pages]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MenuDisplayChildPages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display in nav when.
+        /// </summary>
+        /// <value>
+        /// The display in nav when.
+        /// </value>
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the output cache.
+        /// </summary>
+        /// <value>
+        /// The duration of the output cache.
+        /// </value>
+        public int OutputCacheDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon file id.
+        /// </summary>
+        /// <value>
+        /// The icon file id.
+        /// </value>
+        public int? IconFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include admin footer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include admin footer]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeAdminFooter { get; set; }
 
         /// <summary>
         /// Gets or sets the route id.
@@ -76,66 +226,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories
-        {
-            get
-            {
-                var attributeCategories = new SortedDictionary<string, List<string>>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    var attribute = AttributeCache.Read( id );
-                    if ( !attributeCategories.ContainsKey( attribute.Key ) )
-                        attributeCategories.Add( attribute.Category, new List<string>() );
-                    attributeCategories[attribute.Category].Add( attribute.Key );
-                }
-
-                return attributeCategories;
-            }
-
-            set { }
-        }
-
-        /// <summary>
-        /// List of attributes associated with the page.  This object will not include values.
-        /// To get values associated with the current page instance, use the AttributeValues
-        /// </summary>
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
-        {
-            get
-            {
-                var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
-                    attributes.Add( attribute.Key, attribute );
-                }
-
-                return attributes;
-            }
-
-            set
-            {
-                this.AttributeIds = new List<int>();
-                foreach ( var attribute in value )
-                    this.AttributeIds.Add( attribute.Value.Id );
-            }
-        }
-
-        private List<int> AttributeIds = new List<int>();
-
-        /// <summary>
-        /// Dictionary of all attributes and their value.
-        /// </summary>
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
-
-        /// <summary>
         /// Gets or sets the layout path for the page
         /// </summary>
         /// <value>
@@ -154,9 +244,13 @@ namespace Rock.Web.Cache
             get
             {
                 if ( ParentPageId != null && ParentPageId.Value != 0 )
+                {
                     return PageCache.Read( ParentPageId.Value );
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -168,9 +262,13 @@ namespace Rock.Web.Cache
             get
             {
                 if ( SiteId != null && SiteId.Value != 0 )
+                {
                     return SiteCache.Read( SiteId.Value );
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -186,15 +284,18 @@ namespace Rock.Web.Cache
                 if ( pageIds != null )
                 {
                     foreach ( int id in pageIds )
+                    {
                         pages.Add( PageCache.Read( id ) );
+                    }
                 }
                 else
                 {
                     pageIds = new List<int>();
 
-                    Rock.Model.PageService pageService = new Rock.Model.PageService();
-                    foreach ( Rock.Model.Page page in pageService.GetByParentPageId( this.Id ) )
+                    PageService pageService = new PageService();
+                    foreach ( Page page in pageService.GetByParentPageId( this.Id ) )
                     {
+                        page.LoadAttributes();
                         pageIds.Add( page.Id );
                         pages.Add( PageCache.Read( page ) );
                     }
@@ -218,9 +319,11 @@ namespace Rock.Web.Cache
                 {
                     foreach ( int id in blockIds )
                     {
-                        BlockCache block = BlockCache.Read( id );
+                        BlockCache block = BlockCache.Read( id, SiteId );
                         if ( block != null )
+                        {
                             blocks.Add( block );
+                        }
                     }
                 }
                 else
@@ -228,20 +331,20 @@ namespace Rock.Web.Cache
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    Rock.Model.BlockService blockService = new Rock.Model.BlockService();
-                    foreach ( Rock.Model.Block block in blockService.GetByLayout( this.Layout ) )
+                    BlockService blockService = new BlockService();
+                    foreach ( Block block in blockService.GetByLayout( this.Layout ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blocks.Add( BlockCache.Read( block, SiteId ) );
                     }
 
                     // Load Page Blocks
-                    foreach ( Rock.Model.Block block in blockService.GetByPageId( this.Id ) )
+                    foreach ( Block block in blockService.GetByPageId( this.Id ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block ) );
+                        blocks.Add( BlockCache.Read( block, SiteId ) );
                     }
 
                 }
@@ -268,23 +371,69 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.ParentPage != null )
+                {
+                    return this.ParentPage;
+                }
+                else
+                {
+                    return this.Site;
+                }
+            }
+        }
+
         #endregion
 
         #region Public Methods
 
         /// <summary>
-        /// Saves the attribute values for the page
+        /// Copies from model.
         /// </summary>
-        /// <param name="personId">The person id.</param>
-        public void SaveAttributeValues(int? personId)
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
         {
-            Rock.Model.PageService pageService = new Model.PageService();
-            Rock.Model.Page pageModel = pageService.Get( this.Id );
-            if ( pageModel != null )
+            base.CopyFromModel( model );
+
+            if ( model is Page )
             {
-                pageModel.LoadAttributes();
-                foreach ( var attribute in pageModel.Attributes )
-                    Rock.Attribute.Helper.SaveAttributeValues( pageModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
+                var page = (Page)model;
+                this.Name = page.Name;
+                this.ParentPageId = page.ParentPageId;
+                this.Title = page.Title;
+                this.IsSystem = page.IsSystem;
+                this.SiteId = page.SiteId;
+                this.Layout = page.Layout;
+                this.RequiresEncryption = page.RequiresEncryption;
+                this.EnableViewState = page.EnableViewState;
+                this.MenuDisplayDescription = page.MenuDisplayDescription;
+                this.MenuDisplayIcon = page.MenuDisplayIcon;
+                this.MenuDisplayChildPages = page.MenuDisplayChildPages;
+                this.DisplayInNavWhen = page.DisplayInNavWhen;
+                this.IconCssClass = page.IconCssClass;
+                this.Order = page.Order;
+                this.OutputCacheDuration = page.OutputCacheDuration;
+                this.Description = page.Description;
+                this.IconFileId = page.IconFileId;
+                this.IncludeAdminFooter = page.IncludeAdminFooter;
+
+                this.PageContexts = new Dictionary<string, string>();
+                if ( page.PageContexts != null )
+                {
+                    foreach ( var pageContext in page.PageContexts )
+                    {
+                        this.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
+                    }
+                }
             }
         }
 
@@ -294,7 +443,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public bool DisplayInNav( Rock.Model.Person person )
+        public bool DisplayInNav( Person person )
         {
             switch ( this.DisplayInNavWhen )
             {
@@ -337,7 +486,9 @@ namespace Rock.Web.Cache
                     }
 
                     if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
+                    {
                         Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                    }
                 }
 
                 return keyModel.Entity;
@@ -368,27 +519,21 @@ namespace Rock.Web.Cache
         public void BlockContentUpdated(object sender)
         {
             if ( OnBlockContentUpdated != null )
-                OnBlockContentUpdated( sender, new EventArgs() );
-        }
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
             {
-                if ( this.ParentPage != null )
-                    return this.ParentPage;
-                else
-                    return this.Site;
+                OnBlockContentUpdated( sender, new EventArgs() );
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
 
         #region SharedItemCaching
 
@@ -536,6 +681,79 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Menu XML Methods
+
+        /// <summary>
+        /// Returns XML for a page menu.  XML will be 1 level deep
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public XDocument MenuXml( Person person )
+        {
+            return MenuXml( 1, person );
+        }
+
+        /// <summary>
+        /// Returns XML for a page menu.
+        /// </summary>
+        /// <param name="levelsDeep">The page levels deep.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public XDocument MenuXml( int levelsDeep, Person person )
+        {
+            XElement menuElement = MenuXmlElement( levelsDeep, person );
+            return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
+        }
+
+        private XElement MenuXmlElement( int levelsDeep, Person person )
+        {
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            {
+                string iconUrl = string.Empty;
+                if ( this.IconFileId.HasValue )
+                {
+                    iconUrl = string.Format( "{0}/image.ashx?{1}",
+                        HttpContext.Current.Request.ApplicationPath,
+                        this.IconFileId.Value );
+                }
+
+                XElement pageElement = new XElement( "page",
+                    new XAttribute( "id", this.Id ),
+                    new XAttribute( "title", this.Title ?? this.Name ),
+                    new XAttribute( "url", this.Url ),
+                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
+                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
+                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
+                    new XAttribute( "icon-css-class", this.IconCssClass ?? string.Empty ),
+                    new XElement( "description", this.Description ?? "" ),
+                    new XElement( "icon-url", iconUrl ) );
+
+                XElement childPagesElement = new XElement( "pages" );
+
+                pageElement.Add( childPagesElement );
+
+                if ( levelsDeep > 0 && this.MenuDisplayChildPages )
+                    foreach ( PageCache page in Pages )
+                    {
+                        XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
+                        if ( childPageElement != null )
+                            childPagesElement.Add( childPageElement );
+                    }
+
+                return pageElement;
+            }
+            else
+                return null;
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Private Methods
+
+        #endregion
+
         #region Static Methods
 
         /// <summary>
@@ -560,29 +778,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Adds Page model to cache, and returns cached object
-        /// </summary>
-        /// <param name="pageModel"></param>
-        /// <returns></returns>
-        public static PageCache Read( Rock.Model.Page pageModel )
-        {
-            string cacheKey = PageCache.CacheKey( pageModel.Id );
-
-            ObjectCache cache = MemoryCache.Default;
-            PageCache page = cache[cacheKey] as PageCache;
-
-            if ( page != null )
-                return page;
-            else
-            {
-                page = PageCache.CopyModel( pageModel );
-                cache.Set( cacheKey, page, new CacheItemPolicy() );
-
-                return page;
-            }
-        }
-
-        /// <summary>
         /// Returns Page object from cache.  If page does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
@@ -596,43 +791,93 @@ namespace Rock.Web.Cache
             PageCache page = cache[cacheKey] as PageCache;
 
             if ( page != null )
+            {
                 return page;
+            }
             else
             {
-                Rock.Model.PageService pageService = new Model.PageService();
-                Rock.Model.Page pageModel = pageService.Get( id );
+                var pageService = new PageService();
+                var pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
                     pageModel.LoadAttributes();
+                    page = new PageCache( pageModel );
 
-                    page = PageCache.CopyModel( pageModel );
- 
-                    cache.Set( cacheKey, page, new CacheItemPolicy() );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, page, cachePolicy );
+                    cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
+                    
+                    return page;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static PageCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var pageService = new PageService();
+                var pageModel = pageService.Get( guid );
+                if ( pageModel != null )
+                {
+                    pageModel.LoadAttributes();
+                    var page = new PageCache( pageModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( PageCache.CacheKey( page.Id ), page, cachePolicy );
+                    cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
 
                     return page;
                 }
                 else
+                {
                     return null;
-
+                }
             }
         }
 
-        // Copies the Model object to the Cached object
-        private static PageCache CopyModel( Rock.Model.Page pageModel )
+        /// <summary>
+        /// Adds Page model to cache, and returns cached object
+        /// </summary>
+        /// <param name="pageModel"></param>
+        /// <returns></returns>
+        public static PageCache Read( Page pageModel )
         {
-            // Creates new object by copying properties of model
-            var page = new Rock.Web.Cache.PageCache(pageModel);
+            string cacheKey = PageCache.CacheKey( pageModel.Id );
 
-            if (pageModel.Attributes != null)
-                foreach ( var attribute in pageModel.Attributes )
-                    page.AttributeIds.Add( attribute.Value.Id );
+            ObjectCache cache = MemoryCache.Default;
+            PageCache page = cache[cacheKey] as PageCache;
 
-            page.PageContexts = new Dictionary<string,string>();
-            if ( pageModel.PageContexts != null )
-                foreach ( var pageContext in pageModel.PageContexts )
-                    page.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
+            if ( page != null )
+            {
+                return page;
+            }
+            else
+            {
+                page = new PageCache( pageModel );
 
-            return page;
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, page, cachePolicy );
+                cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
+
+                return page;
+            }
         }
 
         /// <summary>
@@ -673,83 +918,6 @@ namespace Rock.Web.Cache
                     if ( page != null && page.Layout == layout )
                         page.FlushBlocks();
                 }
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
-
-        #region Menu XML Methods
-
-        /// <summary>
-        /// Returns XML for a page menu.  XML will be 1 level deep
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public XDocument MenuXml( Rock.Model.Person person )
-        {
-            return MenuXml( 1, person );
-        }
-
-        /// <summary>
-        /// Returns XML for a page menu.
-        /// </summary>
-        /// <param name="levelsDeep">The page levels deep.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Rock.Model.Person person )
-        {
-            XElement menuElement = MenuXmlElement( levelsDeep, person );
-            return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
-        }
-
-        private XElement MenuXmlElement( int levelsDeep,  Rock.Model.Person person )
-        {
-            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
-            {
-                string iconUrl = string.Empty;
-                if ( this.IconFileId.HasValue )
-                {
-                    iconUrl = string.Format( "{0}/image.ashx?{1}",
-                        HttpContext.Current.Request.ApplicationPath,
-                        this.IconFileId.Value );
-                }
-
-                XElement pageElement = new XElement( "page",
-                    new XAttribute( "id", this.Id ),
-                    new XAttribute( "title", this.Title ?? this.Name ),
-                    new XAttribute( "url", this.Url ),
-                    new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
-                    new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
-                    new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
-                    new XElement( "description", this.Description ?? "" ),
-                    new XElement( "icon-url", iconUrl ) );
-
-                XElement childPagesElement = new XElement( "pages" );
-
-                pageElement.Add( childPagesElement );
-
-                if ( levelsDeep > 0 && this.MenuDisplayChildPages)
-                foreach ( PageCache page in Pages )
-                {
-                    XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
-                    if ( childPageElement != null )
-                        childPagesElement.Add( childPageElement );
-                }
-
-                return pageElement;
-            }
-            else
-                return null;
         }
 
         #endregion

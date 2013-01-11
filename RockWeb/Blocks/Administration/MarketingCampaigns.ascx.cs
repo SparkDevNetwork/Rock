@@ -32,11 +32,11 @@ namespace RockWeb.Blocks.Administration
         /// <value>
         /// The state of the marketing campaign audiences.
         /// </value>
-        private List<MarketingCampaignAudienceDto> MarketingCampaignAudiencesState
+        private ViewStateList<MarketingCampaignAudience> MarketingCampaignAudiencesState
         {
             get
             {
-                return ViewState["MarketingCampaignAudiencesState"] as List<MarketingCampaignAudienceDto>;
+                return ViewState["MarketingCampaignAudiencesState"] as ViewStateList<MarketingCampaignAudience>;
             }
 
             set
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( pnlMarketingCampaignAdEditor.Visible )
             {
-                LoadAdAttributes( new MarketingCampaignAdDto(), true, false );
+                LoadAdAttributes( new MarketingCampaignAd(), true, false );
             }
 
             base.OnLoad( e );
@@ -216,7 +216,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !marketingCampaignAdId.Equals( 0 ) )
             {
-                marketingCampaignAd = MarketingCampaignAd.Read( marketingCampaignAdId );
+                marketingCampaignAd = new MarketingCampaignAdService().Get( marketingCampaignAdId );
             }
             else
             {
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Administration
             ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId );
             tbPriority.Text = marketingCampaignAd.Priority.ToString();
 
-            SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, Person.Read( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
+            SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, new PersonService().Get( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
 
             if ( marketingCampaignAdId.Equals( 0 ) )
             {
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlMarketingCampaignAdType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            MarketingCampaignAdDto marketingCampaignAd = new MarketingCampaignAdDto();
+            MarketingCampaignAd marketingCampaignAd = new MarketingCampaignAd();
 
             LoadAdAttributes( marketingCampaignAd, false, false );
             Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
@@ -289,21 +289,21 @@ namespace RockWeb.Blocks.Administration
 
             int marketingAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
 
-            MarketingCampaignAdType adType = MarketingCampaignAdType.Read( marketingAdTypeId );
+            MarketingCampaignAdType adType = new MarketingCampaignAdTypeService().Get( marketingAdTypeId );
             tbAdDateRangeEndDate.Visible = adType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
 
-            List<Rock.Model.Attribute> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
             marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
             marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
-            marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValueDto>>();
+            marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValue>>();
             foreach ( var attribute in attributesForAdType )
             {
-                marketingCampaignAd.Attributes[attribute.Key] = Rock.Web.Cache.AttributeCache.Read( attribute );
+                marketingCampaignAd.Attributes[attribute.Key] = attribute;
                 if ( marketingCampaignAd.AttributeValues.Count( v => v.Key.Equals( attribute.Key ) ) == 0 )
                 {
-                    List<AttributeValueDto> attributeValues = new List<AttributeValueDto>();
-                    attributeValues.Add( new AttributeValueDto { Value = attribute.DefaultValue } );
+                    List<AttributeValue> attributeValues = new List<AttributeValue>();
+                    attributeValues.Add( new AttributeValue { Value = attribute.DefaultValue } );
                     marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
                 }
             }
@@ -325,22 +325,12 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="marketingAdTypeId">The marketing ad type id.</param>
         /// <returns></returns>
-        private static List<Rock.Model.Attribute> GetAttributesForAdType( int marketingAdTypeId )
+        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
         {
             MarketingCampaignAd temp = new MarketingCampaignAd();
             temp.MarketingCampaignAdTypeId = marketingAdTypeId;
-
-            Rock.Attribute.Helper.LoadAttributes( temp );
-            List<Rock.Web.Cache.AttributeCache> attribs = temp.Attributes.Values.ToList();
-
-            List<Rock.Model.Attribute> result = new List<Rock.Model.Attribute>();
-            foreach ( var item in attribs )
-            {
-                var attrib = item.ToModel();
-                result.Add( attrib );
-            }
-
-            return result;
+            temp.LoadAttributes();
+            return temp.Attributes.Values.ToList();
         }
 
         /// <summary>
@@ -602,7 +592,7 @@ namespace RockWeb.Blocks.Administration
         protected void gMarketingCampaignAudiences_Delete( object sender, RowEventArgs e )
         {
             int marketingCampaignAudienceId = (int)e.RowKeyValue;
-            MarketingCampaignAudiencesState.RemoveDto( marketingCampaignAudienceId );
+            MarketingCampaignAudiencesState.RemoveEntity( marketingCampaignAudienceId );
             BindMarketingCampaignAudiencesGrid();
         }
 
@@ -621,10 +611,10 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindMarketingCampaignAudiencesGrid()
         {
-            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.Name ).ToList();
+            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.AudienceTypeValue.Name ).ToList();
             gMarketingCampaignAudiencesPrimary.DataBind();
 
-            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.Name ).ToList();
+            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.AudienceTypeValue.Name ).ToList();
             gMarketingCampaignAudiencesSecondary.DataBind();
         }
 
@@ -638,10 +628,10 @@ namespace RockWeb.Blocks.Administration
             int audienceTypeValueId = int.Parse( ddlMarketingCampaignAudiences.SelectedValue );
             MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
             marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
-            marketingCampaignAudience.AudienceTypeValue = DefinedValue.Read( audienceTypeValueId );
+            marketingCampaignAudience.AudienceTypeValue = new DefinedValueService().Get( audienceTypeValueId );
             marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
 
-            MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( marketingCampaignAudience ) );
+            MarketingCampaignAudiencesState.Add( marketingCampaignAudience.Clone() as MarketingCampaignAudience );
 
             pnlMarketingCampaignAudiencePicker.Visible = false;
             pnlDetails.Visible = true;
@@ -857,7 +847,7 @@ namespace RockWeb.Blocks.Administration
             hfMarketingCampaignId.Value = marketingCampaign.Id.ToString();
 
             // refresh from db using new service context since the above child items were saved outside of the marketingCampaign object
-            marketingCampaign = MarketingCampaign.Read( marketingCampaign.Id );
+            marketingCampaign = new MarketingCampaignService().Get( marketingCampaign.Id );
             UpdateReadonlyDetails( marketingCampaign );
 
             SetEditMode( false );
@@ -926,7 +916,7 @@ namespace RockWeb.Blocks.Administration
         {
             MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
             MarketingCampaign marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
-            MarketingCampaignAudiencesState = new List<MarketingCampaignAudienceDto>();
+            MarketingCampaignAudiencesState = new ViewStateList<MarketingCampaignAudience>();
 
             if ( marketingCampaign == null )
             {
@@ -945,10 +935,7 @@ namespace RockWeb.Blocks.Administration
             ddlContactPerson.SelectedValue = ( marketingCampaign.ContactPersonId ?? None.Id ).ToString();
             ddlEventGroup.SelectedValue = ( marketingCampaign.EventGroupId ?? None.Id ).ToString();
 
-            foreach ( var audience in marketingCampaign.MarketingCampaignAudiences )
-            {
-                MarketingCampaignAudiencesState.Add( new MarketingCampaignAudienceDto( audience ) );
-            }
+            MarketingCampaignAudiencesState.AddAll( marketingCampaign.MarketingCampaignAudiences.ToList() );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
 
@@ -1023,7 +1010,7 @@ namespace RockWeb.Blocks.Administration
         protected void ddlContactPerson_SelectedIndexChanged( object sender, EventArgs e )
         {
             int personId = int.Parse( ddlContactPerson.SelectedValue );
-            Person contactPerson = Person.Read( personId );
+            Person contactPerson = new PersonService().Get( personId );
             if ( contactPerson != null )
             {
                 tbContactEmail.Text = contactPerson.Email;

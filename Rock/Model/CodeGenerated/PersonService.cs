@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Person Service class
     /// </summary>
-    public partial class PersonService : Service<Person, PersonDto>
+    public partial class PersonService : Service<Person>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonService"/> class
@@ -35,60 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PersonService(IRepository<Person> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Person CreateNew()
-        {
-            return new Person();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PersonDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PersonDto> QueryableDto( IQueryable<Person> items )
-        {
-            return items.Select( m => new PersonDto()
-                {
-                    IsSystem = m.IsSystem,
-                    RecordTypeValueId = m.RecordTypeValueId,
-                    RecordStatusValueId = m.RecordStatusValueId,
-                    RecordStatusReasonValueId = m.RecordStatusReasonValueId,
-                    PersonStatusValueId = m.PersonStatusValueId,
-                    TitleValueId = m.TitleValueId,
-                    GivenName = m.GivenName,
-                    NickName = m.NickName,
-                    LastName = m.LastName,
-                    SuffixValueId = m.SuffixValueId,
-                    PhotoId = m.PhotoId,
-                    BirthDay = m.BirthDay,
-                    BirthMonth = m.BirthMonth,
-                    BirthYear = m.BirthYear,
-                    Gender = m.Gender,
-                    MaritalStatusValueId = m.MaritalStatusValueId,
-                    AnniversaryDate = m.AnniversaryDate,
-                    GraduationDate = m.GraduationDate,
-                    Email = m.Email,
-                    IsEmailActive = m.IsEmailActive,
-                    EmailNote = m.EmailNote,
-                    DoNotEmail = m.DoNotEmail,
-                    SystemNote = m.SystemNote,
-                    ViewedCount = m.ViewedCount,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -143,6 +89,60 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PersonExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Person object to a new Person object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Person Clone( this Person source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Person;
+            }
+            else
+            {
+                var target = new Person();
+                target.IsSystem = source.IsSystem;
+                target.RecordTypeValueId = source.RecordTypeValueId;
+                target.RecordStatusValueId = source.RecordStatusValueId;
+                target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
+                target.PersonStatusValueId = source.PersonStatusValueId;
+                target.IsDeceased = source.IsDeceased;
+                target.TitleValueId = source.TitleValueId;
+                target.GivenName = source.GivenName;
+                target.NickName = source.NickName;
+                target.LastName = source.LastName;
+                target.SuffixValueId = source.SuffixValueId;
+                target.PhotoId = source.PhotoId;
+                target.BirthDay = source.BirthDay;
+                target.BirthMonth = source.BirthMonth;
+                target.BirthYear = source.BirthYear;
+                target.Gender = source.Gender;
+                target.MaritalStatusValueId = source.MaritalStatusValueId;
+                target.AnniversaryDate = source.AnniversaryDate;
+                target.GraduationDate = source.GraduationDate;
+                target.Email = source.Email;
+                target.IsEmailActive = source.IsEmailActive;
+                target.EmailNote = source.EmailNote;
+                target.DoNotEmail = source.DoNotEmail;
+                target.SystemNote = source.SystemNote;
+                target.ViewedCount = source.ViewedCount;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

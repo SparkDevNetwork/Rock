@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EmailTemplate Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
+    public partial class EmailTemplateService : Service<EmailTemplate>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EmailTemplateService"/> class
@@ -38,46 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EmailTemplate CreateNew()
-        {
-            return new EmailTemplate();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EmailTemplateDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EmailTemplateDto> QueryableDto( IQueryable<EmailTemplate> items )
-        {
-            return items.Select( m => new EmailTemplateDto()
-                {
-                    IsSystem = m.IsSystem,
-                    PersonId = m.PersonId,
-                    Category = m.Category,
-                    Title = m.Title,
-                    From = m.From,
-                    To = m.To,
-                    Cc = m.Cc,
-                    Bcc = m.Bcc,
-                    Subject = m.Subject,
-                    Body = m.Body,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -89,6 +49,45 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EmailTemplateExtensionMethods
+    {
+        /// <summary>
+        /// Clones this EmailTemplate object to a new EmailTemplate object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EmailTemplate Clone( this EmailTemplate source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as EmailTemplate;
+            }
+            else
+            {
+                var target = new EmailTemplate();
+                target.IsSystem = source.IsSystem;
+                target.PersonId = source.PersonId;
+                target.Category = source.Category;
+                target.Title = source.Title;
+                target.From = source.From;
+                target.To = source.To;
+                target.Cc = source.Cc;
+                target.Bcc = source.Bcc;
+                target.Subject = source.Subject;
+                target.Body = source.Body;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

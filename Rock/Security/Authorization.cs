@@ -257,6 +257,130 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Determines whether the specified entity is private. Entity is considered private if only the current user 
+        /// has access.  In this scenario, the first rule would give current user access, and second rule would deny 
+        /// all users.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified entity is private; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsPrivate( ISecured entity, string action, Person person )
+        {
+            if ( person != null )
+            {
+                // If there's no Authorizations object, create it
+                if ( Authorizations == null )
+                {
+                    Load();
+                }
+
+                // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
+                // one to find the first one specific to the selected user or a role that the selected user belongs 
+                // to.  If a match is found return whether the user is allowed (true) or denied (false) access
+                if ( Authorizations.Keys.Contains( entity.TypeId ) &&
+                    Authorizations[entity.TypeId].Keys.Contains( entity.Id ) &&
+                    Authorizations[entity.TypeId][entity.Id].Keys.Contains( action ) &&
+                    Authorizations[entity.TypeId][entity.Id][action].Count == 2 )
+                {
+                    AuthRule firstRule = Authorizations[entity.TypeId][entity.Id][action][0];
+                    AuthRule secondRule = Authorizations[entity.TypeId][entity.Id][action][1];
+
+                    // If first rule allows current user, and second rule denies all other users then entity is private
+                    if ( firstRule.AllowOrDeny == "A" &&
+                        firstRule.SpecialRole == SpecialRole.None &&
+                        firstRule.PersonId == person.Id &&
+                        secondRule.AllowOrDeny == "D" &&
+                        secondRule.SpecialRole == SpecialRole.AllUsers )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Makes the private.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The person id.</param>
+        public static void MakePrivate( ISecured entity, string action, Person person, int? personId )
+        {
+            if ( !IsPrivate( entity, action, person ) )
+            {
+                if ( person != null )
+                {
+                    // If there's no Authorizations object, create it
+                    if ( Authorizations == null )
+                    {
+                        Load();
+                    }
+
+                    var authService = new AuthService();
+
+                    // If there are not entries in the Authorizations object for this entity type and entity instance, create
+                    // the dictionary entries
+                    if ( !Authorizations.Keys.Contains( entity.TypeId ) )
+                    {
+                        Authorizations.Add( entity.TypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                    }
+
+                    if ( !Authorizations[entity.TypeId].Keys.Contains( entity.Id ) )
+                    {
+                        Authorizations[entity.TypeId].Add( entity.Id, new Dictionary<string, List<AuthRule>>() );
+                    }
+
+                    if ( !Authorizations[entity.TypeId][entity.Id].Keys.Contains( action ) )
+                    {
+                        Authorizations[entity.TypeId][entity.Id].Add( action, new List<AuthRule>() );
+                    }
+                    else
+                    {
+                        // If existing rules exist, delete them.
+                        foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
+                        {
+                            var oldAuth = authService.Get( authRule.Id );
+                            authService.Delete( oldAuth, personId );
+                        }
+                    }
+
+                    var rules = new List<AuthRule>();
+
+                    Auth auth = new Auth();
+                    auth.EntityTypeId = entity.TypeId;
+                    auth.EntityId = entity.Id;
+                    auth.Order = 0;
+                    auth.Action = action;
+                    auth.AllowOrDeny = "A";
+                    auth.SpecialRole = SpecialRole.None;
+                    auth.PersonId = person.Id;
+                    authService.Add( auth, personId );
+                    authService.Save( auth, personId );
+                    rules.Add( new AuthRule( auth ) );
+
+                    auth = new Auth();
+                    auth.EntityTypeId = entity.TypeId;
+                    auth.EntityId = entity.Id;
+                    auth.Order = 1;
+                    auth.Action = action;
+                    auth.AllowOrDeny = "D";
+                    auth.SpecialRole = SpecialRole.AllUsers;
+                    authService.Add( auth, personId );
+                    authService.Save( auth, personId );
+                    rules.Add( new AuthRule( auth ) );
+
+                    Authorizations[entity.TypeId][entity.Id][action] = rules;
+                }
+            }
+        }
+        
+        /// <summary>
         /// Returns the authorization rules for the specified entity and action.
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>
