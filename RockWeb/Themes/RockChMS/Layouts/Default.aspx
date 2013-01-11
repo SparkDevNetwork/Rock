@@ -71,7 +71,7 @@
 			</div>
 		</div>
 		
-		<div class="container-fluid">
+		<div class="container-fluid body-content">
 			<div class="row-fluid">
 				<div class="span12">
 					<Rock:Zone ID="Content" runat="server" />

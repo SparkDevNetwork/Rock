@@ -19,12 +19,7 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
-<<<<<<< HEAD
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.0.min.js") %>" ></script>
-=======
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.3.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
->>>>>>> f9b70accf4d5e42eb66054b1b8b75a3f61885d27
+    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
 
 </head>

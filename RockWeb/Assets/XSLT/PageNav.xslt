@@ -13,7 +13,11 @@
 						<a href="#" class="dropdown-toggle pagenav-item" data-toggle="dropdown">
 							<xsl:attribute name="href">#</xsl:attribute>
 
-              <i class="icon-book"></i>
+              <i>
+                <xsl:attribute name="class">
+                  <xsl:value-of select="@icon-css-class"/>
+                </xsl:attribute>
+              </i>
 							<xsl:value-of select="@title"/>
               
               <b class="caret"></b>
