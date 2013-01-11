@@ -24,7 +24,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell reorder";
         }
 
         /// <summary>
@@ -95,7 +94,12 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl a = new HtmlGenericControl( "a" );
                 a.Attributes.Add( "href", "#" );
-                a.InnerText = "Reorder";
+                a.AddCssClass( "minimal" );
+                
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "icon-reorder" );
+                a.Controls.Add( buttonIcon );
+
                 cell.Controls.Add( a );
             }
         }

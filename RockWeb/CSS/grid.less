@@ -1,12 +1,10 @@
 ﻿
 .table-bordered th, .grid-table tfoot td.grid-footer  {
 	.header-gradient();
-	
 	font-size: 10px;
 	color: #444;
 	text-transform: uppercase;
 }
-
 
 /* bootstrap override */
 .table-hover tbody tr:hover td,
@@ -15,6 +13,21 @@
     cursor: pointer;
 }
 
+.grid-table th a:hover
+{
+    text-decoration: none;
+}
+
+td[align=center] 
+{
+    text-align: center;
+}
+
+.grid-table a.minimal i
+{
+    text-decoration: none;
+    color: @textColor;
+}
 
 .grid-table thead th.ascending a::before
 {
@@ -30,27 +43,9 @@
 	font-family: FontAwesome; 
 }
 
-
-.grid-icon-cell.reorder a:before
-{
-    content: "\f0c9";
-}
-
-.grid-icon-cell.bool span.true:before
-{
-    content: "\f00c";
-}
-
 /* grid footer classes */
-
-.grid-table tfoot  
-{
-    height: 48px;
-}
-
 .grid-table tfoot td 
 {
-    background: #fff;
     text-align: right;
 }
 
@@ -59,60 +54,20 @@
     margin-left: 8px;
 }
 
-.grid-table tfoot tr:last-child td 
+.grid-table .pagination
 {
-    border-radius: 0 0 4px 4px;
-}
-
-
-.grid-table tfoot .pagination {
-    height: 20px;
-    margin: 2px 0;
-}
-
-.grid-table tfoot .pagination .page-navigation 
-{
-    width: 45%;
-}
-
-.grid-table tfoot .pagination .page-size 
-{
-    float: right;
-    width: 45%;
-}
-
-.grid-table tfoot .pagination .page-size
-{
-    float: right;
     margin: 0;
-    width: 200px;
-    text-align: right;
 }
 
-.grid-table tfoot .pagination .page-size span
+.grid-table .pagination a
 {
-    float: left;
-    font-size: 10px;
-    color: #fff;
+    color: @textColor;
 }
 
-.grid-table tfoot .pagination .page-size .page-size-options
+.grid-table .pagination ul > li > a, .pagination ul > li > span
 {
-    float: right;
-}
-
-.grid-table tfoot .pagination a 
-{
-    line-height: 20px;  
-    font-size: 11px; 
-    padding: 0 6px;
-    border-color: @paginationBorder;
-    background-color: @paginationBackground;
-    color: @rockTextColor;
-}
-
-.grid-table tfoot .pagination a:hover, .grid-table .pagination .active a {
-    background-color: @paginationActiveBackground;
+    font-size: 11px;
+    padding: 4px 12px;
 }
 
 /* grid filter styles */
