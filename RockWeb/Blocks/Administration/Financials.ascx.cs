@@ -99,15 +99,15 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserValue( "From Date", dtStartDate.Text );
-            rFilter.SaveUserValue( "To Date", dtEndDate.Text );
-            rFilter.SaveUserValue( "From Amount", txtFromAmount.Text );
-            rFilter.SaveUserValue( "To Amount", txtToAmount.Text );
-            rFilter.SaveUserValue( "Transaction Code", txtTransactionCode.Text );
-            rFilter.SaveUserValue( "Fund", ddlFundType.SelectedValue != All.Id.ToString() ? ddlFundType.SelectedValue : string.Empty);
-            rFilter.SaveUserValue( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
-            rFilter.SaveUserValue( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
-            rFilter.SaveUserValue( "Source", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
+            rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
+            rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
+            rFilter.SaveUserPreference( "From Amount", txtFromAmount.Text );
+            rFilter.SaveUserPreference( "To Amount", txtToAmount.Text );
+            rFilter.SaveUserPreference( "Transaction Code", txtTransactionCode.Text );
+            rFilter.SaveUserPreference( "Fund", ddlFundType.SelectedValue != All.Id.ToString() ? ddlFundType.SelectedValue : string.Empty);
+            rFilter.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
+            rFilter.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
+            rFilter.SaveUserPreference( "Source", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
 
             BindGrid();
         }
@@ -119,15 +119,15 @@ namespace RockWeb.Blocks.Administration
         private void BindFilter()
         {
             DateTime fromDate;
-            if ( !DateTime.TryParse( rFilter.GetUserValue( "From Date" ), out fromDate ) )
+            if ( !DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
             {
                 fromDate = DateTime.Today;
             }
             dtStartDate.Text = fromDate.ToShortDateString();
-            dtEndDate.Text = rFilter.GetUserValue( "To Date" );
-            txtFromAmount.Text = rFilter.GetUserValue( "From Amount" );
-            txtToAmount.Text = rFilter.GetUserValue( "To Amount" );
-            txtTransactionCode.Text = rFilter.GetUserValue( "Transaction Code" );
+            dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
+            txtFromAmount.Text = rFilter.GetUserPreference( "From Amount" );
+            txtToAmount.Text = rFilter.GetUserPreference( "To Amount" );
+            txtTransactionCode.Text = rFilter.GetUserPreference( "Transaction Code" );
 
             ddlFundType.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
 
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( Fund fund in fundService.Queryable() )
             {
                 ListItem li = new ListItem( fund.Name, fund.Id.ToString() );
-                li.Selected = fund.Id.ToString() == rFilter.GetUserValue( "Fund" );
+                li.Selected = fund.Id.ToString() == rFilter.GetUserPreference( "Fund" );
                 ddlFundType.Items.Add( li );
             }
 
@@ -144,14 +144,14 @@ namespace RockWeb.Blocks.Administration
             BindDefinedTypeDropdown( ddlSourceType, Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source" );
         }
 
-        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userValueKey )
+        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
         {
             ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
             ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
 
-            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserValue( userValueKey ) ) )
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( userPreferenceKey ) ) )
             {
-                ListControl.SelectedValue = rFilter.GetUserValue( userValueKey );
+                ListControl.SelectedValue = rFilter.GetUserPreference( userPreferenceKey );
             }
         }
 

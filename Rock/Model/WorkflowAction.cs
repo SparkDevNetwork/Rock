@@ -5,9 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Workflow;
@@ -18,6 +18,7 @@ namespace Rock.Model
     /// Action POCO Entity.
     /// </summary>
     [Table( "WorkflowAction" )]
+    [DataContract( IsReference = true )]
     public partial class WorkflowAction : Model<WorkflowAction>
     {
 
@@ -29,6 +30,7 @@ namespace Rock.Model
         /// <value>
         /// The activity id.
         /// </value>
+        [DataMember]
         public int ActivityId { get; set; }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The activity type id.
         /// </value>
+        [DataMember]
         public int ActionTypeId { get; set; }
 
         /// <summary>
@@ -45,6 +48,7 @@ namespace Rock.Model
         /// <value>
         /// The last processed date time.
         /// </value>
+        [DataMember]
         public DateTime? LastProcessedDateTime { get; set; }
 
         /// <summary>
@@ -53,6 +57,7 @@ namespace Rock.Model
         /// <value>
         /// The completed date time.
         /// </value>
+        [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
         #endregion
@@ -65,6 +70,7 @@ namespace Rock.Model
         /// <value>
         /// The activity.
         /// </value>
+        [DataMember]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
@@ -73,6 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the activity.
         /// </value>
+        [DataMember]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -103,15 +110,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
         #endregion
 
         #region Methods
@@ -119,11 +117,11 @@ namespace Rock.Model
         /// <summary>
         /// Processes this instance.
         /// </summary>
-        /// <param name="dto">The dto.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.SystemException"></exception>
-        internal virtual bool Process( IDto dto, out List<string> errorMessages )
+        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -135,7 +133,7 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            bool success = workflowAction.Execute( this, dto, out errorMessages );
+            bool success = workflowAction.Execute( this, entity, out errorMessages );
 
             AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
@@ -222,30 +220,11 @@ namespace Rock.Model
             var action = new WorkflowAction();
             action.Activity = activity;
             action.ActionType = actionType;
+            action.LoadAttributes();
 
             action.AddSystemLogEntry( "Activated" );
 
             return action;
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static WorkflowAction Read( int id )
-        {
-            return Read<WorkflowAction>( id );
-        }
-
-        /// <summary>
-        /// Reads the specified GUID.
-        /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static WorkflowAction Read( Guid guid )
-        {
-            return Read<WorkflowAction>( guid );
         }
 
         #endregion

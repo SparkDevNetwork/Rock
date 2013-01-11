@@ -2,13 +2,13 @@
 <asp:UpdatePanel ID="upPages" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
     
     <asp:PlaceHolder ID="phContent" runat="server">
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
-        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnEditRow="rGrid_Edit">
+        <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />

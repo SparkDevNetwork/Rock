@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
+using Rock.Model;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -15,12 +17,132 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class EntityTypeCache : Rock.Model.EntityTypeDto
+    public class EntityTypeCache
     {
-        private EntityTypeCache() : base() { }
-        private EntityTypeCache( Rock.Model.EntityType model ) : base( model ) { }
+        #region Static Fields
+
+        // Locking object
+        private static readonly Object obj = new object();
 
         private static Dictionary<string, int> entityTypes = new Dictionary<string, int>();
+
+        #endregion
+
+        #region Constructors
+
+        private EntityTypeCache()
+        {
+        }
+
+        private EntityTypeCache( EntityType model )
+        {
+            CopyFromModel( model );
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>
+        /// The id.
+        /// </value>
+        public virtual int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GUID.
+        /// </summary>
+        /// <value>
+        /// The GUID.
+        /// </value>
+        public virtual Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the assembly.
+        /// </summary>
+        /// <value>
+        /// The name of the assembly.
+        /// </value>
+        public string AssemblyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the friendly.
+        /// </summary>
+        /// <value>
+        /// The name of the friendly.
+        /// </value>
+        public string FriendlyName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is entity.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is entity; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEntity { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is secured.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is secured; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSecured { get; set; }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        public void CopyFromModel( EntityType entityType )
+        {
+            this.Id = entityType.Id;
+            this.Guid = entityType.Guid;
+            this.Name = entityType.Name;
+            this.AssemblyName = entityType.AssemblyName;
+            this.FriendlyName = entityType.FriendlyName;
+            this.IsEntity = entityType.IsEntity;
+            this.IsSecured = entityType.IsSecured;
+
+            lock ( obj )
+            {
+                // update static dictionary object with name/id combination
+                if ( entityTypes.ContainsKey( entityType.Name ) )
+                {
+                    entityTypes[entityType.Name] = entityType.Id;
+                }
+                else
+                {
+                    entityTypes.Add( entityType.Name, entityType.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
 
         #region Static Methods
 
@@ -30,35 +152,49 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Reads the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        public static EntityTypeCache Read( string name )
-        {
-            if ( entityTypes.ContainsKey( name ) )
-                return Read( entityTypes[name] );
-
-            var entityTypeService = new Rock.Model.EntityTypeService();
-            var entityTypeModel = entityTypeService.Get( name, true, null );
-            return Read( entityTypeModel );
-        }
-
-        /// <summary>
         /// Gets the id.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
         public static int? GetId( string name )
         {
-            if (String.IsNullOrEmpty(name))
+            if ( String.IsNullOrEmpty( name ) )
+            {
                 return null;
+            }
 
             return Read( name ).Id;
         }
 
-        /// <summary>
-        /// Returns EntityType object from cache.  If entityType does not already exist in cache, it
+         /// <summary>
+        /// Reads the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read( string name )
+        {
+            int? entityTypeId = null;
+
+            lock ( obj )
+            {
+                if ( entityTypes.ContainsKey( name ) )
+                {
+                    entityTypeId = entityTypes[name];
+                }
+            }
+
+            if ( entityTypeId.HasValue )
+            {
+                return Read( entityTypeId.Value );
+            }
+
+            var entityTypeService = new EntityTypeService();
+            var entityTypeModel = entityTypeService.Get( name, true, null );
+            return Read( entityTypeModel );
+        }
+
+       /// <summary>
+        /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
         /// <param name="id"></param>
@@ -71,21 +207,62 @@ namespace Rock.Web.Cache
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType != null )
+            {
                 return entityType;
+            }
             else
             {
-                Rock.Model.EntityTypeService entityTypeService = new Rock.Model.EntityTypeService();
-                Rock.Model.EntityType entityTypeModel = entityTypeService.Get( id );
+                var entityTypeService = new EntityTypeService();
+                var entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
-                    entityType = CopyModel( entityTypeModel );
+                    entityType = new EntityTypeCache( entityTypeModel );
 
-                    cache.Set( cacheKey, entityType, new CacheItemPolicy() );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, entityType, cachePolicy );
+                    cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
 
                     return entityType;
                 }
                 else
+                {
                     return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var entityTypeService = new EntityTypeService();
+                var entityTypeModel = entityTypeService.Get( guid );
+                if ( entityTypeModel != null )
+                {
+                    var entityType = new EntityTypeCache( entityTypeModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( EntityTypeCache.CacheKey( entityType.Id ), entityType, cachePolicy );
+                    cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
+
+                    return entityType;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -94,7 +271,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityTypeModel">The field type model.</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( Rock.Model.EntityType entityTypeModel )
+        public static EntityTypeCache Read( EntityType entityTypeModel )
         {
             string cacheKey = EntityTypeCache.CacheKey( entityTypeModel.Id );
 
@@ -102,36 +279,19 @@ namespace Rock.Web.Cache
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType != null )
-                return entityType;
-            else
             {
-                entityType = EntityTypeCache.CopyModel( entityTypeModel );
-                cache.Set( cacheKey, entityType, new CacheItemPolicy() );
-
                 return entityType;
-            }
-        }
-
-        /// <summary>
-        /// Copies the model.
-        /// </summary>
-        /// <param name="entityTypeModel">The field type model.</param>
-        /// <returns></returns>
-        public static EntityTypeCache CopyModel( Rock.Model.EntityType entityTypeModel )
-        {
-            EntityTypeCache entityType = new EntityTypeCache( entityTypeModel );
-
-            // update static dictionary object with name/id combination
-            if ( entityTypes.ContainsKey( entityType.Name ) )
-            {
-                entityTypes[entityType.Name] = entityType.Id;
             }
             else
             {
-                entityTypes.Add( entityType.Name, entityType.Id );
-            }
+                entityType = new EntityTypeCache( entityTypeModel );
 
-            return entityType;
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, entityType, cachePolicy );
+                cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
+
+                return entityType;
+            }
         }
 
         /// <summary>

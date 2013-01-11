@@ -15,7 +15,7 @@ namespace Rock.Model
     /// <summary>
     /// Block Type POCO Service class
     /// </summary>
-    public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
+    public partial class BlockTypeService 
     {
         /// <summary>
         /// Gets Block Type by Guid
@@ -48,13 +48,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of Blocks on the filesystem that have not yet been registered in the service.
+        /// Registers any block types that have not yet been registered in the service.
         /// </summary>
         /// <param name="physWebAppPath">the physical path of the web application</param>
-        /// <returns>a collection of <see cref="BlockType">Blocks</see> that are not yet registered</returns>
-        public IEnumerable<BlockType> GetUnregisteredBlocks( string physWebAppPath )
+        /// <param name="page">The page.</param>
+        /// <param name="currentPersonId">The current person id.</param>
+        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, int? currentPersonId )
         {
-            List<string> list = new List<string>();
+            // Dictionary for block types.  Key is path, value is friendly name
+            var list = new Dictionary<string, string>();
 
             // Find all the blocks in the Blocks folder...
             FindAllBlocksInPath( physWebAppPath, list, "Blocks" );
@@ -62,12 +64,41 @@ namespace Rock.Model
             // Now do the exact same thing for the Plugins folder...
             FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
-            // Now remove from the list any that are already registered (via the path)
+            // Get a list of the blocktypes already registered (via the path)
             var registered = from r in Repository.GetAll() select r.Path;
-            return ( from u in list.Except( registered, StringComparer.CurrentCultureIgnoreCase ) select new BlockType { Path = u, Guid = Guid.NewGuid() } );
+
+            // for each unregistered blocktype
+            foreach ( string path in list.Keys.Except( registered, StringComparer.CurrentCultureIgnoreCase ) )
+            {
+                // Attempt to load the control
+                System.Web.UI.Control control = page.LoadControl( path );
+                if ( control is Rock.Web.UI.RockBlock )
+                {
+                    // Parse the relative path to get the name
+                    var nameParts = list[path].Split( '/' );
+                    for ( int i = 0; i < nameParts.Length; i++ )
+                    {
+                        if (i == nameParts.Length - 1)
+                        {
+                            nameParts[i] = Path.GetFileNameWithoutExtension(nameParts[i]);
+                        }
+                        nameParts[i] = nameParts[i].SplitCase();
+                    }
+
+                    // Create new BlockType record and save it
+                    BlockType blockType = new BlockType();
+                    blockType.Path = path;
+                    blockType.Guid = new Guid();
+                    blockType.Name = String.Join(" - ", nameParts);
+                    blockType.Description = Rock.Reflection.GetDescription( control.GetType() ) ?? string.Empty;
+
+                    this.Add( blockType, currentPersonId );
+                    this.Save( blockType, currentPersonId );
+                }
+            }
         }
 
-        private static void FindAllBlocksInPath( string physWebAppPath, List<string> list, string folder )
+        private static void FindAllBlocksInPath( string physWebAppPath, Dictionary<string, string> list, string folder )
         {
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
             string physicalPath = string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
@@ -85,8 +116,8 @@ namespace Rock.Model
                 // Convert them to virtual file/path: ~/<folder>/foo/bar.ascx
                 for ( int i = 0; i < allBlockNames.Length; i++ )
                 {
-                    fileName = allBlockNames[i].FullName.Replace( physicalPath, virtualPath );
-                    list.Add( fileName.Replace( @"\", "/" ) );
+                    fileName = allBlockNames[i].FullName.Replace( physicalPath, virtualPath ).Replace( @"\", "/" );
+                    list.Add( fileName, fileName.Replace( virtualPath, string.Empty ) );
                 }
             }
         }

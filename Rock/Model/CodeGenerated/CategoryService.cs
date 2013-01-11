@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Category Service class
     /// </summary>
-    public partial class CategoryService : Service<Category, CategoryDto>
+    public partial class CategoryService : Service<Category>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryService"/> class
@@ -35,43 +35,6 @@ namespace Rock.Model
         /// </summary>
         public CategoryService(IRepository<Category> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Category CreateNew()
-        {
-            return new Category();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<CategoryDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<CategoryDto> QueryableDto( IQueryable<Category> items )
-        {
-            return items.Select( m => new CategoryDto()
-                {
-                    IsSystem = m.IsSystem,
-                    ParentCategoryId = m.ParentCategoryId,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
-                    Name = m.Name,
-                    FileId = m.FileId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -98,6 +61,44 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class CategoryExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Category object to a new Category object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Category Clone( this Category source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Category;
+            }
+            else
+            {
+                var target = new Category();
+                target.IsSystem = source.IsSystem;
+                target.ParentCategoryId = source.ParentCategoryId;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Name = source.Name;
+                target.IconSmallFileId = source.IconSmallFileId;
+                target.IconLargeFileId = source.IconLargeFileId;
+                target.IconCssClass = source.IconCssClass;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

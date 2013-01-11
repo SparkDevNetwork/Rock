@@ -32,10 +32,10 @@ namespace Rock.Security.Authentication
         public override bool Authenticate( UserLogin user, string password )
         {
             string username = user.UserName;
-            if ( !String.IsNullOrWhiteSpace( AttributeValue( "Domain" ) ) )
-                username = string.Format( @"{0}\{1}", AttributeValue( "Domain" ), user.UserName );
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
+                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
 
-            var context = new PrincipalContext( ContextType.Domain, AttributeValue( "Server" ) );
+            var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
             using ( context )
             {
                 return context.ValidateCredentials( user.UserName, password );

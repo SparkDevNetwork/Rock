@@ -3,13 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
-using Rock.Model;
 using Rock.Data;
 
 namespace Rock.Model
@@ -18,8 +17,12 @@ namespace Rock.Model
     /// Category POCO Entity.
     /// </summary>
     [Table( "Category" )]
+    [DataContract( IsReference = true )]
     public partial class Category : Entity<Category>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -27,6 +30,7 @@ namespace Rock.Model
         /// System.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -35,23 +39,8 @@ namespace Rock.Model
         /// <value>
         /// The parent category id.
         /// </value>
+        [DataMember]
         public int? ParentCategoryId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parent category.
-        /// </summary>
-        /// <value>
-        /// The parent category
-        /// </value>
-        public virtual Category ParentCategory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the child categories.
-        /// </summary>
-        /// <value>
-        /// The child categories.
-        /// </value>
-        public virtual ICollection<Category> ChildCategories { get; set; }
 
         /// <summary>
         /// Gets or sets the Entity Type Id.
@@ -60,15 +49,8 @@ namespace Rock.Model
         /// Entity Type Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the entity.
-        /// </summary>
-        /// <value>
-        /// The type of the entity.
-        /// </value>
-        public virtual EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the Entity Qualifier Column.
@@ -77,6 +59,7 @@ namespace Rock.Model
         /// Entity Qualifier Column.
         /// </value>
         [MaxLength( 50 )]
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -86,6 +69,7 @@ namespace Rock.Model
         /// Entity Qualifier Value.
         /// </value>
         [MaxLength( 200 )]
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -95,52 +79,88 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [MaxLength(100)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the file id.
+        /// Gets or sets the small icon.
         /// </summary>
         /// <value>
-        /// The file id.
+        /// The small icon.
         /// </value>
-        public int? FileId { get; set; }
+        [DataMember]
+        public int? IconSmallFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the file.
+        /// Gets or sets the large icon.
         /// </summary>
         /// <value>
-        /// The file.
+        /// The large icon.
         /// </value>
-        public virtual BinaryFile File { get; set; }
+        [DataMember]
+        public int? IconLargeFileId { get; set; }
 
         /// <summary>
-        /// Gets the dto.
+        /// Gets or sets the icon CSS class.
         /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
-        /// Static Method to return an object based on the id
+        /// Gets or sets the parent category.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static Category Read( int id )
-        {
-            return Read<Category>( id );
-        }
+        /// <value>
+        /// The parent category
+        /// </value>
+        [DataMember]
+        public virtual Category ParentCategory { get; set; }
 
         /// <summary>
-        /// Reads the specified GUID.
+        /// Gets or sets the child categories.
         /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public static Category Read( Guid guid )
-        {
-            return Read<Category>( guid );
-        }
+        /// <value>
+        /// The child categories.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> ChildCategories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the small icon.
+        /// </summary>
+        /// <value>
+        /// The small icon.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile IconSmallFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the large icon.
+        /// </summary>
+        /// <value>
+        /// The large icon.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile IconLargeFile { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -152,7 +172,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Category Configuration class.
@@ -166,7 +191,11 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentCategory ).WithMany( p => p.ChildCategories).HasForeignKey( p => p.ParentCategoryId).WillCascadeOnDelete( false );
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.File ).WithMany().HasForeignKey( p => p.FileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

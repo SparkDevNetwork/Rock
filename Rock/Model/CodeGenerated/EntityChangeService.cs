@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityChange Service class
     /// </summary>
-    public partial class EntityChangeService : Service<EntityChange, EntityChangeDto>
+    public partial class EntityChangeService : Service<EntityChange>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityChangeService"/> class
@@ -38,45 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override EntityChange CreateNew()
-        {
-            return new EntityChange();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<EntityChangeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<EntityChangeDto> QueryableDto( IQueryable<EntityChange> items )
-        {
-            return items.Select( m => new EntityChangeDto()
-                {
-                    ChangeSet = m.ChangeSet,
-                    ChangeType = m.ChangeType,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityId = m.EntityId,
-                    Property = m.Property,
-                    OriginalValue = m.OriginalValue,
-                    CurrentValue = m.CurrentValue,
-                    CreatedDateTime = m.CreatedDateTime,
-                    CreatedByPersonId = m.CreatedByPersonId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -88,6 +49,44 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class EntityChangeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this EntityChange object to a new EntityChange object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EntityChange Clone( this EntityChange source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as EntityChange;
+            }
+            else
+            {
+                var target = new EntityChange();
+                target.ChangeSet = source.ChangeSet;
+                target.ChangeType = source.ChangeType;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
+                target.Property = source.Property;
+                target.OriginalValue = source.OriginalValue;
+                target.CurrentValue = source.CurrentValue;
+                target.CreatedDateTime = source.CreatedDateTime;
+                target.CreatedByPersonId = source.CreatedByPersonId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

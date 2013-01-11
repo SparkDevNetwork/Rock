@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Security
     [TextField( 5, "Invalid", "InvalidCaption", "Captions", "", false,"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
-        private UserService userService = null;
+        private UserLoginService userLoginService = null;
         private UserLogin user = null;
 
         #region Properties
@@ -64,20 +64,20 @@ namespace RockWeb.Blocks.Security
             pnlDeleted.Visible = false;
             pnlInvalid.Visible = false;
 
-            userService = new UserService();
+            userLoginService = new UserLoginService();
 
             if (!Page.IsPostBack)
             {
-                lDeleted.Text = AttributeValue( "DeletedCaption" );
+                lDeleted.Text = GetAttributeValue( "DeletedCaption" );
 
-                string invalidCaption = AttributeValue( "InvalidCaption" );
+                string invalidCaption = GetAttributeValue( "InvalidCaption" );
                 if ( invalidCaption.Contains( "{0}" ) )
                     invalidCaption = string.Format( invalidCaption, ResolveUrl( "~/NewAccount" ) );
                 lInvalid.Text = invalidCaption;
 
                 ConfirmationCode = Request.QueryString["cc"];
 
-                user = userService.GetByConfirmationCode( ConfirmationCode );
+                user = userLoginService.GetByConfirmationCode( ConfirmationCode );
                 string action = Request.QueryString["action"] ?? "";
 
                 switch ( action.ToLower() )
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeConfirm_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userLoginService.GetByConfirmationCode( ConfirmationCode );
             ShowConfirmed();
         }
 
@@ -119,13 +119,13 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeReset_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userLoginService.GetByConfirmationCode( ConfirmationCode );
             ShowResetPassword();
         }
 
         protected void btnResetPassword_Click( object sender, EventArgs e )
         {
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userLoginService.GetByConfirmationCode( ConfirmationCode );
             ShowResetSuccess();
         }
 
@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Security
         protected void btnCodeDelete_Click( object sender, EventArgs e )
         {
             ConfirmationCode = tbConfirmationCode.Text;
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userLoginService.GetByConfirmationCode( ConfirmationCode );
             ShowDelete();
         }
 
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            user = userService.GetByConfirmationCode( ConfirmationCode );
+            user = userLoginService.GetByConfirmationCode( ConfirmationCode );
             ShowDeleted();
         }
 
@@ -167,11 +167,11 @@ namespace RockWeb.Blocks.Security
             if ( user != null )
             {
                 user.IsConfirmed = true;
-                userService.Save( user, user.PersonId );
+                userLoginService.Save( user, user.PersonId );
 
                 Rock.Security.Authorization.SetAuthCookie( user.UserName, false, false );
 
-                string caption = AttributeValue( "ConfirmedCaption" );
+                string caption = GetAttributeValue( "ConfirmedCaption" );
                 if ( caption.Contains( "{0}" ) )
                     caption = string.Format( caption, user.Person.FirstName );
                 lConfirmed.Text = caption;
@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "ResetPasswordCaption" );
+                string caption = GetAttributeValue( "ResetPasswordCaption" );
                 if ( caption.Contains( "{1}" ) )
                     caption = string.Format( caption, user.Person.FirstName, user.UserName );
                 else if (caption.Contains( "{0}"))
@@ -203,16 +203,16 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "PasswordResetCaption" );
+                string caption = GetAttributeValue( "PasswordResetCaption" );
                 if ( caption.Contains( "{1}" ) )
                     caption = string.Format( caption, user.Person.FirstName, user.UserName );
                 else if ( caption.Contains( "{0}" ) )
                     caption = string.Format( caption, user.Person.FirstName );
                 lResetSuccess.Text = caption;
 
-                userService.ChangePassword( user, tbPassword.Text );
+                userLoginService.ChangePassword( user, tbPassword.Text );
                 user.IsConfirmed = true;
-                userService.Save( user, user.PersonId );
+                userLoginService.Save( user, user.PersonId );
 
                 pnlResetSuccess.Visible = true;
             }
@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Security
         {
             if ( user != null )
             {
-                string caption = AttributeValue( "DeleteCaption" );
+                string caption = GetAttributeValue( "DeleteCaption" );
                 if ( caption.Contains( "{0}" ) )
                     caption = string.Format( caption, user.UserName );
                 lDelete.Text = caption;
@@ -244,8 +244,8 @@ namespace RockWeb.Blocks.Security
                     FormsAuthentication.SignOut();
                 }
 
-                userService.Delete( user, user.PersonId );
-                userService.Save( user, user.PersonId );
+                userLoginService.Delete( user, user.PersonId );
+                userLoginService.Save( user, user.PersonId );
 
                 pnlDeleted.Visible = true;
             }

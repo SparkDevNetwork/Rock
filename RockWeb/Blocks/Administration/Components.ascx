@@ -3,11 +3,11 @@
 <asp:UpdatePanel runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
     <asp:Panel ID="pnlList" runat="server" Visible="false" >
         
-        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnEditRow="rGrid_Edit">
+        <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" />

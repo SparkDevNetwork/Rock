@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// BlockTypes REST API
     /// </summary>
-    public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType, Rock.Model.BlockTypeDto>
+    public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType>
     {
         public BlockTypesController() : base( new Rock.Model.BlockTypeService() ) { } 
     }

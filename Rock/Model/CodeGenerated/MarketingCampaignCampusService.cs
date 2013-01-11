@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// MarketingCampaignCampus Service class
     /// </summary>
-    public partial class MarketingCampaignCampusService : Service<MarketingCampaignCampus, MarketingCampaignCampusDto>
+    public partial class MarketingCampaignCampusService : Service<MarketingCampaignCampus>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignCampusService"/> class
@@ -38,38 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override MarketingCampaignCampus CreateNew()
-        {
-            return new MarketingCampaignCampus();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<MarketingCampaignCampusDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<MarketingCampaignCampusDto> QueryableDto( IQueryable<MarketingCampaignCampus> items )
-        {
-            return items.Select( m => new MarketingCampaignCampusDto()
-                {
-                    MarketingCampaignId = m.MarketingCampaignId,
-                    CampusId = m.CampusId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -81,6 +49,37 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class MarketingCampaignCampusExtensionMethods
+    {
+        /// <summary>
+        /// Clones this MarketingCampaignCampus object to a new MarketingCampaignCampus object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaignCampus Clone( this MarketingCampaignCampus source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaignCampus;
+            }
+            else
+            {
+                var target = new MarketingCampaignCampus();
+                target.MarketingCampaignId = source.MarketingCampaignId;
+                target.CampusId = source.CampusId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

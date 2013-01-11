@@ -379,7 +379,7 @@ namespace RockWeb
             try
             {
                 // get the current user
-                Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
+                Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
                 // save the exception info to the db
                 ExceptionLogService service = new ExceptionLogService();
@@ -437,8 +437,8 @@ namespace RockWeb
                 cookies.Append( "</table>" );
                 exceptionLog.ServerVariables = serverVars.ToString();
 
-                if ( user != null )
-                    exceptionLog.CreatedByPersonId = user.PersonId;
+                if ( userLogin != null )
+                    exceptionLog.CreatedByPersonId = userLogin.PersonId;
 
                 service.Add( exceptionLog, null );
                 service.Save( exceptionLog, null );
@@ -575,21 +575,6 @@ namespace RockWeb
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                // Cache all the Field Types
-                var fieldTypeService = new Rock.Model.FieldTypeService();
-                foreach ( var fieldType in fieldTypeService.Queryable().ToList() )
-                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
-
-                // Cache all tha Defined Types
-                var definedTypeService = new Rock.Model.DefinedTypeService();
-                foreach ( var definedType in definedTypeService.Queryable().ToList() )
-                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-
-                // Cache all the Defined Values
-                var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-
                 // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
                 var qualifiers = new Dictionary<int, Dictionary<string, string>>();
                 foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService().Queryable() )
@@ -606,6 +591,30 @@ namespace RockWeb
                         Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
                     else
                         Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
+                }
+
+                // Cache all the Field Types
+                var fieldTypeService = new Rock.Model.FieldTypeService();
+                foreach ( var fieldType in fieldTypeService.Queryable().ToList() )
+                {
+                    fieldType.LoadAttributes();
+                    Rock.Web.Cache.FieldTypeCache.Read( fieldType );
+                }
+
+                // Cache all tha Defined Types
+                var definedTypeService = new Rock.Model.DefinedTypeService();
+                foreach ( var definedType in definedTypeService.Queryable().ToList() )
+                {
+                    definedType.LoadAttributes();
+                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+                }
+
+                // Cache all the Defined Values
+                var definedValueService = new Rock.Model.DefinedValueService();
+                foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                {
+                    definedValue.LoadAttributes();
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
                 }
             }
         }

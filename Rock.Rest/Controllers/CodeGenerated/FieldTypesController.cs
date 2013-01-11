@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// FieldTypes REST API
     /// </summary>
-    public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Model.FieldType, Rock.Model.FieldTypeDto>
+    public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Model.FieldType>
     {
         public FieldTypesController() : base( new Rock.Model.FieldTypeService() ) { } 
     }

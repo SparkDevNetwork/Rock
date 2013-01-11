@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// PaymentGateway Service class
     /// </summary>
-    public partial class PaymentGatewayService : Service<PaymentGateway, PaymentGatewayDto>
+    public partial class PaymentGatewayService : Service<PaymentGateway>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PaymentGatewayService"/> class
@@ -35,41 +35,6 @@ namespace Rock.Model
         /// </summary>
         public PaymentGatewayService(IRepository<PaymentGateway> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override PaymentGateway CreateNew()
-        {
-            return new PaymentGateway();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<PaymentGatewayDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<PaymentGatewayDto> QueryableDto( IQueryable<PaymentGateway> items )
-        {
-            return items.Select( m => new PaymentGatewayDto()
-                {
-                    Name = m.Name,
-                    Description = m.Description,
-                    ApiUrl = m.ApiUrl,
-                    ApiKey = m.ApiKey,
-                    ApiSecret = m.ApiSecret,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
         }
 
         /// <summary>
@@ -90,6 +55,40 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class PaymentGatewayExtensionMethods
+    {
+        /// <summary>
+        /// Clones this PaymentGateway object to a new PaymentGateway object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PaymentGateway Clone( this PaymentGateway source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as PaymentGateway;
+            }
+            else
+            {
+                var target = new PaymentGateway();
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.ApiUrl = source.ApiUrl;
+                target.ApiKey = source.ApiKey;
+                target.ApiSecret = source.ApiSecret;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

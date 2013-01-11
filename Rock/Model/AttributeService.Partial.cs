@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Attribute POCO Service class
     /// </summary>
-    public partial class AttributeService : Service<Attribute, AttributeDto>
+    public partial class AttributeService 
     {
         /// <summary>
         /// Gets Attributes by Entity Type Id

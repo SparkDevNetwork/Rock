@@ -4,10 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,6 +17,7 @@ namespace Rock.Model
     /// Person Trail POCO Entity.
     /// </summary>
     [Table( "PersonMerged" )]
+    [DataContract( IsReference = true )]
     public partial class PersonMerged : Model<PersonMerged>
     {
         /// <summary>
@@ -25,6 +27,7 @@ namespace Rock.Model
         /// Current Id.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public int CurrentId { get; set; }
         
         /// <summary>
@@ -34,6 +37,7 @@ namespace Rock.Model
         /// Current Guid.
         /// </value>
         [Required]
+        [DataMember( IsRequired = true )]
         public Guid CurrentGuid { get; set; }
         
         /// <summary>
@@ -47,25 +51,6 @@ namespace Rock.Model
                 string identifier = this.CurrentId.ToString() + ">" + this.CurrentGuid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
-        }
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <returns></returns>
-        public override IDto Dto
-        {
-            get { return this.ToDto(); }
-        }
-
-        /// <summary>
-        /// Static Method to return an object based on the id
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static PersonMerged Read( int id )
-        {
-            return Read<PersonMerged>( id );
         }
 
         /// <summary>

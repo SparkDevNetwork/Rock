@@ -42,26 +42,26 @@ namespace RockWeb.Blocks.Administration
 
             try
             {
-                string entityTypeName = AttributeValue( "Entity" );
+                string entityTypeName = GetAttributeValue( "Entity" );
                 if ( string.IsNullOrWhiteSpace( entityTypeName ) )
                 {
                     entityTypeName = PageParameter( "Entity" );
                 }
                 _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( entityTypeName );
 
-                _entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+                _entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
                 if ( string.IsNullOrWhiteSpace( _entityQualifierColumn ) )
                 {
                     _entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
                 }
 
-                _entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+                _entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
                 if ( string.IsNullOrWhiteSpace( _entityQualifierValue ) )
                 {
                     _entityQualifierValue = PageParameter( "EntityQualifierValue" );
                 }
 
-                string entityIdString = AttributeValue( "EntityId" );
+                string entityIdString = GetAttributeValue( "EntityId" );
                 if ( string.IsNullOrWhiteSpace( entityIdString ) )
                 {
                     entityIdString = PageParameter( "EntityId" );
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserValue( "Category", ddlCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
             BindGrid();
         }
 
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Administration
             foreach ( var item in items )
             {
                 ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserValue( "Category" ) == item );
+                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
                 ddlCategoryFilter.Items.Add( li );
             }
         }

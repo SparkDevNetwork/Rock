@@ -3,14 +3,14 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error" />
+        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
 
         <asp:Panel ID="pnlMetricList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnEditRow="rGridMetric_Edit">
+            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="value" OnRowSelected="rGridMetric_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -30,7 +30,7 @@
         <asp:Panel ID="pnlMetricDetails" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfIdMetric" runat="server" />
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
             <div class="row-fluid">
 
@@ -80,7 +80,7 @@
 
             <legend>
                 <asp:Literal ID="lMetric" runat="server">Metric Values</asp:Literal></legend>
-            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnEditRow="rGridValue_Edit">
+            <Rock:Grid ID="rGridValue" runat="server" AllowSorting="true" EmptyDataText="No Metric Values Found" OnRowSelected="rGridValue_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Value" HeaderText="Value" SortExpression="Value" />
@@ -102,7 +102,7 @@
         <Rock:ModalDialog ID="modalValue" runat="server" Title="Metric Value">
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
-                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error" />
+                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
                 <legend>
                     <asp:Literal ID="lValue" runat="server">Metric Value</asp:Literal></legend>

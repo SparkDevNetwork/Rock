@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// BlockType Service class
     /// </summary>
-    public partial class BlockTypeService : Service<BlockType, BlockTypeDto>
+    public partial class BlockTypeService : Service<BlockType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTypeService"/> class
@@ -38,40 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override BlockType CreateNew()
-        {
-            return new BlockType();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<BlockTypeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<BlockTypeDto> QueryableDto( IQueryable<BlockType> items )
-        {
-            return items.Select( m => new BlockTypeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    Path = m.Path,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,6 +49,39 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class BlockTypeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this BlockType object to a new BlockType object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static BlockType Clone( this BlockType source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as BlockType;
+            }
+            else
+            {
+                var target = new BlockType();
+                target.IsSystem = source.IsSystem;
+                target.Path = source.Path;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

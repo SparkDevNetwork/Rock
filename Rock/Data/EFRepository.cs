@@ -23,7 +23,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class EFRepository<T> : IRepository<T>, IDisposable
-        where T : Rock.Data.Entity<T>
+        where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
         /// 
@@ -345,10 +345,10 @@ namespace Rock.Data
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<AuditDto> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
         {
             changes = new List<EntityChange>();
-            audits = new List<AuditDto>();
+            audits = new List<Audit>();
             errorMessages = new List<string>();
 
             Context.ChangeTracker.DetectChanges();
@@ -363,7 +363,7 @@ namespace Rock.Data
                 System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
-                var audit = new Rock.Model.AuditDto();
+                var audit = new Rock.Model.Audit();
 
                 switch ( entry.State )
                 {
@@ -477,6 +477,26 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetConfigurationValue( string key, string value )
+        {
+            switch ( key.ToUpper() )
+            {
+                case "PROXYCREATIONENABLED":
+
+                    bool enabled = true;
+                    if ( Boolean.TryParse( value, out enabled ) )
+                    {
+                        Context.Configuration.ProxyCreationEnabled = enabled;
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Audits the class.
         /// </summary>
         /// <param name="baseType">Type of the base.</param>
@@ -495,7 +515,7 @@ namespace Rock.Data
         private bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                propertyInfo.GetCustomAttribute( typeof( System.Runtime.Serialization.DataMemberAttribute ) ) != null )
+                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" ) )
             {
                 return true;
             }

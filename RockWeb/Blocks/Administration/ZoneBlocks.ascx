@@ -13,7 +13,7 @@
     <asp:Panel ID="pnlLists" runat="server" CssClass="pill-content">
 
         <div id="divPage" runat="server" class="pill-pane" >
-            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnEditRow="gPageBlocks_Edit">
+            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnRowSelected="gPageBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -28,7 +28,7 @@
         </div>
 
         <div id="divLayout" runat="server" class="pill-pane" >
-            <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnEditRow="gLayoutBlocks_Edit">
+            <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
                     <asp:BoundField DataField="Name" HeaderText="Name" />

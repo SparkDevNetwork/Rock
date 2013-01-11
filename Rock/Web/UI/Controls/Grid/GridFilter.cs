@@ -20,7 +20,7 @@ namespace Rock.Web.UI.Controls
     public class GridFilter : PlaceHolder, INamingContainer
     {
         private LinkButton lbFilter;
-        private Dictionary<string, string> _userValues;
+        private Dictionary<string, string> _userPreferences;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -31,16 +31,16 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             // Get User Values
-            _userValues = new Dictionary<string, string>();
+            _userPreferences = new Dictionary<string, string>();
 
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
                 string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.CurrentBlock.Id );
 
-                foreach ( var userValue in rockBlock.GetUserValues( keyPrefix ) )
+                foreach ( var userPreference in rockBlock.GetUserPreferences( keyPrefix ) )
                 {
-                    _userValues.Add( userValue.Key.Replace( keyPrefix, string.Empty ), userValue.Value );
+                    _userPreferences.Add( userPreference.Key.Replace( keyPrefix, string.Empty ), userPreference.Value );
                 }
             }
 
@@ -122,7 +122,7 @@ Sys.Application.add_load(function () {
             writer.AddAttribute( "class", "grid-filter-overview" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            var nonEmptyValues = _userValues.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
+            var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
             if ( nonEmptyValues.Count > 0 )
             {
                 writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
@@ -131,9 +131,9 @@ Sys.Application.add_load(function () {
                 writer.Write( "<h4>Enabled Filters</h4>" );
                 writer.RenderEndTag();
 
-                foreach ( var userValue in nonEmptyValues )
+                foreach ( var userPreference in nonEmptyValues )
                 {
-                    DisplayFilterValueArgs args = new DisplayFilterValueArgs( userValue.Key, userValue.Value );
+                    DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference.Key, userPreference.Value );
                     if ( DisplayFilterValue != null )
                     {
                         DisplayFilterValue( this, args );
@@ -169,7 +169,7 @@ Sys.Application.add_load(function () {
 
             writer.RenderEndTag();
 
-            SaveUserValues();
+            SaveUserPreferences();
         }
 
         /// <summary>
@@ -191,46 +191,46 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Gets the user value for a given key if it exists
+        /// Gets the user preference for a given key if it exists
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetUserValue( string key )
+        public string GetUserPreference( string key )
         {
-            if ( _userValues.ContainsKey( key ) )
+            if ( _userPreferences.ContainsKey( key ) )
             {
-                return _userValues[key];
+                return _userPreferences[key];
             }
             return string.Empty;
         }
 
         /// <summary>
-        /// Adds or updates an item in the UserValues dictionary
+        /// Adds or updates an item in the User Preferences dictionary
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public void SaveUserValue( string key, string value )
+        public void SaveUserPreference( string key, string value )
         {
-            if ( _userValues.ContainsKey( key ) )
+            if ( _userPreferences.ContainsKey( key ) )
             {
-                _userValues[key] = value;
+                _userPreferences[key] = value;
             }
             else
             {
-                _userValues.Add( key, value );
+                _userPreferences.Add( key, value );
             }
         }
 
-        private void SaveUserValues()
+        private void SaveUserPreferences()
         {
             RockBlock rockBlock = this.RockBlock();
             if ( rockBlock != null )
             {
                 string keyPrefix = string.Format( "grid-filter-{0}-", rockBlock.CurrentBlock.Id );
 
-                foreach ( var userValue in _userValues )
+                foreach ( var userPreference in _userPreferences )
                 {
-                    rockBlock.SetUserValue( keyPrefix + userValue.Key, userValue.Value );
+                    rockBlock.SetUserPreference( keyPrefix + userPreference.Key, userPreference.Value );
                 }
             }
         }

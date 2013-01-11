@@ -15,7 +15,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'api/users/available/' + escape($(this).val()),
+                    url: rock.baseUrl + 'api/userlogins/available/' + escape($(this).val()),
                     success: function (getData, status, xhr) {
 
                         if (getData) {
@@ -32,7 +32,7 @@
                         }
                     },
                     error: function (xhr, status, error) {
-                        //alert(status + ' [' + error + ']: ' + xhr.responseText);
+                        alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
             }
@@ -45,8 +45,8 @@
 <asp:UpdatePanel ID="upNewAccount" runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert-message block-message error"/>
-    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert-message block-message error"/>
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
+    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
     <asp:PlaceHolder ID="phUserInfo" runat="server" Visible="true">
 
@@ -59,7 +59,7 @@
                     <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" ></Rock:LabeledTextBox>
                     <dl id="availabilityMessageRow">
                         <dt></dt>
-                        <dd><div id="availabilityMessage" class="alert-message"/></dd>
+                        <dd><div id="availabilityMessage" class="alert"/></dd>
                     </dl>
                     <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
                     <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" LabelText="Confirmation" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
@@ -121,7 +121,7 @@
 
     <asp:PlaceHolder ID="phDuplicates" runat="server" Visible="false">
 
-        <div class="alert-message warning">
+        <div class="alert warning">
             <asp:Literal ID="lFoundDuplicateCaption" runat="server" />
         </div>
 
@@ -157,7 +157,7 @@
 
         <asp:HiddenField ID="hfSendPersonId" runat="server" />
 
-        <div class="alert-message warning">
+        <div class="alert warning">
             <asp:Literal ID="lExistingAccountCaption" runat="server"/>
         </div>
 
@@ -179,7 +179,7 @@
 
     <asp:PlaceHolder ID="phConfirmation" runat="server" Visible="false">
 
-        <div class="alert-message warning">
+        <div class="alert warning">
             <asp:Literal ID="lConfirmCaption" runat="server" />
         </div>
 
@@ -187,7 +187,7 @@
 
     <asp:PlaceHolder ID="phSuccess" runat="server" Visible="false">
 
-        <div class="alert-message success">
+        <div class="alert alert-success success">
             <asp:Literal ID="lSuccessCaption" runat="server" />
         </div>
 

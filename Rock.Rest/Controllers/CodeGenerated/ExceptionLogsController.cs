@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// ExceptionLogs REST API
     /// </summary>
-    public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Model.ExceptionLog, Rock.Model.ExceptionLogDto>
+    public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Model.ExceptionLog>
     {
         public ExceptionLogsController() : base( new Rock.Model.ExceptionLogService() ) { } 
     }

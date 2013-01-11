@@ -428,10 +428,10 @@ namespace Rock.Web.UI.Controls
             }
 
             // add author info
-            Rock.Model.UserLogin user = Rock.Model.UserService.GetCurrentUser();
-            if ( user != null )
+            Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+            if ( userLogin != null )
             {
-                excel.Workbook.Properties.Author = user.Person.FullName;
+                excel.Workbook.Properties.Author = userLogin.Person.FullName;
             }
             else
             {
@@ -729,9 +729,9 @@ namespace Rock.Web.UI.Controls
         {
             base.OnRowCreated( e );
 
-            if ( EditRow != null && e.Row.RowType == DataControlRowType.DataRow )
+            if ( RowSelected != null && e.Row.RowType == DataControlRowType.DataRow )
             {
-                string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "EditRow$" + e.Row.RowIndex );
+                string clickUrl = Page.ClientScript.GetPostBackClientHyperlink( this, "RowSelected$" + e.Row.RowIndex );
 
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
@@ -739,7 +739,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var cell = e.Row.Cells[i];
                         cell.AddCssClass( DataBoundColumns[i] );
-                        cell.AddCssClass( "grid-edit-cell" );
+                        cell.AddCssClass( "grid-select-cell" );
                         cell.Attributes["onclick"] = clickUrl;
                     }
                 }
@@ -844,11 +844,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">A <see cref="T:System.Web.UI.WebControls.GridViewCommandEventArgs" /> that contains event data.</param>
         protected override void OnRowCommand( GridViewCommandEventArgs e )
         {
-            if ( e.CommandName == "EditRow" )
+        	base.OnRowCommand( e );
+        	
+            if ( e.CommandName == "RowSelected" )
             {
                 int rowIndex = Int32.Parse( e.CommandArgument.ToString() );
                 RowEventArgs a = new RowEventArgs( this.Rows[rowIndex] );
-                OnEditRowClick( a );
+                OnRowSelected( a );
             }
         }
 
@@ -960,17 +962,17 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Occurs when [row click].
         /// </summary>
-        public event EventHandler<RowEventArgs> EditRow;
+        public event EventHandler<RowEventArgs> RowSelected;
 
         /// <summary>
-        /// Raises the <see cref="E:EditRowClick" /> event.
+        /// Raises the <see cref="E:RowSelected" /> event.
         /// </summary>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected virtual void OnEditRowClick( RowEventArgs e )
+        protected virtual void OnRowSelected( RowEventArgs e )
         {
-            if ( EditRow != null )
+            if ( RowSelected != null )
             {
-                EditRow( this, e );
+                RowSelected( this, e );
             }
         }
 

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// GroupMember Service class
     /// </summary>
-    public partial class GroupMemberService : Service<GroupMember, GroupMemberDto>
+    public partial class GroupMemberService : Service<GroupMember>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberService"/> class
@@ -38,40 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override GroupMember CreateNew()
-        {
-            return new GroupMember();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<GroupMemberDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<GroupMemberDto> QueryableDto( IQueryable<GroupMember> items )
-        {
-            return items.Select( m => new GroupMemberDto()
-                {
-                    IsSystem = m.IsSystem,
-                    GroupId = m.GroupId,
-                    PersonId = m.PersonId,
-                    GroupRoleId = m.GroupRoleId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,6 +49,39 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class GroupMemberExtensionMethods
+    {
+        /// <summary>
+        /// Clones this GroupMember object to a new GroupMember object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static GroupMember Clone( this GroupMember source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as GroupMember;
+            }
+            else
+            {
+                var target = new GroupMember();
+                target.IsSystem = source.IsSystem;
+                target.GroupId = source.GroupId;
+                target.PersonId = source.PersonId;
+                target.GroupRoleId = source.GroupRoleId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

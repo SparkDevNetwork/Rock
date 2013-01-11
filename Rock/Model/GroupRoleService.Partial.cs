@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Group Role POCO Service class
     /// </summary>
-    public partial class GroupRoleService : Service<GroupRole, GroupRoleDto>
+    public partial class GroupRoleService 
     {
         /// <summary>
         /// Gets the by sort order.

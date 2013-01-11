@@ -5,9 +5,9 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
 
+using Rock.Model;
 using Rock.Security;
 
 namespace Rock.Web.Cache
@@ -17,70 +17,95 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    public class BlockCache : Rock.Model.BlockDto, Rock.Attribute.IHasAttributes
+    public class BlockCache : CachedModel<Block>
     {
-        private BlockCache() : base() { }
-        private BlockCache( Rock.Model.Block model ) : base( model ) { }
+        #region Constructors
 
-        private List<int> AttributeIds = new List<int>();
+        private BlockCache()
+        {
+        }
+
+        private BlockCache( Block block, int? siteId )
+        {
+            CopyFromModel( block );
+            SiteId = siteId;
+        }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
+        /// Gets or sets a value indicating whether this instance is system.
         /// </summary>
         /// <value>
-        /// The attribute categories.
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories
-        {
-            get
-            {
-                var attributeCategories = new SortedDictionary<string, List<string>>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    var attribute = AttributeCache.Read( id );
-                    if ( !attributeCategories.ContainsKey( attribute.Category ) )
-                        attributeCategories.Add( attribute.Category, new List<string>() );
-                    attributeCategories[attribute.Category].Add( attribute.Key );
-                }
-
-                return attributeCategories;
-            }
-
-            set { }
-        }
+        public bool IsSystem { get; set; }
 
         /// <summary>
-        /// List of attributes associated with the Block.  This object will not include values.
-        /// To get values associated with the current page instance, use the AttributeValues
+        /// Gets or sets the page id.
         /// </summary>
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes
-        {
-            get
-            {
-                var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-
-                foreach ( int id in AttributeIds )
-                {
-                    Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
-                    attributes.Add( attribute.Key, attribute );
-                }
-
-                return attributes;
-            }
-
-            set
-            {
-                this.AttributeIds = new List<int>();
-                foreach ( var attribute in value )
-                    this.AttributeIds.Add( attribute.Value.Id );
-            }
-        }
+        /// <value>
+        /// The page id.
+        /// </value>
+        public int? PageId { get; set; }
 
         /// <summary>
-        /// Dictionary of all attributes and their values.
+        /// Gets or sets the site id.
         /// </summary>
-        public Dictionary<string, List<Rock.Model.AttributeValueDto>> AttributeValues { get; set; }
+        /// <value>
+        /// The site id.
+        /// </value>
+        public int? SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the layout.
+        /// </summary>
+        /// <value>
+        /// The layout.
+        /// </value>
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the block type id.
+        /// </summary>
+        /// <value>
+        /// The block type id.
+        /// </value>
+        public int BlockTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the zone.
+        /// </summary>
+        /// <value>
+        /// The zone.
+        /// </value>
+        public string Zone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the output cache.
+        /// </summary>
+        /// <value>
+        /// The duration of the output cache.
+        /// </value>
+        public int OutputCacheDuration { get; set; }
 
         /// <summary>
         /// Gets the page.
@@ -97,6 +122,24 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the <see cref="Site"/> object for the block.
+        /// </summary>
+        public SiteCache Site
+        {
+            get
+            {
+                if ( SiteId != null && SiteId.Value != 0 )
+                {
+                    return SiteCache.Read( SiteId.Value );
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the block type
         /// </summary>
         public BlockTypeCache BlockType
@@ -104,44 +147,6 @@ namespace Rock.Web.Cache
             get
             {
                 return BlockTypeCache.Read( BlockTypeId );
-            }
-        }
-
-        /// <summary>
-        /// Saves the attribute values.
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        public void SaveAttributeValues(int? personId)
-        {
-            var blockService = new Model.BlockService();
-            var blockModel = blockService.Get( this.Id );
-
-            if ( blockModel != null )
-            {
-                blockModel.LoadAttributes();
-                foreach ( var attribute in blockModel.Attributes )
-                    Rock.Attribute.Helper.SaveAttributeValues( blockModel, attribute.Value, this.AttributeValues[attribute.Key], personId );
-            }
-        }
-
-        /// <summary>
-        /// Reloads the attribute values.
-        /// </summary>
-        public void ReloadAttributeValues()
-        {
-            var blockService = new Model.BlockService();
-            var blockModel = blockService.Get( this.Id );
-
-            if ( blockModel != null )
-            {
-                blockModel.LoadAttributes();
-
-                this.AttributeValues = blockModel.AttributeValues;
-
-                this.AttributeIds = new List<int>();
-                if ( blockModel.Attributes != null )
-                    foreach ( var attribute in blockModel.Attributes )
-                        this.AttributeIds.Add( attribute.Value.Id );
             }
         }
 
@@ -155,14 +160,52 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( this.BlockLocation == Model.BlockLocation.Page)
+                if ( this.BlockLocation == Model.BlockLocation.Page )
                 {
                     return this.Page;
                 }
                 else
                 {
-                    return null;
+                    return this.Site;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the block location.
+        /// </summary>
+        /// <value>
+        /// The block location.
+        /// </value>
+        public virtual BlockLocation BlockLocation
+        {
+            get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Copies from model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        public override void CopyFromModel( Data.IEntity model )
+        {
+            base.CopyFromModel( model );
+
+            if ( model is Block )
+            {
+                var block = (Block)model;
+                this.IsSystem = block.IsSystem;
+                this.PageId = block.PageId;
+                this.Layout = block.Layout;
+                this.BlockTypeId = block.BlockTypeId;
+                this.Zone = block.Zone;
+                this.Order = block.Order;
+                this.Name = block.Name;
+
+                this.OutputCacheDuration = block.OutputCacheDuration;
             }
         }
 
@@ -177,6 +220,8 @@ namespace Rock.Web.Cache
             return this.Name;
         }
 
+        #endregion
+
         #region Static Methods
 
         private static string CacheKey( int id )
@@ -185,35 +230,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Adds Block model to cache, and returns cached object
-        /// </summary>
-        /// <param name="blockModel"></param>
-        /// <returns></returns>
-        public static BlockCache Read( Rock.Model.Block blockModel )
-        {
-            string cacheKey = BlockCache.CacheKey( blockModel.Id );
-
-            ObjectCache cache = MemoryCache.Default;
-            BlockCache block = cache[cacheKey] as BlockCache;
-
-            if ( block != null )
-                return block;
-            else
-            {
-                block = BlockCache.CopyModel( blockModel );
-                cache.Set( cacheKey, block, new CacheItemPolicy() );
-
-                return block;
-            }
-        }
-
-        /// <summary>
         /// Returns Block object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The id.</param>
+        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
-        public static BlockCache Read( int id )
+        public static BlockCache Read( int id, int? siteId )
         {
             string cacheKey = BlockCache.CacheKey( id );
 
@@ -221,38 +244,95 @@ namespace Rock.Web.Cache
             BlockCache block = cache[cacheKey] as BlockCache;
 
             if ( block != null )
+            {
                 return block;
+            }
             else
             {
-                var blockService = new Model.BlockService();
+                var blockService = new BlockService();
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
                     blockModel.LoadAttributes();
+                    block = new BlockCache( blockModel, siteId );
 
-                    block = BlockCache.CopyModel( blockModel );
-
-                    cache.Set( cacheKey, block, new CacheItemPolicy() );
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, block, cachePolicy );
+                    cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
 
                     return block;
                 }
                 else
+                {
                     return null;
+                }
             }
         }
 
-        private static BlockCache CopyModel ( Rock.Model.Block blockModel )
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="siteId">The site id.</param>
+        /// <returns></returns>
+        public static BlockCache Read( Guid guid, int? siteId )
         {
-            BlockCache block = new BlockCache(blockModel);
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
 
-            block.AttributeValues = blockModel.AttributeValues;
-            
-            block.AttributeIds = new List<int>();
-            if (blockModel.Attributes != null)
-                foreach ( var attribute in blockModel.Attributes )
-                    block.AttributeIds.Add( attribute.Value.Id );
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj, siteId );
+            }
+            else
+            {
+                var blockService = new BlockService();
+                var blockModel = blockService.Get( guid );
+                if ( blockModel != null )
+                {
+                    blockModel.LoadAttributes();
+                    var block = new BlockCache( blockModel, siteId );
 
-            return block;
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( BlockCache.CacheKey( block.Id ), block, cachePolicy );
+                    cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
+
+                    return block;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds Block model to cache, and returns cached object
+        /// </summary>
+        /// <param name="blockModel">The block model.</param>
+        /// <param name="siteId">The site id.</param>
+        /// <returns></returns>
+        public static BlockCache Read( Block blockModel, int? siteId )
+        {
+            string cacheKey = BlockCache.CacheKey( blockModel.Id );
+
+            ObjectCache cache = MemoryCache.Default;
+            BlockCache block = cache[cacheKey] as BlockCache;
+
+            if ( block != null )
+            {
+                return block;
+            }
+            else
+            {
+                block = new BlockCache( blockModel, siteId );
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, block, cachePolicy );
+                cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
+
+                return block;
+            }
         }
 
         /// <summary>
@@ -267,6 +347,6 @@ namespace Rock.Web.Cache
 
         #endregion
 
-     }
+    }
 
 }

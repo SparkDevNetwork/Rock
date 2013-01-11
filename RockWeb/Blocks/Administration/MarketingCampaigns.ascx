@@ -8,7 +8,7 @@
 
         <asp:Panel ID="pnlList" runat="server">
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnEditRow="gMarketingCampaigns_Edit">
+            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnRowSelected="gMarketingCampaigns_Edit">
                 <Columns>
                     <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
                     <asp:BoundField DataField="EventGroup.Name" HeaderText="Event Group" SortExpression="EventGroup.Name" />
@@ -78,7 +78,7 @@
             </fieldset>
 
             <div id="pnlMarketingCampaignAds" runat="server" class="">
-                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnEditRow="gMarketingCampaignAds_Edit">
+                <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnRowSelected="gMarketingCampaignAds_Edit">
                     <Columns>
                         <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
                         <Rock:DateField DataField="StartDate" HeaderText="Date" />
@@ -94,7 +94,7 @@
         <Rock:NotificationBox ID="nbWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
 
         <asp:Panel ID="pnlMarketingCampaignAudiencePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlMarketingCampaignAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.MarketingCampaignAudienceDto, Rock"
+            <Rock:DataDropDownList ID="ddlMarketingCampaignAudiences" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.MarketingCampaignAudience, Rock"
                 PropertyName="Name" LabelText="Select Audiences" />
             <asp:HiddenField ID="hfMarketingCampaignAudienceIsPrimary" runat="server" />
             <div class="actions">
@@ -115,8 +115,8 @@
                             <asp:Label ID="lblMarketingCampaignAdStatusPerson" runat="server" />
                         </div>
                         <asp:HiddenField ID="hfMarketingCampaignAdStatusPersonId" runat="server" />
-                        <asp:Button ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" class="btn btn-primary btn-mini" Text="Approve" />
-                        <asp:Button ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" class="btn btn-mini" Text="Deny" />
+                        <asp:LinkButton ID="btnApproveAd" runat="server" OnClick="btnApproveAd_Click" CssClass="btn btn-primary btn-mini" Text="Approve" />
+                        <asp:LinkButton ID="btnDenyAd" runat="server" OnClick="btnDenyAd_Click" CssClass="btn btn-mini" Text="Deny" />
                     </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
@@ -126,7 +126,7 @@
                 </legend>
                 <div class="row-fluid">
                     <div class="span6">
-                        <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.MarketingCampaignAdTypeDto, Rock" PropertyName="Name"
+                        <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.MarketingCampaignAdType, Rock" PropertyName="Name"
                             LabelText="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlMarketingCampaignAdType_SelectedIndexChanged" />
                         <Rock:DateTimePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" DatePickerType="Date" Required="true" />
                         <Rock:DateTimePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" DatePickerType="Date" Required="true" />

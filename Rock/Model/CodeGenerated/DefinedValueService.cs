@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// DefinedValue Service class
     /// </summary>
-    public partial class DefinedValueService : Service<DefinedValue, DefinedValueDto>
+    public partial class DefinedValueService : Service<DefinedValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
@@ -38,41 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override DefinedValue CreateNew()
-        {
-            return new DefinedValue();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<DefinedValueDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<DefinedValueDto> QueryableDto( IQueryable<DefinedValue> items )
-        {
-            return items.Select( m => new DefinedValueDto()
-                {
-                    IsSystem = m.IsSystem,
-                    DefinedTypeId = m.DefinedTypeId,
-                    Order = m.Order,
-                    Name = m.Name,
-                    Description = m.Description,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -83,6 +48,18 @@ namespace Rock.Model
         public bool CanDelete( DefinedValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Attendance>().Queryable().Any( a => a.QualifierValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Device>().Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
             
@@ -98,9 +75,21 @@ namespace Rock.Model
             
             // ignoring GroupLocation,LocationTypeValueId 
  
+            if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Metric>().Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Note>().Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
                 return false;
             }  
             
@@ -130,6 +119,40 @@ namespace Rock.Model
                 return false;
             }  
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class DefinedValueExtensionMethods
+    {
+        /// <summary>
+        /// Clones this DefinedValue object to a new DefinedValue object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static DefinedValue Clone( this DefinedValue source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as DefinedValue;
+            }
+            else
+            {
+                var target = new DefinedValue();
+                target.IsSystem = source.IsSystem;
+                target.DefinedTypeId = source.DefinedTypeId;
+                target.Order = source.Order;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

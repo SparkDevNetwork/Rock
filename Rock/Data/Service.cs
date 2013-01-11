@@ -17,7 +17,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Entity<T>
+    public class Service<T> where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
         /// Gets or sets the save messages.
@@ -31,7 +31,7 @@ namespace Rock.Data
         /// <summary>
         /// Gets the Repository.
         /// </summary>
-        protected IRepository<T> Repository
+        public IRepository<T> Repository
         {
             get { return _repository; }
         }
@@ -58,7 +58,7 @@ namespace Rock.Data
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
-        public IQueryable<T> Queryable()
+        public virtual IQueryable<T> Queryable()
         {
             return _repository.AsQueryable();
         }
@@ -68,7 +68,7 @@ namespace Rock.Data
         /// with eager loading of properties specified in includes
         /// </summary>
         /// <returns></returns>
-        public IQueryable<T> Queryable( string includes )
+        public virtual IQueryable<T> Queryable( string includes )
         {
             return _repository.AsQueryable( includes );
         }
@@ -78,7 +78,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public T Get( int id )
+        public virtual T Get( int id )
         {
             return _repository.FirstOrDefault( t => t.Id == id );
         }
@@ -88,7 +88,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public T Get( Guid guid )
+        public virtual T Get( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
         }
@@ -97,7 +97,7 @@ namespace Rock.Data
         /// Trys to get the model with the id value
         /// </summary>
         /// <returns></returns>
-        public bool TryGet( int id, out T item )
+        public virtual bool TryGet( int id, out T item )
         {
             item = Get( id );
             if ( item == null )
@@ -123,7 +123,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="publicKey">The public key.</param>
         /// <returns></returns>
-        public T GetByPublicKey( string publicKey )
+        public virtual T GetByPublicKey( string publicKey )
         {
             try
             {
@@ -320,7 +320,7 @@ namespace Rock.Data
         /// <returns></returns>
         private bool TriggerWorkflows( IEntity entity, WorkflowTriggerType triggerType, int? personId )
         {
-            foreach ( var trigger in TriggerCache.Instance.Triggers( entity.TypeName, triggerType ) )
+            foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ) )
             {
                 if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
                 {
@@ -332,7 +332,7 @@ namespace Rock.Data
                         var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                         List<string> workflowErrors;
-                        if ( !workflow.Process( entity.Dto, out workflowErrors ) )
+                        if ( !workflow.Process( entity, out workflowErrors ) )
                         {
                             ErrorMessages.AddRange( workflowErrors );
                             return false;
@@ -352,7 +352,7 @@ namespace Rock.Data
                 {
                     var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
                     transaction.Trigger = trigger;
-                    transaction.Dto = entity.Dto;
+                    transaction.Entity = entity.Clone();
                     transaction.PersonId = personId;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                 }
@@ -410,7 +410,7 @@ namespace Rock.Data
                 item.Guid = Guid.NewGuid();
 
             List<EntityChange> changes;
-            List<AuditDto> audits;
+            List<Audit> audits;
             List<string> errorMessages;
 
             if ( _repository.Save( personId, out changes, out audits, out errorMessages ) )
@@ -474,44 +474,44 @@ namespace Rock.Data
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <typeparam name="D"></typeparam>
-    public class Service<T, D> : Service<T>
-        where T : Rock.Data.Entity<T>
-        where D : Rock.Data.IDto
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Service{D}" /> class.
-        /// </summary>
-        public Service() : base() { }
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    ///// <typeparam name="T"></typeparam>
+    ///// <typeparam name="D"></typeparam>
+    //public class Service<T, D> : Service<T>
+    //    where T : Rock.Data.Entity<T>
+    //    where D : Rock.Data.IDto
+    //{
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
+    //    /// </summary>
+    //    public Service() : base() { }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Service{D}" /> class.
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public Service( IRepository<T> repository ) : base( repository ) { }
+    //    /// <summary>
+    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
+    //    /// </summary>
+    //    /// <param name="repository">The repository.</param>
+    //    public Service( IRepository<T> repository ) : base( repository ) { }
 
-        /// <summary>
-        /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
-        /// </summary>
-        /// <returns></returns>
-        public virtual IQueryable<D> QueryableDto()
-        {
-            throw new System.NotImplementedException();
-        }
+    //    /// <summary>
+    //    /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    public virtual IQueryable<D> QueryableDto()
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        /// <summary>
-        /// Creates the new.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public virtual T CreateNew()
-        {
-            throw new System.NotImplementedException();
-        }
-    }
+    //    /// <summary>
+    //    /// Creates the new.
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    /// <exception cref="System.NotImplementedException"></exception>
+    //    public virtual T CreateNew()
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
+    //}
 
 }

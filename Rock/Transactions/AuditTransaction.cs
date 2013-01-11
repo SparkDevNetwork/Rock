@@ -20,7 +20,7 @@ namespace Rock.Transactions
         /// <value>
         /// The audits.
         /// </value>
-        public List<AuditDto> Audits { get; set; }
+        public List<Audit> Audits { get; set; }
 
         /// <summary>
         /// Execute method to write transaction to the database.
@@ -31,11 +31,8 @@ namespace Rock.Transactions
             {
                 var auditService = new AuditService();
 
-                foreach ( var auditDto in Audits )
+                foreach ( var audit in Audits )
                 {
-                    var audit = new Audit();
-                    auditDto.CopyToModel( audit );
-
                     auditService.Add( audit, audit.PersonId );
                     auditService.Save( audit, audit.PersonId );
                 }

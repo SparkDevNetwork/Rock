@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Attribute Service class
     /// </summary>
-    public partial class AttributeService : Service<Attribute, AttributeDto>
+    public partial class AttributeService : Service<Attribute>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeService"/> class
@@ -38,50 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Attribute CreateNew()
-        {
-            return new Attribute();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<AttributeDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<AttributeDto> QueryableDto( IQueryable<Attribute> items )
-        {
-            return items.Select( m => new AttributeDto()
-                {
-                    IsSystem = m.IsSystem,
-                    FieldTypeId = m.FieldTypeId,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
-                    Key = m.Key,
-                    Name = m.Name,
-                    Category = m.Category,
-                    Description = m.Description,
-                    Order = m.Order,
-                    IsGridColumn = m.IsGridColumn,
-                    DefaultValue = m.DefaultValue,
-                    IsMultiValue = m.IsMultiValue,
-                    IsRequired = m.IsRequired,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -93,6 +49,49 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class AttributeExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Attribute object to a new Attribute object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Attribute Clone( this Attribute source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Attribute;
+            }
+            else
+            {
+                var target = new Attribute();
+                target.IsSystem = source.IsSystem;
+                target.FieldTypeId = source.FieldTypeId;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Key = source.Key;
+                target.Name = source.Name;
+                target.Category = source.Category;
+                target.Description = source.Description;
+                target.Order = source.Order;
+                target.IsGridColumn = source.IsGridColumn;
+                target.DefaultValue = source.DefaultValue;
+                target.IsMultiValue = source.IsMultiValue;
+                target.IsRequired = source.IsRequired;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

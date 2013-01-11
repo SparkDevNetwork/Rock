@@ -22,11 +22,11 @@ namespace RockWeb.Blocks.Core
     {
         protected void Page_Load( object sender, EventArgs e )
         {
-            string entityQualifierColumn = AttributeValue( "EntityQualifierColumn" );
+            string entityQualifierColumn = GetAttributeValue( "EntityQualifierColumn" );
             if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
                 entityQualifierColumn = PageParameter( "EntityQualifierColumn" );
 
-            string entityQualifierValue = AttributeValue( "EntityQualifierValue" );
+            string entityQualifierValue = GetAttributeValue( "EntityQualifierValue" );
             if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
                 entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Core
                         }}))
                     }},
                     error: function(xhr, status, error) {{
-                        alert(status + ' [' + error + ']: ' + xhr.reponseText);
+                        alert('availablenames status: ' + status + ' [' + error + ']: ' + xhr.reponseText);
                     }}
                 }});
             }},
@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
             type: 'POST',
             url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
             error: function (xhr, status, error) {{
-                alert(status + ' [' + error + ']: ' + xhr.responseText);
+                alert('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}
         }});
     }}
@@ -133,7 +133,7 @@ namespace RockWeb.Blocks.Core
             type: 'DELETE',
             url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
             error: function (xhr, status, error) {{
-                alert(status + ' [' + error + ']: ' + xhr.responseText);
+                alert('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}
         }});
     }}

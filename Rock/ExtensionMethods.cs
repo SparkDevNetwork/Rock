@@ -7,16 +7,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -33,69 +31,69 @@ namespace Rock
         /// </summary>
         /// <param name="obj">Object.</param>
         /// <returns></returns>
-        public static string ToJSON( this object obj )
+        public static string ToJson( this object obj )
         {
             return JsonConvert.SerializeObject( obj );
         }
 
-        /// <summary>
-        /// Converts object to JSON string
-        /// </summary>
-        /// <param name="obj">Object.</param>
-        /// <param name="recursionDepth">constrains the number of object levels to process.</param>
-        /// <returns></returns>
-        public static string ToJSON( this object obj, int recursionDepth )
-        {
-            return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
-        }
+        ///// <summary>
+        ///// Converts object to JSON string
+        ///// </summary>
+        ///// <param name="obj">Object.</param>
+        ///// <param name="recursionDepth">constrains the number of object levels to process.</param>
+        ///// <returns></returns>
+        //public static string ToJSON( this object obj, int recursionDepth )
+        //{
+        //    return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
+        //}
 
-        /// <summary>
-        /// Creates a copy of the object's property as a DynamicObject.
-        /// </summary>
-        /// <param name="obj">The object to copy.</param>
-        /// <returns></returns>
-        public static ExpandoObject ToDynamic( this object obj )
-        {
-            dynamic expando = new ExpandoObject();
-            var dict = expando as IDictionary<string, object>;
-            var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+        ///// <summary>
+        ///// Creates a copy of the object's property as a DynamicObject.
+        ///// </summary>
+        ///// <param name="obj">The object to copy.</param>
+        ///// <returns></returns>
+        //public static ExpandoObject ToDynamic( this object obj )
+        //{
+        //    dynamic expando = new ExpandoObject();
+        //    var dict = expando as IDictionary<string, object>;
+        //    var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
 
-            foreach ( var prop in properties )
-            {
-                dict[prop.Name] = prop.GetValue( obj, null );
-            }
+        //    foreach ( var prop in properties )
+        //    {
+        //        dict[prop.Name] = prop.GetValue( obj, null );
+        //    }
 
-            return expando;
-        }
+        //    return expando;
+        //}
 
-        /// <summary>
-        /// Creates an instance of a model and populates it based on the dynamic object's properties.
-        /// </summary>
-        /// <typeparam name="T">The destination model type</typeparam>
-        /// <param name="obj">The dynamic object to convert</param>
-        /// <returns>A populated instance of the model defined in the type arg</returns>
-        public static T ToModel<T>( this object obj )
-        {
-            var o = obj as ExpandoObject;
-            var instance = Activator.CreateInstance<T>();
+        ///// <summary>
+        ///// Creates an instance of a model and populates it based on the dynamic object's properties.
+        ///// </summary>
+        ///// <typeparam name="T">The destination model type</typeparam>
+        ///// <param name="obj">The dynamic object to convert</param>
+        ///// <returns>A populated instance of the model defined in the type arg</returns>
+        //public static T ToModel<T>( this object obj )
+        //{
+        //    var o = obj as ExpandoObject;
+        //    var instance = Activator.CreateInstance<T>();
 
-            if ( o == null )
-            {
-                return instance;
-            }
+        //    if ( o == null )
+        //    {
+        //        return instance;
+        //    }
 
-            var dict = o as IDictionary<string, object>;
-            var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
-                .Where( prop => dict.ContainsKey( prop.Name ) );
+        //    var dict = o as IDictionary<string, object>;
+        //    var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
+        //        .Where( prop => dict.ContainsKey( prop.Name ) );
 
-            foreach ( var prop in properties )
-            {
-                try { prop.SetValue( instance, dict[ prop.Name ] ); }
-                catch ( Exception ) { }
-            }
+        //    foreach ( var prop in properties )
+        //    {
+        //        try { prop.SetValue( instance, dict[ prop.Name ] ); }
+        //        catch ( Exception ) { }
+        //    }
 
-            return instance;
-        }
+        //    return instance;
+        //}
 
         /// <summary>
         /// Gets the name of the friendly type.
@@ -105,23 +103,21 @@ namespace Rock
         public static string GetFriendlyTypeName( this Type type )
         {
             Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
-
             if ( attrib != null )
             {
                 return attrib.FriendlyTypeName;
             }
             else
             {
-                string result = SplitCase( type.Name );
-                Type idtoInterface = type.GetInterface(typeof(Rock.Data.IDto).Name);
-                if ( idtoInterface != null)
+                if ( typeof(IEntity).IsAssignableFrom(type) )
                 {
-                    if ( result.EndsWith( " dto", StringComparison.InvariantCultureIgnoreCase ) )
-                    {
-                        return result.Substring( 0, result.Length - 4 );
-                    }
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    return entityType.FriendlyName ?? SplitCase( type.Name );
                 }
-                return result;
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
         }
 
@@ -239,6 +235,16 @@ namespace Rock
         {
             var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
             return pluralizationService.Pluralize( str );
+        }
+
+        /// <summary>
+        /// Removes any non-numeric characters
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string AsNumeric( this string str )
+        {
+            return Regex.Replace( str, @"[^0-9]", "" );
         }
 
         #endregion
@@ -486,6 +492,25 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Rocks the page.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static Rock.Web.UI.RockPage RockPage( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is Rock.Web.UI.RockPage )
+                {
+                    return (Rock.Web.UI.RockPage)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions
@@ -574,13 +599,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Sets the read only value.
+        /// </summary>
+        /// <param name="ddl">The DDL.</param>
+        /// <param name="value">The value.</param>
+        public static void SetReadOnlyValue( this DropDownList ddl, string value )
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add( value );
+        }
+
+        /// <summary>
         /// Try's to set the selected value, if the value does not exist, will set the first item in the list
         /// </summary>
         /// <param name="ddl">The DDL.</param>
         /// <param name="value">The value.</param>
-        public static void SetValue( this DropDownList ddl, int value )
+        public static void SetValue( this DropDownList ddl, int? value )
         {
-            ddl.SetValue( value.ToString() );
+            ddl.SetValue( value == null ? "0" : value.ToString() );
         }
 
         /// <summary>
@@ -847,7 +883,7 @@ namespace Rock
 
         #endregion
 
-        #region IEntity, IDto extensions
+        #region IEntity extensions
         
         /// <summary>
         /// Removes the entity.
@@ -878,37 +914,6 @@ namespace Rock
                 list.Remove( item );
             }
 
-        }
-
-        /// <summary>
-        /// Removes the dto.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list">The list.</param>
-        /// <param name="id">The id.</param>
-        public static void RemoveDto<T>( this List<T> list, int id ) where T : Rock.Data.IDto
-        {
-            var item = list.FirstOrDefault( a => a.Id.Equals( id ) );
-            if ( item != null )
-            {
-                list.Remove( item );
-            }
-
-        }
-
-        /// <summary>
-        /// Removes the dto.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list">The list.</param>
-        /// <param name="guid">The GUID.</param>
-        public static void RemoveDto<T>( this List<T> list, Guid guid ) where T : Rock.Data.IDto
-        {
-            var item = list.FirstOrDefault( a => a.Guid.Equals( guid ) );
-            if ( item != null )
-            {
-                list.Remove( item );
-            }
         }
         
         #endregion

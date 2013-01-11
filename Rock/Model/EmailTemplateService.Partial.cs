@@ -14,7 +14,7 @@ namespace Rock.Model
     /// <summary>
     /// Email Template POCO Service class
     /// </summary>
-    public partial class EmailTemplateService : Service<EmailTemplate, EmailTemplateDto>
+    public partial class EmailTemplateService 
     {
         /// <summary>
         /// Gets Email Template by Guid

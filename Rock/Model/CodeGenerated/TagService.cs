@@ -20,7 +20,7 @@ namespace Rock.Model
     /// <summary>
     /// Tag Service class
     /// </summary>
-    public partial class TagService : Service<Tag, TagDto>
+    public partial class TagService : Service<Tag>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TagService"/> class
@@ -38,43 +38,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new model
-        /// </summary>
-        public override Tag CreateNew()
-        {
-            return new Tag();
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public override IQueryable<TagDto> QueryableDto( )
-        {
-            return QueryableDto( this.Queryable() );
-        }
-
-        /// <summary>
-        /// Query DTO objects
-        /// </summary>
-        /// <returns>A queryable list of DTO objects</returns>
-        public IQueryable<TagDto> QueryableDto( IQueryable<Tag> items )
-        {
-            return items.Select( m => new TagDto()
-                {
-                    IsSystem = m.IsSystem,
-                    EntityTypeId = m.EntityTypeId,
-                    EntityTypeQualifierColumn = m.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = m.EntityTypeQualifierValue,
-                    Name = m.Name,
-                    Order = m.Order,
-                    OwnerId = m.OwnerId,
-                    Id = m.Id,
-                    Guid = m.Guid,
-                });
-        }
-
-        /// <summary>
         /// Determines whether this instance can delete the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -86,6 +49,42 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Generated Extension Methods
+    /// </summary>
+    public static class TagExtensionMethods
+    {
+        /// <summary>
+        /// Clones this Tag object to a new Tag object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Tag Clone( this Tag source, bool deepCopy )
+        {
+            if (deepCopy)
+            {
+                return source.Clone() as Tag;
+            }
+            else
+            {
+                var target = new Tag();
+                target.IsSystem = source.IsSystem;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Name = source.Name;
+                target.Order = source.Order;
+                target.OwnerId = source.OwnerId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
+
+            
+                return target;
+            }
         }
     }
 }

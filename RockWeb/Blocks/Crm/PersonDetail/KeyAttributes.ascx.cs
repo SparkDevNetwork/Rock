@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 );
             rootElement.Add( attributesElement );
 
-            foreach ( string keyAttributeId in GetUserValue( "Rock.KeyAttributes" ).SplitDelimitedValues() )
+            foreach ( string keyAttributeId in GetUserPreference( "Rock.KeyAttributes" ).SplitDelimitedValues() )
             {
                 int attributeId = 0;
                 if ( Int32.TryParse( keyAttributeId, out attributeId ) )
@@ -55,37 +55,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-        }
 
-        /// <summary>
-        /// When a control renders it's content to the page, this method will also check to see if
-        /// the block instance of this control has been configured for output caching, and if so,
-        /// the contents will also be rendered to a string variable that will gets cached in the
-        /// default MemoryCache for use next time by the Rock.Web.UI.Page.OnInit() method when rendering the
-        /// control content.
-        /// </summary>
-        /// <param name="writer"></param>
-        protected override void Render( System.Web.UI.HtmlTextWriter writer )
-        {
-            try
-            {
-                if ( xDocument != null && !String.IsNullOrEmpty( AttributeValue( "XsltFile" ) ) )
-                {
-                    string xsltFile = AttributeValue( "XsltFile" );
-                    if ( !String.IsNullOrEmpty( xsltFile ) )
-                    {
-                        string xsltPath = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + AttributeValue( "XsltFile" ) );
-                        var xslt = new XslCompiledTransform();
-                        xslt.Load( xsltPath );
-                        xslt.Transform( xDocument.CreateReader(), null, writer );
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                writer.Write( "Error: " + ex.Message );
-            }
+            xmlContent.DocumentContent = xDocument.ToString();
+            xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
         }
-
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Web;
 
 namespace Rock.Field
@@ -13,6 +14,7 @@ namespace Rock.Field
     /// <summary>
     /// The Name, Description and Value of an field type's configuration items
     /// </summary>
+    [DataContract( IsReference = true )]
     public class ConfigurationValue
     {
         /// <summary>
@@ -21,6 +23,7 @@ namespace Rock.Field
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -29,6 +32,7 @@ namespace Rock.Field
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -37,6 +41,7 @@ namespace Rock.Field
         /// <value>
         /// The value.
         /// </value>
+        [DataMember]
         public string Value { get; set; }
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace Rock.Field
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="value">The value.</param>
-        public ConfigurationValue(string name, string description, string value)
+        public ConfigurationValue( string name, string description, string value )
         {
             Name = name;
             Description = description;
