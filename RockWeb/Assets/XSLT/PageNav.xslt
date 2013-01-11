@@ -15,6 +15,7 @@
 
               <i class="icon-book"></i>
 							<xsl:value-of select="@title"/>
+              
               <b class="caret"></b>
             </a>
               <!-- only display the children if true -->

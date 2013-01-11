@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls
                 lbEditValue.CssClass = "btn btn-mini";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "icon-list-alt" );
+                buttonIcon.Attributes.Add( "class", "icon-pencil" );
                 lbEditValue.Controls.Add( buttonIcon );
 
                 lbEditValue.Click += lbEditValue_Click;
