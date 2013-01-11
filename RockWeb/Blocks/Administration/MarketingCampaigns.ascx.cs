@@ -899,7 +899,8 @@ namespace RockWeb.Blocks.Administration
 
             CampusService campusService = new CampusService();
 
-            cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList(); ;
+            cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampuses.Visible = cpCampuses.AvailableCampusIds.Count > 0;
 
             // Controls on Ad Child Panel
             MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
@@ -986,8 +987,10 @@ namespace RockWeb.Blocks.Administration
     <dl>";
 
             string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
-            campusList = marketingCampaign.MarketingCampaignCampuses.Count == 0 ? None.TextHtml : campusList;
-            lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
+            if ( marketingCampaign.MarketingCampaignCampuses.Count > 0 )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
+            }
 
             string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
             primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
