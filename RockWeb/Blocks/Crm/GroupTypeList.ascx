@@ -7,7 +7,7 @@
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                <asp:BoundField DataField="Groups.Count" HeaderText="Group Count" SortExpression="Groups.Count" />
+                <asp:BoundField DataField="GroupCount" HeaderText="Group Count" SortExpression="Groups.Count" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:DeleteField OnClick="gGroupType_Delete" />
             </Columns>
