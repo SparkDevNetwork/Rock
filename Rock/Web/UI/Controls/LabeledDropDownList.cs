@@ -241,7 +241,14 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            return int.Parse(this.SelectedValue);
+            if ( string.IsNullOrWhiteSpace( this.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return int.Parse( this.SelectedValue );
+            }
         }
 
         /// <summary>
