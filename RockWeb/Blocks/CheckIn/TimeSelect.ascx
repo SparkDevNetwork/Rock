@@ -1,16 +1,16 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.PersonSelect" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TimeSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.TimeSelect" %>
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <fieldset>
-    <legend><asp:Literal ID="lFamilyName" runat="server"></asp:Literal></legend>
+    <legend><asp:Literal ID="lGroupName" runat="server" /></legend>
 
         <div class="control-group">
-            <label class="control-label">Select Person</label>
+            <label class="control-label">Select Time(s)</label>
             <div class="controls">
-                <asp:ListBox ID="lbMembers" runat="server"></asp:ListBox>
+                <asp:CheckBoxList ID="cblTimes" runat="server"></asp:CheckBoxList>
             </div>
         </div>
         

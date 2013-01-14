@@ -54,5 +54,16 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public bool Selected { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Schedule != null ? Schedule.ToString() : string.Empty;
+        }
     }
 }

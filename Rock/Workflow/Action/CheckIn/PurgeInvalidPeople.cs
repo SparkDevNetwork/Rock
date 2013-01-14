@@ -32,7 +32,21 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
+                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    foreach ( var person in family.People.ToList() )
+                    {
+                        if (person.GroupTypes.Count == 0)
+                        {
+                            family.People.Remove(person);
+                        }
+                    }
+                }
+
+                SetCheckInState( action, checkInState );
                 return true;
+
             }
 
             return false;

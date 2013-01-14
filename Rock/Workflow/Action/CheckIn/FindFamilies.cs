@@ -49,6 +49,7 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 family = new CheckInFamily();
                                 family.Group = group.Clone( false );
+                                family.Group.LoadAttributes();
                                 checkInState.CheckIn.Families.Add( family );
                             }
                         }

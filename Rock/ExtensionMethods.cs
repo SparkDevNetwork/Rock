@@ -833,6 +833,16 @@ namespace Rock
             Rock.Attribute.Helper.LoadAttributes( entity );
         }
 
+        /// <summary>
+        /// Copies the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        {
+            Rock.Attribute.Helper.CopyAttributes( source, entity );
+        }
+
         #endregion
 
         #region Route Extensions
