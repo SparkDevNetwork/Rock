@@ -35,18 +35,18 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
-                    foreach ( var familyMember in family.People )
+                    foreach ( var person in family.People )
                     {
                         foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes )
                         {
-                            if ( !familyMember.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                            if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                             {
                                 var checkinGroupType = new CheckInGroupType();
                                 checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
-                                familyMember.GroupTypes.Add( checkinGroupType );
+                                checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                                person.GroupTypes.Add( checkinGroupType );
                             }
                         }
                     }

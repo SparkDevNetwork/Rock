@@ -37,29 +37,31 @@ namespace RockWeb.Blocks.CheckIn
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
-                        if ( family.People.Count == 1 )
-                        {
-                            if ( UserBackedUp )
-                            {
-                                GoBack();
-                            }
-                            else
-                            {
-                                foreach ( var familyMember in family.People )
-                                {
-                                    familyMember.Selected = true;
-                                }
+                        lFamilyName.Text = family.ToString();
 
-                                ProcessSelection();
-                            }
-                        }
-                        else
-                        {
+                        //if ( family.People.Count == 1 )
+                        //{
+                        //    if ( UserBackedUp )
+                        //    {
+                        //        GoBack();
+                        //    }
+                        //    else
+                        //    {
+                        //        foreach ( var familyMember in family.People )
+                        //        {
+                        //            familyMember.Selected = true;
+                        //        }
+
+                        //        ProcessSelection();
+                        //    }
+                        //}
+                        //else
+                        //{
                             foreach ( var familyMember in family.People )
                             {
                                 lbMembers.Items.Add( new ListItem( familyMember.ToString(), familyMember.Person.Id.ToString() ) );
                             }
-                        }
+                        //}
                     }
                     else
                     {

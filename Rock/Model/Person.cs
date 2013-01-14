@@ -481,6 +481,60 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
+        public virtual int? Age
+        {
+            get
+            {
+                DateTime bday;
+                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                {
+                    DateTime today = DateTime.Today;
+                    int age = today.Year - bday.Year;
+                    if ( bday > today.AddYears( -age ) ) age--;
+                    return age;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the fractional age
+        /// </summary>
+        /// <value>
+        /// The age as double.
+        /// </value>
+        public virtual double? AgePrecise
+        {
+            get
+            {
+                DateTime bday;
+                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                {
+                    // Calculate years
+                    DateTime today = DateTime.Today;
+                    int years = today.Year - bday.Year;
+                    if ( bday > today.AddYears( -years ) ) years--;
+                    
+                    // Calculate days between last and next bday (differs on leap years).
+                    DateTime lastBday = bday.AddYears( years );
+                    DateTime nextBday = lastBday.AddYears( 1 );
+                    double daysInYear = nextBday.Subtract( lastBday ).TotalDays;
+
+                    // Calculate days since last bday
+                    double days = today.Subtract( lastBday ).TotalDays;
+
+                    return years + ( days / daysInYear );
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the impersonation parameter.
         /// </summary>
         public virtual string ImpersonationParameter
