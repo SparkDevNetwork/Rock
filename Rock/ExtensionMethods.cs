@@ -109,7 +109,7 @@ namespace Rock
             }
             else
             {
-                if ( typeof(IEntity).IsAssignableFrom(type) )
+                if ( typeof( IEntity ).IsAssignableFrom( type ) )
                 {
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
@@ -629,7 +629,7 @@ namespace Rock
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
-                dictionary.Add(Convert.ToInt32(value), Enum.GetName( enumType, value ).SplitCase() );
+                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
             }
 
             listControl.DataSource = dictionary;
@@ -813,12 +813,33 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
-                return source.OrderBy( sortProperty.Property );
-            else
-                return source.OrderByDescending( sortProperty.Property );
-        }
+            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
+            IOrderedQueryable<T> qry = null;
+
+            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+            {
+                string column = columns[columnIndex].Trim();
+                if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
+                    if ( columnIndex == 0 )
+                    {
+                        qry = source.OrderBy( column );
+                    }
+                    else
+                    {
+                        qry = qry.ThenBy( column );
+                    }
+                }
+                else
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderByDescending( column ) : qry.ThenByDescending( column );
+                }
+            }
+
+            return qry;
+        }
 
         #endregion
 
@@ -884,7 +905,7 @@ namespace Rock
         #endregion
 
         #region IEntity extensions
-        
+
         /// <summary>
         /// Removes the entity.
         /// </summary>
@@ -915,7 +936,7 @@ namespace Rock
             }
 
         }
-        
+
         #endregion
     }
 }
