@@ -13,6 +13,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -22,6 +23,20 @@ namespace RockWeb.Blocks.Crm
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
+            gGroupMembers.Actions.IsAddEnabled = true;
+            gGroupMembers.IsDeleteEnabled = true;
+            gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -56,7 +71,40 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            if ( hfGroupId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  Return to Grid
+                NavigateToParentPage();
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                GroupService groupService = new GroupService();
+                Group group = groupService.Get(int.Parse(hfGroupId.Value));
+                ShowReadonlyDetails(group);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            GroupService groupService = new GroupService();
+            Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
+            ShowEditDetails( group );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
         }
 
         /// <summary>
@@ -127,7 +175,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            NavigateToParentPage();
+            ShowReadonlyDetails( group );
         }
 
         #endregion
@@ -191,18 +239,12 @@ namespace RockWeb.Blocks.Crm
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 group = new GroupService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
             }
             else
             {
                 group = new Group { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
             }
-
             hfGroupId.Value = group.Id.ToString();
-            tbName.Text = group.Name;
-            tbDescription.Text = group.Description;
-            cbIsSecurityRole.Checked = group.IsSecurityRole;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -222,32 +264,51 @@ namespace RockWeb.Blocks.Crm
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( Group.FriendlyTypeName );
-                btnCancel.Text = "Close";
-            }
-
-            ddlGroupType.Enabled = !readOnly;
-            ddlParentGroup.Enabled = !readOnly;
-            ddlCampus.Enabled = !readOnly;
-            cbIsSecurityRole.Enabled = !readOnly;
-
-            tbName.ReadOnly = readOnly;
-            tbDescription.ReadOnly = readOnly;
-            btnSave.Visible = !readOnly;
-
-            if ( readOnly )
-            {
-                ddlGroupType.SetReadOnlyValue( group.GroupType.Name );
-                ddlParentGroup.SetReadOnlyValue( group.ParentGroup != null ? group.ParentGroup.Name : None.Text );
-                ddlCampus.SetReadOnlyValue( group.Campus != null ? group.Campus.Name : None.Text );
+                
+                btnEdit.Visible = false;
+                ShowReadonlyDetails( group );
             }
             else
             {
-                LoadDropDowns( group.Id );
-                ddlGroupType.SetValue( group.GroupTypeId );
-                ddlParentGroup.SetValue( group.ParentGroupId );
-                ddlCampus.SetValue( group.CampusId );
+                btnEdit.Visible = true;
+                if ( group.Id > 0 )
+                {
+                    ShowReadonlyDetails( group );
+                }
+                else
+                {
+                    ShowEditDetails( group );
+                }
             }
+
+            BindGroupMembersGrid();
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void ShowEditDetails( Group group )
+        {
+            if ( group.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
+            }
+            
+            SetEditMode( true );
+            
+            tbName.Text = group.Name;
+            tbDescription.Text = group.Description;
+            cbIsSecurityRole.Checked = group.IsSecurityRole;
+
+            LoadDropDowns( group.Id );
+            ddlGroupType.SetValue( group.GroupTypeId );
+            ddlParentGroup.SetValue( group.ParentGroupId );
+            ddlCampus.SetValue( group.CampusId );
 
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
@@ -255,6 +316,96 @@ namespace RockWeb.Blocks.Crm
                 cbIsSecurityRole.Enabled = false;
                 cbIsSecurityRole.Checked = true;
             }
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        private void ShowReadonlyDetails( Group group )
+        {
+            SetEditMode( false );
+            
+            // make a Description section for nonEdit mode
+            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+            lblMainDetails.Text = @"
+<div class='span5'>
+    <dl>";
+
+            lblMainDetails.Text += string.Format( descriptionFormat, "Group Type", group.GroupType.Name );
+            lblMainDetails.Text += string.Format( descriptionFormat, "Group Name", group.Name  );
+            lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
+            lblMainDetails.Text += string.Format( descriptionFormat, "Parent Group", group.ParentGroup == null ? None.TextHtml : group.ParentGroup.Name );
+            
+
+            lblMainDetails.Text += @"
+    </dl>
+</div>
+<div class='span4'>
+    <dl>";
+            lblMainDetails.Text += string.Format( descriptionFormat, "Campus", group.Campus == null ? None.TextHtml : group.Campus.Name );
+            lblMainDetails.Text += string.Format( descriptionFormat, "Active", group.IsActive.ToYesNo() );
+            
+
+            lblMainDetails.Text += @"
+    </dl>
+</div>";
+        }
+
+        #endregion
+
+        #region GroupMembers Grid
+
+        /// <summary>
+        /// Handles the Click event of the DeleteGroupMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
+        protected void DeleteGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            // todo
+            throw new NotImplementedException();
+        }
+
+        void gGroupMembers_AddClick( object sender, EventArgs e )
+        {
+            // todo
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Binds the group members grid.
+        /// </summary>
+        protected void BindGroupMembersGrid()
+        {
+            GroupMemberService groupMemberService = new GroupMemberService();
+            int groupId = int.Parse( hfGroupId.Value );
+
+            var qry = groupMemberService.Queryable().Where( a => a.GroupId.Equals( groupId ) );
+
+            SortProperty sortProperty = gGroupMembers.SortProperty;
+
+            if (sortProperty != null)
+            {
+                gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName ).ThenBy( a => a.Person.GivenName).ToList();
+            }
+
+            gGroupMembers.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void gGroupMembers_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupMembersGrid();
         }
 
         #endregion
