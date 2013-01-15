@@ -69,13 +69,21 @@ namespace Rock.Rest.Controllers
             foreach ( var group in groupList )
             {
                 group.GroupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
-                groupNameList.Add( new GroupName
+                var groupName = new GroupName();
+                groupName.Id = group.Id;
+                groupName.Name = group.Name;
+
+                // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
+                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
                 {
-                    Id = group.Id,
-                    Name = group.Name,
-                    GroupTypeIconCssClass = group.GroupType.IconCssClass,
-                    GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty
-                } );
+                    groupName.GroupTypeIconCssClass = group.GroupType.IconCssClass;
+                }
+                else
+                {
+                    groupName.GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty;
+                }
+                
+                groupNameList.Add(groupName);
             }
 
 
