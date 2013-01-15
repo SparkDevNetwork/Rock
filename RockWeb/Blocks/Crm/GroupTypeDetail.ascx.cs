@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Crm
             AttributeService attributeService = new AttributeService();
 
             var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
                 && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
 
             GroupTypeAttributesState.AddAll( qryGroupTypeAttributes.ToList() );
