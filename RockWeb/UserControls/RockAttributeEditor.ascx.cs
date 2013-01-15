@@ -35,6 +35,23 @@ namespace RockWeb.Controls
                 SetAttributeEditControl( fieldTypeId, false, null );
                 BuildConfigControls();
             }
+
+            string populateAttributeKeyScript = @"
+function populateAttributeKey(nameControlId, keyControlId ) {
+    // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+    var keyControl = $('#' + keyControlId);
+    var keyValue = keyControl.val();
+    if (keyValue == '') {
+        var nameValue = $('#' + nameControlId).val();
+        nameValue = nameValue.replace(/\s+/g, '');
+        keyControl.val(nameValue);
+    }
+}
+";
+
+            tbAttributeName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbAttributeName.ClientID, tbAttributeKey.ClientID );
+            
+            ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "PopulateAttributeKeyScript", populateAttributeKeyScript, true );
         }
 
         /// <summary>
