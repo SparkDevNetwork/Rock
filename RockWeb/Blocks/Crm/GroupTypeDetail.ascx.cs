@@ -14,6 +14,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -59,6 +60,44 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
+        /// <summary>
+        /// Gets or sets the state of the group type attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the group type attributes.
+        /// </value>
+        private ViewStateList<Attribute> GroupTypeAttributesState
+        {
+            get
+            {
+                return ViewState["GroupTypeAttributesState"] as ViewStateList<Attribute>;
+            }
+
+            set
+            {
+                ViewState["GroupTypeAttributesState"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the state of the group attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the group attributes.
+        /// </value>
+        private ViewStateList<Attribute> GroupAttributesState
+        {
+            get
+            {
+                return ViewState["GroupAttributesState"] as ViewStateList<Attribute>;
+            }
+
+            set
+            {
+                ViewState["GroupAttributesState"] = value;
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -82,6 +121,18 @@ namespace RockWeb.Blocks.Crm
             gLocationTypes.Actions.AddClick += gLocationTypes_Add;
             gLocationTypes.GridRebind += gLocationTypes_GridRebind;
             gLocationTypes.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            gGroupTypeAttributes.DataKeyNames = new string[] { "Guid" };
+            gGroupTypeAttributes.Actions.IsAddEnabled = true;
+            gGroupTypeAttributes.Actions.AddClick += gGroupTypeAttributes_Add;
+            gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
+            gGroupTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            gGroupAttributes.DataKeyNames = new string[] { "Guid" };
+            gGroupAttributes.Actions.IsAddEnabled = true;
+            gGroupAttributes.Actions.AddClick += gGroupAttributes_Add;
+            gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
+            gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
         }
 
         /// <summary>
@@ -157,6 +208,8 @@ namespace RockWeb.Blocks.Crm
 
             ChildGroupTypesDictionary = new Dictionary<int, string>();
             LocationTypesDictionary = new Dictionary<int, string>();
+            GroupTypeAttributesState = new ViewStateList<Attribute>();
+            GroupAttributesState = new ViewStateList<Attribute>();
 
             hfGroupTypeId.Value = groupType.Id.ToString();
             tbName.Text = groupType.Name;
@@ -175,6 +228,22 @@ namespace RockWeb.Blocks.Crm
             cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
             groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+
+            AttributeService attributeService = new AttributeService();
+
+            var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+            GroupTypeAttributesState.AddAll( qryGroupTypeAttributes.ToList() );
+            BindGroupTypeAttributesGrid();
+
+            var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+            GroupAttributesState.AddAll( qryGroupAttributes.ToList() );
+            BindGroupAttributesGrid();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -424,6 +493,7 @@ namespace RockWeb.Blocks.Crm
         {
             GroupType groupType;
             GroupTypeService groupTypeService = new GroupTypeService();
+            AttributeService attributeService = new AttributeService();
 
             int groupTypeId = int.Parse( hfGroupTypeId.Value );
 
@@ -492,9 +562,328 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
                 {
                     groupTypeService.Save( groupType, CurrentPersonId );
+
+                    // get it back to make sure we have a good Id for it for the Attributes
+                    groupType = groupTypeService.Get( groupType.Guid );
+                    
+                    /* Take care of Group Type Attributes */
+
+                    // delete GroupTypeAttributes that are no longer configured in the UI
+                    var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                        .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
+                        && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+                    var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
+                                            where !( from d in GroupTypeAttributesState
+                                                     select d.Guid ).Contains( attr.Guid )
+                                            select attr;
+
+                    deletedGroupTypeAttributes.ToList().ForEach( a =>
+                    {
+                        var attr = attributeService.Get( a.Guid );
+                        attributeService.Delete( attr, CurrentPersonId );
+                        attributeService.Save( attr, CurrentPersonId );
+                    } );
+
+                    // add/update the GroupTypeAttributes that are assigned in the UI
+                    foreach ( var attributeState in GroupTypeAttributesState )
+                    {
+                        Attribute attribute = groupTypeAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                        if ( attribute == null )
+                        {
+                            attribute = attributeState.Clone() as Rock.Model.Attribute;
+                            attributeService.Add( attribute, CurrentPersonId );
+                        }
+                        else
+                        {
+                            attributeState.Id = attribute.Id;
+                            attribute.FromDictionary( attributeState.ToDictionary() );
+                        }
+
+                        attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                        attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
+                        attributeService.Save( attribute, CurrentPersonId );
+                    }
+
+                    /* Take care of Group Attributes */
+
+                    // delete GroupAttributes that are no longer configured in the UI
+                    var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                        .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                        && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+                    var deletedGroupAttributes = from attr in groupAttributesQry
+                                                     where !( from d in GroupAttributesState
+                                                              select d.Guid ).Contains( attr.Guid )
+                                                     select attr;
+
+                    deletedGroupAttributes.ToList().ForEach( a =>
+                    {
+                        var attr = attributeService.Get( a.Guid );
+                        attributeService.Delete( attr, CurrentPersonId );
+                        attributeService.Save( attr, CurrentPersonId );
+                    } );
+
+                    // add/update the GroupAttributes that are assigned in the UI
+                    foreach ( var attributeState in GroupAttributesState )
+                    {
+                        Attribute attribute = groupAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                        if ( attribute == null )
+                        {
+                            attribute = attributeState.Clone() as Rock.Model.Attribute;
+                            attributeService.Add( attribute, CurrentPersonId );
+                        }
+                        else
+                        {
+                            attributeState.Id = attribute.Id;
+                            attribute.FromDictionary( attributeState.ToDictionary() );
+                        }
+
+                        attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                        attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Group().TypeName ).Id;
+                        attributeService.Save( attribute, CurrentPersonId );
+                    }
                 } );
 
             NavigateToParentPage();
+        }
+
+        #endregion
+
+        #region GroupTypeAttributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupTypeAttributes_Add( object sender, EventArgs e )
+        {
+            gGroupTypeAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gGroupTypeAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gGroupTypeAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the group type attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gGroupTypeAttributes_ShowEdit( Guid attributeGuid )
+        {
+            pnlDetails.Visible = false;
+            pnlGroupTypeAttribute.Visible = true;
+            Attribute attribute;
+            string actionTitle;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                actionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
+            }
+            else
+            {
+                attribute = GroupTypeAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                actionTitle = ActionTitle.Edit( "attribute for group type " + tbName.Text );
+            }
+
+            edtGroupTypeAttributes.EditAttribute( attribute, actionTitle );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gGroupTypeAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            GroupTypeAttributesState.RemoveEntity( attributeGuid );
+
+            BindGroupTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupTypeAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroupTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveGroupTypeAttribute_Click( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtGroupTypeAttributes.GetAttributeValues( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            GroupTypeAttributesState.RemoveEntity( attribute.Guid );
+            GroupTypeAttributesState.Add( attribute );
+
+            pnlDetails.Visible = true;
+            pnlGroupTypeAttribute.Visible = false;
+
+            BindGroupTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelGroupTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelGroupTypeAttribute_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlGroupTypeAttribute.Visible = false;
+        }
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindGroupTypeAttributesGrid()
+        {
+            gGroupTypeAttributes.DataSource = GroupTypeAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupTypeAttributes.DataBind();
+        }
+
+        #endregion
+
+        #region GroupAttributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupAttributes_Add( object sender, EventArgs e )
+        {
+            gGroupAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gGroupAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gGroupAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the group attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gGroupAttributes_ShowEdit( Guid attributeGuid )
+        {
+            pnlDetails.Visible = false;
+            pnlGroupAttribute.Visible = true;
+            Attribute attribute;
+            string actionTitle;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                actionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
+            }
+            else
+            {
+                attribute = GroupAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                actionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
+            }
+
+            edtGroupAttributes.EditAttribute( attribute, actionTitle );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gGroupAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            GroupAttributesState.RemoveEntity( attributeGuid );
+
+            BindGroupAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gGroupAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroupAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveGroupAttribute_Click( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtGroupAttributes.GetAttributeValues( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            GroupAttributesState.RemoveEntity( attribute.Guid );
+            GroupAttributesState.Add( attribute );
+
+            pnlDetails.Visible = true;
+            pnlGroupAttribute.Visible = false;
+
+            BindGroupAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelGroupAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelGroupAttribute_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlGroupAttribute.Visible = false;
+        }
+
+        /// <summary>
+        /// Binds the group type attributes grid.
+        /// </summary>
+        private void BindGroupAttributesGrid()
+        {
+            gGroupAttributes.DataSource = GroupAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupAttributes.DataBind();
         }
 
         #endregion
