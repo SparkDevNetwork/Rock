@@ -493,6 +493,7 @@ namespace RockWeb.Blocks.Crm
         {
             GroupType groupType;
             GroupTypeService groupTypeService = new GroupTypeService();
+            AttributeService attributeService = new AttributeService();
 
             int groupTypeId = int.Parse( hfGroupTypeId.Value );
 
@@ -564,13 +565,12 @@ namespace RockWeb.Blocks.Crm
 
                     // get it back to make sure we have a good Id for it for the Attributes
                     groupType = groupTypeService.Get( groupType.Guid );
-
-                    AttributeService attributeService = new AttributeService();
+                    
                     /* Take care of Group Type Attributes */
 
                     // delete GroupTypeAttributes that are no longer configured in the UI
                     var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                        .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
                         && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
 
                     var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
