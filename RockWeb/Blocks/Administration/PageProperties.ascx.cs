@@ -14,6 +14,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Model;
+using Rock.Services.NuGet;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -241,22 +242,17 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnExport_Click( object sender, EventArgs e )
         {
-            // Generate the JSON from model data
             var pageService = new PageService();
             var page = pageService.Get( _page.Guid );
-            var json = page.ToJson();
-
-            // Create a temp directory to hold package contents in staging area
-
-            // Write the contents from `json` into an `export.json` file in staging area
-
-            // Grab corresponding block code files and replicate their underlying directory in staging area
-
-            // Generate the `.nuspec` file with some default values (file names, etc)
-
-            // Use NuGet API to generate the `.nupak` file
-
-            // Clean up staging area?
+            var packageService = new PackageService();
+            using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
+            {
+                Response.Clear();
+                Response.ContentType = "application/octet-stream";
+                Response.AddHeader( "content-disposition", "inline;filename=" + page.Name );
+                Response.BinaryWrite( stream.ToArray() );
+                Response.Flush();
+            }
         }
 
         protected void btnImport_Click( object sender, EventArgs e )

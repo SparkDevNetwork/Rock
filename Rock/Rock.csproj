@@ -334,6 +334,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
