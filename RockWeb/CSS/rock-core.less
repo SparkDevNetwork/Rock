@@ -180,15 +180,11 @@ a.help-tip:hover span {
     border: 0;
 }
 
-/* Icon Buttons 
-i[class^="icon-"] 
+#cms-admin-footer .btn
 {
-    font-size: 18px;
-    color: #747474;
-}*/
-
-
-
+    color: @rockSecondaryTextColor;
+    box-shadow: none;
+}
 
 /* HTML Content */
 .html-content, .html-content-block, .html-content-block > div {
@@ -203,8 +199,18 @@ i[class^="icon-"]
 
 .html-content-version-label 
 {
+    background-color: lighten(@rockModalHeader, 20%);
+    padding: 2px 8px;
     float: left;
-    margin: 11px 0 0 16px;
+    margin: 6px 0 0 16px;
+    .border-radius(@baseBorderRadius);
+    color: @rockModalHeaderTextColor;
+}
+
+.html-content-version-label:hover
+{
+    color: inherit;
+    text-decoration: none;
 }
 
 .html-content-edit-header 
@@ -255,8 +261,8 @@ span.cke_skin_kama {
 
 .modal-header {
     min-height: 34px;
-    background-color: #2f2f2f;  
-    color: #888;
+    background-color: @rockModalHeader;  
+    color: @rockModalHeaderTextColor;
     padding: 5px 15px;
 }
 

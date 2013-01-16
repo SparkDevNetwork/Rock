@@ -9,15 +9,12 @@
         <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/font-awesome.css") %>">
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/grid.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
     
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.3.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
