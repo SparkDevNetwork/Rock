@@ -109,7 +109,12 @@ namespace Rock
             }
             else
             {
-                if ( typeof( IEntity ).IsAssignableFrom( type ) )
+                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+                {
+                    type = type.BaseType;
+                }
+                
+                if ( type.Namespace.Equals("Rock.Model"))
                 {
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
