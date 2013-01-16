@@ -62,9 +62,14 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                         else
                                         {
-                                            foreach ( var schedule in group.Schedules )
+                                            bool firstItem = true;
+                                            foreach ( var schedule in group.Schedules.OrderBy( s => s.Schedule.StartTime ) )
                                             {
-                                                cblTimes.Items.Add( new ListItem( schedule.ToString(), schedule.Schedule.Id.ToString() ) );
+                                                ListItem item = new ListItem( schedule.ToString(), schedule.Schedule.Id.ToString() );
+                                                item.Selected = firstItem;
+                                                cblTimes.Items.Add( item );
+
+                                                firstItem = false;
                                             }
                                         }
                                     }
