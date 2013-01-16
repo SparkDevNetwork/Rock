@@ -12,12 +12,12 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes family members without any active group types
+    /// Removes any person that does not have any group types
     /// </summary>
-    [Description("Removes family members without any active group types")]
+    [Description( "Removes any person that does not have any group types" )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Purge Invalid People" )]
-    public class PurgeInvalidPeople : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Remove Empty People" )]
+    public class RemoveEmptyPeople : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -32,14 +32,13 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                foreach ( var family in checkInState.CheckIn.Families.ToList() )
                 {
                     foreach ( var person in family.People.ToList() )
                     {
-                        if (person.GroupTypes.Count == 0)
+                        if ( person.GroupTypes.Count == 0 )
                         {
-                            family.People.Remove(person);
+                            family.People.Remove( person );
                         }
                     }
                 }

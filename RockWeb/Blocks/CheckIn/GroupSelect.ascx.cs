@@ -48,29 +48,29 @@ namespace RockWeb.Blocks.CheckIn
                                 {
                                     lLocationName.Text = location.ToString();
 
-                                    //if ( location.Groups.Count == 1 )
-                                    //{
-                                    //    if ( UserBackedUp )
-                                    //    {
-                                    //        GoBack();
-                                    //    }
-                                    //    else
-                                    //    {
-                                    //        foreach ( var group in location.Groups )
-                                    //        {
-                                    //            group.Selected = true;
-                                    //        }
+                                    if ( location.Groups.Count == 1 )
+                                    {
+                                        if ( UserBackedUp )
+                                        {
+                                            GoBack();
+                                        }
+                                        else
+                                        {
+                                            foreach ( var group in location.Groups )
+                                            {
+                                                group.Selected = true;
+                                            }
 
-                                    //        ProcessSelection();
-                                    //    }
-                                    //}
-                                    //else
-                                    //{
+                                            ProcessSelection();
+                                        }
+                                    }
+                                    else
+                                    {
                                         foreach ( var group in location.Groups )
                                         {
                                             lbGroups.Items.Add( new ListItem( group.ToString(), group.Group.Id.ToString() ) );
                                         }
-                                    //}
+                                    }
                                 }
                                 else
                                 {

@@ -42,29 +42,29 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             lPersonName.Text = person.Person.FullName;
 
-                            //if ( person.GroupTypes.Count == 1 )
-                            //{
-                            //    if ( UserBackedUp )
-                            //    {
-                            //        GoBack();
-                            //    }
-                            //    else
-                            //    {
-                            //        foreach ( var groupType in person.GroupTypes )
-                            //        {
-                            //            groupType.Selected = true;
-                            //        }
+                            if ( person.GroupTypes.Count == 1 )
+                            {
+                                if ( UserBackedUp )
+                                {
+                                    GoBack();
+                                }
+                                else
+                                {
+                                    foreach ( var groupType in person.GroupTypes )
+                                    {
+                                        groupType.Selected = true;
+                                    }
 
-                            //        ProcessSelection();
-                            //    }
-                            //}
-                            //else
-                            //{
+                                    ProcessSelection();
+                                }
+                            }
+                            else
+                            {
                                 foreach ( var groupType in person.GroupTypes )
                                 {
                                     lbGroupTypes.Items.Add( new ListItem( groupType.ToString(), groupType.GroupType.Id.ToString() ) );
                                 }
-                            //} 
+                            } 
                         }
                         else
                         {

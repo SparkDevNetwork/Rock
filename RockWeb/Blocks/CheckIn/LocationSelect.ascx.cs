@@ -45,29 +45,29 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 lGroupTypeName.Text = groupType.ToString();
 
-                                //if ( groupType.Locations.Count == 1 )
-                                //{
-                                //    if ( UserBackedUp )
-                                //    {
-                                //        GoBack();
-                                //    }
-                                //    else
-                                //    {
-                                //        foreach ( var location in groupType.Locations )
-                                //        {
-                                //            location.Selected = true;
-                                //        }
+                                if ( groupType.Locations.Count == 1 )
+                                {
+                                    if ( UserBackedUp )
+                                    {
+                                        GoBack();
+                                    }
+                                    else
+                                    {
+                                        foreach ( var location in groupType.Locations )
+                                        {
+                                            location.Selected = true;
+                                        }
 
-                                //        ProcessSelection();
-                                //    }
-                                //}
-                                //else
-                                //{
+                                        ProcessSelection();
+                                    }
+                                }
+                                else
+                                {
                                     foreach ( var location in groupType.Locations )
                                     {
                                         lbLocations.Items.Add( new ListItem( location.ToString(), location.Location.Id.ToString() ) );
                                     }
-                                //}
+                                }
                             }
                             else
                             {

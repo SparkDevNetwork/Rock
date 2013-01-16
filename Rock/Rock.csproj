@@ -343,13 +343,15 @@
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
     <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
-    <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadLocations.cs" />
-    <Compile Include="Workflow\Action\CheckIn\PurgeInvalidPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />

@@ -94,7 +94,12 @@ namespace Rock.Model
         ///   <c>true</c> if [did attend]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool DidAttend { get; set; }
+        public bool DidAttend 
+        {
+            get { return _didAttend; }
+            set { _didAttend = value; }
+        }
+        private bool _didAttend = true;
 
         /// <summary>
         /// Gets or sets the unique security code.
