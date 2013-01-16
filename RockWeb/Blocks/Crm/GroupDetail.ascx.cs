@@ -58,6 +58,17 @@ namespace RockWeb.Blocks.Crm
                     pnlDetails.Visible = false;
                 }
             }
+
+            if ( pnlDetails.Visible )
+            {
+                var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
+                if ( group.GroupTypeId > 0 )
+                {
+                    group.LoadAttributes();
+                    phGroupAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, false );
+                }
+            }
         }
 
         #endregion
@@ -124,7 +135,7 @@ namespace RockWeb.Blocks.Crm
             {
                 group = new Group();
                 group.IsSystem = false;
-                groupService.Add( group, CurrentPersonId );
+                
             }
             else
             {
@@ -132,7 +143,13 @@ namespace RockWeb.Blocks.Crm
                 wasSecurityRole = group.IsSecurityRole;
             }
 
-            group.Name = tbName.Text;
+            bool updateTreeViewNodeOnSave = false;
+            if ( !group.Name.Equals( tbName.Text ) )
+            {
+                updateTreeViewNodeOnSave = true;
+                group.Name = tbName.Text;
+            }
+
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
             group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
@@ -146,6 +163,16 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
+            group.LoadAttributes();
+            
+            Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
+            Rock.Attribute.Helper.SetErrorIndicators( phGroupAttributes, group );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             if ( !group.IsValid )
             {
                 // Controls will render the error messages                    
@@ -154,7 +181,19 @@ namespace RockWeb.Blocks.Crm
 
             RockTransactionScope.WrapTransaction( () =>
             {
+
+                if ( group.Id.Equals( 0 ) )
+                {
+                    groupService.Add( group, CurrentPersonId );
+                }
+
                 groupService.Save( group, CurrentPersonId );
+                Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
+
+                if ( updateTreeViewNodeOnSave )
+                {
+                    //TODO
+                }
             } );
 
             if ( wasSecurityRole )
@@ -310,6 +349,15 @@ namespace RockWeb.Blocks.Crm
             ddlParentGroup.SetValue( group.ParentGroupId );
             ddlCampus.SetValue( group.CampusId );
 
+            GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
+            phGroupTypeAttributes.Controls.Clear();
+            groupType.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributes );
+            
+            phGroupAttributes.Controls.Clear();
+            group.LoadAttributes();
+            Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true );
+
             // if this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
             {
@@ -325,31 +373,125 @@ namespace RockWeb.Blocks.Crm
         private void ShowReadonlyDetails( Group group )
         {
             SetEditMode( false );
+
+            string groupIconHtml = string.Empty;
+            if (!string.IsNullOrWhiteSpace(group.GroupType.IconCssClass))
+            {
+                groupIconHtml = string.Format( "<i class='{0} icon-large' ></i>", group.GroupType.IconCssClass );
+            }
+            else
+            {
+                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                string imageUrlFormat = "<img src='" + appPath + "/Image.ashx?id={0}&width=50&height=50' />";
+                if ( group.GroupType.IconLargeFileId != null )
+                {
+                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
+                }
+                else if ( group.GroupType.IconSmallFileId != null )
+                {
+                    groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconSmallFileId );
+                }
+            }
+
+            lGroupIconHtml.Text = groupIconHtml;
+            lReadOnlyTitle.Text = group.Name;
+            string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
+            if ( group.IsActive )
+            {
+                lblActiveHtml.Text = string.Format(activeHtmlFormat, "label-success", "Active");
+            }
+            else
+            {
+                lblActiveHtml.Text = string.Format(activeHtmlFormat, "label-important", "Inactive");
+            }
             
-            // make a Description section for nonEdit mode
+            
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
 <div class='span5'>
     <dl>";
 
             lblMainDetails.Text += string.Format( descriptionFormat, "Group Type", group.GroupType.Name );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Name", group.Name  );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Parent Group", group.ParentGroup == null ? None.TextHtml : group.ParentGroup.Name );
             
-
+            lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
+            if ( group.ParentGroup != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, group.ParentGroup.GroupType.Name, group.ParentGroup.Name );
+            }
+            
             lblMainDetails.Text += @"
     </dl>
 </div>
 <div class='span4'>
     <dl>";
-            lblMainDetails.Text += string.Format( descriptionFormat, "Campus", group.Campus == null ? None.TextHtml : group.Campus.Name );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Active", group.IsActive.ToYesNo() );
+
+            if ( group.Campus != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Campus", group.Campus == null ? None.TextHtml : group.Campus.Name );
+            }
+
+            /*
+            string attribDump = string.Empty;
+             
+            if ( groupType.Attributes != null )
+            {
+                foreach ( var attribPair in groupType.Attributes.OrderBy(a => a.Value.Order).ThenBy(b => b.Value.Name))
+                {
+                    var attrib = attribPair.Value;
+                    var fieldType = attrib.FieldType;
+                    string displayValue;
+                    if ( !string.IsNullOrWhiteSpace( attrib.DefaultValue ) )
+                    {
+                        displayValue = fieldType.Field.FormatValue( this, attrib.DefaultValue, attrib.QualifierValues, false );
+                    }
+                    else
+                    {
+                        displayValue = None.TextHtml;
+                    }
+
+                    attribDump += string.Format( descriptionFormat, attrib.Name, displayValue );
+                }
+            }
+             
             
+            group.LoadAttributes();
+            
+            if ( group.Attributes != null )
+            {
+                foreach ( var attribPair in group.Attributes.OrderBy( a => a.Value.Order ).ThenBy( b => b.Value.Name ) )
+                {
+                    var attrib = attribPair.Value;
+                    var fieldType = attrib.FieldType;
+                    string attribValue = group.GetAttributeValue(attrib.Key);
+                    string displayValue;
+                    if ( !string.IsNullOrWhiteSpace( attribValue ) )
+                    {
+                        displayValue = fieldType.Field.FormatValue( this, attribValue, attrib.QualifierValues, false );
+                    }
+                    else
+                    {
+                        displayValue = None.TextHtml;
+                    }
+
+                    attribDump += string.Format( descriptionFormat, attrib.Name, displayValue );
+                    
+                }
+            }
+
+            lblMainDetails.Text += attribDump;
+            */
 
             lblMainDetails.Text += @"
     </dl>
 </div>";
+
+            
+            GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
+            groupType.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributesReadOnly );
+
+            group.LoadAttributes();
+            Rock.Attribute.Helper.AddDisplayControls( group, phGroupAttributesReadOnly );
         }
 
         #endregion
