@@ -35,7 +35,7 @@ namespace Rock.CheckIn
         /// The security code.
         /// </value>
         [DataMember]
-        string SecurityCode { get; set; }
+        public string SecurityCode { get; set; }
 
         /// <summary>
         /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
