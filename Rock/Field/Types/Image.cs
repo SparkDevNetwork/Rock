@@ -26,9 +26,22 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return string.Format( "<a href='{0}image.ashx?{1}' target='_blank'>Image</a>",
-                parentControl.ResolveUrl( "~" ),
-                value );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var appPath = parentControl.ResolveUrl( "~" );
+                int imgSize = 100;
+                if ( condensed )
+                {
+                    imgSize = 50;
+                }
+
+                string imageUrlFormat = "<img src='" + appPath + "Image.ashx?id={0}&width={1}&height={1}' />";
+                return string.Format( imageUrlFormat, value, imgSize );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>
