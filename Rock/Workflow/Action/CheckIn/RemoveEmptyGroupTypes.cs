@@ -12,12 +12,12 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any options that do not have an active group type, location, group and schedule
+    /// Removes any group type that does not have any locations
     /// </summary>
-    [Description("Removes any options that do not have an active group type, location, group and schedule")]
+    [Description("Removes any group type that does not have any locations")]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Remove Incomplete Options" )]
-    public class RemoveIncompleteOptions : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Remove Empty Group Types" )]
+    public class RemoveEmptyGroupTypes : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -32,7 +32,23 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
+                foreach ( var family in checkInState.CheckIn.Families.ToList() )
+                {
+                    foreach ( var person in family.People.ToList() )
+                    {
+                        foreach ( var groupType in person.GroupTypes.ToList() )
+                        {
+                            if ( groupType.Locations.Count == 0 )
+                            {
+                                person.GroupTypes.Remove( groupType );
+                            }
+                        }
+                    }
+                }
+
+                SetCheckInState( action, checkInState );
                 return true;
+
             }
 
             return false;

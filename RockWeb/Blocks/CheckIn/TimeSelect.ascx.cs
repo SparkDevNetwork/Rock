@@ -51,22 +51,22 @@ namespace RockWeb.Blocks.CheckIn
                                     {
                                         lGroupName.Text = group.ToString();
 
-                                        //if ( group.Schedules.Count == 1 )
-                                        //{
-                                        //    foreach ( var schedule in group.Schedules )
-                                        //    {
-                                        //        schedule.Selected = true;
-                                        //    }
+                                        if ( group.Schedules.Count == 1 )
+                                        {
+                                            foreach ( var schedule in group.Schedules )
+                                            {
+                                                schedule.Selected = true;
+                                            }
 
-                                        //    ProcessSelection();
-                                        //}
-                                        //else
-                                        //{
+                                            ProcessSelection();
+                                        }
+                                        else
+                                        {
                                             foreach ( var schedule in group.Schedules )
                                             {
                                                 cblTimes.Items.Add( new ListItem( schedule.ToString(), schedule.Schedule.Id.ToString() ) );
                                             }
-                                        //}
+                                        }
                                     }
                                     else
                                     {

@@ -19,7 +19,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Family Select block" )]
+    [Description( "Check-In Person Select block" )]
     public partial class PersonSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -39,29 +39,29 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         lFamilyName.Text = family.ToString();
 
-                        //if ( family.People.Count == 1 )
-                        //{
-                        //    if ( UserBackedUp )
-                        //    {
-                        //        GoBack();
-                        //    }
-                        //    else
-                        //    {
-                        //        foreach ( var familyMember in family.People )
-                        //        {
-                        //            familyMember.Selected = true;
-                        //        }
+                        if ( family.People.Count == 1 )
+                        {
+                            if ( UserBackedUp )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                foreach ( var familyMember in family.People )
+                                {
+                                    familyMember.Selected = true;
+                                }
 
-                        //        ProcessSelection();
-                        //    }
-                        //}
-                        //else
-                        //{
+                                ProcessSelection();
+                            }
+                        }
+                        else
+                        {
                             foreach ( var familyMember in family.People )
                             {
                                 lbMembers.Items.Add( new ListItem( familyMember.ToString(), familyMember.Person.Id.ToString() ) );
                             }
-                        //}
+                        }
                     }
                     else
                     {
