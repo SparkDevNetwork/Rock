@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.Administration
 
         private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
-        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
+        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings", "Import/Export" } ;
         
         protected string CurrentProperty
         {
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        protected void btnExport_Click( object sender, EventArgs e )
+        protected void lbExport_Click( object sender, EventArgs e )
         {
             var pageService = new PageService();
             var page = pageService.Get( _page.Guid );
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
-        protected void btnImport_Click( object sender, EventArgs e )
+        protected void lbImport_Click( object sender, EventArgs e )
         {
             // var bytes = fuImport.FileBytes
 
@@ -321,6 +321,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = true;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = false;
+                pnlImportExport.Visible = false;
                 pnlBasicProperty.DataBind();
             }
             else if ( CurrentProperty.Equals( "Menu Display" ) )
@@ -328,6 +329,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = true;
                 pnlAdvancedSettings.Visible = false;
+                pnlImportExport.Visible = false;
                 pnlMenuDisplay.DataBind();
             }
             else if ( CurrentProperty.Equals( "Advanced Settings" ) )
@@ -335,7 +337,16 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlMenuDisplay.Visible = false;
                 pnlAdvancedSettings.Visible = true;
+                pnlImportExport.Visible = false;
                 pnlAdvancedSettings.DataBind();
+            }
+            else if ( CurrentProperty.Equals( "Import/Export" ) )
+            {
+                pnlBasicProperty.Visible = false;
+                pnlMenuDisplay.Visible = false;
+                pnlAdvancedSettings.Visible = false;
+                pnlImportExport.Visible = true;
+                pnlImportExport.DataBind();
             }
 
             upPanel.DataBind();

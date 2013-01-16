@@ -80,27 +80,31 @@
                     </div>
                 </div>
             </asp:Panel>
-
-            <asp:PlaceHolder id="phAttributes" runat="server" />
             
-            <asp:PlaceHolder ID="phImportExport" runat="server">
+            <asp:Panel ID="pnlImportExport" runat="server" Visible="False">
                 <div class="row">
                     <div class="span6">
                         <fieldset>
                             <legend>Import Pages</legend>
                             <asp:FileUpload runat="server" ID="fuImport" />
-                            <asp:Button runat="server" ID="btnImport" Text="Import" OnClick="btnImport_Click" />
+                            <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-small" OnClick="lbImport_Click">
+                                <i class="icon-arrow-up"></i> Import
+                            </asp:LinkButton>
                         </fieldset>
                     </div>
                     <div class="span6">
                         <fieldset>
                             <legend>Export Pages</legend>
                             <asp:CheckBox runat="server" ID="cbExportChildren" />
-                            <asp:Button runat="server" ID="btnExport" OnClick="btnExport_Click" />
+                            <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-small">
+                                <i class="icon-download-alt"></i> Export
+                            </asp:LinkButton>
                         </fieldset>
                     </div>
                 </div>
-            </asp:PlaceHolder>
+            </asp:Panel>
+
+            <asp:PlaceHolder id="phAttributes" runat="server" />
 
         </div>
 

@@ -40,8 +40,7 @@ namespace Rock.Services.NuGet
                 json = pageCopy.ToJson();
             }
 
-            var exportFilePath = Path.Combine( packageDirectory.FullName, "export.json" );
-            using ( var file = new StreamWriter( exportFilePath ) )
+            using ( var file = new StreamWriter( Path.Combine( packageDirectory.FullName, "export.json" ) ) )
             {
                 file.Write( json );   
             }
@@ -52,14 +51,19 @@ namespace Rock.Services.NuGet
 
             // Generate the `.nuspec` file with some default values (file names, etc)
 
-            var manifest = new Manifest();
-            manifest.Metadata.Id = packageDirectory.Name;
-            manifest.Metadata.Version = "0.0.0";
-            manifest.Metadata.Description = page.Description;
-            manifest.Metadata.Authors = "PageExport";
+            var manifest = new Manifest
+            {
+                Metadata = {
+                    Id = packageDirectory.Name,
+                    Version = "0.0.0",
+                    Description = page.Description,
+                    Authors = "PageExport"
+                },
+                Files = new List<ManifestFile>()
+            };
 
             var webRootPath = HttpContext.Current.Server.MapPath( "~" );
-            AddToManifest( manifest, exportFilePath, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
+            AddToManifest( manifest, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
             var blockTypes = new Dictionary<Guid, BlockType>();
             var uniqueDirectories = new Dictionary<string, string>();
             FindUniqueBlockTypesAndDirectories( page, isRecursive, blockTypes, uniqueDirectories );
@@ -94,6 +98,7 @@ namespace Rock.Services.NuGet
                 packageBuilder.Save( outputStream );
             }
             
+            // TODO: Clean up staging area...
             return outputStream;
         }
 
@@ -125,7 +130,7 @@ namespace Rock.Services.NuGet
                     blockTypes.Add( blockType.Guid, blockType );
 
                     var path = blockType.Path;
-                    var directory = path.Substring( 0, path.LastIndexOf( Path.DirectorySeparatorChar ) );
+                    var directory = path.Substring( 0, path.LastIndexOf( '/' ) );
 
                     if ( !directories.ContainsKey( directory ) )
                     {
@@ -146,6 +151,11 @@ namespace Rock.Services.NuGet
         private void AddToManifest( Manifest manifest, string directory, string webRootPath, 
             string filterPattern = "*.*", SearchOption searchOption = SearchOption.AllDirectories )
         {
+            if ( !Directory.Exists( directory ) )
+            {
+                return;
+            }
+
             var files = from file in Directory.EnumerateFiles( directory, filterPattern, searchOption )
                         // Remove physical root blockTypeFilePath path (`C:\inetpub\...\`)
                         let pathSuffix = file.Substring( webRootPath.Length + 1 )
