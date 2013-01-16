@@ -35,7 +35,7 @@ namespace Rock.CheckIn
         /// The security code.
         /// </value>
         [DataMember]
-        string SecurityCode { get; set; }
+        public string SecurityCode { get; set; }
 
         /// <summary>
         /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
@@ -54,5 +54,16 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public bool Selected { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Schedule != null ? Schedule.ToString() : string.Empty;
+        }
     }
 }

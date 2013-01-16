@@ -12,12 +12,12 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any locations that are not active
+    /// Removes any group that does not have any schedules
     /// </summary>
-    [Description("Removes any locations that are not active")]
+    [Description("Removes any group that does not have any schedules")]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Filter Active Locations" )]
-    public class FilterActiveLocations : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Remove Empty Groups" )]
+    public class RemoveEmptyGroups : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -32,18 +32,20 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
-                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                foreach ( var family in checkInState.CheckIn.Families.ToList() )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var person in family.People.ToList() )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                        foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            foreach( var location in groupType.Locations.ToList())
+                            foreach ( var location in groupType.Locations.ToList() )
                             {
-                                if (!location.Location.IsActive)
+                                foreach ( var group in location.Groups.ToList() )
                                 {
-                                    groupType.Locations.Remove(location);
+                                    if ( group.Schedules.Count == 0 )
+                                    {
+                                        location.Groups.Remove( group );
+                                    }
                                 }
                             }
                         }
@@ -52,6 +54,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                 SetCheckInState( action, checkInState );
                 return true;
+
             }
 
             return false;

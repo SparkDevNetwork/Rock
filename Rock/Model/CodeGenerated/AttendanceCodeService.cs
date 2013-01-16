@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PrayerRequest Service class
+    /// AttendanceCode Service class
     /// </summary>
-    public partial class PrayerRequestService : Service<PrayerRequest>
+    public partial class AttendanceCodeService : Service<AttendanceCode>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrayerRequestService"/> class
+        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
         /// </summary>
-        public PrayerRequestService()
+        public AttendanceCodeService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PrayerRequestService"/> class
+        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
         /// </summary>
-        public PrayerRequestService(IRepository<PrayerRequest> repository) : base(repository)
+        public AttendanceCodeService(IRepository<AttendanceCode> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PrayerRequest item, out string errorMessage )
+        public bool CanDelete( AttendanceCode item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,42 +55,25 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PrayerRequestExtensionMethods
+    public static class AttendanceCodeExtensionMethods
     {
         /// <summary>
-        /// Clones this PrayerRequest object to a new PrayerRequest object
+        /// Clones this AttendanceCode object to a new AttendanceCode object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PrayerRequest Clone( this PrayerRequest source, bool deepCopy )
+        public static AttendanceCode Clone( this AttendanceCode source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PrayerRequest;
+                return source.Clone() as AttendanceCode;
             }
             else
             {
-                var target = new PrayerRequest();
-                target.FirstName = source.FirstName;
-                target.LastName = source.LastName;
-                target.Email = source.Email;
-                target.RequestedByPersonId = source.RequestedByPersonId;
-                target.CategoryId = source.CategoryId;
-                target.Text = source.Text;
-                target.Answer = source.Answer;
-                target.EnteredDate = source.EnteredDate;
-                target.ExpirationDate = source.ExpirationDate;
-                target.GroupId = source.GroupId;
-                target.AllowComments = source.AllowComments;
-                target.IsUrgent = source.IsUrgent;
-                target.IsPublic = source.IsPublic;
-                target.IsActive = source.IsActive;
-                target.IsApproved = source.IsApproved;
-                target.FlagCount = source.FlagCount;
-                target.PrayerCount = source.PrayerCount;
-                target.ApprovedByPersonId = source.ApprovedByPersonId;
-                target.ApprovedOnDate = source.ApprovedOnDate;
+                var target = new AttendanceCode();
+                target.IssueDateTime = source.IssueDateTime;
+                target.Code = source.Code;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

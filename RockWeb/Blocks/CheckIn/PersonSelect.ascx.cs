@@ -19,7 +19,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Family Select block" )]
+    [Description( "Check-In Person Select block" )]
     public partial class PersonSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -37,6 +37,8 @@ namespace RockWeb.Blocks.CheckIn
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
+                        lFamilyName.Text = family.ToString();
+
                         if ( family.People.Count == 1 )
                         {
                             if ( UserBackedUp )
