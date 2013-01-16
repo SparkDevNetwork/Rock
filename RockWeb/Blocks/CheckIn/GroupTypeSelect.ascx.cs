@@ -60,9 +60,16 @@ namespace RockWeb.Blocks.CheckIn
                             }
                             else
                             {
+                                int? defaultId = person.GroupTypes.OrderByDescending( g => g.LastCheckIn ).Select( g => g.GroupType.Id ).FirstOrDefault();
                                 foreach ( var groupType in person.GroupTypes )
                                 {
-                                    lbGroupTypes.Items.Add( new ListItem( groupType.ToString(), groupType.GroupType.Id.ToString() ) );
+                                    ListItem item = new ListItem( groupType.ToString(), groupType.GroupType.Id.ToString() );
+                                    if ( defaultId.HasValue && groupType.GroupType.Id == defaultId.Value )
+                                    {
+                                        item.Selected = true;
+                                    }
+
+                                    lbGroupTypes.Items.Add( item );
                                 }
                             } 
                         }

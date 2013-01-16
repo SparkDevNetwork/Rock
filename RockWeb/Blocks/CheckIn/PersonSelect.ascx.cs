@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 lbMembers.Items.Add( new ListItem( familyMember.ToString(), familyMember.Person.Id.ToString() ) );
                             }
+
                         }
                     }
                     else
