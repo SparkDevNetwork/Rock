@@ -66,9 +66,16 @@ namespace RockWeb.Blocks.CheckIn
                                     }
                                     else
                                     {
+                                        int? defaultId = location.Groups.OrderByDescending( g => g.LastCheckIn ).Select( g => g.Group.Id ).FirstOrDefault();
                                         foreach ( var group in location.Groups )
                                         {
-                                            lbGroups.Items.Add( new ListItem( group.ToString(), group.Group.Id.ToString() ) );
+                                            ListItem item = new ListItem( group.ToString(), group.Group.Id.ToString() );
+                                            if ( defaultId.HasValue && group.Group.Id == defaultId.Value )
+                                            {
+                                                item.Selected = true;
+                                            }
+
+                                            lbGroups.Items.Add( item );
                                         }
                                     }
                                 }

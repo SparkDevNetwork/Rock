@@ -22,6 +22,12 @@ namespace Rock.Model
         private char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
         private List<string> noGood = new List<string> { "666", "KKK" };
 
+        /// <summary>
+        /// Gets the specified day.
+        /// </summary>
+        /// <param name="day">The day.</param>
+        /// <param name="code">The code.</param>
+        /// <returns></returns>
         public IQueryable<AttendanceCode> Get( DateTime day, string code )
         {
             DateTime today = day.Date;
@@ -29,6 +35,11 @@ namespace Rock.Model
             return Repository.AsQueryable().Where( c => c.Code == code && c.IssueDateTime <= today && c.IssueDateTime < tomorrow);
         }
 
+        /// <summary>
+        /// Gets the new.
+        /// </summary>
+        /// <param name="codeLength">Length of the code.</param>
+        /// <returns></returns>
         public AttendanceCode GetNew(int codeLength = 3)
         {
             string code = string.Empty;
