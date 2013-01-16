@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -28,14 +29,14 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var appPath = parentControl.ResolveUrl( "~" );
+                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "Image.ashx" );
                 int imgSize = 100;
                 if ( condensed )
                 {
                     imgSize = 50;
                 }
 
-                string imageUrlFormat = "<img src='" + appPath + "Image.ashx?id={0}&width={1}&height={1}' />";
+                string imageUrlFormat = "<img src='" + imagePath + "?id={0}&width={1}&height={1}' />";
                 return string.Format( imageUrlFormat, value, imgSize );
             }
             else

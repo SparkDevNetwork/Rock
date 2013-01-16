@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web.Http;
 using Rock.Model;
@@ -62,7 +63,7 @@ namespace Rock.Rest.Controllers
 
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = appPath + "/Image.ashx?id={0}&width=25&height=25";
+            string imageUrlFormat = Path.Combine(appPath, "Image.ashx?id={0}&width=25&height=25");
 
             GroupTypeService groupTypeService = new GroupTypeService();
 
