@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Model;
+
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -32,7 +34,49 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
+                DateTime startDateTime = DateTime.Now;
+
+                using ( new Rock.Data.UnitOfWorkScope() )
+                {
+                    var attendanceCodeService = new AttendanceCodeService();
+                    var attendanceService = new AttendanceService();
+
+                    foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                    {
+                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        {
+                            var attendanceCode = attendanceCodeService.GetNew( 3 );
+
+                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            {
+                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                                {
+                                    foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                    {
+                                        foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                        {
+                                            var attendance = new Attendance();
+                                            attendance.ScheduleId = schedule.Schedule.Id;
+                                            attendance.GroupId = group.Group.Id;
+                                            attendance.LocationId = location.Location.Id;
+                                            attendance.PersonId = person.Person.Id;
+                                            attendance.AttendanceCodeId = attendanceCode.Id;
+                                            attendance.StartDateTime = startDateTime;
+                                            attendanceService.Add( attendance, null );
+                                            attendanceService.Save( attendance, null );
+
+                                            schedule.SecurityCode = attendanceCode.Code;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                SetCheckInState( action, checkInState );
                 return true;
+
             }
 
             return false;

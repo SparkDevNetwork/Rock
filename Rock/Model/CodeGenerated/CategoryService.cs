@@ -55,6 +55,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<PrayerRequest>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<WorkflowType>().Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );

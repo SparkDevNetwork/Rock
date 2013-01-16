@@ -41,10 +41,9 @@ namespace Rock.Workflow.Action.CheckIn
                     var service = new GroupMemberService();
                     foreach ( var groupMember in service.GetByGroupId( family.Group.Id ) )
                     {
-                        var person = family.People.Where( m => m.Person.Id == groupMember.PersonId).FirstOrDefault();
-                        if ( person == null )
+                        if (!family.People.Any( p => p.Person.Id == groupMember.PersonId));
                         {
-                            person = new CheckInPerson();
+                            var person = new CheckInPerson();
                             person.Person = groupMember.Person.Clone( false );
                             person.FamilyMember = true;
                             family.People.Add( person );
