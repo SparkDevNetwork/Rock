@@ -61,6 +61,15 @@ namespace Rock.Model
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance code id.
+        /// </summary>
+        /// <value>
+        /// The attendance code id.
+        /// </value>
+        [DataMember]
+        public int? AttendanceCodeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the qualifier value id.
         /// </summary>
         /// <value>
@@ -100,16 +109,6 @@ namespace Rock.Model
             set { _didAttend = value; }
         }
         private bool _didAttend = true;
-
-        /// <summary>
-        /// Gets or sets the unique security code.
-        /// </summary>
-        /// <value>
-        /// The security code.
-        /// </value>
-        [MaxLength(10)]
-        [DataMember]
-        public string SecurityCode { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
@@ -159,6 +158,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance code.
+        /// </summary>
+        /// <value>
+        /// The attendance code.
+        /// </value>
+        [DataMember]
+        public virtual AttendanceCode AttendanceCode { get; set; }
 
         /// <summary>
         /// Gets or sets the qualifier.
@@ -218,6 +226,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }
     }
 

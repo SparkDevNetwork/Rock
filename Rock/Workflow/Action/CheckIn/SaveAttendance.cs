@@ -36,32 +36,37 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 DateTime startDateTime = DateTime.Now;
 
-                var attendanceService = new AttendanceService();
-
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
-                    {
-                        // TODO: Add code to generate security code
-                        string securityCode = "xxx";
+                    var attendanceCodeService = new AttendanceCodeService();
+                    var attendanceService = new AttendanceService();
 
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                    foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                    {
+                        foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                            var attendanceCode = attendanceCodeService.GetNew( 3 );
+
+                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
                                 {
-                                    foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                    foreach ( var group in location.Groups.Where( g => g.Selected ) )
                                     {
-                                        var attendance = new Attendance();
-                                        attendance.ScheduleId = schedule.Schedule.Id;
-                                        attendance.GroupId = group.Group.Id;
-                                        attendance.LocationId = location.Location.Id;
-                                        attendance.PersonId = person.Person.Id;
-                                        attendance.SecurityCode = securityCode;
-                                        attendance.StartDateTime = startDateTime;
-                                        attendanceService.Add( attendance, null );
-                                        attendanceService.Save( attendance, null );
+                                        foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                        {
+                                            var attendance = new Attendance();
+                                            attendance.ScheduleId = schedule.Schedule.Id;
+                                            attendance.GroupId = group.Group.Id;
+                                            attendance.LocationId = location.Location.Id;
+                                            attendance.PersonId = person.Person.Id;
+                                            attendance.AttendanceCodeId = attendanceCode.Id;
+                                            attendance.StartDateTime = startDateTime;
+                                            attendanceService.Add( attendance, null );
+                                            attendanceService.Save( attendance, null );
+
+                                            schedule.SecurityCode = attendanceCode.Code;
+                                        }
                                     }
                                 }
                             }
@@ -69,6 +74,7 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
+                SetCheckInState( action, checkInState );
                 return true;
 
             }

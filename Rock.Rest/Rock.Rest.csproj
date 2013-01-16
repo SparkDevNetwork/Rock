@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
