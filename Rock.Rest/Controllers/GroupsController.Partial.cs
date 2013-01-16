@@ -71,7 +71,7 @@ namespace Rock.Rest.Controllers
                 group.GroupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
                 var groupName = new GroupName();
                 groupName.Id = group.Id;
-                groupName.Name = group.Name;
+                groupName.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
 
                 // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
                 if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
