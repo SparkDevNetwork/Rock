@@ -30,7 +30,7 @@
             <div id="content">
                 <img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" />
                 
-                <div id="content-box" class="group">
+                <div id="content-box" class="clearfix">
                     <Rock:Zone ID="Content" runat="server" />
                 </div>
             </div>
