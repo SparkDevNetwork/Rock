@@ -133,6 +133,9 @@
     <Compile Include="CheckIn\CheckInSchedule.cs" />
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
+    <Compile Include="CheckIn\KioskLocationAttendance.cs" />
+    <Compile Include="CheckIn\KioskGroupAttendance.cs" />
+    <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
     <Compile Include="CheckIn\KioskGroup.cs" />
     <Compile Include="CheckIn\KioskGroupType.cs" />
     <Compile Include="CheckIn\KioskLocation.cs" />
@@ -283,6 +286,7 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
+    <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
