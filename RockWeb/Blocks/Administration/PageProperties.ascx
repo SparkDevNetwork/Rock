@@ -1,6 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.PageProperties" %>
 
 <asp:UpdatePanel id="upPanel" runat="server">
+    <Triggers><asp:PostBackTrigger ControlID="lbExport" /></Triggers>
 <ContentTemplate>
  
     <asp:PlaceHolder ID="phContent" runat="server">
