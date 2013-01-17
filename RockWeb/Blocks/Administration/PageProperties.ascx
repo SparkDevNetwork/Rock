@@ -86,7 +86,7 @@
                     <div class="span6">
                         <fieldset>
                             <legend>Import Pages</legend>
-                            <asp:FileUpload runat="server" ID="fuImport" />
+                            <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
                             <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-small" OnClick="lbImport_Click">
                                 <i class="icon-arrow-up"></i> Import
                             </asp:LinkButton>
@@ -95,7 +95,10 @@
                     <div class="span6">
                         <fieldset>
                             <legend>Export Pages</legend>
-                            <asp:CheckBox runat="server" ID="cbExportChildren" />
+                            <label class="checkbox">
+                                <asp:CheckBox runat="server" ID="cbExportChildren" />
+                                Export child pages?
+                            </label>
                             <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-small">
                                 <i class="icon-download-alt"></i> Export
                             </asp:LinkButton>

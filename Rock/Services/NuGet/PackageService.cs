@@ -10,7 +10,7 @@ using Rock.Model;
 namespace Rock.Services.NuGet
 {
     /// <summary>
-    /// Facade class to provide intaraction with NuGet internals 
+    /// Facade class to provide intaraction with NuGet internals
     /// </summary>
     public class PackageService
     {
@@ -25,21 +25,8 @@ namespace Rock.Services.NuGet
             // Create temp blockTypeFilePath to store package
             var packageDirectory = CreatePackageDirectory( page.Name );
 
-            // Generate the JSON from model data recursively, or not
-            string json;
-
-            if ( isRecursive )
-            {
-                json = page.ToJson();   
-            }
-            else
-            {
-                // make a deep copy, remove it's child pages, and ToJson that...
-                var pageCopy = page.Clone() as Page ?? new Page();
-                pageCopy.Pages = new List<Page>();
-                json = pageCopy.ToJson();
-            }
-
+            // Generate the JSON from model data and write it to disk
+            var json = GetJson( page, isRecursive );
             using ( var file = new StreamWriter( Path.Combine( packageDirectory.FullName, "export.json" ) ) )
             {
                 file.Write( json );   
@@ -49,21 +36,17 @@ namespace Rock.Services.NuGet
             // * Find out from `page` which Blocks need to be packaged up (recursively if ExportChildren box is checked)
             // * Grab asset folders for each Block's code file uniquely (Scripts, Assets, CSS folders)
 
-            // Generate the `.nuspec` file with some default values (file names, etc)
-
-            var manifest = new Manifest
+            var packageBuilder = new PackageBuilder
             {
-                Metadata = {
-                    Id = packageDirectory.Name,
-                    Version = "0.0.0",
-                    Description = page.Description,
-                    Authors = "PageExport"
-                },
-                Files = new List<ManifestFile>()
+                Id = packageDirectory.Name,
+                Version = new SemanticVersion( "0.0" ),
+                Description = page.Description
             };
 
+            packageBuilder.Authors.Add( "PageExport" );
+
             var webRootPath = HttpContext.Current.Server.MapPath( "~" );
-            AddToManifest( manifest, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
+            AddToPackage( packageBuilder, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
             var blockTypes = new Dictionary<Guid, BlockType>();
             var uniqueDirectories = new Dictionary<string, string>();
             FindUniqueBlockTypesAndDirectories( page, isRecursive, blockTypes, uniqueDirectories );
@@ -74,31 +57,25 @@ namespace Rock.Services.NuGet
                 var directory = sourcePath.Substring( 0, sourcePath.LastIndexOf( Path.DirectorySeparatorChar ) );
                 var fileName = Path.GetFileNameWithoutExtension( sourcePath );
                 var pattern = string.Format( "{0}.*", fileName );
-                AddToManifest( manifest, directory, webRootPath, pattern, SearchOption.TopDirectoryOnly );
+                AddToPackage( packageBuilder, directory, webRootPath, pattern, SearchOption.TopDirectoryOnly );
             }
 
-            // Second pass through blocks. Determine which folders need to be added to the manifest
+            // Second pass through blocks. Determine which folders need to be added to the packageBuilder
             foreach ( var dir in uniqueDirectories.Keys )
             {
                 var sourcePath = HttpContext.Current.Server.MapPath( dir );
 
                 // Are there any folders present named "CSS", "Scripts" or "Assets"?
-                AddToManifest( manifest, Path.Combine(sourcePath, "CSS" ), webRootPath );
-                AddToManifest( manifest, Path.Combine(sourcePath, "Scripts" ), webRootPath );
-                AddToManifest( manifest, Path.Combine(sourcePath, "Assets" ), webRootPath );
-            }
-
-            var outputStream = new MemoryStream();
-            using ( var manifestStream = new MemoryStream() )
-            {
-                manifest.Save( manifestStream );
-
-                // Use NuGet API to generate the `.nupkg` file
-                var packageBuilder = new PackageBuilder( manifestStream, packageDirectory.FullName );
-                packageBuilder.Save( outputStream );
+                AddToPackage( packageBuilder, Path.Combine(sourcePath, "CSS" ), webRootPath );
+                AddToPackage( packageBuilder, Path.Combine(sourcePath, "Scripts" ), webRootPath );
+                AddToPackage( packageBuilder, Path.Combine(sourcePath, "Assets" ), webRootPath );
             }
             
-            // TODO: Clean up staging area...
+            var outputStream = new MemoryStream();
+            packageBuilder.Save( outputStream );
+
+            // Clean up staging area
+            packageDirectory.Delete( recursive: true );
             return outputStream;
         }
 
@@ -111,6 +88,7 @@ namespace Rock.Services.NuGet
             
         }
 
+
         private DirectoryInfo CreatePackageDirectory( string pageName )
         {
             var name = Regex.Replace( pageName, @"[^A-Za-z0-9]", string.Empty );
@@ -118,6 +96,27 @@ namespace Rock.Services.NuGet
             var packageName = string.Format( "{0}_{1}", name, Guid.NewGuid() );
             return Directory.CreateDirectory( Path.Combine( rootPath, "PackageStaging", packageName ) );
         }
+
+
+        private string GetJson( Page page, bool isRecursive )
+        {
+            string json;
+
+            if ( isRecursive )
+            {
+                json = page.ToJson();
+            }
+            else
+            {
+                // make a deep copy, remove it's child pages, and ToJson that...
+                var pageCopy = page.Clone() as Page ?? new Page();
+                pageCopy.Pages = new List<Page>();
+                json = pageCopy.ToJson();
+            }
+
+            return json;
+        }
+
 
         private void FindUniqueBlockTypesAndDirectories( Page page, bool isRecursive, Dictionary<Guid, BlockType> blockTypes, Dictionary<string, string> directories )
         {
@@ -148,7 +147,7 @@ namespace Rock.Services.NuGet
             }
         }
 
-        private void AddToManifest( Manifest manifest, string directory, string webRootPath, 
+        private void AddToPackage( PackageBuilder packageBuilder, string directory, string webRootPath, 
             string filterPattern = "*.*", SearchOption searchOption = SearchOption.AllDirectories )
         {
             if ( !Directory.Exists( directory ) )
@@ -157,18 +156,14 @@ namespace Rock.Services.NuGet
             }
 
             var files = from file in Directory.EnumerateFiles( directory, filterPattern, searchOption )
-                        // Remove physical root blockTypeFilePath path (`C:\inetpub\...\`)
                         let pathSuffix = file.Substring( webRootPath.Length + 1 )
-                        // Make location relative to ~/App_Data/PackageStaging/{PackageName}/{package.nuspec}
-                        let source = string.Format( "../../../../{0}", pathSuffix )
-                        let target = pathSuffix
-                        select new ManifestFile
+                        select new ManifestFile()
                             {
-                                Source = source,
-                                Target = target
+                                Source = pathSuffix,
+                                Target = pathSuffix,
                             };
 
-            manifest.Files.AddRange( files );
+            packageBuilder.PopulateFiles( webRootPath, files );
         }
     }
 }
