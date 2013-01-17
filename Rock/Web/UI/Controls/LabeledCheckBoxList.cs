@@ -4,7 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Constants;
@@ -162,6 +164,20 @@ namespace Rock.Web.UI.Controls
             //writer.RenderEndTag();
 
             writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Gets the selected values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<string> SelectedValues
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
+            }
         }
 
     }

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>System.Linq.Dynamic</id>
+    <version>1.0.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.opensource.org/licenses/ms-pl</licenseUrl>
+    <projectUrl>https://github.com/kahanu/System.Linq.Dynamic</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This is the Microsoft assembly for the .Net 4.0 Dynamic language functionality.</description>
+    <tags>system linq dynamic</tags>
+    <references>
+      <reference file="System.Linq.Dynamic.dll" />
+    </references>
+  </metadata>
+</package>
