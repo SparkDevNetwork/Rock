@@ -2,15 +2,13 @@
 
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
-        <asp:HiddenField ID="hfIdType" runat="server" />
+        <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
-        
-
-        <asp:Panel ID="pnlTypeDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
 
             <div id="pnlEditDetails" runat="server" class="well">
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
 
                 <fieldset>
                     <legend>
@@ -21,22 +19,11 @@
                         <div class="span6">
                             <Rock:DataTextBox ID="tbTypeName" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbTypeDescription" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                            <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
-                            <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
                         </div>
 
                         <div class="span6">
-                            <div class="control-group">
-                                <h5>Defined Type Attributes
-                                </h5>
-                                <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
-                                    <Columns>
-                                        <asp:BoundField DataField="Name" />
-                                        <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
-                                        <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
+                            <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
+                            <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
                         </div>
                     </div>
 
@@ -53,9 +40,6 @@
                     <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phDefinedTypeAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
@@ -65,18 +49,35 @@
                 </div>
             </fieldset>
 
-            <asp:Panel ID="pnlValues" runat="server">
-                <h4>Values</h4>
+            <div class="row-fluid">
+                <div class="span6">
+                    <asp:Panel ID="pnlAttributeTypes" runat="server">
+                        <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
+                        <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                            <Columns>
+                                <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
+                                <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
+                                <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
+                            </Columns>
+                        </Rock:Grid>
 
-                <Rock:Grid ID="rGridValue" runat="server" OnRowSelected="rGridValue_Edit" AllowSorting="true">
-                    <Columns>
-                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                        <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                        <Rock:DeleteField OnClick="rGridValue_Delete" />
-                    </Columns>
-                </Rock:Grid>
+                    </asp:Panel>
+                </div>
 
-            </asp:Panel>
+                <div class="span6">
+                    <asp:Panel ID="pnlValues" runat="server">
+                        <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
+                        <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="false" DisplayType="Light">
+                            <Columns>
+                                <asp:BoundField DataField="Name" HeaderText="Values for Defined Type"/>
+                                <Rock:EditField OnClick="gDefinedValues_Edit" />
+                                <Rock:DeleteField OnClick="gDefinedValues_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+
+                    </asp:Panel>
+                </div>
+            </div>
 
         </asp:Panel>
 
@@ -84,24 +85,26 @@
             <RockWeb:RockAttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" />
         </asp:Panel>
 
-        <Rock:ModalDialog ID="modalValues" runat="server" Title="Type Values">
-            <Content>
-                <asp:HiddenField ID="hfIdValue" runat="server" />
-                <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+        <asp:Panel ID="pnlDefinedValueEditor" runat="server" Visible="false">
+            <Rock:ModalDialog ID="modalValues" runat="server" Title="Type Values">
+                <Content>
+                    <asp:HiddenField ID="hfIdValue" runat="server" />
+                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
-                <fieldset>
-                    <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />
-                    <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                    <div class="control-group">
-                        <label class="control-label">
-                            <asp:Literal ID="attrCaption" runat="server"></asp:Literal></label>
-                        <div class="controls">
-                            <asp:PlaceHolder ID="phAttrControl" runat="server"></asp:PlaceHolder>
+                    <fieldset>
+                        <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        <div class="control-group">
+                            <label class="control-label">
+                                <asp:Literal ID="attrCaption" runat="server"></asp:Literal></label>
+                            <div class="controls">
+                                <asp:PlaceHolder ID="phAttrControl" runat="server"></asp:PlaceHolder>
+                            </div>
                         </div>
-                    </div>
-                </fieldset>
-            </Content>
-        </Rock:ModalDialog>
+                    </fieldset>
+                </Content>
+            </Rock:ModalDialog>
+        </asp:Panel>
 
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
