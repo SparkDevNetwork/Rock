@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Crm
             group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
             group.ParentGroupId = ddlParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
+            group.IsActive = cbIsActive.Checked;
 
             // check for duplicates within GroupType
             if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
@@ -343,10 +344,12 @@ namespace RockWeb.Blocks.Crm
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
             cbIsSecurityRole.Checked = group.IsSecurityRole;
+            cbIsActive.Checked = group.IsActive;
 
             LoadDropDowns( group.Id );
             ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
+            ddlParentGroup.LabelText = group.ParentGroup.GroupType.Name;
             ddlCampus.SetValue( group.CampusId );
 
             GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
@@ -430,61 +433,9 @@ namespace RockWeb.Blocks.Crm
                 lblMainDetails.Text += string.Format( descriptionFormat, "Campus", group.Campus == null ? None.TextHtml : group.Campus.Name );
             }
 
-            /*
-            string attribDump = string.Empty;
-             
-            if ( groupType.Attributes != null )
-            {
-                foreach ( var attribPair in groupType.Attributes.OrderBy(a => a.Value.Order).ThenBy(b => b.Value.Name))
-                {
-                    var attrib = attribPair.Value;
-                    var fieldType = attrib.FieldType;
-                    string displayValue;
-                    if ( !string.IsNullOrWhiteSpace( attrib.DefaultValue ) )
-                    {
-                        displayValue = fieldType.Field.FormatValue( this, attrib.DefaultValue, attrib.QualifierValues, false );
-                    }
-                    else
-                    {
-                        displayValue = None.TextHtml;
-                    }
-
-                    attribDump += string.Format( descriptionFormat, attrib.Name, displayValue );
-                }
-            }
-             
-            
-            group.LoadAttributes();
-            
-            if ( group.Attributes != null )
-            {
-                foreach ( var attribPair in group.Attributes.OrderBy( a => a.Value.Order ).ThenBy( b => b.Value.Name ) )
-                {
-                    var attrib = attribPair.Value;
-                    var fieldType = attrib.FieldType;
-                    string attribValue = group.GetAttributeValue(attrib.Key);
-                    string displayValue;
-                    if ( !string.IsNullOrWhiteSpace( attribValue ) )
-                    {
-                        displayValue = fieldType.Field.FormatValue( this, attribValue, attrib.QualifierValues, false );
-                    }
-                    else
-                    {
-                        displayValue = None.TextHtml;
-                    }
-
-                    attribDump += string.Format( descriptionFormat, attrib.Name, displayValue );
-                    
-                }
-            }
-
-            lblMainDetails.Text += attribDump;
-            */
-
             lblMainDetails.Text += @"
     </dl>
 </div>";
-
             
             GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
             groupType.LoadAttributes();
