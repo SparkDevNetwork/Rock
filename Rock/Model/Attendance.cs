@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;

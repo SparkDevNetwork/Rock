@@ -71,7 +71,22 @@ namespace Rock.Model
             return Repository.Find( t => t.GroupId == groupId &&
                 ( includeDeceased || !t.Person.IsDeceased.HasValue || !t.Person.IsDeceased.Value ) );
         }
-        
+
+        /// <summary>
+        /// Gets Mebers by group id and person id.
+        /// </summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="personId">The person id.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
+        {
+            return Repository.Find( g =>
+                g.GroupId == groupId &&
+                g.PersonId == personId &&
+                ( includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value ) );
+        }
+
         /// <summary>
         /// Gets Member by Group Id And Person Id And Group Role Id
         /// </summary>

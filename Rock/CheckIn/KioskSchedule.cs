@@ -3,11 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -29,17 +25,6 @@ namespace Rock.CheckIn
         public Schedule Schedule { get; set; }
 
         /// <summary>
-        /// The number of people who have already arrived, and not yet departed 
-        /// with an attendance record associated with the same group, location, 
-        /// and schedule
-        /// </summary>
-        /// <value>
-        /// The current attendance.
-        /// </value>
-        [DataMember]
-        public int currentAttendance { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="KioskSchedule" /> class.
         /// </summary>
         public KioskSchedule()
@@ -55,6 +40,17 @@ namespace Rock.CheckIn
             : base()
         {
             Schedule = schedule.Clone( false );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Schedule.ToString();
         }
     }
 }
