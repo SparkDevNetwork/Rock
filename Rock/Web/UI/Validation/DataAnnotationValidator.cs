@@ -8,7 +8,9 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.UI.Controls;
 
 // enable client side validation using jQuery see
 // http://www.mourfield.com/Article/70/using-the-jquery-validation-plugin-to-build-a-data-annotations-aspnet-validator
@@ -70,6 +72,22 @@ namespace Rock.Web.UI.Validation
             // get the control validation value
             string value = GetControlValidationValue( ControlToValidate );
 
+            string propertyLabelText = null;
+            
+            Control control = FindControl( ControlToValidate );
+            if ( control != null )
+            {
+                if ( control is ILabeledControl )
+                {
+                    propertyLabelText = ( control as ILabeledControl ).LabelText;
+                }
+            }
+
+            if ( string.IsNullOrWhiteSpace( propertyLabelText ) )
+            {
+                propertyLabelText = PropertyName;
+            }
+
             if ( ValueMustBeInteger )
             {
                 if ( !string.IsNullOrWhiteSpace( value ) )
@@ -77,14 +95,14 @@ namespace Rock.Web.UI.Validation
                     int intValue;
                     if ( !int.TryParse( value, out intValue ) )
                     {
-                        ErrorMessage = string.Format( "{0} must be an whole number", PropertyName );
+                        ErrorMessage = string.Format( "{0} must be an whole number", propertyLabelText );
                         return false;
                     }
                     else
                     {
                         if ( intValue < 0 )
                         {
-                            ErrorMessage = string.Format( "{0} cannot be negative", PropertyName );
+                            ErrorMessage = string.Format( "{0} cannot be negative", propertyLabelText );
                             return false;
                         }
                     }
@@ -109,15 +127,15 @@ namespace Rock.Web.UI.Validation
                     {
                         if ( attribute is MaxLengthAttribute )
                         {
-                            ErrorMessage = string.Format( "{0} can't be longer than {1}", PropertyName, ( attribute as MaxLengthAttribute ).Length.ToString() );
+                            ErrorMessage = string.Format( "{0} can't be longer than {1}", propertyLabelText, ( attribute as MaxLengthAttribute ).Length.ToString() );
                         }
                         else if ( attribute is RequiredAttribute )
                         {
-                            ErrorMessage = string.Format( "A value for {0} is required", PropertyName ); //property.Name );
+                            ErrorMessage = string.Format( "A value for {0} is required", propertyLabelText );
                         }
                         else
                         {
-                            ErrorMessage = string.Format( "Invalid value for {0}", PropertyName );
+                            ErrorMessage = string.Format( "Invalid value for {0}", propertyLabelText );
                         }
                     }
 
