@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Administration
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( "[All]" );
+            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
             AttributeService attributeService = new AttributeService();
             var items = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Administration
                 AttributeService attributeService = new AttributeService();
                 var queryable = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
 
-                if ( ddlCategoryFilter.SelectedValue != "[All]" )
+                if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
                     queryable = queryable.
                         Where( a => a.Category == ddlCategoryFilter.SelectedValue );
                 {

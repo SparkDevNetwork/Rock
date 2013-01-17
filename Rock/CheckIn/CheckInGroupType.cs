@@ -44,7 +44,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the locations that are available for the current group type
@@ -63,5 +63,17 @@ namespace Rock.CheckIn
         {
             Locations = new List<CheckInLocation>();
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return GroupType != null ? GroupType.ToString() : string.Empty;
+        }
+
     }
 }

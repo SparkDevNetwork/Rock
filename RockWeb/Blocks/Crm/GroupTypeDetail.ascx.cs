@@ -600,7 +600,7 @@ namespace RockWeb.Blocks.Crm
                             attribute.FromDictionary( attributeState.ToDictionary() );
                         }
 
-                        attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                        attribute.EntityTypeQualifierColumn = "Id";
                         attribute.EntityTypeQualifierValue = groupType.Id.ToString();
                         attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
                         attributeService.Save( attribute, CurrentPersonId );

@@ -58,32 +58,45 @@ namespace Rock.Model
     public static class PrayerRequestExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PrayerRequest entity
+        /// Clones this PrayerRequest object to a new PrayerRequest object
         /// </summary>
-        public static void CopyPropertiesFrom( this PrayerRequest target, PrayerRequest source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PrayerRequest Clone( this PrayerRequest source, bool deepCopy )
         {
-            target.FirstName = source.FirstName;
-            target.LastName = source.LastName;
-            target.Email = source.Email;
-            target.RequestedByPersonId = source.RequestedByPersonId;
-            target.CategoryId = source.CategoryId;
-            target.Text = source.Text;
-            target.Answer = source.Answer;
-            target.EnteredDate = source.EnteredDate;
-            target.ExpirationDate = source.ExpirationDate;
-            target.GroupId = source.GroupId;
-            target.AllowComments = source.AllowComments;
-            target.IsUrgent = source.IsUrgent;
-            target.IsPublic = source.IsPublic;
-            target.IsActive = source.IsActive;
-            target.IsApproved = source.IsApproved;
-            target.FlagCount = source.FlagCount;
-            target.PrayerCount = source.PrayerCount;
-            target.ApprovedByPersonId = source.ApprovedByPersonId;
-            target.ApprovedOnDate = source.ApprovedOnDate;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PrayerRequest;
+            }
+            else
+            {
+                var target = new PrayerRequest();
+                target.FirstName = source.FirstName;
+                target.LastName = source.LastName;
+                target.Email = source.Email;
+                target.RequestedByPersonId = source.RequestedByPersonId;
+                target.CategoryId = source.CategoryId;
+                target.Text = source.Text;
+                target.Answer = source.Answer;
+                target.EnteredDate = source.EnteredDate;
+                target.ExpirationDate = source.ExpirationDate;
+                target.GroupId = source.GroupId;
+                target.AllowComments = source.AllowComments;
+                target.IsUrgent = source.IsUrgent;
+                target.IsPublic = source.IsPublic;
+                target.IsActive = source.IsActive;
+                target.IsApproved = source.IsApproved;
+                target.FlagCount = source.FlagCount;
+                target.PrayerCount = source.PrayerCount;
+                target.ApprovedByPersonId = source.ApprovedByPersonId;
+                target.ApprovedOnDate = source.ApprovedOnDate;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

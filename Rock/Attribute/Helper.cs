@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Constants;
 using Rock.Web.UI;
 
 namespace Rock.Attribute
@@ -196,7 +196,7 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
-                    attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
+                    attributes.Add( attribute.Id, Rock.Web.Cache.AttributeCache.Read( attribute ) );
                 }
             }
 
@@ -322,7 +322,7 @@ namespace Rock.Attribute
                 {
                     attributeValue = attributeValues[i];
                 }
-                else 
+                else
                 {
                     attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
@@ -349,12 +349,81 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Copies the attributes from one entity to another
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
+        public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
+        {
+            // Copy Categories
+            if ( source.AttributeCategories != null )
+            {
+                target.AttributeCategories = new SortedDictionary<string, List<string>>();
+                foreach ( var item in source.AttributeCategories )
+                {
+                    var list = new List<string>();
+                    foreach ( string value in item.Value )
+                    {
+                        list.Add( value );
+                    }
+                    target.AttributeCategories.Add( item.Key, list );
+                }
+            }
+            else
+            {
+                target.AttributeCategories = null;
+            }
+
+            // Copy Attributes
+            if ( source.Attributes != null )
+            {
+                target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                foreach ( var item in source.Attributes )
+                {
+                    target.Attributes.Add( item.Key, item.Value );
+                }
+            }
+            else
+            {
+                target.Attributes = null;
+            }
+
+            // Copy Attribute Values
+            if ( source.AttributeValues != null )
+            {
+                target.AttributeValues = new Dictionary<string, List<Model.AttributeValue>>();
+                foreach ( var item in source.AttributeValues )
+                {
+                    var list = new List<Model.AttributeValue>();
+                    foreach ( var value in item.Value )
+                    {
+                        var attributeValue = new Model.AttributeValue();
+                        attributeValue.IsSystem = value.IsSystem;
+                        attributeValue.AttributeId = value.AttributeId;
+                        attributeValue.EntityId = value.EntityId;
+                        attributeValue.Order = value.Order;
+                        attributeValue.Value = value.Value;
+                        attributeValue.Id = value.Id;
+                        attributeValue.Guid = value.Guid;
+                        list.Add( attributeValue );
+                    }
+                    target.AttributeValues.Add( item.Key, list );
+                }
+            }
+            else
+            {
+                target.AttributeValues = null;
+            }
+
+        }
+
+        /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
         /// <param name="item"></param>
         /// <param name="parentControl"></param>
         /// <param name="setValue"></param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue)
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue )
         {
             AddEditControls( item, parentControl, setValue, new List<string>() );
         }
@@ -449,6 +518,55 @@ namespace Rock.Attribute
                 }
         }
 
+        /// <summary>
+        /// Gets the display HTML.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <returns></returns>
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
+        {
+            exclude = exclude ?? new List<string>();
+            string result = string.Empty;
+
+            if ( item.Attributes != null )
+            {
+                foreach ( var category in item.AttributeCategories )
+                {
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
+                    header.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : item.GetType().GetFriendlyTypeName() +  " Attributes";
+                    parentControl.Controls.Add( header );
+                    
+                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                    parentControl.Controls.Add( dl );
+
+                    foreach ( string key in category.Value )
+                    {
+                        var attribute = item.Attributes[key];
+
+                        if ( !exclude.Contains( attribute.Name ) )
+                        {
+                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                            dt.InnerText = attribute.Name;
+                            dl.Controls.Add( dt );
+
+                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                            string value = item.AttributeValues[attribute.Key][0].Value;
+                            string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                            if ( string.IsNullOrWhiteSpace( controlHtml ) )
+                            {
+                                controlHtml = None.TextHtml;
+                            }
+
+                            dd.InnerHtml = controlHtml;
+                            dl.Controls.Add( dd );
+                        }
+                    }
+                }
+            }
+        }
+        
         /// <summary>
         /// Sets any missing required field error indicators.
         /// </summary>

@@ -132,10 +132,13 @@ namespace Rock.CheckIn
                 // list of group types
                 if ( kioskGroup.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
+                    kioskGroup.Group.LoadAttributes();
+
                     KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == kioskGroup.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
+                        kioskGroupType.GroupType.LoadAttributes();
                         kioskGroupType.NextActiveTime = DateTimeOffset.MaxValue;
                         kioskStatus.KioskGroupTypes.Add( kioskGroupType );
                     }
@@ -152,6 +155,7 @@ namespace Rock.CheckIn
                         if ( kioskLocation == null )
                         {
                             kioskLocation = new KioskLocation( location );
+                            kioskLocation.Location.LoadAttributes();
                             kioskGroupType.KioskLocations.Add( kioskLocation );
                         }
 

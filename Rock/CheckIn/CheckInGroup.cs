@@ -26,7 +26,7 @@ namespace Rock.CheckIn
         /// The group.
         /// </value>
         [DataMember]
-        public Group group { get; set; }
+        public Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInGroup" /> is selected for check-in
@@ -44,7 +44,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules that are available for the current group
@@ -63,5 +63,17 @@ namespace Rock.CheckIn
         {
             Schedules = new List<CheckInSchedule>();
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group != null ? Group.ToString() : string.Empty;
+        }
+
     }
 }

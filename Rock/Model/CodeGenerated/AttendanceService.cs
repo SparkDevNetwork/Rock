@@ -76,11 +76,11 @@ namespace Rock.Model
                 target.ScheduleId = source.ScheduleId;
                 target.GroupId = source.GroupId;
                 target.PersonId = source.PersonId;
+                target.AttendanceCodeId = source.AttendanceCodeId;
                 target.QualifierValueId = source.QualifierValueId;
                 target.StartDateTime = source.StartDateTime;
                 target.EndDateTime = source.EndDateTime;
                 target.DidAttend = source.DidAttend;
-                target.SecurityCode = source.SecurityCode;
                 target.Note = source.Note;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
