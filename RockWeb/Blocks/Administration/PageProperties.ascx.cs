@@ -247,11 +247,14 @@ namespace RockWeb.Blocks.Administration
             var packageService = new PackageService();
             using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
             {
+                EnableViewState = false;
                 Response.Clear();
                 Response.ContentType = "application/octet-stream";
-                Response.AddHeader( "content-disposition", "inline;filename=" + page.Name );
+                Response.AddHeader( "content-disposition", "attachment; filename=" + page.Name );
+                Response.Charset = "";
                 Response.BinaryWrite( stream.ToArray() );
                 Response.Flush();
+                Response.End();
             }
         }
 
