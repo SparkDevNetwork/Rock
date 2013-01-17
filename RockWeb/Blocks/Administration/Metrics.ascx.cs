@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Administration
         private void BindCategoryFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( "[All]" );
+            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
             MetricService metricService = new MetricService();
             var items = metricService.Queryable().
@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Administration
         {
             var queryable = new Rock.Model.MetricService().Queryable();
 
-            if ( ddlCategoryFilter.SelectedValue != "[All]" )
+            if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
                 queryable = queryable.
                     Where( a => a.Category == ddlCategoryFilter.SelectedValue );
 
@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 lAction.Text = "Add";
-                tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
+                tbCategory.Text = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
                 tbTitle.Text = string.Empty;
                 tbSubtitle.Text = string.Empty;
                 tbDescription.Text = string.Empty;

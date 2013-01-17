@@ -5,7 +5,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <fieldset>
-    <legend>People</legend>
+    <legend><asp:Literal ID="lFamilyName" runat="server"></asp:Literal></legend>
 
         <div class="control-group">
             <label class="control-label">Select Person</label>

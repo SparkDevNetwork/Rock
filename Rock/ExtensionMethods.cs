@@ -109,7 +109,12 @@ namespace Rock
             }
             else
             {
-                if ( typeof( IEntity ).IsAssignableFrom( type ) )
+                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+                {
+                    type = type.BaseType;
+                }
+                
+                if ( type.Namespace.Equals("Rock.Model"))
                 {
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
@@ -852,6 +857,16 @@ namespace Rock
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
         {
             Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
+        /// Copies the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        {
+            Rock.Attribute.Helper.CopyAttributes( source, entity );
         }
 
         #endregion

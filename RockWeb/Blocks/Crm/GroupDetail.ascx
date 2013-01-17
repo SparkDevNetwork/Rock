@@ -22,11 +22,18 @@
                         </div>
                         <div class="span6">
                             <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" />
-                            <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
                             <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
+                            <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
+                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
                         </div>
                     </div>
 
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupTypeAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
                 </fieldset>
 
                 <div class="actions">
@@ -37,11 +44,21 @@
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <legend>Group Detail
+
+                <legend>
+                    <asp:Literal ID="lGroupIconHtml" runat="server" />&nbsp;
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </legend>
+                <asp:Literal ID="lblActiveHtml" runat="server" />
                 <div class="well">
                     <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
+                    </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupTypeAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -55,9 +72,9 @@
             <div id="pnlGroupMembers" runat="server">
                 <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true">
                     <Columns>
-                        <asp:BoundField DataField="Person.FirstName" HeaderText="First Name" SortExpression="Person.NickName, Person.GivenName"/>
-                        <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName"/>
-                        <asp:BoundField DataField="GroupRole.Name" HeaderText="Group Role" SortExpression="GroupRole.Name"/>
+                        <asp:BoundField DataField="Person.FirstName" HeaderText="First Name" SortExpression="Person.NickName, Person.GivenName" />
+                        <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
+                        <asp:BoundField DataField="GroupRole.Name" HeaderText="Group Role" SortExpression="GroupRole.Name" />
                         <Rock:DeleteField OnClick="DeleteGroupMember_Click" />
                     </Columns>
                 </Rock:Grid>
