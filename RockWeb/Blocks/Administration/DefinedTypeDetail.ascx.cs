@@ -5,7 +5,9 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -371,7 +373,8 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                attribute = new AttributeService().Get( attributeGuid );
+                AttributeService attributeService = new AttributeService();
+                attribute = attributeService.Get( attributeGuid );
                 actionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
@@ -398,10 +401,13 @@ namespace RockWeb.Blocks.Administration
                     return;
                 }
 
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                 attributeService.Delete( attribute, CurrentPersonId );
+                attributeService.Save( attribute, CurrentPersonId );
             }
 
             BindDefinedTypeAttributesGrid();
+            BindDefinedValuesGrid();
         }
 
         /// <summary>
@@ -421,7 +427,17 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            Attribute attribute;
+            AttributeService attributeService = new AttributeService();
+            if ( edtDefinedTypeAttributes.AttributeId.Equals( 0 ) )
+            {
+                attribute = new Attribute();
+            }
+            else
+            {
+                attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId );
+            }
+
             edtDefinedTypeAttributes.GetAttributeValues( attribute );
 
             // Controls will show warnings
@@ -432,7 +448,6 @@ namespace RockWeb.Blocks.Administration
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                AttributeService attributeService = new AttributeService();
                 if ( attribute.Id.Equals( 0 ) )
                 {
                     attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new DefinedValue().TypeName ).Id;
@@ -441,6 +456,7 @@ namespace RockWeb.Blocks.Administration
                     attributeService.Add( attribute, CurrentPersonId );
                 }
 
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                 attributeService.Save( attribute, CurrentPersonId );
             } );
 
@@ -448,6 +464,7 @@ namespace RockWeb.Blocks.Administration
             pnlDefinedTypeAttributes.Visible = false;
 
             BindDefinedTypeAttributesGrid();
+            BindDefinedValuesGrid();
         }
 
         /// <summary>
@@ -537,7 +554,38 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         protected void BindDefinedValuesGrid()
         {
+            AttributeService attributeService = new AttributeService();
+
             int definedTypeId = hfDefinedTypeId.ValueAsInt();
+            
+            // add attributes with IsGridColumn to grid
+            var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( definedTypeId.ToString() ) );
+
+            qryDefinedTypeAttributes = qryDefinedTypeAttributes.Where( a => a.IsGridColumn );
+
+            List<Attribute> gridItems = qryDefinedTypeAttributes.ToList();
+
+            foreach ( var item in gDefinedValues.Columns.OfType<AttributeField>().ToList() )
+            {
+                gDefinedValues.Columns.Remove( item );
+            }
+
+            foreach ( var item in gridItems.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = item.Key;
+                bool columnExists = gDefinedValues.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.HeaderText = item.Name;
+                    boundField.SortExpression = string.Empty;
+                    int insertPos = gDefinedValues.Columns.IndexOf(gDefinedValues.Columns.OfType<DeleteField>().First());
+                    gDefinedValues.Columns.Insert(insertPos, boundField );
+                }
+            }
 
             var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == definedTypeId );
 
@@ -551,7 +599,9 @@ namespace RockWeb.Blocks.Administration
                 queryable = queryable.OrderBy( a => a.Id );
             }
 
-            gDefinedValues.DataSource = queryable.ToList();
+            var result = queryable.ToList();
+
+            gDefinedValues.DataSource = result;
             gDefinedValues.DataBind();
         }
 
