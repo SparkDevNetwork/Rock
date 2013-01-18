@@ -245,6 +245,10 @@
     <Compile Include="Migrations\201301162240000_DefinedTypesSweep01.Designer.cs">
       <DependentUpon>201301162240000_DefinedTypesSweep01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301172201176_CheckInPages.cs" />
+    <Compile Include="Migrations\201301172201176_CheckInPages.Designer.cs">
+      <DependentUpon>201301172201176_CheckInPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -940,6 +944,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301162240000_DefinedTypesSweep01.resx">
       <DependentUpon>201301162240000_DefinedTypesSweep01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301172201176_CheckInPages.resx">
+      <DependentUpon>201301172201176_CheckInPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
