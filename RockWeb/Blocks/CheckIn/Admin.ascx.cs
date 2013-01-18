@@ -24,6 +24,23 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !Page.IsPostBack )
             {
+                string script = string.Format( @"
+    <script>
+        $(document).ready(function (e) {{
+            if (localStorage) {{
+                if (localStorage.checkInKiosk) {{
+                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                    if (localStorage.checkInGroupTypes) {{
+                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+                    }}
+                    {0};
+                }}
+            }}
+        }});
+    </script>
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+                phScript.Controls.Add( new LiteralControl( script ) );
+
                 ddlKiosk.Items.Clear();
                 ddlKiosk.DataSource = new DeviceService().Queryable().ToList();
                 ddlKiosk.DataBind();
@@ -39,6 +56,21 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+            else
+            {
+                phScript.Controls.Clear();
+            }
+        }
+
+        protected void lbRefresh_Click( object sender, EventArgs e )
+        {
+            ListItem item = ddlKiosk.Items.FindByValue(hfKiosk.Value);
+            if ( item != null )
+            {
+                ddlKiosk.SelectedValue = item.Value;
+            }
+
+            BindGroupTypes(hfGroupTypes.Value);
         }
 
         protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
@@ -74,6 +106,13 @@ namespace RockWeb.Blocks.CheckIn
 
         private void BindGroupTypes()
         {
+            BindGroupTypes( string.Empty );
+        }
+
+        private void BindGroupTypes( string selectedValues )
+        {
+            var selectedItems = selectedValues.Split( ',' );
+
             cblGroupTypes.Items.Clear();
 
             if ( ddlKiosk.SelectedValue != None.IdValue )
@@ -85,18 +124,31 @@ namespace RockWeb.Blocks.CheckIn
                     cblGroupTypes.DataBind();
                 }
 
-                if ( CurrentGroupTypeIds != null )
+                if ( selectedValues != string.Empty )
                 {
-                    foreach ( int id in CurrentGroupTypeIds )
+                    foreach ( string id in selectedValues.Split(',') )
                     {
-                        ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
+                        ListItem item = cblGroupTypes.Items.FindByValue( id );
                         if ( item != null )
                         {
                             item.Selected = true;
                         }
                     }
                 }
-
+                else
+                {
+                    if ( CurrentGroupTypeIds != null )
+                    {
+                        foreach ( int id in CurrentGroupTypeIds )
+                        {
+                            ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
+                            if ( item != null )
+                            {
+                                item.Selected = true;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

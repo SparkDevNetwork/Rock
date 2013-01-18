@@ -41,6 +41,18 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !Page.IsPostBack && CurrentCheckInState != null )
             {
+                string script = string.Format( @"
+    <script>
+        $(document).ready(function (e) {{
+            if (localStorage) {{
+                localStorage.checkInKiosk = '{0}';
+                localStorage.checkInGroupTypes = '{1}';
+            }}
+        }});
+    </script>
+", CurrentKioskId, CurrentGroupTypeIds.AsDelimited(",") );
+                phScript.Controls.Add( new LiteralControl( script ) );
+
                 CurrentWorkflow = null;
                 SaveState();
                 RefreshView();
