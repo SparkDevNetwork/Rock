@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             nbMessage.Visible = false;
-            
+
             base.OnLoad( e );
         }
 
