@@ -224,6 +224,25 @@ namespace Rock.Migrations
         }
 
         /// <summary>
+        /// Adds the page route.
+        /// </summary>
+        /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="route">The route.</param>
+        public void AddPageRoute( string parentPageGuid, string route )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                INSERT INTO [PageRoute] (
+                    [IsSystem],[PageId],[Route],[Guid])
+                VALUES(
+                    1, @PageId, '{1}', newid())
+", parentPageGuid, route ) );
+
+        }
+        /// <summary>
         /// Defaults the system page.
         /// </summary>
         /// <param name="name">The name.</param>

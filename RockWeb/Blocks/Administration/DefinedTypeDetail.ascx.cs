@@ -21,34 +21,6 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class DefinedTypeDetail : RockBlock, IDetailBlock
     {
-        /// <summary>
-        /// Gets or sets the state of the defined type attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the defined type attributes.
-        /// </value>
-        private ViewStateList<Attribute> DefinedTypeAttributesState
-        {
-            get
-            {
-                return ViewState["DefinedTypeAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["DefinedTypeAttributesState"] = value;
-            }
-        }
-
-
-        #region Fields
-
-        private int? _entityTypeId = null;
-        private string _entityTypeName = string.Empty;
-        private string _entityQualifier = string.Empty;
-
-        #endregion
-
         #region Control Methods
 
         /// <summary>
@@ -59,24 +31,17 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            _entityTypeName = GetAttributeValue( "DefinedType" );
-            _entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( _entityTypeName );
-            _entityQualifier = "DefinedTypeId";
-
             // assign type values grid actions
-            rGridValue.DataKeyNames = new string[] { "id" };
-            rGridValue.Actions.IsAddEnabled = true;
-            rGridValue.Actions.AddClick += rGridValue_Add;
-            rGridValue.GridRebind += rGridValue_GridRebind;
+            gDefinedValues.DataKeyNames = new string[] { "id" };
+            gDefinedValues.Actions.IsAddEnabled = true;
+            gDefinedValues.Actions.AddClick += gDefinedValues_Add;
+            gDefinedValues.GridRebind += gDefinedValues_GridRebind;
 
             // assign attributes grid actions
-            gDefinedTypeAttributes.DataKeyNames = new string[] { "id" };
+            gDefinedTypeAttributes.DataKeyNames = new string[] { "Guid" };
             gDefinedTypeAttributes.Actions.IsAddEnabled = true;
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
-
-            modalValues.SaveClick += btnSaveValue_Click;
-            modalValues.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
         }
 
         /// <summary>
@@ -96,7 +61,18 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    pnlTypeDetails.Visible = false;
+                    pnlDetails.Visible = false;
+                }
+            }
+
+            if ( pnlDefinedValueEditor.Visible )
+            {
+                if ( !string.IsNullOrWhiteSpace( hfDefinedTypeId.Value ) )
+                {
+                    var definedValue = new DefinedValue { DefinedTypeId = hfDefinedTypeId.ValueAsInt() };
+                    definedValue.LoadAttributes();
+                    phDefinedValueAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, false );
                 }
             }
         }
@@ -110,11 +86,10 @@ namespace RockWeb.Blocks.Administration
         {
             DefinedType definedType = null;
             DefinedTypeService typeService = new DefinedTypeService();
-            AttributeService attributeService = new AttributeService();
 
-            int typeId = int.Parse( hfIdType.Value );
+            int definedTypeId = hfDefinedTypeId.ValueAsInt();
 
-            if ( typeId == 0 )
+            if ( definedTypeId == 0 )
             {
                 definedType = new DefinedType();
                 definedType.IsSystem = false;
@@ -123,8 +98,8 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                Rock.Web.Cache.DefinedTypeCache.Flush( typeId );
-                definedType = typeService.Get( typeId );
+                Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeId );
+                definedType = typeService.Get( definedTypeId );
             }
 
             definedType.Name = tbTypeName.Text;
@@ -142,49 +117,8 @@ namespace RockWeb.Blocks.Administration
             {
                 typeService.Save( definedType, CurrentPersonId );
 
-                // get it back to make sure we have a good Id for it for the Attributes
+                // get it back to make sure we have a good Id
                 definedType = typeService.Get( definedType.Guid );
-                hfIdType.Value = definedType.Id.ToString();
-
-                /* Take care of Defined Type Attributes */
-
-                // delete DefinedTypeAttributes that are no longer configured in the UI
-                var definedTypeAttributesQry = attributeService.GetByEntityTypeId( new DefinedType().TypeId ).AsQueryable()
-                    .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                    && a.EntityTypeQualifierValue.Equals( definedType.Id.ToString() ) );
-
-                var deletedDefinedTypeAttributes = from attr in definedTypeAttributesQry
-                                                   where !( from d in DefinedTypeAttributesState
-                                                            select d.Guid ).Contains( attr.Guid )
-                                                   select attr;
-
-                deletedDefinedTypeAttributes.ToList().ForEach( a =>
-                {
-                    var attr = attributeService.Get( a.Guid );
-                    attributeService.Delete( attr, CurrentPersonId );
-                    attributeService.Save( attr, CurrentPersonId );
-                } );
-
-                // add/update the DefinedTypeAttributes that are assigned in the UI
-                foreach ( var attributeState in DefinedTypeAttributesState )
-                {
-                    Attribute attribute = definedTypeAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                    if ( attribute == null )
-                    {
-                        attribute = attributeState.Clone() as Rock.Model.Attribute;
-                        attributeService.Add( attribute, CurrentPersonId );
-                    }
-                    else
-                    {
-                        attributeState.Id = attribute.Id;
-                        attribute.FromDictionary( attributeState.ToDictionary() );
-                    }
-
-                    attribute.EntityTypeQualifierColumn = "Id";
-                    attribute.EntityTypeQualifierValue = definedType.Id.ToString();
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new DefinedType().TypeName ).Id;
-                    attributeService.Save( attribute, CurrentPersonId );
-                }
             } );
 
             ShowReadonlyDetails( definedType );
@@ -197,7 +131,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancelType_Click( object sender, EventArgs e )
         {
-            if ( hfIdType.Value.Equals( "0" ) )
+            if ( hfDefinedTypeId.IsZero() )
             {
                 // Cancelling on Add.  Return to Grid
                 NavigateToParentPage();
@@ -206,7 +140,7 @@ namespace RockWeb.Blocks.Administration
             {
                 // Cancelling on Edit.  Return to Details
                 DefinedTypeService definedTypeService = new DefinedTypeService();
-                DefinedType definedType = definedTypeService.Get( int.Parse( hfIdType.Value ) );
+                DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
                 ShowReadonlyDetails( definedType );
             }
         }
@@ -218,6 +152,9 @@ namespace RockWeb.Blocks.Administration
         private void ShowReadonlyDetails( DefinedType definedType )
         {
             SetEditMode( false );
+
+            hfDefinedTypeId.SetValue( definedType.Id );
+            tbTypeName.Text = definedType.Name;
 
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -242,7 +179,6 @@ namespace RockWeb.Blocks.Administration
 </div>";
 
             definedType.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( definedType, phDefinedTypeAttributesReadOnly );
         }
 
         /// <summary>
@@ -262,21 +198,10 @@ namespace RockWeb.Blocks.Administration
 
             SetEditMode( true );
 
-            DefinedTypeAttributesState = new ViewStateList<Attribute>();
-
             tbTypeName.Text = definedType.Name;
             tbTypeCategory.Text = definedType.Category;
             tbTypeDescription.Text = definedType.Description;
             ddlTypeFieldType.SetValue( definedType.FieldTypeId );
-
-            AttributeService attributeService = new AttributeService();
-
-            var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedType().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( definedType.Id.ToString() ) );
-
-            DefinedTypeAttributesState.AddAll( qryDefinedTypeAttributes.ToList() );
-            BindDefinedTypeAttributesGrid();
         }
 
         /// <summary>
@@ -287,7 +212,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             DefinedTypeService definedTypeService = new DefinedTypeService();
-            DefinedType definedType = definedTypeService.Get( int.Parse( hfIdType.Value ) );
+            DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
             ShowEditDetails( definedType );
         }
 
@@ -298,6 +223,7 @@ namespace RockWeb.Blocks.Administration
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
+            vsDetails.Enabled = editable;
             fieldsetViewDetails.Visible = !editable;
         }
 
@@ -313,7 +239,7 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            pnlTypeDetails.Visible = true;
+            pnlDetails.Visible = true;
             DefinedType definedType = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -325,7 +251,7 @@ namespace RockWeb.Blocks.Administration
                 definedType = new DefinedType { Id = 0 };
             }
 
-            hfIdType.Value = definedType.Id.ToString();
+            hfDefinedTypeId.SetValue( definedType.Id );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -345,7 +271,6 @@ namespace RockWeb.Blocks.Administration
 
             if ( readOnly )
             {
-
                 btnEdit.Visible = false;
                 ShowReadonlyDetails( definedType );
             }
@@ -362,7 +287,8 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            rGridValue_Bind( int.Parse( hfIdType.Value ) );
+            BindDefinedTypeAttributesGrid();
+            BindDefinedValuesGrid();
         }
 
         /// <summary>
@@ -378,18 +304,18 @@ namespace RockWeb.Blocks.Administration
 
                 DefinedValue definedValue;
 
-                int valueId = int.Parse( hfIdValue.Value );
-                if ( valueId == 0 )
+                int definedValueId = hfDefinedValueId.ValueAsInt();
+                if ( definedValueId == 0 )
                 {
                     definedValue = new DefinedValue();
                     definedValue.IsSystem = false;
-                    definedValue.DefinedTypeId = int.Parse( hfIdType.Value );
+                    definedValue.DefinedTypeId = definedValueId;
                     valueService.Add( definedValue, CurrentPersonId );
                 }
                 else
                 {
-                    Rock.Web.Cache.AttributeCache.Flush( valueId );
-                    definedValue = valueService.Get( valueId );
+                    Rock.Web.Cache.AttributeCache.Flush( definedValueId );
+                    definedValue = valueService.Get( definedValueId );
                 }
 
                 definedValue.Name = tbValueName.Text;
@@ -397,10 +323,8 @@ namespace RockWeb.Blocks.Administration
 
                 valueService.Save( definedValue, CurrentPersonId );
             }
-           
-            rGridValue_Bind( int.Parse( hfIdType.Value ) );
 
-            modalValues.Hide();
+            BindDefinedValuesGrid();
             pnlValues.Visible = true;
         }
 
@@ -435,7 +359,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gDefinedTypeAttributes_ShowEdit( Guid attributeGuid )
         {
-            pnlTypeDetails.Visible = false;
+            pnlDetails.Visible = false;
+            vsDetails.Enabled = false;
             pnlDefinedTypeAttributes.Visible = true;
             Attribute attribute;
             string actionTitle;
@@ -446,7 +371,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                attribute = DefinedTypeAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                attribute = new AttributeService().Get( attributeGuid );
                 actionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
@@ -461,7 +386,20 @@ namespace RockWeb.Blocks.Administration
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            DefinedTypeAttributesState.RemoveEntity( attributeGuid );
+            AttributeService attributeService = new AttributeService();
+            Attribute attribute = attributeService.Get( attributeGuid );
+
+            if ( attribute != null )
+            {
+                string errorMessage;
+                if ( !attributeService.CanDelete( attribute, out errorMessage ) )
+                {
+                    mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                attributeService.Delete( attribute, CurrentPersonId );
+            }
 
             BindDefinedTypeAttributesGrid();
         }
@@ -492,10 +430,21 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            DefinedTypeAttributesState.RemoveEntity( attribute.Guid );
-            DefinedTypeAttributesState.Add( attribute );
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                AttributeService attributeService = new AttributeService();
+                if ( attribute.Id.Equals( 0 ) )
+                {
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new DefinedValue().TypeName ).Id;
+                    attribute.EntityTypeQualifierColumn = "DefinedTypeId";
+                    attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
+                    attributeService.Add( attribute, CurrentPersonId );
+                }
 
-            pnlTypeDetails.Visible = true;
+                attributeService.Save( attribute, CurrentPersonId );
+            } );
+
+            pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
 
             BindDefinedTypeAttributesGrid();
@@ -508,7 +457,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancelDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            pnlTypeDetails.Visible = true;
+            pnlDetails.Visible = true;
             pnlDefinedTypeAttributes.Visible = false;
         }
 
@@ -517,7 +466,15 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindDefinedTypeAttributesGrid()
         {
-            gDefinedTypeAttributes.DataSource = DefinedTypeAttributesState.OrderBy( a => a.Name ).ToList();
+            AttributeService attributeService = new AttributeService();
+
+            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+
+            var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( definedTypeId.ToString() ) );
+
+            gDefinedTypeAttributes.DataSource = qryDefinedTypeAttributes.OrderBy( a => a.Name ).ToList();
             gDefinedTypeAttributes.DataBind();
         }
 
@@ -525,37 +482,36 @@ namespace RockWeb.Blocks.Administration
         #region Edit Values
 
         /// <summary>
-        /// Handles the Add event of the rGridValue control.
+        /// Handles the Add event of the gDefinedValues control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rGridValue_Add( object sender, EventArgs e )
+        protected void gDefinedValues_Add( object sender, EventArgs e )
         {
-            ShowEditValue( 0 );
+            gDefinedValues_ShowEdit( 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the rGridValue control.
+        /// Handles the Edit event of the gDefinedValues control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rGridValue_Edit( object sender, RowEventArgs e )
+        protected void gDefinedValues_Edit( object sender, RowEventArgs e )
         {
             int definedValueId = (int)e.RowKeyValue;
-            hfIdValue.Value = definedValueId.ToString();
-            ShowEditValue( definedValueId );
+            gDefinedValues_ShowEdit( definedValueId );
         }
 
         /// <summary>
-        /// Handles the Delete event of the rGridValue control.
+        /// Handles the Delete event of the gDefinedValues control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rGridValue_Delete( object sender, RowEventArgs e )
+        protected void gDefinedValues_Delete( object sender, RowEventArgs e )
         {
             var valueService = new DefinedValueService();
 
-            DefinedValue value = valueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+            DefinedValue value = valueService.Get( (int)e.RowKeyValue );
 
             if ( value != null )
             {
@@ -563,28 +519,29 @@ namespace RockWeb.Blocks.Administration
                 valueService.Save( value, CurrentPersonId );
             }
 
-            rGridValue_Bind( int.Parse( hfIdType.Value ) );
+            BindDefinedValuesGrid();
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the rGridValue control.
+        /// Handles the GridRebind event of the gDefinedValues control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rGridValue_GridRebind( object sender, EventArgs e )
+        protected void gDefinedValues_GridRebind( object sender, EventArgs e )
         {
-            rGridValue_Bind( int.Parse( hfIdType.Value ) );
+            BindDefinedValuesGrid();
         }
 
         /// <summary>
-        /// Rs the grid value_ bind.
+        /// Binds the defined values grid.
         /// </summary>
-        /// <param name="definedTypeId">The defined type id.</param>
-        protected void rGridValue_Bind( int definedTypeId )
+        protected void BindDefinedValuesGrid()
         {
+            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+
             var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == definedTypeId );
 
-            SortProperty sortProperty = rGridValue.SortProperty;
+            SortProperty sortProperty = gDefinedValues.SortProperty;
             if ( sortProperty != null )
             {
                 queryable = queryable.Sort( sortProperty );
@@ -594,73 +551,104 @@ namespace RockWeb.Blocks.Administration
                 queryable = queryable.OrderBy( a => a.Id );
             }
 
-            rGridValue.DataSource = queryable.ToList();
-            rGridValue.DataBind();
+            gDefinedValues.DataSource = queryable.ToList();
+            gDefinedValues.DataBind();
         }
 
         /// <summary>
         /// Shows the edit value.
         /// </summary>
         /// <param name="valueId">The value id.</param>
-        protected void ShowEditValue( int valueId )
+        protected void gDefinedValues_ShowEdit( int valueId )
         {
-            phAttrControl.Controls.Clear();
-
-            AttributeValueService attributeValueService = new AttributeValueService();
-            AttributeService attributeService = new AttributeService();
-
-            var valueModel = new DefinedValueService().Get( valueId );
-            var attributeList = attributeService
-                .Get( _entityTypeId, _entityQualifier, hfIdType.Value )
-                .ToArray();
-
-            // TODO add control for each attribute associated with the defined type
-            foreach ( var attribute in attributeList )
+            pnlDetails.Visible = false;
+            pnlDefinedValueEditor.Visible = true;
+            DefinedValue definedValue;
+            if ( valueId.Equals( 0 ) )
             {
-                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType );
-                if ( fieldType != null )
-                {
-                    var configControls = fieldType.Field.ConfigurationControls();
-
-                    /*
-                    
-                    var ctrlGroup = new HtmlGenericControl( "div" );
-                    phAttrControl.Controls.Add( ctrlGroup );
-                    ctrlGroup.AddCssClass( "control-group" );
-
-                    var lbl = new Label();
-                    ctrlGroup.Controls.Add( lbl );
-                    lbl.AddCssClass( "control-label" );
-                    lbl.Text = attribute.Name;
-
-                    var ctrls = new HtmlGenericControl( "div" );
-                    ctrlGroup.Controls.Add( ctrls );
-                    ctrls.AddCssClass( "controls" );
-
-                    Control control = configControls[i];
-                    ctrls.Controls.Add( control );
-                    control.ID = "configControl_" + attribute.Key;
-                    i++;
-                     
-                     
-                    */
-                }
-            }
-
-            if ( valueModel != null )
-            {
-                hfIdValue.Value = valueId.ToString();
-                tbValueName.Text = valueModel.Name;
-                tbValueDescription.Text = valueModel.Description;
+                definedValue = new DefinedValue { Id = 0 };
+                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
+                lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + tbTypeName.Text );
             }
             else
             {
-                hfIdValue.Value = string.Empty;
-                tbValueName.Text = string.Empty;
-                tbValueDescription.Text = string.Empty;
+                definedValue = new DefinedValueService().Get( valueId );
+                lActionTitleDefinedValue.Text = ActionTitle.Edit( "defined value for " + tbTypeName.Text );
             }
 
-            modalValues.Show();
+            hfDefinedValueId.SetValue( definedValue.Id );
+            tbValueName.Text = definedValue.Name;
+            tbValueDescription.Text = definedValue.Description;
+            definedValue.LoadAttributes();
+            phDefinedValueAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveDefinedValue control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveDefinedValue_Click( object sender, EventArgs e )
+        {
+            DefinedValue definedValue;
+            DefinedValueService definedValueService = new DefinedValueService();
+
+            int definedValueId = hfDefinedValueId.ValueAsInt();
+
+            if ( definedValueId.Equals( 0 ) )
+            {
+                definedValue = new DefinedValue { Id = 0 };
+                definedValue.DefinedTypeId = definedValueId;
+                definedValue.IsSystem = false;
+            }
+            else
+            {
+                definedValue = definedValueService.Get( definedValueId );
+            }
+
+            definedValue.Name = tbValueName.Text;
+            definedValue.Description = tbValueDescription.Text;
+            definedValue.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phDefinedValueAttributes, definedValue );
+            Rock.Attribute.Helper.SetErrorIndicators( phDefinedValueAttributes, definedValue );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !definedValue.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                if ( definedValue.Id.Equals( 0 ) )
+                {
+                    definedValueService.Add( definedValue, CurrentPersonId );
+                }
+
+                definedValueService.Save( definedValue, CurrentPersonId );
+                Rock.Attribute.Helper.SaveAttributeValues( definedValue, CurrentPersonId );
+            } );
+
+            pnlDetails.Visible = true;
+            pnlDefinedValueEditor.Visible = false;
+            BindDefinedValuesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelDefinedValue control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelDefinedValue_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlDefinedValueEditor.Visible = false;
         }
 
         #endregion

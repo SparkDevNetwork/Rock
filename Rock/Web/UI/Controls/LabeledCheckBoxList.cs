@@ -17,7 +17,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledCheckBoxList runat=server></{0}:LabeledCheckBoxList>" )]
-    public class LabeledCheckBoxList : CheckBoxList
+    public class LabeledCheckBoxList : CheckBoxList, ILabeledControl
     {
         private Label label;
         private Label lblNoItemsText;

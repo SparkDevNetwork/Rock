@@ -36,10 +36,11 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 DateTime startDateTime = DateTime.Now;
 
-                using ( new Rock.Data.UnitOfWorkScope() )
+                using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
                     var attendanceCodeService = new AttendanceCodeService();
                     var attendanceService = new AttendanceService();
+                    var groupMemberService = new GroupMemberService();
 
                     foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                     {
@@ -53,19 +54,41 @@ namespace Rock.Workflow.Action.CheckIn
                                 {
                                     foreach ( var group in location.Groups.Where( g => g.Selected ) )
                                     {
+                                        if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
+                                            groupType.GroupType.DefaultGroupRoleId.HasValue &&
+                                            !groupMemberService.GetByGroupIdAndPersonId( group.Group.Id, person.Person.Id, true ).Any() )
+                                        {
+                                            var groupMember = new GroupMember();
+                                            groupMember.GroupId = group.Group.Id;
+                                            groupMember.PersonId = person.Person.Id;
+                                            groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
+                                            groupMemberService.Add( groupMember, null );
+                                            groupMemberService.Save( groupMember, null );
+                                        }
+
                                         foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
                                         {
-                                            var attendance = new Attendance();
-                                            attendance.ScheduleId = schedule.Schedule.Id;
-                                            attendance.GroupId = group.Group.Id;
-                                            attendance.LocationId = location.Location.Id;
-                                            attendance.PersonId = person.Person.Id;
+                                            // Only create one attendance record per day for each person/schedule/group/location
+                                            var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
+                                            if ( attendance == null )
+                                            {
+                                                attendance = uow.DbContext.Attendances.Create();
+                                                attendance.LocationId = location.Location.Id;
+                                                attendance.ScheduleId = schedule.Schedule.Id;
+                                                attendance.GroupId = group.Group.Id;
+                                                attendance.PersonId = person.Person.Id;
+                                                attendanceService.Add( attendance, null );
+                                            }
+
                                             attendance.AttendanceCodeId = attendanceCode.Id;
                                             attendance.StartDateTime = startDateTime;
-                                            attendanceService.Add( attendance, null );
+                                            attendance.EndDateTime = null;
+                                            attendance.DidAttend = true;
                                             attendanceService.Save( attendance, null );
 
                                             schedule.SecurityCode = attendanceCode.Code;
+
+                                            Rock.CheckIn.KioskCache.AddAttendance( attendance );
                                         }
                                     }
                                 }
