@@ -2,14 +2,6 @@
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-
-    <script type="text/javascript">
-
-        Sys.Application.add_load(function () {
-            $('a.brand').attr('href', rock.baseUrl);
-        });
-
-    </script>
     
     <!-- Page Header -->
 		<header class="navbar navbar-static-top pageheader">
@@ -18,7 +10,9 @@
 					<div class="row-fluid">
 						<div class="span2 clearfix">
 	
-							<a class="brand"><img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" /></a>
+                            <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                                <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
+                            </asp:HyperLink>
 					
 						</div>
 						

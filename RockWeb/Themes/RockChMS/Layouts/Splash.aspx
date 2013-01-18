@@ -28,7 +28,7 @@
     <form id="form1" runat="server">
 
             <div id="content">
-                <img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" />
+                <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
                 <div id="content-box" class="clearfix">
                     <Rock:Zone ID="Content" runat="server" />
