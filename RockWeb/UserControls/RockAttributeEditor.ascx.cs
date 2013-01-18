@@ -50,7 +50,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
 ";
 
             tbAttributeName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbAttributeName.ClientID, tbAttributeKey.ClientID );
-            
+
             ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "PopulateAttributeKeyScript", populateAttributeKeyScript, true );
         }
 
@@ -200,6 +200,13 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveAttribute_Click( object sender, EventArgs e )
         {
+            Attribute attribute = new Attribute();
+            GetAttributeValues( attribute );
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
             if ( SaveClick != null )
             {
                 SaveClick( sender, e );
