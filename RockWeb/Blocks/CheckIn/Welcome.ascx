@@ -2,6 +2,8 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
+    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
+
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="row-fluid">

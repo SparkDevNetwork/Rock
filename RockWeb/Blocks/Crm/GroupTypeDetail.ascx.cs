@@ -581,6 +581,7 @@ namespace RockWeb.Blocks.Crm
                     deletedGroupTypeAttributes.ToList().ForEach( a =>
                     {
                         var attr = attributeService.Get( a.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                         attributeService.Delete( attr, CurrentPersonId );
                         attributeService.Save( attr, CurrentPersonId );
                     } );
@@ -603,6 +604,7 @@ namespace RockWeb.Blocks.Crm
                         attribute.EntityTypeQualifierColumn = "Id";
                         attribute.EntityTypeQualifierValue = groupType.Id.ToString();
                         attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
+                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Save( attribute, CurrentPersonId );
                     }
 
@@ -621,6 +623,7 @@ namespace RockWeb.Blocks.Crm
                     deletedGroupAttributes.ToList().ForEach( a =>
                     {
                         var attr = attributeService.Get( a.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                         attributeService.Delete( attr, CurrentPersonId );
                         attributeService.Save( attr, CurrentPersonId );
                     } );
@@ -643,6 +646,7 @@ namespace RockWeb.Blocks.Crm
                         attribute.EntityTypeQualifierColumn = "GroupTypeId";
                         attribute.EntityTypeQualifierValue = groupType.Id.ToString();
                         attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Group().TypeName ).Id;
+                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Save( attribute, CurrentPersonId );
                     }
                 } );
