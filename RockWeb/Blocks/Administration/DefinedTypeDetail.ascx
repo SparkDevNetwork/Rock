@@ -69,7 +69,7 @@
                         <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                         <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="false" DisplayType="Light">
                             <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Values for Defined Type"/>
+                                <asp:BoundField DataField="Name" HeaderText="Values for Defined Type" />
                                 <Rock:EditField OnClick="gDefinedValues_Edit" />
                                 <Rock:DeleteField OnClick="gDefinedValues_Delete" />
                             </Columns>
@@ -86,28 +86,28 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlDefinedValueEditor" runat="server" Visible="false">
-            <Rock:ModalDialog ID="modalValues" runat="server" Title="Type Values">
-                <Content>
-                    <asp:HiddenField ID="hfIdValue" runat="server" />
-                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-
-                    <fieldset>
+            <asp:HiddenField ID="hfDefinedValueId" runat="server" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <fieldset>
+                <legend>
+                    <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
+                </legend>
+                <div class="row-fluid">
+                    <div class="span12">
                         <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                        <div class="control-group">
-                            <label class="control-label">
-                                <asp:Literal ID="attrCaption" runat="server"></asp:Literal></label>
-                            <div class="controls">
-                                <asp:PlaceHolder ID="phAttrControl" runat="server"></asp:PlaceHolder>
-                            </div>
-                        </div>
-                    </fieldset>
-                </Content>
-            </Rock:ModalDialog>
+                    </div>
+                </div>
+                <div class="attributes">
+                    <asp:PlaceHolder ID="phDefinedValueAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                </div>
+            </fieldset>
+
+            <div class="actions">
+                <asp:LinkButton ID="btnSaveDefinedValue" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveDefinedValue_Click" />
+                <asp:LinkButton ID="btnCancelDefinedValue" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelDefinedValue_Click" />
+            </div>
         </asp:Panel>
-
-
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
