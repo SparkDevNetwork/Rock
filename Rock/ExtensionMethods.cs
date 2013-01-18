@@ -113,8 +113,8 @@ namespace Rock
                 {
                     type = type.BaseType;
                 }
-                
-                if ( type.Namespace.Equals("Rock.Model"))
+
+                if ( type.Namespace.Equals( "Rock.Model" ) )
                 {
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
@@ -950,6 +950,42 @@ namespace Rock
                 list.Remove( item );
             }
 
+        }
+
+        #endregion
+
+        #region HiddenField Extensions
+
+        /// <summary>
+        /// Values as int.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns></returns>
+        public static int ValueAsInt( this HiddenField hiddenField )
+        {
+            return int.Parse( hiddenField.Value );
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this HiddenField hiddenField, int value )
+        {
+            hiddenField.Value = value.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether the specified hidden field is zero.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified hidden field is zero; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsZero( this HiddenField hiddenField )
+        {
+            return hiddenField.Value.Equals( "0" );
         }
 
         #endregion
