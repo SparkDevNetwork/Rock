@@ -344,6 +344,7 @@ namespace RockWeb.Blocks.Administration
                     attributeService.Add( attribute, CurrentPersonId );
                 }
 
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                 attributeService.Save( attribute, CurrentPersonId );
             } );
 

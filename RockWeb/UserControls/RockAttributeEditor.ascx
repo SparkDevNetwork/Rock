@@ -22,6 +22,7 @@
             <asp:PlaceHolder ID="phAttributeDefaultValue" runat="server" EnableViewState="false" />
             <Rock:LabeledCheckBox ID="cbAttributeMultiValue" runat="server" LabelText="Allow Multiple Values" />
             <Rock:LabeledCheckBox ID="cbAttributeRequired" runat="server" LabelText="Required" />
+            <Rock:LabeledCheckBox ID="cbShowInGrid" runat="server" LabelText="Show in Grid" />
         </div>
 
     </div>
