@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OneTimeGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.OneTimeGift" %>
 
+<script type="text/javascript">
+
+
+    
+</script>
+
 <asp:UpdatePanel ID="upOneTimeGift" runat="server">
  <ContentTemplate>
 
@@ -9,263 +15,269 @@
                                 
             <div class="row-fluid">
                                 
-                <div class="span8">
+                <div class="span6 well">
 
-                    <div class="row-fluid">
-                        
-                        <div class="span4">
+                    <div class="control-group">
 
-                            <div class="row">
+                        <div class="btn-group">
 
-                                <div class="btn-group">
-
-                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Select your Campus <span class="caret"></span> </button>
+                            <button class="btn dropdown-toggle" data-toggle="dropdown">Select your Campus <span class="caret"></span> </button>
                             
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">Anderson</a></li>
-                                        <li><a href="#">Greenville</a></li>
-                                        <li><a href="#">Spartanburg</a></li>
-                                    </ul>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Anderson</a></li>
+                                <li><a href="#">Greenville</a></li>
+                                <li><a href="#">Spartanburg</a></li>
+                            </ul>
 
-                                </div>
-                        
-                            </div>
-
-                            <div class="row">
-
-                               <div class="input-prepend">
-
-                                  <div class="btn-group">
-                            
-                                      <button class="btn dropdown-toggle" data-toggle="dropdown">Select Fund <span class="caret"></span> </button>
-                            
-                                      <ul class="dropdown-menu">
-                                          <li><a href="#">General Fund</a></li>
-                                          <li><a href="#">Building Fund</a></li>
-                                          <li><a href="#">Special Giving</a></li>                            
-                                      </ul>
-
-                                      <span class="add-on">$</span>
-                                      <input class="span3" id="prependedDropdownButton" type="text" placeholder="0.00">
-
-                                  </div>
-                           
-                               </div>
-                        
-                               <div class="input-prepend">
-
-                                  <div class="btn-group">
-                            
-                                      <button class="btn dropdown-toggle" data-toggle="dropdown">Select Fund <span class="caret"></span> </button>
-                            
-                                      <ul class="dropdown-menu">
-                                          <li><a href="#">General Fund</a></li>
-                                          <li><a href="#">Building Fund</a></li>
-                                          <li><a href="#">Special Giving</a></li>                            
-                                      </ul>
-
-                                      <span class="add-on">$</span>
-                                      <input class="span3" id="Text1" type="text" placeholder="0.00">
-
-                                  </div>
-                           
-                               </div>
-
-                            </div>
-
-                            <div class="row">
-                        
-                                <div class="btn-group">
-
-                                    <a href="#" class="btn btn-success"><i class="icon-white icon-plus"></i> Add Another Gift</a>
-
-                                </div>
-
-                            </div>                  
+                        </div>
                     
-                        </div>
-                
-                        <div class="span4">
-
-                            <div class="row">
-
-                                <input type="text" class="span5" placeholder="First Name" />
-                                <input type="text" class="span5" placeholder="Last Name" />
-
-                            </div>
-
-                            <div class="row">
-                        
-                                <input type="text" class="span10" placeholder="Address" />                        
-                        
-                            </div>
-
-                            <div class="row">
-                        
-                                <input type="text" class="span5" placeholder="City" />                        
-                                <input type="text" class="span3" placeholder="State" />                        
-                                <input type="text" class="span2" placeholder="Zip" />                        
-
-                            </div>                    
-
-                            <div class="row">
-                        
-                                <input type="text" class="span10" placeholder="Email" />                        
-                        
-                            </div>
-
-                        </div>
-                        
                     </div>
                     
-                </div>
-                                
-            </div>
+                    <div class="control-group">
 
-            <div class="divider"><hr width="40%" size="3"></div>
+                        <div class="input-prepend">
+
+                            <div class="btn-group">
+                            
+                                <button class="btn dropdown-toggle" data-toggle="dropdown">Select Fund <span class="caret"></span> </button>
+                            
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">General Fund</a></li>
+                                    <li><a href="#">Building Fund</a></li>
+                                    <li><a href="#">Special Giving</a></li>                            
+                                </ul>
+
+                                <span class="add-on">$</span>
+                                <input class="input-mini" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
+
+                            </div>
+                           
+                        </div>
+
+                    </div>
+                        
+                    <div class="control-group">
+
+                        <div class="input-prepend">
+
+                            <div class="btn-group">
+                            
+                                <button class="btn dropdown-toggle" data-toggle="dropdown">Select Fund <span class="caret"></span> </button>
+                            
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">General Fund</a></li>
+                                    <li><a href="#">Building Fund</a></li>
+                                    <li><a href="#">Special Giving</a></li>                            
+                                </ul>
+
+                                <span class="add-on">$</span>
+                                <input class="input-mini" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
+
+                            </div>
+                           
+                        </div>
+
+
+                    </div>
+
+                    <div class="control-group">
+                        
+                        <div class="btn-group">
+
+                            <a href="#" class="btn btn-success"><i class="icon-white icon-plus"></i> Add Another Gift</a>
+
+                        </div>
+
+                    </div>                  
+                    
+                </div>
+
+
+                <div class="span6 well">
+
+                    <div class="control-group">
+
+                        <input type="text" class="input-small" placeholder="First Name" />
+                        <input type="text" class="input-medium" placeholder="Last Name" />
+
+                    </div>
+
+                    <div class="control-group">
+                        
+                        <input type="text" class="input-xlarge" placeholder="Address" />                        
+                        
+                    </div>
+
+                    <div class="control-group">
+                        
+                        <input type="text" class="input-small" placeholder="City" />                        
+                        <input type="text" class="input-small" placeholder="State" />                        
+                        <input type="text" class="input-small" placeholder="Zip" />                        
+
+                    </div>                    
+
+                    <div class="control-group">
+                        
+                        <input type="text" class="input-xlarge" placeholder="Email" />                        
+                        
+                    </div>
+
+                </div>
+                
+            </div>
+              
+            <div class="divider"><hr width="50%" size="3"></div>
             
             <div class="row-fluid">
               
-                <div class="span8">
+                <div class="span6 well">
+
+                    <div class="tabbable">
+
+                        <ul class="nav nav-tabs">
+
+                            <li class="active"><a href="#tab1" data-toggle="tab">Credit Card</a></li>
+
+                            <li><a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
+
+                        </ul>
+
+                        <div class="tab-content">
+
+                            <div class="tab-pane active" id="tab1">
                     
-                    <div class="row-fluid">
+                                <div class="control-group">
 
-                        <div class="span4">
+                                    <div class="input-append">
 
-                            <div class="row">
-
-                               <div class="input-append">
-
-                                  <div class="btn-group">
+                                        <div class="controls">
                             
-                                      <input class="span6" type="text" placeholder="CC #">
+                                            <input class="input-medium" type="text" placeholder="CC #">
 
-                                      <button class="btn dropdown-toggle" data-toggle="dropdown">Card Type <span class="caret"></span> </button>
-                            
-                                      <ul class="dropdown-menu">
-                                          <li><a href="#">Visa</a></li>
-                                            <li><a href="#">Discover</a></li>
-                                            <li><a href="#">American Express</a></li>                            
-                                      </ul>
-
-                                  </div>
+                                        </div>
                            
-                               </div>
+                                    </div>
 
+                                </div>
+                           
+                                <div class="control-group">
+                        
+                                    <div class="clearfix">
+
+                                        <div class="input-prepend">
+
+                                            <div class="btn-group inline pull-left">
+
+                                                <button class="btn dropdown-toggle" data-toggle="dropdown">Month <span class="caret"></span> </button>
+                            
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="#">January</a></li>
+                                                    <li><a href="#">February</a></li>
+                                                    <li><a href="#">March</a></li> 
+                                                    <li><a href="#">April</a></li>
+                                                    <li><a href="#">May</a></li>
+                                                    <li><a href="#">June</a></li>
+                                                    <li><a href="#">July</a></li>
+                                                    <li><a href="#">August</a></li>
+                                                    <li><a href="#">September</a></li>
+                                                    <li><a href="#">October</a></li>
+                                                    <li><a href="#">November</a></li>
+                                                    <li><a href="#">December</a></li>
+                                                </ul>
+
+                                            </div>
+
+                                            <div class="btn-group inline pull-left">
+
+                                                <button class="btn dropdown-toggle" data-toggle="dropdown">Year <span class="caret"></span> </button>
+
+                                                <ul class="dropdown-menu" >
+
+                                                    <li><a href="#">2012</a></li>
+                                                    <li><a href="#">2013</a></li>
+                                                    <li><a href="#">2014</a></li>
+                                                    <li><a href="#">2015</a></li>
+                                                    <li><a href="#">2016</a></li>
+                                                    <li><a href="#">2017</a></li>                                       
+
+                                                </ul>                           
+
+                                            </div>  
+
+                                            <input class="input-mini inline" size="3" type="text" placeholder="CVV #">
+                            
+                                        </div>
+
+                                    </div>
+                        
+                                </div>
+
+                                <div class="control-group">
+
+                                    <div class="text">
+                            
+                                        <input class="input-medium" type="text" size="30" placeholder="Name on Card" />                                    
+                        
+                                    </div>
+
+                                </div>
+                            
                             </div>
-                           
-                            <div class="row">
-                                
-                                <div class="btn-group span4">
 
-                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Month <span class="caret"></span> </button>
-                            
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">January</a></li>
-                                        <li><a href="#">February</a></li>
-                                        <li><a href="#">March</a></li> 
-                                        <li><a href="#">April</a></li>
-                                        <li><a href="#">May</a></li>
-                                        <li><a href="#">June</a></li>
-                                        <li><a href="#">July</a></li>
-                                        <li><a href="#">August</a></li>
-                                        <li><a href="#">September</a></li>
-                                        <li><a href="#">October</a></li>
-                                        <li><a href="#">November</a></li>
-                                        <li><a href="#">December</a></li>
-                                    </ul>
+                            <div class="tab-pane" id="tab2">
+                                
+                                <div class="control-group">
+                                
+                                    <input type="text" class="input-medium" placeholder="Bank" />                                        
 
                                 </div>
 
-                                <div class="btn-group span3">
+                                <div class="control-group">
 
-                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Day <span class="caret"></span> </button>
+                                    <input type="text" class="input-medium" placeholder="Routing #" />                                        
 
-                                    <ul class="dropdown-menu">
+                                </div>
 
-                                        <li><a href="#">01</a></li>
-                                        <li><a href="#">02</a></li>
-                                        <li><a href="#">03</a></li>
-                                        <li><a href="#">04</a></li>
-                                        <li><a href="#">05</a></li>
-                                        <li><a href="#">06</a></li>
-                                        <li><a href="#">07</a></li>
-                                        <li><a href="#">08</a></li>
-                                        <li><a href="#">09</a></li>
-                                        <li><a href="#">10</a></li>
-                                        <li><a href="#">11</a></li>
-                                        <li><a href="#">12</a></li>
-                                        <li><a href="#">13</a></li>
-                                        <li><a href="#">14</a></li>
-                                        <li><a href="#">15</a></li>
-                                        <li><a href="#">16</a></li>
-                                        <li><a href="#">17</a></li>
-                                        <li><a href="#">18</a></li>
-                                        <li><a href="#">19</a></li>
-                                        <li><a href="#">20</a></li>
-                                        <li><a href="#">21</a></li>
-                                        <li><a href="#">22</a></li>
-                                        <li><a href="#">23</a></li>
-                                        <li><a href="#">24</a></li>
-                                        <li><a href="#">25</a></li>
-                                        <li><a href="#">26</a></li>
-                                        <li><a href="#">27</a></li>
-                                        <li><a href="#">28</a></li>
-                                        <li><a href="#">29</a></li>
-                                        <li><a href="#">30</a></li>
-                                        <li><a href="#">31</a></li>
 
-                                    </ul>
+                                <div class="control-group">
 
-                                </div>    
-                        
-                                <div class="btn-group span3">
+                                    <input type="text" class="input-medium" placeholder="Account #" />
 
-                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Year <span class="caret"></span> </button>
+                                </div>
 
-                                    <ul class="dropdown-menu" >
+                                <div class="control-group">
 
-                                        <li><a href="#">2012</a></li>
-                                        <li><a href="#">2013</a></li>
-                                        <li><a href="#">2014</a></li>
-                                        <li><a href="#">2015</a></li>
-                                        <li><a href="#">2016</a></li>
-                                        <li><a href="#">2017</a></li>                                       
+                                    <div class="btn-group">
 
-                                    </ul>                           
+                                        <label class="radio inline">
+                                            <input type="radio" name="optionsRadios" value="option1" checked>Checking 
+                                        </label>
 
-                                </div>  
+                                        <label class="radio inline">
+                                            <input type="radio" name="optionsRadios" value="option2">Savings 
+                                        </label>                                                      
 
-                            </div>
+                                    </div>
 
-                            <div class="row">
-
-                                <div class="text">
-                            
-                                    <input type="text" class="span8" placeholder="Name on Card" />
-                                    
-                        
                                 </div>
 
                             </div>
 
                         </div>
 
-                        <div class="span4">
+                    </div>
 
-                            <div class="row">
+                    <div class="control-group">
 
-                                <div class="btn-group">
+                        <div class="btn-group">
 
-                                    <label class="checkbox inline">
-                                        <input type="checkbox" id="cbxSaveDetails" value="option1"> Save My Information
-                                    </label>                                                        
+                            <label class="checkbox inline">
 
-                                </div>
+                                <input type="checkbox" id="cbxSaveDetails" value="option1"> Save My Information
 
-                            </div>
+                            </label>                                                        
 
-                        </div>     
+                        </div>
 
                     </div>
 
@@ -283,89 +295,18 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <div class="row-fluid">     
+        <div class="row-fluid ">     
                                 
-            <form class="well form-inline">
+            <div class="span6 well">
 
-                <div class="span4">
+                <h3 class="header-text" >Confirm your Contribution: </h3>
 
-                    <h4 class="header-text" >Confirm your Contribution: </h4>
+                <label><b>John Doe</b>, you're about to give <b>$400.00</b> to the <b>General Fund</b> and <b>$50.00</b> to the <b>Building Fund</b>.
+                
+                <br /><br /> Your total gift of <b>$450.00</b> will be given using a <b>Visa</b> credit card ending in <b>3456</b>.</label><br />
+               
 
-                    <div class="control-group">
-
-                        <div class="btn-group">
-
-                            <button class="btn dropdown-toggle" data-toggle="dropdown">Anderson <span class="caret"></span> </button>
-                            
-                            <ul class="dropdown-menu">
-                                <li><a href="#">Anderson</a></li>
-                                <li><a href="#">Greenville</a></li>
-                                <li><a href="#">Spartanburg</a></li>
-                            </ul>
-
-                        </div>
-                        
-                    </div>
-
-                    <div class="control-group">
-
-                       <div class="input-prepend">
-
-                          <div class="btn-group">
-                            
-                              <button class="btn dropdown-toggle" data-toggle="dropdown">General Fund <span class="caret"></span> </button>
-                            
-                              <ul class="dropdown-menu">
-                                  <li><a href="#">General Fund</a></li>
-                                  <li><a href="#">Building Fund</a></li>
-                                  <li><a href="#">Special Giving</a></li>                            
-                              </ul>
-
-                              <span class="add-on">$</span>
-                              <input class="span3" type="text" placeholder="400.00">
-
-                          </div>
-                           
-                       </div>
-                        
-                       <div class="input-prepend">
-
-                          <div class="btn-group">
-                            
-                              <button class="btn dropdown-toggle" data-toggle="dropdown">Building Fund <span class="caret"></span> </button>
-                            
-                              <ul class="dropdown-menu">
-                                  <li><a href="#">General Fund</a></li>
-                                  <li><a href="#">Building Fund</a></li>
-                                  <li><a href="#">Special Giving</a></li>                            
-                              </ul>
-
-                              <span class="add-on">$</span>
-                              <input class="span3" type="text" placeholder="50.00">
-
-                          </div>
-                           
-                       </div>
-
-                    </div>
-
-                    <div><hr width="60%" size="3"></div>
-
-                    <div class="control-group">
-
-                       <div class="input-prepend">
-                           
-                           <label class="label inline span4">Total Gift </label>
-                           <span class="add-on">$</span>
-                           <input class="input-small uneditable-input" type="text" placeholder="450.00">
-                            
-                       </div>
-
-                    </div>
-
-                </div>
-
-            </form>
+            </div>
 
         </div>
 
