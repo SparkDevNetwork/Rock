@@ -76,11 +76,13 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         {
             attribute.Guid = new Guid( hfAttributeGuid.Value );
             attribute.Id = int.Parse( hfAttributeId.Value );
+
             attribute.Key = tbAttributeKey.Text;
             attribute.Name = tbAttributeName.Text;
             attribute.Category = tbAttributeCategory.Text;
             attribute.Description = tbAttributeDescription.Text;
             attribute.FieldTypeId = int.Parse( ddlAttributeFieldType.SelectedValue );
+            attribute.IsGridColumn = cbShowInGrid.Checked;
 
             FieldTypeCache fieldTypeCache = FieldTypeCache.Read( attribute.FieldTypeId );
             attribute.AttributeQualifiers = new List<AttributeQualifier>();
@@ -146,6 +148,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
 
             cbAttributeMultiValue.Checked = attribute.IsMultiValue;
             cbAttributeRequired.Checked = attribute.IsRequired;
+            cbShowInGrid.Checked = attribute.IsGridColumn;
         }
 
         /// <summary>
@@ -200,7 +203,17 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute = new Attribute();
+            Attribute attribute;
+            if ( hfAttributeId.IsZero() )
+            {
+                attribute = new Attribute();
+            }
+            else
+            {
+                AttributeService attributeService = new AttributeService();
+                attribute = attributeService.Get( hfAttributeId.ValueAsInt() );
+            }
+            
             GetAttributeValues( attribute );
             if ( !attribute.IsValid )
             {
