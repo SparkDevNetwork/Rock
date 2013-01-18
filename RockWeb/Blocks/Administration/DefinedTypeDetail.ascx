@@ -38,45 +38,42 @@
             <fieldset id="fieldsetViewDetails" runat="server">
                 <div class="well">
                     <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                        <div class="span6">
+                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                        <div class="span6">
+                            <asp:Panel ID="pnlAttributeTypes" runat="server">
+                                <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
+                                <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                                    <Columns>
+                                        <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
+                                        <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
+                                        <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </asp:Panel>
+                        </div>
                     </div>
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="btnEdit_Click" />
-                    </div>
+
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="btnEdit_Click" />
                 </div>
             </fieldset>
 
             <div class="row-fluid">
-                <div class="span6">
-                    <asp:Panel ID="pnlAttributeTypes" runat="server">
-                        <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
-                        <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
-                                <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
-                                <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />
-                            </Columns>
-                        </Rock:Grid>
+                <h4>Values for Defined Type</h4>
+                <asp:Panel ID="pnlValues" runat="server">
+                    <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
+                    <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="true" ShowAttributeGridColumns="true">
+                        <Columns>
+                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:DeleteField OnClick="gDefinedValues_Delete" />
+                        </Columns>
+                    </Rock:Grid>
 
-                    </asp:Panel>
-                </div>
-
-                <div class="span6">
-                    <asp:Panel ID="pnlValues" runat="server">
-                        <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
-                        <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="false" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Values for Defined Type" />
-                                <Rock:EditField OnClick="gDefinedValues_Edit" />
-                                <Rock:DeleteField OnClick="gDefinedValues_Delete" />
-                            </Columns>
-                        </Rock:Grid>
-
-                    </asp:Panel>
-                </div>
+                </asp:Panel>
             </div>
 
         </asp:Panel>

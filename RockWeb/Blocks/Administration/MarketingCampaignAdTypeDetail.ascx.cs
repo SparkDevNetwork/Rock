@@ -276,6 +276,7 @@ namespace RockWeb.Blocks.Administration
                 deletedAttributes.ToList().ForEach( a =>
                     {
                         var attr = attributeService.Get( a.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                         attributeService.Delete( attr, CurrentPersonId );
                         attributeService.Save( attr, CurrentPersonId );
                     } );
@@ -298,6 +299,7 @@ namespace RockWeb.Blocks.Administration
                     attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
                     attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
                     attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new MarketingCampaignAd().TypeName ).Id;
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                     attributeService.Save( attribute, CurrentPersonId );
                 }
             } );
