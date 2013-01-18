@@ -65,7 +65,7 @@ namespace Rock.Web.UI.Controls
         $('input#{0}').keyup(function(event){{
             if(event.keyCode == 13){{
                 var keyValue = $('#{1}_hSearchFilter:first').val();
-                var $li = $('.dropdown dd ul li[key=""' + keyValue + '""]:first');
+                var $li = $('.dropdown ul li[key=""' + keyValue + '""]:first');
                 var target = $li.attr('target');
                 window.location.href = rock.baseUrl + target.replace('{{0}}',encodeURIComponent($(this).val()));
             }}
