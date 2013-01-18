@@ -1,0 +1,544 @@
+// import module files
+@import "grid.less";
+
+/* Zone Config */
+.zone-instance.outline 
+{
+    border: 1px solid #909090;
+    min-height: 30px;
+    min-width: 120px;
+    position: relative;
+    margin: 1px;
+}
+
+.zone-configuration {
+    background: #272727;
+    border-color: #565656;
+    border-radius: 4px 4px 4px 4px;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 25px;
+    z-index: 40;
+    right:auto;
+}
+
+.zone-configuration-bar {
+    color: #7F7F7F;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+}
+
+.zone-configuration-bar span {
+    display: block;
+    float: left;
+    font-size: 10px;
+    padding-right: 20px;
+    margin-top: 4px;
+}
+
+.zone-configuration p {
+    float: left;   
+}
+
+/* Module Config */
+.block-configuration {
+    background: #272727;
+    border-color: #565656;
+    border-radius: 4px 4px 4px 4px;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 2px;
+    width: 26px;
+    z-index: 40;
+}
+
+.block-instance.outline 
+{
+    min-height: 36px;
+    clear: both;
+    display: block;
+    position: relative;
+}
+
+.config-bar > a 
+{
+    text-decoration: none;
+}
+
+.config-bar  a i[class^="icon-"] {
+    float: left;
+    margin-left: 5px;
+    margin-top: 3px;
+    font-size: 18px;
+    color: @rockSecondaryTextColor;
+    margin-right: 10px;
+}
+
+.block-configuration-bar {
+    color: #7F7F7F;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+}
+
+.block-configuration-bar .btn
+{
+    margin-right: 12px;
+    color: @rockSecondaryTextColor;   
+}
+
+.block-configuration-bar span {
+    display: block;
+    float: left;
+    font-size: 10px;
+    padding-right: 20px;
+    margin-top: 4px;
+}
+
+/* context help 
+a.help-tip {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	margin-left: 6px;
+	font-size: 18px;
+    color: #747474;
+}
+
+a.help-tip::before 
+{
+    font-family: "FontAwesome";
+    content: "\f059";
+}
+
+a.help-tip span {
+    display: none; 
+    padding: 2px 3px; 
+    margin-left: 8px; 
+    width: 130px;
+    margin: -4px 0 0 10px;
+    font-size: 14px;
+}
+
+a.help-tip:hover span {
+    display:inline; 
+    position:absolute; 
+    background:#ffffff; 
+    border:1px solid #cccccc; 
+    color:#6c6c6c;
+}*/
+
+/* Admin Footer */
+#cms-admin-footer {
+    bottom: 0;
+    height: 20px;
+    z-index: 300;
+    position: fixed;
+    right: 0;
+    margin-right: 25px;
+    background: rgba(210,210,210,.8);
+    border-color: rgba(150,150,150,.8);
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+    color: #454545;
+    padding: 5px 12px 0 12px;
+    font-size: 80%;
+}
+
+#cms-admin-footer .button-bar {
+    margin-top: -4px;
+    margin-left: 12px;
+    float: right;
+}
+
+#cms-admin-footer .button-bar a 
+{
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+}
+
+#cms-admin-footer .btn
+{
+    color: @rockSecondaryTextColor;
+    box-shadow: none;
+}
+
+/* HTML Content */
+.html-content, .html-content-block, .html-content-block > div {
+	display: inline;
+    position: relative;
+}
+
+.html-content-editor-panel .editor-buttons {
+    float: right;
+    margin-top: 6px;
+}
+
+.html-content-version-label 
+{
+    background-color: lighten(@rockModalHeader, 20%);
+    padding: 2px 8px;
+    float: left;
+    margin: 6px 0 0 16px;
+    .border-radius(@baseBorderRadius);
+    color: @rockModalHeaderTextColor;
+}
+
+.html-content-version-label:hover
+{
+    color: inherit;
+    text-decoration: none;
+}
+
+.html-content-edit-header 
+{
+    padding: 6px 16px 0 16px;
+}
+
+.html-content-approve 
+{
+    float: right;
+    margin-top: 4px;
+}
+
+
+/* CK Editor Tweaks */
+span.cke_skin_kama {
+    padding: 0 !important;   
+}
+
+/* Dialog Styling */
+#dialog 
+{
+    overflow: hidden;    
+}
+
+#dialog .scroll-container 
+{
+    width: 720px;
+}
+
+
+#dialog .scroll-container .overview 
+{
+    width: 520px; 
+}
+
+#dialog .scroll-container .viewport 
+{
+    width: 690px; 
+}
+
+
+.modal-body.iframe 
+{
+    background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
+    overflow: hidden;
+}
+
+.modal-header {
+    min-height: 34px;
+    background-color: @rockModalHeader;  
+    color: @rockModalHeaderTextColor;
+    padding: 5px 15px;
+}
+
+.modal-header h3 
+{
+    float: left;
+}
+
+.modal-backdrop 
+{
+    background-color: #8b8b8b;
+    opacity: 0.7;    
+}
+
+.modal, .modal2 {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11000;
+  width: 750px;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999; /* IE6-7 */
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+  -moz-background-clip: padding-box;
+  background-clip: padding-box;
+}
+
+.modal .close, .modal2 .close {
+  margin-top: 7px;
+  color: #fff;
+}
+.modal.fade, .modal2.fade {
+  -webkit-transition: opacity .3s linear, top .3s ease-out;
+  -moz-transition: opacity .3s linear, top .3s ease-out;
+  -ms-transition: opacity .3s linear, top .3s ease-out;
+  -o-transition: opacity .3s linear, top .3s ease-out;
+  transition: opacity .3s linear, top .3s ease-out;
+  top: -25%;
+}
+.modal.fade.in, .modal2.fade.in {
+  top: 50%;
+}
+
+.modal-body {
+  padding: 8px 12px 12px 12px;
+}
+.modal-body form {
+  margin-bottom: 0;
+}
+.modal-footer {
+  background-color: #f5f5f5;
+  padding: 14px 15px 15px;
+  border-top: 1px solid #ddd;
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: inset 0 1px 0 #ffffff;
+  -moz-box-shadow: inset 0 1px 0 #ffffff;
+  box-shadow: inset 0 1px 0 #ffffff;
+  zoom: 1;
+  margin-bottom: 0;
+}
+.modal-footer:before, .modal-footer:after {
+  display: table;
+  content: "";
+  zoom: 1;
+}
+.modal-footer:after {
+  clear: both;
+}
+.modal-footer .btn {
+  float: right;
+  margin-left: 5px;
+}
+
+#modal-popup_iframe {
+    height: 100%;
+    width: 100%;
+    border: 0;
+}
+
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
+
+/* security dialog styles */
+.add-user fieldset, .add-role fieldset 
+{
+    border: 1px solid #c4c4c4;
+    border-radius: 4px;   
+    margin-top: 22px;
+}
+
+.add-user legend, .add-role legend
+{
+    font-size: 16px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.add-user table 
+{
+    margin-top: 10px;   
+}
+
+.add-user table td 
+{
+    padding: 0 10px 6px;   
+}
+
+
+
+
+
+/* jQuery Scrolling Capability */
+.scroll-container 
+{ 
+    width: 520px; 
+    clear: both; 
+}
+
+.scroll-container .thumb 
+{
+    margin-left: -6px;
+    background-color: #ccc;
+}
+
+.scroll-container .thumb:hover
+{
+    background-color: #bbb;
+}
+
+
+.scroll-container .viewport 
+{ 
+    width: 500px;  
+    overflow: hidden; 
+    position: relative; 
+    height: 380px;
+}
+
+.scroll-container .overview 
+{ 
+    list-style: none; 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+}
+
+
+.scroll-container .scrollbar 
+{ 
+    position: relative; 
+    float: right; 
+    width: 15px; 
+}
+
+.scroll-container .track 
+{ 
+    height: 100%; 
+    position: relative;  
+    width: 0;
+    background-color: #ddd;
+    border-radius: 4px;  
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #fff;
+    padding: 0; 
+}
+
+.scroll-container .thumb 
+{ 
+    height: 20px; 
+    width: 13px; 
+    cursor: pointer; 
+    overflow: hidden; 
+    position: absolute; 
+    top: 0;
+    border-radius: 120px;
+}
+
+.scroll-container .thumb .end 
+{ 
+    overflow: hidden; 
+    height: 5px; 
+    width: 13px; 
+    background-color: transparent; 
+}
+
+.scroll-container .disable
+{ 
+    display: none; 
+}
+
+/* widget wrapper*/
+.widget
+{
+    background-color: @rockWidgetBackground;
+    border: 1px solid @tableBorder;
+    border-radius: @baseBorderRadius;
+}
+
+.widget h3 
+{
+    font-size: 15px;  
+    line-height: 15px;
+    margin: 0 0 6px 0;
+}
+
+.widget header
+{
+    .header-gradient ();
+    padding: 6px;
+    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
+    border-bottom: 1px solid @tableBorder;
+    margin-bottom: 24px;
+}
+
+/* page list as blocks */
+
+.page-list-as-blocks ul 
+{
+    list-style: none;
+}
+
+.page-list-as-blocks li 
+{
+    background-color: @rockPageTitleBackground;
+    border-radius: 6px 6px 6px 6px;
+    border: 1px solid #bbb;
+    float: left;
+    margin: 0 2% 12px 2%;
+    width: 20%;
+    overflow: hidden;
+    color: @rockSecondaryTextColor;
+    text-align: center;
+}
+
+    
+.page-list-as-blocks li a 
+{
+    display: block;
+    color: inherit;
+    height: 75px;
+    padding: 12px;
+}
+
+.page-list-as-blocks li a:hover
+{
+    text-decoration: none;
+}
+
+.page-list-as-blocks h4
+{
+    margin-top: 0;
+    font-size: 14px;
+    margin: 6px 0;
+}
+
+/* error page */
+.error-wrap
+{
+    padding: 12px;
+    overflow: hidden;
+}
+
+.exception-type
+{
+    margin-top: 12px;
+}

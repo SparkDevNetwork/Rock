@@ -5,12 +5,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Oops...</title>
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/bootstrap.min.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/CSS/RockCore.css") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>" />
 
-    <script src="<%= ResolveUrl("~/Scripts/jquery-1.8.3.min.js") %>" >
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+
+    <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
     <script>
         $(document).ready(function () {
             $(".stack-trace").hide();
@@ -27,15 +27,22 @@
     
         
         <div id="content">
-            <h1>Rock ChMS</h1>
+            <img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" />
+
             <div id="content-box">
-                <h1>Ah Man... An Error Occurred...</h1>
-                <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
-                been notified of this problem.</p>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="error-wrap">
+                            <h1>Ah Man... An Error Occurred...</h1>
+                            <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
+                            been notified of this problem.</p>
 
-                <p><a onclick="history.go(-1);" class="btn small">Go Back</a></p>
+                            <p><a onclick="history.go(-1);" class="btn small">Go Back</a></p>
 
-                <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
+                            <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

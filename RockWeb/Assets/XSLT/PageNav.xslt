@@ -5,70 +5,64 @@
 	<xsl:output method="html" indent="yes"/>
 
 	<xsl:template match="/">
-		<nav>
-			<ul>
+
+			<ul class="nav">
 				<xsl:for-each select="page/pages/page">
 					<!-- top level child pages of the root page -->
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle pagenav-item" data-toggle="dropdown">
+							<xsl:attribute name="href">#</xsl:attribute>
+
+              <i>
+                <xsl:attribute name="class">
+                  <xsl:value-of select="@icon-css-class"/>
+                </xsl:attribute>
+              </i>
+							<xsl:value-of select="@title"/>
+              
+              <b class="caret"></b>
+            </a>
+              <!-- only display the children if true -->
+              <xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
+                <ul class="dropdown-menu">
+                  <!-- second level children -->
+                  <xsl:for-each select="pages/page">
+                    <xsl:call-template name="secondLevel">
+                      <xsl:with-param name="page" select="."/>
+                    </xsl:call-template>
+                  </xsl:for-each>
+                </ul>
+              </xsl:if>
+              
+						
+					</li>
+				</xsl:for-each>
+			</ul>
+
+	</xsl:template>
+
+	<xsl:template name="secondLevel">
+		<xsl:param name="page"/>
+		
+				<li class="pagenav-header">
+					<xsl:value-of select="@title"/>
+				</li>
+				
+				
+			<!-- only display the children if true and there are some to display -->
+			<xsl:if test="@display-child-pages = 'true'">
+				<!-- third level children -->
+				<xsl:for-each select="./pages/page">
 					<li>
-						<a href="#">
+						<a>
 							<xsl:attribute name="href">
 								<xsl:value-of select="@url"/>
 							</xsl:attribute>
 							<xsl:value-of select="@title"/>
 						</a>
-						<!-- only display the children if true -->
-						<xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
-							<div class="nav-menu group">
-								<div class="width-1column">
-									<!-- second level children -->
-									<xsl:for-each select="pages/page">
-										<xsl:call-template name="secondLevel">
-											<xsl:with-param name="page" select="."/>
-										</xsl:call-template>
-									</xsl:for-each>
-								</div>
-							</div>
-						</xsl:if>
 					</li>
 				</xsl:for-each>
-			</ul>
-		</nav>
-	</xsl:template>
-
-	<xsl:template name="secondLevel">
-		<xsl:param name="page"/>
-		<section>
-			<header>
-				<strong>
-					<xsl:value-of select="@title"/>
-				</strong>
-				<xsl:if test="@display-icon = 'true'">
-					<img>
-						<xsl:attribute name="src">
-							<xsl:value-of disable-output-escaping="yes" select="icon-url"/>
-						</xsl:attribute>
-					</img>
-				</xsl:if>
-				<xsl:if test="@display-description = 'true'">
-					<xsl:value-of disable-output-escaping="yes" select="description"/>
-				</xsl:if>
-			</header>
-			<!-- only display the children if true and there are some to display -->
-			<xsl:if test="@display-child-pages = 'true'">
-				<ul class="group">
-					<!-- third level children -->
-					<xsl:for-each select="./pages/page">
-						<li>
-							<a>
-								<xsl:attribute name="href">
-									<xsl:value-of select="@url"/>
-								</xsl:attribute>
-								<xsl:value-of select="@title"/>
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
+        <li class="divider"></li>
 			</xsl:if>
-		</section>
 	</xsl:template>
 </xsl:stylesheet>
