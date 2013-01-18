@@ -20,7 +20,6 @@ StyleCop.Cache
 
 #specific folders
 [Oo]bj/
-[Bb]in
 [Dd]ebug*/
 [Rr]elease*/
 RockWeb/Cache/*
