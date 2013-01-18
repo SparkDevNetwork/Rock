@@ -10,15 +10,25 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="page-list-as-blocks">
-        <h1>
-          <xsl:value-of select="page/@title"/>
-        </h1>
-        <xsl:if test="page/@display-description = 'true'">
-          <p>
-            <xsl:value-of disable-output-escaping="yes" select="page/description"/>
-          </p>
-        </xsl:if>
+      <div class="widget page-list-as-blocks clearfix">
+        <header>
+          <xsl:if test="@icon-css-class != ''">
+            <i>
+              <xsl:attribute name="class">
+                <xsl:value-of select="@icon-css-class"/>
+              </xsl:attribute>
+            </i>
+          </xsl:if>
+          <h3>
+            <xsl:value-of select="page/@title"/>
+          </h3>
+          <xsl:if test="page/@display-description = 'true'">
+            <p>
+              <xsl:value-of disable-output-escaping="yes" select="page/description"/>
+            </p>
+          </xsl:if>
+        </header>
+        
         
         <ul>
           <xsl:for-each select="page/pages/page">
@@ -38,6 +48,22 @@
 				<xsl:attribute name="href">
 					<xsl:value-of select="@id"/>
 				</xsl:attribute>
+
+        <xsl:if test="@display-description != 'true'">
+          <xsl:attribute name="title">
+            <xsl:value-of disable-output-escaping="yes" select="description"/>
+          </xsl:attribute>
+        </xsl:if>
+
+        <xsl:if test="@icon-css-class != ''">
+          <i>
+            <xsl:attribute name="class">
+              <xsl:value-of select="@icon-css-class"/> icon-large
+            </xsl:attribute>
+          </i>
+        </xsl:if>
+        
+        
         <h4><xsl:value-of select="@title"/></h4>
       
         <xsl:if test="@display-description = 'true'">

@@ -3,108 +3,91 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
-    <div id="page-frame">
-        <header id="page-header" class="navbar navbar-fixed-top">
-            <div class="container-fluid">
-                <div class="row-fluid">
-                    <div class="span3">
-                        <asp:HyperLink runat="server" CssClass="brand" NavigateUrl="~" Text="Rock ChMS" />
-                    </div>
-                    <div class="span9">
-                        <div class="content pull-right">
-                            <Rock:Zone ID="zHeader" Name="Header" runat="server" />
-                            <Rock:SearchField ID="searchField" runat="server" />
-                        </div>
-                    </div>
-                </div>
-                <div class="row-fluid">
-                    <div class="span12">
-                        <Rock:Zone ID="Menu" runat="server" />
-                        <a href="" id="header-lock">Lock</a>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <script type="text/javascript">
 
-
-        <div id="page-title" class="navbar">
-            <div class="container-fluid">
-                <div class="row-fluid">
-                    <div class="span3">
-                        <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-                    </div>
-                    <div class="span9">
-                        <Rock:Zone ID="PageTitleBar" runat="server" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="container-fluid">
-            <div class="row-fluid">
-                <div class="span12">
-
-                        <Rock:Zone ID="Content" runat="server" />
-
-                </div>    
-            </div>
-        </div>
-
-        <div id="page-footer" class="navbar">
-            <div class="container-fluid">
-                <div class="row-fluid">
-                    <div class="span12">
-                        <Rock:Zone ID="Footer" runat="server" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-    </div>
-    
-
-    
-    
-                
-
-
-    <script>
-        /* script to manage header lock */
-        $(document).ready(function () {
-            var headerIsLocked = localStorage.getItem("rock-header-lock");
-
-            if (headerIsLocked == "true") {
-                $('#page-header').addClass('navbar-fixed-top');
-            }
-            else {
-                $('#page-header').removeClass('navbar-fixed-top');
-            }
-
-            setHeaderLock();
+        Sys.Application.add_load(function () {
+            $('a.brand').attr('href', rock.baseUrl);
         });
 
-        $('#header-lock').click(function (e) {
-            $('#page-header').toggleClass('navbar-fixed-top');
-
-            setHeaderLock();
-
-            e.preventDefault();
-        });
-
-        function setHeaderLock() {
-            if ($('#page-header').hasClass('navbar-fixed-top')) {
-                localStorage.setItem('rock-header-lock', 'true');
-                // set location of page title
-                var headerHeight = $('#page-header').height();
-                $('#page-title').css('margin-top', '98px');
-            }
-            else {
-                localStorage.setItem('rock-header-lock', 'false');
-                $('#page-title').css('margin-top', 0);
-            }
-        }
     </script>
-            
+    
+    <!-- Page Header -->
+		<header class="navbar navbar-static-top pageheader">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					<div class="row-fluid">
+						<div class="span2 clearfix">
+	
+							<a class="brand"><img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" /></a>
+					
+						</div>
+						
+						<div class="span10 clearfix">	
+							
+							<div class="pageheader-collapse pull-right">
+								<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</a>
+						
+								<div class="nav-collapse collapse">
+									
+									<Rock:Zone ID="zHeader" Name="Header" runat="server" />
+									
+								</div>
+							</div> <!-- collapse container -->
+							
+							<Rock:SearchField ID="searchField" runat="server" />
+						</div> <!-- end column -->
+					</div> <!-- end row -->
+
+				</div> <!-- end container -->
+			</div> <!-- end navbar-inner -->
+		</header>
+		
+		<nav class="navbar navbar-static-top pagenav">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					
+                    <Rock:Zone ID="Menu" runat="server" />										
+					
+				</div>
+			</div>
+		</nav>
+		
+		<div class="navbar navbar-static-top pagetitle">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					<div class="row-fluid">
+						<div class="span6">
+							<h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />
+						</div>
+                        <div class="span6">
+                            <Rock:Zone ID="Zone1" runat="server" />
+                        </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="container-fluid body-content">
+			<div class="row-fluid">
+				<div class="span12">
+					<Rock:Zone ID="Content" runat="server" />
+				</div>
+			</div>
+		</div>
+		
+		<footer class="page-footer">
+			<div class="container-fluid">
+				<div class="row-fluid">
+					<div class="span12">
+						<Rock:Zone ID="Footer" runat="server" />
+					</div>
+				</div>
+			</div>
+		</footer>
+        
 </asp:Content>
 

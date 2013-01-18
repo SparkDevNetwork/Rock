@@ -8,6 +8,7 @@ using System;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -24,7 +25,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell delete";
         }
 
         /// <summary>
@@ -98,7 +98,13 @@ namespace Rock.Web.UI.Controls
                 DeleteField deleteField = cell.ContainingField as DeleteField;
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
+                lbDelete.CssClass = "btn btn-danger btn-mini";
                 lbDelete.ToolTip = "Delete";
+
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "icon-remove" );
+                lbDelete.Controls.Add( buttonIcon );
+
                 lbDelete.Click += lbDelete_Click;
                 lbDelete.DataBinding += lbDelete_DataBinding;
                 lbDelete.PreRender += lbDelete_PreRender;
