@@ -1,30 +1,13 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaigns.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaigns" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MarketingCampaignDetail.ascx.cs" Inherits="RockWeb.Blocks.Administration.MarketingCampaignDetail" %>
 
 <asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
-    <Triggers>
-        <asp:PostBackTrigger ControlID="gMarketingCampaigns" />
-    </Triggers>
     <ContentTemplate>
-
-        <asp:Panel ID="pnlList" runat="server">
-            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gMarketingCampaigns" runat="server" AllowSorting="true" OnRowSelected="gMarketingCampaigns_Edit">
-                <Columns>
-                    <asp:BoundField DataField="Title" HeaderText="Title" SortExpression="Title" />
-                    <asp:BoundField DataField="EventGroup.Name" HeaderText="Event Group" SortExpression="EventGroup.Name" />
-                    <asp:BoundField DataField="ContactFullName" HeaderText="Contact" SortExpression="ContactFullName" />
-                    <Rock:DeleteField OnClick="gMarketingCampaigns_Delete" />
-                </Columns>
-            </Rock:Grid>
-        </asp:Panel>
-
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
-
             <div id="pnlEditDetails" runat="server" class="well">
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
                 <fieldset>
                     <legend>
                         <asp:Literal ID="lActionTitle" runat="server" /></legend>
@@ -36,7 +19,7 @@
                             <Rock:DataTextBox ID="tbContactEmail" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactEmail" LabelText="Contact Email" />
                             <Rock:DataTextBox ID="tbContactPhoneNumber" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactPhoneNumber" LabelText="Contact Phone" />
                             <Rock:DataTextBox ID="tbContactFullName" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactFullName" LabelText="Contact Name" />
-                            <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Event Group" />
+                            <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Linked Event" />
                         </div>
                         <div class="span6">
                             <Rock:CampusPicker ID="cpCampuses" runat="server" />
@@ -67,6 +50,9 @@
                 <legend>Marketing Campaign - Ads
                 </legend>
                 <div class="well">
+                    <div class="row-fluid">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    </div>
                     <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
@@ -105,6 +91,7 @@
 
         <!-- Ad Details Controls -->
         <asp:Panel ID="pnlMarketingCampaignAdEditor" runat="server" Visible="false">
+            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-error" />
             <asp:HiddenField ID="hfMarketingCampaignAdId" runat="server" />
             <asp:UpdatePanel ID="upAdApproval" runat="server">
                 <ContentTemplate>

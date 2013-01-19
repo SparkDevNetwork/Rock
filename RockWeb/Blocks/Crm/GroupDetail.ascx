@@ -52,6 +52,9 @@
                 <asp:Literal ID="lblActiveHtml" runat="server" />
                 <div class="well">
                     <div class="row-fluid">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    </div>
+                    <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                     <div class="attributes">
@@ -59,9 +62,6 @@
                     </div>
                     <div class="attributes">
                         <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />

@@ -409,7 +409,21 @@ namespace Rock.Web.UI
 
             if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
-                Rock.Model.Page page = new PageService().Get( new Guid( pageGuid ) );
+                NavigateToPage( new Guid( pageGuid ), itemKey, itemKeyValue );
+            }
+        }
+
+        /// <summary>
+        /// Navigates to page.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void NavigateToPage( Guid pageGuid, string itemKey, int itemKeyValue )
+        {
+            if ( !pageGuid.Equals(Guid.Empty) )
+            {
+                Rock.Model.Page page = new PageService().Get( pageGuid );
                 if ( page != null )
                 {
                     if ( page.Guid.Equals( CurrentPage.Guid ) )

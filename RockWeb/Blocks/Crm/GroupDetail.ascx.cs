@@ -116,6 +116,9 @@ namespace RockWeb.Blocks.Crm
         {
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
+
+            pnlGroupMembers.Disabled = editable;
+            gGroupMembers.Enabled = !editable;
         }
 
         /// <summary>
@@ -135,7 +138,7 @@ namespace RockWeb.Blocks.Crm
             {
                 group = new Group();
                 group.IsSystem = false;
-                
+                group.Name = string.Empty;
             }
             else
             {
@@ -215,6 +218,8 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
+            // reload group from db using a new context
+            group = new GroupService().Get( group.Id );
             ShowReadonlyDetails( group );
         }
 
@@ -282,7 +287,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                group = new Group { Id = 0 };
+                group = new Group { Id = 0, IsActive = true };
             }
             hfGroupId.Value = group.Id.ToString();
 
@@ -349,13 +354,17 @@ namespace RockWeb.Blocks.Crm
             LoadDropDowns( group.Id );
             ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
-            ddlParentGroup.LabelText = group.ParentGroup.GroupType.Name;
+
+            ddlParentGroup.LabelText = "Parent Group";
             ddlCampus.SetValue( group.CampusId );
 
-            GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
             phGroupTypeAttributes.Controls.Clear();
-            groupType.LoadAttributes();
-            Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributes );
+            GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
+            if ( groupType != null )
+            {
+                groupType.LoadAttributes();
+                Rock.Attribute.Helper.AddDisplayControls( groupType, phGroupTypeAttributes );
+            }
             
             phGroupAttributes.Controls.Clear();
             group.LoadAttributes();
@@ -396,6 +405,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
+            hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name;
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
