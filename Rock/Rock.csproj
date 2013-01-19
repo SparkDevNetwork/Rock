@@ -122,6 +122,7 @@
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -252,6 +253,10 @@
     <Compile Include="Migrations\201301182037029_NewBootstrapTheme.cs" />
     <Compile Include="Migrations\201301182037029_NewBootstrapTheme.Designer.cs">
       <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.cs" />
+    <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.Designer.cs">
+      <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -955,6 +960,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301182037029_NewBootstrapTheme.resx">
       <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301182325595_MarketingCampaignListDetail.resx">
+      <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
