@@ -62,7 +62,8 @@ delete from BlockType where Guid = 'D99313E1-EFF0-4339-8296-4FA4922B48B7'
             // Attrib Value for Event Detail:Show Edit
             AddBlockAttributeValue( "68D40E7D-EF38-4B53-8BD7-1D798F1C5B22", "50C7E223-459E-4A1C-AE3C-2892CBD40D22", "True" );
             // Attrib Value for Event Detail:Limit to Security Role Groups
-            AddBlockAttributeValue( "68D40E7D-EF38-4B53-8BD7-1D798F1C5B22", "12295C7E-08F4-4AC5-8A34-C829620FC0B1", "False" );
+            AddBlockAttributeValue( "68D40E7D-EF38-4B53-8BD7-1D798F1C5B22", "12295C7E-08F4-4AC5-8A34-C829620FC0B1", "False" );
+
         }
 
         /// <summary>
