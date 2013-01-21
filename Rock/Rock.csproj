@@ -363,6 +363,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Reporting\Person\Gender.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
