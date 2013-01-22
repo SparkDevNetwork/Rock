@@ -373,6 +373,7 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Reporting\FilterComponent.cs" />
     <Compile Include="Reporting\FilterContainer.cs" />
+    <Compile Include="Reporting\PersonFilters\LastAttendedDaysFilter.cs" />
     <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
     <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
     <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
