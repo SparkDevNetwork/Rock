@@ -439,6 +439,22 @@ namespace Rock.Data
         public DbSet<PrayerRequest> PrayerRequests { get; set; }
 
         /// <summary>
+        /// Gets or sets the reports.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<Report> Reports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report filters.
+        /// </summary>
+        /// <value>
+        /// The report filters.
+        /// </value>
+        public DbSet<ReportFilter> ReportFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -666,6 +682,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
+            modelBuilder.Configurations.Add( new ReportConfiguration() );
+            modelBuilder.Configurations.Add( new ReportFilterConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Expressions;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Model;
+
 using Rock;
 using Rock.Web.UI;
+using Rock.Reporting;
+using Rock.Reporting.PersonFilter;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -14,32 +18,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class DynamicReporting : RockBlock
     {
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            gResults.DataKeyNames = new string[] { "id" };
-            gResults.Actions.IsAddEnabled = false;
-            gResults.Actions.IsExcelExportEnabled = true;
-            gResults.GridRebind += gResults_GridRebind;
-
-            if ( !Page.IsPostBack )
-            {
-                lstColumns.Items.Clear();
-                foreach ( var c in GetEntityProperties( typeof( Person ) ) )
-                {
-                    ListItem listItem = new ListItem( c, c );
-                    listItem.Selected = true;
-                    lstColumns.Items.Add( listItem );
-                }
-
-                PopulateGridColumns();
-            }
-        }
+        private Report _report;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -48,6 +27,67 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            string reportId = PageParameter( "ReportId" );
+            if ( !string.IsNullOrWhiteSpace( reportId ) )
+            {
+                _report = new ReportService().Get( Int32.Parse( reportId ) );
+            }
+            else
+            {
+                _report = new Report();
+            }
+
+            gResults.DataKeyNames = new string[] { "id" };
+            gResults.Actions.IsAddEnabled = false;
+            gResults.Actions.IsExcelExportEnabled = true;
+            gResults.GridRebind += gResults_GridRebind;
+
+            if ( !Page.IsPostBack )
+            {
+                foreach ( var serviceEntry in Rock.Reporting.FilterContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    ListItem li = new ListItem( component.Prompt, component.GetType().FullName );
+                    ddlFilters.Items.Add(li);
+                }
+
+                ShowReport();
+                PopulateGridColumns();
+                RunQuery();
+            }
+        }
+
+        private void ShowReport()
+        {
+            tbName.Text = _report.Name;
+            tbDescription.Text = _report.Description;
+
+            phFilters.Controls.Clear();
+
+            if ( _report.ReportFilter != null )
+            {
+                var ul = new HtmlGenericControl( "ul" );
+                phFilters.Controls.Add( ul );
+                CreateFilterControl( ul, _report.ReportFilter );
+            }
+        }
+
+        private void CreateFilterControl( System.Web.UI.Control parentControl, ReportFilter filter )
+        {
+            var li = new HtmlGenericControl( "li" );
+            parentControl.Controls.Add( li );
+            li.InnerText = filter.ToString();
+
+            if ( filter.FilterType == FilterType.AndCollection || filter.FilterType == FilterType.OrCollection )
+            {
+                var ul = new HtmlGenericControl( "ul" );
+                li.Controls.Add( ul );
+                foreach ( var childFilter in filter.ReportFilters )
+                {
+                    CreateFilterControl( ul, childFilter );
+                }
+            }
         }
 
         /// <summary>
@@ -56,7 +96,7 @@ namespace RockWeb.Blocks.Administration
         private void PopulateGridColumns()
         {
             gResults.Columns.Clear();
-            foreach ( var c in lstColumns.SelectedValues )
+            foreach ( var c in GetEntityProperties( typeof( Person ) ) )
             {
                 BoundField boundField = new BoundField();
                 boundField.DataField = c;
@@ -82,18 +122,16 @@ namespace RockWeb.Blocks.Administration
         private void RunQuery()
         {
             PopulateGridColumns();
+
             PersonService personService = new PersonService();
-            string whereClause = tbWhereClause.Text;
             var qry = personService.Queryable();
-            if (!string.IsNullOrWhiteSpace(whereClause))
-            { 
-                qry = qry.Where<Rock.Model.Person>( whereClause, null );
+
+            ParameterExpression item = Expression.Parameter( typeof( Person ), "p" );
+            Expression expr = _report.GetExpression( item );
+            if ( expr != null )
+            {
+                qry = qry.Where( Expression.Lambda<Func<Person, bool>>( expr, item ) );
             }
-            //var selectList = lstColumns.SelectedValues.ToArray();
-
-            //var qrySelect = qry.Select( selectList, null );
-
-            //var n = new string[] { "a", "b" };
 
             var result = qry.ToList();
             gResults.DataSource = result;
@@ -120,27 +158,5 @@ namespace RockWeb.Blocks.Administration
 
             return properties;
         }
-
-       
-
-        /// <summary>
-        /// Handles the Click event of the btnGo control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnGo_Click( object sender, EventArgs e )
-        {
-            RunQuery();
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the lstColumns control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lstColumns_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            //PopulateGridColumns();
-        }
-}
+    }
 }

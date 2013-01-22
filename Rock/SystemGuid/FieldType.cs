@@ -31,6 +31,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Defined value field type
         /// </summary>
-        public static Guid DEFINEDVALUE { get { return new Guid( "59D5A94C-94A0-4630-B80A-BB25697D74C7" ); } }
+        public static Guid DEFINED_VALUE { get { return new Guid( "59D5A94C-94A0-4630-B80A-BB25697D74C7" ); } }
+
+        /// <summary>
+        /// Single Select field type
+        /// </summary>
+        public static Guid SINGLE_SELECT { get { return new Guid( "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0" ); } }
     }
 }
