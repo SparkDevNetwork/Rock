@@ -227,6 +227,13 @@ namespace Rock.Model
             );
         }
 
+        public IEnumerable<Person> GetTest( int numDays )
+        {
+            DateTime daysAgo = DateTime.Today.AddDays( 0 - numDays );
+            return this.Queryable().Where( p =>
+                p.Attendances.Select( a => a.StartDateTime ).Max() > daysAgo );
+        }
+
         #endregion
 
         #region Get Person
