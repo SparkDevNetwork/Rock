@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AttendanceCode Service class
+    /// ReportFilter Service class
     /// </summary>
-    public partial class AttendanceCodeService : Service<AttendanceCode>
+    public partial class ReportFilterService : Service<ReportFilter>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
+        /// Initializes a new instance of the <see cref="ReportFilterService"/> class
         /// </summary>
-        public AttendanceCodeService()
+        public ReportFilterService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
+        /// Initializes a new instance of the <see cref="ReportFilterService"/> class
         /// </summary>
-        public AttendanceCodeService(IRepository<AttendanceCode> repository) : base(repository)
+        public ReportFilterService(IRepository<ReportFilter> repository) : base(repository)
         {
         }
 
@@ -45,13 +45,13 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AttendanceCode item, out string errorMessage )
+        public bool CanDelete( ReportFilter item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attendance>().Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
+            if ( new Service<ReportFilter>().Queryable().Any( a => a.ParentId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceCode.FriendlyTypeName, Attendance.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ReportFilter.FriendlyTypeName, ReportFilter.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -61,25 +61,28 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttendanceCodeExtensionMethods
+    public static class ReportFilterExtensionMethods
     {
         /// <summary>
-        /// Clones this AttendanceCode object to a new AttendanceCode object
+        /// Clones this ReportFilter object to a new ReportFilter object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AttendanceCode Clone( this AttendanceCode source, bool deepCopy )
+        public static ReportFilter Clone( this ReportFilter source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AttendanceCode;
+                return source.Clone() as ReportFilter;
             }
             else
             {
-                var target = new AttendanceCode();
-                target.IssueDateTime = source.IssueDateTime;
-                target.Code = source.Code;
+                var target = new ReportFilter();
+                target.FilterType = source.FilterType;
+                target.ParentId = source.ParentId;
+                target.EntityTypeId = source.EntityTypeId;
+                target.ComparisonType = source.ComparisonType;
+                target.Value = source.Value;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

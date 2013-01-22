@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AttendanceCode Service class
+    /// Report Service class
     /// </summary>
-    public partial class AttendanceCodeService : Service<AttendanceCode>
+    public partial class ReportService : Service<Report>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
+        /// Initializes a new instance of the <see cref="ReportService"/> class
         /// </summary>
-        public AttendanceCodeService()
+        public ReportService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
+        /// Initializes a new instance of the <see cref="ReportService"/> class
         /// </summary>
-        public AttendanceCodeService(IRepository<AttendanceCode> repository) : base(repository)
+        public ReportService(IRepository<Report> repository) : base(repository)
         {
         }
 
@@ -45,15 +45,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AttendanceCode item, out string errorMessage )
+        public bool CanDelete( Report item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Attendance>().Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceCode.FriendlyTypeName, Attendance.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -61,25 +55,27 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttendanceCodeExtensionMethods
+    public static class ReportExtensionMethods
     {
         /// <summary>
-        /// Clones this AttendanceCode object to a new AttendanceCode object
+        /// Clones this Report object to a new Report object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AttendanceCode Clone( this AttendanceCode source, bool deepCopy )
+        public static Report Clone( this Report source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AttendanceCode;
+                return source.Clone() as Report;
             }
             else
             {
-                var target = new AttendanceCode();
-                target.IssueDateTime = source.IssueDateTime;
-                target.Code = source.Code;
+                var target = new Report();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.ReportFilterId = source.ReportFilterId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

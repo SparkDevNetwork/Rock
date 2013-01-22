@@ -253,6 +253,10 @@
     <Compile Include="Migrations\201301182037029_NewBootstrapTheme.Designer.cs">
       <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301212124450_Reporting.cs" />
+    <Compile Include="Migrations\201301212124450_Reporting.Designer.cs">
+      <DependentUpon>201301212124450_Reporting.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -284,6 +288,8 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
@@ -295,6 +301,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\ReportFilter.cs" />
+    <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
@@ -363,7 +371,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
-    <Compile Include="Reporting\Person\Gender.cs" />
+    <Compile Include="Reporting\FilterComponent.cs" />
+    <Compile Include="Reporting\FilterContainer.cs" />
+    <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\GenderFilter.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
@@ -956,6 +969,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301182037029_NewBootstrapTheme.resx">
       <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301212124450_Reporting.resx">
+      <DependentUpon>201301212124450_Reporting.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
