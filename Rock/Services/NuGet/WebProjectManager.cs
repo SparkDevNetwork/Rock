@@ -178,7 +178,7 @@ namespace Rock.Services.NuGet
         /// <returns>a package; otherwise null if no package was found</returns>
         public IPackage GetUpdate( IPackage package )
         {
-            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFramework: null ).FirstOrDefault( p => package.Id == p.Id );
+            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null ).FirstOrDefault( p => package.Id == p.Id );
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace Rock.Services.NuGet
         /// </returns>
         public IEnumerable<IPackage> GetUpdates()
         {
-            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFramework: null );
+            return SourceRepository.GetUpdates( LocalRepository.GetPackages(), includePrerelease: false, includeAllVersions: true, targetFrameworks: null );
         }
 
         /// <summary>

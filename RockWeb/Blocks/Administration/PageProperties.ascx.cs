@@ -245,12 +245,13 @@ namespace RockWeb.Blocks.Administration
             var pageService = new PageService();
             var page = pageService.Get( _page.Guid );
             var packageService = new PackageService();
+            var pageName = page.Name.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : ""); 
             using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
             {
                 EnableViewState = false;
                 Response.Clear();
                 Response.ContentType = "application/octet-stream";
-                Response.AddHeader( "content-disposition", "attachment; filename=" + page.Name );
+                Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".rkpg" );
                 Response.Charset = "";
                 Response.BinaryWrite( stream.ToArray() );
                 Response.Flush();

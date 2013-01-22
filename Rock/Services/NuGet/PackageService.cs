@@ -19,34 +19,34 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="isRecursive">if set to <c>true</c> [should export children].</param>
-        /// <returns></returns>
+        /// <returns>a <see cref="T:System.IO.MemoryStream"/> of the exported page package.</returns>
         public MemoryStream ExportPage( Page page, bool isRecursive )
         {
-            // Create temp blockTypeFilePath to store package
-            var packageDirectory = CreatePackageDirectory( page.Name );
+            // Create a temp directory to hold package contents in staging area
+            string packageId = Guid.NewGuid().ToString();
+            var packageDirectory = CreatePackageDirectory( page.Name, packageId );
+            var webRootPath = HttpContext.Current.Server.MapPath( "~" );
+            
+            // Create a manifest for this page export...
+            Manifest manifest = new Manifest();
+            manifest.Metadata = new ManifestMetadata();
+            manifest.Metadata.Authors = "PageExport";
+            manifest.Metadata.Version = "0.0";
+            manifest.Metadata.Id = packageId;
+            manifest.Metadata.Description = ( string.IsNullOrEmpty( page.Description ) ) ? "a page export" : page.Description;
+            manifest.Files = new List<ManifestFile>();
 
-            // Generate the JSON from model data and write it to disk
+            // Generate the JSON from model data and write it to disk, then add it to the manifest
             var json = GetJson( page, isRecursive );
             using ( var file = new StreamWriter( Path.Combine( packageDirectory.FullName, "export.json" ) ) )
             {
                 file.Write( json );   
             }
+            AddToManifest( manifest, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
 
-            // Create a temp directory to hold package contents in staging area
             // * Find out from `page` which Blocks need to be packaged up (recursively if ExportChildren box is checked)
             // * Grab asset folders for each Block's code file uniquely (Scripts, Assets, CSS folders)
-
-            var packageBuilder = new PackageBuilder
-            {
-                Id = packageDirectory.Name,
-                Version = new SemanticVersion( "0.0" ),
-                Description = page.Description
-            };
-
-            packageBuilder.Authors.Add( "PageExport" );
-
-            var webRootPath = HttpContext.Current.Server.MapPath( "~" );
-            AddToPackage( packageBuilder, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
+            // * Add them to the package manifest
             var blockTypes = new Dictionary<Guid, BlockType>();
             var uniqueDirectories = new Dictionary<string, string>();
             FindUniqueBlockTypesAndDirectories( page, isRecursive, blockTypes, uniqueDirectories );
@@ -57,20 +57,33 @@ namespace Rock.Services.NuGet
                 var directory = sourcePath.Substring( 0, sourcePath.LastIndexOf( Path.DirectorySeparatorChar ) );
                 var fileName = Path.GetFileNameWithoutExtension( sourcePath );
                 var pattern = string.Format( "{0}.*", fileName );
-                AddToPackage( packageBuilder, directory, webRootPath, pattern, SearchOption.TopDirectoryOnly );
+                AddToManifest( manifest, directory, webRootPath, pattern, SearchOption.TopDirectoryOnly );
             }
 
-            // Second pass through blocks. Determine which folders need to be added to the packageBuilder
+            // Second pass through blocks. Determine which folders (by convention) need to be added
+            // to the package manifest.
             foreach ( var dir in uniqueDirectories.Keys )
             {
                 var sourcePath = HttpContext.Current.Server.MapPath( dir );
-
                 // Are there any folders present named "CSS", "Scripts" or "Assets"?
-                AddToPackage( packageBuilder, Path.Combine(sourcePath, "CSS" ), webRootPath );
-                AddToPackage( packageBuilder, Path.Combine(sourcePath, "Scripts" ), webRootPath );
-                AddToPackage( packageBuilder, Path.Combine(sourcePath, "Assets" ), webRootPath );
+                AddToManifest( manifest, Path.Combine( sourcePath, "CSS" ), webRootPath );
+                AddToManifest( manifest, Path.Combine( sourcePath, "Scripts" ), webRootPath );
+                AddToManifest( manifest, Path.Combine( sourcePath, "Assets" ), webRootPath );
             }
-            
+
+            // Save the manifest as "pageexport.nuspec" in the temp folder
+            string basePath = packageDirectory.FullName;
+            string manifestPath = Path.Combine( basePath, "pageexport.nuspec" );
+            using ( Stream fileStream = File.Create( manifestPath ) )
+            {
+                manifest.Save( fileStream );
+            }
+
+            // Create a NuGet package from the manifest and 'save' it to a memory stream for the consumer...
+            // BTW - don't use anything older than nuget 2.1 due to Manifest bug (http://nuget.codeplex.com/workitem/2813)
+            // which will cause the PackageBuilder constructor to fail due to <Files> vs <files> being in the manifest.
+            PackageBuilder packageBuilder = new PackageBuilder( manifestPath, basePath, NullPropertyProvider.Instance, false );
+
             var outputStream = new MemoryStream();
             packageBuilder.Save( outputStream );
 
@@ -88,16 +101,26 @@ namespace Rock.Services.NuGet
             
         }
 
-
-        private DirectoryInfo CreatePackageDirectory( string pageName )
+        /// <summary>
+        /// Creates a unique directory for temporarily holding the page export package.
+        /// </summary>
+        /// <param name="pageName">Name of the page.</param>
+        /// <param name="packageId">The unique package id.</param>
+        /// <returns>a <see cref="T:System.IO.DirectoryInfo"/> of the new directory.</returns>
+        private DirectoryInfo CreatePackageDirectory( string pageName, string packageId )
         {
             var name = Regex.Replace( pageName, @"[^A-Za-z0-9]", string.Empty );
             var rootPath = HttpContext.Current.Server.MapPath( "~/App_Data" );
-            var packageName = string.Format( "{0}_{1}", name, Guid.NewGuid() );
+            var packageName = string.Format( "{0}_{1}", name, packageId );
             return Directory.CreateDirectory( Path.Combine( rootPath, "PackageStaging", packageName ) );
         }
 
-
+        /// <summary>
+        /// Gets the json for this page.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="isRecursive">if set to <c>true</c> [is recursive].</param>
+        /// <returns></returns>
         private string GetJson( Page page, bool isRecursive )
         {
             string json;
@@ -117,7 +140,13 @@ namespace Rock.Services.NuGet
             return json;
         }
 
-
+        /// <summary>
+        /// Finds the unique block types and directories for the given page and adds them to the <paramref name="blockTypes"/> and <paramref name="directories"/> dictionaries.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="isRecursive">if set to <c>true</c> [child pages are recursively searched too].</param>
+        /// <param name="blockTypes">a Dictionary of BlockTypes.</param>
+        /// <param name="directories">a Dictionary of directory names.</param>
         private void FindUniqueBlockTypesAndDirectories( Page page, bool isRecursive, Dictionary<Guid, BlockType> blockTypes, Dictionary<string, string> directories )
         {
             foreach ( var block in page.Blocks )
@@ -147,7 +176,16 @@ namespace Rock.Services.NuGet
             }
         }
 
-        private void AddToPackage( PackageBuilder packageBuilder, string directory, string webRootPath, 
+        /// <summary>
+        /// Add the given directories files (matching the given file filter and search options)
+        /// to the manifest.
+        /// </summary>
+        /// <param name="manifest">A NuGet Manifest</param>
+        /// <param name="directory">the directory containing the file(s)</param>
+        /// <param name="webRootPath">the physical path to the app's webroot</param>
+        /// <param name="filterPattern"> A file filter pattern such as *.* or *.cs</param>
+        /// <param name="searchOption">A <see cref="T:System.IO.SearchOption"/> search option to define the scope of the search</param>
+        private void AddToManifest( Manifest manifest, string directory, string webRootPath,
             string filterPattern = "*.*", SearchOption searchOption = SearchOption.AllDirectories )
         {
             if ( !Directory.Exists( directory ) )
@@ -155,15 +193,17 @@ namespace Rock.Services.NuGet
                 return;
             }
 
+            // In our trivial case, the files we're adding need to have a target folder under the "content\"
+            // folder and the source path suffix will be the 
             var files = from file in Directory.EnumerateFiles( directory, filterPattern, searchOption )
                         let pathSuffix = file.Substring( webRootPath.Length + 1 )
                         select new ManifestFile()
-                            {
-                                Source = pathSuffix,
-                                Target = pathSuffix,
-                            };
+                        {
+                            Source = Path.Combine( "..", "..", "..", pathSuffix ), 
+                            Target = Path.Combine( "content",  pathSuffix )
+                        };
 
-            packageBuilder.PopulateFiles( webRootPath, files );
+            manifest.Files.AddRange( files );
         }
     }
 }
