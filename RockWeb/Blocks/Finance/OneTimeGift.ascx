@@ -1,21 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OneTimeGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.OneTimeGift" %>
 
-<script type="text/javascript">
-
-
-    
-</script>
-
 <asp:UpdatePanel ID="upOneTimeGift" runat="server">
- <ContentTemplate>
+<ContentTemplate>
 
     <asp:Panel ID="pnlDetails" runat="server">
+
+        <% spanClass = ( UseStackedLayout ) ? "span12" : "span6"; %>
         
         <div class="container-fluid">     
                                 
             <div class="row-fluid">
                                 
-                <div class="span6 well">
+                <div class="<%= spanClass %> well">
 
                     <div class="control-group">
 
@@ -91,9 +87,14 @@
                     </div>                  
                     
                 </div>
+            
+                <% if ( UseStackedLayout )
+                   { %>
+                    </div>
+                    <div class="row-fluid">
+                <% } %>
 
-
-                <div class="span6 well">
+                <div class="<%= spanClass %> well">
 
                     <div class="control-group">
 
@@ -125,12 +126,10 @@
                 </div>
                 
             </div>
-              
-            <div class="divider"><hr width="50%" size="3"></div>
             
             <div class="row-fluid">
               
-                <div class="span6 well">
+                <div class="<%= spanClass %> well">
 
                     <div class="tabbable">
 
@@ -295,9 +294,11 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
+        <% spanClass = ( UseStackedLayout ) ? "span12" : "span6"; %>
+
         <div class="row-fluid ">     
                                 
-            <div class="span6 well">
+            <div class="<%= spanClass %> well">
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
 

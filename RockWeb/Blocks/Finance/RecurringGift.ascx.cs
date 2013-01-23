@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI;
@@ -18,9 +19,19 @@ namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 
-    /// </summary>
+    /// </summary>    
+    [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?")]
+    [BooleanField( 0, "Show Campus dropdown", false, "ShowCampusSelect", "", "Should giving be associated with a specific campus?" )]
     public partial class RecurringGift : RockBlock
     {
+        #region Fields
+
+        protected bool UseStackedLayout = false;
+        protected bool ShowCampusSelect = false;
+        protected string spanClass;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -29,8 +40,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );                       
-            
+            base.OnInit( e );
+
         }
 
         /// <summary>
@@ -40,7 +51,10 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             nbMessage.Visible = false;
-            
+
+            UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "UseStackedLayout" ) );
+            ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusSelect" ) );
+
             base.OnLoad( e );
         }
 

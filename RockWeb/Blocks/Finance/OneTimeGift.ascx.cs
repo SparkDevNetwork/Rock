@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI;
@@ -18,9 +19,17 @@ namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 
-    /// </summary>
+    /// </summary>    
+    [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?" )]
     public partial class OneTimeGift : RockBlock
     {
+        #region Fields
+
+        protected bool UseStackedLayout = false;
+        protected string spanClass;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -29,7 +38,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );                       
+            base.OnInit( e );
+
+            UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "UseStackedLayout" ) );
             
         }
 
