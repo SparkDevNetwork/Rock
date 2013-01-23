@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Administration
                 EnableViewState = false;
                 Response.Clear();
                 Response.ContentType = "application/octet-stream";
-                Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".rkpg" );
+                Response.AddHeader( "content-disposition", "attachment; filename=" + pageName + ".nupkg" );
                 Response.Charset = "";
                 Response.BinaryWrite( stream.ToArray() );
                 Response.Flush();
@@ -261,18 +261,10 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbImport_Click( object sender, EventArgs e )
         {
-            // var bytes = fuImport.FileBytes
+            var packageService = new PackageService();
+            packageService.ImportPage( fuImport.FileBytes );
 
-            // Read in `.nupak` file, validate/interrogate contents
-
-            // Unzip valid file into root directory (root packages directory?)
-
-            // Read `export.json` file contents and use
-            var page = Rock.Model.Page.FromJson( "" );
-            var pageService = new PageService();
-            pageService.Save( page, CurrentPerson.Id );
-
-            // Save copy of `.nupak` file to `ImortedPackages` folder?
+            // TODO: Display some kind of feedback to the admin notifying them of status, success, etc?
         }
 
         #endregion

@@ -95,10 +95,20 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// Imports the page.
         /// </summary>
-        /// <param name="json">The json.</param>
-        public void ImportPage( string json )
+        /// <param name="uploadedPackage">Byte array of the uploaded package</param>
+        public void ImportPage( byte[] uploadedPackage )
         {
-            
+            // Write .nupkg file to the PackageStaging folder...
+
+            // Validate package...
+            // * Does it have any executable .dll files?
+            // * Does it have code files that need to go on the file system?
+            // * Does it have an export.json file? Should that be a requirement?
+
+            // If export.json is present, deserialize data
+            // * Are there any new BlockTypes to register? If so, save them first.
+            // * Scrub out any `Id` and `Guid` fields that came over from export
+            // * Save page data via PageService
         }
 
         /// <summary>
