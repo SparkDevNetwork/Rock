@@ -58,16 +58,29 @@ namespace Rock.Model
     public static class PageRouteExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PageRoute entity
+        /// Clones this PageRoute object to a new PageRoute object
         /// </summary>
-        public static void CopyPropertiesFrom( this PageRoute target, PageRoute source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PageRoute Clone( this PageRoute source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.PageId = source.PageId;
-            target.Route = source.Route;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PageRoute;
+            }
+            else
+            {
+                var target = new PageRoute();
+                target.IsSystem = source.IsSystem;
+                target.PageId = source.PageId;
+                target.Route = source.Route;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

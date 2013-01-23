@@ -58,23 +58,36 @@ namespace Rock.Model
     public static class EmailTemplateExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another EmailTemplate entity
+        /// Clones this EmailTemplate object to a new EmailTemplate object
         /// </summary>
-        public static void CopyPropertiesFrom( this EmailTemplate target, EmailTemplate source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EmailTemplate Clone( this EmailTemplate source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.PersonId = source.PersonId;
-            target.Category = source.Category;
-            target.Title = source.Title;
-            target.From = source.From;
-            target.To = source.To;
-            target.Cc = source.Cc;
-            target.Bcc = source.Bcc;
-            target.Subject = source.Subject;
-            target.Body = source.Body;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as EmailTemplate;
+            }
+            else
+            {
+                var target = new EmailTemplate();
+                target.IsSystem = source.IsSystem;
+                target.PersonId = source.PersonId;
+                target.Category = source.Category;
+                target.Title = source.Title;
+                target.From = source.From;
+                target.To = source.To;
+                target.Cc = source.Cc;
+                target.Bcc = source.Bcc;
+                target.Subject = source.Subject;
+                target.Body = source.Body;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

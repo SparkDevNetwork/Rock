@@ -4,10 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -35,7 +32,7 @@ namespace Rock.CheckIn
         /// The security code.
         /// </value>
         [DataMember]
-        string SecurityCode { get; set; }
+        public string SecurityCode { get; set; }
 
         /// <summary>
         /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
@@ -44,7 +41,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInSchedule" /> is selected for check-in
@@ -54,5 +51,16 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public bool Selected { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Schedule != null ? Schedule.ToString() : string.Empty;
+        }
     }
 }

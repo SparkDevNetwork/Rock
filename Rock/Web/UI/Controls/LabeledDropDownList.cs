@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
-    public class LabeledDropDownList : DropDownList
+    public class LabeledDropDownList : DropDownList, ILabeledControl
     {
         /// <summary>
         /// 
@@ -241,7 +241,14 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            return int.Parse(this.SelectedValue);
+            if ( string.IsNullOrWhiteSpace( this.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return int.Parse( this.SelectedValue );
+            }
         }
 
         /// <summary>

@@ -58,22 +58,35 @@ namespace Rock.Model
     public static class EntityChangeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another EntityChange entity
+        /// Clones this EntityChange object to a new EntityChange object
         /// </summary>
-        public static void CopyPropertiesFrom( this EntityChange target, EntityChange source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EntityChange Clone( this EntityChange source, bool deepCopy )
         {
-            target.ChangeSet = source.ChangeSet;
-            target.ChangeType = source.ChangeType;
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Property = source.Property;
-            target.OriginalValue = source.OriginalValue;
-            target.CurrentValue = source.CurrentValue;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.CreatedByPersonId = source.CreatedByPersonId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as EntityChange;
+            }
+            else
+            {
+                var target = new EntityChange();
+                target.ChangeSet = source.ChangeSet;
+                target.ChangeType = source.ChangeType;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
+                target.Property = source.Property;
+                target.OriginalValue = source.OriginalValue;
+                target.CurrentValue = source.CurrentValue;
+                target.CreatedDateTime = source.CreatedDateTime;
+                target.CreatedByPersonId = source.CreatedByPersonId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

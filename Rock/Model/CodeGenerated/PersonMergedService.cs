@@ -58,15 +58,28 @@ namespace Rock.Model
     public static class PersonMergedExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PersonMerged entity
+        /// Clones this PersonMerged object to a new PersonMerged object
         /// </summary>
-        public static void CopyPropertiesFrom( this PersonMerged target, PersonMerged source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PersonMerged Clone( this PersonMerged source, bool deepCopy )
         {
-            target.CurrentId = source.CurrentId;
-            target.CurrentGuid = source.CurrentGuid;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PersonMerged;
+            }
+            else
+            {
+                var target = new PersonMerged();
+                target.CurrentId = source.CurrentId;
+                target.CurrentGuid = source.CurrentGuid;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

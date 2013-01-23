@@ -3,11 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -38,13 +35,13 @@ namespace Rock.CheckIn
         public bool Selected { get; set; }
 
         /// <summary>
-        /// Gets or sets the members of the family
+        /// Gets or sets the people that this family can check-in
         /// </summary>
         /// <value>
-        /// The members.
+        /// The people.
         /// </value>
         [DataMember]
-        public List<CheckInPerson> FamilyMembers { get; set; }
+        public List<CheckInPerson> People { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
@@ -52,7 +49,7 @@ namespace Rock.CheckIn
         public CheckInFamily()
             : base()
         {
-            FamilyMembers = new List<CheckInPerson>();
+            People = new List<CheckInPerson>();
         }
 
         /// <summary>

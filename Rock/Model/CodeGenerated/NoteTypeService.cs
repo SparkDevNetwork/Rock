@@ -58,19 +58,32 @@ namespace Rock.Model
     public static class NoteTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another NoteType entity
+        /// Clones this NoteType object to a new NoteType object
         /// </summary>
-        public static void CopyPropertiesFrom( this NoteType target, NoteType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static NoteType Clone( this NoteType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.EntityTypeId = source.EntityTypeId;
-            target.Name = source.Name;
-            target.SourcesTypeId = source.SourcesTypeId;
-            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as NoteType;
+            }
+            else
+            {
+                var target = new NoteType();
+                target.IsSystem = source.IsSystem;
+                target.EntityTypeId = source.EntityTypeId;
+                target.Name = source.Name;
+                target.SourcesTypeId = source.SourcesTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

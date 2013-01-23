@@ -58,16 +58,29 @@ namespace Rock.Model
     public static class TaggedItemExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another TaggedItem entity
+        /// Clones this TaggedItem object to a new TaggedItem object
         /// </summary>
-        public static void CopyPropertiesFrom( this TaggedItem target, TaggedItem source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static TaggedItem Clone( this TaggedItem source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.TagId = source.TagId;
-            target.EntityId = source.EntityId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as TaggedItem;
+            }
+            else
+            {
+                var target = new TaggedItem();
+                target.IsSystem = source.IsSystem;
+                target.TagId = source.TagId;
+                target.EntityId = source.EntityId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

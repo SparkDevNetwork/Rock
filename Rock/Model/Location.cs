@@ -327,8 +327,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} {1} {2}, {3} {4}",
-                this.Street1, this.Street2, this.City, this.State, this.Zip );
+            if ( string.IsNullOrEmpty( this.Name ) )
+            {
+                return string.Format( "{0} {1} {2}, {3} {4}",
+                    this.Street1, this.Street2, this.City, this.State, this.Zip );
+            }
+            else
+            {
+                return this.Name;
+            }
         }
 
         #endregion
