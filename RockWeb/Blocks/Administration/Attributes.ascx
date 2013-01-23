@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category"  />
+                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
@@ -37,45 +37,8 @@
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
 
-            <asp:HiddenField ID="hfId" runat="server" />
-
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-
-            <div class="row-fluid">
-
-                <div class="span6">
-
-                    <fieldset>
-                        <legend>
-                            <asp:Literal ID="lActionTitle" runat="server"></asp:Literal>
-                        </legend>
-                        <Rock:DataTextBox ID="tbKey" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Key" />
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbCategory" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Category" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                    </fieldset>
-
-                </div>
-
-                <div class="span6">
-
-                    <fieldset>
-                        <legend>&nbsp;</legend>
-                        <Rock:LabeledDropDownList ID="ddlFieldType" runat="server" LabelText="Field Type"></Rock:LabeledDropDownList>
-                        <asp:PlaceHolder ID="phFieldTypeQualifiers" runat="server"></asp:PlaceHolder>
-                        <Rock:DataTextBox ID="tbDefaultValue" runat="server" SourceTypeName="Rock.Model.Attribute, Rock" PropertyName="DefaultValue" />
-                        <Rock:LabeledCheckBox ID="cbMultiValue" runat="server" LabelText="Allow Multiple Values" />
-                        <Rock:LabeledCheckBox ID="cbRequired" runat="server" LabelText="Required" />
-                    </fieldset>
-
-                </div>
-
-            </div>
-
-            <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-            </div>
+            <RockWeb:RockAttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
 
         </asp:Panel>
 

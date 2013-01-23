@@ -64,18 +64,31 @@ namespace Rock.Model
     public static class PaymentGatewayExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PaymentGateway entity
+        /// Clones this PaymentGateway object to a new PaymentGateway object
         /// </summary>
-        public static void CopyPropertiesFrom( this PaymentGateway target, PaymentGateway source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PaymentGateway Clone( this PaymentGateway source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.ApiUrl = source.ApiUrl;
-            target.ApiKey = source.ApiKey;
-            target.ApiSecret = source.ApiSecret;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PaymentGateway;
+            }
+            else
+            {
+                var target = new PaymentGateway();
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.ApiUrl = source.ApiUrl;
+                target.ApiKey = source.ApiKey;
+                target.ApiSecret = source.ApiSecret;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -3,17 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Web.UI;
 
 using Rock;
-using Rock.Attribute;
 using Rock.CheckIn;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn

@@ -58,20 +58,33 @@ namespace Rock.Model
     public static class WorkflowTriggerExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another WorkflowTrigger entity
+        /// Clones this WorkflowTrigger object to a new WorkflowTrigger object
         /// </summary>
-        public static void CopyPropertiesFrom( this WorkflowTrigger target, WorkflowTrigger source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static WorkflowTrigger Clone( this WorkflowTrigger source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.WorkflowTypeId = source.WorkflowTypeId;
-            target.WorkflowTriggerType = source.WorkflowTriggerType;
-            target.WorkflowName = source.WorkflowName;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as WorkflowTrigger;
+            }
+            else
+            {
+                var target = new WorkflowTrigger();
+                target.IsSystem = source.IsSystem;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.WorkflowTypeId = source.WorkflowTypeId;
+                target.WorkflowTriggerType = source.WorkflowTriggerType;
+                target.WorkflowName = source.WorkflowName;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

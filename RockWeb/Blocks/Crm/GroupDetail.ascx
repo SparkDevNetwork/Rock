@@ -7,31 +7,77 @@
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" />
-                </legend>
+            <div id="pnlEditDetails" runat="server" class="well">
 
-                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <fieldset>
+                    <legend>
+                        <asp:Literal ID="lActionTitle" runat="server" />
+                    </legend>
 
-                <div class="row-fluid">
-                    <div class="span6">
-                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
-                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
+                        </div>
+                        <div class="span6">
+                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" />
+                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
+                            <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
+                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
+                        </div>
                     </div>
-                    <div class="span6">
-                        <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" />
-                        <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
-                        <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
+
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupTypeAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                </fieldset>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
+            </div>
+
+            <fieldset id="fieldsetViewDetails" runat="server">
+
+                <legend>
+                    <asp:Literal ID="lGroupIconHtml" runat="server" />&nbsp;
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </legend>
+                <asp:Literal ID="lblActiveHtml" runat="server" />
+                <div class="well">
+                    <div class="row-fluid">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    </div>
+                    <div class="row-fluid">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupTypeAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                    <div class="attributes">
+                        <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    </div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                    </div>
+                </div>
             </fieldset>
 
-            <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            <div id="pnlGroupMembers" runat="server">
+                <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true">
+                    <Columns>
+                        <asp:BoundField DataField="Person.FirstName" HeaderText="First Name" SortExpression="Person.NickName, Person.GivenName" />
+                        <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
+                        <asp:BoundField DataField="GroupRole.Name" HeaderText="Group Role" SortExpression="GroupRole.Name" />
+                        <Rock:DeleteField OnClick="DeleteGroupMember_Click" />
+                    </Columns>
+                </Rock:Grid>
             </div>
         </asp:Panel>
     </ContentTemplate>

@@ -58,20 +58,33 @@ namespace Rock.Model
     public static class PledgeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Pledge entity
+        /// Clones this Pledge object to a new Pledge object
         /// </summary>
-        public static void CopyPropertiesFrom( this Pledge target, Pledge source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Pledge Clone( this Pledge source, bool deepCopy )
         {
-            target.PersonId = source.PersonId;
-            target.FundId = source.FundId;
-            target.Amount = source.Amount;
-            target.StartDate = source.StartDate;
-            target.EndDate = source.EndDate;
-            target.FrequencyTypeValueId = source.FrequencyTypeValueId;
-            target.FrequencyAmount = source.FrequencyAmount;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Pledge;
+            }
+            else
+            {
+                var target = new Pledge();
+                target.PersonId = source.PersonId;
+                target.FundId = source.FundId;
+                target.Amount = source.Amount;
+                target.StartDate = source.StartDate;
+                target.EndDate = source.EndDate;
+                target.FrequencyTypeValueId = source.FrequencyTypeValueId;
+                target.FrequencyAmount = source.FrequencyAmount;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

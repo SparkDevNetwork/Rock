@@ -112,18 +112,31 @@ namespace Rock.Model
     public static class EntityTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another EntityType entity
+        /// Clones this EntityType object to a new EntityType object
         /// </summary>
-        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EntityType Clone( this EntityType source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.AssemblyName = source.AssemblyName;
-            target.FriendlyName = source.FriendlyName;
-            target.IsEntity = source.IsEntity;
-            target.IsSecured = source.IsSecured;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as EntityType;
+            }
+            else
+            {
+                var target = new EntityType();
+                target.Name = source.Name;
+                target.AssemblyName = source.AssemblyName;
+                target.FriendlyName = source.FriendlyName;
+                target.IsEntity = source.IsEntity;
+                target.IsSecured = source.IsSecured;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

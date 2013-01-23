@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web.Http;
 using Rock.Model;
@@ -62,20 +63,28 @@ namespace Rock.Rest.Controllers
 
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = appPath + "/Image.ashx?id={0}&width=25&height=25";
+            string imageUrlFormat = Path.Combine(appPath, "Image.ashx?id={0}&width=25&height=25");
 
             GroupTypeService groupTypeService = new GroupTypeService();
 
             foreach ( var group in groupList )
             {
                 group.GroupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
-                groupNameList.Add( new GroupName
+                var groupName = new GroupName();
+                groupName.Id = group.Id;
+                groupName.Name = System.Web.HttpUtility.HtmlEncode( group.Name );
+
+                // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
+                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
                 {
-                    Id = group.Id,
-                    Name = group.Name,
-                    GroupTypeIconCssClass = group.GroupType.IconCssClass,
-                    GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty
-                } );
+                    groupName.GroupTypeIconCssClass = group.GroupType.IconCssClass;
+                }
+                else
+                {
+                    groupName.GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty;
+                }
+                
+                groupNameList.Add(groupName);
             }
 
 

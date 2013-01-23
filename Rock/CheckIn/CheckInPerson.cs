@@ -5,9 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -29,6 +27,14 @@ namespace Rock.CheckIn
         public Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this person is a part of the family (vs. from a relationship).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if family member; otherwise, <c>false</c>.
+        /// </value>
+        public bool FamilyMember { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> is selected for check-in.
         /// </summary>
         /// <value>
@@ -44,7 +50,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the group types available for the current person.

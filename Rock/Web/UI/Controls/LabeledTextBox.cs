@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledTextBox : TextBox
+    public class LabeledTextBox : TextBox, ILabeledControl
     {
         /// <summary>
         /// 

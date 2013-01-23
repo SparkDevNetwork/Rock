@@ -31,6 +31,14 @@ namespace Rock.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance codes.
+        /// </summary>
+        /// <value>
+        /// The attendance codes.
+        /// </value>
+        public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -423,6 +431,14 @@ namespace Rock.Data
         public DbSet<Pledge> Pledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the prayer requests.
+        /// </summary>
+        /// <value>
+        /// The prayer requests.
+        /// </value>
+        public DbSet<PrayerRequest> PrayerRequests { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -599,6 +615,7 @@ namespace Rock.Data
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
             modelBuilder.Configurations.Add( new AttendanceConfiguration() );
+            modelBuilder.Configurations.Add( new AttendanceCodeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
@@ -648,6 +665,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

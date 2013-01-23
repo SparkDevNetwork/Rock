@@ -180,7 +180,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( aAdd );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
-            aAdd.Attributes.Add( "class", "add" );
+            aAdd.Attributes.Add( "class", "btn" );
             aAdd.InnerText = "Add";
 
             lbAdd = new LinkButton();

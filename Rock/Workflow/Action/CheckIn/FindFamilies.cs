@@ -3,13 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
-using Newtonsoft.Json;
 
 using Rock.CheckIn;
 using Rock.Model;
@@ -48,8 +45,8 @@ namespace Rock.Workflow.Action.CheckIn
                             if ( family == null )
                             {
                                 family = new CheckInFamily();
-                                family.Group = new Group();
-                                family.Group.CopyPropertiesFrom( group );
+                                family.Group = group.Clone( false );
+                                family.Group.LoadAttributes();
                                 checkInState.CheckIn.Families.Add( family );
                             }
                         }

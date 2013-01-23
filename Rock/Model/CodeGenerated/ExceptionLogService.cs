@@ -58,29 +58,42 @@ namespace Rock.Model
     public static class ExceptionLogExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another ExceptionLog entity
+        /// Clones this ExceptionLog object to a new ExceptionLog object
         /// </summary>
-        public static void CopyPropertiesFrom( this ExceptionLog target, ExceptionLog source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static ExceptionLog Clone( this ExceptionLog source, bool deepCopy )
         {
-            target.ParentId = source.ParentId;
-            target.SiteId = source.SiteId;
-            target.PageId = source.PageId;
-            target.ExceptionDate = source.ExceptionDate;
-            target.CreatedByPersonId = source.CreatedByPersonId;
-            target.HasInnerException = source.HasInnerException;
-            target.StatusCode = source.StatusCode;
-            target.ExceptionType = source.ExceptionType;
-            target.Description = source.Description;
-            target.Source = source.Source;
-            target.StackTrace = source.StackTrace;
-            target.PageUrl = source.PageUrl;
-            target.ServerVariables = source.ServerVariables;
-            target.QueryString = source.QueryString;
-            target.Form = source.Form;
-            target.Cookies = source.Cookies;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as ExceptionLog;
+            }
+            else
+            {
+                var target = new ExceptionLog();
+                target.ParentId = source.ParentId;
+                target.SiteId = source.SiteId;
+                target.PageId = source.PageId;
+                target.ExceptionDate = source.ExceptionDate;
+                target.CreatedByPersonId = source.CreatedByPersonId;
+                target.HasInnerException = source.HasInnerException;
+                target.StatusCode = source.StatusCode;
+                target.ExceptionType = source.ExceptionType;
+                target.Description = source.Description;
+                target.Source = source.Source;
+                target.StackTrace = source.StackTrace;
+                target.PageUrl = source.PageUrl;
+                target.ServerVariables = source.ServerVariables;
+                target.QueryString = source.QueryString;
+                target.Form = source.Form;
+                target.Cookies = source.Cookies;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

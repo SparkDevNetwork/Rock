@@ -58,26 +58,39 @@ namespace Rock.Model
     public static class MetricExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Metric entity
+        /// Clones this Metric object to a new Metric object
         /// </summary>
-        public static void CopyPropertiesFrom( this Metric target, Metric source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Metric Clone( this Metric source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Type = source.Type;
-            target.Category = source.Category;
-            target.Title = source.Title;
-            target.Subtitle = source.Subtitle;
-            target.Description = source.Description;
-            target.MinValue = source.MinValue;
-            target.MaxValue = source.MaxValue;
-            target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
-            target.LastCollected = source.LastCollected;
-            target.Source = source.Source;
-            target.SourceSQL = source.SourceSQL;
-            target.Order = source.Order;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Metric;
+            }
+            else
+            {
+                var target = new Metric();
+                target.IsSystem = source.IsSystem;
+                target.Type = source.Type;
+                target.Category = source.Category;
+                target.Title = source.Title;
+                target.Subtitle = source.Subtitle;
+                target.Description = source.Description;
+                target.MinValue = source.MinValue;
+                target.MaxValue = source.MaxValue;
+                target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
+                target.LastCollected = source.LastCollected;
+                target.Source = source.Source;
+                target.SourceSQL = source.SourceSQL;
+                target.Order = source.Order;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

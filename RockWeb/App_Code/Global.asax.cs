@@ -136,7 +136,8 @@ namespace RockWeb
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
-                    string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    string url = Path.Combine(appPath, "KeepAlive.aspx");
                     WebRequest request = WebRequest.Create( url );
                     WebResponse response = request.GetResponse();
 

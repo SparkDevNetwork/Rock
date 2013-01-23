@@ -5,9 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -44,7 +42,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the groups that are available for the current location
@@ -63,5 +61,17 @@ namespace Rock.CheckIn
         {
             Groups = new List<CheckInGroup>();
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Location != null ? Location.ToString() : string.Empty;
+        }
+
     }
 }

@@ -14,7 +14,7 @@
     <RootNamespace>Rock</RootNamespace>
     <AssemblyName>Rock</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>4.0</OldToolsVersion>
@@ -122,6 +122,7 @@
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -133,6 +134,9 @@
     <Compile Include="CheckIn\CheckInSchedule.cs" />
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
+    <Compile Include="CheckIn\KioskLocationAttendance.cs" />
+    <Compile Include="CheckIn\KioskGroupAttendance.cs" />
+    <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
     <Compile Include="CheckIn\KioskGroup.cs" />
     <Compile Include="CheckIn\KioskGroupType.cs" />
     <Compile Include="CheckIn\KioskLocation.cs" />
@@ -226,6 +230,34 @@
     <Compile Include="Migrations\201301092105309_GroupViewer01.Designer.cs">
       <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.cs" />
+    <Compile Include="Migrations\201301102215432_AddDeceasedFlag.Designer.cs">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.cs" />
+    <Compile Include="Migrations\201301102317461_AddPrayerRequest.Designer.cs">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301161307416_AddAttendanceCode.cs" />
+    <Compile Include="Migrations\201301161307416_AddAttendanceCode.Designer.cs">
+      <DependentUpon>201301161307416_AddAttendanceCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301162240000_DefinedTypesSweep01.cs" />
+    <Compile Include="Migrations\201301162240000_DefinedTypesSweep01.Designer.cs">
+      <DependentUpon>201301162240000_DefinedTypesSweep01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301172201176_CheckInPages.cs" />
+    <Compile Include="Migrations\201301172201176_CheckInPages.Designer.cs">
+      <DependentUpon>201301172201176_CheckInPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301182037029_NewBootstrapTheme.cs" />
+    <Compile Include="Migrations\201301182037029_NewBootstrapTheme.Designer.cs">
+      <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.cs" />
+    <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.Designer.cs">
+      <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -236,6 +268,8 @@
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
+    <Compile Include="Model\AttendanceCode.cs" />
+    <Compile Include="Model\CodeGenerated\AttendanceCodeService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
@@ -254,6 +288,7 @@
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
+    <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
@@ -263,6 +298,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
+    <Compile Include="Model\AttendanceCodeService.Partial.cs" />
+    <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
@@ -279,6 +316,7 @@
     <Compile Include="Model\PageContext.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
+    <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\UserLoginService.Partial.cs" />
@@ -331,15 +369,20 @@
     </Compile>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
+    <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
     <Compile Include="Workflow\Action\CheckIn\SaveAttendance.cs" />
-    <Compile Include="Workflow\Action\CheckIn\RemoveIncompleteOptions.cs" />
+    <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadSchedules.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadGroups.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadLocations.cs" />
-    <Compile Include="Workflow\Action\CheckIn\PurgeInvalidPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\LoadGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
@@ -900,6 +943,27 @@
     <EmbeddedResource Include="Migrations\201301092105309_GroupViewer01.resx">
       <DependentUpon>201301092105309_GroupViewer01.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102215432_AddDeceasedFlag.resx">
+      <DependentUpon>201301102215432_AddDeceasedFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301102317461_AddPrayerRequest.resx">
+      <DependentUpon>201301102317461_AddPrayerRequest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301161307416_AddAttendanceCode.resx">
+      <DependentUpon>201301161307416_AddAttendanceCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301162240000_DefinedTypesSweep01.resx">
+      <DependentUpon>201301162240000_DefinedTypesSweep01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301172201176_CheckInPages.resx">
+      <DependentUpon>201301172201176_CheckInPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301182037029_NewBootstrapTheme.resx">
+      <DependentUpon>201301182037029_NewBootstrapTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301182325595_MarketingCampaignListDetail.resx">
+      <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
@@ -913,12 +977,11 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>60512</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>
-          </IISUrl>
+          <IISUrl>http://localhost:60512/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

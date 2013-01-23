@@ -58,23 +58,36 @@ namespace Rock.Model
     public static class WorkflowTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another WorkflowType entity
+        /// Clones this WorkflowType object to a new WorkflowType object
         /// </summary>
-        public static void CopyPropertiesFrom( this WorkflowType target, WorkflowType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static WorkflowType Clone( this WorkflowType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.IsActive = source.IsActive;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.CategoryId = source.CategoryId;
-            target.Order = source.Order;
-            target.WorkTerm = source.WorkTerm;
-            target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
-            target.IsPersisted = source.IsPersisted;
-            target.LoggingLevel = source.LoggingLevel;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as WorkflowType;
+            }
+            else
+            {
+                var target = new WorkflowType();
+                target.IsSystem = source.IsSystem;
+                target.IsActive = source.IsActive;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.CategoryId = source.CategoryId;
+                target.Order = source.Order;
+                target.WorkTerm = source.WorkTerm;
+                target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+                target.IsPersisted = source.IsPersisted;
+                target.LoggingLevel = source.LoggingLevel;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }
