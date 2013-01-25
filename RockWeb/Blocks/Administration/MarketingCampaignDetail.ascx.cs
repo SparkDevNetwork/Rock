@@ -65,11 +65,13 @@ namespace RockWeb.Blocks.Administration
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
             gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
             gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = true;
             gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
             gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
