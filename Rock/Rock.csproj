@@ -368,7 +368,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\Controls\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
