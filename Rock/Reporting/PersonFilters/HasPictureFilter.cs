@@ -5,6 +5,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock.Field;
 using Rock.Model;
@@ -20,68 +22,93 @@ namespace Rock.Reporting.PersonFilter
     public class HasPictureFilter : FilterComponent
     {
         /// <summary>
-        /// Gets the prompt.
+        /// Gets the title.
         /// </summary>
         /// <value>
-        /// The prompt.
+        /// The title.
         /// </value>
-        public override string Prompt
+        public override string Title
         {
             get { return "Has Picture"; }
         }
 
         /// <summary>
-        /// Gets the supported comparison types.
+        /// Formats the selection.
         /// </summary>
-        /// <value>
-        /// The supported comparison types.
-        /// </value>
-        public override FilterComparisonType SupportedComparisonTypes
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override string FormatSelection( string selection )
         {
-            get
+            bool hasPicture = false;
+            if (!Boolean.TryParse(selection, out hasPicture))
+                hasPicture = false;
+
+            if (hasPicture)
             {
-                return
-                    FilterComparisonType.None;
+                return "Has Picture";
+            }
+            else
+            {
+                return "Doesn't Have Picture";
             }
         }
 
         /// <summary>
-        /// Gets the type of the field.
+        /// Gets the selection controls
         /// </summary>
-        /// <value>
-        /// The type of the field.
-        /// </value>
-        public override Rock.Web.Cache.FieldTypeCache FieldType
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="selection">The selection.</param>
+        public override void AddControls( Control parentControl, bool setSelection, string selection )
         {
-            get
+            parentControl.Controls.Add( new LiteralControl( this.Title + " " ) );
+
+            CheckBox cb = new CheckBox();
+            cb.ID = parentControl.ID + "_cb";
+            parentControl.Controls.Add( cb );
+
+            cb.Text = "Yes";
+
+            if ( setSelection )
             {
-                return Rock.Web.Cache.FieldTypeCache.Read( SystemGuid.FieldType.BOOLEAN );
+                bool hasPicture = false;
+                if ( !Boolean.TryParse( selection, out hasPicture ) )
+                    hasPicture = false;
+
+                cb.Checked = hasPicture;
             }
         }
 
         /// <summary>
-        /// Gets the field configuration values.
+        /// Gets the selection.
         /// </summary>
-        /// <value>
-        /// The field configuration values.
-        /// </value>
-        public override Dictionary<string, string> FieldConfigurationValues
+        /// <param name="parentControl">The parent control.</param>
+        /// <returns></returns>
+        public override string GetSelection( Control parentControl )
         {
-            get
+            foreach ( Control control in parentControl.Controls )
             {
-                return null;
+                if ( control is CheckBox )
+                {
+                    return ( (CheckBox)control ).Checked.ToString();
+                }
             }
+
+            return string.Empty;
         }
 
 
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, FilterComparisonType comparisonType, string fieldTypeValue )
+        public override Expression GetExpression( Expression parameterExpression, string selection )
         {
             bool hasPicture = true;
-            if ( Boolean.TryParse( fieldTypeValue, out hasPicture ) )
+            if ( Boolean.TryParse( selection, out hasPicture ) )
             {
                 MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
                 Expression hasValue = Expression.Property( property, "HasValue");

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Model;
 using Rock.Extension;
 using Rock.Field;
@@ -16,46 +19,106 @@ namespace Rock.Reporting
     public abstract class FilterComponent : IComponent
     {
         /// <summary>
-        /// Gets the prompt.
+        /// Gets the title.
         /// </summary>
         /// <value>
-        /// The prompt.
+        /// The title.
         /// </value>
-        public abstract string Prompt { get; }
+        public abstract string Title { get; }
 
         /// <summary>
-        /// Gets the supported comparison types.
+        /// Formats the selection.
         /// </summary>
-        /// <value>
-        /// The supported comparison types.
-        /// </value>
-        public abstract FilterComparisonType SupportedComparisonTypes { get; }
+        /// <param name="selection">The selection.</param>
+        public virtual string FormatSelection( string selection )
+        {
+            FilterComparisonType comparisonType = FilterComparisonType.None;
+            string value = string.Empty;
+
+            string[] options = selection.Split( '|' );
+            if ( options.Length > 0 )
+            {
+                try { comparisonType= options[0].ConvertToEnum<FilterComparisonType>(); }
+                catch {}
+            }
+            if ( options.Length > 1 )
+            {
+                value = options[1];
+            }
+
+            return string.Format( "{0} {1} {2}", Title, 
+                comparisonType != FilterComparisonType.None ? comparisonType.ConvertToString() : "", 
+                value );
+        }
 
         /// <summary>
-        /// Gets the type of the field.
+        /// Gets the selection controls
         /// </summary>
-        /// <value>
-        /// The type of the field.
-        /// </value>
-        public abstract Rock.Web.Cache.FieldTypeCache FieldType { get; }
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="selection">The selection.</param>
+        public virtual void AddControls( Control parentControl, bool setSelection, string selection )
+        {
+            parentControl.Controls.Add( new LiteralControl( this.Title + " " ) );
+
+            DropDownList ddl = ComparisonControl( StringFilterComparisonTypes );
+            ddl.ID = parentControl.ID + "_ddl";
+            parentControl.Controls.Add( ddl );
+
+            parentControl.Controls.Add( new LiteralControl( " " ) );
+
+            TextBox tb = new TextBox();
+            tb.ID = parentControl.ID + "_tb";
+            parentControl.Controls.Add( tb );
+
+            if ( setSelection )
+            {
+                string[] options = selection.Split( '|' );
+                if ( options.Length > 0 )
+                {
+                    ddl.SelectedValue = options[0];
+                }
+                if ( options.Length > 1 )
+                {
+                    tb.Text = options[1];
+                }
+            }
+
+        }
 
         /// <summary>
-        /// Gets the field configuration values.
+        /// Gets the selection.
         /// </summary>
-        /// <value>
-        /// The field configuration values.
-        /// </value>
-        public abstract Dictionary<string, string> FieldConfigurationValues { get; }
+        /// <param name="parentControl">The parent control.</param>
+        /// <returns></returns>
+        public virtual string GetSelection( Control parentControl )
+        {
+            string comparisonType = string.Empty;
+            string value = string.Empty;
+
+            foreach ( Control control in parentControl.Controls )
+            {
+                if ( control is DropDownList )
+                {
+                    comparisonType = ( (DropDownList)control ).SelectedValue;
+                }
+                if ( control is TextBox )
+                {
+                    value = ( (TextBox)control ).Text;
+                }
+            }
+
+            return string.Format( "{0}|{1}", comparisonType, value );
+        }
 
         /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="comparisonType">Type of the comparison.</param>
-        /// <param name="fieldTypeValue">The field type value.</param>
+        /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( Expression parameterExpression, FilterComparisonType comparisonType, string fieldTypeValue );
-
+        public abstract Expression GetExpression( Expression parameterExpression, string selection );
 
         /// <summary>
         /// Gets the comparison expression.
@@ -64,7 +127,7 @@ namespace Rock.Reporting
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public Expression ComparisonExpression( FilterComparisonType comparisonType, Expression property, Expression value )
+        protected Expression ComparisonExpression( FilterComparisonType comparisonType, Expression property, Expression value )
         {
             if ( comparisonType == FilterComparisonType.Contains )
             {
@@ -81,7 +144,7 @@ namespace Rock.Reporting
                 return Expression.Call( property, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
             }
 
-            if ( comparisonType == FilterComparisonType.Equal )
+            if ( comparisonType == FilterComparisonType.EqualTo )
             {
                 return Expression.Equal( property, value );
             }
@@ -91,15 +154,15 @@ namespace Rock.Reporting
                 return Expression.GreaterThan( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.GreaterThanOrEqual )
+            if ( comparisonType == FilterComparisonType.GreaterThanOrEqualTo )
             {
                 return Expression.GreaterThanOrEqual( property, value );
             }
 
             if ( comparisonType == FilterComparisonType.IsBlank )
             {
-                Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ));
-                Expression emtpyString = Expression.Constant(string.Empty);
+                Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
+                Expression emtpyString = Expression.Constant( string.Empty );
                 return Expression.Equal( trimmed, value );
             }
 
@@ -115,12 +178,12 @@ namespace Rock.Reporting
                 return Expression.LessThan( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.LessThanOrEqual )
+            if ( comparisonType == FilterComparisonType.LessThanOrEqualTo )
             {
                 return Expression.LessThanOrEqual( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.NotEqual )
+            if ( comparisonType == FilterComparisonType.NotEqualTo )
             {
                 return Expression.NotEqual( property, value );
             }
@@ -132,6 +195,61 @@ namespace Rock.Reporting
 
             return null;
         }
+
+        /// <summary>
+        /// Gets a dropdownlist of the supported comparison types
+        /// </summary>
+        /// <param name="supportedComparisonTypes">The supported comparison types.</param>
+        /// <returns></returns>
+        protected DropDownList ComparisonControl( FilterComparisonType supportedComparisonTypes )
+        {
+            var ddl = new DropDownList();
+            foreach ( FilterComparisonType comparisonType in Enum.GetValues( typeof( FilterComparisonType ) ) )
+            {
+                if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )
+                {
+                    ddl.Items.Add( new ListItem( comparisonType.ConvertToString(), comparisonType.ConvertToInt().ToString() ) );
+                }
+            }
+            return ddl;
+        }
+
+        /// <summary>
+        /// Gets the comparison types typically used for string fields
+        /// </summary>
+        public static FilterComparisonType StringFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    FilterComparisonType.Contains &
+                    FilterComparisonType.DoesNotContain &
+                    FilterComparisonType.EqualTo &
+                    FilterComparisonType.IsBlank &
+                    FilterComparisonType.IsNotBlank &
+                    FilterComparisonType.NotEqualTo &
+                    FilterComparisonType.StartsWith &
+                    FilterComparisonType.EndsWith;
+            }
+        }
+
+        /// <summary>
+        /// Gets the comparison types typically used for numeric fields
+        /// </summary>
+        public static FilterComparisonType NumericFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    FilterComparisonType.EqualTo &
+                    FilterComparisonType.NotEqualTo &
+                    FilterComparisonType.GreaterThan &
+                    FilterComparisonType.GreaterThanOrEqualTo &
+                    FilterComparisonType.LessThan &
+                    FilterComparisonType.LessThanOrEqualTo;
+            }
+        }
+
     }
 
 

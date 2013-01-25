@@ -257,6 +257,10 @@
     <Compile Include="Migrations\201301212124450_Reporting.Designer.cs">
       <DependentUpon>201301212124450_Reporting.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301242138425_UpdateReportFilter.cs" />
+    <Compile Include="Migrations\201301242138425_UpdateReportFilter.Designer.cs">
+      <DependentUpon>201301242138425_UpdateReportFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -373,7 +377,7 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Reporting\FilterComponent.cs" />
     <Compile Include="Reporting\FilterContainer.cs" />
-    <Compile Include="Reporting\PersonFilters\LastAttendedDaysFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\GroupTypeAttendanceFilter.cs" />
     <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
     <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
     <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
@@ -973,6 +977,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301212124450_Reporting.resx">
       <DependentUpon>201301212124450_Reporting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301242138425_UpdateReportFilter.resx">
+      <DependentUpon>201301242138425_UpdateReportFilter.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

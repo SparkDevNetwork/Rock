@@ -81,8 +81,7 @@ namespace Rock.Model
                 target.FilterType = source.FilterType;
                 target.ParentId = source.ParentId;
                 target.EntityTypeId = source.EntityTypeId;
-                target.ComparisonType = source.ComparisonType;
-                target.Value = source.Value;
+                target.Selection = source.Selection;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

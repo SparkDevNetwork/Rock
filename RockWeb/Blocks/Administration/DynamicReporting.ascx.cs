@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
                 foreach ( var serviceEntry in Rock.Reporting.FilterContainer.Instance.Components )
                 {
                     var component = serviceEntry.Value.Value;
-                    ListItem li = new ListItem( component.Prompt, component.GetType().FullName );
+                    ListItem li = new ListItem( component.Title, component.GetType().FullName );
                     ddlFilters.Items.Add(li);
                 }
 
@@ -130,7 +130,8 @@ namespace RockWeb.Blocks.Administration
             Expression expr = _report.GetExpression( item );
             if ( expr != null )
             {
-                qry = qry.Where( Expression.Lambda<Func<Person, bool>>( expr, item ) );
+                var lambda = Expression.Lambda<Func<Person, bool>>( expr, item );
+                qry = qry.Where( lambda );
             }
 
             var result = qry.ToList();

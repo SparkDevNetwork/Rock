@@ -54,22 +54,13 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the comparison.
-        /// </value>
-        [DataMember]
-        public FilterComparisonType ComparisonType { get; set; }
-
-        /// <summary>
         /// Gets or sets the value.
         /// </summary>
         /// <value>
         /// The value.
         /// </value>
         [DataMember]
-        public string Value { get; set; }
+        public string Selection { get; set; }
 
         #endregion
 
@@ -130,7 +121,7 @@ namespace Rock.Model
                             string componentName = component.GetType().FullName;
                             if ( componentName == this.EntityType.Name )
                             {
-                                return component.GetExpression( parameter, this.ComparisonType, this.Value );
+                                return component.GetExpression( parameter, this.Selection );
                             }
                         }
                     }
@@ -201,26 +192,16 @@ namespace Rock.Model
                     return "Or";
 
                 default:
-                    StringBuilder sb = new StringBuilder();
-
                     foreach ( var serviceEntry in Rock.Reporting.FilterContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
                         string componentName = component.GetType().FullName;
                         if ( componentName == this.EntityType.Name )
                         {
-                            sb.AppendFormat("{0} ",component.Prompt);
+                            return component.FormatSelection( this.Selection );
                         }
                     }
-
-                    if (ComparisonType != FilterComparisonType.None)
-                    {
-                        sb.AppendFormat("{0} ", ComparisonType.ConvertToString());
-                    }
-
-                    sb.Append(Value);
-
-                    return sb.ToString();
+                    return string.Empty;
             }
         }
 
@@ -283,12 +264,12 @@ namespace Rock.Model
         /// <summary>
         /// Equal
         /// </summary>
-        Equal = 0x1,
+        EqualTo = 0x1,
 
         /// <summary>
         /// Not equal
         /// </summary>
-        NotEqual = 0x2,
+        NotEqualTo = 0x2,
 
         /// <summary>
         /// Starts with
@@ -323,7 +304,7 @@ namespace Rock.Model
         /// <summary>
         /// Greater than or equal
         /// </summary>
-        GreaterThanOrEqual = 0x100,
+        GreaterThanOrEqualTo = 0x100,
 
         /// <summary>
         /// Less than
@@ -333,7 +314,7 @@ namespace Rock.Model
         /// <summary>
         /// Less than or equal
         /// </summary>
-        LessThanOrEqual = 0x400,
+        LessThanOrEqualTo = 0x400,
 
         /// <summary>
         /// Ends with
