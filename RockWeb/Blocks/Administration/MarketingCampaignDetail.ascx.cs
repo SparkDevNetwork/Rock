@@ -184,13 +184,13 @@ namespace RockWeb.Blocks.Administration
             }
 
             marketingCampaign.Title = tbTitle.Text;
-            if ( ddlContactPerson.SelectedValue.Equals( None.Id.ToString() ) )
+            if ( ppContactPerson.SelectedValue.Equals( None.Id.ToString() ) )
             {
                 marketingCampaign.ContactPersonId = null;
             }
             else
             {
-                marketingCampaign.ContactPersonId = int.Parse( ddlContactPerson.SelectedValue );
+                marketingCampaign.ContactPersonId = int.Parse( ppContactPerson.SelectedValue );
             }
 
             marketingCampaign.ContactEmail = tbContactEmail.Text;
@@ -314,12 +314,6 @@ namespace RockWeb.Blocks.Administration
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
 
-            PersonService personService = new PersonService();
-            List<Person> persons = personService.Queryable().OrderBy( a => a.NickName ).ThenBy( a => a.LastName ).ToList();
-            persons.Insert( 0, new Person { Id = None.Id, GivenName = None.Text } );
-            ddlContactPerson.DataSource = persons;
-            ddlContactPerson.DataBind();
-
             CampusService campusService = new CampusService();
 
             cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
@@ -421,7 +415,7 @@ namespace RockWeb.Blocks.Administration
             tbContactPhoneNumber.Text = marketingCampaign.ContactPhoneNumber;
 
             LoadDropDowns();
-            ddlContactPerson.SetValue( marketingCampaign.ContactPersonId );
+            ppContactPerson.SetValue( marketingCampaign.ContactPerson );
             ddlEventGroup.SetValue( marketingCampaign.EventGroupId );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
@@ -494,13 +488,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlContactPerson control.
+        /// Handles the SelectPerson event of the ppContactPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlContactPerson_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ppContactPerson_SelectPerson( object sender, EventArgs e )
         {
-            int personId = int.Parse( ddlContactPerson.SelectedValue );
+            int personId = int.Parse( ppContactPerson.SelectedValue );
             Person contactPerson = new PersonService().Get( personId );
             if ( contactPerson != null )
             {
