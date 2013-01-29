@@ -1,31 +1,19 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupRoles.ascx.cs" Inherits="GroupRoles" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupRoleDetail.ascx.cs" Inherits="RockWeb.Blocks.Crm.GroupRoleDetail" %>
 
 <asp:UpdatePanel ID="upGroupRoles" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlList" runat="server">
-            <Rock:NotificationBox ID="nbGridWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />
-            <Rock:Grid ID="gGroupRoles" runat="server" AllowSorting="true" OnRowSelected="gGroupRoles_Edit">
-                <Columns>
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                    <asp:BoundField DataField="GroupType.Name" HeaderText="Group Type" SortExpression="GroupType.Name" />
-                    <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
-                    <Rock:DeleteField OnClick="gGroupRoles_Delete" />
-                </Columns>
-            </Rock:Grid>
-        </asp:Panel>
-
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-
             <asp:HiddenField ID="hfGroupRoleId" runat="server" />
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
 
             <fieldset>
                 <legend>
-                    <i id="iconIsSystem" runat="server" class="icon-eye-open"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
+
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" />
@@ -46,8 +34,6 @@
             </div>
 
         </asp:Panel>
-
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
