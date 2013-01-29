@@ -126,7 +126,6 @@ namespace Rock.Model
         /// Nick Name.
         /// </value>
         [MaxLength( 50 )]
-        [TrackChanges]
         [DataMember]
         public string NickName { get; set; }
 
@@ -137,7 +136,6 @@ namespace Rock.Model
         /// Last Name.
         /// </value>
         [MaxLength( 50 )]
-        [TrackChanges]
         [DataMember]
         public string LastName { get; set; }
         

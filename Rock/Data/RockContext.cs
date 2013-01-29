@@ -151,14 +151,6 @@ namespace Rock.Data
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Changes.
-        /// </summary>
-        /// <value>
-        /// the Entity Changes.
-        /// </value>
-        public DbSet<EntityChange> EntityChanges { get; set; }
-
-        /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
         /// <value>
@@ -630,7 +622,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
