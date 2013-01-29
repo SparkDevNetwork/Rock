@@ -258,9 +258,13 @@
     <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.Designer.cs">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201301292038505_ListDetailSweep03.cs" />
-    <Compile Include="Migrations\201301292038505_ListDetailSweep03.Designer.cs">
-      <DependentUpon>201301292038505_ListDetailSweep03.cs</DependentUpon>
+    <Compile Include="Migrations\201301291756455_RemoveEntityChange.cs" />
+    <Compile Include="Migrations\201301291756455_RemoveEntityChange.Designer.cs">
+      <DependentUpon>201301291756455_RemoveEntityChange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301292308074_ListDetailSweep03.cs" />
+    <Compile Include="Migrations\201301292308074_ListDetailSweep03.Designer.cs">
+      <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -406,7 +410,6 @@
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\CodeGenerated\DefinedTypeService.cs" />
     <Compile Include="Model\CodeGenerated\DefinedValueService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityChangeService.cs" />
     <Compile Include="Model\CodeGenerated\ExceptionLogService.cs" />
     <Compile Include="Model\CodeGenerated\FieldTypeService.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
@@ -416,8 +419,6 @@
     <Compile Include="Model\Metric.cs" />
     <Compile Include="Model\DefinedTypeService.Partial.cs" />
     <Compile Include="Model\DefinedValueService.Partial.cs" />
-    <Compile Include="Model\EntityChange.cs" />
-    <Compile Include="Model\EntityChangeService.Partial.cs" />
     <Compile Include="Model\ExceptionLog.cs" />
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\MetricValueService.Partial.cs" />
@@ -586,7 +587,6 @@
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
     <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
-    <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
@@ -710,7 +710,6 @@
     <Compile Include="Data\Model.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\TrackChangesAttribute.cs" />
     <Compile Include="Data\RockContext.cs" />
     <Compile Include="Data\UnitOfWorkScope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -970,8 +969,11 @@
     <EmbeddedResource Include="Migrations\201301182325595_MarketingCampaignListDetail.resx">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201301292038505_ListDetailSweep03.resx">
-      <DependentUpon>201301292038505_ListDetailSweep03.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201301291756455_RemoveEntityChange.resx">
+      <DependentUpon>201301291756455_RemoveEntityChange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301292308074_ListDetailSweep03.resx">
+      <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

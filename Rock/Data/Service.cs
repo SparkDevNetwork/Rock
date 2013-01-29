@@ -409,20 +409,11 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            List<EntityChange> changes;
             List<Audit> audits;
             List<string> errorMessages;
 
-            if ( _repository.Save( personId, out changes, out audits, out errorMessages ) )
+            if ( _repository.Save( personId, out audits, out errorMessages ) )
             {
-                if ( changes != null && changes.Count > 0 )
-                {
-                    var transaction = new Rock.Transactions.EntityChangeTransaction();
-                    transaction.Changes = changes;
-                    transaction.PersonId = personId;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-
                 if ( audits != null && audits.Count > 0 )
                 {
                     var transaction = new Rock.Transactions.AuditTransaction();

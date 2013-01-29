@@ -107,7 +107,6 @@
     <Compile Include="Controllers\CodeGenerated\DefinedTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\DefinedValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EmailTemplatesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\EntityChangesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ExceptionLogsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FieldTypesController.cs" />
