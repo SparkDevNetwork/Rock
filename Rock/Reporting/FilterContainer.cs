@@ -36,6 +36,26 @@ namespace Rock.Reporting
             Refresh();
         }
 
+        /// <summary>
+        /// Gets the component with the matching Entity Type Name
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <returns></returns>
+        public static FilterComponent GetComponent( string entityTypeName )
+        {
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                string componentName = component.GetType().FullName;
+                if ( componentName == entityTypeName )
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( FilterComponent ) )]

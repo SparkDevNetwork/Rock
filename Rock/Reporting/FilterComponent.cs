@@ -32,7 +32,7 @@ namespace Rock.Reporting
         /// <param name="selection">The selection.</param>
         public virtual string FormatSelection( string selection )
         {
-            FilterComparisonType comparisonType = FilterComparisonType.None;
+            FilterComparisonType comparisonType = FilterComparisonType.StartsWith;
             string value = string.Empty;
 
             string[] options = selection.Split( '|' );
@@ -46,44 +46,33 @@ namespace Rock.Reporting
                 value = options[1];
             }
 
-            return string.Format( "{0} {1} {2}", Title, 
-                comparisonType != FilterComparisonType.None ? comparisonType.ConvertToString() : "", 
-                value );
+            return string.Format( "{0} {1} {2}", Title, comparisonType.ConvertToString(), value );
         }
 
         /// <summary>
-        /// Gets the selection controls
+        /// Creates the child controls.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        /// <param name="selection">The selection.</param>
-        public virtual void AddControls( Control parentControl, bool setSelection, string selection )
+        /// <returns></returns>
+        public virtual Control[] CreateChildControls()
         {
-            parentControl.Controls.Add( new LiteralControl( this.Title + " " ) );
+            var controls = new Control[2] {
+                ComparisonControl( StringFilterComparisonTypes ),
+                new TextBox() };
+            SetSelection( controls, string.Format( "{0}|", FilterComparisonType.StartsWith.ConvertToInt().ToString() ) );
+            return controls;
+        }
 
-            DropDownList ddl = ComparisonControl( StringFilterComparisonTypes );
-            ddl.ID = parentControl.ID + "_ddl";
-            parentControl.Controls.Add( ddl );
-
-            parentControl.Controls.Add( new LiteralControl( " " ) );
-
-            TextBox tb = new TextBox();
-            tb.ID = parentControl.ID + "_tb";
-            parentControl.Controls.Add( tb );
-
-            if ( setSelection )
-            {
-                string[] options = selection.Split( '|' );
-                if ( options.Length > 0 )
-                {
-                    ddl.SelectedValue = options[0];
-                }
-                if ( options.Length > 1 )
-                {
-                    tb.Text = options[1];
-                }
-            }
-
+        /// <summary>
+        /// Renders the controls.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public virtual void RenderControls( HtmlTextWriter writer, Control[] controls )
+        {
+            writer.Write( this.Title + " " );
+            controls[0].RenderControl( writer );
+            writer.Write( " " );
+            controls[1].RenderControl( writer );
         }
 
         /// <summary>
@@ -91,24 +80,26 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <returns></returns>
-        public virtual string GetSelection( Control parentControl )
+        public virtual string GetSelection( Control[] controls )
         {
-            string comparisonType = string.Empty;
-            string value = string.Empty;
-
-            foreach ( Control control in parentControl.Controls )
-            {
-                if ( control is DropDownList )
-                {
-                    comparisonType = ( (DropDownList)control ).SelectedValue;
-                }
-                if ( control is TextBox )
-                {
-                    value = ( (TextBox)control ).Text;
-                }
-            }
-
+            string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
+            string value = ( (TextBox)controls[1] ).Text;
             return string.Format( "{0}|{1}", comparisonType, value );
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public virtual void SetSelection( Control[] controls, string selection )
+        {
+            string[] options = selection.Split( '|' );
+            if ( options.Length >= 2 )
+            {
+                ( (DropDownList)controls[0] ).SelectedValue = options[0];
+                ( (TextBox)controls[1] ).Text = options[1];
+            }
         }
 
         /// <summary>
@@ -222,13 +213,13 @@ namespace Rock.Reporting
             get
             {
                 return
-                    FilterComparisonType.Contains &
-                    FilterComparisonType.DoesNotContain &
-                    FilterComparisonType.EqualTo &
-                    FilterComparisonType.IsBlank &
-                    FilterComparisonType.IsNotBlank &
-                    FilterComparisonType.NotEqualTo &
-                    FilterComparisonType.StartsWith &
+                    FilterComparisonType.Contains |
+                    FilterComparisonType.DoesNotContain |
+                    FilterComparisonType.EqualTo |
+                    FilterComparisonType.IsBlank |
+                    FilterComparisonType.IsNotBlank |
+                    FilterComparisonType.NotEqualTo |
+                    FilterComparisonType.StartsWith |
                     FilterComparisonType.EndsWith;
             }
         }
@@ -241,11 +232,11 @@ namespace Rock.Reporting
             get
             {
                 return
-                    FilterComparisonType.EqualTo &
-                    FilterComparisonType.NotEqualTo &
-                    FilterComparisonType.GreaterThan &
-                    FilterComparisonType.GreaterThanOrEqualTo &
-                    FilterComparisonType.LessThan &
+                    FilterComparisonType.EqualTo |
+                    FilterComparisonType.NotEqualTo |
+                    FilterComparisonType.GreaterThan |
+                    FilterComparisonType.GreaterThanOrEqualTo |
+                    FilterComparisonType.LessThan |
                     FilterComparisonType.LessThanOrEqualTo;
             }
         }

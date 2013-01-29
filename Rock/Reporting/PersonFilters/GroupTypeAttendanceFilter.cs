@@ -33,113 +33,104 @@ namespace Rock.Reporting.PersonFilter
         }
 
         /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <returns></returns>
+        public override Control[] CreateChildControls()
+        {
+            DropDownList ddlGroupType = new DropDownList();
+            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
+            {
+                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+            }
+
+            var controls = new Control[4] {
+                ddlGroupType,  ComparisonControl( NumericFilterComparisonTypes ),
+                new TextBox(), new TextBox() };
+
+            SetSelection( controls, string.Format( "{0}|{1}|4|16", 
+                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
+                FilterComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+
+            return controls;
+        }
+
+        /// <summary>
         /// Formats the selection.
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            GroupType groupType = null;
-            FilterComparisonType comparisonType = FilterComparisonType.None;
-            int attended = 0;
-            int weeks = 0;
+            string s = "Group Type Attendance";
 
             string[] options = selection.Split( '|' );
-            if ( options.Length != 4  )
+            if ( options.Length >= 4 )
             {
-                return string.Empty;
+                var groupType = new GroupTypeService().Get( int.Parse( options[0] ) );
+
+                FilterComparisonType comparisonType = FilterComparisonType.GreaterThanOrEqualTo;
+                try { comparisonType= options[0].ConvertToEnum<FilterComparisonType>(); }
+                catch {}
+
+                s = string.Format( "Attended '{0}' {1} {2} times in the last {3} week(s)",
+                    groupType != null ? groupType.Name : "?",
+                    comparisonType.ConvertToString(),
+                    options[2], options[3] );
             }
 
-            int groupTypeId = 0;
-            if (int.TryParse(options[0], out groupTypeId))
-            {
-                groupType = new GroupTypeService().Get(groupTypeId);
-            }
-
-            try { comparisonType= options[1].ConvertToEnum<FilterComparisonType>(); }
-            catch {}
-
-            if (!int.TryParse(options[2], out attended))
-                attended = 0;
-
-            if (!int.TryParse(options[3], out weeks))
-                weeks = 0;
-
-            return string.Format("Attended {0} {1} {2} times in the last {3} week(s)",
-                groupType != null ? groupType.Name : "?",
-                comparisonType != FilterComparisonType.None ? comparisonType.ConvertToString() : string.Empty,
-                attended, weeks);
+            return s;
         }
 
         /// <summary>
-        /// Gets the selection controls
+        /// Renders the controls.
         /// </summary>
-        /// <param name="setSelection"></param>
-        /// <param name="selection"></param>
-        public override void AddControls( Control parentControl, bool setSelection, string selection )
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
         {
-            var controls = new List<Control>();
-
-            DropDownList ddlGroupType = new DropDownList();
-            ddlGroupType.ID = parentControl.ID + "_ddlGroupType";
-            parentControl.Controls.Add(ddlGroupType);
-
-            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
-            {
-                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
-            }
-
-            parentControl.Controls.Add(new LiteralControl("<br/><br/>Attended "));
-
-            DropDownList ddlComparison = ComparisonControl( NumericFilterComparisonTypes );
-            ddlComparison.ID = parentControl.ID + "_ddlComparison";
-            parentControl.Controls.Add(ddlComparison);
-
-            parentControl.Controls.Add(new LiteralControl(" "));
-
-            TextBox tbAttendance = new TextBox();
-            tbAttendance.ID = parentControl.ID + "_tbAttendance";
-            parentControl.Controls.Add(tbAttendance);
-
-            parentControl.Controls.Add(new LiteralControl(" times in the last "));
-
-            TextBox tbWeeks = new TextBox();
-            tbWeeks.ID = parentControl.ID + "_tbWeeks";
-            parentControl.Controls.Add(tbWeeks);
-
-            parentControl.Controls.Add(new LiteralControl(" weeks."));
-
-            if ( setSelection )
-            {
-                string[] options = selection.Split( '|' );
-                if ( options.Length != 4 )
-                {
-                    ddlGroupType.SelectedValue = options[0];
-                    ddlComparison.SelectedValue = options[1];
-                    tbAttendance.Text = options[2];
-                    tbWeeks.Text = options[3];
-                }
-            }
+            controls[0].RenderControl( writer );
+            writer.WriteBreak();
+            writer.Write( "Attended " );
+            controls[1].RenderControl( writer );
+            writer.Write( " " );
+            controls[2].RenderControl( writer );
+            writer.Write( " Times in the Last " );
+            controls[3].RenderControl( writer );
+            writer.Write( " Week(s)." );
         }
 
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
+        /// <param name="controls"></param>
         /// <returns></returns>
-        public override string GetSelection( Control parentControl )
+        public override string GetSelection( Control[] controls )
         {
-            DropDownList ddlGroupType = parentControl.FindControl( parentControl.ID + "_ddlGroupType" ) as DropDownList;
-            DropDownList ddlComparison = parentControl.FindControl( parentControl.ID + "_ddlComparison" ) as DropDownList;
-            TextBox tbAttendance = parentControl.FindControl( parentControl.ID + "_tbAttendance" ) as TextBox;
-            TextBox tbWeeks = parentControl.FindControl( parentControl.ID + "_tbWeeks" ) as TextBox;
-
-            return string.Format("{0}|{1}|{2}|{3}",
-                ddlGroupType != null ? ddlGroupType.SelectedValue : string.Empty,
-                ddlComparison != null ? ddlComparison.SelectedValue : string.Empty,
-                tbAttendance.Text, tbWeeks.Text);
+            string groupTypeId = ( (DropDownList)controls[0] ).SelectedValue;
+            string comparisonType = ( (DropDownList)controls[1] ).SelectedValue;
+            string attended = ( (TextBox)controls[2] ).Text;
+            string weeks = ( (TextBox)controls[3] ).Text;
+            return string.Format( "{0}|{1}|{2}|{3}",
+                groupTypeId, comparisonType, attended, weeks );
         }
 
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public override void SetSelection( Control[] controls, string selection )
+        {
+            string[] options = selection.Split( '|' );
+            if ( options.Length >= 4 )
+            {
+                ( (DropDownList)controls[0] ).SelectedValue = options[0];
+                ( (DropDownList)controls[1] ).SelectedValue = options[1];
+                ( (TextBox)controls[2] ).Text = options[2];
+                ( (TextBox)controls[3] ).Text = options[3];
+            }
+        }
 
         /// <summary>
         /// Gets the expression.
@@ -156,7 +147,7 @@ namespace Rock.Reporting.PersonFilter
                 return null;
             }
 
-            FilterComparisonType comparisonType = FilterComparisonType.None;
+            FilterComparisonType comparisonType = FilterComparisonType.GreaterThanOrEqualTo;
             int attended = 0;
             int weeks = 0;
 

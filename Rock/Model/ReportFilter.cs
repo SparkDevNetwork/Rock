@@ -19,6 +19,7 @@ namespace Rock.Model
     /// <summary>
     /// Campus POCO Entity.
     /// </summary>
+    [NotAudited]
     [Table( "ReportFilter" )]
     [DataContract( IsReference = true )]
     public partial class ReportFilter : Model<ReportFilter>
@@ -98,6 +99,30 @@ namespace Rock.Model
         }
         private ICollection<ReportFilter> _filters;
 
+        /// <summary>
+        /// Gets the UI helper class
+        /// </summary>
+        /// <value>
+        /// The UI helper.
+        /// </value>
+        public virtual ReportFilterUIHelper UIHelper
+        {
+            get
+            {
+                var helper = new ReportFilterUIHelper();
+                helper.FilterType = this.FilterType;
+                helper.EntityTypeName = this.EntityType.Name;
+                helper.Selection = this.Selection;
+                helper.ChildFilters = new List<ReportFilterUIHelper>();
+                foreach ( var filter in this.ReportFilters )
+                {
+                    helper.ChildFilters.Add( filter.UIHelper );
+                }
+                return helper;
+            }
+        }
+        
+
         #endregion
 
         #region Methods
@@ -113,13 +138,13 @@ namespace Rock.Model
             {
                 case FilterType.Expression:
 
-                    if ( this.EntityType != null )
+                    if ( this.EntityTypeId.HasValue )
                     {
-                        foreach ( var serviceEntry in Rock.Reporting.FilterContainer.Instance.Components )
+                        var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
+                        if ( entityType != null )
                         {
-                            var component = serviceEntry.Value.Value;
-                            string componentName = component.GetType().FullName;
-                            if ( componentName == this.EntityType.Name )
+                            var component = Rock.Reporting.FilterContainer.GetComponent( entityType.Name );
+                            if ( component != null )
                             {
                                 return component.GetExpression( parameter, this.Selection );
                             }
@@ -127,7 +152,7 @@ namespace Rock.Model
                     }
                     return null;
 
-                case FilterType.AndCollection:
+                case FilterType.And:
 
                     Expression andExp = null;
                     foreach ( var filter in this.ReportFilters )
@@ -149,7 +174,7 @@ namespace Rock.Model
 
                     return andExp;
 
-                case FilterType.OrCollection:
+                case FilterType.Or:
 
                     Expression orExp = null;
                     foreach ( var filter in this.ReportFilters )
@@ -185,10 +210,10 @@ namespace Rock.Model
         {
             switch(this.FilterType)
             {
-                case FilterType.AndCollection:
+                case FilterType.And:
                     return "And";
 
-                case FilterType.OrCollection:
+                case FilterType.Or:
                     return "Or";
 
                 default:
@@ -242,12 +267,12 @@ namespace Rock.Model
         /// <summary>
         /// Collection of Expressions that should be and'd together
         /// </summary>
-        AndCollection = 1,
+        And = 1,
 
         /// <summary>
         /// Collection of Expressions that should be or'd together
         /// </summary>
-        OrCollection = 2
+        Or = 2
     }
 
     /// <summary>
@@ -256,11 +281,6 @@ namespace Rock.Model
     [Flags]
     public enum FilterComparisonType
     {
-        /// <summary>
-        /// None
-        /// </summary>
-        None = 0x0,
-
         /// <summary>
         /// Equal
         /// </summary>
@@ -324,4 +344,15 @@ namespace Rock.Model
     }
 
     #endregion
+
+    /// <summary>
+    /// Helper class for creating filter UI controls
+    /// </summary>
+    public class ReportFilterUIHelper
+    {
+        public FilterType FilterType { get; set; }
+        public string EntityTypeName { get; set; }
+        public string Selection { get; set; }
+        public List<ReportFilterUIHelper> ChildFilters { get; set; }
+    }
 }

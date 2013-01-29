@@ -38,7 +38,7 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            FilterComparisonType comparisonType = FilterComparisonType.None;
+            FilterComparisonType comparisonType = FilterComparisonType.StartsWith;
             string value = string.Empty;
 
             string[] options = selection.Split( '|' );
