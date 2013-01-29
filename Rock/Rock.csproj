@@ -258,6 +258,10 @@
     <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.Designer.cs">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301292038505_ListDetailSweep03.cs" />
+    <Compile Include="Migrations\201301292038505_ListDetailSweep03.Designer.cs">
+      <DependentUpon>201301292038505_ListDetailSweep03.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -965,6 +969,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301182325595_MarketingCampaignListDetail.resx">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301292038505_ListDetailSweep03.resx">
+      <DependentUpon>201301292038505_ListDetailSweep03.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
