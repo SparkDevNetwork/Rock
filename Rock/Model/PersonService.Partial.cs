@@ -227,24 +227,6 @@ namespace Rock.Model
             );
         }
 
-        public IEnumerable<Person> GetTest( int numDays )
-        {
-            DateTime daysAgo = DateTime.Today.AddDays( 0 - numDays );
-            return this.Queryable().Where( p =>
-                p.Attendances.Select( a => a.StartDateTime ).Max() > daysAgo );
-        }
-
-        public IEnumerable<Person> GetTest2( int groupTypeId, int timesAttended, int weeks )
-        {
-            DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
-
-            return this.Queryable().Where( p =>
-                p.Attendances.Count( a =>
-                    a.Group.GroupTypeId == groupTypeId &&
-                    a.StartDateTime >= startDate &&
-                    a.DidAttend ) >= timesAttended );
-        }
-
         #endregion
 
         #region Get Person

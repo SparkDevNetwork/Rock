@@ -1,13 +1,14 @@
-using System.ComponentModel.DataAnnotations;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model

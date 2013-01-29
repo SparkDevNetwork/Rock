@@ -4,14 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
-using Rock;
 
 namespace Rock.Web.UI.Controls.Report
 {
@@ -30,11 +25,6 @@ namespace Rock.Web.UI.Controls.Report
         /// <value>
         /// The name of the entity type.
         /// </value>
-        [
-        Category( "Behavior" ),
-        DefaultValue( "0" ),
-        Description( "Entity Type Name" )
-        ]
         public string EntityTypeName
         {
             get
@@ -54,11 +44,6 @@ namespace Rock.Web.UI.Controls.Report
         /// <value>
         /// The selection.
         /// </value>
-        [
-        Category( "Behavior" ),
-        DefaultValue( "" ),
-        Description( "Filter Selection" )
-        ]
         public string Selection
         {
             get
@@ -114,10 +99,10 @@ namespace Rock.Web.UI.Controls.Report
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
+        protected override void Render( HtmlTextWriter writer )
         {
             var component = Rock.Reporting.FilterContainer.GetComponent( EntityTypeName );
             if ( component != null )
@@ -145,6 +130,9 @@ namespace Rock.Web.UI.Controls.Report
             }
         }
 
+        /// <summary>
+        /// Occurs when [delete click].
+        /// </summary>
         public event EventHandler DeleteClick;
     }
 }
