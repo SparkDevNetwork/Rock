@@ -341,13 +341,11 @@ namespace Rock.Data
         /// need to be logged
         /// </summary>
         /// <param name="PersonId">The id of the person making the change</param>
-        /// <param name="changes">The changes.</param>
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages )
         {
-            changes = new List<EntityChange>();
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
@@ -520,61 +518,6 @@ namespace Rock.Data
                 return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// Gets the entity changes.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="baseType">Type of the base.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        private List<Rock.Model.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
-        {
-            List<Rock.Model.EntityChange> entityChanges = new List<Model.EntityChange>();
-
-            // Do not track changes on the 'EntityChange' entity type. 
-            if ( !( entity is Rock.Model.EntityChange ) )
-            {
-                Guid changeSet = Guid.NewGuid();
-
-                // Look for properties that have the "TrackChanges" attribute
-                foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
-                {
-                    object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
-                    if ( customAttributes.Length > 0 )
-                    {
-                        var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
-                        var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
-                            Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
-
-                        string currentValueStr = currentValue == null ? string.Empty : currentValue.ToString();
-                        string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
-
-                        if ( currentValueStr != originalValueStr )
-                        {
-                            if ( entityChanges == null )
-                            {
-                                entityChanges = new List<Model.EntityChange>();
-                            }
-
-                            Rock.Model.EntityChange change = new Model.EntityChange();
-                            change.ChangeSet = changeSet;
-                            change.ChangeType = Context.Entry( entity ).State.ToString();
-                            change.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( baseType.Name ).Id;
-                            change.Property = propInfo.Name;
-                            change.OriginalValue = originalValueStr;
-                            change.CurrentValue = currentValueStr;
-                            change.CreatedByPersonId = personId;
-                            change.CreatedDateTime = DateTime.Now;
-
-                            entityChanges.Add( change );
-                        }
-                    }
-                }
-            }
-
-            return entityChanges;
         }
 
         /// <summary>

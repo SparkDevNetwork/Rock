@@ -124,6 +124,7 @@ namespace Rock.Web.UI.Controls
             LinkButton lbDelete = sender as LinkButton;
             if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
             {
+                lbDelete.AddCssClass( "disabled" );
                 lbDelete.Enabled = false;
             }
             
@@ -167,6 +168,7 @@ namespace Rock.Web.UI.Controls
                         bool isSystem = (bool)pi.GetValue( dgi.DataItem );
                         if ( isSystem )
                         {
+                            lbDelete.AddCssClass( "disabled" );
                             lbDelete.Enabled = false;
                         }
                     }

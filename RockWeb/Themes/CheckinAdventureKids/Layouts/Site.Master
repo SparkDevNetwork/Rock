@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Site" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="RockWeb.Themes.CheckinAdventureKids.Layouts.Site" %>
 <!DOCTYPE html>
 
 <html>
@@ -14,9 +14,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/adventurekids-theme.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
@@ -25,7 +25,6 @@
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/person-picker.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>

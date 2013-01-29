@@ -38,7 +38,7 @@
                             <p>
                                 Global attributes provide values for each and every group of this type. Every group of this type will be guaranteed to have the same value.
                             </p>
-                            <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                            <Rock:Grid ID="gGroupTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
                                 <Columns>
                                     <asp:BoundField DataField="Name" />
                                     <Rock:EditField OnClick="gGroupTypeAttributes_Edit" />
@@ -52,7 +52,7 @@
                         <p>
                             Group attributes allow for providing different values for each group. Examples  would be 'small group topic', 'meeting night', etc.
                         </p>
-                        <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                        <Rock:Grid ID="gGroupAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
                             <Columns>
                                 <asp:BoundField DataField="Name" />
                                 <Rock:EditField OnClick="gGroupAttributes_Edit" />
@@ -65,7 +65,7 @@
                         <p>
                             Groups can have several locations attached to them.  For instance you may want to have a meeting location and a assignment target location.
                         </p>
-                        <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light">
+                        <Rock:Grid ID="gLocationTypes" runat="server" DisplayType="Light" ShowHeader="false">
                             <Columns>
                                 <asp:BoundField DataField="Value" />
                                 <Rock:DeleteField OnClick="gLocationTypes_Delete" />
@@ -77,7 +77,7 @@
                         <p>
                             This defines what types of groups can be added as children. This helps to define what hierarchy of groups you wish to support. To create allow for an unlimited hierarchy allow child groups of this group type.
                         </p>
-                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light">
+                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false">
                             <Columns>
                                 <asp:BoundField DataField="Value" />
                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
