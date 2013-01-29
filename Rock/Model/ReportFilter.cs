@@ -1,16 +1,15 @@
-using System;
 //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
-using System.Text;
 
 using Rock.Data;
 
@@ -98,30 +97,6 @@ namespace Rock.Model
             set { _filters = value; }
         }
         private ICollection<ReportFilter> _filters;
-
-        /// <summary>
-        /// Gets the UI helper class
-        /// </summary>
-        /// <value>
-        /// The UI helper.
-        /// </value>
-        public virtual ReportFilterUIHelper UIHelper
-        {
-            get
-            {
-                var helper = new ReportFilterUIHelper();
-                helper.FilterType = this.FilterType;
-                helper.EntityTypeName = this.EntityType.Name;
-                helper.Selection = this.Selection;
-                helper.ChildFilters = new List<ReportFilterUIHelper>();
-                foreach ( var filter in this.ReportFilters )
-                {
-                    helper.ChildFilters.Add( filter.UIHelper );
-                }
-                return helper;
-            }
-        }
-        
 
         #endregion
 
@@ -345,14 +320,4 @@ namespace Rock.Model
 
     #endregion
 
-    /// <summary>
-    /// Helper class for creating filter UI controls
-    /// </summary>
-    public class ReportFilterUIHelper
-    {
-        public FilterType FilterType { get; set; }
-        public string EntityTypeName { get; set; }
-        public string Selection { get; set; }
-        public List<ReportFilterUIHelper> ChildFilters { get; set; }
-    }
 }

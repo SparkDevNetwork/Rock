@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Model;
 using Rock.Extension;
-using Rock.Field;
+using Rock.Model;
 
 namespace Rock.Reporting
 {
@@ -78,7 +78,7 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
+        /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public virtual string GetSelection( Control[] controls )
         {
@@ -106,7 +106,6 @@ namespace Rock.Reporting
         /// Gets the expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="comparisonType">Type of the comparison.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         public abstract Expression GetExpression( Expression parameterExpression, string selection );

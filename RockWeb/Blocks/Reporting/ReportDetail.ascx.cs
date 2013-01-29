@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock.Model;
 
 using Rock;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Report;
-using Rock.Reporting;
-using Rock.Reporting.PersonFilter;
 
 namespace RockWeb.Blocks.Reporting
 {

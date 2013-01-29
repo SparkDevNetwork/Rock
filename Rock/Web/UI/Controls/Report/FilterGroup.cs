@@ -4,14 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Rock;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls.Report
@@ -28,11 +24,12 @@ namespace Rock.Web.UI.Controls.Report
         LinkButton lbAddGroup;
         LinkButton lbDelete;
 
-        [
-        Category( "Behavior" ),
-        DefaultValue( "And" ),
-        Description( "Type of Filter (And/Or)" )
-        ]
+        /// <summary>
+        /// Gets or sets the type of the filter.
+        /// </summary>
+        /// <value>
+        /// The type of the filter.
+        /// </value>
         public FilterType FilterType
         {
             get
@@ -51,11 +48,12 @@ namespace Rock.Web.UI.Controls.Report
             }
         }
 
-        [
-        Category( "Behavior" ),
-        DefaultValue( true ),
-        Description( "Delete Enabled" )
-        ]
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is delete enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is delete enabled; otherwise, <c>false</c>.
+        /// </value>
         public bool IsDeleteEnabled
         {
             get
@@ -115,7 +113,11 @@ namespace Rock.Web.UI.Controls.Report
             i.AddCssClass( "icon-remove" );
         }
 
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <summary>
+        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
+        /// </summary>
+        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
+        protected override void Render( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "well well-small" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -176,14 +178,34 @@ namespace Rock.Web.UI.Controls.Report
             }
         }
 
+        /// <summary>
+        /// Occurs when [add filter click].
+        /// </summary>
         public event EventHandler<AddFilterArgs> AddFilterClick;
+        
+        /// <summary>
+        /// Occurs when [add group click].
+        /// </summary>
         public event EventHandler AddGroupClick;
+
+        /// <summary>
+        /// Occurs when [delete group click].
+        /// </summary>
         public event EventHandler DeleteGroupClick;
 
     }
 
+    /// <summary>
+    /// Event argument for adding new filter
+    /// </summary>
     public class AddFilterArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the name of the entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the entity type.
+        /// </value>
         public string EntityTypeName { get; set; }
     }
 }
