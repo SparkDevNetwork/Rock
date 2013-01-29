@@ -25,7 +25,7 @@ delete from [BlockType] where [Guid] = '89315EBC-D4BD-41E6-B1F1-929D19E66608'
                 
 delete from [Block] where [Guid] = '09DC13AF-8BF8-4A65-B3DF-77F17C5650D6'
 delete from [BlockType] where [Guid] = 'FEE08A28-B774-4294-9F77-697FE66CA5B5'
-" 
+"
                 );
 
             AddPage( "BBD61BB9-7BE0-4F16-9615-91D38F3AE9C9", "Group Role Detail", "", "Default", "29BAFA8E-F05A-4468-B2CE-473EEDE7C532" );
