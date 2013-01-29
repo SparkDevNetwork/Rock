@@ -5,6 +5,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock.Field;
 using Rock.Model;
@@ -38,7 +40,7 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            FilterComparisonType comparisonType = FilterComparisonType.None;
+            FilterComparisonType comparisonType = FilterComparisonType.StartsWith;
             string value = string.Empty;
 
             string[] options = selection.Split( '|' );

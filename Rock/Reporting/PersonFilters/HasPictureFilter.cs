@@ -39,9 +39,9 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            bool hasPicture = false;
+            bool hasPicture = true;
             if (!Boolean.TryParse(selection, out hasPicture))
-                hasPicture = false;
+                hasPicture = true;
 
             if (hasPicture)
             {
@@ -54,49 +54,50 @@ namespace Rock.Reporting.PersonFilter
         }
 
         /// <summary>
-        /// Gets the selection controls
+        /// Creates the child controls.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        /// <param name="selection">The selection.</param>
-        public override void AddControls( Control parentControl, bool setSelection, string selection )
+        /// <returns></returns>
+        public override Control[] CreateChildControls()
         {
-            parentControl.Controls.Add( new LiteralControl( this.Title + " " ) );
-
             CheckBox cb = new CheckBox();
-            cb.ID = parentControl.ID + "_cb";
-            parentControl.Controls.Add( cb );
+            cb.Checked = true;
+            return new Control[1] { cb };
+        }
 
-            cb.Text = "Yes";
-
-            if ( setSelection )
-            {
-                bool hasPicture = false;
-                if ( !Boolean.TryParse( selection, out hasPicture ) )
-                    hasPicture = false;
-
-                cb.Checked = hasPicture;
-            }
+        /// <summary>
+        /// Renders the controls.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        {
+            writer.Write( this.Title + " " );
+            controls[0].RenderControl( writer );
         }
 
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
+        /// <param name="controls"></param>
         /// <returns></returns>
-        public override string GetSelection( Control parentControl )
+        public override string GetSelection( Control[] controls )
         {
-            foreach ( Control control in parentControl.Controls )
-            {
-                if ( control is CheckBox )
-                {
-                    return ( (CheckBox)control ).Checked.ToString();
-                }
-            }
-
-            return string.Empty;
+            return ( (CheckBox)controls[0] ).Checked.ToString();
         }
 
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public override void SetSelection( Control[] controls, string selection )
+        {
+            bool hasPicture = true;
+            if ( !Boolean.TryParse( selection, out hasPicture ) )
+                hasPicture = true;
+
+            ( (CheckBox)controls[0] ).Checked = hasPicture;
+        }
 
         /// <summary>
         /// Gets the expression.

@@ -383,6 +383,9 @@
     <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
     <Compile Include="Reporting\PersonFilters\GenderFilter.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterGroup.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />

@@ -44,35 +44,67 @@ namespace Rock.Reporting.PersonFilter
         }
 
         /// <summary>
-        /// Controls this instance.
+        /// Creates the child controls.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
-        /// <param name="selection">The selection.</param>
-        public override void AddControls( Control parentControl, bool setSelection, string selection )
+        /// <returns></returns>
+        public override Control[] CreateChildControls()
         {
-            parentControl.Controls.Add( new LiteralControl( this.Title + " " ) );
-
             RadioButtonList rbl = new RadioButtonList();
-            rbl.ID = parentControl.ID + "_rbl";
-            parentControl.Controls.Add( rbl );
-
+            rbl.RepeatLayout = RepeatLayout.Flow;
+            rbl.RepeatDirection = RepeatDirection.Horizontal;
             rbl.Items.Add( new ListItem( "Male", "Male" ) );
             rbl.Items.Add( new ListItem( "Female", "Female" ) );
+            rbl.SelectedValue = "Male";
 
-            if ( setSelection )
-            {
-                if ( selection == "Male" )
-                {
-                    rbl.Items[0].Selected = true;
-                }
-                else
-                {
-                    rbl.Items[1].Selected = true;
-                }
-            }
+            return new Control[1] { rbl };
         }
 
+        /// <summary>
+        /// Renders the controls.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="controls">The controls.</param>
+        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        {
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Label
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( this.Title + " " );
+            writer.RenderEndTag();
+
+            // Controls
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            controls[0].RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Gets the selection.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <returns></returns>
+        public override string GetSelection( Control[] controls )
+        {
+            return ( (RadioButtonList)controls[0] ).SelectedValue;
+        }
+
+        /// <summary>
+        /// Sets the selection.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <param name="selection">The selection.</param>
+        public override void SetSelection( Control[] controls, string selection )
+        {
+            var rbl = (RadioButtonList)controls[0];
+            rbl.Items[0].Selected = selection != "Female";
+            rbl.Items[1].Selected = selection == "Female";
+        }
         /// <summary>
         /// Gets the expression.
         /// </summary>
