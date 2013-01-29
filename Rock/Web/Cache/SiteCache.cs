@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using System.Web;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -64,7 +64,50 @@ namespace Rock.Web.Cache
         /// <value>
         /// The theme.
         /// </value>
-        public string Theme { get; set; }
+        public string Theme
+        {
+            get
+            {
+                var httpContext = HttpContext.Current;
+                if ( httpContext != null )
+                {
+                    var request = httpContext.Request;
+                    if ( request != null )
+                    {
+                        string cookieName = SiteCache.CacheKey( this.Id ) + ":theme";
+                        HttpCookie cookie = request.Cookies[cookieName];
+
+                        string theme = request["theme"];
+                        if ( !string.IsNullOrEmpty( theme ) )
+                        {
+                            if ( cookie == null )
+                            {
+                                cookie = new HttpCookie( cookieName, theme );
+                            }
+                            else
+                            {
+                                cookie.Value = theme;
+                            }
+                            httpContext.Response.Cookies.Set( cookie );
+
+                            return theme;
+                        }
+
+                        if ( cookie != null )
+                        {
+                            return cookie.Value;
+                        }
+                    }
+                }
+
+                return _theme;
+            }
+            set
+            {
+                _theme = value;
+            }
+        }
+        private string _theme = string.Empty;
 
         /// <summary>
         /// Gets or sets the default page id.
