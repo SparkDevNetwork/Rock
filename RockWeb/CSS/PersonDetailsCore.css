@@ -19,7 +19,7 @@ a.highlight:hover
 /* block global */
 #person-profile 
 {
-    margin-top: -18px;   
+    margin-top: -12px;   
 }
 
 /* left column */
@@ -441,7 +441,8 @@ section.person-notes div.person-notes-details
     clear: both;
 }
 
-section.person-notes div.note-container-top 
+// start end
+xxsection.person-notes div.note-container-top 
 {
     height: 20px;
     box-shadow: 0 10px 10px -10px #e6e6e6 inset; 
@@ -450,7 +451,7 @@ section.person-notes div.note-container-top
     margin-bottom: -20px;
 }
 
-section.person-notes div.note-container-bottom 
+xxsection.person-notes div.note-container-bottom 
 {
     height: 20px;
     box-shadow: 0 -10px 10px -10px #e6e6e6 inset; 
@@ -460,6 +461,8 @@ section.person-notes div.note-container-bottom
     bottom: 0;
     width: 100%;
 }
+
+// end end
 
 section.person-notes div.note-container
 {
