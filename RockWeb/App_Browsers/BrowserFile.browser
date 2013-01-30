@@ -1,0 +1,7 @@
+﻿<browsers>
+    <browser refID="Default">
+        <controlAdapters>
+            <adapter controlType="System.Web.UI.WebControls.RadioButtonList" adapterType="Rock.Web.UI.Adapters.RadioButtonListAdapter, Rock"/>
+        </controlAdapters>
+    </browser>
+</browsers>
