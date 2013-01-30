@@ -59,7 +59,11 @@ namespace Rock.Web.UI.Controls
                 }});
             }},
             minLength: 2,
-            appendTo: 'div.filter-search'
+            appendTo: 'div.smart-search',
+            messages: {{
+              noResults: function () {{ }},
+              results: function () {{ }}
+            }}
         }});
 
         $('input#{0}').keyup(function(event){{
