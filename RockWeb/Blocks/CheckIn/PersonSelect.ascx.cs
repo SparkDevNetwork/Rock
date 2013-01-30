@@ -53,11 +53,8 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            foreach ( var familyMember in family.People )
-                            {
-                                lbMembers.Items.Add( new ListItem( familyMember.ToString(), familyMember.Person.Id.ToString() ) );
-                            }
-
+                            rSelection.DataSource = family.People;
+                            rSelection.DataBind();
                         }
                     }
                     else
@@ -68,22 +65,19 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                if ( lbMembers.SelectedItem != null )
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
                 {
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+                    int id = Int32.Parse( e.CommandArgument.ToString() );
+                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
+                    if ( familyMember != null )
                     {
-                        int id = Int32.Parse( lbMembers.SelectedItem.Value );
-                        var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-                        if ( familyMember != null )
-                        {
-                            familyMember.Selected = true;
-                            ProcessSelection();
-                        }
+                        familyMember.Selected = true;
+                        ProcessSelection();
                     }
                 }
             }
