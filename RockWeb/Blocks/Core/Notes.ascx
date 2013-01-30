@@ -44,12 +44,12 @@
                 </div>
             </div>
             <div class="viewport">
-                <div class="note-container-top"></div>
+ 
                 <div class="note-container overview" >
                     <asp:PlaceHolder ID="phNotes" runat="server"></asp:PlaceHolder>
                     <asp:Xml ID="xmlNotes" runat="server"></asp:Xml>
                 </div>
-                <div class="note-container-bottom"></div>
+
             </div>
         </div>
 
