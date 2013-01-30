@@ -266,6 +266,10 @@
     <Compile Include="Migrations\201301292308074_ListDetailSweep03.Designer.cs">
       <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301301954199_Report.cs" />
+    <Compile Include="Migrations\201301301954199_Report.Designer.cs">
+      <DependentUpon>201301301954199_Report.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -297,6 +301,8 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
@@ -308,6 +314,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\ReportFilter.cs" />
+    <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
@@ -379,6 +387,16 @@
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Controls\PersonPicker.cs" />
+    <Compile Include="Reporting\FilterComponent.cs" />
+    <Compile Include="Reporting\FilterContainer.cs" />
+    <Compile Include="Reporting\PersonFilters\GroupTypeAttendanceFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\GenderFilter.cs" />
+    <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterGroup.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
@@ -974,6 +992,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301292308074_ListDetailSweep03.resx">
       <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301301954199_Report.resx">
+      <DependentUpon>201301301954199_Report.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
