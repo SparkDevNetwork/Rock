@@ -152,6 +152,21 @@ namespace Rock.Tests.Fakes
             return true;
         }
 
+        public IEnumerable<EntityType> SqlQuery( string sql, params object[] parameters )
+        {
+            throw new NotImplementedException();
+        }
+
+        public System.Collections.IEnumerable SqlQuery( Type elementType, string sql, params object[] parameters )
+        {
+            throw new NotImplementedException();
+        }
+
+        public int ExecuteSqlCommand( string sql, params object[] parameters )
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetConfigurationValue( string key, string value )
         {
         }
