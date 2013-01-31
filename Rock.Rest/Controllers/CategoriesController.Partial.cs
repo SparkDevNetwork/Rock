@@ -100,7 +100,7 @@ namespace Rock.Rest.Controllers
             var qryHasChildrenCategory = from x in Get().Select( a => a.ParentCategoryId )
                                          where resultIds.Contains( x.Value )
                                          select x.Value;
-            
+
             List<int> qryHasChildrenList = qryHasChildrenCategory.ToList();
 
             IQueryable<int?> entityItemQuery = null;
@@ -113,12 +113,16 @@ namespace Rock.Rest.Controllers
 
             foreach ( var g in categoryItemList )
             {
-                g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
-                if ( !g.HasChildren )
+                if ( g.EntityTypeName.Equals( typeof( Category ).Name ) )
                 {
-                    if (entityItemQuery != null)
+                    g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
+                    if ( !g.HasChildren )
                     {
-                        g.HasChildren = entityItemQuery.Any(a => (a ?? 0) == g.Id);
+
+                        if ( entityItemQuery != null )
+                        {
+                            g.HasChildren = entityItemQuery.Any( a => ( a ?? 0 ) == g.Id );
+                        }
                     }
                 }
             }
