@@ -5,10 +5,11 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-
 using Rock.Model;
 
 namespace Rock.Data
@@ -172,10 +173,72 @@ namespace Rock.Data
         bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages);
 
         /// <summary>
+        /// Creates a raw query that will return entities
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        IEnumerable<T> ExecuteQuery( string query, params object[] parameters );
+
+        /// <summary>
         /// Sets the configuration value.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         void SetConfigurationValue( string key, string value );
     }
+
+    /// <summary>
+    /// Repository interface for non entity specific methods
+    /// </summary>
+    public interface IRepository
+    {
+        /// <summary>
+        /// Creates a raw query that will return elements of the given type.  The
+        /// type can be any type that has properties that match the names of the columns
+        /// returned from the query, or can be a simple primitive type. The type does
+        /// not have to be an entity type. 
+        /// </summary>
+        /// <param name="elementType">Type of the element.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        IEnumerable ExecuteQuery( Type elementType, string query, params object[] parameters );
+
+        /// <summary>
+        /// Gets a data set.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters );
+
+        /// <summary>
+        /// Gets a data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters );
+
+        /// <summary>
+        /// Gets a data reader.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters );
+
+        /// <summary>
+        /// Executes a command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        int ExecuteCommand( string command, params object[] parameters );
+    }
+
 }
