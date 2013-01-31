@@ -256,6 +256,10 @@
     <Compile Include="Migrations\201301301954199_Report.Designer.cs">
       <DependentUpon>201301301954199_Report.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301310052455_WorkflowUI01.cs" />
+    <Compile Include="Migrations\201301310052455_WorkflowUI01.Designer.cs">
+      <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -981,6 +985,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301301954199_Report.resx">
       <DependentUpon>201301301954199_Report.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301310052455_WorkflowUI01.resx">
+      <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
