@@ -48,7 +48,7 @@ public partial class SiteMap : RockBlock
 
             foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                string childNodeHtml = "<li>" + childPage.Name + Environment.NewLine;
+                string childNodeHtml = string.Format( "<li><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, RockPage.BuildUrl(childPage.Id, new Dictionary<string,string>()) );
                 if ( childPage.Blocks.Count > 0 )
                 {
                     childNodeHtml += "<ul>";
