@@ -7,15 +7,16 @@ DECLARE
 	@lastName nvarchar(50),
 	@email nvarchar(75),
 	@phoneNumber decimal,
- 
+
 	@year int,
 	@month int,
 	@day int,
-	@personCounter int = 0,  
+	@personCounter int = 0, 
 	@maxPerson int = 99999
 
 begin
 
+begin transaction
 while @personCounter < @maxPerson
 	begin
 		set @firstName = 'FirstName' + CONVERT(nvarchar(100), ROUND(rand() * 2000, 0));
@@ -34,5 +35,9 @@ while @personCounter < @maxPerson
 
 		set @personCounter += 1;
 	end
+commit transaction
+
+
 
 end
+
