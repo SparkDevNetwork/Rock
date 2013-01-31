@@ -547,6 +547,7 @@ namespace RockWeb.Blocks.Administration
             if ( !marketingCampaignAdId.Equals( 0 ) )
             {
                 marketingCampaignAd = new MarketingCampaignAdService().Get( marketingCampaignAdId );
+                marketingCampaignAd.LoadAttributes();
             }
             else
             {
