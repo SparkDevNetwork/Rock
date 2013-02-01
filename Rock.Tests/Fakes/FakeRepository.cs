@@ -137,17 +137,7 @@ namespace Rock.Tests.Fakes
             return true;
         }
 
-        public IEnumerable<T> SqlQuery( string sql, params object[] parameters )
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Collections.IEnumerable SqlQuery( Type elementType, string sql, params object[] parameters )
-        {
-            throw new NotImplementedException();
-        }
-
-        public int ExecuteSqlCommand( string sql, params object[] parameters )
+        public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
             throw new NotImplementedException();
         }
@@ -155,6 +145,6 @@ namespace Rock.Tests.Fakes
         public void SetConfigurationValue( string key, string value )
         {
         }
-    
+
     }
 }
