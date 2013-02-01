@@ -3,15 +3,14 @@
 <asp:UpdatePanel ID="upNotes" runat="server">
 <ContentTemplate>
 
-<div class="span8 person-notes-container">
-    <section id="person-notes" class="person-notes scroll-container">
+<div class="span8 person-notes scroll-container">
 
-        <header class="group">
+        <header class="clearfix">
             <h4><asp:Literal ID="lTitle" runat="server"></asp:Literal></h4>
-            <a id="note-add" class="note-add btn"><i class="icon-plus"></i></a>
+            <a class="note-add btn btn-small"><i class="icon-plus"></i></a>
         </header>
                     
-        <div id="note-entry" style="display: none;">
+        <div class="note-entry" style="display: none;">
             <label>Note</label>
             <asp:TextBox ID="tbNewNote" runat="server" TextMode="MultiLine"></asp:TextBox>
  
@@ -53,7 +52,6 @@
             </div>
         </div>
 
-    </section>
 </div>
 
 </ContentTemplate>
