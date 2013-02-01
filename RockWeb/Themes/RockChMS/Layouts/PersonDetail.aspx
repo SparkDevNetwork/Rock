@@ -7,7 +7,6 @@
     {
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
-        AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
     }
@@ -84,7 +83,7 @@
 <%-- Content Area --%>
                     <div id="person-profile" class="row-fluid">
                         <div class="span3">
-                            <div class="bio-wrap group">
+                            <div class="bio-wrap clearfix">
                                 <Rock:Zone ID="Bio" runat="server"/>
                                 <aside class="bio-details">
                                     <Rock:Zone ID="BioDetails" runat="server"/>
