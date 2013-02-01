@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
     Sys.Application.add_load(function () {{
         $('#{0} tbody').sortable({{
             helper: fixHelper,
-            handle: '.grid-icon-cell.reorder',
+            handle: '.icon-reorder',
             start: function(event, ui) {{
                 var start_pos = ui.item.index();
                 ui.item.data('start_pos', start_pos);
