@@ -127,7 +127,6 @@ namespace Rock.Web.UI.Controls
             }});
 
             $('#{3}').click( function(){{
-                alert('this works');
                 $(this).hide('fast');
                 $('#{1}').val('0');
                 $('#{2}').attr('src','')
