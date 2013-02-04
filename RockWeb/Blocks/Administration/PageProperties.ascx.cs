@@ -133,6 +133,8 @@ namespace RockWeb.Blocks.Administration
                 tbPageRoute.Text = string.Join(",", page.PageRoutes.Select( route => route.Route ).ToArray());
                 imgIcon.ImageId = page.IconFileId;
 
+                // Add enctype attribute to page's <form> tag to allow file upload control to function
+                Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
             }
 
             base.OnLoad( e );
@@ -261,8 +263,11 @@ namespace RockWeb.Blocks.Administration
 
         protected void lbImport_Click( object sender, EventArgs e )
         {
-            var packageService = new PackageService();
-            packageService.ImportPage( fuImport.FileBytes );
+            if ( fuImport.PostedFile != null )
+            {
+                var packageService = new PackageService();
+                packageService.ImportPage( fuImport.FileBytes, fuImport.FileName );
+            }
 
             // TODO: Display some kind of feedback to the admin notifying them of status, success, etc?
         }
