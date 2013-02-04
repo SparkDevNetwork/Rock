@@ -110,8 +110,31 @@ namespace Rock.Web.UI.Controls
                 ( Required ? " required" : "" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            label.AddCssClass( "control-label" );
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             label.RenderControl( writer );
+
+            if ( Help.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "help" );
+                writer.AddAttribute( "href", "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.AddAttribute( "class", "icon-question-sign" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "alert alert-info" );
+                writer.AddAttribute( "style", "display:none" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag( HtmlTextWriterTag.Small );
+                writer.Write( Help.Trim() );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
+
+            writer.RenderEndTag();
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -135,14 +158,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
-
-            if ( Help.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "alert alert-info" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( Help.Trim() );
                 writer.RenderEndTag();
             }
 

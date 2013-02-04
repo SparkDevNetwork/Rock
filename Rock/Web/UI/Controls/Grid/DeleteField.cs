@@ -3,12 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -41,7 +42,6 @@ namespace Rock.Web.UI.Controls
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
             this.ParentGrid = control as Grid;
-
             return base.Initialize( sortingEnabled, control );
         }
 

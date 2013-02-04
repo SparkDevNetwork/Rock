@@ -122,8 +122,19 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            label.AddCssClass( "control-label" );
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             label.RenderControl( writer );
+
+            if ( Help.Trim() != string.Empty )
+            {
+                HelpBlock helpBlock = new HelpBlock();
+                helpBlock.Text = Help.Trim();
+                helpBlock.RenderControl( writer );
+            }
+
+            writer.RenderEndTag();
 
             if ( Items.Count == 0 )
             {
@@ -153,14 +164,19 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.RenderControl( writer );
+
             if ( Help.Trim() != string.Empty )
             {
-                writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
-                writer.Write( Help.Trim() );
-                writer.RenderEndTag();
+                HelpBlock helpBlock = new HelpBlock();
+                helpBlock.Text = Help.Trim();
+                helpBlock.RenderControl( writer );
             }
 
+            writer.RenderEndTag();
             //writer.RenderEndTag();
 
             writer.RenderEndTag();
