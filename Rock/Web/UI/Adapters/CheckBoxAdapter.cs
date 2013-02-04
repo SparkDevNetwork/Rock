@@ -1,0 +1,67 @@
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.Adapters;
+
+namespace Rock.Web.UI.Adapters
+{
+    /// <summary>
+    /// Control adapter for checkbox
+    /// </summary>
+    public class CheckBoxAdapter : WebControlAdapter
+    {
+        /// <summary>
+        /// Creates the beginning tag for the Web control in the markup that is transmitted to the target browser.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
+        protected override void RenderBeginTag( System.Web.UI.HtmlTextWriter writer )
+        {
+        }
+
+        /// <summary>
+        /// Creates the ending tag for the Web control in the markup that is transmitted to the target browser.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
+        protected override void RenderEndTag( System.Web.UI.HtmlTextWriter writer )
+        {
+        }
+
+        /// <summary>
+        /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
+        protected override void RenderContents( System.Web.UI.HtmlTextWriter writer )
+        {
+            CheckBox cb = Control as CheckBox;
+            if ( cb != null )
+            {
+                writer.WriteLine();
+                writer.AddAttribute( "class", "checkbox inline" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
+                writer.AddAttribute( "id", cb.ClientID );
+                writer.AddAttribute( "type", "checkbox" );
+                writer.AddAttribute( "name", cb.UniqueID );
+                if ( cb.Checked )
+                {
+                    writer.AddAttribute( "checked", "checked" );
+                }
+                writer.RenderBeginTag( HtmlTextWriterTag.Input );
+                writer.RenderEndTag();
+
+                writer.Write( cb.Text );
+
+                writer.RenderEndTag();
+
+                if ( Page != null && Page.ClientScript != null )
+                {
+                    Page.ClientScript.RegisterForEventValidation( cb.UniqueID );
+                }
+            }
+        }
+    }
+}
