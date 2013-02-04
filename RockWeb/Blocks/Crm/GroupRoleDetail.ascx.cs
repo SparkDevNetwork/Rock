@@ -177,9 +177,9 @@ namespace RockWeb.Blocks.Crm
             groupRole.Name = tbName.Text;
             groupRole.Description = tbDescription.Text;
             groupRole.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
-            groupRole.SortOrder = tbSortOrder.TextAsInteger();
-            groupRole.MinCount = tbMinCount.TextAsInteger();
-            groupRole.MaxCount = tbMaxCount.TextAsInteger();
+            groupRole.SortOrder = tbSortOrder.Text.AsInteger();
+            groupRole.MinCount = tbMinCount.Text.AsInteger();
+            groupRole.MaxCount = tbMaxCount.Text.AsInteger();
 
             // validate Control values
             if ( !tbSortOrder.IsValid )

@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.Administration
 
             marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
             marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
-            marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
+            marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
             marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
             if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
             {

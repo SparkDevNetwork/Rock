@@ -16,11 +16,16 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:HelpBlock runat=server></{0}:HelpBlock>" )]
     public class HelpBlock : Literal
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( System.EventArgs e )
         {
-            string script = @"
-Sys.Application.add_load(function () {
+            base.OnInit( e );
 
+            string script = @"
+$(document).ready(function() {
     $('a.help').click(function () {
         $(this).siblings('div.alert-info').slideToggle(function(){
             $('.scroll-container').each(function() {
@@ -30,8 +35,14 @@ Sys.Application.add_load(function () {
     });
 });
 ";
-            this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), "help-block", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "help-block", script, true );
+
         }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Text.Trim() != string.Empty )
