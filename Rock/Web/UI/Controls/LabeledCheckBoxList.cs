@@ -19,8 +19,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:LabeledCheckBoxList runat=server></{0}:LabeledCheckBoxList>" )]
     public class LabeledCheckBoxList : CheckBoxList, ILabeledControl
     {
-        private Label label;
-        private Label lblNoItemsText;
+        private Literal label;
+        private Literal lblNoItemsText;
+        private HelpBlock helpBlock;
 
         /// <summary>
         /// Gets or sets the help tip.
@@ -63,12 +64,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["Help"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return helpBlock.Text;
             }
             set
             {
-                ViewState["Help"] = value;
+                EnsureChildControls();
+                helpBlock.Text = value;
             }
         }
 
@@ -105,35 +107,29 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            label = new Label();
-            label.AssociatedControlID = this.ID;
+            label = new Literal();
             Controls.Add( label );
 
-            lblNoItemsText = new Label { Text = None.TextHtml };
+            lblNoItemsText = new Literal { Text = None.TextHtml };
             Controls.Add( lblNoItemsText );
+
+            helpBlock = new HelpBlock();
+            Controls.Add( helpBlock );
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             label.RenderControl( writer );
-
-            if ( Help.Trim() != string.Empty )
-            {
-                HelpBlock helpBlock = new HelpBlock();
-                helpBlock.Text = Help.Trim();
-                helpBlock.RenderControl( writer );
-            }
-
+            helpBlock.RenderControl( writer );
             writer.RenderEndTag();
 
             if ( Items.Count == 0 )
@@ -146,10 +142,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "controls checkbox" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            //writer.AddAttribute( "class", "checkbox" );
-            //writer.RenderBeginTag( HtmlTextWriterTag.Label );
-
-            base.Render( writer );
+            base.RenderControl( writer );
 
             writer.RenderEndTag();
 
@@ -163,21 +156,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
             }
-
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.RenderControl( writer );
-
-            if ( Help.Trim() != string.Empty )
-            {
-                HelpBlock helpBlock = new HelpBlock();
-                helpBlock.Text = Help.Trim();
-                helpBlock.RenderControl( writer );
-            }
-
-            writer.RenderEndTag();
-            //writer.RenderEndTag();
 
             writer.RenderEndTag();
         }

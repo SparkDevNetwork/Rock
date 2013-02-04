@@ -17,14 +17,19 @@ namespace Rock.Web.UI.Controls
     public class LabeledTextBox : TextBox, ILabeledControl
     {
         /// <summary>
-        /// 
+        /// The label
         /// </summary>
         protected Literal label;
 
         /// <summary>
-        /// 
+        /// The help block
         /// </summary>
-        protected RequiredFieldValidator requiredFieldValidator;
+        protected HelpBlock helpBlock;
+
+        /// <summary>
+        /// The required field validator
+        /// </summary>
+        protected RequiredFieldValidator requiredValidator;
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
@@ -94,12 +99,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["Help"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return helpBlock.Text;
             }
             set
             {
-                ViewState["Help"] = value;
+                EnsureChildControls();
+                helpBlock.Text = value;
             }
         }
 
@@ -130,6 +136,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || requiredValidator.IsValid;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -139,25 +159,27 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             label = new Literal();
-
-            requiredFieldValidator = new RequiredFieldValidator();
-            requiredFieldValidator.ID = this.ID + "_rfv";
-            requiredFieldValidator.ControlToValidate = this.ID;
-            requiredFieldValidator.Display = ValidatorDisplay.Dynamic;
-            requiredFieldValidator.CssClass = "help-inline";
-            requiredFieldValidator.Enabled = false;
-
             Controls.Add( label );
-            Controls.Add( requiredFieldValidator );
+
+            requiredValidator = new RequiredFieldValidator();
+            requiredValidator.ID = this.ID + "_rfv";
+            requiredValidator.ControlToValidate = this.ID;
+            requiredValidator.Display = ValidatorDisplay.Dynamic;
+            requiredValidator.CssClass = "help-inline";
+            requiredValidator.Enabled = false;
+            Controls.Add( requiredValidator );
+
+            helpBlock = new HelpBlock();
+            Controls.Add( helpBlock );
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
-            bool isValid = !Required || requiredFieldValidator.IsValid;
+            bool isValid = !Required || requiredValidator.IsValid;
 
             writer.AddAttribute( "class", "control-group" +
                 ( isValid ? "" : " error" ) +
@@ -166,29 +188,24 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             label.RenderControl( writer );
-
-            if ( Help.Trim() != string.Empty )
-            {
-                HelpBlock helpBlock = new HelpBlock();
-                helpBlock.Text = Help.Trim();
-                helpBlock.RenderControl( writer );
-            }
+            helpBlock.RenderControl( writer );
 
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.Render( writer );
+            base.RenderControl( writer );
 
             if ( Required )
             {
-                requiredFieldValidator.Enabled = true;
-                requiredFieldValidator.ErrorMessage = LabelText + " is Required.";
-                requiredFieldValidator.RenderControl( writer );
+                requiredValidator.Enabled = true;
+                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.RenderControl( writer );
             }
+
+            RenderDataValidator( writer );
 
             if ( Tip.Trim() != string.Empty )
             {
@@ -207,12 +224,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Method for inheriting classes to use to render just the base control
+        /// Renders any data validator.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        protected void RenderBase( HtmlTextWriter writer )
+        protected virtual void RenderDataValidator( HtmlTextWriter writer )
         {
-            base.Render( writer );
         }
 
         /// <summary>
