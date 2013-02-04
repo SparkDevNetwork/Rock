@@ -46,10 +46,10 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( "class", "checkbox inline" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
-                    string itemId = string.Format( "{0}_{1}", cbl.ClientID, i++ );
+                    string itemId = string.Format( "{0}_{1}", cbl.ClientID, i );
                     writer.AddAttribute( "id", itemId );
                     writer.AddAttribute( "type", "checkbox" );
-                    writer.AddAttribute( "name", cbl.UniqueID );
+                    writer.AddAttribute( "name", string.Format( "{0}${1}", cbl.UniqueID, i++ ) );
                     writer.AddAttribute( "value", li.Value );
                     if ( li.Selected )
                     {
