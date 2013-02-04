@@ -96,19 +96,49 @@ namespace Rock.Services.NuGet
         /// Imports the page.
         /// </summary>
         /// <param name="uploadedPackage">Byte array of the uploaded package</param>
-        public void ImportPage( byte[] uploadedPackage )
+        /// <param name="fileName">File name of uploaded package</param>
+        public void ImportPage( byte[] uploadedPackage, string fileName )
         {
             // Write .nupkg file to the PackageStaging folder...
+            var path = Path.Combine( HttpContext.Current.Server.MapPath( "~/App_Data/PackageStaging" ), fileName );
+            using ( var file = new FileStream( path, FileMode.Create ) )
+            {
+                file.Write( uploadedPackage, 0, uploadedPackage.Length );
+            }
+
+            var package = new ZipPackage( path );
+            var packageFiles = package.GetFiles();
+            var exportFile = packageFiles.FirstOrDefault( f => f.Path.Contains( "export.json" ) );
+
+            if ( exportFile != null )
+            {
+                // TODO: Consider busting this `if` block out into a method call
+                string json;
+
+                using ( var stream = exportFile.GetStream() )
+                {
+                    json = stream.ReadToEnd();
+                }
+
+                var pageService = new PageService();
+                var page = Page.FromJson( json );
+
+                // TODO: Validate Page object, strip ID's and Guid's, write to DB, etc
+            }
+
 
             // Validate package...
-            // * Does it have any executable .dll files?
-            // * Does it have code files that need to go on the file system?
+            // * Does it have any executable .dll files? Should those go to the bin folder, or into a plugins directory to be loaded via MEF?
+            // * Does it have code or asset files that need to go on the file system?
             // * Does it have an export.json file? Should that be a requirement?
 
             // If export.json is present, deserialize data
             // * Are there any new BlockTypes to register? If so, save them first.
             // * Scrub out any `Id` and `Guid` fields that came over from export
             // * Save page data via PageService
+
+            // Clean up PackageStaging folder.
+            // Once data is saved, do we want to save the .nuspec file for later?
         }
 
         /// <summary>
