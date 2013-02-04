@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        protected Label label;
+        protected Literal label;
 
         /// <summary>
         /// 
@@ -138,8 +138,7 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Label();
-            label.AssociatedControlID = this.ID;
+            label = new Literal();
 
             requiredFieldValidator = new RequiredFieldValidator();
             requiredFieldValidator.ID = this.ID + "_rfv";
@@ -165,8 +164,19 @@ namespace Rock.Web.UI.Controls
                 ( Required ? " required" : "" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            label.AddCssClass( "control-label" );
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             label.RenderControl( writer );
+
+            if ( Help.Trim() != string.Empty )
+            {
+                HelpBlock helpBlock = new HelpBlock();
+                helpBlock.Text = Help.Trim();
+                helpBlock.RenderControl( writer );
+            }
+
+            writer.RenderEndTag();
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -188,14 +198,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
                 writer.Write( Tip.Trim() );
                 writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
-
-            if ( Help.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "alert alert-info" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( Help.Trim() );
                 writer.RenderEndTag();
             }
 

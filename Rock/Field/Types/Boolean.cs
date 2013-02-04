@@ -64,7 +64,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            LabeledCheckBox checkBox = new LabeledCheckBox();
+            CheckBox checkBox = new CheckBox();
             return checkBox;
         }
 
@@ -76,8 +76,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is LabeledCheckBox )
-                return ( (LabeledCheckBox)control ).Checked.ToString();
+            if ( control != null && control is CheckBox )
+                return ( (CheckBox)control ).Checked.ToString();
             return null;
         }
 
@@ -89,8 +89,8 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is LabeledCheckBox )
-                ( (LabeledCheckBox)control ).Checked = string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value );
+            if ( control != null && control is CheckBox )
+                ( (CheckBox)control ).Checked = string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value );
         }
     }
 }
