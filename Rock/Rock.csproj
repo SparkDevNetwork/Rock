@@ -376,6 +376,10 @@
     <Compile Include="Model\Category.cs" />
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\HelpBlock.cs" />
     <Compile Include="Web\UI\Controls\PersonPicker.cs" />
     <Compile Include="Reporting\FilterComponent.cs" />
     <Compile Include="Reporting\FilterContainer.cs" />
