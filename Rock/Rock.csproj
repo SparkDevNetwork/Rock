@@ -276,7 +276,12 @@
     <Compile Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.Designer.cs">
       <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.cs" />
+    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.Designer.cs">
+      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1011,6 +1016,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.resx">
       <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302042346570_FixBlockLayoutData.resx">
+      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

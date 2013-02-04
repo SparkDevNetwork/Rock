@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class MarketingCampaignAdDisplay01 : RockMigration
+    public partial class MarketingCampaignAdDisplay01 : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
