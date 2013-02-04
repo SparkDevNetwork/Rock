@@ -26,6 +26,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.CssClass = "span1";
         }
 
         /// <summary>
