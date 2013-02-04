@@ -12,7 +12,7 @@ namespace Rock.Migrations
     /// <summary>
     /// Custom Migration methods
     /// </summary>
-    public abstract class RockMigration : DbMigration
+    public abstract class RockMigration_3 : DbMigration
     {
 
         #region Block Type Methods
@@ -283,18 +283,9 @@ namespace Rock.Migrations
         /// <param name="zone">The zone.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid )
+        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid)
         {
             var sb = new StringBuilder();
-            string layoutParam;
-            if ( string.IsNullOrWhiteSpace( layout ) )
-            {
-                layoutParam = "NULL";
-            }
-            else
-            {
-                layoutParam = string.Format( "'{0}'", layout );
-            }
 
             sb.Append( @"
                 DECLARE @PageId int
@@ -323,7 +314,7 @@ namespace Rock.Migrations
                 VALUES(
                     1,@PageId,'{5}',@BlockTypeId,'{1}',
                     {2},'{3}',0,
-                    {4})
+                    '{4}')
                 SET @BlockId = SCOPE_IDENTITY()
 ",
                     blockTypeGuid,
@@ -331,7 +322,7 @@ namespace Rock.Migrations
                     order,
                     name,
                     guid,
-                    layoutParam );
+                    layout);
 
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )

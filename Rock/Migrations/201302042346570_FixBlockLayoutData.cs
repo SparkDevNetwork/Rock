@@ -11,14 +11,14 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddDeceasedFlag : RockMigration_3
+    public partial class FixBlockLayoutData : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Person", "IsDeceased", c => c.Boolean());
+            Sql( @"update [Block] set [Layout] = null where [Layout] = ''" );
         }
         
         /// <summary>
@@ -26,7 +26,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.Person", "IsDeceased");
         }
     }
 }
