@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Reporting
         private void BindGrid()
         {
             gReport.Visible = true;
-            pnlError.Visible = false;
+            nbError.Visible = false;
 
             string query = GetAttributeValue( "Query" );
             if ( !string.IsNullOrWhiteSpace( query ) )
@@ -231,8 +231,11 @@ namespace RockWeb.Blocks.Reporting
                 catch ( System.Exception ex )
                 {
                     gReport.Visible = false;
-                    lError.Text = ex.Message;
-                    pnlError.Visible = true;
+                    phHtml.Visible = false;
+                    xmlContent.Visible = false;
+
+                    nbError.Text = ex.Message;
+                    nbError.Visible = true;
                 }
             }
         }
