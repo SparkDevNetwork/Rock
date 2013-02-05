@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class GroupViewer01 : RockMigration
+    public partial class GroupViewer01 : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

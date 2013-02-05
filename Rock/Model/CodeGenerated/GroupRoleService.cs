@@ -70,21 +70,34 @@ namespace Rock.Model
     public static class GroupRoleExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another GroupRole entity
+        /// Clones this GroupRole object to a new GroupRole object
         /// </summary>
-        public static void CopyPropertiesFrom( this GroupRole target, GroupRole source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static GroupRole Clone( this GroupRole source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.GroupTypeId = source.GroupTypeId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.SortOrder = source.SortOrder;
-            target.MaxCount = source.MaxCount;
-            target.MinCount = source.MinCount;
-            target.IsLeader = source.IsLeader;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as GroupRole;
+            }
+            else
+            {
+                var target = new GroupRole();
+                target.IsSystem = source.IsSystem;
+                target.GroupTypeId = source.GroupTypeId;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.SortOrder = source.SortOrder;
+                target.MaxCount = source.MaxCount;
+                target.MinCount = source.MinCount;
+                target.IsLeader = source.IsLeader;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

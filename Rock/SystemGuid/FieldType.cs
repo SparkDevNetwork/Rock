@@ -14,11 +14,6 @@ namespace Rock.SystemGuid
     public static class FieldType
     {
         /// <summary>
-        /// Text field type
-        /// </summary>
-        public static Guid TEXT { get { return new Guid( "9C204CD0-1233-41C5-818A-C5DA439445AA" ); } }
-
-        /// <summary>
         /// Boolean field type
         /// </summary>
         public static Guid BOOLEAN { get { return new Guid( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A" ); } }
@@ -31,6 +26,26 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Defined value field type
         /// </summary>
-        public static Guid DEFINEDVALUE { get { return new Guid( "59D5A94C-94A0-4630-B80A-BB25697D74C7" ); } }
+        public static Guid DEFINED_VALUE { get { return new Guid( "59D5A94C-94A0-4630-B80A-BB25697D74C7" ); } }
+
+        /// <summary>
+        /// Integer field type
+        /// </summary>
+        public static Guid INTEGER { get { return new Guid( "A75DFC58-7A1B-4799-BF31-451B2BBE38FF" ); } }
+
+        /// <summary>
+        /// Image field type
+        /// </summary>
+        public static Guid IMAGE { get { return new Guid( "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d" ); } }
+
+        /// <summary>
+        /// Single Select field type
+        /// </summary>
+        public static Guid SINGLE_SELECT { get { return new Guid( "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0" ); } }
+
+        /// <summary>
+        /// Text field type
+        /// </summary>
+        public static Guid TEXT { get { return new Guid( "9C204CD0-1233-41C5-818A-C5DA439445AA" ); } }
     }
 }

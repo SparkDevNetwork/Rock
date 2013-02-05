@@ -55,6 +55,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<PrayerRequest>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<WorkflowType>().Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );
@@ -70,22 +76,35 @@ namespace Rock.Model
     public static class CategoryExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Category entity
+        /// Clones this Category object to a new Category object
         /// </summary>
-        public static void CopyPropertiesFrom( this Category target, Category source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Category Clone( this Category source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.ParentCategoryId = source.ParentCategoryId;
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.Name = source.Name;
-            target.IconSmallFileId = source.IconSmallFileId;
-            target.IconLargeFileId = source.IconLargeFileId;
-            target.IconCssClass = source.IconCssClass;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Category;
+            }
+            else
+            {
+                var target = new Category();
+                target.IsSystem = source.IsSystem;
+                target.ParentCategoryId = source.ParentCategoryId;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Name = source.Name;
+                target.IconSmallFileId = source.IconSmallFileId;
+                target.IconLargeFileId = source.IconLargeFileId;
+                target.IconCssClass = source.IconCssClass;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

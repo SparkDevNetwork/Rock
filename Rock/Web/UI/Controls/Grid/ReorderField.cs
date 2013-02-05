@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell reorder";
+            this.HeaderStyle.CssClass = "span1";
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.Web.UI.Controls
     Sys.Application.add_load(function () {{
         $('#{0} tbody').sortable({{
             helper: fixHelper,
-            handle: '.grid-icon-cell.reorder',
+            handle: '.icon-reorder',
             start: function(event, ui) {{
                 var start_pos = ui.item.index();
                 ui.item.data('start_pos', start_pos);
@@ -95,7 +95,12 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl a = new HtmlGenericControl( "a" );
                 a.Attributes.Add( "href", "#" );
-                a.InnerText = "Reorder";
+                a.AddCssClass( "minimal" );
+                
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "icon-reorder" );
+                a.Controls.Add( buttonIcon );
+
                 cell.Controls.Add( a );
             }
         }

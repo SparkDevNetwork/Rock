@@ -3,11 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 using Rock.Attribute;
 using Rock.Model;
@@ -121,12 +119,12 @@ namespace Rock.CheckIn
                 var workflowType = workflowTypeService.Get( workflowTypeId );
                 if ( workflowType != null )
                 {
-                    if (CurrentWorkflow == null)
+                    if ( CurrentWorkflow == null )
                     {
                         CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name );
                     }
 
-                    CurrentWorkflow.SetAttributeValue("CheckInState", CurrentCheckInState.ToJson());
+                    CurrentWorkflow.SetAttributeValue( "CheckInState", CurrentCheckInState.ToJson() );
 
                     var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
                     if ( activityType != null )
@@ -144,8 +142,12 @@ namespace Rock.CheckIn
                     }
                     else
                     {
-                        throw new Exception( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
+                        errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
                     }
+                }
+                else
+                {
+                    errorMessages.Add( string.Format( "Invalid Workflow type Id", activityName ) );
                 }
 
             }

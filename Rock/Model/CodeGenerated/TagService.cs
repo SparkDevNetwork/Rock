@@ -58,20 +58,33 @@ namespace Rock.Model
     public static class TagExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Tag entity
+        /// Clones this Tag object to a new Tag object
         /// </summary>
-        public static void CopyPropertiesFrom( this Tag target, Tag source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Tag Clone( this Tag source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
-            target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.OwnerId = source.OwnerId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Tag;
+            }
+            else
+            {
+                var target = new Tag();
+                target.IsSystem = source.IsSystem;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
+                target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
+                target.Name = source.Name;
+                target.Order = source.Order;
+                target.OwnerId = source.OwnerId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

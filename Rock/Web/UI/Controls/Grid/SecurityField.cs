@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.ItemStyle.CssClass = "grid-icon-cell security";
+            this.HeaderStyle.CssClass = "span1";
         }
 
         /// <summary>
@@ -112,8 +112,13 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add( "class", "show-modal-iframe" );
+                aSecure.Attributes.Add( "class", "show-modal-iframe btn btn-mini" );
                 aSecure.Attributes.Add( "height", "500px" );
+
+                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                buttonIcon.Attributes.Add( "class", "icon-lock" );
+                aSecure.Controls.Add( buttonIcon );
+
                 aSecure.DataBinding += new EventHandler( aSecure_DataBinding );
             }
         }

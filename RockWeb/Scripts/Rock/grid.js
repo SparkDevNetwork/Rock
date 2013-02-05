@@ -5,6 +5,9 @@
             {
                 "label": "OK", "class": "btn-primary", "callback": function () {
                     var postbackJs = e.target.href;
+                    if (postbackJs == null) {
+                        postbackJs = e.target.parentElement.href;
+                    }
                     // need to do unescape because firefox might put %20 instead of spaces
                     postbackJs = unescape(postbackJs);
                     eval(postbackJs)

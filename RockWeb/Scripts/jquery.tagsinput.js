@@ -17,6 +17,7 @@
         + Added the ability to add a CSS class to the tags
         + Added ability to disable delete
         + Added autocomplete appendTo option
+        + Added autocomplete messages option
 */
 
 (function($) {
@@ -239,7 +240,11 @@
 	        comfortZone: 20,
 	        enableDelete: true,
 	        inputPadding: 6 * 2,
-            autoCompleteAppendTo: 'div.tag-wrap'
+	        autoCompleteAppendTo: 'div.tag-wrap',
+	        autoCompleteMessages: {
+	            noResults: function () { },
+	            results: function () { }
+	        }
     },options);
 
 		this.each(function() { 
@@ -304,7 +309,7 @@
 				});
 						
 				if (settings.autocomplete_url != undefined) {
-				    autocomplete_options = { source: settings.autocomplete_url, appendTo: settings.autoCompleteAppendTo };
+				    autocomplete_options = { source: settings.autocomplete_url, appendTo: settings.autoCompleteAppendTo, messages: settings.autoCompleteMessages };
 					for (attrname in settings.autocomplete) { 
 						autocomplete_options[attrname] = settings.autocomplete[attrname]; 
 					}

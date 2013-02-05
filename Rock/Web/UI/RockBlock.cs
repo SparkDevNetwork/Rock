@@ -338,6 +338,18 @@ namespace Rock.Web.UI
         //}
 
         /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public void SaveAttributeValues( int? personId )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SaveAttributeValues( personId );
+            }
+        }
+
+        /// <summary>
         /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
@@ -350,6 +362,19 @@ namespace Rock.Web.UI
                 return CurrentBlock.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Sets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SetAttributeValue( key, value );
+            }
         }
 
         /// <summary>
@@ -409,7 +434,21 @@ namespace Rock.Web.UI
 
             if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
-                Rock.Model.Page page = new PageService().Get( new Guid( pageGuid ) );
+                NavigateToPage( new Guid( pageGuid ), itemKey, itemKeyValue );
+            }
+        }
+
+        /// <summary>
+        /// Navigates to page.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void NavigateToPage( Guid pageGuid, string itemKey, int itemKeyValue )
+        {
+            if ( !pageGuid.Equals(Guid.Empty) )
+            {
+                Rock.Model.Page page = new PageService().Get( pageGuid );
                 if ( page != null )
                 {
                     if ( page.Guid.Equals( CurrentPage.Guid ) )

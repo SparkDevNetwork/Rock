@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -41,13 +40,12 @@ namespace Rock.Workflow.Action.CheckIn
                     var service = new GroupMemberService();
                     foreach ( var groupMember in service.GetByGroupId( family.Group.Id ) )
                     {
-                        var familyMember = family.FamilyMembers.Where( m => m.Person.Id == groupMember.PersonId).FirstOrDefault();
-                        if (familyMember == null)
+                        if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )
                         {
-                            familyMember = new CheckInPerson();
-                            familyMember.Person = new Person();
-                            familyMember.Person.CopyPropertiesFrom(groupMember.Person);
-                            family.FamilyMembers.Add(familyMember);
+                            var person = new CheckInPerson();
+                            person.Person = groupMember.Person.Clone( false );
+                            person.FamilyMember = true;
+                            family.People.Add( person );
                         }
                     }
 

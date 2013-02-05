@@ -354,7 +354,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table";
+            base.CssClass = "grid-table table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -474,7 +474,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i+1].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -606,7 +606,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
+            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
             UseAccessibleHeader = true;
 
@@ -649,7 +649,7 @@ namespace Rock.Web.UI.Controls
                 this.Actions.IsExcelExportEnabled = false;
 
                 this.RemoveCssClass( "table-bordered" );
-                this.RemoveCssClass( "table-stripped" );
+                this.RemoveCssClass( "table-striped" );
                 this.RemoveCssClass( "table-hover" );
                 this.RemoveCssClass( "table-full" );
                 this.AddCssClass( "table-condensed" );
@@ -660,7 +660,7 @@ namespace Rock.Web.UI.Controls
                 this.RemoveCssClass( "table-condensed" );
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
-                this.AddCssClass( "table-stripped" );
+                this.AddCssClass( "table-striped" );
                 this.AddCssClass( "table-hover" );
                 this.AddCssClass( "table-full" );
             }
@@ -795,6 +795,7 @@ namespace Rock.Web.UI.Controls
 
                 TableCell cell = new TableCell();
                 cell.ColumnSpan = this.Columns.Count;
+                cell.CssClass = "grid-footer";
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
@@ -1144,6 +1145,27 @@ namespace Rock.Web.UI.Controls
         /// The direction.
         /// </value>
         public System.Web.UI.WebControls.SortDirection Direction { get; set; }
+
+        /// <summary>
+        /// Gets the direction as an ASC or DESC string.
+        /// </summary>
+        /// <value>
+        /// The direction string.
+        /// </value>
+        public string DirectionString 
+        { 
+            get
+            {
+                if (Direction == SortDirection.Descending)
+                {
+                    return "DESC";
+                }
+                else
+                {
+                    return "ASC";
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the property name

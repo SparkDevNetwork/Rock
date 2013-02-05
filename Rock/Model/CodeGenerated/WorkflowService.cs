@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class WorkflowExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Workflow entity
+        /// Clones this Workflow object to a new Workflow object
         /// </summary>
-        public static void CopyPropertiesFrom( this Workflow target, Workflow source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Workflow Clone( this Workflow source, bool deepCopy )
         {
-            target.WorkflowTypeId = source.WorkflowTypeId;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Status = source.Status;
-            target.IsProcessing = source.IsProcessing;
-            target.ActivatedDateTime = source.ActivatedDateTime;
-            target.LastProcessedDateTime = source.LastProcessedDateTime;
-            target.CompletedDateTime = source.CompletedDateTime;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Workflow;
+            }
+            else
+            {
+                var target = new Workflow();
+                target.WorkflowTypeId = source.WorkflowTypeId;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Status = source.Status;
+                target.IsProcessing = source.IsProcessing;
+                target.ActivatedDateTime = source.ActivatedDateTime;
+                target.LastProcessedDateTime = source.LastProcessedDateTime;
+                target.CompletedDateTime = source.CompletedDateTime;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

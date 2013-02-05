@@ -58,15 +58,28 @@ namespace Rock.Model
     public static class PersonAccountExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PersonAccount entity
+        /// Clones this PersonAccount object to a new PersonAccount object
         /// </summary>
-        public static void CopyPropertiesFrom( this PersonAccount target, PersonAccount source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PersonAccount Clone( this PersonAccount source, bool deepCopy )
         {
-            target.PersonId = source.PersonId;
-            target.Account = source.Account;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PersonAccount;
+            }
+            else
+            {
+                var target = new PersonAccount();
+                target.PersonId = source.PersonId;
+                target.Account = source.Account;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

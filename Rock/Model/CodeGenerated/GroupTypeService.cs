@@ -68,27 +68,40 @@ namespace Rock.Model
     public static class GroupTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another GroupType entity
+        /// Clones this GroupType object to a new GroupType object
         /// </summary>
-        public static void CopyPropertiesFrom( this GroupType target, GroupType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static GroupType Clone( this GroupType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.GroupTerm = source.GroupTerm;
-            target.GroupMemberTerm = source.GroupMemberTerm;
-            target.DefaultGroupRoleId = source.DefaultGroupRoleId;
-            target.AllowMultipleLocations = source.AllowMultipleLocations;
-            target.ShowInGroupList = source.ShowInGroupList;
-            target.IconSmallFileId = source.IconSmallFileId;
-            target.IconLargeFileId = source.IconLargeFileId;
-            target.IconCssClass = source.IconCssClass;
-            target.TakesAttendance = source.TakesAttendance;
-            target.AttendanceRule = source.AttendanceRule;
-            target.AttendancePrintTo = source.AttendancePrintTo;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as GroupType;
+            }
+            else
+            {
+                var target = new GroupType();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.GroupTerm = source.GroupTerm;
+                target.GroupMemberTerm = source.GroupMemberTerm;
+                target.DefaultGroupRoleId = source.DefaultGroupRoleId;
+                target.AllowMultipleLocations = source.AllowMultipleLocations;
+                target.ShowInGroupList = source.ShowInGroupList;
+                target.IconSmallFileId = source.IconSmallFileId;
+                target.IconLargeFileId = source.IconLargeFileId;
+                target.IconCssClass = source.IconCssClass;
+                target.TakesAttendance = source.TakesAttendance;
+                target.AttendanceRule = source.AttendanceRule;
+                target.AttendancePrintTo = source.AttendancePrintTo;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -3,13 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
-using Newtonsoft.Json;
 
 using Rock.CheckIn;
 using Rock.Model;
@@ -39,18 +36,24 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) )
                 {
-                    var personService = new PersonService();
-                    foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
+                    using ( new Rock.Data.UnitOfWorkScope() )
                     {
-                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY ).Select( m => m.Group ) )
+                        var personService = new PersonService();
+                        var memberService = new GroupMemberService();
+
+                        foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
                         {
-                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                            if ( family == null )
+                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY ).Select( m => m.Group ) )
                             {
-                                family = new CheckInFamily();
-                                family.Group = new Group();
-                                family.Group.CopyPropertiesFrom( group );
-                                checkInState.CheckIn.Families.Add( family );
+                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                                if ( family == null )
+                                {
+                                    family = new CheckInFamily();
+                                    family.Group = group.Clone( false );
+                                    family.Group.LoadAttributes();
+                                    family.Caption = string.Format( "{0} ({1})", group.ToString(), memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " ) );
+                                    checkInState.CheckIn.Families.Add( family );
+                                }
                             }
                         }
                     }

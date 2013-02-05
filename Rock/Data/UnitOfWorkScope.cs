@@ -21,7 +21,7 @@ namespace Rock.Data
         /// <summary>
         /// The object context
         /// </summary>
-        public readonly DbContext objectContext;
+        public readonly RockContext DbContext;
 
         /// <summary>
         /// Gets or sets a value indicating whether all changes should be saved when scope ends.
@@ -34,9 +34,9 @@ namespace Rock.Data
         /// <summary>
         /// Gets the current object context.
         /// </summary>
-        internal static DbContext CurrentObjectContext
+        internal static RockContext CurrentObjectContext
         {
-            get { return currentScope != null ? currentScope.objectContext : null; }
+            get { return currentScope != null ? currentScope.DbContext : null; }
         }
 
         /// <summary>
@@ -51,10 +51,10 @@ namespace Rock.Data
         public UnitOfWorkScope( bool saveAllChangesAtScopeEnd )
         {
             if ( currentScope != null && !currentScope.isDisposed )
-                throw new InvalidOperationException( "ObjectContextScope instances can not be nested" );
+                throw new InvalidOperationException( "RockContextScope instances can not be nested" );
 
             SaveAllChangesAtScopeEnd = saveAllChangesAtScopeEnd;
-            objectContext = new RockContext();
+            DbContext = new RockContext();
             isDisposed = false;
             //Thread.BeginThreadAffinity();  --Not supported with Medium Trust
             currentScope = this;
@@ -84,10 +84,10 @@ namespace Rock.Data
 
                     if ( SaveAllChangesAtScopeEnd )
                     {
-                        objectContext.SaveChanges();
+                        DbContext.SaveChanges();
                     }
 
-                    objectContext.Dispose();
+                    DbContext.Dispose();
                 }
 
                 isDisposed = true;
