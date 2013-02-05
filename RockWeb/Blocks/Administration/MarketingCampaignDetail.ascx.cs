@@ -22,6 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
+    [AdditionalActions( new string[] { "Approve" } )]
     [LinkedPage("Event Page", "EventPageGuid")]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {
@@ -58,6 +59,11 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
+            gMarketingCampaignAds.DataKeyNames = new string[] { "Id" };
+            gMarketingCampaignAds.Actions.AddClick += gMarketingCampaignAds_Add;
+            gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
+            gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
+
             gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
             gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
             gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
@@ -70,6 +76,12 @@ namespace RockWeb.Blocks.Administration
             gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
+            // Block Security on Ads grid (RockPage takes care of "View")
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gMarketingCampaignAds.Actions.IsAddEnabled = canAddEditDelete;
+            gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
+            gMarketingCampaignAds.Actions.IsAddEnabled = canAddEditDelete;
+            gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -91,6 +103,11 @@ namespace RockWeb.Blocks.Administration
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+
+            if ( pnlMarketingCampaignAdEditor.Visible )
+            {
+                LoadAdAttributes( new MarketingCampaignAd(), true, false );
             }
         }
 
@@ -142,19 +159,8 @@ namespace RockWeb.Blocks.Administration
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            var marketingCampaignAdListBlock = this.RockPage().RockBlocks.FirstOrDefault( a => a.GetType().Name.Equals( "MarketingCampaignAdList" ) );
-
-            if ( marketingCampaignAdListBlock != null )
-            {
-                if ( editable )
-                {
-                    marketingCampaignAdListBlock.Attributes["disabled"] = "disabled";
-                }
-                else
-                {
-                    marketingCampaignAdListBlock.Attributes.Remove( "disabled" );
-                }
-            }
+            pnlMarketingCampaignAds.Disabled = editable;
+            gMarketingCampaignAds.Enabled = !editable;
         }
 
         /// <summary>
@@ -317,6 +323,18 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Loads the drop downs ads.
+        /// </summary>
+        private void LoadDropDownsAds()
+        {
+            // Controls on Ad Child Panel
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            var adtypes = marketingCampaignAdTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+            ddlMarketingCampaignAdType.DataSource = adtypes;
+            ddlMarketingCampaignAdType.DataBind();
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -373,7 +391,7 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            this.ContextEntities["Rock.Model.MarketingCampaign"] = marketingCampaign;
+            BindMarketingCampaignAdsGrid();
         }
 
         /// <summary>
@@ -489,6 +507,359 @@ namespace RockWeb.Blocks.Administration
                 tbContactFullName.Text = contactPerson.FullName;
                 PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY );
                 tbContactPhoneNumber.Text = phoneNumber == null ? string.Empty : phoneNumber.Number;
+            }
+        }
+
+        #endregion
+
+        #region MarketingCampaignAds Grid and Editor
+
+        /// <summary>
+        /// Handles the Add event of the gMarketingCampaignAds control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMarketingCampaignAds_Add( object sender, EventArgs e )
+        {
+            gMarketingCampaignAds_ShowEdit( 0 );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gMarketingCampaignAds control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMarketingCampaignAds_Edit( object sender, RowEventArgs e )
+        {
+            gMarketingCampaignAds_ShowEdit( (int)e.RowKeyValue );
+        }
+
+        /// <summary>
+        /// Gs the marketing campaign ads_ show edit.
+        /// </summary>
+        /// <param name="marketingCampaignAdId">The marketing campaign ad id.</param>
+        protected void gMarketingCampaignAds_ShowEdit( int marketingCampaignAdId )
+        {
+            hfMarketingCampaignAdId.Value = marketingCampaignAdId.ToString();
+
+            btnApproveAd.Visible = IsUserAuthorized( "Approve" );
+            btnDenyAd.Visible = IsUserAuthorized( "Approve" );
+
+            MarketingCampaignAd marketingCampaignAd = null;
+
+            if ( !marketingCampaignAdId.Equals( 0 ) )
+            {
+                marketingCampaignAd = new MarketingCampaignAdService().Get( marketingCampaignAdId );
+                marketingCampaignAd.LoadAttributes();
+            }
+            else
+            {
+                marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
+            }
+
+            if ( marketingCampaignAd.Id.Equals( 0 ) )
+            {
+                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text);
+            }
+            else
+            {
+                lActionTitleAd.Text = ActionTitle.Edit( "Marketing Ad for " + tbTitle.Text );
+            }
+
+            LoadDropDownsAds();
+            ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId );
+            tbPriority.Text = marketingCampaignAd.Priority.ToString();
+
+            SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, new PersonService().Get( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
+
+            if ( marketingCampaignAdId.Equals( 0 ) )
+            {
+                tbAdDateRangeStartDate.SelectedDate = null;
+                tbAdDateRangeEndDate.SelectedDate = null;
+            }
+            else
+            {
+                tbAdDateRangeStartDate.SelectedDate = marketingCampaignAd.StartDate;
+                tbAdDateRangeEndDate.SelectedDate = marketingCampaignAd.EndDate;
+            }
+
+            tbUrl.Text = marketingCampaignAd.Url;
+
+            LoadAdAttributes( marketingCampaignAd, true, true );
+
+            pnlMarketingCampaignAdEditor.Visible = true;
+            pnlDetails.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlMarketingCampaignAdType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ddlMarketingCampaignAdType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            MarketingCampaignAd marketingCampaignAd = new MarketingCampaignAd();
+
+            LoadAdAttributes( marketingCampaignAd, false, false );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
+
+            SetApprovalValues( MarketingCampaignAdStatus.PendingApproval, null );
+
+            LoadAdAttributes( marketingCampaignAd, true, true );
+        }
+
+        /// <summary>
+        /// Loads the attribute controls.
+        /// </summary>
+        /// <param name="marketingCampaignAd">The marketing campaign ad.</param>
+        /// <param name="createControls">if set to <c>true</c> [create controls].</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void LoadAdAttributes( Rock.Attribute.IHasAttributes marketingCampaignAd, bool createControls, bool setValues )
+        {
+            if ( string.IsNullOrWhiteSpace( ddlMarketingCampaignAdType.SelectedValue ) )
+            {
+                return;
+            }
+
+            int marketingAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
+
+            MarketingCampaignAdType marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( marketingAdTypeId );
+            tbAdDateRangeEndDate.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+
+            List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
+
+            marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
+            marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
+            marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValue>>();
+            foreach ( var attribute in attributesForAdType )
+            {
+                marketingCampaignAd.Attributes[attribute.Key] = attribute;
+                if ( marketingCampaignAd.AttributeValues.Count( v => v.Key.Equals( attribute.Key ) ) == 0 )
+                {
+                    List<AttributeValue> attributeValues = new List<AttributeValue>();
+                    attributeValues.Add( new AttributeValue { Value = attribute.DefaultValue } );
+                    marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
+                }
+            }
+
+            foreach ( var category in attributesForAdType.Select( a => a.Category ).Distinct() )
+            {
+                marketingCampaignAd.AttributeCategories[category] = attributesForAdType.Where( a => a.Category.Equals( category ) ).Select( a => a.Key ).ToList();
+            }
+
+            if ( createControls )
+            {
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( marketingCampaignAd, phAttributes, setValues );
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attributes for ad.
+        /// </summary>
+        /// <param name="marketingAdTypeId">The marketing ad type id.</param>
+        /// <returns></returns>
+        private static List<Rock.Web.Cache.AttributeCache> GetAttributesForAdType( int marketingAdTypeId )
+        {
+            MarketingCampaignAd temp = new MarketingCampaignAd();
+            temp.MarketingCampaignAdTypeId = marketingAdTypeId;
+            temp.LoadAttributes();
+            return temp.Attributes.Values.ToList();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMarketingCampaignAds control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
+        {
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+            MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( (int)e.RowKeyValue );
+
+            marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
+            marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+            BindMarketingCampaignAdsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gMarketingCampaignAds control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gMarketingCampaignAds_GridRebind( object sender, EventArgs e )
+        {
+            BindMarketingCampaignAdsGrid();
+        }
+
+        /// <summary>
+        /// Binds the marketing campaign ads grid.
+        /// </summary>
+        private void BindMarketingCampaignAdsGrid()
+        {
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+            int marketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
+            var qry = marketingCampaignAdService.Queryable().Where( a => a.MarketingCampaignId.Equals( marketingCampaignId ) );
+
+            gMarketingCampaignAds.DataSource = qry.OrderBy( a => a.StartDate ).ThenBy( a => a.Priority ).ThenBy( a => a.MarketingCampaignAdType.Name ).ToList();
+            gMarketingCampaignAds.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveAd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveAd_Click( object sender, EventArgs e )
+        {
+            int marketingCampaignAdId = int.Parse( hfMarketingCampaignAdId.Value );
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+
+            MarketingCampaignAd marketingCampaignAd;
+            if ( marketingCampaignAdId.Equals( 0 ) )
+            {
+                marketingCampaignAd = new MarketingCampaignAd { Id = 0 };
+            }
+            else
+            {
+                marketingCampaignAd = marketingCampaignAdService.Get( marketingCampaignAdId );
+            }
+
+            if ( string.IsNullOrWhiteSpace( ddlMarketingCampaignAdType.SelectedValue ) )
+            {
+                ddlMarketingCampaignAdType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlMarketingCampaignAdType.LabelText ) );
+                return;
+            }
+
+            marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
+            marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
+            marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
+            marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
+            if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
+            {
+                marketingCampaignAd.MarketingCampaignStatusPersonId = int.Parse( hfMarketingCampaignAdStatusPersonId.Value );
+            }
+            else
+            {
+                marketingCampaignAd.MarketingCampaignStatusPersonId = null;
+            }
+
+            if ( tbAdDateRangeStartDate.SelectedDate == null )
+            {
+                tbAdDateRangeStartDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "StartDate" ) );
+                return;
+            }
+
+            marketingCampaignAd.StartDate = tbAdDateRangeStartDate.SelectedDate ?? DateTime.MinValue;
+
+            if ( tbAdDateRangeEndDate.Visible )
+            {
+                if ( tbAdDateRangeEndDate.SelectedDate == null )
+                {
+                    tbAdDateRangeEndDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "EndDate" ) );
+                    return;
+                }
+
+                marketingCampaignAd.EndDate = tbAdDateRangeEndDate.SelectedDate ?? DateTime.MaxValue;
+            }
+            else
+            {
+                marketingCampaignAd.EndDate = marketingCampaignAd.StartDate;
+            }
+
+            if ( marketingCampaignAd.EndDate < marketingCampaignAd.StartDate )
+            {
+                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
+            }
+
+            marketingCampaignAd.Url = tbUrl.Text;
+
+            LoadAdAttributes( marketingCampaignAd, false, false );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
+            Rock.Attribute.Helper.SetErrorIndicators( phAttributes, marketingCampaignAd );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !marketingCampaignAd.IsValid )
+            {
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( marketingCampaignAd.Id.Equals( 0 ) )
+                    {
+                        marketingCampaignAdService.Add( marketingCampaignAd, CurrentPersonId );
+                    }
+
+                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+                    Rock.Attribute.Helper.SaveAttributeValues( marketingCampaignAd, CurrentPersonId );
+                } );
+
+            pnlMarketingCampaignAdEditor.Visible = false;
+            pnlDetails.Visible = true;
+
+            BindMarketingCampaignAdsGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelAd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelAd_Click( object sender, EventArgs e )
+        {
+            pnlMarketingCampaignAdEditor.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnApproveAd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnApproveAd_Click( object sender, EventArgs e )
+        {
+            SetApprovalValues( MarketingCampaignAdStatus.Approved, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDenyAd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDenyAd_Click( object sender, EventArgs e )
+        {
+            SetApprovalValues( MarketingCampaignAdStatus.Denied, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Sets the approval values.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <param name="person">The person.</param>
+        private void SetApprovalValues( MarketingCampaignAdStatus status, Person person )
+        {
+            ltMarketingCampaignAdStatus.Text = status.ConvertToString();
+            switch ( status )
+            {
+                case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-success";
+                    break;
+                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-error";
+                    break;
+                default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
+                    break;
+            }
+
+            hfMarketingCampaignAdStatus.Value = status.ConvertToInt().ToString();
+            lblMarketingCampaignAdStatusPerson.Visible = person != null;
+            if ( person != null )
+            {
+                lblMarketingCampaignAdStatusPerson.Text = "by " + person.FullName;
+                hfMarketingCampaignAdStatusPersonId.Value = person.Id.ToString();
             }
         }
 
