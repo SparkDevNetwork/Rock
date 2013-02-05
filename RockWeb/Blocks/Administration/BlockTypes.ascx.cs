@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
+                gBlockTypes.RowItemText = "Block Type";
                 gBlockTypes.DataKeyNames = new string[] { "id" };
                 gBlockTypes.Actions.IsAddEnabled = true;
                 gBlockTypes.Actions.AddClick += gBlockTypes_Add;
@@ -121,6 +122,28 @@ namespace RockWeb.Blocks.Administration
             }
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the SetBadgeType event of the Blocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="BadgeRowEventArgs" /> instance containing the event data.</param>
+        protected void Blocks_SetBadgeType( object sender, BadgeRowEventArgs e )
+        {
+            int blockCount = (int)e.FieldValue;
+            if ( blockCount == 0 )
+            {
+                e.BadgeType = BadgeType.Important;
+            }
+            else if ( blockCount > 1 )
+            {
+                e.BadgeType = BadgeType.Success;
+            }
+            else
+            {
+                e.BadgeType = BadgeType.Info;
+            }
         }
 
         /// <summary>
@@ -264,5 +287,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }
