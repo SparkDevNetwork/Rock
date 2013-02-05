@@ -109,6 +109,12 @@ namespace Rock
             }
             else
             {
+                if ( type.Namespace == null )
+                {
+                    // Anonymous types will not have a namespace
+                    return "Item";
+                }
+
                 if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
                 {
                     type = type.BaseType;
