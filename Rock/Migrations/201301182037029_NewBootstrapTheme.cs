@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class NewBootstrapTheme : RockMigration
+    public partial class NewBootstrapTheme : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

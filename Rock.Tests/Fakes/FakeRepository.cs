@@ -137,6 +137,11 @@ namespace Rock.Tests.Fakes
             return true;
         }
 
+        public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetConfigurationValue( string key, string value )
         {
         }

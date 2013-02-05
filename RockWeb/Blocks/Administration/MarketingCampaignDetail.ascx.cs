@@ -435,7 +435,10 @@ namespace RockWeb.Blocks.Administration
         private void ShowReadonlyDetails( MarketingCampaign marketingCampaign )
         {
             SetEditMode( false );
-
+            
+            // set title.text value even though it is hidden so that Ad Edit can get the title of the campaign
+            tbTitle.Text = marketingCampaign.Title;
+            
             // make a Description section for nonEdit mode
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -547,15 +550,16 @@ namespace RockWeb.Blocks.Administration
             if ( !marketingCampaignAdId.Equals( 0 ) )
             {
                 marketingCampaignAd = new MarketingCampaignAdService().Get( marketingCampaignAdId );
+                marketingCampaignAd.LoadAttributes();
             }
             else
             {
                 marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
             }
 
-            if ( !marketingCampaignAd.Id.Equals( 0 ) )
+            if ( marketingCampaignAd.Id.Equals( 0 ) )
             {
-                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text );
+                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text);
             }
             else
             {
@@ -729,7 +733,7 @@ namespace RockWeb.Blocks.Administration
 
             marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
             marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
-            marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
+            marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
             marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
             if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
             {

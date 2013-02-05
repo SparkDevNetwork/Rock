@@ -136,8 +136,7 @@ namespace RockWeb
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
-                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                    string url = Path.Combine(appPath, "KeepAlive.aspx");
+                    string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
                     WebRequest request = WebRequest.Create( url );
                     WebResponse response = request.GetResponse();
 
@@ -179,7 +178,7 @@ namespace RockWeb
                         transaction.Execute();
                     }
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     try
                     {
@@ -303,7 +302,7 @@ namespace RockWeb
                             // setup merge codes for email
                             var mergeObjects = new Dictionary<string, object>();
                             mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
-                            
+
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
                             if ( emailAddressesList != null )
@@ -336,7 +335,7 @@ namespace RockWeb
                             Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
                             Context.ApplicationInstance.CompleteRequest();
                         }
-                        
+
                         // intentially throw ThreadAbort
                         Response.End();
                     }

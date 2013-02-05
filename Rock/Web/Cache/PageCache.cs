@@ -226,14 +226,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets or sets the layout path for the page
-        /// </summary>
-        /// <value>
-        /// The layout path.
-        /// </value>
-        public string LayoutPath { get; set; }
-
-        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>

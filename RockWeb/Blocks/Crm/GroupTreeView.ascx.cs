@@ -4,18 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -55,7 +45,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void groupItem_Click( string groupId )
+        protected void groupItem_Click( string groupId )
         {
             NavigateToDetailPage( "groupId", int.Parse( groupId ) );
         }
