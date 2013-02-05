@@ -59,15 +59,29 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                         else
                                         {
-                                            bool firstItem = true;
-                                            foreach ( var schedule in group.Schedules.OrderBy( s => s.Schedule.StartTime ) )
-                                            {
-                                                ListItem item = new ListItem( schedule.ToString(), schedule.Schedule.Id.ToString() );
-                                                item.Selected = firstItem;
-                                                cblTimes.Items.Add( item );
+                                            string script = string.Format( @"
+    <script>
+        function GetTimeSelection() {{
+            var ids = '';
+            $('div.time-select button.active').each( function() {{
+                ids += $(this).attr('schedule-id') + ',';
+            }});
+            if (ids == '') {{
+                alert('Please select at least one time');
+                return false;
+            }}
+            else
+            {{
+                $('#{0}').val(ids);
+                return true;
+            }}
+        }}
+    </script>
+", hfTimes.ClientID );
+                                            Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
 
-                                                firstItem = false;
-                                            }
+                                            rSelection.DataSource = group.Schedules.OrderBy( s => s.Schedule.StartTime );
+                                            rSelection.DataBind();
                                         }
                                     }
                                     else
@@ -117,16 +131,13 @@ namespace RockWeb.Blocks.CheckIn
                                 var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
                                 if ( group != null )
                                 {
-                                    foreach( ListItem item in cblTimes.Items)
+                                    foreach( var scheduleId in hfTimes.Value.SplitDelimitedValues())
                                     {
-                                        if(item.Selected)
+                                        int id = Int32.Parse( scheduleId );
+                                        var schedule = group.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
+                                        if (schedule != null)
                                         {
-                                            int id = Int32.Parse( item.Value );
-                                            var schedule = group.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
-                                            if (schedule != null)
-                                            {
-                                                schedule.Selected = true;
-                                            }
+                                            schedule.Selected = true;
                                         }
                                     }
 

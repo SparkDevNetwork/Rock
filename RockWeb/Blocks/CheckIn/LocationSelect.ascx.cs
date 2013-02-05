@@ -60,17 +60,8 @@ namespace RockWeb.Blocks.CheckIn
                                 }
                                 else
                                 {
-                                    int? defaultId = groupType.Locations.OrderByDescending( l => l.LastCheckIn ).Select( l => l.Location.Id ).FirstOrDefault();
-                                    foreach ( var location in groupType.Locations )
-                                    {
-                                        ListItem item = new ListItem( location.ToString(), location.Location.Id.ToString() );
-                                        if ( defaultId.HasValue && location.Location.Id == defaultId.Value )
-                                        {
-                                            item.Selected = true;
-                                        }
-
-                                        lbLocations.Items.Add( item );
-                                    }
+                                    rSelection.DataSource = groupType.Locations;
+                                    rSelection.DataBind();
                                 }
                             }
                             else
@@ -91,28 +82,25 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                if ( lbLocations.SelectedItem != null )
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
                 {
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
+                    if ( person != null )
                     {
-                        var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                        if ( person != null )
+                        var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
+                        if ( groupType != null )
                         {
-                            var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                            if ( groupType != null )
+                            int id = Int32.Parse( e.CommandArgument.ToString() );
+                            var location = groupType.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
+                            if ( location != null )
                             {
-                                int id = Int32.Parse( lbLocations.SelectedItem.Value );
-                                var location = groupType.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
-                                if ( location != null )
-                                {
-                                    location.Selected = true;
-                                    ProcessSelection();
-                                }
+                                location.Selected = true;
+                                ProcessSelection();
                             }
                         }
                     }

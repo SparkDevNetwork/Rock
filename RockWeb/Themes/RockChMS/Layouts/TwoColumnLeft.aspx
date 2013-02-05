@@ -79,7 +79,7 @@
                 <%-- Content Area --%>
 
                 <div id="group-viewer" class="row-fluid">
-                    <a href="#" onclick="javascript: $('#leftContentDiv').toggle(500);">hide/show</a>
+                    <a href="#" onclick="javascript: $('#leftContentDiv').toggle(500); $('#hideshowImg').toggleClass('icon-caret-right') "><span class="badge"><i id="hideshowImg" class="icon-caret-left"></i></span></a>
                     <div id="vertical">
                         <div id="leftContentDiv" class="span3" style="border-right: 1px solid #808080">
                             <Rock:Zone ID="LeftContent" runat="server" />

@@ -54,4 +54,31 @@ namespace Rock.Data
             return (IRepository<T>)Activator.CreateInstance( assemblyName, className ).Unwrap();
         }
     }
+
+    /// <summary>
+    /// Static class to support factory method implementation of repository for non entity specific methods
+    /// </summary>
+    public class RepositoryFactory
+    {
+        /// <summary>
+        /// Finds the repository.
+        /// </summary>
+        /// <returns></returns>
+        public IRepository FindRepository()
+        {
+            var repositoryType = ConfigurationManager.AppSettings["RepositoryType"];
+
+            // If empty, return a default of the EFRepository<T>...
+            if ( string.IsNullOrEmpty( repositoryType ) )
+            {
+                return new EFRepository();
+            }
+
+            var settingArray = repositoryType.Split( new[] { ',' } );
+            string className = settingArray[0];
+            string assemblyName = settingArray[1];
+
+            return (IRepository)Activator.CreateInstance( assemblyName, className ).Unwrap();
+        }
+    }
 }

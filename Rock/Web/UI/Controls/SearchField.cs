@@ -59,7 +59,11 @@ namespace Rock.Web.UI.Controls
                 }});
             }},
             minLength: 2,
-            appendTo: 'div.filter-search'
+            appendTo: 'div.smart-search',
+            messages: {{
+              noResults: function () {{ }},
+              results: function () {{ }}
+            }}
         }});
 
         $('input#{0}').keyup(function(event){{
@@ -79,10 +83,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             HiddenField hfFilter = new HiddenField();
             hfFilter.ID = this.ID + "_hSearchFilter";
@@ -99,7 +103,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "smart-search" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.Render( writer );
+            base.RenderControl( writer );
 
             writer.AddAttribute( "class", "nav pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Ul );

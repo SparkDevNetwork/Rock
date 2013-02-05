@@ -252,6 +252,24 @@ namespace Rock
             return Regex.Replace( str, @"[^0-9]", "" );
         }
 
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static int? AsInteger( this string str )
+        {
+            int value;
+            if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         #endregion
 
         #region Int Extensions
