@@ -49,6 +49,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the available campus ids.
+        /// </summary>
+        /// <value>
+        /// The available campus ids.
+        /// </value>
+        public List<int> AvailableCampusIds
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Select( a => int.Parse( a.Value ) ).ToList();
+            }
+        }
+
+        /// <summary>
         /// Gets the selected campus ids.
         /// </summary>
         /// <value>

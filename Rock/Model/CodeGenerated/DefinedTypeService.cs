@@ -64,19 +64,32 @@ namespace Rock.Model
     public static class DefinedTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another DefinedType entity
+        /// Clones this DefinedType object to a new DefinedType object
         /// </summary>
-        public static void CopyPropertiesFrom( this DefinedType target, DefinedType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static DefinedType Clone( this DefinedType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.FieldTypeId = source.FieldTypeId;
-            target.Order = source.Order;
-            target.Category = source.Category;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as DefinedType;
+            }
+            else
+            {
+                var target = new DefinedType();
+                target.IsSystem = source.IsSystem;
+                target.FieldTypeId = source.FieldTypeId;
+                target.Order = source.Order;
+                target.Category = source.Category;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -58,17 +58,30 @@ namespace Rock.Model
     public static class AttributeQualifierExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another AttributeQualifier entity
+        /// Clones this AttributeQualifier object to a new AttributeQualifier object
         /// </summary>
-        public static void CopyPropertiesFrom( this AttributeQualifier target, AttributeQualifier source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static AttributeQualifier Clone( this AttributeQualifier source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.AttributeId = source.AttributeId;
-            target.Key = source.Key;
-            target.Value = source.Value;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as AttributeQualifier;
+            }
+            else
+            {
+                var target = new AttributeQualifier();
+                target.IsSystem = source.IsSystem;
+                target.AttributeId = source.AttributeId;
+                target.Key = source.Key;
+                target.Value = source.Value;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

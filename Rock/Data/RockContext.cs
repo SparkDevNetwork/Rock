@@ -31,6 +31,14 @@ namespace Rock.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance codes.
+        /// </summary>
+        /// <value>
+        /// The attendance codes.
+        /// </value>
+        public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -141,14 +149,6 @@ namespace Rock.Data
         /// the Email Templates.
         /// </value>
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Entity Changes.
-        /// </summary>
-        /// <value>
-        /// the Entity Changes.
-        /// </value>
-        public DbSet<EntityChange> EntityChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the entity types.
@@ -431,6 +431,22 @@ namespace Rock.Data
         public DbSet<PrayerRequest> PrayerRequests { get; set; }
 
         /// <summary>
+        /// Gets or sets the reports.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<Report> Reports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report filters.
+        /// </summary>
+        /// <value>
+        /// The report filters.
+        /// </value>
+        public DbSet<ReportFilter> ReportFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -607,6 +623,7 @@ namespace Rock.Data
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
             modelBuilder.Configurations.Add( new AttendanceConfiguration() );
+            modelBuilder.Configurations.Add( new AttendanceCodeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
@@ -621,7 +638,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
@@ -657,6 +673,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
+            modelBuilder.Configurations.Add( new ReportConfiguration() );
+            modelBuilder.Configurations.Add( new ReportFilterConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

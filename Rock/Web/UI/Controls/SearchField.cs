@@ -33,16 +33,12 @@ namespace Rock.Web.UI.Controls
             string script = string.Format( @"
     $(document).ready(function() {{
 
-        $('.dropdown dt').click(function () {{
-            $('.dropdown dd ul').fadeToggle('fast');
-        }});
 
         // change selection when picked
-        $('.dropdown dd ul li').click(function () {{
+        $('.smart-search .dropdown-menu a').click(function () {{
             var text = $(this).html();
-            $('.dropdown dt').html(text);
-            $('.dropdown dd ul').hide();
-            $('#{1}_hSearchFilter').val($(this).attr('key'));
+            $('.smart-search .dropdown a.dropdown-toggle span').html(text);
+            $('#{1}_hSearchFilter').val($(this).parent().attr('key'));
         }});
 
         $('input#{0}').autocomplete({{
@@ -63,13 +59,17 @@ namespace Rock.Web.UI.Controls
                 }});
             }},
             minLength: 2,
-            appendTo: 'div.filter-search'
+            appendTo: 'div.smart-search',
+            messages: {{
+              noResults: function () {{ }},
+              results: function () {{ }}
+            }}
         }});
 
         $('input#{0}').keyup(function(event){{
             if(event.keyCode == 13){{
                 var keyValue = $('#{1}_hSearchFilter:first').val();
-                var $li = $('.dropdown dd ul li[key=""' + keyValue + '""]:first');
+                var $li = $('.dropdown ul li[key=""' + keyValue + '""]:first');
                 var target = $li.attr('target');
                 window.location.href = rock.baseUrl + target.replace('{{0}}',encodeURIComponent($(this).val()));
             }}
@@ -83,10 +83,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             HiddenField hfFilter = new HiddenField();
             hfFilter.ID = this.ID + "_hSearchFilter";
@@ -100,22 +100,34 @@ namespace Rock.Web.UI.Controls
                         hfFilter.Value = service.Key.ToString();
                 }
 
-            writer.AddAttribute( "class", "filter-search" );
+            writer.AddAttribute( "class", "smart-search" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.Render( writer );
+            base.RenderControl( writer );
 
-            writer.AddAttribute( "class", "filter" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( "class", "nav pull-right" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
             writer.AddAttribute( "class", "dropdown" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Dl );
+            writer.RenderBeginTag( HtmlTextWriterTag.Li );
+            
+            writer.AddAttribute( "class", "dropdown-toggle" );
+            writer.AddAttribute( "data-toggle", "dropdown" );
+            writer.RenderBeginTag( HtmlTextWriterTag.A);
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+            // wrap item in span for css hook
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( searchExtensions[hfFilter.Value].Item1 );
             writer.RenderEndTag();
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Dd );
+            // add carat
+            writer.AddAttribute( "class", "caret" );
+            writer.RenderBeginTag( HtmlTextWriterTag.B );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "dropdown-menu" );
             writer.RenderBeginTag( HtmlTextWriterTag.Ul );
 
             foreach ( var searchExtension in searchExtensions )
@@ -123,18 +135,21 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "key", searchExtension.Key );
                 writer.AddAttribute( "target", searchExtension.Value.Item2 );
                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( searchExtension.Value.Item1 );
+                writer.RenderEndTag();
+                
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
-            writer.RenderEndTag();
-            writer.RenderEndTag();
+            writer.RenderEndTag(); //ul
+            writer.RenderEndTag(); //li
+            writer.RenderEndTag(); //ul
 
             hfFilter.RenderControl(writer);
 
-            writer.RenderEndTag();
-            writer.RenderEndTag();
+            writer.RenderEndTag(); //div
         }
     }
 }

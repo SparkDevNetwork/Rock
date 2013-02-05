@@ -64,20 +64,33 @@ namespace Rock.Model
     public static class FinancialBatchExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another FinancialBatch entity
+        /// Clones this FinancialBatch object to a new FinancialBatch object
         /// </summary>
-        public static void CopyPropertiesFrom( this FinancialBatch target, FinancialBatch source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static FinancialBatch Clone( this FinancialBatch source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.BatchDate = source.BatchDate;
-            target.IsClosed = source.IsClosed;
-            target.CampusId = source.CampusId;
-            target.Entity = source.Entity;
-            target.EntityId = source.EntityId;
-            target.ForeignReference = source.ForeignReference;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as FinancialBatch;
+            }
+            else
+            {
+                var target = new FinancialBatch();
+                target.Name = source.Name;
+                target.BatchDate = source.BatchDate;
+                target.IsClosed = source.IsClosed;
+                target.CampusId = source.CampusId;
+                target.Entity = source.Entity;
+                target.EntityId = source.EntityId;
+                target.ForeignReference = source.ForeignReference;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

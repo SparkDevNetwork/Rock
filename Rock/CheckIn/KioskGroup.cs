@@ -3,11 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -53,9 +50,19 @@ namespace Rock.CheckIn
         public KioskGroup( Group group )
             : base()
         {
-            Group = new Group();
-            Group.CopyPropertiesFrom( group );
+            Group = group.Clone( false );
             KioskSchedules = new List<KioskSchedule>();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group.ToString();
         }
     }
 }

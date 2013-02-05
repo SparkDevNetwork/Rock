@@ -19,8 +19,7 @@ namespace Rock.Tests.Model
             public void ShouldCopyEntity()
             {
                 var pageRoute = new PageRoute { Guid = Guid.NewGuid() };
-                var result = new PageRoute();
-                result.CopyPropertiesFrom(pageRoute);
+                var result = pageRoute.Clone( false );
                 Assert.AreEqual( result.Guid, pageRoute.Guid );
             }
         }

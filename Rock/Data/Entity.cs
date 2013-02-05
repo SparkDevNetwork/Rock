@@ -162,7 +162,7 @@ namespace Rock.Data
         #region Methods
 
         /// <summary>
-        /// Clones this instance.
+        /// Creates a deep copy of this instance
         /// </summary>
         /// <returns></returns>
         public virtual IEntity Clone()

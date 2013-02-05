@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,10 +23,17 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class Person : Model<Person>
     {
+
+        #region Constants
+
         /// <summary>
         /// The Entity Type used for saving user values
         /// </summary>
         public const string USER_VALUE_ENTITY = "Rock.Model.Person.Value";
+
+        #endregion
+
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the System.
@@ -126,7 +134,6 @@ namespace Rock.Model
         /// Nick Name.
         /// </value>
         [MaxLength( 50 )]
-        [TrackChanges]
         [DataMember]
         public string NickName { get; set; }
 
@@ -137,7 +144,6 @@ namespace Rock.Model
         /// Last Name.
         /// </value>
         [MaxLength( 50 )]
-        [TrackChanges]
         [DataMember]
         public string LastName { get; set; }
         
@@ -281,6 +287,10 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Users.
         /// </summary>
@@ -288,7 +298,7 @@ namespace Rock.Model
         /// Collection of Users.
         /// </value>
         [DataMember]
-        public virtual ICollection<Model.UserLogin> Users { get; set; }
+        public virtual ICollection<UserLogin> Users { get; set; }
         
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -315,7 +325,21 @@ namespace Rock.Model
         /// Collection of Members.
         /// </value>
         [DataMember]
-        public virtual ICollection<Model.GroupMember> Members { get; set; }
+        public virtual ICollection<GroupMember> Members { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendances.
+        /// </summary>
+        /// <value>
+        /// The attendances.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Attendance> Attendances
+        {
+            get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }
+            set { _attendances = value; }
+        }
+        private ICollection<Attendance> _attendances;
 
         /// <summary>
         /// Gets or sets the Pledges.
@@ -324,7 +348,7 @@ namespace Rock.Model
         /// Collection of Pledges.
         /// </value>
         [DataMember]
-        public virtual ICollection<Model.Pledge> Pledges { get; set; }
+        public virtual ICollection<Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the PersonAccountLookups.
@@ -333,76 +357,76 @@ namespace Rock.Model
         /// Collection of PersonAccountLookups.
         /// </value>
         [DataMember]
-        public virtual ICollection<Model.PersonAccount> PersonAccountLookups { get; set; }
+        public virtual ICollection<PersonAccount> PersonAccountLookups { get; set; }
 
         /// <summary>
         /// Gets or sets the Marital Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue MaritalStatusValue { get; set; }
+        public virtual DefinedValue MaritalStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Person Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue PersonStatusValue { get; set; }
+        public virtual DefinedValue PersonStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue RecordStatusValue { get; set; }
+        public virtual DefinedValue RecordStatusValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Status Reason.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue RecordStatusReasonValue { get; set; }
+        public virtual DefinedValue RecordStatusReasonValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue RecordTypeValue { get; set; }
+        public virtual DefinedValue RecordTypeValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Suffix.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue SuffixValue { get; set; }
+        public virtual DefinedValue SuffixValue { get; set; }
         
         /// <summary>
         /// Gets or sets the Title.
         /// </summary>
         /// <value>
-        /// A <see cref="Model.DefinedValue"/> object.
+        /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue TitleValue { get; set; }
+        public virtual DefinedValue TitleValue { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
         [DataMember]
-        public virtual Model.BinaryFile Photo { get; set; }
+        public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
         /// Gets NickName if not null, otherwise gets GivenName.
@@ -481,6 +505,60 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
+        public virtual int? Age
+        {
+            get
+            {
+                DateTime bday;
+                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                {
+                    DateTime today = DateTime.Today;
+                    int age = today.Year - bday.Year;
+                    if ( bday > today.AddYears( -age ) ) age--;
+                    return age;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the fractional age
+        /// </summary>
+        /// <value>
+        /// The age as double.
+        /// </value>
+        public virtual double? AgePrecise
+        {
+            get
+            {
+                DateTime bday;
+                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                {
+                    // Calculate years
+                    DateTime today = DateTime.Today;
+                    int years = today.Year - bday.Year;
+                    if ( bday > today.AddYears( -years ) ) years--;
+                    
+                    // Calculate days between last and next bday (differs on leap years).
+                    DateTime lastBday = bday.AddYears( years );
+                    DateTime nextBday = lastBday.AddYears( 1 );
+                    double daysInYear = nextBday.Subtract( lastBday ).TotalDays;
+
+                    // Calculate days since last bday
+                    double days = today.Subtract( lastBday ).TotalDays;
+
+                    return years + ( days / daysInYear );
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the impersonation parameter.
         /// </summary>
         public virtual string ImpersonationParameter
@@ -497,17 +575,21 @@ namespace Rock.Model
         /// <value>
         /// The impersonated user.
         /// </value>
-        public virtual Rock.Model.UserLogin ImpersonatedUser
+        public virtual UserLogin ImpersonatedUser
         {
             get
             {
-                Rock.Model.UserLogin user = new Model.UserLogin();
+                UserLogin user = new UserLogin();
                 user.UserName = this.FullName;
                 user.PersonId = this.Id;
                 user.Person = this;
                 return user;
             }
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -519,7 +601,12 @@ namespace Rock.Model
         {
             return this.FullName;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Person Configuration class.
@@ -542,6 +629,10 @@ namespace Rock.Model
         }
     }
 
+    #endregion
+
+    #region Enumerations
+
     /// <summary>
     /// The gender of a person
     /// </summary>
@@ -562,5 +653,7 @@ namespace Rock.Model
         /// </summary>
         Female = 2
     }
+
+    #endregion
 
 }

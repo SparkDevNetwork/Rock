@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 using Newtonsoft.Json;
 
@@ -26,6 +25,7 @@ namespace Rock.CheckIn
         private static int _cacheSeconds = 60;
         private static DateTimeOffset _lastCached { get; set; }
         private static Dictionary<int, KioskStatus> _kiosks;
+        private static Dictionary<int, KioskLocationAttendance> _locations;
 
         /// <summary>
         /// Initializes the <see cref="KioskCache" /> class.
@@ -82,11 +82,54 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the location attendance.
+        /// </summary>
+        /// <param name="locationId">The location id.</param>
+        /// <returns></returns>
+        public static KioskLocationAttendance GetLocationAttendance (int locationId)
+        {
+            lock ( obj )
+            {
+                if ( _locations.ContainsKey( locationId ) )
+                {
+                    // Clone the object so that a reference to the static object is not maintaned (or updated)
+                    string json = JsonConvert.SerializeObject( _locations[locationId] );
+                    return JsonConvert.DeserializeObject( json, typeof( KioskLocationAttendance ) ) as KioskLocationAttendance;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Adds an attendance item to location attendance cache so that it is accurate between refreshes
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        public static void AddAttendance( Attendance attendance )
+        {
+            lock ( obj )
+            {
+                if (_locations != null && attendance.LocationId.HasValue)
+                {
+                    if ( !_locations.ContainsKey( attendance.LocationId.Value ) )
+                    {
+                        var locationAttendance = new KioskLocationAttendance();
+                        locationAttendance.LocationId = attendance.Location.Id;
+                        locationAttendance.LocationName = attendance.Location.Name;
+                        locationAttendance.Groups = new List<KioskGroupAttendance>();
+                    }
+                    AddAttendanceRecord( _locations[attendance.LocationId.Value], attendance );
+                }
+            }
+        }
+
+        /// <summary>
         /// Refreshes the cache.
         /// </summary>
         private static void RefreshCache()
         {
             _kiosks = new Dictionary<int, KioskStatus>();
+            _locations = new Dictionary<int, KioskLocationAttendance>();
 
             var checkInDeviceTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             foreach ( var kiosk in new DeviceService().Queryable()
@@ -95,11 +138,13 @@ namespace Rock.CheckIn
             {
                 var kioskStatus = new KioskStatus( kiosk );
 
-                foreach ( Location location in kiosk.Locations )
+                using (new Rock.Data.UnitOfWorkScope())
                 {
-                    LoadKioskLocations( kioskStatus, location );
+                    foreach ( Location location in kiosk.Locations )
+                    {
+                        LoadKioskLocations( kioskStatus, location );
+                    }
                 }
-
                 _kiosks.Add( kiosk.Id, kioskStatus );
             }
 
@@ -108,7 +153,8 @@ namespace Rock.CheckIn
 
         private static void LoadKioskLocations( KioskStatus kioskStatus, Location location )
         {
-            foreach ( var groupLocation in new GroupLocationService().GetActiveByLocation( location.Id ) )
+            var groupLocationService = new GroupLocationService();
+            foreach ( var groupLocation in groupLocationService.GetActiveByLocation( location.Id ) )
             {
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
@@ -132,10 +178,13 @@ namespace Rock.CheckIn
                 // list of group types
                 if ( kioskGroup.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
+                    kioskGroup.Group.LoadAttributes();
+
                     KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == kioskGroup.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
+                        kioskGroupType.GroupType.LoadAttributes();
                         kioskGroupType.NextActiveTime = DateTimeOffset.MaxValue;
                         kioskStatus.KioskGroupTypes.Add( kioskGroupType );
                     }
@@ -152,6 +201,7 @@ namespace Rock.CheckIn
                         if ( kioskLocation == null )
                         {
                             kioskLocation = new KioskLocation( location );
+                            kioskLocation.Location.LoadAttributes();
                             kioskGroupType.KioskLocations.Add( kioskLocation );
                         }
 
@@ -160,9 +210,53 @@ namespace Rock.CheckIn
                 }
             }
 
+            if ( !_locations.ContainsKey( location.Id ) )
+            {
+                var locationAttendance = new KioskLocationAttendance();
+                locationAttendance.LocationId = location.Id;
+                locationAttendance.LocationName = location.Name;
+                locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                var attendanceService = new AttendanceService();
+                foreach ( var attendance in attendanceService.GetByDateAndLocation( DateTime.Today, location.Id ) )
+                {
+                    AddAttendanceRecord( locationAttendance, attendance );
+                }
+
+                _locations.Add(location.Id, locationAttendance );
+            }
+
             foreach ( var childLocation in location.ChildLocations )
             {
                 LoadKioskLocations( kioskStatus, childLocation );
+            }
+        }
+
+        private static void AddAttendanceRecord( KioskLocationAttendance kioskLocationAttendance, Attendance attendance )
+        {
+            if ( attendance.GroupId.HasValue && attendance.ScheduleId.HasValue && attendance.PersonId.HasValue )
+            {
+                var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.GroupId ).FirstOrDefault();
+                if ( groupAttendance == null )
+                {
+                    groupAttendance = new KioskGroupAttendance();
+                    groupAttendance.GroupId = attendance.GroupId.Value;
+                    groupAttendance.GroupName = attendance.Group.Name;
+                    groupAttendance.Schedules = new List<KioskScheduleAttendance>();
+                    kioskLocationAttendance.Groups.Add( groupAttendance );
+                }
+
+                var scheduleAttendance = groupAttendance.Schedules.Where( s => s.ScheduleId == attendance.ScheduleId ).FirstOrDefault();
+                if ( scheduleAttendance == null )
+                {
+                    scheduleAttendance = new KioskScheduleAttendance();
+                    scheduleAttendance.ScheduleId = attendance.ScheduleId.Value;
+                    scheduleAttendance.ScheduleName = attendance.Schedule.Name;
+                    scheduleAttendance.PersonIds = new List<int>();
+                    groupAttendance.Schedules.Add( scheduleAttendance );
+                }
+
+                scheduleAttendance.PersonIds.Add( attendance.PersonId.Value );
             }
         }
     }

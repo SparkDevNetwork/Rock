@@ -109,7 +109,12 @@ namespace Rock
             }
             else
             {
-                if ( typeof(IEntity).IsAssignableFrom(type) )
+                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+                {
+                    type = type.BaseType;
+                }
+
+                if ( type.Namespace.Equals( "Rock.Model" ) )
                 {
                     var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
@@ -245,6 +250,24 @@ namespace Rock
         public static string AsNumeric( this string str )
         {
             return Regex.Replace( str, @"[^0-9]", "" );
+        }
+
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static int? AsInteger( this string str )
+        {
+            int value;
+            if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -629,7 +652,7 @@ namespace Rock
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
-                dictionary.Add(Convert.ToInt32(value), Enum.GetName( enumType, value ).SplitCase() );
+                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
             }
 
             listControl.DataSource = dictionary;
@@ -813,12 +836,33 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
-                return source.OrderBy( sortProperty.Property );
-            else
-                return source.OrderByDescending( sortProperty.Property );
-        }
+            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
+            IOrderedQueryable<T> qry = null;
+
+            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+            {
+                string column = columns[columnIndex].Trim();
+                if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
+                    if ( columnIndex == 0 )
+                    {
+                        qry = source.OrderBy( column );
+                    }
+                    else
+                    {
+                        qry = qry.ThenBy( column );
+                    }
+                }
+                else
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderByDescending( column ) : qry.ThenByDescending( column );
+                }
+            }
+
+            return qry;
+        }
 
         #endregion
 
@@ -831,6 +875,16 @@ namespace Rock
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
         {
             Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
+        /// Copies the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        {
+            Rock.Attribute.Helper.CopyAttributes( source, entity );
         }
 
         #endregion
@@ -884,7 +938,7 @@ namespace Rock
         #endregion
 
         #region IEntity extensions
-        
+
         /// <summary>
         /// Removes the entity.
         /// </summary>
@@ -915,7 +969,43 @@ namespace Rock
             }
 
         }
-        
+
+        #endregion
+
+        #region HiddenField Extensions
+
+        /// <summary>
+        /// Values as int.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns></returns>
+        public static int ValueAsInt( this HiddenField hiddenField )
+        {
+            return int.Parse( hiddenField.Value );
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this HiddenField hiddenField, int value )
+        {
+            hiddenField.Value = value.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether the specified hidden field is zero.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified hidden field is zero; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsZero( this HiddenField hiddenField )
+        {
+            return hiddenField.Value.Equals( "0" );
+        }
+
         #endregion
     }
 }

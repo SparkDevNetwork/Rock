@@ -78,21 +78,34 @@ namespace Rock.Model
     public static class BinaryFileExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another BinaryFile entity
+        /// Clones this BinaryFile object to a new BinaryFile object
         /// </summary>
-        public static void CopyPropertiesFrom( this BinaryFile target, BinaryFile source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static BinaryFile Clone( this BinaryFile source, bool deepCopy )
         {
-            target.IsTemporary = source.IsTemporary;
-            target.IsSystem = source.IsSystem;
-            target.Data = source.Data;
-            target.Url = source.Url;
-            target.FileName = source.FileName;
-            target.MimeType = source.MimeType;
-            target.LastModifiedTime = source.LastModifiedTime;
-            target.Description = source.Description;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as BinaryFile;
+            }
+            else
+            {
+                var target = new BinaryFile();
+                target.IsTemporary = source.IsTemporary;
+                target.IsSystem = source.IsSystem;
+                target.Data = source.Data;
+                target.Url = source.Url;
+                target.FileName = source.FileName;
+                target.MimeType = source.MimeType;
+                target.LastModifiedTime = source.LastModifiedTime;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

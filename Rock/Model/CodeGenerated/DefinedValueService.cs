@@ -128,18 +128,31 @@ namespace Rock.Model
     public static class DefinedValueExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another DefinedValue entity
+        /// Clones this DefinedValue object to a new DefinedValue object
         /// </summary>
-        public static void CopyPropertiesFrom( this DefinedValue target, DefinedValue source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static DefinedValue Clone( this DefinedValue source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.DefinedTypeId = source.DefinedTypeId;
-            target.Order = source.Order;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as DefinedValue;
+            }
+            else
+            {
+                var target = new DefinedValue();
+                target.IsSystem = source.IsSystem;
+                target.DefinedTypeId = source.DefinedTypeId;
+                target.Order = source.Order;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

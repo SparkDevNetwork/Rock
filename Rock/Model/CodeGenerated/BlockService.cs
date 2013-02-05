@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class BlockExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Block entity
+        /// Clones this Block object to a new Block object
         /// </summary>
-        public static void CopyPropertiesFrom( this Block target, Block source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Block Clone( this Block source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.PageId = source.PageId;
-            target.Layout = source.Layout;
-            target.BlockTypeId = source.BlockTypeId;
-            target.Zone = source.Zone;
-            target.Order = source.Order;
-            target.Name = source.Name;
-            target.OutputCacheDuration = source.OutputCacheDuration;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Block;
+            }
+            else
+            {
+                var target = new Block();
+                target.IsSystem = source.IsSystem;
+                target.PageId = source.PageId;
+                target.Layout = source.Layout;
+                target.BlockTypeId = source.BlockTypeId;
+                target.Zone = source.Zone;
+                target.Order = source.Order;
+                target.Name = source.Name;
+                target.OutputCacheDuration = source.OutputCacheDuration;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

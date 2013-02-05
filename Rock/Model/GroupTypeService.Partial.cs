@@ -37,13 +37,9 @@ namespace Rock.Model
                 return false;
             }
 
-            RockContext context = new RockContext();
-
-            context.Database.Connection.Open();
-            var cmd = context.Database.Connection.CreateCommand();
-            cmd.CommandText = string.Format( "delete from crmGroupTypeAssociation where GroupTypeId = {0} or ChildGroupTypeId = {0}", item.Id );
-            cmd.ExecuteNonQuery();
             item.ChildGroupTypes.Clear();
+            this.Save( item, personId );
+
             return base.Delete( item, personId );
         }
     }

@@ -34,7 +34,6 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [TrackChanges]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 

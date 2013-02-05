@@ -58,16 +58,29 @@ namespace Rock.Model
     public static class SiteDomainExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another SiteDomain entity
+        /// Clones this SiteDomain object to a new SiteDomain object
         /// </summary>
-        public static void CopyPropertiesFrom( this SiteDomain target, SiteDomain source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static SiteDomain Clone( this SiteDomain source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.SiteId = source.SiteId;
-            target.Domain = source.Domain;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as SiteDomain;
+            }
+            else
+            {
+                var target = new SiteDomain();
+                target.IsSystem = source.IsSystem;
+                target.SiteId = source.SiteId;
+                target.Domain = source.Domain;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

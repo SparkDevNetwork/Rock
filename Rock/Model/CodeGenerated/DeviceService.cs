@@ -70,22 +70,35 @@ namespace Rock.Model
     public static class DeviceExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Device entity
+        /// Clones this Device object to a new Device object
         /// </summary>
-        public static void CopyPropertiesFrom( this Device target, Device source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Device Clone( this Device source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.GeoPoint = source.GeoPoint;
-            target.GeoFence = source.GeoFence;
-            target.DeviceTypeValueId = source.DeviceTypeValueId;
-            target.IPAddress = source.IPAddress;
-            target.PrinterDeviceId = source.PrinterDeviceId;
-            target.PrintFrom = source.PrintFrom;
-            target.PrintToOverride = source.PrintToOverride;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Device;
+            }
+            else
+            {
+                var target = new Device();
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.GeoPoint = source.GeoPoint;
+                target.GeoFence = source.GeoFence;
+                target.DeviceTypeValueId = source.DeviceTypeValueId;
+                target.IPAddress = source.IPAddress;
+                target.PrinterDeviceId = source.PrinterDeviceId;
+                target.PrintFrom = source.PrintFrom;
+                target.PrintToOverride = source.PrintToOverride;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

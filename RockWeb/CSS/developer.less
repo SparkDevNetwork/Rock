@@ -1,0 +1,128 @@
+﻿/* 
+    Please add developer CSS changes here.  These will be merged into the appropriate CSS file
+    and optimized for our styling strategy.
+    */
+
+.grid-icon-cell.delete a.aspNetDisabled {
+    cursor:default;
+    color:#CCCCCC;
+}
+
+/* A definition for these classes exist in the default bootstrap, however their "disabled" color does not look disabled with our theme. */
+.btn-primary.disabled, .btn-primary[disabled] {
+    color: #fff;
+    background-color: #CCC;
+    cursor: not-allowed;
+}
+
+/* This is for the theme... if you want the bg color below the footer to be the same color */
+html
+{
+ background-color: #3a3a3a;   
+}
+
+/* Rock Person Picker classes */
+.rock-picker-person {
+    width: 320px;
+}
+
+.rock-picker {
+    color: #515151;
+    left: auto;
+    top: auto;
+    padding: 8px;
+}
+
+    .rock-picker:after {
+        border-bottom: 6px solid #FFFFFF;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        content: "";
+        display: inline-block;
+        left: 10px;
+        position: absolute;
+        top: -6px;
+    }
+
+    .rock-picker:before {
+        border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        content: "";
+        display: inline-block;
+        left: 9px;
+        position: absolute;
+        top: -7px;
+    }
+
+    .rock-picker:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+.rock-picker-search {
+    width: 304px;
+}
+
+.rock-picker .caret {
+    border-top: 4px solid #515151;
+    margin-top: 8px;
+}
+
+.rock-picker h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+.rock-picker hr {
+    margin: 0 0 6px;
+}
+
+ul.rock-picker-select {
+    list-style: none;
+    margin-left: 0;
+}
+
+.rock-picker-select-item-details {
+    margin-bottom: 12px;
+}
+
+    .rock-picker-select-item-details h5 {
+        margin: 0 0 -4px;
+        text-transform: uppercase;
+        font-size: 10px;
+    }
+
+    .rock-picker-select-item-details img {
+        float: left;
+        margin: 2px 12px 2px 24px;
+    }
+
+    .rock-picker-select-item-details .rock-picker-select-person-details {
+        float: left;
+        font-size: 13px;
+    }
+
+ul.rock-picker-select input[type="radio"],
+ul.rock-picker-select input[type="checkbox"] {
+    margin: 0 6px 0 0;
+}
+
+/* Ad Display */
+.ad-content {
+	padding: 10px;
+	border-top: 1px solid #515151;
+	border-bottom: 1px solid #515151;
+}
+
+/* Remove the dotted-line around the help icon */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+}
+
+a.help:hover { 
+    text-decoration:none;
+}
+

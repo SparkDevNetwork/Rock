@@ -64,16 +64,29 @@ namespace Rock.Model
     public static class MarketingCampaignAdTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another MarketingCampaignAdType entity
+        /// Clones this MarketingCampaignAdType object to a new MarketingCampaignAdType object
         /// </summary>
-        public static void CopyPropertiesFrom( this MarketingCampaignAdType target, MarketingCampaignAdType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAdType Clone( this MarketingCampaignAdType source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.DateRangeType = source.DateRangeType;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaignAdType;
+            }
+            else
+            {
+                var target = new MarketingCampaignAdType();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.DateRangeType = source.DateRangeType;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

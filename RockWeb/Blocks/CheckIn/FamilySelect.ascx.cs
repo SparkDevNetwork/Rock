@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,10 +11,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -53,28 +50,23 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        foreach ( var family in CurrentCheckInState.CheckIn.Families )
-                        {
-                            lbFamilies.Items.Add( new ListItem( family.ToString(), family.Group.Id.ToString() ) );
-                        }
+                        rSelection.DataSource = CurrentCheckInState.CheckIn.Families;
+                        rSelection.DataBind();
                     }
                 }
             }
         }
 
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                if ( lbFamilies.SelectedItem != null )
+                int id = Int32.Parse( e.CommandArgument.ToString() );
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
+                if ( family != null )
                 {
-                    int id = Int32.Parse( lbFamilies.SelectedItem.Value );
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
-                    if ( family != null )
-                    {
-                        family.Selected = true;
-                        ProcessSelection();
-                    }
+                    family.Selected = true;
+                    ProcessSelection();
                 }
             }
         }

@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class MarketingCampaignAdExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another MarketingCampaignAd entity
+        /// Clones this MarketingCampaignAd object to a new MarketingCampaignAd object
         /// </summary>
-        public static void CopyPropertiesFrom( this MarketingCampaignAd target, MarketingCampaignAd source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static MarketingCampaignAd Clone( this MarketingCampaignAd source, bool deepCopy )
         {
-            target.MarketingCampaignId = source.MarketingCampaignId;
-            target.MarketingCampaignAdTypeId = source.MarketingCampaignAdTypeId;
-            target.Priority = source.Priority;
-            target.MarketingCampaignAdStatus = source.MarketingCampaignAdStatus;
-            target.MarketingCampaignStatusPersonId = source.MarketingCampaignStatusPersonId;
-            target.StartDate = source.StartDate;
-            target.EndDate = source.EndDate;
-            target.Url = source.Url;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as MarketingCampaignAd;
+            }
+            else
+            {
+                var target = new MarketingCampaignAd();
+                target.MarketingCampaignId = source.MarketingCampaignId;
+                target.MarketingCampaignAdTypeId = source.MarketingCampaignAdTypeId;
+                target.Priority = source.Priority;
+                target.MarketingCampaignAdStatus = source.MarketingCampaignAdStatus;
+                target.MarketingCampaignStatusPersonId = source.MarketingCampaignStatusPersonId;
+                target.StartDate = source.StartDate;
+                target.EndDate = source.EndDate;
+                target.Url = source.Url;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }
