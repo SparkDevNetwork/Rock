@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.Caching;
@@ -478,6 +479,24 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_End( object sender, EventArgs e )
         {
+            try
+            {
+                // log the reason that the application end was fired
+                HttpRuntime runtime = (HttpRuntime)typeof( System.Web.HttpRuntime ).InvokeMember( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.GetField, null, null, null );
+
+                if ( runtime != null )
+                {
+                    string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
+                    string shutDownStack = (string)runtime.GetType().InvokeMember( "_shutDownStack", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
+
+                    EventLog.WriteEntry( "Rock", String.Format( "shutDownMessage:\r\n{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ), EventLogEntryType.Warning );
+                }
+            }
+            catch
+            {
+                // intentionally ignore exception
+            }
+
             // close out jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
             if ( runJobsInContext )
