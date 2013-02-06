@@ -112,7 +112,7 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add( "class", "show-modal-iframe btn btn-mini" );
+                aSecure.Attributes.Add( "class", "btn btn-mini" );
                 aSecure.Attributes.Add( "height", "500px" );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
@@ -130,8 +130,9 @@ namespace Rock.Web.UI.Controls
             object dataValue = DataBinder.Eval( container.DataItem, "id" );
             if ( dataValue != DBNull.Value )
             {
-                lnk.Attributes.Add( "href", page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
-                    Security.Authorization.EncodeEntityTypeName( EntityType ), dataValue.ToString(), Title ) ) );
+                string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
+                    Security.Authorization.EncodeEntityTypeName( EntityType ), dataValue.ToString(), Title ) );
+                lnk.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + url + "')");
             }
         }
     }

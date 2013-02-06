@@ -14,7 +14,7 @@ namespace Rock.Reporting
     /// <summary>
     /// MEF Container class for reporting filters
     /// </summary>
-    public class FilterContainer : Container<FilterComponent, IComponentData>
+    public class FilterContainer : ContainerManaged<FilterComponent, IComponentData>
     {
         private static FilterContainer instance;
 

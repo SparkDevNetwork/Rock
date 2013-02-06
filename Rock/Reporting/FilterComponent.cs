@@ -16,7 +16,7 @@ namespace Rock.Reporting
     /// <summary>
     /// 
     /// </summary>
-    public abstract class FilterComponent : IComponent
+    public abstract class FilterComponent : ComponentManaged
     {
         /// <summary>
         /// Gets the title.
