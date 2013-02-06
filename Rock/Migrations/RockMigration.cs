@@ -321,9 +321,9 @@ namespace Rock.Migrations
                     [Order],[Name],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,'{5}',@BlockTypeId,'{1}',
+                    1,@PageId,{5},@BlockTypeId,'{1}',
                     {2},'{3}',0,
-                    {4})
+                    '{4}')
                 SET @BlockId = SCOPE_IDENTITY()
 ",
                     blockTypeGuid,
