@@ -58,6 +58,20 @@
                 </div>
             </fieldset>
 
+            <div id="pnlWorkflowList" runat="server" class="">
+                <Rock:Grid ID="gWorkflows" runat="server" DisplayType="Full" OnRowSelected="gWorkflows_RowSelected">
+                    <Columns>
+                        <asp:BoundField DataField="Name" HeaderText="Name" />
+                        <asp:BoundField DataField="Status" HeaderText="Status" />
+                        <Rock:BoolField DataField="IsProcessing" HeaderText="Processing" />
+                        <Rock:DateTimeField DataField="ActivatedDateTime" HeaderText="Activated" />
+                        <Rock:DateTimeField DataField="LastProcessedDateTime" HeaderText="Last Processed" />
+                        <Rock:DateTimeField DataField="CompletedDateTime" HeaderText="Completed" />
+                        <Rock:DeleteField OnClick="gWorkflows_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
         </asp:Panel>
 
     </ContentTemplate>
