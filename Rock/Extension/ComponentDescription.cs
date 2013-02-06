@@ -31,6 +31,14 @@ namespace Rock.Extension
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
+        public Type Type { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -68,6 +76,7 @@ namespace Rock.Extension
             Name = service.Key;
             Order = service.Value.Order;
             IsActive = service.Value.IsActive;
+            Type = type;
 
             // Look for a DescriptionAttribute on the class and if found, use its value for the description
             // property of this class
