@@ -176,12 +176,20 @@ namespace Rock.Web.UI.Controls
                 if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
-                    Type itemType = dataSourceType.GetGenericArguments()[0];
-                    if ( itemType != null )
-                    {
-                        rowItemText = itemType.GetFriendlyTypeName().ToLower();
-                    }
 
+                    Type[] genericArgs = dataSourceType.GetGenericArguments();
+                    if ( genericArgs.Length > 0 )
+                    {
+                        Type itemType = dataSourceType.GetGenericArguments()[0];
+                        if ( itemType != null )
+                        {
+                            rowItemText = itemType.GetFriendlyTypeName();
+                        }
+                    }
+                    else
+                    {
+                        return "Item";
+                    }
                 }
                 return ( rowItemText as string );
             }
@@ -671,8 +679,6 @@ namespace Rock.Web.UI.Controls
             int itemCount = 0;
             if ( this.DataSource is DataTable || this.DataSource is DataView )
             {
-                DataTable data = null;
-
                 if ( this.DataSource is DataTable )
                 {
                     itemCount = ( (DataTable)this.DataSource ).Rows.Count;
@@ -1378,7 +1384,10 @@ namespace Rock.Web.UI.Controls
             }
 
             // Set Item Count
-            itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, rowItemText.Pluralize() );
+            if ( itemCountDisplay != null )
+            {
+                itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, itemCount == 1 ? rowItemText : rowItemText.Pluralize() );
+            }
 
             // Set page size controls
             if ( ItemLinkListItem[0] != null )
