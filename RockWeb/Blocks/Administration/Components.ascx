@@ -13,6 +13,13 @@
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
                 <Rock:BoolField DataField="IsActive" HeaderText="Active" />
+                <asp:TemplateField>
+                    <HeaderStyle CssClass="span1" />
+                    <ItemStyle HorizontalAlign="Center"/>
+                    <ItemTemplate>
+                        <a id="aSecure" runat="server" class="btn btn-mini" height="500px"><i class="icon-lock"></i></a>
+                    </ItemTemplate>
+                </asp:TemplateField>
             </Columns>
         </Rock:Grid>
 

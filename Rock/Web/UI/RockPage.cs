@@ -554,9 +554,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.ID = "aPageProperties";
                         aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
+                        aAttributes.Attributes.Add( "class", "btn properties" );
                         aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aPageProperties'), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
+                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
@@ -567,9 +567,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.ID = "aChildPages";
                         aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
+                        aChildPages.Attributes.Add( "class", "btn page-child-pages" );
                         aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($('#aChildPages'), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
+                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
@@ -590,9 +590,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.ID = "aPageSecurity";
                         aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
+                        aPageSecurity.Attributes.Add( "class", "btn page-security" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
-                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($('#aPageSecurity'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
+                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( typeof(Rock.Model.Page) ), CurrentPage.Id ) ) + "')" );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
@@ -604,9 +604,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aSystemInfo );
                         aSystemInfo.ID = "aSystemInfo";
                         aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
+                        aSystemInfo.Attributes.Add( "class", "btn system-info" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
-                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($('#aSystemInfo'), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
+                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
@@ -802,9 +802,9 @@ namespace Rock.Web.UI
                 zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.ID = string.Format( "aBlockConfig-{0}", control.ID );
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($('#" + aBlockConfig.ID + "'), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";

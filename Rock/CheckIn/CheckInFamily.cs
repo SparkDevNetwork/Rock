@@ -44,6 +44,12 @@ namespace Rock.CheckIn
         public List<CheckInPerson> People { get; set; }
 
         /// <summary>
+        /// An optional value that can be set to display family name.  If not set, the Group name will be used
+        /// </summary>
+        [DataMember]
+        public string Caption { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
         /// </summary>
         public CheckInFamily()
@@ -60,7 +66,14 @@ namespace Rock.CheckIn
         /// </returns>
         public override string ToString()
         {
-            return Group != null ? Group.ToString() : string.Empty;
+            if ( !string.IsNullOrWhiteSpace( Caption ) )
+            {
+                return Caption;
+            }
+            else
+            {
+                return Group != null ? Group.ToString() : string.Empty;
+            }
         }
     }
 }

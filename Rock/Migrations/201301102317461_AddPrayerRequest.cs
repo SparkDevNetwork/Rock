@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddPrayerRequest : RockMigration
+    public partial class AddPrayerRequest : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

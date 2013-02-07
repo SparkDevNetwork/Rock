@@ -223,7 +223,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Location).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
-            this.HasOptional( a => a.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Person ).WithMany( p => p.Attendances ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }

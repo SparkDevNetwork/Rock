@@ -4,15 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Web;
-using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Search.Person
 {
@@ -61,39 +57,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            string fName = string.Empty;
-            string lName = string.Empty;
-
-            var names = searchterm.SplitDelimitedValues();
-
-            bool lastFirst = searchterm.Contains(",");
-
-            if (lastFirst)
-            {
-                // last, first
-                lName = names.Length >= 1 ? names[0] : string.Empty;
-                fName = names.Length >= 2 ? names[1] : string.Empty;
-            }
-            else
-            {
-                // first last
-                fName = names.Length >= 1 ? names[0] : string.Empty;
-                lName = names.Length >= 2 ? names[1] : string.Empty;
-            }
-
-            var personService = new PersonService();
-
-            var people = personService.Queryable().
-                Where( p => ( ( p.NickName ?? p.GivenName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) );
-
-            if ( lastFirst )
-                people = people.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ?? p.GivenName );
-            else
-                people = people.OrderBy( p => p.NickName ?? p.GivenName ).ThenBy( p => p.LastName );
-
-            return people.
-                Select( p => ( lastFirst ? p.LastName + ", " + ( p.NickName ?? p.GivenName ) : ( p.NickName ?? p.GivenName ) + " " + p.LastName ) ).
-                Distinct();
+            return new PersonService().Queryable().SelectFullNames( searchterm, true );
         }
     }
 }

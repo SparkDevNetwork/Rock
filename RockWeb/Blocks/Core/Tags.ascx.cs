@@ -85,6 +85,10 @@ namespace RockWeb.Blocks.Core
                 }});
             }},
             autoCompleteAppendTo: 'div.tag-wrap',
+            autoCompleteMessages: {{
+              noResults: function () {{ }},
+              results: function () {{ }}
+            }},
             'height': 'auto',
             'width': '100%',
             'interactive': true,

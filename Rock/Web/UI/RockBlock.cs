@@ -338,6 +338,18 @@ namespace Rock.Web.UI
         //}
 
         /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public void SaveAttributeValues( int? personId )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SaveAttributeValues( personId );
+            }
+        }
+
+        /// <summary>
         /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
@@ -350,6 +362,19 @@ namespace Rock.Web.UI
                 return CurrentBlock.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Sets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SetAttributeValue( key, value );
+            }
         }
 
         /// <summary>
@@ -516,9 +541,9 @@ namespace Rock.Web.UI
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
+                aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aBlockProperties'), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -533,9 +558,9 @@ namespace Rock.Web.UI
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.ID = "aSecureBlock";
                 aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
+                aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($('#aSecureBlock'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
+                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
                     Security.Authorization.EncodeEntityTypeName( typeof(Block) ), CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );

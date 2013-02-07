@@ -9,15 +9,20 @@
 
         <div class="control-group">
             <label class="control-label">Select Time(s)</label>
-            <div class="controls">
-                <asp:CheckBoxList ID="cblTimes" runat="server"></asp:CheckBoxList>
+            <div class="controls btn-group time-select" data-toggle="buttons-checkbox">
+                <asp:Repeater ID="rSelection" runat="server">
+                    <ItemTemplate>
+                        <button type="button" schedule-id='<%# Eval("Schedule.Id") %>' class="btn btn-primary btn-large"><%# Container.DataItem.ToString() %></button>
+                    </ItemTemplate>
+                </asp:Repeater>
+                <asp:HiddenField ID="hfTimes" runat="server"></asp:HiddenField>
             </div>
         </div>
         
     </fieldset>
 
     <div class="actions">
-        <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClick="lbSelect_Click" Text="Select" />
+        <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" Text="Select" />
         <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
         <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
     </div>

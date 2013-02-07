@@ -6,9 +6,9 @@
 <head runat="server">
     <title>Oops...</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
     <script>
@@ -27,7 +27,7 @@
     
         
         <div id="content">
-            <img alt="Rock ChMS" src="/RockWeb/Assets/Images/rock-logo.svg" class="pageheader-logo" />
+            <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
 
             <div id="content-box">
                 <div class="row-fluid">

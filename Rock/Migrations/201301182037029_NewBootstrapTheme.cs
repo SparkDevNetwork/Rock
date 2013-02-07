@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class NewBootstrapTheme : RockMigration
+    public partial class NewBootstrapTheme : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -34,8 +34,8 @@ namespace Rock.Migrations
                 update Page set IconCssClass = 'icon-envelope' where Id = 46
                 update Page set IconCssClass = 'icon-tags' where Id = 90
                 update Page set IconCssClass = 'icon-sign-blank' where Id = 104
-                update Page set IconCssClass = 'icon-icon-book' where Id = 84
-                update Page set IconCssClass = 'icon-icon-bar-chart' where Id = 94
+                update Page set IconCssClass = 'icon-book' where Id = 84
+                update Page set IconCssClass = 'icon-bar-chart' where Id = 94
                 update Page set IconCssClass = 'icon-group' where Id = 110
 
                 update Page set IconCssClass = 'icon-desktop' where Id = 2

@@ -32,9 +32,11 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
+                gBlockTypes.RowItemText = "Block Type";
                 gBlockTypes.DataKeyNames = new string[] { "id" };
                 gBlockTypes.Actions.IsAddEnabled = true;
                 gBlockTypes.Actions.AddClick += gBlockTypes_Add;
@@ -70,6 +72,17 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Grid Events
+
+        /// <summary>
+        /// Handles the Apply Filter event for the GridFilter
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            // We're not saving any filters here because the ones we're using are transient in nature.
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the Add event of the gBlockTypes control.
@@ -109,6 +122,28 @@ namespace RockWeb.Blocks.Administration
             }
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the SetBadgeType event of the Blocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="BadgeRowEventArgs" /> instance containing the event data.</param>
+        protected void Blocks_SetBadgeType( object sender, BadgeRowEventArgs e )
+        {
+            int blockCount = (int)e.FieldValue;
+            if ( blockCount == 0 )
+            {
+                e.BadgeType = BadgeType.Important;
+            }
+            else if ( blockCount > 1 )
+            {
+                e.BadgeType = BadgeType.Success;
+            }
+            else
+            {
+                e.BadgeType = BadgeType.Info;
+            }
         }
 
         /// <summary>
@@ -189,13 +224,33 @@ namespace RockWeb.Blocks.Administration
             BlockTypeService blockTypeService = new BlockTypeService();
             SortProperty sortProperty = gBlockTypes.SortProperty;
 
+            var blockTypes = blockTypeService.Queryable();
+
+            // Exclude system blocks if checked.
+            if ( cbExcludeSystem.Checked )
+            {
+                blockTypes = blockTypes.Where( b => b.IsSystem == false );
+            }
+
+            // Filter by Name
+            if ( !string.IsNullOrEmpty( tbNameFilter.Text.Trim() ) )
+            {
+                blockTypes = blockTypes.Where( b => b.Name.Contains( tbNameFilter.Text.Trim() ) );
+            }
+
+            // Filter by Path
+            if ( !string.IsNullOrEmpty( tbPathFilter.Text.Trim() ) )
+            {
+                blockTypes = blockTypes.Where( b => b.Path.Contains( tbPathFilter.Text.Trim() ) );
+            }
+
             if ( sortProperty != null )
             {
-                gBlockTypes.DataSource = blockTypeService.Queryable().Sort( sortProperty ).ToList();
+                gBlockTypes.DataSource = blockTypes.Sort( sortProperty ).ToList();
             }
             else
             {
-                gBlockTypes.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
+                gBlockTypes.DataSource = blockTypes.OrderBy( b => b.Name ).ToList();
             }
 
             gBlockTypes.DataBind();
@@ -232,5 +287,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }

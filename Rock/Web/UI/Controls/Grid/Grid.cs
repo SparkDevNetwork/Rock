@@ -176,12 +176,20 @@ namespace Rock.Web.UI.Controls
                 if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
-                    Type itemType = dataSourceType.GetGenericArguments()[0];
-                    if ( itemType != null )
-                    {
-                        rowItemText = itemType.GetFriendlyTypeName().ToLower();
-                    }
 
+                    Type[] genericArgs = dataSourceType.GetGenericArguments();
+                    if ( genericArgs.Length > 0 )
+                    {
+                        Type itemType = dataSourceType.GetGenericArguments()[0];
+                        if ( itemType != null )
+                        {
+                            rowItemText = itemType.GetFriendlyTypeName();
+                        }
+                    }
+                    else
+                    {
+                        return "Item";
+                    }
                 }
                 return ( rowItemText as string );
             }
@@ -474,7 +482,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i+1].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -667,10 +675,28 @@ namespace Rock.Web.UI.Controls
 
             base.OnDataBound( e );
 
+            // Get ItemCount
+            int itemCount = 0;
+            if ( this.DataSource is DataTable || this.DataSource is DataView )
+            {
+                if ( this.DataSource is DataTable )
+                {
+                    itemCount = ( (DataTable)this.DataSource ).Rows.Count;
+                }
+                else if ( this.DataSource is DataView )
+                {
+                    itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
+                }
+            }
+            else
+            {
+                itemCount = ( (IList)this.DataSource ).Count;
+            }
+
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
             if ( PagerTemplate != null )
             {
-                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize );
+                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
             }
         }
 
@@ -760,7 +786,7 @@ namespace Rock.Web.UI.Controls
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
-                if ( column != null )
+                if ( column != null && !( column is INotRowSelectedField ) )
                 {
                     DataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
@@ -1147,6 +1173,27 @@ namespace Rock.Web.UI.Controls
         public System.Web.UI.WebControls.SortDirection Direction { get; set; }
 
         /// <summary>
+        /// Gets the direction as an ASC or DESC string.
+        /// </summary>
+        /// <value>
+        /// The direction string.
+        /// </value>
+        public string DirectionString 
+        { 
+            get
+            {
+                if (Direction == SortDirection.Descending)
+                {
+                    return "DESC";
+                }
+                else
+                {
+                    return "ASC";
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the property name
         /// </summary>
         /// <value>
@@ -1183,6 +1230,8 @@ namespace Rock.Web.UI.Controls
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
         LinkButton[] PageLink = new LinkButton[12];
 
+       Literal itemCountDisplay;
+
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
 
@@ -1201,14 +1250,6 @@ namespace Rock.Web.UI.Controls
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
 
-            // RockPage Status
-            //HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
-            //divStatus.Attributes.Add( "class", "page-status" );
-            //divPagination.Controls.Add( divStatus );
-
-            //lStatus = new Literal(); 
-            //divStatus.Controls.Add( lStatus );
-
             // Pagination
             NavigationPanel = new HtmlGenericControl( "div" );
             NavigationPanel.Attributes.Add( "class", "page-navigation" );
@@ -1226,18 +1267,22 @@ namespace Rock.Web.UI.Controls
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].Click += new EventHandler( lbPage_Click );
             }
-
+            
             PageLink[0].Text = "&larr; Previous";
             PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
+
+            // itemCount
+            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
+            divItemCount.Attributes.Add( "class", "item-count" );
+            divPagination.Controls.Add( divItemCount );
+
+            itemCountDisplay = new Literal();
+            divItemCount.Controls.Add( itemCountDisplay );
 
             // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
             divPagination.Controls.Add( divSize );
-
-            //Label lblPageSize = new Label();
-            //lblPageSize.Text = "Items per page:";
-            //divSize.Controls.Add( lblPageSize );
 
             HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
             divSizeOptions.Attributes.Add( "class", "page-size-options" );
@@ -1268,12 +1313,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageCount">The number of total pages</param>
         /// <param name="pageIndex">The current page index</param>
         /// <param name="pageSize">The number of items on each page</param>
-        public void SetNavigation( int pageCount, int pageIndex, int pageSize )
+        /// <param name="itemCount">The item count.</param>
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
         {
-            //// Set status
-            //if (lStatus != null)
-            //    lStatus.Text = string.Format( "RockPage {0:N0} of {1:N0}", pageIndex+1, pageCount );
-
             // Set navigation controls
             if ( NavigationPanel != null )
             {
@@ -1339,6 +1381,12 @@ namespace Rock.Web.UI.Controls
                 {
                     NavigationPanel.Visible = false;
                 }
+            }
+
+            // Set Item Count
+            if ( itemCountDisplay != null )
+            {
+                itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, itemCount == 1 ? rowItemText : rowItemText.Pluralize() );
             }
 
             // Set page size controls

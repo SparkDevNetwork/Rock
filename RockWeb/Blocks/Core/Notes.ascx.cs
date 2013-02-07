@@ -36,11 +36,11 @@ namespace RockWeb.Blocks.Core
                 string script = @"
 Sys.Application.add_load(function () {
 
-    $('#note-add').click(function () {
-        $('#note-entry').slideToggle(""slow"");
+    $('.note-add').click(function () {
+        $(this).parent().siblings('.note-entry').slideToggle(""slow"");
     });
 
-    $('#person-notes').tinyscrollbar({ size: 150 });
+    $('.person-notes').tinyscrollbar({ size: 150 });
 
 });";
                 this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
@@ -148,11 +148,15 @@ Sys.Application.add_load(function () {
         {
             var article = new HtmlGenericControl( "article" );
             phNotes.Controls.Add( article );
-            article.AddCssClass( "group" );
+            article.AddCssClass( "alert" );
 
-            if ( note.IsAlert.HasValue && note.IsAlert.Value )
+            if (note.IsAlert.HasValue && note.IsAlert.Value)
             {
-                article.AddCssClass( "alert" );
+                article.AddCssClass("alert-error");
+            }
+            else
+            {
+                article.AddCssClass("alert-info");
             }
 
             if ( note.IsPrivate( "View", CurrentPerson ) )
@@ -181,9 +185,9 @@ Sys.Application.add_load(function () {
 
             var div = new HtmlGenericControl( "div" );
             article.Controls.Add( div );
-            div.AddCssClass( "details" );
+            div.AddCssClass( "detail" );
 
-            var heading = new HtmlGenericControl( "h5" );
+            var heading = new HtmlGenericControl( "strong" );
             div.Controls.Add( heading );
             heading.Controls.Add( new LiteralControl( string.Format( "{0} - {1}", note.Date.ToShortDateString(), note.Caption ) ) );
 

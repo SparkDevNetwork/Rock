@@ -151,14 +151,6 @@ namespace Rock.Data
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Changes.
-        /// </summary>
-        /// <value>
-        /// the Entity Changes.
-        /// </value>
-        public DbSet<EntityChange> EntityChanges { get; set; }
-
-        /// <summary>
         /// Gets or sets the entity types.
         /// </summary>
         /// <value>
@@ -439,6 +431,22 @@ namespace Rock.Data
         public DbSet<PrayerRequest> PrayerRequests { get; set; }
 
         /// <summary>
+        /// Gets or sets the reports.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<Report> Reports { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report filters.
+        /// </summary>
+        /// <value>
+        /// The report filters.
+        /// </value>
+        public DbSet<ReportFilter> ReportFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -630,7 +638,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
@@ -666,6 +673,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
+            modelBuilder.Configurations.Add( new ReportConfiguration() );
+            modelBuilder.Configurations.Add( new ReportFilterConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
