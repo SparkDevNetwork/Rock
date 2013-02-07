@@ -786,7 +786,7 @@ namespace Rock.Web.UI.Controls
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
-                if ( column != null )
+                if ( column != null && !( column is INotRowSelectedField ) )
                 {
                     DataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
