@@ -280,6 +280,10 @@
     <Compile Include="Migrations\201302042346570_FixBlockLayoutData.Designer.cs">
       <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302062119470_CategoryDetail.cs" />
+    <Compile Include="Migrations\201302062119470_CategoryDetail.Designer.cs">
+      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -402,6 +406,9 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Grid\CustomCheckboxField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
+    <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
     <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
@@ -1023,6 +1030,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302042346570_FixBlockLayoutData.resx">
       <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302062119470_CategoryDetail.resx">
+      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

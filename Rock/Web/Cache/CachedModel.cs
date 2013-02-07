@@ -237,6 +237,17 @@ namespace Rock.Web.Cache
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public virtual Dictionary<string, string> AttributeValueDefaults
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="personId">The person id.</param>
