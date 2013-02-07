@@ -57,17 +57,8 @@ namespace RockWeb.Blocks.CheckIn
                             }
                             else
                             {
-                                int? defaultId = person.GroupTypes.OrderByDescending( g => g.LastCheckIn ).Select( g => g.GroupType.Id ).FirstOrDefault();
-                                foreach ( var groupType in person.GroupTypes )
-                                {
-                                    ListItem item = new ListItem( groupType.ToString(), groupType.GroupType.Id.ToString() );
-                                    if ( defaultId.HasValue && groupType.GroupType.Id == defaultId.Value )
-                                    {
-                                        item.Selected = true;
-                                    }
-
-                                    lbGroupTypes.Items.Add( item );
-                                }
+                                rSelection.DataSource = person.GroupTypes;
+                                rSelection.DataBind();
                             } 
                         }
                         else
@@ -83,25 +74,22 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void lbSelect_Click( object sender, EventArgs e )
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                if ( lbGroupTypes.SelectedItem != null )
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
                 {
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
+                    if ( person != null )
                     {
-                        var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                        if ( person != null )
+                        int id = Int32.Parse( e.CommandArgument.ToString() );
+                        var groupType = person.GroupTypes.Where( g => g.GroupType.Id == id ).FirstOrDefault();
+                        if ( groupType != null )
                         {
-                            int id = Int32.Parse( lbGroupTypes.SelectedItem.Value );
-                            var groupType = person.GroupTypes.Where( g => g.GroupType.Id == id ).FirstOrDefault();
-                            if ( groupType != null )
-                            {
-                                groupType.Selected = true;
-                                ProcessSelection();
-                            }
+                            groupType.Selected = true;
+                            ProcessSelection();
                         }
                     }
                 }

@@ -126,7 +126,7 @@ namespace Rock.Model
     public partial class AuditConfiguration : EntityTypeConfiguration<Audit>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityChangeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="EntityTypeConfiguration" /> class.
         /// </summary>
         public AuditConfiguration()
         {

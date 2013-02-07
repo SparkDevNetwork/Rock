@@ -12,6 +12,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Constants;
+
 using Rock.Web.UI;
 
 namespace Rock.Attribute
@@ -233,7 +234,14 @@ namespace Rock.Attribute
                 {
                     var attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attributeEntry.Value.Id;
-                    attributeValue.Value = attributeEntry.Value.DefaultValue;
+                    if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attributeEntry.Value.Name ) )
+                    {
+                        attributeValue.Value = entity.AttributeValueDefaults[attributeEntry.Value.Name];
+                    }
+                    else
+                    {
+                        attributeValue.Value = attributeEntry.Value.DefaultValue;
+                    }
                     attributeValues[attributeEntry.Value.Key].Add( attributeValue );
                 }
                 else
@@ -467,29 +475,45 @@ namespace Rock.Attribute
                             div.Attributes.Add( "attribute-key", attribute.Key );
                             div.ClientIDMode = ClientIDMode.AutoID;
 
-                            Label lbl = new Label();
-                            div.Controls.Add( lbl );
-                            lbl.ClientIDMode = ClientIDMode.AutoID;
-                            lbl.AddCssClass( "control-label" );
-                            lbl.Text = attribute.Name;
-                            lbl.AssociatedControlID = string.Format( "attribute_field_{0}", attribute.Id );
+                            Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue );
+                            if ( !( attributeControl is CheckBox ) )
+                            {
+                                HtmlGenericControl labelDiv = new HtmlGenericControl( "div" );
+                                div.Controls.Add( labelDiv );
+                                labelDiv.AddCssClass( "control-label" );
+                                labelDiv.ClientIDMode = ClientIDMode.AutoID;
+
+                                Literal lbl = new Literal();
+                                labelDiv.Controls.Add( lbl );
+                                lbl.Text = attribute.Name;
+
+                                if ( !string.IsNullOrEmpty( attribute.Description ) )
+                                {
+                                    var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                                    labelDiv.Controls.Add( HelpBlock );
+                                    HelpBlock.Text = attribute.Description;
+                                }
+                            }
 
                             HtmlGenericControl divControls = new HtmlGenericControl( "div" );
                             div.Controls.Add( divControls );
-                            divControls.Controls.Clear();
-
                             divControls.AddCssClass( "controls" );
-
-                            Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue );
-                            if ( attributeControl is CheckBox )
-                            {
-                                ( attributeControl as CheckBox ).Text = attribute.Name;
-                                lbl.Visible = false;
-                            }
+                            divControls.Controls.Clear();
 
                             attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
                             attributeControl.ClientIDMode = ClientIDMode.AutoID;
                             divControls.Controls.Add( attributeControl );
+
+                            if ( attributeControl is CheckBox )
+                            {
+                                ( attributeControl as CheckBox ).Text = attribute.Name;
+                                if ( !string.IsNullOrEmpty( attribute.Description ) )
+                                {
+                                    var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                                    divControls.Controls.Add( HelpBlock );
+                                    HelpBlock.Text = attribute.Description;
+                                }
+                            }
 
                             if ( attribute.IsRequired && ( attributeControl is TextBox ) )
                             {
@@ -503,15 +527,6 @@ namespace Rock.Attribute
 
                                 if ( !setValue && !rfv.IsValid )
                                     div.Attributes.Add( "class", "error" );
-                            }
-
-                            if ( !string.IsNullOrEmpty( attribute.Description ) )
-                            {
-                                HtmlGenericControl helpBlock = new HtmlGenericControl( "div" );
-                                divControls.Controls.Add( helpBlock );
-                                helpBlock.ClientIDMode = ClientIDMode.AutoID;
-                                helpBlock.AddCssClass( "alert alert-info" );
-                                helpBlock.InnerHtml = attribute.Description;
                             }
                         }
                     }

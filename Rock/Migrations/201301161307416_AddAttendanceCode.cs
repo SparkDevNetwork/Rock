@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddAttendanceCode : RockMigration
+    public partial class AddAttendanceCode : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

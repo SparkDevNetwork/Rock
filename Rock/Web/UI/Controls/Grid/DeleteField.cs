@@ -3,12 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -25,6 +26,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.CssClass = "span1";
         }
 
         /// <summary>
@@ -41,7 +43,6 @@ namespace Rock.Web.UI.Controls
             deleteFieldTemplate.LinkButtonClick += deleteFieldTemplate_LinkButtonClick;
             this.ItemTemplate = deleteFieldTemplate;
             this.ParentGrid = control as Grid;
-
             return base.Initialize( sortingEnabled, control );
         }
 
@@ -124,6 +125,7 @@ namespace Rock.Web.UI.Controls
             LinkButton lbDelete = sender as LinkButton;
             if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
             {
+                lbDelete.AddCssClass( "disabled" );
                 lbDelete.Enabled = false;
             }
             
@@ -167,6 +169,7 @@ namespace Rock.Web.UI.Controls
                         bool isSystem = (bool)pi.GetValue( dgi.DataItem );
                         if ( isSystem )
                         {
+                            lbDelete.AddCssClass( "disabled" );
                             lbDelete.Enabled = false;
                         }
                     }

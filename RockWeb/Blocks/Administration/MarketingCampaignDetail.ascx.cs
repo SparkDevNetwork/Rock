@@ -65,11 +65,13 @@ namespace RockWeb.Blocks.Administration
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gMarketingCampaignAudiencesPrimary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesPrimary.Actions.IsAddEnabled = true;
             gMarketingCampaignAudiencesPrimary.Actions.AddClick += gMarketingCampaignAudiencesPrimary_Add;
             gMarketingCampaignAudiencesPrimary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesPrimary.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gMarketingCampaignAudiencesSecondary.DataKeyNames = new string[] { "id" };
+            gMarketingCampaignAudiencesSecondary.Actions.IsAddEnabled = true;
             gMarketingCampaignAudiencesSecondary.Actions.AddClick += gMarketingCampaignAudiencesSecondary_Add;
             gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -184,13 +186,13 @@ namespace RockWeb.Blocks.Administration
             }
 
             marketingCampaign.Title = tbTitle.Text;
-            if ( ddlContactPerson.SelectedValue.Equals( None.Id.ToString() ) )
+            if ( ppContactPerson.SelectedValue.Equals( None.Id.ToString() ) )
             {
                 marketingCampaign.ContactPersonId = null;
             }
             else
             {
-                marketingCampaign.ContactPersonId = int.Parse( ddlContactPerson.SelectedValue );
+                marketingCampaign.ContactPersonId = int.Parse( ppContactPerson.SelectedValue );
             }
 
             marketingCampaign.ContactEmail = tbContactEmail.Text;
@@ -314,12 +316,6 @@ namespace RockWeb.Blocks.Administration
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
 
-            PersonService personService = new PersonService();
-            List<Person> persons = personService.Queryable().OrderBy( a => a.NickName ).ThenBy( a => a.LastName ).ToList();
-            persons.Insert( 0, new Person { Id = None.Id, GivenName = None.Text } );
-            ddlContactPerson.DataSource = persons;
-            ddlContactPerson.DataBind();
-
             CampusService campusService = new CampusService();
 
             cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
@@ -421,7 +417,7 @@ namespace RockWeb.Blocks.Administration
             tbContactPhoneNumber.Text = marketingCampaign.ContactPhoneNumber;
 
             LoadDropDowns();
-            ddlContactPerson.SetValue( marketingCampaign.ContactPersonId );
+            ppContactPerson.SetValue( marketingCampaign.ContactPerson );
             ddlEventGroup.SetValue( marketingCampaign.EventGroupId );
 
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
@@ -439,7 +435,10 @@ namespace RockWeb.Blocks.Administration
         private void ShowReadonlyDetails( MarketingCampaign marketingCampaign )
         {
             SetEditMode( false );
-
+            
+            // set title.text value even though it is hidden so that Ad Edit can get the title of the campaign
+            tbTitle.Text = marketingCampaign.Title;
+            
             // make a Description section for nonEdit mode
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -494,13 +493,13 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlContactPerson control.
+        /// Handles the SelectPerson event of the ppContactPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlContactPerson_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ppContactPerson_SelectPerson( object sender, EventArgs e )
         {
-            int personId = int.Parse( ddlContactPerson.SelectedValue );
+            int personId = int.Parse( ppContactPerson.SelectedValue );
             Person contactPerson = new PersonService().Get( personId );
             if ( contactPerson != null )
             {
@@ -551,15 +550,16 @@ namespace RockWeb.Blocks.Administration
             if ( !marketingCampaignAdId.Equals( 0 ) )
             {
                 marketingCampaignAd = new MarketingCampaignAdService().Get( marketingCampaignAdId );
+                marketingCampaignAd.LoadAttributes();
             }
             else
             {
                 marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
             }
 
-            if ( !marketingCampaignAd.Id.Equals( 0 ) )
+            if ( marketingCampaignAd.Id.Equals( 0 ) )
             {
-                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text );
+                lActionTitleAd.Text = ActionTitle.Add( "Marketing Ad for " + tbTitle.Text);
             }
             else
             {
@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.Administration
 
             marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
             marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
-            marketingCampaignAd.Priority = tbPriority.TextAsInteger() ?? 0;
+            marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
             marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfMarketingCampaignAdStatus.Value );
             if ( !string.IsNullOrWhiteSpace( hfMarketingCampaignAdStatusPersonId.Value ) )
             {

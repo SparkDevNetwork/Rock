@@ -4,26 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>
-    </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock</RootNamespace>
     <AssemblyName>Rock</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <UseIISExpress>true</UseIISExpress>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>4.0</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <TargetFrameworkProfile />
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,7 +19,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>Rock.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -117,6 +104,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\AudiencesFieldAttribute.cs" />
+    <Compile Include="Attribute\AudiencesPrimarySecondaryFieldAttribute.cs" />
+    <Compile Include="Attribute\CampusesFieldAttribute.cs" />
+    <Compile Include="Attribute\MarketingCampaignAdImageAttributeNameFieldAttribute.cs" />
+    <Compile Include="Attribute\MarketingCampaignAdTypesFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
@@ -144,6 +136,12 @@
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
     <Compile Include="Data\NotExportable.cs" />
+    <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\AudiencesField.cs" />
+    <Compile Include="Field\Types\CampusesField.cs" />
+    <Compile Include="Field\Types\AudiencePrimarySecondaryField.cs" />
+    <Compile Include="Field\Types\MarketingCampaignAdImageAttributeNameField.cs" />
+    <Compile Include="Field\Types\MarketingCampaignAdTypesField.cs" />
     <Compile Include="Field\Types\GroupField.cs" />
     <Compile Include="Field\Types\GroupTypesField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
@@ -258,7 +256,36 @@
     <Compile Include="Migrations\201301182325595_MarketingCampaignListDetail.Designer.cs">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201301291756455_RemoveEntityChange.cs" />
+    <Compile Include="Migrations\201301291756455_RemoveEntityChange.Designer.cs">
+      <DependentUpon>201301291756455_RemoveEntityChange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301292308074_ListDetailSweep03.cs" />
+    <Compile Include="Migrations\201301292308074_ListDetailSweep03.Designer.cs">
+      <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301301954199_Report.cs" />
+    <Compile Include="Migrations\201301301954199_Report.Designer.cs">
+      <DependentUpon>201301301954199_Report.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301310052455_WorkflowUI01.cs" />
+    <Compile Include="Migrations\201301310052455_WorkflowUI01.Designer.cs">
+      <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.cs" />
+    <Compile Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.Designer.cs">
+      <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.cs" />
+    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.Designer.cs">
+      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201302062119470_CategoryDetail.cs" />
+    <Compile Include="Migrations\201302062119470_CategoryDetail.Designer.cs">
+      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -289,6 +316,8 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
@@ -300,6 +329,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\ReportFilter.cs" />
+    <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
@@ -368,7 +399,28 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
+    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
+    <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
+    <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
+    <Compile Include="Web\UI\Controls\Toggle.cs" />
+    <Compile Include="Web\UI\Controls\HelpBlock.cs" />
+    <Compile Include="Web\UI\Controls\PersonPicker.cs" />
+    <Compile Include="Reporting\FilterComponent.cs" />
+    <Compile Include="Reporting\FilterContainer.cs" />
+    <Compile Include="Reporting\PersonFilters\GroupTypeAttendanceFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\GenderFilter.cs" />
+    <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterGroup.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
@@ -400,7 +452,6 @@
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\CodeGenerated\DefinedTypeService.cs" />
     <Compile Include="Model\CodeGenerated\DefinedValueService.cs" />
-    <Compile Include="Model\CodeGenerated\EntityChangeService.cs" />
     <Compile Include="Model\CodeGenerated\ExceptionLogService.cs" />
     <Compile Include="Model\CodeGenerated\FieldTypeService.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
@@ -410,8 +461,6 @@
     <Compile Include="Model\Metric.cs" />
     <Compile Include="Model\DefinedTypeService.Partial.cs" />
     <Compile Include="Model\DefinedValueService.Partial.cs" />
-    <Compile Include="Model\EntityChange.cs" />
-    <Compile Include="Model\EntityChangeService.Partial.cs" />
     <Compile Include="Model\ExceptionLog.cs" />
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\MetricValueService.Partial.cs" />
@@ -580,7 +629,6 @@
     <Compile Include="SystemGuid\Page.cs" />
     <Compile Include="Transactions\AuditTransaction.cs" />
     <Compile Include="Transactions\WorkflowTriggerTransaction.cs" />
-    <Compile Include="Transactions\EntityChangeTransaction.cs" />
     <Compile Include="Transactions\UserLastActivityTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
@@ -704,7 +752,6 @@
     <Compile Include="Data\Model.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\TrackChangesAttribute.cs" />
     <Compile Include="Data\RockContext.cs" />
     <Compile Include="Data\UnitOfWorkScope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -964,33 +1011,30 @@
     <EmbeddedResource Include="Migrations\201301182325595_MarketingCampaignListDetail.resx">
       <DependentUpon>201301182325595_MarketingCampaignListDetail.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301291756455_RemoveEntityChange.resx">
+      <DependentUpon>201301291756455_RemoveEntityChange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301292308074_ListDetailSweep03.resx">
+      <DependentUpon>201301292308074_ListDetailSweep03.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301301954199_Report.resx">
+      <DependentUpon>201301301954199_Report.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301310052455_WorkflowUI01.resx">
+      <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.resx">
+      <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302042346570_FixBlockLayoutData.resx">
+      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302062119470_CategoryDetail.resx">
+      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>60512</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:60512/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

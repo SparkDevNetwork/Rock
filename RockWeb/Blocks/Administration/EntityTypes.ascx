@@ -10,9 +10,10 @@
                     <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
                     <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
                     <asp:TemplateField>
-                        <ItemStyle HorizontalAlign="Center" CssClass="grid-icon-cell security" />
+                        <HeaderStyle CssClass="span1" />
+                        <ItemStyle HorizontalAlign="Center"/>
                         <ItemTemplate>
-                            <a id="aSecure" runat="server" class="show-modal-iframe" height="500px" />
+                            <a id="aSecure" runat="server" class="btn btn-mini" height="500px"><i class="icon-lock"></i></a>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>

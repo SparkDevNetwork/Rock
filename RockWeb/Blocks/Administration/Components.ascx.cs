@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Extension;
@@ -56,6 +57,12 @@ namespace RockWeb.Blocks.Administration
                             rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.Columns[0].Visible = _isAuthorizedToConfigure;    // Reorder
                         rGrid.GridRebind += rGrid_GridRebind;
+                        rGrid.RowDataBound += rGrid_RowDataBound;
+
+                        if ( containerType.BaseType.GenericTypeArguments.Length > 0 )
+                        {
+                            rGrid.RowItemText = containerType.BaseType.GenericTypeArguments[0].Name.SplitCase();
+                        }
                     }
                     else
                         DisplayError( "Could not get ContainerManaged instance from Instance property" );
@@ -136,6 +143,22 @@ namespace RockWeb.Blocks.Administration
         void rGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
+        }
+
+        void rGrid_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            ComponentDescription componentDescription = e.Row.DataItem as ComponentDescription;
+            if ( componentDescription != null )
+            {
+                HtmlAnchor aSecure = e.Row.FindControl( "aSecure" ) as HtmlAnchor;
+                if ( aSecure != null )
+                {
+                    aSecure.Visible = true;
+                    string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
+                        Rock.Security.Authorization.EncodeEntityTypeName( componentDescription.Type.AssemblyQualifiedName ), 0, componentDescription.Name + " Security" ) );
+                    aSecure.HRef = "javascript: showModalPopup($(this), '" + url + "')";
+                }
+            }
         }
 
         #endregion

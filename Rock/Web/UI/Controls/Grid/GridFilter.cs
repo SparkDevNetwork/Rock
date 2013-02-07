@@ -54,7 +54,7 @@ Sys.Application.add_load(function () {
     });
 
 });";
-            if ( !this.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
+            if ( !this.Page.ClientScript.IsStartupScriptRegistered( scriptKey ) )
             {
                 this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
             }
@@ -91,10 +91,10 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
-        protected override void Render( System.Web.UI.HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "grid-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -159,7 +159,7 @@ Sys.Application.add_load(function () {
             writer.Write( "<h4>Filter Options</h4>" );
             writer.RenderEndTag();
 
-            base.Render( writer );
+            base.RenderControl( writer );
 
             writer.RenderEndTag();
 

@@ -10,7 +10,6 @@
             <div id="treeviewGroups" class="groupTreeview">
             </div>
         </div>
-        <div class="console"></div>
         <script>
             function onSelect(e) {
                 var groupId = this.dataItem(e.node).id;
