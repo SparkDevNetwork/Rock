@@ -50,6 +50,22 @@ namespace Rock.Web.UI.Adapters
                 {
                     writer.AddAttribute( "checked", "checked" );
                 }
+
+                if (cb.AutoPostBack)
+                {
+                    PostBackOptions postBackOption = new PostBackOptions(cb, string.Empty);
+                    if (cb.CausesValidation && this.Page.GetValidators(cb.ValidationGroup).Count > 0)
+                    {
+                        postBackOption.PerformValidation = true;
+                        postBackOption.ValidationGroup = cb.ValidationGroup;
+                    }
+                    if (this.Page.Form != null)
+                    {
+                        postBackOption.AutoPostBack = true;
+                    }
+                    writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 

@@ -7,6 +7,7 @@
 // https://github.com/nostalgiaz/bootstrap-switch/commit/265bfbf0e2d7f390e231249fa457c4d3d34d9b42
 
 using System.ComponentModel;
+using System.Globalization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -111,18 +112,52 @@ $(document).ready(function() {
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "type", "checkbox" );
-            writer.AddAttribute( "name", this.UniqueID );
+            if ( this.ClientID != null )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
+            }
+            writer.AddAttribute( HtmlTextWriterAttribute.Type, "checkbox" );
+            if ( this.UniqueID != null )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Name, this.UniqueID );
+            }
             if ( this.Checked )
             {
-                writer.AddAttribute( "checked", "checked" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Checked, "checked" );
             }
+            if ( !base.IsEnabled && this.SupportsDisabledAttribute )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Disabled, "disabled" );
+            }
+ 
+            PostBackOptions postBackOption = new PostBackOptions( this, string.Empty );
+            if ( this.CausesValidation && this.Page.GetValidators( this.ValidationGroup ).Count > 0 )
+            {
+                postBackOption.PerformValidation = true;
+                postBackOption.ValidationGroup = this.ValidationGroup;
+            }
+            if ( this.Page.Form != null )
+            {
+                postBackOption.AutoPostBack = true;
+            }
+            string onClick = this.Page.ClientScript.GetPostBackEventReference( postBackOption, true );
+            writer.AddAttribute( HtmlTextWriterAttribute.Onchange, onClick );
+            
+            string accessKey = this.AccessKey;
+            if ( accessKey.Length > 0 )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Accesskey, accessKey );
+            }
+            int tabIndex = this.TabIndex;
+            if ( tabIndex != 0 )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Tabindex, tabIndex.ToString( NumberFormatInfo.InvariantInfo ) );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Input );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
         }
-
     }
 }
