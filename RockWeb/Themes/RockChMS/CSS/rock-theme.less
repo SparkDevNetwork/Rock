@@ -46,7 +46,7 @@ h1 {
 
 .close
 {
-    color: @rockSectionTextColor;
+    color: @rockLightTextColor;
 }
 
 .nav-pills > .active > a,
@@ -69,6 +69,13 @@ h1 {
 // 2. Global Page Settings
 //
 // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+// set window background
+html
+{
+ background-color: #3a3a3a;  
+ background-image: url('../Assets/Images/header-texture.png'); 
+}
 
 // set page background
 body {  background-image: url('../Assets/Images/light-texture.png');
@@ -182,7 +189,7 @@ body {  background-image: url('../Assets/Images/light-texture.png');
 .smart-search input {
 	border: 0;
 	background: transparent;
-	color: @rockSectionTextColor;
+	color: @rockLightTextColor;
 	border-radius: 0;
 }
 
@@ -191,15 +198,15 @@ body {  background-image: url('../Assets/Images/light-texture.png');
 }
 
 .smart-search input:-moz-placeholder {
-    color: darken(@rockSectionTextColor, 25%); 
+    color: darken(@rockLightTextColor, 25%); 
 }
 
 .smart-search input::-moz-placeholder {
-    color: darken(@rockSectionTextColor, 25%); 
+    color: darken(@rockLightTextColor, 25%); 
 }
 
 .smart-search input::-webkit-input-placeholder {
-    color: darken(@rockSectionTextColor, 25%); 
+    color: darken(@rockLightTextColor, 25%); 
 }
 
 .smart-search .nav > li > a {
