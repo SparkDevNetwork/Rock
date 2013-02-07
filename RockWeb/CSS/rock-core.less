@@ -1,5 +1,9 @@
-// import module files
-@import "grid.less";
+// import module files @import "grid.less";
+/* global classes */
+.clickable
+{
+    cursor: pointer;
+}
 
 /* Zone Config */
 .zone-instance.outline 
@@ -472,6 +476,7 @@ span.cke_skin_kama {
     background-color: @rockWidgetBackground;
     border: 1px solid @tableBorder;
     border-radius: @baseBorderRadius;
+    margin-bottom: 2em;
 }
 
 .widget h3 
@@ -486,8 +491,17 @@ span.cke_skin_kama {
     .header-gradient ();
     padding: 6px;
     border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
-    border-bottom: 1px solid @tableBorder;
-    margin-bottom: 24px;
+}
+
+.widget.widget-dark > header
+{
+    .header-gradient-dark ();
+    color: #fff;
+}
+
+.widget-content
+{
+    padding: 20px 15px 15px;
 }
 
 /* page list as blocks */
