@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -18,6 +19,22 @@ namespace Rock.Reporting
     /// </summary>
     public abstract class FilterComponent : ComponentManaged
     {
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                return defaults;
+            }
+        }
+
         /// <summary>
         /// Gets the title.
         /// </summary>

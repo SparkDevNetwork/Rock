@@ -141,6 +141,17 @@ namespace Rock.Data
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public virtual Dictionary<string, string> AttributeValueDefaults
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// Gets the first value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
