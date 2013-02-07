@@ -192,6 +192,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !itemKey.Equals( "workflowTypeId" ) )
             {
+                pnlDetails.Visible = false;
                 return;
             }
 
@@ -311,5 +312,15 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+        
+        protected void gWorkflows_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+        
+        protected void gWorkflows_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+}
 }
