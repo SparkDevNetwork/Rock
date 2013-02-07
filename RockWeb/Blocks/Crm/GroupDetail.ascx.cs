@@ -273,12 +273,12 @@ namespace RockWeb.Blocks.Crm
         /// <param name="itemKeyValue">The group id.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            pnlDetails.Visible = false;
             if ( !itemKey.Equals( "groupId" ) )
             {
                 return;
             }
-
-            pnlDetails.Visible = true;
+            
             Group group = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -289,6 +289,13 @@ namespace RockWeb.Blocks.Crm
             {
                 group = new Group { Id = 0, IsActive = true };
             }
+
+            if ( group == null )
+            {
+                return;
+            }
+
+            pnlDetails.Visible = true;
             hfGroupId.Value = group.Id.ToString();
 
             // render UI based on Authorized and IsSystem
