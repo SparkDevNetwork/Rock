@@ -1,3 +1,6 @@
+delete from [Group] where IsSystem = 0
+delete from [GroupType] where IsSystem = 0 and [Id] not in (select GroupTypeId from GroupTypeAssociation union select ChildGroupTypeId from GroupTypeAssociation)
+
 declare
   @regionGroupId int = null,
   @areaGroupId int = null,
