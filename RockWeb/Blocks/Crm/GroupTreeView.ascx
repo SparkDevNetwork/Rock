@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upGroupType" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
         <asp:HiddenField ID="hfRootGroupId" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfInitialGroupId" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <div class="treeview-back">
             <h3>
@@ -17,7 +19,30 @@
             }
 
             function showGroupDetails(groupId) {
-                __doPostBack('<%= upGroupType.ClientID %>', 'groupId=' + groupId);
+                var groupSearch = '?groupId=' + groupId;
+                if (window.location.search != groupSearch) {
+                    window.location.search = groupSearch;
+                }
+            }
+
+            function findChildItemInTree(treeViewData, groupId, groupParentIds) {
+                if (groupParentIds != '') {
+                    var groupParentList = groupParentIds.split(",");
+                    for (var i = 0; i < groupParentList.length; i++) {
+                        var parentGroupId = groupParentList[i];
+                        var parentItem = treeViewData.dataSource.get(parentGroupId);
+                        var parentNodeItem = treeViewData.findByUid(parentItem.uid);
+                        if (!parentItem.expanded && parentItem.hasChildren) {
+                            // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
+                            treeViewData.expand(parentNodeItem);
+                            return null;
+                        }
+                    }
+                }
+
+                var initialGroupItem = treeViewData.dataSource.get(groupId);
+
+                return initialGroupItem;
             }
 
             function onDataBound(e) {
@@ -26,7 +51,18 @@
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
-                    var firstItem = treeViewData.root[0].firstChild;
+                    var initialGroupId = $('#hfInitialGroupId').val();
+                    var initialGroupParentIds = $('#hfInitialGroupParentIds').val();
+                    var initialGroupItem = findChildItemInTree(treeViewData, initialGroupId, initialGroupParentIds);
+                    var firstItem = null;
+                    if (initialGroupId) {
+                        if (initialGroupItem) {
+                            firstItem = treeViewData.findByUid(initialGroupItem.uid);
+                        }
+                    }
+                    else {
+                        firstItem = treeViewData.root[0].firstChild;
+                    }
                     var firstDataItem = this.dataItem(firstItem);
                     if (firstDataItem) {
                         treeViewData.select(firstItem);
