@@ -1,4 +1,6 @@
-// import module files @import "grid.less";
+// import module files 
+@import "grid.less";
+
 /* global classes */
 .clickable
 {
@@ -120,39 +122,16 @@
     margin-top: 4px;
 }
 
-/* context help 
-a.help-tip {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-	margin-left: 6px;
-	font-size: 18px;
-    color: #747474;
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @rockLightTextColor;
 }
 
-a.help-tip::before 
-{
-    font-family: "FontAwesome";
-    content: "\f059";
+a.help:hover { 
+    text-decoration:none;
 }
-
-a.help-tip span {
-    display: none; 
-    padding: 2px 3px; 
-    margin-left: 8px; 
-    width: 130px;
-    margin: -4px 0 0 10px;
-    font-size: 14px;
-}
-
-a.help-tip:hover span {
-    display:inline; 
-    position:absolute; 
-    background:#ffffff; 
-    border:1px solid #cccccc; 
-    color:#6c6c6c;
-}*/
 
 /* Admin Footer */
 #cms-admin-footer {
