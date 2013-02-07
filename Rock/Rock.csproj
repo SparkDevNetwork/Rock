@@ -400,6 +400,8 @@
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomCheckboxField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
     <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
