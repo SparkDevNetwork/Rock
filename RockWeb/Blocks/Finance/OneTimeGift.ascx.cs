@@ -21,11 +21,15 @@ namespace RockWeb.Blocks.Finance
     /// 
     /// </summary>    
     [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?" )]
+    [BooleanField( 0, "Show Campus dropdown", false, "ShowCampusSelect", "", "Should giving be associated with a specific campus?" )]
+
     public partial class OneTimeGift : RockBlock
     {
         #region Fields
 
         protected bool UseStackedLayout = false;
+        protected bool ShowCampusSelect = false;
+        protected bool ShowSaveCard = false;
         protected string spanClass;
 
         #endregion
@@ -41,7 +45,10 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "UseStackedLayout" ) );
-            
+            ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusSelect" ) );
+
+            // if logged in
+            ShowSaveCard = true;
         }
 
         /// <summary>
