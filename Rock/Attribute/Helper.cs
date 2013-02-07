@@ -234,7 +234,14 @@ namespace Rock.Attribute
                 {
                     var attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attributeEntry.Value.Id;
-                    attributeValue.Value = attributeEntry.Value.DefaultValue;
+                    if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attributeEntry.Value.Name ) )
+                    {
+                        attributeValue.Value = entity.AttributeValueDefaults[attributeEntry.Value.Name];
+                    }
+                    else
+                    {
+                        attributeValue.Value = attributeEntry.Value.DefaultValue;
+                    }
                     attributeValues[attributeEntry.Value.Key].Add( attributeValue );
                 }
                 else

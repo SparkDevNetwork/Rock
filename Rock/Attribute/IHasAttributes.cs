@@ -46,6 +46,15 @@ namespace Rock.Attribute
         Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
+        /// value for an attribute
+        /// </summary>
+        /// <value>
+        /// The attribute value defaults.
+        /// </value>
+        Dictionary<string, string> AttributeValueDefaults { get; }        
+        
+        /// <summary>
         /// Gets the first value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>

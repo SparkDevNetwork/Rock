@@ -71,6 +71,17 @@ namespace Rock.Extension
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public virtual Dictionary<string, string> AttributeValueDefaults
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// Gets the first value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -115,17 +126,18 @@ namespace Rock.Extension
             get
             {
                 int order = 0;
-                if (!AttributeValues.ContainsKey( "Order" ) || !( Int32.TryParse( AttributeValues["Order"][0].Value, out order ) ) )
+
+                string value = GetAttributeValue( "Order" );
+                if ( Int32.TryParse( value, out order ) )
                 {
-                    foreach(var attribute in Attributes)
+                    return order;
+                }
+
+                if (Attributes.ContainsKey("Order"))
+                {
+                    if ( Int32.TryParse( Attributes["Order"].DefaultValue, out order ) )
                     {
-                        if ( attribute.Key == "Order" )
-                        {
-                            if ( Int32.TryParse( attribute.Value.DefaultValue, out order ) )
-                                return order;
-                            else
-                                return 0;
-                        }
+                        return order;
                     }
                 }
                 return order;
@@ -143,25 +155,27 @@ namespace Rock.Extension
             get
             {
                 bool isActive = false;
-                if ( !AttributeValues.ContainsKey( "Active" ) || !( Boolean.TryParse( AttributeValues["Active"][0].Value, out isActive ) ) )
+
+                string value = GetAttributeValue("Active");
+                if (value != null)
                 {
-                    foreach ( var attribute in Attributes )
+                    if ( Boolean.TryParse( value, out isActive ) )
                     {
-                        if ( attribute.Key == "Active" )
-                        {
-                            if ( Boolean.TryParse( attribute.Value.DefaultValue, out isActive ) )
-                                return isActive;
-                            else
-                                return false;
-                        }
+                        return isActive;
+                    }
+                }
+
+                if (Attributes.ContainsKey("Active"))
+                {
+                    if ( Boolean.TryParse( Attributes["Active"].DefaultValue, out isActive ) )
+                    {
+                        return isActive;
                     }
                 }
                 return isActive;
             }
         }
 
-
-        
         /// <summary>
         /// Initializes a new instance of the <see cref="ComponentManaged"/> class.
         /// </summary>
