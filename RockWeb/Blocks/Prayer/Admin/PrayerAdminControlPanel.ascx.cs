@@ -19,13 +19,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     // This attribute field belongs elsewhere... like in the Prayer Session blocktype
-    [IntegerField( 0, "Min Flagged Count", "1", null, "Flagged Requests", "Number of times a request has to be 'flagged' before it is considered flagged for approval/re-approval." )]
-    //int _minFlaggedCount = 1;
-    //_minFlaggedCount = int.Parse( GetAttributeValue( "MinFlaggedCount" ) );
-    public partial class PrayerAdminControlPanel : RockBlock
+    [IntegerField( 0, "Catgegory Id", "", null, "Filtering", "The id of the parent Category. Only prayer requests under this category will be shown." )]
+    [IntegerField( 1, "Min Flagged Count", "1", null, "Flagged Requests", "Number of times a request has to be 'flagged' before it is considered flagged for approval/re-approval." )]
+    public partial class PrayerAdminControlPanel : Rock.Web.UI.RockBlock
     {
         #region Private BlockType Attributes
-
+        //int _minFlaggedCount = 1;
+        //_minFlaggedCount = int.Parse( GetAttributeValue( "MinFlaggedCount" ) );
+        
         protected int? _prayerRequestEntityTypeId = null;
         protected NoteType _noteType;
         #endregion
@@ -414,7 +415,8 @@ namespace RockWeb.Blocks.Prayer
             // Filter by category...
             if ( ddlCategoryFilter.SelectedValue != All.Id.ToString() )
             {
-                prayerRequests = prayerRequests.Where( a => a.Category.Id.ToString() == ddlCategoryFilter.SelectedValue );
+                int selectedCategoryID = int.Parse( ddlCategoryFilter.SelectedValue );
+                prayerRequests = prayerRequests.Where( a => a.Category != null && a.Category.Id == selectedCategoryID );
             }
 
             // Filter by approved/unapproved
@@ -433,19 +435,21 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequests = prayerRequests.Where( a => a.EnteredDate <= dtRequestEnteredDateRangeEndDate.SelectedDate );
             }
 
-            // Sort by the given property otherwise sort by the EnteredDate
-            if ( sortProperty != null )
+            if ( prayerRequests.Count() > 0 )
             {
-                gPrayerRequests.DataSource = prayerRequests.Sort( sortProperty ).ToList();
+                // Sort by the given property otherwise sort by the EnteredDate
+                if ( sortProperty != null )
+                {
+                    gPrayerRequests.DataSource = prayerRequests.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    // TODO Figure out how to tell Grid what Direction and Property it's sorting on
+                    //sortProperty.Direction = SortDirection.Ascending;
+                    //sortProperty.Property = "EnteredDate";
+                    gPrayerRequests.DataSource = prayerRequests.OrderBy( p => p.EnteredDate ).ToList();
+                }
             }
-            else
-            {
-                // TODO Figure out how to tell Grid what Direction and Property it's sorting on
-                //sortProperty.Direction = SortDirection.Ascending;
-                //sortProperty.Property = "EnteredDate";
-                gPrayerRequests.DataSource = prayerRequests.OrderBy( p => p.EnteredDate ).ToList();
-            }
-
             gPrayerRequests.DataBind();
         }
 
