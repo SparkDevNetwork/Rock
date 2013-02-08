@@ -460,7 +460,9 @@ namespace RockWeb.Blocks.Administration
                 {
                     var page = new PageService().Get(new Guid(eventPageGuid));
 
-                    string eventGroupUrl = CurrentPage.BuildUrlForDetailPage( page.Id, "groupId", marketingCampaign.EventGroupId ?? 0 );
+                    Dictionary<string, string> queryString = new Dictionary<string, string>();
+                    queryString.Add( "groupId", marketingCampaign.EventGroupId.ToString() );
+                    string eventGroupUrl = CurrentPage.BuildUrl( page.Id, queryString );
                     eventGroupHtml = string.Format( "<a href='{0}'>{1}</a>", eventGroupUrl, marketingCampaign.EventGroup.Name );
                 }
 

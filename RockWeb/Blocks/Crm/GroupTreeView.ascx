@@ -7,9 +7,13 @@
         <asp:HiddenField ID="hfGroupTypes" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfSelectedGroupId" runat="server" ClientIDMode="Static" />
         <div class="treeview-back">
             <h3>
                 <asp:Literal ID="ltlTreeViewTitle" runat="server" /></h3>
+            <asp:LinkButton ID="lbAddGroup" runat="server" CssClass="add btn pull-right" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddGroup_Click">
+                <i class="icon-plus-sign"></i>
+            </asp:LinkButton>
             <div id="treeviewGroups" class="groupTreeview">
             </div>
         </div>
@@ -22,6 +26,7 @@
             function showGroupDetails(groupId) {
                 var groupSearch = '?groupId=' + groupId;
                 if (window.location.search != groupSearch) {
+                    $('#hfSelectedGroupId').val(groupId);
                     window.location.search = groupSearch;
                 }
             }
