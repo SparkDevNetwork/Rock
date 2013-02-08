@@ -20,6 +20,8 @@ declare
 
 begin
 
+begin transaction
+
 select CONCAT('adding ', @maxRegions, ' group regions');
 select CONCAT('adding ', @maxRegions*@maxAreasPerRegion, ' group areas');
 select CONCAT('adding ', @maxRegions*@maxAreasPerRegion*@maxGroupsPerArea, ' groups');
@@ -29,12 +31,14 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[IconCssClass]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group Region'
            ,'The Neighborhood Group Regions'
            ,null
+           ,'icon-heart-empty'
            ,newid())
 
 select @regionGroupTypeId = @@IDENTITY
@@ -44,12 +48,14 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[IconCssClass]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group Area'
            ,'The Neighborhood Group Areas'
            ,null
+           ,'icon-random'
            ,newid())
 
 select @areaGroupTypeId = @@IDENTITY
@@ -59,12 +65,14 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[IconCssClass]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group'
            ,'The Neighborhood Groups'
            ,null
+           ,'icon-home'
            ,newid())
 
 select @groupTypeId = @@IDENTITY
@@ -116,11 +124,6 @@ while @regionCounter < @maxRegions
         set @regionCounter += 1;
     end;
 
+commit transaction
+
 end
-
-/*
-select * from [Group]
-delete from [Group] where IsSystem = 0
-delete from [GroupType] where Id not in (select GroupTypeId from [Group])
-*/
-

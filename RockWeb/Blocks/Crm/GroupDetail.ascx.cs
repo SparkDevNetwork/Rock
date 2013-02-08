@@ -133,23 +133,24 @@ namespace RockWeb.Blocks.Crm
 
             int groupId = int.Parse( hfGroupId.Value );
             bool wasSecurityRole = false;
+            bool reloadPage = false;
 
             if ( groupId == 0 )
             {
                 group = new Group();
                 group.IsSystem = false;
                 group.Name = string.Empty;
+                reloadPage = true;
             }
             else
             {
                 group = groupService.Get( groupId );
                 wasSecurityRole = group.IsSecurityRole;
             }
-
-            bool updateTreeViewNodeOnSave = false;
+            
             if ( !group.Name.Equals( tbName.Text ) )
             {
-                updateTreeViewNodeOnSave = true;
+                reloadPage = true;
                 group.Name = tbName.Text;
             }
 
@@ -194,10 +195,7 @@ namespace RockWeb.Blocks.Crm
                 groupService.Save( group, CurrentPersonId );
                 Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
 
-                if ( updateTreeViewNodeOnSave )
-                {
-                    //TODO
-                }
+                
             } );
 
             if ( wasSecurityRole )
@@ -218,9 +216,18 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            // reload group from db using a new context
-            group = new GroupService().Get( group.Id );
-            ShowReadonlyDetails( group );
+            if ( reloadPage )
+            {
+                Response.Redirect(Request.Url.AbsolutePath + "?groupId=" + group.Id.ToString(), false);
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+            else
+            {
+                // reload group from db using a new context
+                group = new GroupService().Get( group.Id );
+                ShowReadonlyDetails( group );
+            }
         }
 
         #endregion
@@ -401,7 +408,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "/Image.ashx?id={0}&width=50&height=50' />";
+                string imageUrlFormat = "<img src='" + appPath + "Image.ashx?id={0}&width=50&height=50' />";
                 if ( group.GroupType.IconLargeFileId != null )
                 {
                     groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
@@ -418,7 +425,7 @@ namespace RockWeb.Blocks.Crm
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( group.IsActive )
             {
-                lblActiveHtml.Text = string.Format(activeHtmlFormat, "label-success", "Active");
+                lblActiveHtml.Text = string.Empty;
             }
             else
             {
@@ -436,7 +443,7 @@ namespace RockWeb.Blocks.Crm
             lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
             if ( group.ParentGroup != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, group.ParentGroup.GroupType.Name, group.ParentGroup.Name );
+                lblMainDetails.Text += string.Format( descriptionFormat, "Parent Group", group.ParentGroup.Name );
             }
             
             lblMainDetails.Text += @"
