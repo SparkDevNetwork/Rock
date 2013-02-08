@@ -12,12 +12,12 @@ using System.Web.UI.WebControls;
 using Rock.Extension;
 using Rock.Model;
 
-namespace Rock.Reporting
+namespace Rock.DataFilters
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class FilterComponent : ComponentManaged
+    public abstract class DataFilterComponent : ComponentManaged
     {
         /// <summary>
         /// Gets the attribute value defaults.
@@ -44,18 +44,26 @@ namespace Rock.Reporting
         public abstract string Title { get; }
 
         /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public abstract string FilteredEntityTypeName { get; }
+
+        /// <summary>
         /// Formats the selection.
         /// </summary>
         /// <param name="selection">The selection.</param>
         public virtual string FormatSelection( string selection )
         {
-            FilterComparisonType comparisonType = FilterComparisonType.StartsWith;
+            ComparisonType comparisonType = ComparisonType.StartsWith;
             string value = string.Empty;
 
             string[] options = selection.Split( '|' );
             if ( options.Length > 0 )
             {
-                try { comparisonType= options[0].ConvertToEnum<FilterComparisonType>(); }
+                try { comparisonType= options[0].ConvertToEnum<ComparisonType>(); }
                 catch {}
             }
             if ( options.Length > 1 )
@@ -75,7 +83,7 @@ namespace Rock.Reporting
             var controls = new Control[2] {
                 ComparisonControl( StringFilterComparisonTypes ),
                 new TextBox() };
-            SetSelection( controls, string.Format( "{0}|", FilterComparisonType.StartsWith.ConvertToInt().ToString() ) );
+            SetSelection( controls, string.Format( "{0}|", ComparisonType.StartsWith.ConvertToInt().ToString() ) );
             return controls;
         }
 
@@ -134,68 +142,68 @@ namespace Rock.Reporting
         /// <param name="property">The property.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        protected Expression ComparisonExpression( FilterComparisonType comparisonType, Expression property, Expression value )
+        protected Expression ComparisonExpression( ComparisonType comparisonType, Expression property, Expression value )
         {
-            if ( comparisonType == FilterComparisonType.Contains )
+            if ( comparisonType == ComparisonType.Contains )
             {
                 return Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value );
             }
 
-            if ( comparisonType == FilterComparisonType.DoesNotContain )
+            if ( comparisonType == ComparisonType.DoesNotContain )
             {
                 return Expression.Not( Expression.Call( property, typeof( string ).GetMethod( "Contains", new Type[] { typeof( string ) } ), value ) );
             }
 
-            if ( comparisonType == FilterComparisonType.EndsWith )
+            if ( comparisonType == ComparisonType.EndsWith )
             {
                 return Expression.Call( property, typeof( string ).GetMethod( "EndsWith", new Type[] { typeof( string ) } ), value );
             }
 
-            if ( comparisonType == FilterComparisonType.EqualTo )
+            if ( comparisonType == ComparisonType.EqualTo )
             {
                 return Expression.Equal( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.GreaterThan )
+            if ( comparisonType == ComparisonType.GreaterThan )
             {
                 return Expression.GreaterThan( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.GreaterThanOrEqualTo )
+            if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
                 return Expression.GreaterThanOrEqual( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.IsBlank )
+            if ( comparisonType == ComparisonType.IsBlank )
             {
                 Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
                 Expression emtpyString = Expression.Constant( string.Empty );
                 return Expression.Equal( trimmed, value );
             }
 
-            if ( comparisonType == FilterComparisonType.IsNotBlank )
+            if ( comparisonType == ComparisonType.IsNotBlank )
             {
                 Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
                 Expression emtpyString = Expression.Constant( string.Empty );
                 return Expression.NotEqual( trimmed, value );
             }
 
-            if ( comparisonType == FilterComparisonType.LessThan )
+            if ( comparisonType == ComparisonType.LessThan )
             {
                 return Expression.LessThan( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.LessThanOrEqualTo )
+            if ( comparisonType == ComparisonType.LessThanOrEqualTo )
             {
                 return Expression.LessThanOrEqual( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.NotEqualTo )
+            if ( comparisonType == ComparisonType.NotEqualTo )
             {
                 return Expression.NotEqual( property, value );
             }
 
-            if ( comparisonType == FilterComparisonType.StartsWith )
+            if ( comparisonType == ComparisonType.StartsWith )
             {
                 return Expression.Call( property, typeof( string ).GetMethod( "StartsWith", new Type[] { typeof( string ) } ), value );
             }
@@ -208,10 +216,10 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
         /// <returns></returns>
-        protected DropDownList ComparisonControl( FilterComparisonType supportedComparisonTypes )
+        protected DropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
         {
             var ddl = new DropDownList();
-            foreach ( FilterComparisonType comparisonType in Enum.GetValues( typeof( FilterComparisonType ) ) )
+            foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
             {
                 if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )
                 {
@@ -224,40 +232,39 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the comparison types typically used for string fields
         /// </summary>
-        public static FilterComparisonType StringFilterComparisonTypes
+        public static ComparisonType StringFilterComparisonTypes
         {
             get
             {
                 return
-                    FilterComparisonType.Contains |
-                    FilterComparisonType.DoesNotContain |
-                    FilterComparisonType.EqualTo |
-                    FilterComparisonType.IsBlank |
-                    FilterComparisonType.IsNotBlank |
-                    FilterComparisonType.NotEqualTo |
-                    FilterComparisonType.StartsWith |
-                    FilterComparisonType.EndsWith;
+                    ComparisonType.Contains |
+                    ComparisonType.DoesNotContain |
+                    ComparisonType.EqualTo |
+                    ComparisonType.IsBlank |
+                    ComparisonType.IsNotBlank |
+                    ComparisonType.NotEqualTo |
+                    ComparisonType.StartsWith |
+                    ComparisonType.EndsWith;
             }
         }
 
         /// <summary>
         /// Gets the comparison types typically used for numeric fields
         /// </summary>
-        public static FilterComparisonType NumericFilterComparisonTypes
+        public static ComparisonType NumericFilterComparisonTypes
         {
             get
             {
                 return
-                    FilterComparisonType.EqualTo |
-                    FilterComparisonType.NotEqualTo |
-                    FilterComparisonType.GreaterThan |
-                    FilterComparisonType.GreaterThanOrEqualTo |
-                    FilterComparisonType.LessThan |
-                    FilterComparisonType.LessThanOrEqualTo;
+                    ComparisonType.EqualTo |
+                    ComparisonType.NotEqualTo |
+                    ComparisonType.GreaterThan |
+                    ComparisonType.GreaterThanOrEqualTo |
+                    ComparisonType.LessThan |
+                    ComparisonType.LessThanOrEqualTo;
             }
         }
 
     }
-
 
 }

@@ -3,32 +3,44 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace Rock.Reporting.PersonFilter
+using Rock.Model;
+
+namespace Rock.DataFilters.Person
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have a picture or not" )]
-    [Export( typeof( FilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Has Picture Filter" )]
-    public class HasPictureFilter : FilterComponent
+    [Description("Filter persons on Gender")]
+    [Export(typeof(DataFilterComponent))]
+    [ExportMetadata("ComponentName", "Gender Filter")]
+    public class GenderFilter : DataFilterComponent
     {
         /// <summary>
-        /// Gets the title.
+        /// Gets the prompt.
         /// </summary>
         /// <value>
-        /// The title.
+        /// The prompt.
         /// </value>
         public override string Title
         {
-            get { return "Has Picture"; }
+            get { return "Gender"; }
+        }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public override string FilteredEntityTypeName
+        {
+            get { return "Rock.Model.Person"; }
         }
 
         /// <summary>
@@ -38,18 +50,7 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            bool hasPicture = true;
-            if (!Boolean.TryParse(selection, out hasPicture))
-                hasPicture = true;
-
-            if (hasPicture)
-            {
-                return "Has Picture";
-            }
-            else
-            {
-                return "Doesn't Have Picture";
-            }
+            return string.Format( "{0} is {1}", Title, selection );
         }
 
         /// <summary>
@@ -58,9 +59,14 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override Control[] CreateChildControls()
         {
-            CheckBox cb = new CheckBox();
-            cb.Checked = true;
-            return new Control[1] { cb };
+            RadioButtonList rbl = new RadioButtonList();
+            rbl.RepeatLayout = RepeatLayout.Flow;
+            rbl.RepeatDirection = RepeatDirection.Horizontal;
+            rbl.Items.Add( new ListItem( "Male", "Male" ) );
+            rbl.Items.Add( new ListItem( "Female", "Female" ) );
+            rbl.SelectedValue = "Male";
+
+            return new Control[1] { rbl };
         }
 
         /// <summary>
@@ -70,8 +76,22 @@ namespace Rock.Reporting.PersonFilter
         /// <param name="controls">The controls.</param>
         public override void RenderControls( HtmlTextWriter writer, Control[] controls )
         {
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Label
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
             writer.Write( this.Title + " " );
+            writer.RenderEndTag();
+
+            // Controls
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -81,7 +101,7 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
-            return ( (CheckBox)controls[0] ).Checked.ToString();
+            return ( (RadioButtonList)controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -91,13 +111,10 @@ namespace Rock.Reporting.PersonFilter
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
-
-            ( (CheckBox)controls[0] ).Checked = hasPicture;
+            var rbl = (RadioButtonList)controls[0];
+            rbl.Items[0].Selected = selection != "Female";
+            rbl.Items[1].Selected = selection == "Female";
         }
-
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -106,15 +123,11 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            bool hasPicture = true;
-            if ( Boolean.TryParse( selection, out hasPicture ) )
-            {
-                MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-                Expression hasValue = Expression.Property( property, "HasValue");
-                Expression value = Expression.Constant( hasPicture );
-                return Expression.Equal( hasValue, value);
-            }
-            return null;
+            Gender gender = selection.ConvertToEnum<Gender>();
+
+            Expression property = Expression.Property( parameterExpression, "Gender" );
+            Expression constant = Expression.Constant( gender );
+            return Expression.Equal( property, constant );
         }
     }
 }

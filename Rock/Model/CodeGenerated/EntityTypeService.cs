@@ -85,9 +85,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<ReportFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, ReportFilter.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
                 return false;
             }  
  

@@ -13,15 +13,15 @@ using System.Web.UI.WebControls;
 
 using Rock.Model;
 
-namespace Rock.Reporting.PersonFilter
+namespace Rock.DataFilters.Person
 {
     /// <summary>
     /// 
     /// </summary>
     [Description( "Filter persons on whether they have attended a group type a specific number of times" )]
-    [Export( typeof( FilterComponent ) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Type Filter" )]
-    public class GroupTypeAttendanceFilter : FilterComponent
+    public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         /// <summary>
         /// Gets the title.
@@ -32,6 +32,17 @@ namespace Rock.Reporting.PersonFilter
         public override string Title
         {
             get { return "Group Type Attendance"; }
+        }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public override string FilteredEntityTypeName
+        {
+            get { return "Rock.Model.Person"; }
         }
 
         /// <summary>
@@ -52,7 +63,7 @@ namespace Rock.Reporting.PersonFilter
 
             SetSelection( controls, string.Format( "{0}|{1}|4|16", 
                 ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
-                FilterComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -71,8 +82,8 @@ namespace Rock.Reporting.PersonFilter
             {
                 var groupType = new GroupTypeService().Get( int.Parse( options[0] ) );
 
-                FilterComparisonType comparisonType = FilterComparisonType.GreaterThanOrEqualTo;
-                try { comparisonType= options[0].ConvertToEnum<FilterComparisonType>(); }
+                ComparisonType comparisonType = ComparisonType.GreaterThanOrEqualTo;
+                try { comparisonType= options[0].ConvertToEnum<ComparisonType>(); }
                 catch {}
 
                 s = string.Format( "Attended '{0}' {1} {2} times in the last {3} week(s)",
@@ -148,7 +159,7 @@ namespace Rock.Reporting.PersonFilter
                 return null;
             }
 
-            FilterComparisonType comparisonType = FilterComparisonType.GreaterThanOrEqualTo;
+            ComparisonType comparisonType = ComparisonType.GreaterThanOrEqualTo;
             int attended = 0;
             int weeks = 0;
 
@@ -156,7 +167,7 @@ namespace Rock.Reporting.PersonFilter
             if ( !int.TryParse( options[0], out groupTypeId ) )
                 groupTypeId = 0;
 
-            try { comparisonType = options[1].ConvertToEnum<FilterComparisonType>(); }
+            try { comparisonType = options[1].ConvertToEnum<ComparisonType>(); }
             catch { }
 
             if ( !int.TryParse( options[2], out attended ) )

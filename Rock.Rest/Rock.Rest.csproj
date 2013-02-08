@@ -59,7 +59,6 @@
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ReportFiltersController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
     <Compile Include="Controllers\KiosksController.cs" />

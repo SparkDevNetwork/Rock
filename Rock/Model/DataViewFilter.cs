@@ -12,16 +12,17 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.DataFilters;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Campus POCO Entity.
+    /// DataViewFilter POCO Entity.
     /// </summary>
     [NotAudited]
-    [Table( "ReportFilter" )]
+    [Table( "DataViewFilter" )]
     [DataContract( IsReference = true )]
-    public partial class ReportFilter : Model<ReportFilter>
+    public partial class DataViewFilter : Model<DataViewFilter>
     {
 
         #region Entity Properties
@@ -33,7 +34,7 @@ namespace Rock.Model
         /// The type of the filter.
         /// </value>
         [DataMember]
-        public FilterType FilterType { get; set; }
+        public ExpressionType ExpressionType { get; set; }
 
         /// <summary>
         /// Gets or sets the parent id.
@@ -73,7 +74,7 @@ namespace Rock.Model
         /// The parent.
         /// </value>
         [DataMember]
-        public virtual ReportFilter Parent { get; set; }
+        public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -85,18 +86,46 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the report filters.
+        /// Gets or sets the child filters.
         /// </summary>
         /// <value>
-        /// The report filters.
+        /// The child filters.
         /// </value>
         [DataMember]
-        public virtual ICollection<ReportFilter> ReportFilters
+        public virtual ICollection<DataViewFilter> ChildFilters
         {
-            get { return _filters ?? ( _filters = new Collection<ReportFilter>() ); }
+            get { return _filters ?? ( _filters = new Collection<DataViewFilter>() ); }
             set { _filters = value; }
         }
-        private ICollection<ReportFilter> _filters;
+        private ICollection<DataViewFilter> _filters;
+
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            bool authorized = base.IsAuthorized( action, person );
+
+            // Authorization to view a filter is dependent on being able to view all 
+            // of it's child filters
+            if ( authorized && string.Compare( action, "View", true ) == 0 )
+            {
+                foreach(var childFilter in ChildFilters)
+                {
+                    if (!childFilter.IsAuthorized(action, person))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return authorized;
+        }
 
         #endregion
 
@@ -107,18 +136,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public Expression GetExpression( ParameterExpression parameter )
+        public virtual Expression GetExpression( ParameterExpression parameter )
         {
-            switch ( FilterType )
+            switch ( ExpressionType )
             {
-                case FilterType.Expression:
+                case ExpressionType.Filter:
 
                     if ( this.EntityTypeId.HasValue )
                     {
                         var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
-                            var component = Rock.Reporting.FilterContainer.GetComponent( entityType.Name );
+                            var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
                                 return component.GetExpression( parameter, this.Selection );
@@ -127,10 +156,10 @@ namespace Rock.Model
                     }
                     return null;
 
-                case FilterType.And:
+                case ExpressionType.GroupAll:
 
                     Expression andExp = null;
-                    foreach ( var filter in this.ReportFilters )
+                    foreach ( var filter in this.ChildFilters )
                     {
                         Expression exp = filter.GetExpression( parameter );
                         if ( exp != null )
@@ -149,10 +178,10 @@ namespace Rock.Model
 
                     return andExp;
 
-                case FilterType.Or:
+                case ExpressionType.GroupAny:
 
                     Expression orExp = null;
-                    foreach ( var filter in this.ReportFilters )
+                    foreach ( var filter in this.ChildFilters )
                     {
                         Expression exp = filter.GetExpression( parameter );
                         if ( exp != null )
@@ -183,23 +212,20 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            switch(this.FilterType)
+            switch ( this.ExpressionType )
             {
-                case FilterType.And:
-                    return "And";
+                case ExpressionType.GroupAll:
+                    return "All";
 
-                case FilterType.Or:
-                    return "Or";
+                case ExpressionType.GroupAny:
+                    return "Any";
 
                 default:
-                    foreach ( var serviceEntry in Rock.Reporting.FilterContainer.Instance.Components )
+
+                    var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    if ( component != null )
                     {
-                        var component = serviceEntry.Value.Value;
-                        string componentName = component.GetType().FullName;
-                        if ( componentName == this.EntityType.Name )
-                        {
-                            return component.FormatSelection( this.Selection );
-                        }
+                        return component.FormatSelection( this.Selection );
                     }
                     return string.Empty;
             }
@@ -214,14 +240,14 @@ namespace Rock.Model
     /// <summary>
     /// Campus Configuration class.
     /// </summary>
-    public partial class ReportFilterConfiguration : EntityTypeConfiguration<ReportFilter>
+    public partial class DataViewFilterConfiguration : EntityTypeConfiguration<DataViewFilter>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReportFilterConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="DataViewFilterConfiguration"/> class.
         /// </summary>
-        public ReportFilterConfiguration()
+        public DataViewFilterConfiguration()
         {
-            this.HasOptional( r => r.Parent ).WithMany( r => r.ReportFilters).HasForeignKey( r => r.ParentId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.Parent ).WithMany( r => r.ChildFilters).HasForeignKey( r => r.ParentId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -232,29 +258,29 @@ namespace Rock.Model
     /// <summary>
     /// Type of Filter entry
     /// </summary>
-    public enum FilterType
+    public enum ExpressionType
     {
         /// <summary>
         /// Expression filter
         /// </summary>
-        Expression = 0,
+        Filter = 0,
 
         /// <summary>
         /// Collection of Expressions that should be and'd together
         /// </summary>
-        And = 1,
+        GroupAll = 1,
 
         /// <summary>
         /// Collection of Expressions that should be or'd together
         /// </summary>
-        Or = 2
+        GroupAny = 2
     }
 
     /// <summary>
     /// Reporting Field Comparison Types
     /// </summary>
     [Flags]
-    public enum FilterComparisonType
+    public enum ComparisonType
     {
         /// <summary>
         /// Equal
