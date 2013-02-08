@@ -5,11 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
@@ -28,36 +26,44 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnLoad( e );
 
-            string[] eventArgs = ( Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
-            if ( eventArgs.Length == 2 )
+            string itemId = PageParameter( "workflowTypeId" );
+            string entityTypeName = "workflowType";
+            if ( string.IsNullOrWhiteSpace( itemId ) )
             {
-                if ( eventArgs[0].Equals("categoryId", StringComparison.OrdinalIgnoreCase) )
-                {
-                    categoryItem_Click( eventArgs[1] );
-                }
-                else if ( eventArgs[0].Equals("workflowTypeId", StringComparison.OrdinalIgnoreCase) )
-                {
-                    workflowTypeItem_Click( eventArgs[1] );
-                }
+                itemId = PageParameter( "categoryId" );
+                entityTypeName = "category";
             }
-        }
 
-        /// <summary>
-        /// Categories the item_ click.
-        /// </summary>
-        /// <param name="categoryId">The category id.</param>
-        protected void categoryItem_Click( string categoryId )
-        {
-            NavigateToDetailPage( "categoryId", int.Parse( categoryId ) );
-        }
+            if ( !string.IsNullOrWhiteSpace( itemId ) )
+            {
+                hfInitialItemId.Value = itemId;
+                hfInitialEntityTypeName.Value = entityTypeName;
+                List<string> parentIdList = new List<string>();
 
-        /// <summary>
-        /// Workflows the type item_ click.
-        /// </summary>
-        /// <param name="workflowTypeId">The workflow type id.</param>
-        protected void workflowTypeItem_Click( string workflowTypeId )
-        {
-            NavigateToDetailPage( "workflowTypeId", int.Parse( workflowTypeId ) );
+                Category category = null;
+                if ( entityTypeName.Equals( "workflowType" ) )
+                {
+                    WorkflowType workflowType = new WorkflowTypeService().Get( int.Parse( itemId ) );
+                    category = workflowType.Category;
+                    parentIdList.Insert( 0, category.Id.ToString() );
+                }
+                else
+                {
+                    category = new CategoryService().Get( int.Parse( itemId ) );
+                }
+                
+                while ( category != null )
+                {
+                    category = category.ParentCategory;
+                    if ( category != null )
+                    {
+                        parentIdList.Insert( 0, category.Id.ToString() );
+                    }
+
+                }
+
+                hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
+            }
         }
     }
 }

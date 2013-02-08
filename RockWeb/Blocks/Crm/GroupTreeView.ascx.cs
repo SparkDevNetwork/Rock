@@ -5,10 +5,10 @@
 //
 using System;
 using System.Collections.Generic;
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -49,28 +49,6 @@ namespace RockWeb.Blocks.Crm
                 }
 
                 hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
-            }
-
-            string[] eventArgs = ( Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
-            if ( eventArgs.Length == 2 )
-            {
-                if ( eventArgs[0] == "groupId" )
-                {
-                    groupItem_Click( eventArgs[1] );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the groupItem control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void groupItem_Click( string groupId )
-        {
-            if ( !( PageParameter( "groupId" ) ?? string.Empty ).Equals( groupId ) )
-            {
-                NavigateToDetailPage( "groupId", int.Parse( groupId ) );
             }
         }
     }
