@@ -76,6 +76,15 @@ INSERT INTO [dbo].[GroupType]
            ,newid())
 
 select @groupTypeId = @@IDENTITY
+
+-- setup valid child group types
+insert into [dbo].[GroupTypeAssociation] 
+    (GroupTypeId, ChildGroupTypeId)
+values
+    (@regionGroupTypeId, @areaGroupTypeId),
+    (@areaGroupTypeId, @groupTypeId)
+
+
 select @campusId = null;
 
 -- NG regions

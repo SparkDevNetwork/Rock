@@ -228,20 +228,6 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void LoadDropDowns( int currentGroupId )
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            var groupTypeQry = groupTypeService.Queryable();
-
-            // limit GroupType selection to what Block Attributes allow
-            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-            if ( groupTypeIds.Count > 0 )
-            {
-                groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
-            }
-
-            List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
-            ddlGroupType.DataSource = groupTypes;
-            ddlGroupType.DataBind();
-
             GroupService groupService = new GroupService();
 
             // optimization to only fetch Id, Name from db
@@ -260,6 +246,49 @@ namespace RockWeb.Blocks.Crm
             campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
             ddlCampus.DataSource = campuses;
             ddlCampus.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlParentGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ddlParentGroup_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            GroupTypeService groupTypeService = new GroupTypeService();
+            var groupTypeQry = groupTypeService.Queryable();
+
+            // limit GroupType selection to what Block Attributes allow
+            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
+            if ( groupTypeIds.Count > 0 )
+            {
+                groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
+            }
+            
+            // also, limit GroupType to ChildGroupTypes that the ParentGroup allows
+            int? parentGroupId = ddlParentGroup.SelectedValueAsInt();
+            if ( parentGroupId != null )
+            {
+                Group parentGroup = new GroupService().Get( parentGroupId.Value );
+                List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
+                groupTypeQry = groupTypeQry.Where( a => allowedChildGroupTypeIds.Contains( a.Id ) );
+            }
+
+            List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
+
+            // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
+            
+            if ( ddlGroupType.SelectedValue != null )
+            {
+                int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
+                if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) ) 
+                {
+                    ddlGroupType.SelectedValue = null;
+                }
+            }
+
+            ddlGroupType.DataSource = groupTypes;
+            ddlGroupType.DataBind();
         }
 
         /// <summary>
@@ -366,6 +395,7 @@ namespace RockWeb.Blocks.Crm
             LoadDropDowns( group.Id );
             ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
+            ddlParentGroup_SelectedIndexChanged( null, null );
 
             ddlParentGroup.LabelText = "Parent Group";
             ddlCampus.SetValue( group.CampusId );
@@ -529,5 +559,6 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion
-    }
+        
+}
 }
