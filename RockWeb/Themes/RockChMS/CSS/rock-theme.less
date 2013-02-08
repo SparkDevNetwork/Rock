@@ -85,6 +85,13 @@ body {  background-image: url('../Assets/Images/light-texture.png');
     background-image: url('../Assets/Images/light-texture@2x.png');
     background-size: 256px 256px;
   }
+
+  html
+  {
+    background-color: #3a3a3a;  
+    background-image: url('../Assets/Images/header-texture.png'); /*todo add retina image*/
+  }
+
 }
 
 
@@ -286,13 +293,16 @@ body {  background-image: url('../Assets/Images/light-texture.png');
     margin-bottom: 24px;
 }
 
-#splash {
-    background-image: url('../Assets/Images/header-texture.png');
+
+body#splash
+{
+    background: none;
 }
 
 #splash .pageheader-logo {
     height: 45px;
-	width: 127.57px
+	width: 127.57px;
+    margin-bottom: 6px;
 }
 
 #splash #content {
@@ -304,15 +314,16 @@ body#splash #content-box {
     background-image: url('../Assets/Images/light-texture.png');
     .border-radius(@baseBorderRadius);
 }
+
+#splash .form-actions
+{
+    margin-bottom: 0;
+}
+
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
   #splash #content-box {
     background-image: url('../Assets/Images/light-texture@2x.png');
     background-size: 256px 256px;
-  }
-
-  #splash {
-    background-image: url('../Assets/Images/header-texture.png');
-    background-size: 210px 163px;
   }
 }
 
