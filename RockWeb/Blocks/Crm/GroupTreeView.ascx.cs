@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Crm
             if ( !string.IsNullOrWhiteSpace( groupId ) )
             {
                 hfInitialGroupId.Value = groupId;
+                hfSelectedGroupId.Value = groupId.ToString();
                 Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
@@ -48,11 +49,21 @@ namespace RockWeb.Blocks.Crm
                     {
                         parentIdList.Insert( 0, group.Id.ToString() );
                     }
-
                 }
 
                 hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
             }
         }
-    }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbAddGroup_Click( object sender, EventArgs e )
+        {
+            int groupId = hfSelectedGroupId.ValueAsInt();
+            NavigateToDetailPage( "groupId", 0, "parentGroupId", groupId );
+        }
+}
 }

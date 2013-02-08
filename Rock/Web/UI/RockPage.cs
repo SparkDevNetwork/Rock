@@ -1183,21 +1183,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Builds the URL.
-        /// </summary>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="queryKey">The query key.</param>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static string BuildUrlForDetailPage( int pageId, string queryKey, int id )
-        {
-            NameValueCollection queryString = new NameValueCollection();
-            Dictionary<string, string> parms = new Dictionary<string, string>();
-            queryString.Add( queryKey, id.ToString() );
-            return BuildUrl( new PageReference( pageId, -1 ), parms, queryString ); 
-        }
-
-        /// <summary>
         /// Builds a URL from a page and parameters with support for routes
         /// </summary>
         /// <param name="pageRef">PageReference to use for the link</param>

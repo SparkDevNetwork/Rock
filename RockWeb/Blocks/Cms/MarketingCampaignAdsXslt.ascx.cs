@@ -174,7 +174,9 @@ namespace RockWeb.Blocks.Cms
                     Rock.Model.Page detailPage = new PageService().Get( new Guid( "detailPageGuid" ) );
                     if ( detailPage != null )
                     {
-                        detailPageUrl = CurrentPage.BuildUrlForDetailPage( detailPage.Id, "marketingCampaignAd", marketingCampaignAd.Id );
+                        Dictionary<string, string> queryString = new Dictionary<string, string>();
+                        queryString.Add( "marketingCampaignAd", marketingCampaignAd.Id.ToString() );
+                        detailPageUrl = CurrentPage.BuildUrl( detailPage.Id, queryString );
                     }
                 }
 
