@@ -9,15 +9,15 @@ using System.Linq.Expressions;
 
 using Rock.Model;
 
-namespace Rock.Reporting.PersonFilter
+namespace Rock.DataFilters.Person
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on Last Name" )]
-    [Export( typeof( FilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Last Name Filter" )]
-    public class LastNameFilter : FilterComponent
+    [Description( "Filter persons on First Name" )]
+    [Export( typeof( DataFilterComponent ) )]
+    [ExportMetadata( "ComponentName", "First Name Filter" )]
+    public class FirstNameFilter : DataFilterComponent
     {
         /// <summary>
         /// Gets the title.
@@ -27,7 +27,18 @@ namespace Rock.Reporting.PersonFilter
         /// </value>
         public override string Title
         {
-            get { return "Last Name"; }
+            get { return "First Name"; }
+        }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public override string FilteredEntityTypeName
+        {
+            get { return "Rock.Model.Person"; }
         }
 
         /// <summary>
@@ -38,13 +49,13 @@ namespace Rock.Reporting.PersonFilter
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            FilterComparisonType comparisonType = FilterComparisonType.StartsWith;
+            ComparisonType comparisonType = ComparisonType.StartsWith;
             string value = string.Empty;
 
             string[] options = selection.Split( '|' );
             if ( options.Length > 0 )
             {
-                try { comparisonType = options[0].ConvertToEnum<FilterComparisonType>(); }
+                try { comparisonType = options[0].ConvertToEnum<ComparisonType>(); }
                 catch { }
             }
             if ( options.Length > 1 )
@@ -52,7 +63,9 @@ namespace Rock.Reporting.PersonFilter
                 value = options[1];
             }
 
-            MemberExpression property = Expression.Property( parameterExpression, "LastName" );
+            MemberExpression gnProperty = Expression.Property( parameterExpression, "GivenName" );
+            MemberExpression nnProperty = Expression.Property( parameterExpression, "NickName" );
+            Expression property = Expression.Coalesce( nnProperty, gnProperty );
             Expression constant = Expression.Constant( value );
             return ComparisonExpression( comparisonType, property, constant );
         }

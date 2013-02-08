@@ -72,11 +72,11 @@ namespace RockWeb.Blocks.Reporting
             RunQuery();
         }
 
-        void groupControl_AddFilterClick( object sender, AddFilterArgs e )
+        void groupControl_AddFilterClick( object sender, EventArgs e )
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
-            filterField.EntityTypeName = e.EntityTypeName;
+            filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             groupControl.Controls.Add( filterField );
 
             _report.ReportFilter = GetFilterControl();
@@ -88,7 +88,8 @@ namespace RockWeb.Blocks.Reporting
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
-            childGroupControl.FilterType = FilterType.And;
+            childGroupControl.FilterType = ExpressionType.All;
+            childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             groupControl.Controls.Add( childGroupControl );
 
             _report.ReportFilter = GetFilterControl();
@@ -148,7 +149,7 @@ namespace RockWeb.Blocks.Reporting
             if ( reportFilterId.HasValue )
             {
                 ReportFilterService reportFilterService = new ReportFilterService();
-                ReportFilter filter = reportFilterService.Get( reportFilterId.Value );
+                DataViewFilter filter = reportFilterService.Get( reportFilterId.Value );
                 DeleteReportFilter( filter, reportFilterService );
                 reportFilterService.Save( filter, CurrentPersonId );
             }
@@ -157,11 +158,11 @@ namespace RockWeb.Blocks.Reporting
             RunQuery();
         }
 
-        private void DeleteReportFilter( ReportFilter filter, ReportFilterService service )
+        private void DeleteReportFilter( DataViewFilter filter, ReportFilterService service )
         {
             if ( filter != null )
             {
-                foreach ( var childFilter in filter.ReportFilters.ToList() )
+                foreach ( var childFilter in filter.ChildFilters.ToList() )
                 {
                     DeleteReportFilter( childFilter, service );
                 }
@@ -182,10 +183,10 @@ namespace RockWeb.Blocks.Reporting
                 _report = new Report();
             }
 
-            if ( _report.ReportFilter == null || _report.ReportFilter.FilterType == FilterType.Expression )
+            if ( _report.ReportFilter == null || _report.ReportFilter.ExpressionType == ExpressionType.Expression )
             {
-                _report.ReportFilter = new ReportFilter();
-                _report.ReportFilter.FilterType = FilterType.And;
+                _report.ReportFilter = new DataViewFilter();
+                _report.ReportFilter.ExpressionType = ExpressionType.All;
             }
 
             tbName.Text = _report.Name;
@@ -204,18 +205,19 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-        private void CreateFilterControl( Control parentControl, ReportFilter filter )
+        private void CreateFilterControl( Control parentControl, DataViewFilter filter )
         {
-            if ( filter.FilterType == FilterType.And || filter.FilterType == FilterType.Or )
+            if ( filter.ExpressionType == ExpressionType.All || filter.ExpressionType == ExpressionType.Any )
             {
                 var groupControl = new FilterGroup();
                 parentControl.Controls.Add( groupControl );
                 groupControl.IsDeleteEnabled = parentControl is FilterGroup;
-                groupControl.FilterType = filter.FilterType;
+                groupControl.FilteredEntityTypeName = filter.EntityType.Name;
+                groupControl.FilterType = filter.ExpressionType;
                 groupControl.AddFilterClick += groupControl_AddFilterClick;
                 groupControl.AddGroupClick += groupControl_AddGroupClick;
                 groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
-                foreach ( var childFilter in filter.ReportFilters )
+                foreach ( var childFilter in filter.ChildFilters )
                 {
                     CreateFilterControl( groupControl, childFilter );
                 }
@@ -224,13 +226,13 @@ namespace RockWeb.Blocks.Reporting
             {
                 var filterControl = new FilterField();
                 parentControl.Controls.Add( filterControl );
-                filterControl.EntityTypeName = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value ).Name;
+                filterControl.FilterEntityTypeName = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value ).Name;
                 filterControl.Selection = filter.Selection;
                 filterControl.DeleteClick += filterControl_DeleteClick;
             }
         }
 
-        private ReportFilter GetFilterControl()
+        private DataViewFilter GetFilterControl()
         {
             if ( phFilters.Controls.Count > 0 )
             {
@@ -240,7 +242,7 @@ namespace RockWeb.Blocks.Reporting
             return null;
         }
 
-        private ReportFilter GetFilterControl(Control control)
+        private DataViewFilter GetFilterControl(Control control)
         {
             FilterGroup groupControl = control as FilterGroup;
             if ( groupControl != null )
@@ -257,26 +259,26 @@ namespace RockWeb.Blocks.Reporting
             return null;
         }
 
-        private ReportFilter GetFilterGroupControl(FilterGroup filterGroup)
+        private DataViewFilter GetFilterGroupControl(FilterGroup filterGroup)
         {
-            ReportFilter filter = new ReportFilter();
-            filter.FilterType = filterGroup.FilterType;
+            DataViewFilter filter = new DataViewFilter();
+            filter.ExpressionType = filterGroup.FilterType;
             foreach ( Control control in filterGroup.Controls )
             {
-                ReportFilter childFilter = GetFilterControl( control );
+                DataViewFilter childFilter = GetFilterControl( control );
                 if ( childFilter != null )
                 {
-                    filter.ReportFilters.Add( childFilter );
+                    filter.ChildFilters.Add( childFilter );
                 }
             }
             return filter;
         }
 
-        private ReportFilter GetFilterFieldControl( FilterField filterField )
+        private DataViewFilter GetFilterFieldControl( FilterField filterField )
         {
-            ReportFilter filter = new ReportFilter();
-            filter.FilterType = FilterType.Expression;
-            filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(filterField.EntityTypeName).Id;
+            DataViewFilter filter = new DataViewFilter();
+            filter.ExpressionType = ExpressionType.Expression;
+            filter.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read(filterField.FilterEntityTypeName).Id;
             filter.Selection = filterField.Selection;
 
             return filter;

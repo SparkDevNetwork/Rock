@@ -14,11 +14,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Campus POCO Entity.
+    /// DataView POCO Entity.
     /// </summary>
-    [Table( "Report" )]
+    [Table( "DataView" )]
     [DataContract( IsReference = true )]
-    public partial class Report : Model<Report>
+    public partial class DataView : Model<DataView>
     {
 
         #region Entity Properties
@@ -63,13 +63,22 @@ namespace Rock.Model
         public int? CategoryId { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity type that this view applies to.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the root filter id.
         /// </summary>
         /// <value>
         /// The root filter id.
         /// </value>
         [DataMember]
-        public int? DataViewId { get; set; }
+        public int? DataViewFilterId { get; set; }
 
         #endregion
 
@@ -85,17 +94,41 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the data view for the report.
+        /// Gets or sets the type of the entity.
         /// </summary>
         /// <value>
-        /// The report data view.
+        /// The type of the entity.
         /// </value>
         [DataMember]
-        public virtual DataView DataView { get; set; }
+        public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the root Data View Filter.
+        /// </summary>
+        /// <value>
+        /// The report filter.
+        /// </value>
+        [DataMember]
+        public virtual DataViewFilter DataViewFilter { get; set; }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="parameter">The parameter.</param>
+        /// <returns></returns>
+        public Expression GetExpression( ParameterExpression parameter )
+        {
+            if ( DataViewFilter != null )
+            {
+                return DataViewFilter.GetExpression( parameter );
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -117,15 +150,15 @@ namespace Rock.Model
     /// <summary>
     /// Campus Configuration class.
     /// </summary>
-    public partial class ReportConfiguration : EntityTypeConfiguration<Report>
+    public partial class DataViewConfiguration : EntityTypeConfiguration<DataView>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ReportConfiguration"/> class.
         /// </summary>
-        public ReportConfiguration()
+        public DataViewConfiguration()
         {
-            this.HasOptional( r => r.Category ).WithMany().HasForeignKey( r => r.CategoryId ).WillCascadeOnDelete( false );
-            this.HasOptional( r => r.DataView ).WithMany().HasForeignKey( r => r.DataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( v => v.Category ).WithMany().HasForeignKey( v => v.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( v => v.DataViewFilter ).WithMany().HasForeignKey( v => v.DataViewFilterId ).WillCascadeOnDelete( true );
         }
     }
 

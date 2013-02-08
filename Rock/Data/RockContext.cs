@@ -444,7 +444,7 @@ namespace Rock.Data
         /// <value>
         /// The report filters.
         /// </value>
-        public DbSet<ReportFilter> ReportFilters { get; set; }
+        public DbSet<DataViewFilter> ReportFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules.
@@ -674,7 +674,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ReportConfiguration() );
-            modelBuilder.Configurations.Add( new ReportFilterConfiguration() );
+            modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
