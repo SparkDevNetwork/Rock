@@ -21,7 +21,7 @@
                             <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
                         </div>
                         <div class="span6">
-                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" />
+                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" AutoPostBack="true" OnSelectedIndexChanged="ddlParentGroup_SelectedIndexChanged" />
                             <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
                             <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
                             <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
