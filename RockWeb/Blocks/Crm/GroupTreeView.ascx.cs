@@ -32,6 +32,9 @@ namespace RockWeb.Blocks.Crm
 
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
+            string groupTypes = GetAttributeValue( "GroupTypes" );
+            groupTypes = string.IsNullOrWhiteSpace(groupTypes) ? "0" : groupTypes;
+            hfGroupTypes.Value = groupTypes;
             string groupId = PageParameter( "groupId" );
             if ( !string.IsNullOrWhiteSpace( groupId ) )
             {

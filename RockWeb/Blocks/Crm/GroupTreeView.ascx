@@ -4,6 +4,7 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfRootGroupId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupId" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfGroupTypes" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <div class="treeview-back">
@@ -74,12 +75,13 @@
             var restUrl = "<%=ResolveUrl( "~/api/groups/getchildren/" ) %>";
             var rootGroupId = $('#hfRootGroupId').val();
             var limitToSecurityRoleGroups = $('#hfLimitToSecurityRoleGroups').val();
+            var groupTypes = $('#hfGroupTypes').val();
 
             var groupList = new kendo.data.HierarchicalDataSource({
                 transport: {
                     read: {
                         url: function (options) {
-                            var requestUrl = restUrl + (options.id || 0) + '/' + (rootGroupId || 0) + '/' + (limitToSecurityRoleGroups || false)
+                            var requestUrl = restUrl + (options.id || 0) + '/' + (rootGroupId || 0) + '/' + (limitToSecurityRoleGroups || false) + '/' + (groupTypes || '0');
                             return requestUrl;
                         }
                     }
