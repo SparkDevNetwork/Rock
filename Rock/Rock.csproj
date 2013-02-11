@@ -288,6 +288,10 @@
     <Compile Include="Migrations\201302072347100_FixMissingLoginStatusTwoColumnLeft.Designer.cs">
       <DependentUpon>201302072347100_FixMissingLoginStatusTwoColumnLeft.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302112227304_WorkflowListUI.cs" />
+    <Compile Include="Migrations\201302112227304_WorkflowListUI.Designer.cs">
+      <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1038,6 +1042,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302072347100_FixMissingLoginStatusTwoColumnLeft.resx">
       <DependentUpon>201302072347100_FixMissingLoginStatusTwoColumnLeft.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302112227304_WorkflowListUI.resx">
+      <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

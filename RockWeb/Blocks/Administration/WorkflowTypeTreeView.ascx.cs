@@ -44,8 +44,14 @@ namespace RockWeb.Blocks.Administration
                 if ( entityTypeName.Equals( "workflowType" ) )
                 {
                     WorkflowType workflowType = new WorkflowTypeService().Get( int.Parse( itemId ) );
-                    category = workflowType.Category;
-                    parentIdList.Insert( 0, category.Id.ToString() );
+                    if ( workflowType != null )
+                    {
+                        category = workflowType.Category;
+                        if ( category != null )
+                        {
+                            parentIdList.Insert( 0, category.Id.ToString() );
+                        }
+                    }
                 }
                 else
                 {

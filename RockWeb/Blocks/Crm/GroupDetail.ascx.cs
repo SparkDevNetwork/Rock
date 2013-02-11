@@ -214,9 +214,9 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            Response.Redirect( Request.Url.AbsolutePath + "?groupId=" + group.Id.ToString(), false );
-            Context.ApplicationInstance.CompleteRequest();
-            return;
+            var qryParams = new Dictionary<string, string>();
+            qryParams["groupId"] = group.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         #endregion
