@@ -55,10 +55,9 @@
                             </asp:Panel>
                         </div>
                     </div>
-
-                </div>
-                <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="btnEdit_Click" />
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" CausesValidation="false" OnClick="btnEdit_Click" />
+                    </div>
                 </div>
             </fieldset>
 
@@ -66,7 +65,7 @@
                 <h4>Values for Defined Type</h4>
                 <asp:Panel ID="pnlValues" runat="server">
                     <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
-                    <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="true" ShowAttributeGridColumns="true">
+                    <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="true">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:DeleteField OnClick="gDefinedValues_Delete" />

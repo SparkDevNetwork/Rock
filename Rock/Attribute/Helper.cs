@@ -62,7 +62,7 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    blockProperties.Add( new TextFieldAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
+                    blockProperties.Add( new TextFieldAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, contextAttribute.DefaultParameterName ) );
                 }
             }
 

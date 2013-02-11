@@ -141,6 +141,25 @@ namespace Rock.Web.UI
         /// </value>
         public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities { get; private set; }
 
+        /// <summary>
+        /// Contexts the entity.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T ContextEntity<T>() where T : Rock.Data.IEntity, new()
+        {
+            string entityTypeName = typeof( T ).FullName;
+            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            {
+                var entity = ContextEntities[entityTypeName];
+                return (T)entity;
+            }
+            else
+            {
+                return default( T );
+            }
+        }
+
         #endregion
 
         #region Protected Caching Methods
@@ -417,10 +436,9 @@ namespace Rock.Web.UI
         /// <summary>
         /// Navigates to parent page.
         /// </summary>
-        public void NavigateToParentPage()
+        public void NavigateToParentPage( Dictionary<string, string> queryString = null)
         {
-            Response.Redirect( CurrentPage.BuildUrl( this.CurrentPage.ParentPageId.Value, null ), false );
-            Context.ApplicationInstance.CompleteRequest();
+            NavigateToPage( this.CurrentPage.ParentPage.Guid, queryString );
         }
 
         /// <summary>
@@ -461,8 +479,8 @@ namespace Rock.Web.UI
                 Rock.Model.Page page = new PageService().Get( pageGuid );
                 if ( page != null )
                 {
-                    string detailUrl = CurrentPage.BuildUrl( page.Id, queryString );
-                    Response.Redirect( detailUrl, false );
+                    string pageUrl = CurrentPage.BuildUrl( page.Id, queryString );
+                    Response.Redirect( pageUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
