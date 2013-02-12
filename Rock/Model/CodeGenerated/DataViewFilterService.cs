@@ -48,6 +48,12 @@ namespace Rock.Model
         public bool CanDelete( DataViewFilter item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<DataViewFilter>().Queryable().Any( a => a.ParentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataViewFilter.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
