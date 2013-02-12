@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using System.Text;
 
 using Rock.Data;
 using Rock.DataFilters;
@@ -34,7 +36,7 @@ namespace Rock.Model
         /// The type of the filter.
         /// </value>
         [DataMember]
-        public ExpressionType ExpressionType { get; set; }
+        public FilterExpressionType ExpressionType { get; set; }
 
         /// <summary>
         /// Gets or sets the parent id.
@@ -84,6 +86,18 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DataViewFilter" /> 
+        /// is currently expanded.  This property is only used by the DataView ui to 
+        /// track which filters are currently expanded
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual bool Expanded { get; set; }
 
         /// <summary>
         /// Gets or sets the child filters.
@@ -140,7 +154,7 @@ namespace Rock.Model
         {
             switch ( ExpressionType )
             {
-                case ExpressionType.Filter:
+                case FilterExpressionType.Filter:
 
                     if ( this.EntityTypeId.HasValue )
                     {
@@ -156,7 +170,7 @@ namespace Rock.Model
                     }
                     return null;
 
-                case ExpressionType.GroupAll:
+                case FilterExpressionType.GroupAll:
 
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -178,7 +192,7 @@ namespace Rock.Model
 
                     return andExp;
 
-                case ExpressionType.GroupAny:
+                case FilterExpressionType.GroupAny:
 
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
@@ -212,23 +226,36 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            switch ( this.ExpressionType )
+            if ( this.ExpressionType == FilterExpressionType.Filter )
             {
-                case ExpressionType.GroupAll:
-                    return "All";
-
-                case ExpressionType.GroupAny:
-                    return "Any";
-
-                default:
-
-                    var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
-                    if ( component != null )
-                    {
-                        return component.FormatSelection( this.Selection );
-                    }
-                    return string.Empty;
+                var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                if ( component != null )
+                {
+                    return component.FormatSelection( this.Selection );
+                }
             }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+
+                string conjuction = this.ExpressionType == FilterExpressionType.GroupAll ? " OR " : " AND ";
+
+                var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
+                for(int i = 0; i < children.Count; i++)
+                {
+                    sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, children[i].ToString() );
+                }
+
+                if (children.Count > 1)
+                {
+                    sb.Insert(0, "( ");
+                    sb.Append(" )");
+                }
+
+                return sb.ToString();
+            }
+
+            return string.Empty;
         }
 
         #endregion
@@ -258,7 +285,7 @@ namespace Rock.Model
     /// <summary>
     /// Type of Filter entry
     /// </summary>
-    public enum ExpressionType
+    public enum FilterExpressionType
     {
         /// <summary>
         /// Expression filter

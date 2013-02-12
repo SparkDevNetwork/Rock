@@ -41,6 +41,26 @@ namespace Rock.DataFilters
         }
 
         /// <summary>
+        /// Gets a list of entity type names that have Data Filter components
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> GetAvailableFilteredEntityTypeNames()
+        {
+            var entityTypeNames = new List<string>();
+
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( !entityTypeNames.Contains(component.FilteredEntityTypeName) )
+                {
+                    entityTypeNames.Add( component.FilteredEntityTypeName );
+                }
+            }
+
+            return entityTypeNames;
+        }
+
+        /// <summary>
         /// Gets the component with the matching Entity Type Name
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>

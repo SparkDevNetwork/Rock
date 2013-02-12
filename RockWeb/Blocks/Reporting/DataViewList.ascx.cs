@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Reporting
     /// 
     /// </summary>
     [DetailPage]
-    public partial class ReportList : RockBlock
+    public partial class DataViewList : RockBlock
     { 
         #region Control Methods
 
@@ -32,15 +32,15 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            gReport.DataKeyNames = new string[] { "id" };
-            gReport.Actions.IsAddEnabled = true;
-            gReport.Actions.AddClick += gReport_Add;
-            gReport.GridRebind += gReport_GridRebind;
+            gDataView.DataKeyNames = new string[] { "id" };
+            gDataView.Actions.IsAddEnabled = true;
+            gDataView.Actions.AddClick += gDataView_Add;
+            gDataView.GridRebind += gDataView_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gReport.Actions.IsAddEnabled = canAddEditDelete;
-            gReport.IsDeleteEnabled = canAddEditDelete;
+            gDataView.Actions.IsAddEnabled = canAddEditDelete;
+            gDataView.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -62,48 +62,48 @@ namespace RockWeb.Blocks.Reporting
         #region Grid Events (main grid)
 
         /// <summary>
-        /// Handles the Add event of the gReport control.
+        /// Handles the Add event of the gDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gReport_Add( object sender, EventArgs e )
+        protected void gDataView_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "reportId", 0 );
+            NavigateToDetailPage( "dataViewId", 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gReport control.
+        /// Handles the Edit event of the gDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gReport_Edit( object sender, RowEventArgs e )
+        protected void gDataView_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "reportId", (int)e.RowKeyValue );
+            NavigateToDetailPage( "dataViewId", (int)e.RowKeyValue );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gReport control.
+        /// Handles the Delete event of the gDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gReport_Delete( object sender, RowEventArgs e )
+        protected void gDataView_Delete( object sender, RowEventArgs e )
         {
             RockTransactionScope.WrapTransaction( () =>
             {
-                ReportService reportService = new ReportService();
-                Report report = reportService.Get( (int)e.RowKeyValue );
+                DataViewService dataViewService = new DataViewService();
+                DataView dataView = dataViewService.Get( (int)e.RowKeyValue );
 
-                if ( report != null )
+                if ( dataView != null )
                 {
                     string errorMessage;
-                    if ( !reportService.CanDelete( report, out errorMessage ) )
+                    if ( !dataViewService.CanDelete( dataView, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
-                    reportService.Delete( report, CurrentPersonId );
-                    reportService.Save( report, CurrentPersonId );
+                    dataViewService.Delete( dataView, CurrentPersonId );
+                    dataViewService.Save( dataView, CurrentPersonId );
                 }
             } );
 
@@ -111,11 +111,11 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gReport control.
+        /// Handles the GridRebind event of the gDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void gReport_GridRebind( object sender, EventArgs e )
+        private void gDataView_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -129,19 +129,19 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
-            ReportService reportService = new ReportService();
-            SortProperty sortProperty = gReport.SortProperty;
+            DataViewService dataViewService = new DataViewService();
+            SortProperty sortProperty = gDataView.SortProperty;
 
             if ( sortProperty != null )
             {
-                gReport.DataSource = reportService.Queryable().Sort( sortProperty ).ToList();
+                gDataView.DataSource = dataViewService.Queryable().Sort( sortProperty ).ToList();
             }
             else
             {
-                gReport.DataSource = reportService.Queryable().OrderBy( p => p.Name ).ToList();
+                gDataView.DataSource = dataViewService.Queryable().OrderBy( p => p.Name ).ToList();
             }
 
-            gReport.DataBind();
+            gDataView.DataBind();
         }
 
         #endregion

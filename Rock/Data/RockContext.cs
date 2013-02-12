@@ -117,6 +117,22 @@ namespace Rock.Data
         /// The categories.
         /// </value>
         public DbSet<Category> Categories { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the data views.
+        /// </summary>
+        /// <value>
+        /// The data views.
+        /// </value>
+        public DbSet<DataView> DataViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view filters.
+        /// </summary>
+        /// <value>
+        /// The data view filters.
+        /// </value>
+        public DbSet<DataViewFilter> DataViewFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Types.
@@ -439,14 +455,6 @@ namespace Rock.Data
         public DbSet<Report> Reports { get; set; }
 
         /// <summary>
-        /// Gets or sets the report filters.
-        /// </summary>
-        /// <value>
-        /// The report filters.
-        /// </value>
-        public DbSet<DataViewFilter> ReportFilters { get; set; }
-
-        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -634,6 +642,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new CampusConfiguration() );
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
+            modelBuilder.Configurations.Add( new DataViewConfiguration() );
+            modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
@@ -674,7 +684,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ReportConfiguration() );
-            modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

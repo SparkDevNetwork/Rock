@@ -42,7 +42,7 @@ namespace Rock
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
 
             if ( includeBaseType )
-                types.Add( ClassName( baseType ), baseType );
+                types.Add( baseType.FullName, baseType );
 
             Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
 
@@ -95,7 +95,7 @@ namespace Rock
                             foreach ( Type typeInterface in type.GetInterfaces() )
                                 if ( typeInterface == baseType )
                                 {
-                                    types.Add( ClassName( type ), type );
+                                    types.Add( type.FullName, type );
                                     break;
                                 }
                         }
@@ -106,7 +106,7 @@ namespace Rock
                             {
                                 if ( parentType == baseType )
                                 {
-                                    types.Add( ClassName( type ), type );
+                                    types.Add( type.FullName, type );
                                     break;
                                 }
                                 parentType = parentType.BaseType;
@@ -121,21 +121,6 @@ namespace Rock
             }
 
             return types;
-        }
-
-        /// <summary>
-        /// Returns the name of the type.  If a <see cref="System.ComponentModel.DescriptionAttribute"/> is 
-        /// present for the type, it's value will be returned, otherwise the type name will be returned
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns></returns>
-        public static string ClassName( Type type )
-        {
-            object[] attributes = type.GetCustomAttributes( typeof( System.ComponentModel.DescriptionAttribute ), true );
-            if ( attributes.Length > 0 )
-                return ( (System.ComponentModel.DescriptionAttribute)attributes[0] ).Description;
-
-            return type.ToString();
         }
 
         /// <summary>

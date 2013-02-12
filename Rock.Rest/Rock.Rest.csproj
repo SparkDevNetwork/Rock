@@ -56,6 +56,8 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DataViewFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />

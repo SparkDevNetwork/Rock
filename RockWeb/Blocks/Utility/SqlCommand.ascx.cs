@@ -149,9 +149,9 @@ namespace RockWeb.Blocks.Utility
             }
         }
 
-        private DataView GetSortedView( DataTable dataTable )
+        private System.Data.DataView GetSortedView( DataTable dataTable )
         {
-            DataView dataView = dataTable.DefaultView;
+            System.Data.DataView dataView = dataTable.DefaultView;
 
             SortProperty sortProperty = gReport.SortProperty;
             if ( sortProperty != null )
