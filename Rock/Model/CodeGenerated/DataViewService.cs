@@ -48,6 +48,12 @@ namespace Rock.Model
         public bool CanDelete( DataView item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Report>().Queryable().Any( a => a.DataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

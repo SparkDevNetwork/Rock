@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201302082010581_AddDataView"; }
+            get { return "201302121305161_AddDataView"; }
         }
         
         string IMigrationMetadata.Source
