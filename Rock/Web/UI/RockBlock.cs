@@ -508,14 +508,7 @@ namespace Rock.Web.UI
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
         public void DimOtherBlocks( bool dimmed )
         {
-            RockPage rockPage = this.RockPage();
-            foreach ( IDimmableBlock dimmableBlock in rockPage.RockBlocks.Where( a => a is IDimmableBlock ) )
-            {
-                if ( dimmableBlock != this )
-                {
-                    dimmableBlock.SetDimmed( dimmed );
-                }
-            }
+            this.RockPage().DimOtherBlocks( this, dimmed );
         }
 
         #region User Preferences
