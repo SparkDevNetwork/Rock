@@ -139,14 +139,14 @@ namespace Rock.Web.UI
         /// <value>
         /// The context entities.
         /// </value>
-        public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities { get; private set; }
+        private Dictionary<string, Rock.Data.IEntity> ContextEntities { get; set; }
 
         /// <summary>
-        /// Contexts the entity.
+        /// Returns the ContextEntity of the Type specified
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T ContextEntity<T>() where T : Rock.Data.IEntity, new()
+        public T ContextEntity<T>() where T : Rock.Data.IEntity
         {
             string entityTypeName = typeof( T ).FullName;
             if ( ContextEntities.ContainsKey( entityTypeName ) )
@@ -157,6 +157,22 @@ namespace Rock.Web.UI
             else
             {
                 return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Return the ContextEntity for blocks that are designed to have at most one ContextEntity
+        /// </summary>
+        /// <returns></returns>
+        public Rock.Data.IEntity ContextEntity()
+        {
+            if ( ContextEntities.Count() == 1 )
+            {
+                return ContextEntities.First().Value;
+            }
+            else
+            {
+                return null;
             }
         }
 
