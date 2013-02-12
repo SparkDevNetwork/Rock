@@ -300,6 +300,10 @@
     <Compile Include="Migrations\201302121305161_AddDataView.Designer.cs">
       <DependentUpon>201302121305161_AddDataView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302122058443_FixInactiveSecurityGroups.cs" />
+    <Compile Include="Migrations\201302122058443_FixInactiveSecurityGroups.Designer.cs">
+      <DependentUpon>201302122058443_FixInactiveSecurityGroups.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1062,6 +1066,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302121305161_AddDataView.resx">
       <DependentUpon>201302121305161_AddDataView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302122058443_FixInactiveSecurityGroups.resx">
+      <DependentUpon>201302122058443_FixInactiveSecurityGroups.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
