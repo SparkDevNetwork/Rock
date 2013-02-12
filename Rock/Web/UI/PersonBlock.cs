@@ -14,7 +14,7 @@ namespace Rock.Web.UI
     /// <summary>
     /// A Block used on the person detail page
     /// </summary>
-    [ContextAware( "Rock.Model.Person" )]
+    [ContextAware( typeof(Person) )]
     public class PersonBlock : RockBlock
     {
         /// <summary>
@@ -30,11 +30,11 @@ namespace Rock.Web.UI
         {
             base.OnInit( e );
 
-            if ( ContextEntities.ContainsKey( "Rock.Model.Person" ) )
+            Person = this.ContextEntity<Person>();
+
+            if ( Person == null )
             {
-                Person = ContextEntities["Rock.Model.Person"] as Person;
-                if ( Person == null )
-                    Person = new Person();
+                Person = new Person();
             }
         }
 

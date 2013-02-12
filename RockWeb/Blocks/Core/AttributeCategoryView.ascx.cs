@@ -42,22 +42,12 @@ namespace RockWeb.Blocks.Core
                 entityQualifierValue = PageParameter( "EntityQualifierValue" );
 
             // Get the context entity
-            int? contextEntityTypeId = null;
-            Rock.Data.IEntity contextEntity = null;
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
+            Rock.Data.IEntity contextEntity = this.ContextEntity();
+
+            if ( contextEntity != null )
             {
-                contextEntityTypeId = entry.Value.TypeId;
-                contextEntity = entry.Value;
-
-                // Should only be one.
-                break;
-            }
-
-            if ( contextEntityTypeId.HasValue && contextEntity != null )
-            {
-
                 ObjectCache cache = MemoryCache.Default;
-                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextEntityTypeId, entityQualifierColumn, entityQualifierValue );
+                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextEntity.TypeId, entityQualifierColumn, entityQualifierValue );
 
                 Dictionary<string, List<int>> cachedAttributes = cache[cacheKey] as Dictionary<string, List<int>>;
                 if ( cachedAttributes == null )
@@ -66,7 +56,7 @@ namespace RockWeb.Blocks.Core
 
                     AttributeService attributeService = new AttributeService();
                     foreach ( var item in attributeService
-                        .Get(contextEntityTypeId, entityQualifierColumn, entityQualifierValue)
+                        .Get(contextEntity.TypeId, entityQualifierColumn, entityQualifierValue)
                         .OrderBy( a => a.Category )
                         .ThenBy( a => a.Order )
                         .Select( a => new { a.Category, a.Id } ) )
