@@ -70,65 +70,75 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Site site;
-            SiteService siteService = new SiteService();
-            bool newSite = false;
-
-            int siteId = int.Parse( hfSiteId.Value );
-
-            if ( siteId == 0 )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                newSite = true;
-                site = new Rock.Model.Site();
-                siteService.Add( site, CurrentPersonId );
-            }
-            else
-            {
-                site = siteService.Get( siteId );
+                Site site;
+                SiteService siteService = new SiteService();
                 SiteDomainService siteDomainService = new SiteDomainService();
-                foreach ( var domain in site.SiteDomains.ToList() )
+                bool newSite = false;
+
+                int siteId = int.Parse( hfSiteId.Value );
+
+                if ( siteId == 0 )
                 {
+                    newSite = true;
+                    site = new Rock.Model.Site();
+                    siteService.Add( site, CurrentPersonId );
+                }
+                else
+                {
+                    site = siteService.Get( siteId );
+                }
+
+                site.Name = tbSiteName.Text;
+                site.Description = tbDescription.Text;
+                site.Theme = ddlTheme.Text;
+                site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
+
+                var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
+
+                // Remove any deleted domains
+                foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
+                {
+                    site.SiteDomains.Remove( domain );
                     siteDomainService.Delete( domain, CurrentPersonId );
                 }
 
-                site.SiteDomains.Clear();
-            }
-
-            site.Name = tbSiteName.Text;
-            site.Description = tbDescription.Text;
-            site.Theme = ddlTheme.Text;
-            site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
-
-            foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
-            {
-                SiteDomain sd = new SiteDomain();
-                sd.Domain = domain;
-                sd.Guid = Guid.NewGuid();
-                site.SiteDomains.Add( sd );
-            }
-
-            site.FaviconUrl = tbFaviconUrl.Text;
-            site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-            site.FacebookAppId = tbFacebookAppId.Text;
-            site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
-            if ( !site.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                siteService.Save( site, CurrentPersonId );
-
-                if ( newSite )
+                foreach ( string domain in currentDomains )
                 {
-                    Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                    SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
+                    if ( sd == null )
+                    {
+                        sd = new SiteDomain();
+                        sd.Domain = domain;
+                        sd.Guid = Guid.NewGuid();
+                        site.SiteDomains.Add( sd );
+                    }
                 }
-            } );
 
-            SiteCache.Flush( site.Id );
+                site.FaviconUrl = tbFaviconUrl.Text;
+                site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
+                site.FacebookAppId = tbFacebookAppId.Text;
+                site.FacebookAppSecret = tbFacebookAppSecret.Text;
+
+                if ( !site.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    siteService.Save( site, CurrentPersonId );
+
+                    if ( newSite )
+                    {
+                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                    }
+                } );
+
+                SiteCache.Flush( site.Id );
+            }
 
             NavigateToParentPage();
         }
