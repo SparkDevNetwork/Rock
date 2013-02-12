@@ -19,19 +19,9 @@ namespace Rock.Web.UI.Controls
     public class FilterGroup : CompositeControl
     {
         Toggle toggleAllAny;
-        Button btnAddFilter;
-        Button btnAddGroup;
+        HtmlButton btnAddFilter;
+        HtmlButton btnAddGroup;
         LinkButton lbDelete;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FilterGroup" /> class.
-        /// </summary>
-        /// <param name="filteredEntityTypeName">Name of the filtered entity type.</param>
-        public FilterGroup( string filteredEntityTypeName )
-            : base()
-        {
-            FilteredEntityTypeName = filteredEntityTypeName;
-        }
 
         /// <summary>
         /// Gets or sets the name of entity type that is being filtered.
@@ -58,20 +48,20 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the filter.
         /// </value>
-        public ExpressionType FilterType
+        public FilterExpressionType FilterType
         {
             get
             {
                 EnsureChildControls();
-                return toggleAllAny.Checked ? ExpressionType.GroupAll : ExpressionType.GroupAny;
+                return toggleAllAny.Checked ? FilterExpressionType.GroupAll : FilterExpressionType.GroupAny;
             }
 
             set
             {
-                if ( value != ExpressionType.Filter )
+                if ( value != FilterExpressionType.Filter )
                 {
                     EnsureChildControls();
-                    toggleAllAny.Checked = value == ExpressionType.GroupAll;
+                    toggleAllAny.Checked = value == FilterExpressionType.GroupAll;
                 }
             }
         }
@@ -101,14 +91,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            Controls.Clear();
+
             toggleAllAny = new Toggle();
             Controls.Add( toggleAllAny );
+            toggleAllAny.AddCssClass( "switch-mini" );
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
 
-            btnAddGroup = new Button();
+            btnAddGroup = new HtmlButton();
             Controls.Add( btnAddGroup );
-            btnAddGroup.Click += btnAddGroup_Click;
+            btnAddGroup.ServerClick += btnAddGroup_ServerClick;
             btnAddGroup.AddCssClass( "btn btn-inverse" );
 
             var iAddGroup = new HtmlGenericControl( "i" );
@@ -116,9 +109,9 @@ namespace Rock.Web.UI.Controls
             btnAddGroup.Controls.Add( iAddGroup );
             btnAddGroup.Controls.Add( new LiteralControl( " Add Filter Group" ) );
 
-            btnAddFilter = new Button();
+            btnAddFilter = new HtmlButton();
             Controls.Add( btnAddFilter );
-            btnAddFilter.Click += btnAddFilter_Click;
+            btnAddFilter.ServerClick += btnAddFilter_ServerClick;
             btnAddFilter.AddCssClass( "btn btn-inverse" );
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -158,7 +151,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            btnAddGroup.RenderControl(writer);
+            btnAddGroup.RenderControl( writer );
 
             btnAddFilter.RenderControl( writer );
 
@@ -187,9 +180,11 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
-        void btnAddGroup_Click( object sender, EventArgs e )
+        void btnAddGroup_ServerClick( object sender, EventArgs e )
         {
             if ( AddGroupClick != null )
             {
@@ -197,7 +192,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void btnAddFilter_Click( object sender, EventArgs e )
+        void btnAddFilter_ServerClick( object sender, EventArgs e )
         {
             if ( AddFilterClick != null )
             {

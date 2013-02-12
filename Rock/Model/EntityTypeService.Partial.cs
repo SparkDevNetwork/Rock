@@ -68,12 +68,12 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
                 var entityType = new EntityType();
-                entityType.Name = type.Value.FullName;
+                entityType.Name = type.Key;
                 entityType.FriendlyName = type.Value.Name.SplitCase();
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                 entityType.IsEntity = true;
                 entityType.IsSecured = false;
-                entityTypes.Add( type.Value.FullName, entityType );
+                entityTypes.Add( type.Key, entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
@@ -81,19 +81,19 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
-                if ( entityTypes.ContainsKey( type.Value.FullName ) )
+                if ( entityTypes.ContainsKey( type.Key ) )
                 {
-                    entityTypes[type.Value.FullName].IsSecured = true;
+                    entityTypes[type.Key].IsSecured = true;
                 }
                 else
                 {
                     var entityType = new EntityType();
-                    entityType.Name = type.Value.FullName;
+                    entityType.Name = type.Key;
                     entityType.FriendlyName = type.Value.Name.SplitCase();
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Value.FullName, entityType);
+                    entityTypes.Add( type.Key, entityType);
                 }
             }
 

@@ -83,7 +83,7 @@ namespace Rock.DataFilters
             var controls = new Control[2] {
                 ComparisonControl( StringFilterComparisonTypes ),
                 new TextBox() };
-            SetSelection( controls, string.Format( "{0}|", ComparisonType.StartsWith.ConvertToInt().ToString() ) );
+            //SetSelection( controls, string.Format( "{0}|", ComparisonType.StartsWith.ConvertToInt().ToString() ) );
             return controls;
         }
 

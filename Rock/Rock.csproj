@@ -296,6 +296,10 @@
     <Compile Include="Migrations\201302120034051_MarketingCampaignChildBlocks.Designer.cs">
       <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302082010581_AddDataView.cs" />
+    <Compile Include="Migrations\201302082010581_AddDataView.Designer.cs">
+      <DependentUpon>201302082010581_AddDataView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -314,6 +318,8 @@
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
@@ -328,6 +334,7 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
@@ -1052,6 +1059,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302120034051_MarketingCampaignChildBlocks.resx">
       <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302082010581_AddDataView.resx">
+      <DependentUpon>201302082010581_AddDataView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

@@ -10,6 +10,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.DataFilters;
 
 namespace Rock.Web.UI.Controls
@@ -26,16 +27,6 @@ namespace Rock.Web.UI.Controls
         protected LinkButton lbDelete;
         protected HiddenField hfExpanded;
         protected Control[] filterControls;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FilterField" /> class.
-        /// </summary>
-        /// <param name="filteredEntityTypeName">Name of the filtered entity type.</param>
-        public FilterField( string filteredEntityTypeName )
-            : base()
-        {
-            FilteredEntityTypeName = filteredEntityTypeName;
-        }
 
         /// <summary>
         /// Gets or sets the name of entity type that is being filtered.
@@ -63,8 +54,7 @@ namespace Rock.Web.UI.Controls
                     {
                         AuthorizedComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, string>;
                     }
-
-                    if ( AuthorizedComponents == null )
+                    else
                     {
                         AuthorizedComponents = new Dictionary<string, string>();
                         RockPage rockPage = this.Page as RockPage;
@@ -80,8 +70,12 @@ namespace Rock.Web.UI.Controls
                             }
 
                         }
+
+                        HttpContext.Current.Items.Add( itemKey, AuthorizedComponents );
                     }
                 }
+
+                RecreateChildControls();
             }
         }
 
@@ -117,11 +111,10 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                bool expanded = false;
-                if (!Boolean.TryParse(hfExpanded.Value, out expanded))
-                {
-                    expanded = false;
-                }
+
+                bool expanded = true;
+                if (!bool.TryParse(hfExpanded.Value, out expanded))
+                    expanded = true;
                 return expanded;
             }
             set
@@ -169,13 +162,10 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
+            Controls.Clear();
+
             ddlFilterType = new DropDownList();
             Controls.Add( ddlFilterType );
-            ddlFilterType.AutoPostBack = true;
-            ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
-
-            hfExpanded = new HiddenField();
-            Controls.Add( hfExpanded );
 
             var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
@@ -194,6 +184,21 @@ namespace Rock.Web.UI.Controls
                 filterControls = new Control[0];
             }
 
+            ddlFilterType.AutoPostBack = true;
+            ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
+
+            ddlFilterType.Items.Clear();
+            ddlFilterType.Items.Add( new ListItem( string.Empty ) );
+            foreach ( var item in AuthorizedComponents )
+            {
+                ListItem li = new ListItem( item.Value, item.Key );
+                li.Selected = item.Key == FilterEntityTypeName;
+                ddlFilterType.Items.Add( li );
+            }
+
+            hfExpanded = new HiddenField();
+            Controls.Add( hfExpanded );
+
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
             lbDelete.CssClass = "btn btn-mini btn-danger ";
@@ -211,39 +216,54 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             DataFilterComponent component = null;
-            if (string.IsNullOrWhiteSpace(FilterEntityTypeName) && ddlFilterType.Items.Count > 0)
+            if (!string.IsNullOrWhiteSpace(FilterEntityTypeName))
             {
-                FilterEntityTypeName = ddlFilterType.Items[0].Value;
+                component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             }
-            component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+
+            if ( component == null )
+            {
+                hfExpanded.Value = "True";
+            }
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget filter-item" );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix" );
             writer.RenderBeginTag( "header" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget filter-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left filter-item-description" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description" );
+            if ( Expanded )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( component != null ? component.FormatSelection( Selection ) : "Select Filter" );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left filter-item-select" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
+            if ( !Expanded )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "Filter Type " );
-            ddlFilterType.SelectedValue = FilterEntityTypeName;
             ddlFilterType.RenderControl( writer );
+            writer.RenderEndTag();
+
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-view-state icon-chevron-down" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
@@ -253,7 +273,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "widget-content" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            if ( !Expanded )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             if ( component != null )
             {
@@ -268,6 +291,11 @@ namespace Rock.Web.UI.Controls
         void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
             FilterEntityTypeName = ( (DropDownList)sender ).SelectedValue;
+
+            if ( SelectionChanged != null )
+            {
+                SelectionChanged( this, e );
+            }
         }
         
         void lbDelete_Click( object sender, EventArgs e )
@@ -282,6 +310,8 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [delete click].
         /// </summary>
         public event EventHandler DeleteClick;
+
+        public event EventHandler SelectionChanged;
 
 
     }
