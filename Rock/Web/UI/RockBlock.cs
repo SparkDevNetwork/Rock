@@ -436,7 +436,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Navigates to parent page.
         /// </summary>
-        public void NavigateToParentPage( Dictionary<string, string> queryString = null)
+        public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
             NavigateToPage( this.CurrentPage.ParentPage.Guid, queryString );
         }
@@ -482,6 +482,22 @@ namespace Rock.Web.UI
                     string pageUrl = CurrentPage.BuildUrl( page.Id, queryString );
                     Response.Redirect( pageUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dims the other blocks.
+        /// </summary>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void DimOtherBlocks( bool dimmed )
+        {
+            RockPage rockPage = this.RockPage();
+            foreach ( IDimmableBlock dimmableBlock in rockPage.RockBlocks.Where( a => a is IDimmableBlock ) )
+            {
+                if ( dimmableBlock != this )
+                {
+                    dimmableBlock.SetDimmed( dimmed );
                 }
             }
         }

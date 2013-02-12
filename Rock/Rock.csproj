@@ -292,6 +292,10 @@
     <Compile Include="Migrations\201302112227304_WorkflowListUI.Designer.cs">
       <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302120034051_MarketingCampaignChildBlocks.cs" />
+    <Compile Include="Migrations\201302120034051_MarketingCampaignChildBlocks.Designer.cs">
+      <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -432,6 +436,7 @@
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
+    <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
@@ -1045,6 +1050,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302112227304_WorkflowListUI.resx">
       <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302120034051_MarketingCampaignChildBlocks.resx">
+      <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
