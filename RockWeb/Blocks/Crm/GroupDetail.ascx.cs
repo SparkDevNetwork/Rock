@@ -14,6 +14,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -22,6 +23,30 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( 6, "Limit to Security Role Groups", false )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
+
+        #region Child Grid Dictionarys
+
+        /// <summary>
+        /// Gets or sets the state of the group member attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the group member attributes.
+        /// </value>
+        private ViewStateList<Attribute> GroupMemberAttributesState
+        {
+            get
+            {
+                return ViewState["GroupMemberAttributesState"] as ViewStateList<Attribute>;
+            }
+
+            set
+            {
+                ViewState["GroupMemberAttributesState"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -32,10 +57,11 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-            gGroupMembers.Actions.IsAddEnabled = true;
-            gGroupMembers.IsDeleteEnabled = true;
-            gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+            gGroupMemberAttributes.DataKeyNames = new string[] { "Guid" };
+            gGroupMemberAttributes.Actions.IsAddEnabled = true;
+            gGroupMemberAttributes.Actions.AddClick += gGroupMemberAttributes_Add;
+            gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
+            gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
         }
 
         /// <summary>
@@ -125,8 +151,7 @@ namespace RockWeb.Blocks.Crm
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            pnlGroupMembers.Disabled = editable;
-            gGroupMembers.Enabled = !editable;
+            this.DimOtherBlocks( editable );
         }
 
         /// <summary>
@@ -138,6 +163,7 @@ namespace RockWeb.Blocks.Crm
         {
             Group group;
             GroupService groupService = new GroupService();
+            AttributeService attributeService = new AttributeService();
 
             int groupId = int.Parse( hfGroupId.Value );
             bool wasSecurityRole = false;
@@ -194,6 +220,48 @@ namespace RockWeb.Blocks.Crm
 
                 groupService.Save( group, CurrentPersonId );
                 Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
+
+                /* Take care of Group Member Attributes */
+
+                // delete GroupMemberAttributes that are no longer configured in the UI
+                var groupMemberAttributesQry = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                    .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
+                    && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
+
+                var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
+                                             where !( from d in GroupMemberAttributesState
+                                                      select d.Guid ).Contains( attr.Guid )
+                                             select attr;
+
+                deletedGroupMemberAttributes.ToList().ForEach( a =>
+                {
+                    var attr = attributeService.Get( a.Guid );
+                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    attributeService.Delete( attr, CurrentPersonId );
+                    attributeService.Save( attr, CurrentPersonId );
+                } );
+
+                // add/update the GroupMemberAttributes that are assigned in the UI
+                foreach ( var attributeState in GroupMemberAttributesState )
+                {
+                    Attribute attribute = groupMemberAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                    if ( attribute == null )
+                    {
+                        attribute = attributeState.Clone() as Rock.Model.Attribute;
+                        attributeService.Add( attribute, CurrentPersonId );
+                    }
+                    else
+                    {
+                        attributeState.Id = attribute.Id;
+                        attribute.FromDictionary( attributeState.ToDictionary() );
+                    }
+
+                    attribute.EntityTypeQualifierColumn = "GroupId";
+                    attribute.EntityTypeQualifierValue = group.Id.ToString();
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupMember().TypeName ).Id;
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                    attributeService.Save( attribute, CurrentPersonId );
+                }
             } );
 
             if ( wasSecurityRole )
@@ -264,7 +332,7 @@ namespace RockWeb.Blocks.Crm
             {
                 groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
             }
-            
+
             // also, limit GroupType to ChildGroupTypes that the ParentGroup allows
             int? parentGroupId = ddlParentGroup.SelectedValueAsInt();
             if ( parentGroupId != null )
@@ -277,11 +345,10 @@ namespace RockWeb.Blocks.Crm
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
 
             // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
-            
             if ( ddlGroupType.SelectedValue != null )
             {
                 int? selectedGroupTypeId = ddlGroupType.SelectedValueAsInt();
-                if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) ) 
+                if ( !groupTypes.Any( a => a.Id.Equals( selectedGroupTypeId ?? 0 ) ) )
                 {
                     ddlGroupType.SelectedValue = null;
                 }
@@ -366,8 +433,6 @@ namespace RockWeb.Blocks.Crm
                     ShowEditDetails( group );
                 }
             }
-
-            BindGroupMembersGrid();
         }
 
         /// <summary>
@@ -393,6 +458,9 @@ namespace RockWeb.Blocks.Crm
             cbIsActive.Checked = group.IsActive;
 
             LoadDropDowns( group.Id );
+
+            GroupMemberAttributesState = new ViewStateList<Attribute>();
+
             ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
             ddlParentGroup_SelectedIndexChanged( null, null );
@@ -418,6 +486,15 @@ namespace RockWeb.Blocks.Crm
                 cbIsSecurityRole.Enabled = false;
                 cbIsSecurityRole.Checked = true;
             }
+
+            AttributeService attributeService = new AttributeService();
+
+            var qryGroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
+
+            GroupMemberAttributesState.AddAll( qryGroupMemberAttributes.ToList() );
+            BindGroupMemberAttributesGrid();
         }
 
         /// <summary>
@@ -498,67 +575,121 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #region GroupMembers Grid
+        #region GroupMemberAttributes Grid and Picker
 
         /// <summary>
-        /// Handles the Click event of the DeleteGroupMember control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
-        protected void DeleteGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            // todo
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Handles the AddClick event of the gGroupMembers control.
+        /// Handles the Add event of the gGroupMemberAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gGroupMembers_AddClick( object sender, EventArgs e )
+        protected void gGroupMemberAttributes_Add( object sender, EventArgs e )
         {
-            // todo
-            throw new NotImplementedException();
+            gGroupMemberAttributes_ShowEdit( Guid.Empty );
         }
 
         /// <summary>
-        /// Binds the group members grid.
+        /// Handles the Edit event of the gGroupMemberAttributes control.
         /// </summary>
-        protected void BindGroupMembersGrid()
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gGroupMemberAttributes_Edit( object sender, RowEventArgs e )
         {
-            GroupMemberService groupMemberService = new GroupMemberService();
-            int groupId = int.Parse( hfGroupId.Value );
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gGroupMemberAttributes_ShowEdit( attributeGuid );
+        }
 
-            var qry = groupMemberService.Queryable().Where( a => a.GroupId.Equals( groupId ) );
-
-            SortProperty sortProperty = gGroupMembers.SortProperty;
-
-            if ( sortProperty != null )
+        /// <summary>
+        /// Gs the group member attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gGroupMemberAttributes_ShowEdit( Guid attributeGuid )
+        {
+            pnlDetails.Visible = false;
+            pnlGroupMemberAttribute.Visible = true;
+            Attribute attribute;
+            string actionTitle;
+            if ( attributeGuid.Equals( Guid.Empty ) )
             {
-                gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+                attribute = new Attribute();
+                actionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else
             {
-                gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName ).ThenBy( a => a.Person.GivenName ).ToList();
+                attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                actionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
 
-            gGroupMembers.DataBind();
+            edtGroupMemberAttributes.EditAttribute( attribute, actionTitle );
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gGroupMembers control.
+        /// Handles the Delete event of the gGroupMemberAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gGroupMemberAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            GroupMemberAttributesState.RemoveEntity( attributeGuid );
+
+            BindGroupMemberAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gGroupMemberAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void gGroupMembers_GridRebind( object sender, EventArgs e )
+        protected void gGroupMemberAttributes_GridRebind( object sender, EventArgs e )
         {
-            BindGroupMembersGrid();
+            BindGroupMemberAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveGroupMemberAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveGroupMemberAttribute_Click( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtGroupMemberAttributes.GetAttributeValues( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            GroupMemberAttributesState.RemoveEntity( attribute.Guid );
+            GroupMemberAttributesState.Add( attribute );
+
+            pnlDetails.Visible = true;
+            pnlGroupMemberAttribute.Visible = false;
+
+            BindGroupMemberAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelGroupMemberAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelGroupMemberAttribute_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlGroupMemberAttribute.Visible = false;
+        }
+
+        /// <summary>
+        /// Binds the group member attributes grid.
+        /// </summary>
+        private void BindGroupMemberAttributesGrid()
+        {
+            gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupMemberAttributes.DataBind();
         }
 
         #endregion
-        
-}
+    }
 }

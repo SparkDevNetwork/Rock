@@ -18,13 +18,26 @@
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
+                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" AutoPostBack="true" OnSelectedIndexChanged="ddlParentGroup_SelectedIndexChanged" />
                             <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
                         </div>
                         <div class="span6">
-                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" AutoPostBack="true" OnSelectedIndexChanged="ddlParentGroup_SelectedIndexChanged" />
                             <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
                             <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" LabelText="Security Role" />
-                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
+
+                            <h5>Group Member Attributes
+                            </h5>
+                            <p>
+                                Group member attributes allow for providing different values for each group member.
+                            </p>
+                            <Rock:Grid ID="gGroupMemberAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" />
+                                    <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
                         </div>
                     </div>
 
@@ -68,17 +81,11 @@
                     </div>
                 </div>
             </fieldset>
-
-            <div id="pnlGroupMembers" runat="server">
-                <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true">
-                    <Columns>
-                        <asp:BoundField DataField="Person.FirstName" HeaderText="First Name" SortExpression="Person.NickName, Person.GivenName" />
-                        <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.LastName" />
-                        <asp:BoundField DataField="GroupRole.Name" HeaderText="Group Role" SortExpression="GroupRole.Name" />
-                        <Rock:DeleteField OnClick="DeleteGroupMember_Click" />
-                    </Columns>
-                </Rock:Grid>
-            </div>
         </asp:Panel>
+
+        <asp:Panel ID="pnlGroupMemberAttribute" runat="server" Visible="false">
+            <RockWeb:RockAttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
+        </asp:Panel>
+
     </ContentTemplate>
 </asp:UpdatePanel>

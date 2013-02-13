@@ -4,6 +4,7 @@
     <ContentTemplate>
         <div id="pnlMarketingCampaignAds" runat="server" class="">
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnRowSelected="gMarketingCampaignAds_Edit">
                 <Columns>
                     <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />

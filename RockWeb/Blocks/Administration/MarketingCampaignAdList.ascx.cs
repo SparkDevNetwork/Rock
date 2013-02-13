@@ -10,6 +10,7 @@ using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -116,11 +117,24 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
         {
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
-            MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( (int)e.RowKeyValue );
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+                MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( (int)e.RowKeyValue );
+                if ( marketingCampaignAd != null )
+                {
+                    string errorMessage;
+                    if ( !marketingCampaignAdService.CanDelete( marketingCampaignAd, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
-            marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
-            marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+                    marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonId );
+                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonId );
+                }
+            } );
+            
             BindMarketingCampaignAdsGrid();
         }
 
