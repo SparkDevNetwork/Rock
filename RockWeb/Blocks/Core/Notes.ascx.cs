@@ -21,7 +21,6 @@ namespace RockWeb.Blocks.Core
     [TextField( 1, "Note Type", "Behavior", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
     public partial class Notes : RockBlock
     {
-        private string contextTypeName = string.Empty;
         private IEntity contextEntity = null;
 
         private NoteType noteType;
@@ -53,15 +52,9 @@ Sys.Application.add_load(function () {
         {
             base.OnLoad( e );
 
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
-                contextTypeName = entry.Key;
-                contextEntity = entry.Value;
-                // Should only be one.
-                break;
-            }
+            contextEntity = this.ContextEntity();
 
-            if ( !String.IsNullOrEmpty( contextTypeName ) && contextEntity != null )
+            if ( contextEntity != null )
             {
                 GetNoteType();
                 if ( !Page.IsPostBack )

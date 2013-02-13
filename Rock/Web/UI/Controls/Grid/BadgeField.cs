@@ -20,6 +20,158 @@ namespace Rock.Web.UI.Controls
     public class BadgeField : BoundField
     {
         /// <summary>
+        /// Gets or sets the important minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Important.
+        /// </value>
+        public int ImportantMin
+        {
+            get
+            {
+                int? i = ViewState["ImportantMin"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["ImportantMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the important max.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Important.
+        /// </value>
+        public int ImportantMax
+        {
+            get
+            {
+                int? i = ViewState["ImportantMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["ImportantMax"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Warning minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Warning.
+        /// </value>
+        public int WarningMin
+        {
+            get
+            {
+                int? i = ViewState["WarningMin"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["WarningMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Warning maximum value rule.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Warning.
+        /// </value>
+        public int WarningMax
+        {
+            get
+            {
+                int? i = ViewState["WarningMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["WarningMax"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Success minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Success.
+        /// </value>
+        public int SuccessMin
+        {
+            get
+            {
+                int? i = ViewState["SuccessMin"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["SuccessMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Success maximum value rule.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Success.
+        /// </value>
+        public int SuccessMax
+        {
+            get
+            {
+                int? i = ViewState["SuccessMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["SuccessMax"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Info minimum value rule.
+        /// </summary>
+        /// <value>
+        /// The minimum value to be considered Info.
+        /// </value>
+        public int InfoMin
+        {
+            get
+            {
+                int? i = ViewState["InfoMin"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["InfoMin"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Info maximum value rule.
+        /// </summary>
+        /// <value>
+        /// The maximum value to be considered Info.
+        /// </value>
+        public int InfoMax
+        {
+            get
+            {
+                int? i = ViewState["InfoMax"] as int?;
+                return ( i == null ) ? int.MaxValue : i.Value;
+            }
+            set
+            {
+                ViewState["InfoMax"] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BadgeField" /> class.
         /// </summary>
         public BadgeField()
@@ -40,6 +192,9 @@ namespace Rock.Web.UI.Controls
         protected override string FormatDataValue( object dataValue, bool encode )
         {
             BadgeRowEventArgs eventArg = new BadgeRowEventArgs( dataValue );
+
+            SetBadgeTypeByRules( eventArg );
+
             if ( SetBadgeType != null )
             {
                 SetBadgeType( this, eventArg );
@@ -56,6 +211,31 @@ namespace Rock.Web.UI.Controls
             return string.Format( "<span class='{0}'>{1}</span>", css, fieldValue );
         }
 
+        private void SetBadgeTypeByRules( BadgeRowEventArgs e )
+        {
+            if ( !( e.FieldValue is int ) )
+                return;
+
+            int count = (int)e.FieldValue;
+
+            if ( ImportantMin <= count && count <= ImportantMax )
+            {
+                e.BadgeType = BadgeType.Important;
+            }
+            else if ( WarningMin <= count && count <= WarningMax )
+            {
+                e.BadgeType = BadgeType.Warning;
+            }
+            else if ( SuccessMin <= count && count <= SuccessMax )
+            {
+                e.BadgeType = BadgeType.Success;
+            }
+            else if ( InfoMin <= count && count <= InfoMax )
+            {
+                e.BadgeType = BadgeType.Info;
+            }
+        }
+        
         /// <summary>
         /// Occurs when badge field is being formatted.  Use to set the badge type
         /// based on the current row's field value.

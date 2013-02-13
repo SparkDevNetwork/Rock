@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( 3, "Show Edit", true )]
     [BooleanField( 5, "Show Notification", false )]
     [BooleanField( 6, "Limit to Security Role Groups", false )]
-    [ContextAware( "Rock.Model.Group" )]
+    [ContextAware( typeof(Group) )]
     [DetailPage]
     public partial class GroupList : RockBlock
     {
@@ -169,14 +169,11 @@ namespace RockWeb.Blocks.Crm
             {
                 qry = qry.Where( a => a.IsSecurityRole );
             }
-
-            if ( ContextEntities.ContainsKey( "Rock.Model.Group" ) )
+            
+            Group parentGroup = ContextEntity<Group>();
+            if ( parentGroup != null )
             {
-                Group parentGroup = ContextEntities["Rock.Model.Group"] as Group;
-                if ( parentGroup != null )
-                {
-                    qry = qry.Where( a => a.IsAncestorOfGroup( parentGroup.Id ) );
-                }
+                qry = qry.Where( a => a.IsAncestorOfGroup( parentGroup.Id ) );
             }
 
             if ( sortProperty != null )

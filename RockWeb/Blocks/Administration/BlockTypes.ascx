@@ -14,7 +14,8 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                     <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
-                    <Rock:BadgeField HeaderText="Usage" DataField="Blocks.Count" SortExpression="Blocks.Count" OnSetBadgeType="Blocks_SetBadgeType" />
+                    <Rock:BadgeField HeaderText="Usage" DataField="Blocks.Count" SortExpression="Blocks.Count"
+                        ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                     <Rock:DeleteField OnClick="gBlockTypes_Delete" />
                 </Columns>

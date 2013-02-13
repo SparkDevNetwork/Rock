@@ -24,7 +24,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "GroupsGetChildren",
-                routeTemplate: "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}",
+                routeTemplate: "api/Groups/GetChildren/{id}/{rootGroupId}/{limitToSecurityRoleGroups}/{groupTypeIds}",
                 defaults: new
                 {
                     controller = "Groups",
@@ -37,7 +37,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public IQueryable<GroupName> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups )
+        public IQueryable<GroupName> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
             IQueryable<Group> qry;
             if ( id == 0 )
@@ -56,6 +56,16 @@ namespace Rock.Rest.Controllers
             if ( limitToSecurityRoleGroups )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
+            }
+
+            if (!string.IsNullOrWhiteSpace(groupTypeIds))
+            {
+                if ( groupTypeIds != "0" )
+                {
+                    List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse(a)).ToList();
+
+                    qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
+                }
             }
 
             List<Group> groupList = qry.ToList();
