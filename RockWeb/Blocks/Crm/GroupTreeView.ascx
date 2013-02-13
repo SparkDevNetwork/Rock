@@ -52,7 +52,7 @@
             }
 
             function onDataBound(e) {
-                // automatically select the first item in the treeview if there isn't one currently selected
+                // select the item specified in the page param in the treeview if there isn't one currently selected
                 var treeViewData = $('#treeviewGroups').data("kendoTreeView");
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
@@ -60,19 +60,15 @@
                     var initialGroupId = $('#hfInitialGroupId').val();
                     var initialGroupParentIds = $('#hfInitialGroupParentIds').val();
                     var initialGroupItem = findChildItemInTree(treeViewData, initialGroupId, initialGroupParentIds);
-                    var firstItem = null;
                     if (initialGroupId) {
                         if (initialGroupItem) {
-                            firstItem = treeViewData.findByUid(initialGroupItem.uid);
+                            var firstItem = treeViewData.findByUid(initialGroupItem.uid);
+                            var firstDataItem = this.dataItem(firstItem);
+                            if (firstDataItem) {
+                                treeViewData.select(firstItem);
+                                showGroupDetails(firstDataItem.id);
+                            }
                         }
-                    }
-                    else {
-                        firstItem = treeViewData.root[0].firstChild;
-                    }
-                    var firstDataItem = this.dataItem(firstItem);
-                    if (firstDataItem) {
-                        treeViewData.select(firstItem);
-                        showGroupDetails(firstDataItem.id);
                     }
                 }
             }

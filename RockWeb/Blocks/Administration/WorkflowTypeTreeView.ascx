@@ -41,7 +41,7 @@
             }
 
             function findChildItemInTree(treeViewData, entityTypeName, itemId, itemParentIds) {
-                
+
                 if (itemParentIds != '') {
                     var itemParentList = itemParentIds.split(",");
                     for (var i = 0; i < itemParentList.length; i++) {
@@ -69,29 +69,24 @@
 
 
             function onDataBound(e) {
-                // automatically select the first item in the treeview if there isn't one currently selected
+                // select the item specified in the page param in the treeview if there isn't one currently selected
                 var treeViewData = $('#treeviewWorkflowType').data("kendoTreeView");
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
-
                     var initialEntityTypeName = $('#hfInitialEntityTypeName').val();
                     var initialItemId = $('#hfInitialItemId').val();
                     var initialCategoryParentIds = $('#hfInitialCategoryParentIds').val();
                     var initialItem = findChildItemInTree(treeViewData, initialEntityTypeName, initialItemId, initialCategoryParentIds);
-                    var firstItem = null;
                     if (initialItemId) {
                         if (initialItem) {
-                            firstItem = treeViewData.findByUid(initialItem.uid);
+                            var firstItem = treeViewData.findByUid(initialItem.uid);
+                            var firstDataItem = this.dataItem(firstItem);
+                            if (firstDataItem) {
+                                treeViewData.select(firstItem);
+                                showItemDetails(firstDataItem);
+                            }
                         }
-                    }
-                    else {
-                        firstItem = treeViewData.root[0].firstChild;
-                    }
-                    var firstDataItem = this.dataItem(firstItem);
-                    if (firstDataItem) {
-                        treeViewData.select(firstItem);
-                        showItemDetails(firstDataItem);
                     }
                 }
             }
