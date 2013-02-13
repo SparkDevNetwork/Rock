@@ -659,18 +659,6 @@ namespace Rock.Web.Cache
             return RockPage.BuildUrl( pageRef, parms, queryString );
         }
 
-        /// <summary>
-        /// Builds the URL for detail page.
-        /// </summary>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="queryKey">The query key.</param>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public string BuildUrlForDetailPage( int pageId, string queryKey, int id )
-        {
-            return RockPage.BuildUrlForDetailPage( pageId, queryKey, id );
-        }
-
         #endregion
 
         #region Menu XML Methods
@@ -727,9 +715,12 @@ namespace Rock.Web.Cache
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages )
                     foreach ( PageCache page in Pages )
                     {
-                        XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
-                        if ( childPageElement != null )
-                            childPagesElement.Add( childPageElement );
+                        if ( page != null )
+                        {
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
+                            if ( childPageElement != null )
+                                childPagesElement.Add( childPageElement );
+                        }
                     }
 
                 return pageElement;

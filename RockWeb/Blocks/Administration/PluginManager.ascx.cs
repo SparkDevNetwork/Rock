@@ -22,14 +22,33 @@ namespace RockWeb.Blocks.Administration
     public enum ViewMode
     {
         Installed,
-        Available
+        Available,
+        Search
     }
 
     public partial class PluginManager : Rock.Web.UI.RockBlock
     {
         #region Fields
         WebProjectManager nuGetService = null;
-        ViewMode viewing;
+
+        /// <summary>
+        /// Gets or sets the current view mode.
+        /// </summary>
+        /// <value>
+        /// The current view mode.
+        /// </value>
+        protected ViewMode CurrentViewMode
+        {
+            get
+            {
+                string s = ViewState["CurrentViewMode"] as string;
+                return s == null ? ViewMode.Installed : s.ConvertToEnum<ViewMode>();
+            }
+            set
+            {
+                ViewState["CurrentViewMode"] = value.ConvertToString();
+            }
+        }
 
         protected WebProjectManager NuGetService
         {
@@ -88,8 +107,6 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            this.viewing = ( hfViewing.Value == "available" ) ? ViewMode.Available : ViewMode.Installed;
-
             if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
@@ -116,23 +133,20 @@ namespace RockWeb.Blocks.Administration
         
         protected void btnInstalled_Click( object sender, EventArgs e )
         {
-            this.viewing = ViewMode.Installed;
+            this.CurrentViewMode = ViewMode.Installed;
             BindPackageListGrid();
         }
 
         protected void btnAvailable_Click( object sender, EventArgs e )
         {
-            this.viewing = ViewMode.Available;
+            this.CurrentViewMode = ViewMode.Available;
             BindPackageListGrid();
         }
 
         protected void bSearch_Click( object sender, EventArgs e )
         {
-            liInstalled.RemoveCssClass( "active" );
-            liAvailable.RemoveCssClass( "active" );
-
-            gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false );
-            gPackageList.DataBind();
+            this.CurrentViewMode = ViewMode.Search;
+            BindPackageListGrid();
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
@@ -140,23 +154,28 @@ namespace RockWeb.Blocks.Administration
             pnlPackageList.Visible = true;
             pnlPackage.Visible = false;
             BindPackageListGrid();
-        }
+        } 
 
         #endregion
 
         protected void BindPackageListGrid()
         {
-            switch ( this.viewing )
+            switch ( this.CurrentViewMode )
             {
                 case ViewMode.Installed:
                     liInstalled.AddCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
-                    gPackageList.DataSource = InstalledPackages;
+                    gPackageList.DataSource = InstalledPackages.ToList();
                     break;
                 case ViewMode.Available:
                     liInstalled.RemoveCssClass( "active" );
                     liAvailable.AddCssClass( "active" );
-                    gPackageList.DataSource = AvailablePackages;
+                    gPackageList.DataSource = AvailablePackages.ToList();
+                    break;
+                case ViewMode.Search:
+                    liInstalled.RemoveCssClass( "active" );
+                    liAvailable.RemoveCssClass( "active" );
+                    gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false ).ToList();
                     break;
                 default:
                     break;
@@ -166,6 +185,16 @@ namespace RockWeb.Blocks.Administration
         }
 
         #region Package List Grid Events
+
+        /// <summary>
+        /// Handles the GridRebind event of the gPackageList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gPackageList_GridRebind( object sender, EventArgs e )
+        {
+            BindPackageListGrid();
+        }
 
         /// <summary>
         /// Used to populate each item in the PackageList

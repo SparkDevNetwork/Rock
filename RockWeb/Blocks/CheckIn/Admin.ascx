@@ -14,7 +14,7 @@
     <fieldset>
     <legend>Check-In Configuration</legend>
 
-        <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" LabelText="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
+        <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" LabelText="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
         <Rock:LabeledCheckBoxList ID="cblGroupTypes" runat="server" LabelText="Group Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:LabeledCheckBoxList>
 
     </fieldset>

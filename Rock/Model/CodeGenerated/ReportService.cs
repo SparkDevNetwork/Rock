@@ -75,7 +75,8 @@ namespace Rock.Model
                 target.IsSystem = source.IsSystem;
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.ReportFilterId = source.ReportFilterId;
+                target.CategoryId = source.CategoryId;
+                target.DataViewId = source.DataViewId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

@@ -54,45 +54,48 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the category id.
+        /// </summary>
+        /// <value>
+        /// The category id.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
+        /// <summary>
         /// Gets or sets the root filter id.
         /// </summary>
         /// <value>
         /// The root filter id.
         /// </value>
         [DataMember]
-        public int? ReportFilterId { get; set; }
+        public int? DataViewId { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the report filter.
+        /// Gets or sets the category.
         /// </summary>
         /// <value>
-        /// The report filter.
+        /// The category.
         /// </value>
         [DataMember]
-        public virtual ReportFilter ReportFilter { get; set; }
+        public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view for the report.
+        /// </summary>
+        /// <value>
+        /// The report data view.
+        /// </value>
+        [DataMember]
+        public virtual DataView DataView { get; set; }
 
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Gets the expression.
-        /// </summary>
-        /// <param name="parameter">The parameter.</param>
-        /// <returns></returns>
-        public Expression GetExpression( ParameterExpression parameter )
-        {
-            if ( ReportFilter != null )
-            {
-                return ReportFilter.GetExpression( parameter );
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -121,7 +124,8 @@ namespace Rock.Model
         /// </summary>
         public ReportConfiguration()
         {
-            this.HasOptional( r => r.ReportFilter).WithMany().HasForeignKey( r => r.ReportFilterId).WillCascadeOnDelete( true );
+            this.HasOptional( r => r.Category ).WithMany().HasForeignKey( r => r.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.DataView ).WithMany().HasForeignKey( r => r.DataViewId ).WillCascadeOnDelete( false );
         }
     }
 

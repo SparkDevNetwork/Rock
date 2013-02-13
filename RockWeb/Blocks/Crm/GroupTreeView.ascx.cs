@@ -4,7 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm
@@ -29,25 +32,38 @@ namespace RockWeb.Blocks.Crm
 
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
-
-            string[] eventArgs = ( Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
-            if ( eventArgs.Length == 2 )
+            string groupTypes = GetAttributeValue( "GroupTypes" );
+            groupTypes = string.IsNullOrWhiteSpace(groupTypes) ? "0" : groupTypes;
+            hfGroupTypes.Value = groupTypes;
+            string groupId = PageParameter( "groupId" );
+            if ( !string.IsNullOrWhiteSpace( groupId ) )
             {
-                if ( eventArgs[0] == "groupId" )
+                hfInitialGroupId.Value = groupId;
+                hfSelectedGroupId.Value = groupId.ToString();
+                Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
+                List<string> parentIdList = new List<string>();
+                while ( group != null )
                 {
-                    groupItem_Click( eventArgs[1] );
+                    group = group.ParentGroup;
+                    if ( group != null )
+                    {
+                        parentIdList.Insert( 0, group.Id.ToString() );
+                    }
                 }
+
+                hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the groupItem control.
+        /// Handles the Click event of the lbAddGroup control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void groupItem_Click( string groupId )
+        protected void lbAddGroup_Click( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupId", int.Parse( groupId ) );
+            int groupId = hfSelectedGroupId.ValueAsInt();
+            NavigateToDetailPage( "groupId", 0, "parentGroupId", groupId );
         }
-    }
+}
 }

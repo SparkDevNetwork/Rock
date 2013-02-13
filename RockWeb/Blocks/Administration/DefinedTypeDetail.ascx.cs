@@ -649,7 +649,7 @@ namespace RockWeb.Blocks.Administration
             if ( definedValueId.Equals( 0 ) )
             {
                 definedValue = new DefinedValue { Id = 0 };
-                definedValue.DefinedTypeId = definedValueId;
+                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
                 definedValue.IsSystem = false;
             }
             else

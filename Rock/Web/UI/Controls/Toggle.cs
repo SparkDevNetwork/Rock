@@ -89,7 +89,7 @@ $(document).ready(function() {
     });
 });
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "toggle-switch-init", script, true );
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
         }
 
