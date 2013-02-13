@@ -1,5 +1,6 @@
 delete from [Group] where IsSystem = 0
 delete from [GroupTypeAssociation] where [GroupTypeId] in (select id from GroupType where IsSystem = 0)
+delete from [GroupRole] where [GroupTypeId] in (select id from GroupType where IsSystem = 0)
 delete from [GroupType] where IsSystem = 0 and [Id] not in (select GroupTypeId from GroupTypeAssociation union select ChildGroupTypeId from GroupTypeAssociation)
 
 declare
@@ -77,6 +78,14 @@ INSERT INTO [dbo].[GroupType]
            ,newid())
 
 select @groupTypeId = @@IDENTITY
+
+INSERT INTO [dbo].[GroupRole] 
+    ([IsSystem] ,[GroupTypeId] ,[Name] ,[Description] ,[SortOrder] ,[MaxCount] ,[MinCount] ,[Guid] ,[IsLeader])
+     VALUES
+    (0, @groupTypeId, 'Leader', '', 0, null, null, NEWID(), 1),
+    (0, @groupTypeId, 'Assistant Leader', '', 0, null, null, NEWID(), 0),
+    (0, @groupTypeId, 'Host', '', 0, null, null, NEWID(), 0),
+    (0, @groupTypeId, 'Member', '', 0, null, null, NEWID(), 0)
 
 -- setup valid child group types
 insert into [dbo].[GroupTypeAssociation] 
