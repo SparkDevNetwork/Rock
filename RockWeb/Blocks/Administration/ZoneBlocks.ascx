@@ -5,14 +5,14 @@
 <ContentTemplate>
 
     <asp:HiddenField ID="hfOption" runat="server" Value="Page" />
-    <ul id="zone-block-options" class="nav nav-pills" data-pills="pills">
-        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>' >Current Page</a></li>
-        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>'><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
+    <ul id="zone-block-options" class="nav nav-pills">
+        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Current Page</a></li>
+        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
     </ul>
 
-    <asp:Panel ID="pnlLists" runat="server" CssClass="pill-content">
+    <asp:Panel ID="pnlLists" runat="server" CssClass="tab-content">
 
-        <div id="divPage" runat="server" class="pill-pane" >
+        <div id="divPage" runat="server" class="tab-pane" >
             <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnRowSelected="gPageBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
@@ -27,7 +27,7 @@
             </Rock:Grid>
         </div>
 
-        <div id="divLayout" runat="server" class="pill-pane" >
+        <div id="divLayout" runat="server" class="tab-pane" >
             <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
                 <Columns>
                     <Rock:ReorderField />
