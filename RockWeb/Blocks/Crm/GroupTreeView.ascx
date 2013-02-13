@@ -14,7 +14,7 @@
             <asp:LinkButton ID="lbAddGroup" runat="server" CssClass="add btn pull-right" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddGroup_Click">
                 <i class="icon-plus-sign"></i>
             </asp:LinkButton>
-            <div id="treeviewGroups" class="groupTreeview">
+            <div id="treeviewGroups" class="tree-view tree-view-group">
             </div>
         </div>
         <script>
@@ -53,7 +53,7 @@
 
             function onDataBound(e) {
                 // automatically select the first item in the treeview if there isn't one currently selected
-                var treeViewData = $('.groupTreeview').data("kendoTreeView");
+                var treeViewData = $('#treeviewGroups').data("kendoTreeView");
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
@@ -99,7 +99,7 @@
                 }
             });
 
-            $('.groupTreeview').kendoTreeView({
+            $('#treeviewGroups').kendoTreeView({
                 template: "<i class='#= item.GroupTypeIconCssClass #'></i> #= item.Name #",
                 dataSource: groupList,
                 dataTextField: 'Name',
