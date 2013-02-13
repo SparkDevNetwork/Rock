@@ -11,7 +11,6 @@
 <ContentTemplate>
     <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
     <asp:Panel id="pnlPackageList" runat="server" DefaultButton="ibSearch">
-    <asp:HiddenField runat="server" ID="hfViewing" />
         <div class="container-fluid">
             <div class="row">
                 <div class="span9">
@@ -27,7 +26,7 @@
             </div>
             <div class="row">
                 <Rock:Grid ID="gPackageList" runat="server" AllowPaging="false" EmptyDataText="No plugins found"
-                AlternatingRowStyle-BackColor="#f3f3f3"
+                AlternatingRowStyle-BackColor="#f3f3f3" OnGridRebind="gPackageList_GridRebind"  
                 onrowdatabound="gPackageList_RowDataBound" DataKeyNames="Id,Version" GridLines="none"
                 onrowcommand="gPackageList_RowCommand" >
                     <Columns>
