@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                e.BadgeType = BadgeType.Info;
+                e.BadgeType = BadgeType.None;
             }
         }
 

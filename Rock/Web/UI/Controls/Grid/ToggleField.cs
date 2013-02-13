@@ -27,10 +27,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Gets or sets the CssClass of the field.
         /// </summary>
         /// <value>
-        /// The title.
+        /// The CssClass.
         /// </value>
         public string CssClass
         {
@@ -39,7 +39,45 @@ namespace Rock.Web.UI.Controls
         }
         private string cssClass = "switch-mini";
 
+        /// <summary>
+        /// Gets or sets the DataField of the BoundField.
+        /// </summary>
+        /// <value>
+        /// The data field.
+        /// </value>
         public string DataField { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ToggleField" /> is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled; otherwise, <c>false</c>.
+        /// </value>
+        public string Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text that represents the "on" state.
+        /// </summary>
+        /// <value>
+        /// The "on" text.
+        /// </value>
+        public string OnText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text that represents the "off" state.
+        /// </summary>
+        /// <value>
+        /// The "off" text.
+        /// </value>
+        public string OffText { get; set; }
+
+        /// <summary>
+        /// Gets the parent grid.
+        /// </summary>
+        /// <value>
+        /// The parent grid.
+        /// </value>
+        public Grid ParentGrid { get; internal set; }
 
         /// <summary>
         /// Performs basic instance initialization for a data control field.
@@ -69,15 +107,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the parent grid.
-        /// </summary>
-        /// <value>
-        /// The parent grid.
-        /// </value>
-        public Grid ParentGrid { get; internal set; }
-
-        /// <summary>
-        /// Occurs when [click].
+        /// Occurs when [checked changed].
         /// </summary>
         public event EventHandler<RowEventArgs> CheckedChanged;
 
@@ -116,6 +146,14 @@ namespace Rock.Web.UI.Controls
         private string DataField { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ToggleFieldTemplate" /> is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if enabled; otherwise, <c>false</c>.
+        /// </value>
+        private bool Enabled { get; set; }
+
+        /// <summary>
         /// When implemented by a class, defines the <see cref="T:System.Web.UI.Control"/>
         /// object that child controls and templates belong to. These child controls are in
         /// turn defined within an inline template.
@@ -129,60 +167,69 @@ namespace Rock.Web.UI.Controls
                 ToggleField toggleField = cell.ContainingField as ToggleField;
                 ParentGrid = toggleField.ParentGrid;
                 DataField = toggleField.DataField;
+                bool isEnabled = false;
+                bool.TryParse(toggleField.Enabled, out isEnabled );
+                Enabled = isEnabled;
 
-                LabeledToggle labledToggle = new LabeledToggle();
-                labledToggle.OnText = "yes";
-                labledToggle.OffText = "no";
-                labledToggle.EnableViewState = true; // TODO remove if unnecessary
-                labledToggle.AddCssClass( toggleField.CssClass );
-                labledToggle.CheckedChanged += labledToggle_CheckedChanged;
-                labledToggle.DataBinding += labledToggle_DataBinding;
-                labledToggle.PreRender += labledToggle_PreRender;
+                Toggle toggle = new Toggle();
+                toggle.OnText = toggleField.OnText;
+                toggle.OffText = toggleField.OffText;
 
-                cell.Controls.Add( labledToggle );
-            }
-        }
+                //toggle.EnableViewState = true; // TODO remove if unnecessary
+                toggle.AddCssClass( toggleField.CssClass );
+                toggle.CheckedChanged += toggle_CheckedChanged;
+                toggle.DataBinding += toggle_DataBinding;
+                toggle.PreRender += toggle_PreRender;
 
-        void labledToggle_PreRender( object sender, EventArgs e )
-        {
-            LabeledToggle labledToggle = sender as LabeledToggle;
-            if ( labledToggle.Enabled && !ParentGrid.Enabled )
-            {
-                labledToggle.AddCssClass( "disabled" );
-                labledToggle.Enabled = false;
-                labledToggle.AutoPostBack = false; // TODO remove if unnecessary
+                cell.Controls.Add( toggle );
             }
         }
 
         /// <summary>
-        /// Handles the DataBinding event of the labledToggle control.
+        /// Handles the PreRender event of the toggle control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void labledToggle_DataBinding( object sender, EventArgs e )
+        void toggle_PreRender( object sender, EventArgs e )
         {
-            LabeledToggle labledToggle = sender as LabeledToggle;
-            GridViewRow dgi = labledToggle.NamingContainer as GridViewRow;
+            Toggle toggle = sender as Toggle;
+            if ( toggle.Enabled && ( !ParentGrid.Enabled || ! this.Enabled ) )
+            {
+                toggle.AddCssClass( "disabled" );
+                toggle.Enabled = false;
+                toggle.AutoPostBack = false; // TODO remove if unnecessary
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBinding event of the Toggle control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void toggle_DataBinding( object sender, EventArgs e )
+        {
+            Toggle toggle = sender as Toggle;
+            GridViewRow dgi = toggle.NamingContainer as GridViewRow;
             if ( dgi.DataItem != null )
             {
                 object dataValue = DataBinder.Eval( dgi.DataItem, DataField );
 
-                labledToggle.Checked = ( (Boolean)dataValue );
+                toggle.Checked = ( (Boolean)dataValue );
                 
             }
-            labledToggle.AutoPostBack = true;  // TODO remove if unnecessary
+            toggle.AutoPostBack = true;  // TODO remove if unnecessary
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the labledToggle control.
+        /// Handles the CheckedChanged event of the Toggle control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void labledToggle_CheckedChanged( object sender, EventArgs e )
+        void toggle_CheckedChanged( object sender, EventArgs e )
         {
             if ( CheckedChanged != null )
             {
-                GridViewRow row = (GridViewRow)( (LabeledToggle)sender ).Parent.Parent;
+                GridViewRow row = (GridViewRow)( (Toggle)sender ).Parent.Parent;
                 RowEventArgs args = new RowEventArgs( row );
                 CheckedChanged( sender, args );
             }

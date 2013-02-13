@@ -296,6 +296,7 @@
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceCode.cs" />
+    <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCodeService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
@@ -329,6 +330,7 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\ReportFilter.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
