@@ -260,12 +260,19 @@ span.cke_skin_kama {
     opacity: 0.7;    
 }
 
-.modal, .modal2 {
+.bootbox.modal {
+    width:500px;
+    left: 50%;
+    margin-left:-250px;
+}
+
+.modal {
   position: fixed;
   top: 50%;
   left: 50%;
   z-index: 11000;
   width: 750px;
+  margin-left: 0px;
   background-color: #ffffff;
   border: 1px solid #999;
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -281,11 +288,11 @@ span.cke_skin_kama {
   background-clip: padding-box;
 }
 
-.modal .close, .modal2 .close {
+.modal .close {
   margin-top: 7px;
   color: #fff;
 }
-.modal.fade, .modal2.fade {
+.modal.fade {
   -webkit-transition: opacity .3s linear, top .3s ease-out;
   -moz-transition: opacity .3s linear, top .3s ease-out;
   -ms-transition: opacity .3s linear, top .3s ease-out;
@@ -293,7 +300,7 @@ span.cke_skin_kama {
   transition: opacity .3s linear, top .3s ease-out;
   top: -25%;
 }
-.modal.fade.in, .modal2.fade.in {
+.modal.fade.in {
   top: 50%;
 }
 
