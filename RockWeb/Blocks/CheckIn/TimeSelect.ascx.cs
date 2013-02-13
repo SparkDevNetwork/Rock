@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.CheckIn
                                     var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
                                     if ( group != null )
                                     {
-                                        lGroupName.Text = group.ToString();
+                                        lTitle.Text = person.ToString() + " - " + group.ToString();
 
                                         if ( group.Schedules.Count == 1 )
                                         {

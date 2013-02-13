@@ -715,9 +715,12 @@ namespace Rock.Web.Cache
                 if ( levelsDeep > 0 && this.MenuDisplayChildPages )
                     foreach ( PageCache page in Pages )
                     {
-                        XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
-                        if ( childPageElement != null )
-                            childPagesElement.Add( childPageElement );
+                        if ( page != null )
+                        {
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
+                            if ( childPageElement != null )
+                                childPagesElement.Add( childPageElement );
+                        }
                     }
 
                 return pageElement;
