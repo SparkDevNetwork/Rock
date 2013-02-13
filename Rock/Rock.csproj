@@ -136,6 +136,7 @@
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
     <Compile Include="Data\NotExportable.cs" />
+    <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\AudiencesField.cs" />
     <Compile Include="Field\Types\CampusesField.cs" />
