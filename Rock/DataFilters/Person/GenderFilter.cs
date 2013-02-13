@@ -50,7 +50,7 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            return string.Format( "{0} is {1}", Title, selection );
+            return string.Format( "{0} is '{1}'", Title, selection );
         }
 
         /// <summary>

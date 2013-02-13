@@ -91,6 +91,7 @@ $(document).ready(function() {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
             groupControl.Controls.Add( filterField );
+            filterField.ID = string.Format( "{0}_ff_{1}", groupControl.ID, groupControl.Controls.Count );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
         }
@@ -100,6 +101,7 @@ $(document).ready(function() {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
             groupControl.Controls.Add( childGroupControl );
+            childGroupControl.ID = string.Format( "{0}_fg_{1}", groupControl.ID, groupControl.Controls.Count );
             childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             childGroupControl.FilterType = FilterExpressionType.GroupAll;
         }
@@ -284,6 +286,7 @@ $(document).ready(function() {
             {
                 var filterControl = new FilterField();
                 parentControl.Controls.Add( filterControl );
+                filterControl.ID = string.Format( "{0}_ff_{1}", parentControl.ID, parentControl.Controls.Count );
                 filterControl.FilteredEntityTypeName = filteredEntityTypeName;
                 if ( filter.EntityTypeId.HasValue )
                 {
@@ -304,6 +307,7 @@ $(document).ready(function() {
             {
                 var groupControl = new FilterGroup();
                 parentControl.Controls.Add( groupControl );
+                groupControl.ID = string.Format( "{0}_fg_{1}", parentControl.ID, parentControl.Controls.Count );
                 groupControl.FilteredEntityTypeName = filteredEntityTypeName;
                 groupControl.IsDeleteEnabled = parentControl is FilterGroup;
                 if ( setSelection )
@@ -313,7 +317,7 @@ $(document).ready(function() {
                 groupControl.AddFilterClick += groupControl_AddFilterClick;
                 groupControl.AddGroupClick += groupControl_AddGroupClick;
                 groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
-                foreach ( var childFilter in filter.ChildFilters.OrderBy( f => f.ExpressionType ))
+                foreach ( var childFilter in filter.ChildFilters)
                 {
                     CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection );
                 }
