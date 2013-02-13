@@ -71,7 +71,7 @@ namespace Rock.DataFilters
                 value = options[1];
             }
 
-            return string.Format( "{0} {1} {2}", Title, comparisonType.ConvertToString(), value );
+            return string.Format( "{0} {1} '{2}'", Title, comparisonType.ConvertToString(), value );
         }
 
         /// <summary>

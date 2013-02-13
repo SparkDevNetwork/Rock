@@ -166,7 +166,9 @@ namespace Rock.Web.UI.Controls
 
             ddlFilterType = new DropDownList();
             Controls.Add( ddlFilterType );
+            ddlFilterType.ID = this.ID + "_ddlFilter";
 
+            int i = 0;
             var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
@@ -176,6 +178,7 @@ namespace Rock.Web.UI.Controls
                     foreach ( var filterControl in filterControls )
                     {
                         Controls.Add( filterControl );
+                        filterControl.ID = string.Format( "{0}_fc_{1}", this.ID, i++ );
                     }
                 }
             }
@@ -198,15 +201,17 @@ namespace Rock.Web.UI.Controls
 
             hfExpanded = new HiddenField();
             Controls.Add( hfExpanded );
+            hfExpanded.ID = this.ID + "_hfExpanded";
 
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
+            lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.CssClass = "btn btn-mini btn-danger ";
             lbDelete.Click += lbDelete_Click;
 
-            var i = new HtmlGenericControl( "i" );
-            lbDelete.Controls.Add( i );
-            i.AddCssClass( "icon-remove" );
+            var iDelete = new HtmlGenericControl( "i" );
+            lbDelete.Controls.Add( iDelete );
+            iDelete.AddCssClass( "icon-remove" );
         }
 
         /// <summary>
