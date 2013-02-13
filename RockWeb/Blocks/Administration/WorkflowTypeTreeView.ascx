@@ -8,7 +8,7 @@
         <div class="treeview-back">
             <h3>
                 <asp:Literal ID="ltlTreeViewTitle" runat="server" /></h3>
-            <div id="treeviewWorkflowType" class="workflowTypeTreeview">
+            <div id="treeviewWorkflowType" class="tree-view tree-view-workflowtype">
             </div>
         </div>
         <script>
@@ -70,7 +70,7 @@
 
             function onDataBound(e) {
                 // automatically select the first item in the treeview if there isn't one currently selected
-                var treeViewData = $('.workflowTypeTreeview').data("kendoTreeView");
+                var treeViewData = $('#treeviewWorkflowType').data("kendoTreeView");
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
@@ -121,7 +121,7 @@
                 }
             });
 
-            $('.workflowTypeTreeview').kendoTreeView({
+            $('#treeviewWorkflowType').kendoTreeView({
                 template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
                 dataSource: dataList,
                 dataTextField: 'Name',
