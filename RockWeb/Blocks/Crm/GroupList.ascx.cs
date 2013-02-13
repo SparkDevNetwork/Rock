@@ -97,6 +97,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroups_Delete( object sender, RowEventArgs e )
         {
+            // NOTE: Very similar code in GroupDetail.btnDelete_Click
             RockTransactionScope.WrapTransaction( () =>
             {
                 GroupService groupService = new GroupService();
