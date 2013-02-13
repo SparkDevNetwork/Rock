@@ -5,7 +5,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <fieldset>
-    <legend><asp:Literal ID="lGroupName" runat="server" /></legend>
+    <legend><asp:Literal ID="lTitle" runat="server" /></legend>
 
         <div class="control-group">
             <label class="control-label">Select Time(s)</label>
