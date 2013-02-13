@@ -36,11 +36,24 @@ namespace RockWeb.Blocks.Crm
             groupTypes = string.IsNullOrWhiteSpace(groupTypes) ? "0" : groupTypes;
             hfGroupTypes.Value = groupTypes;
             string groupId = PageParameter( "groupId" );
+
             if ( !string.IsNullOrWhiteSpace( groupId ) )
             {
                 hfInitialGroupId.Value = groupId;
                 hfSelectedGroupId.Value = groupId.ToString();
                 Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
+                
+                if ( group != null )
+                {
+                    // show the Add button if the selected Group's GroupType can have children
+                    lbAddGroup.Visible = group.GroupType.ChildGroupTypes.Count > 0;
+                }
+                else
+                {
+                    // hide the Add Button when adding a new Group
+                    lbAddGroup.Visible = false;
+                }
+
                 List<string> parentIdList = new List<string>();
                 while ( group != null )
                 {
@@ -52,6 +65,11 @@ namespace RockWeb.Blocks.Crm
                 }
 
                 hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
+            }
+            else
+            {
+                // let the Add button be visible if there is nothing selected
+                lbAddGroup.Visible = true;
             }
         }
 
