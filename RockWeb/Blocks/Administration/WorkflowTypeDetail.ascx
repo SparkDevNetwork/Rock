@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
+
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
@@ -13,8 +14,6 @@
                     <legend>
                         <asp:Literal ID="lActionTitle" runat="server" />
                     </legend>
-
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row-fluid">
                         <div class="span6">
@@ -33,6 +32,19 @@
                     </div>
                 </fieldset>
 
+                <fieldset>
+                    <legend>
+                        <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
+                        <span class="pull-right">
+                            <asp:LinkButton ID="lbAddActivity" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivity_Click"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
+                        </span>
+                    </legend>
+
+                    <div class="row-fluid">
+                        <asp:PlaceHolder ID="phActivities" runat="server" />
+                    </div>
+                </fieldset>
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
@@ -47,8 +59,10 @@
                 <asp:Literal ID="lblActiveHtml" runat="server" />
                 <div class="well">
                     <div class="row-fluid">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                    </div>
+                    <div class="row-fluid">
                         <div class="span6">
-                            <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
                             <asp:Literal ID="lblMainDetails" runat="server" />
                         </div>
                         <div class="span6">
@@ -79,6 +93,26 @@
         <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
             <RockWeb:RockAttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
         </asp:Panel>
+        <script>
+            Sys.Application.add_load(function () {
+                // activity annimation
+                $('.workflow-activity > header').click(function () {
+                    $(this).siblings('.widget-content').slideToggle();
 
+                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
+                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
+
+                });
+
+                // action annimation
+                $('.workflow-action > header').click(function () {
+                    $(this).siblings('.widget-content').slideToggle();
+
+                    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
+                    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
+
+                });
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -545,12 +545,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
         
-        protected void gWorkflows_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-
-        }
-        
-        protected void gWorkflows_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void lbAddActivity_Click( object sender, EventArgs e )
         {
 
         }
