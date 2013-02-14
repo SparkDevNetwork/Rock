@@ -46,7 +46,7 @@
                     var itemParentList = itemParentIds.split(",");
                     for (var i = 0; i < itemParentList.length; i++) {
                         var parentItemId = itemParentList[i];
-                        var parentItem = treeViewData.dataSource.get(parentItemId);
+                        var parentItem = findItemInData(treeViewData.dataSource.data(), 'Category', parentItemId);
                         var parentNodeItem = treeViewData.findByUid(parentItem.uid);
                         if (!parentItem.expanded && parentItem.hasChildren) {
                             // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
