@@ -29,7 +29,6 @@ namespace RockWeb.Blocks.Prayer
         protected int? _prayerRequestEntityTypeId = null;
         protected NoteType _noteType;
         bool canAddEditDelete = false;
-        bool canApprove = false;
         #endregion
 
         #region Control Methods
