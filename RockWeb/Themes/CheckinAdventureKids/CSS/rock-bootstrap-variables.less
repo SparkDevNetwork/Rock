@@ -54,8 +54,8 @@
 @baseLineHeight:        20px;
 @altFontFamily:         @serifFontFamily;
 
-@headingsFontFamily:    inherit; // empty to use BS default, @baseFontFamily
-@headingsFontWeight:    bold;    // instead of browser default, bold
+@headingsFontFamily:    @rockSansFontFamilyBold; //inherit; // empty to use BS default, @baseFontFamily
+@headingsFontWeight:    normal; //bold;    // instead of browser default, bold
 @headingsColor:         inherit; // empty to use BS default, @textColor
 
 
@@ -85,11 +85,11 @@
 
 // Buttons
 // -------------------------
-@btnBackground:                     @white;
-@btnBackgroundHighlight:            darken(@white, 10%);
-@btnBorder:                         #bbb;
+@btnBackground:                     #ecdebf;
+@btnBackgroundHighlight:            darken(@btnBackground, 10%);
+@btnBorder:                         #91876f;
 
-@btnPrimaryBackground:              #515151; //@linkColor;
+@btnPrimaryBackground:              #4e2727; //@linkColor;
 @btnPrimaryBackgroundHighlight:     spin(@btnPrimaryBackground, 20%);
 
 @btnInfoBackground:                 #5bc0de;
