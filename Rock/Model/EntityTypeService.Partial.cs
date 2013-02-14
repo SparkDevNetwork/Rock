@@ -54,6 +54,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the entities that have the IsEntity flag set to true
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<EntityType> GetEntities()
+        {
+            return Repository.AsQueryable()
+                .Where( e => e.IsEntity );
+        }
+
+        /// <summary>
         /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
         /// as an entity type.
         /// </summary>
