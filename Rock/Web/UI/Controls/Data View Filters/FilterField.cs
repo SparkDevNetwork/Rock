@@ -202,6 +202,7 @@ namespace Rock.Web.UI.Controls
             hfExpanded = new HiddenField();
             Controls.Add( hfExpanded );
             hfExpanded.ID = this.ID + "_hfExpanded";
+            hfExpanded.Value = "True";
 
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
