@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using Rock.Model;
 using Rock.Workflow;
 
@@ -34,6 +35,20 @@ namespace Rock.Data
         public IRepository<T> Repository
         {
             get { return _repository; }
+        }
+
+        /// <summary>
+        /// Gets a LINQ expression parameter.
+        /// </summary>
+        /// <value>
+        /// The parameter expression.
+        /// </value>
+        public ParameterExpression ParameterExpression
+        {
+            get
+            {
+                return Expression.Parameter( typeof( T ), "p" );
+            }
         }
 
         /// <summary>
@@ -91,6 +106,29 @@ namespace Rock.Data
         public virtual T Get( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+            return this.Queryable().Where(lambda);
+        }
+
+        /// <summary>
+        /// Anies the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public bool Any( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+            return this.Queryable().Any( lambda );
         }
 
         /// <summary>

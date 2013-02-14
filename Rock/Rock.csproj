@@ -107,6 +107,7 @@
     <Compile Include="Attribute\AudiencesFieldAttribute.cs" />
     <Compile Include="Attribute\AudiencesPrimarySecondaryFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
+    <Compile Include="Attribute\EntityTypeAttribute.cs" />
     <Compile Include="Attribute\MarketingCampaignAdImageAttributeNameFieldAttribute.cs" />
     <Compile Include="Attribute\MarketingCampaignAdTypesFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
@@ -135,12 +136,14 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\AudiencesField.cs" />
     <Compile Include="Field\Types\CampusesField.cs" />
     <Compile Include="Field\Types\AudiencePrimarySecondaryField.cs" />
+    <Compile Include="Field\Types\EntityType.cs" />
     <Compile Include="Field\Types\MarketingCampaignAdImageAttributeNameField.cs" />
     <Compile Include="Field\Types\MarketingCampaignAdTypesField.cs" />
     <Compile Include="Field\Types\GroupField.cs" />

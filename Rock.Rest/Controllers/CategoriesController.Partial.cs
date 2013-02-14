@@ -3,10 +3,14 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,10 +48,30 @@ namespace Rock.Rest.Controllers
 
             int? entityTypeId = null;
 
+            object serviceInstance = null;
+
             if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                entityTypeId = EntityTypeCache.GetId( "Rock.Model." + entityTypeName );
-                qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+                var entityType = EntityTypeCache.Read( entityTypeName );
+                if ( entityType != null )
+                {
+                    entityTypeId = entityType.Id;
+                    qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+
+                    // Get the GetByCategory method
+                    if ( entityType.AssemblyName != null )
+                    {
+                        Type type = Type.GetType( entityType.AssemblyName );
+                        if ( type != null )
+                        {
+                            Type[] modelType = { type };
+                            Type genericServiceType = typeof( Rock.Data.Service<> );
+                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                            serviceInstance = Activator.CreateInstance( modelServiceType );
+                        }
+                    }
+                }
             }
 
             List<Category> categoryList = qry.ToList();
@@ -76,21 +100,23 @@ namespace Rock.Rest.Controllers
                 categoryItemList.Add( categoryItem );
             }
 
-            // add any entity specific items in this category (NOTE: only supports WorkflowType right now)
-            if ( entityTypeName.Equals( typeof( WorkflowType ).Name ) )
+            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof(ParameterExpression), typeof(Expression) } );
+            IQueryable items = GetCategorizedItems( serviceInstance, getMethod, id ) as IQueryable;
+            if (items != null)
             {
-                WorkflowTypeService workflowTypeService = new WorkflowTypeService();
-                var workflowTypeQuery = workflowTypeService.Queryable().Where( a => ( a.CategoryId ?? 0 ).Equals( id ) );
-                List<WorkflowType> workflowTypeList = workflowTypeQuery.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-                foreach ( var item in workflowTypeList )
+                foreach(var item in items)
                 {
-                    var categoryItem = new CategoryItem();
-                    categoryItem.Id = item.Id;
-                    categoryItem.Name = item.Name;
-                    categoryItem.EntityTypeName = typeof( WorkflowType ).Name;
-                    categoryItem.IconCssClass = "icon-list-ol";
-                    categoryItem.IconSmallUrl = string.Empty;
-                    categoryItemList.Add( categoryItem );
+                    ICategorized categorizedItem = item as ICategorized;
+                    if ( categorizedItem != null )
+                    {
+                        var categoryItem = new CategoryItem();
+                        categoryItem.Id = categorizedItem.Id;
+                        categoryItem.Name = categorizedItem.Name;
+                        categoryItem.EntityTypeName = typeof( WorkflowType ).Name;
+                        categoryItem.IconCssClass = "icon-list-ol";
+                        categoryItem.IconSmallUrl = string.Empty;
+                        categoryItemList.Add( categoryItem );
+                    }
                 }
             }
 
@@ -103,31 +129,37 @@ namespace Rock.Rest.Controllers
 
             List<int> qryHasChildrenList = qryHasChildrenCategory.ToList();
 
-            IQueryable<int?> entityItemQuery = null;
-
-            if ( entityTypeName.Equals( typeof( WorkflowType ).Name ) )
-            {
-                WorkflowTypeService workflowTypeService = new WorkflowTypeService();
-                entityItemQuery = workflowTypeService.Queryable().Select( a => a.CategoryId );
-            }
-
+            MethodInfo anyMethod = serviceInstance.GetType().GetMethod( "Any", new Type[] { typeof(ParameterExpression), typeof(Expression) } );
             foreach ( var g in categoryItemList )
             {
                 if ( g.EntityTypeName.Equals( typeof( Category ).Name ) )
                 {
                     g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
-                    if ( !g.HasChildren )
+                    if ( !g.HasChildren && serviceInstance != null && getMethod != null )
                     {
-
-                        if ( entityItemQuery != null )
-                        {
-                            g.HasChildren = entityItemQuery.Any( a => ( a ?? 0 ) == g.Id );
-                        }
+                        g.HasChildren = (bool)GetCategorizedItems( serviceInstance, anyMethod, g.Id );
                     }
                 }
             }
 
             return categoryItemList.AsQueryable();
+        }
+
+        private object GetCategorizedItems( object serviceInstance, System.Reflection.MethodInfo queryMethod, int categoryId )
+        {
+            if ( serviceInstance != null && queryMethod != null )
+            {
+                var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
+                var zeroExpression = Expression.Constant( 0 );
+                var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );
+                var constantExpression = Expression.Constant( categoryId );
+                var compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+
+                return queryMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
+            }
+
+            return null;
         }
     }
 
