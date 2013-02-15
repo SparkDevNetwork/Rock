@@ -189,7 +189,7 @@ if ($ActiveWhen.text() != '')
                             {
                                 var gUl = new HtmlGenericControl( "ul" );
                                 gUl.AddCssClass("checkin-count-groups");
-                                lUl.Controls.Add( gUl );
+                                lLi.Controls.Add( gUl );
 
                                 var gLi = new HtmlGenericControl( "li" );
                                 gUl.Controls.Add( gLi );
@@ -199,7 +199,7 @@ if ($ActiveWhen.text() != '')
                                 {
                                     var sUl = new HtmlGenericControl( "ul" );
                                     sUl.AddCssClass("checkin-count-schedules");
-                                    gUl.Controls.Add( sUl );
+                                    gLi.Controls.Add( sUl );
 
                                     var sLi = new HtmlGenericControl( "li" );
                                     sUl.Controls.Add( sLi );

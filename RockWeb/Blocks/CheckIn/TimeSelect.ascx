@@ -6,7 +6,7 @@
 
     <div class="row-fluid checkin-header">
         <div class="span12">
-            <h1><asp:Literal ID="lTitle" runat="server" /></h1>
+            <h1><asp:Literal ID="lTitle" runat="server" /><div class="checkin-sub-title"><asp:Literal ID="lSubTitle" runat="server"></asp:Literal></div></h1>
         </div>
     </div>
                 
