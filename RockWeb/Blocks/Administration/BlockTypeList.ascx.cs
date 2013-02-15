@@ -5,14 +5,12 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using Rock;
+using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
-using Rock.Constants;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -21,7 +19,8 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public partial class BlockTypes : RockBlock
+    [DetailPage]
+    public partial class BlockTypeList : RockBlock
     {
         #region Control Methods
 
@@ -34,15 +33,16 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
-            {
-                gBlockTypes.RowItemText = "Block Type";
-                gBlockTypes.DataKeyNames = new string[] { "id" };
-                gBlockTypes.Actions.IsAddEnabled = true;
-                gBlockTypes.Actions.AddClick += gBlockTypes_Add;
-                gBlockTypes.RowSelected += gBlockTypes_EditRow;
-                gBlockTypes.GridRebind += gBlockTypes_GridRebind;
-            }
+            gBlockTypes.RowItemText = "Block Type";
+            gBlockTypes.DataKeyNames = new string[] { "id" };
+            gBlockTypes.Actions.IsAddEnabled = true;
+            gBlockTypes.Actions.AddClick += gBlockTypes_Add;
+            gBlockTypes.GridRebind += gBlockTypes_GridRebind;
+
+            // Block Security and special attributes (RockPage takes care of "View")
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gBlockTypes.Actions.IsAddEnabled = canAddEditDelete;
+            gBlockTypes.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -51,19 +51,10 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( !Page.IsPostBack )
             {
-                if ( !Page.IsPostBack )
-                {
-                    new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
-                    BindGrid();
-                }
-            }
-            else
-            {
-                gBlockTypes.Visible = false;
-                nbMessage.Text = WarningMessage.NotAuthorizedToEdit( BlockType.FriendlyTypeName );
-                nbMessage.Visible = true;
+                new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
+                BindGrid();
             }
 
             base.OnLoad( e );
@@ -91,7 +82,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Add( object sender, EventArgs e )
         {
-            ShowEdit( 0 );
+            NavigateToDetailPage( "blockTypeId", 0 );
         }
 
         /// <summary>
@@ -99,9 +90,9 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gBlockTypes_EditRow( object sender, RowEventArgs e )
+        protected void gBlockTypes_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( (int)gBlockTypes.DataKeys[e.RowIndex]["id"] );
+            NavigateToDetailPage( "blockTypeId", (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -111,15 +102,24 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Delete( object sender, RowEventArgs e )
         {
-            BlockTypeService blockTypeService = new BlockTypeService();
-            BlockType blockType = blockTypeService.Get( (int)gBlockTypes.DataKeys[e.RowIndex]["id"] );
-            if ( CurrentBlock != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                blockTypeService.Delete( blockType, CurrentPersonId );
-                blockTypeService.Save( blockType, CurrentPersonId );
+                BlockTypeService blockTypeService = new BlockTypeService();
+                BlockType blockType = blockTypeService.Get( (int)e.RowKeyValue );
+                if ( blockType != null )
+                {
+                    string errorMessage;
+                    if ( !blockTypeService.CanDelete( blockType, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
 
-                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
-            }
+                    blockTypeService.Delete( blockType, CurrentPersonId );
+                    blockTypeService.Save( blockType, CurrentPersonId );
+                    Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+                }
+            } );
 
             BindGrid();
         }
@@ -134,60 +134,26 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        #endregion
-
-        #region Edit Events
-
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the RowDataBound event of the gBlockTypes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs" /> instance containing the event data.</param>
+        protected void gBlockTypes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSave control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            BlockType blockType;
-            BlockTypeService blockTypeService = new BlockTypeService();
-
-            int blockTypeId = int.Parse( hfBlockTypeId.Value );
-
-            if ( blockTypeId == 0 )
+            BlockType blockType = e.Row.DataItem as Rock.Model.BlockType;
+            if ( blockType != null )
             {
-                blockType = new BlockType();
-                blockTypeService.Add( blockType, CurrentPersonId );
+                string blockPath = Request.MapPath( blockType.Path );
+                if ( !System.IO.File.Exists( blockPath ) )
+                {
+                    e.Row.Cells[4].Text = "<span class='label label-important'>Missing</span>";
+                }
+                else
+                {
+                    e.Row.Cells[4].Text = "<span class='label label-success'>OK</span>";
+                }
             }
-            else
-            {
-                BlockTypeCache.Flush( blockTypeId );
-                blockType = blockTypeService.Get( blockTypeId );
-            }
-
-            blockType.Name = tbName.Text;
-            blockType.Path = tbPath.Text;
-            blockType.Description = tbDescription.Text;
-
-            if ( !blockType.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            blockTypeService.Save( blockType, CurrentPersonId );
-
-            BindGrid();
-
-            pnlDetails.Visible = false;
-            pnlList.Visible = true;
         }
 
         #endregion
@@ -234,37 +200,6 @@ namespace RockWeb.Blocks.Administration
             gBlockTypes.DataBind();
         }
 
-        /// <summary>
-        /// Shows the edit.
-        /// </summary>
-        /// <param name="blockTypeId">The block type id.</param>
-        protected void ShowEdit( int blockTypeId )
-        {
-            pnlDetails.Visible = true;
-            pnlList.Visible = false;
-
-            BlockTypeService blockTypeService = new BlockTypeService();
-            BlockType blockType = blockTypeService.Get( blockTypeId );
-
-            if ( blockType != null )
-            {
-                lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName );
-                hfBlockTypeId.Value = blockType.Id.ToString();
-                tbName.Text = blockType.Name;
-                tbPath.Text = blockType.Path;
-                tbDescription.Text = blockType.Description;
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName );
-                hfBlockTypeId.Value = 0.ToString();
-                tbName.Text = string.Empty;
-                tbPath.Text = string.Empty;
-                tbDescription.Text = string.Empty;
-            }
-        }
-
         #endregion
-
     }
 }

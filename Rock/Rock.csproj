@@ -316,6 +316,10 @@
     <Compile Include="Migrations\201302150233346_CategoryTreeView.Designer.cs">
       <DependentUpon>201302150233346_CategoryTreeView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302152230138_BlockTypeListDetail.cs" />
+    <Compile Include="Migrations\201302152230138_BlockTypeListDetail.Designer.cs">
+      <DependentUpon>201302152230138_BlockTypeListDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1091,6 +1095,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302150233346_CategoryTreeView.resx">
       <DependentUpon>201302150233346_CategoryTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302152230138_BlockTypeListDetail.resx">
+      <DependentUpon>201302152230138_BlockTypeListDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
