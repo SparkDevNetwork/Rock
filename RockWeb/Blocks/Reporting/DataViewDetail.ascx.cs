@@ -169,7 +169,7 @@ $(document).ready(function() {
 
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( itemId.HasValue )
+            if ( itemId.HasValue && itemId.Value != 0 )
             {
                 ShowView( itemId.Value );
             }
