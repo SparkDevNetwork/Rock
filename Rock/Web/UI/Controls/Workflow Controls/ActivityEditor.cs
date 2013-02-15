@@ -15,6 +15,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ActivityEditor runat=server></{0}:ActivityEditor>" )]
     public class ActivityEditor : CompositeControl
     {
+        private HiddenField hfActivityGuid;
         private Label lblActivityName;
         private Label lblActivityDescription;
         private LinkButton lbDeleteActivity;
@@ -43,6 +44,27 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["IsDeleteEnabled"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the activity GUID.
+        /// </summary>
+        /// <value>
+        /// The activity GUID.
+        /// </value>
+        public Guid ActivityGuid
+        {
+            get
+            {
+                EnsureChildControls();
+                return new Guid(hfActivityGuid.Value);
+            }
+
+            set
+            {
+                EnsureChildControls();
+                hfActivityGuid.Value = value.ToString();
             }
         }
 
@@ -139,6 +161,9 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            hfActivityGuid = new HiddenField();
+            hfActivityGuid.ID = this.ID + "_hfActivityGuid";
+
             lblActivityName = new Label();
             lblActivityDescription = new Label();
 
@@ -162,6 +187,14 @@ namespace Rock.Web.UI.Controls
             lbAddAction.CssClass = "btn btn-mini";
             lbAddAction.Click += lbAddAction_Click;
             lbAddAction.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
+
+            Controls.Add( hfActivityGuid );
+            Controls.Add( lblActivityName );
+            Controls.Add( lblActivityDescription );
+            Controls.Add( cbActivityIsActive );
+            Controls.Add( cbActivityIsActivatedWithWorkflow );
+            Controls.Add( lbDeleteActivity );
+            Controls.Add( lbAddAction );
         }
 
         /// <summary>
