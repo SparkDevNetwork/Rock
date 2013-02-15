@@ -20,7 +20,7 @@ namespace Rock.DataFilters.Person
     /// </summary>
     [Description( "Filter persons on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Type Filter" )]
+    [ExportMetadata( "ComponentName", "Group Type Attendance Filter" )]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         /// <summary>
@@ -31,7 +31,18 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Title
         {
-            get { return "Group Type Attendance"; }
+            get { return "Recent Attendance"; }
+        }
+
+        /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Group Attendance"; }
         }
 
         /// <summary>
