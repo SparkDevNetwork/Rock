@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Administration
                 pnlDetails.Visible = false;
                 return;
             }
-            
+
             WorkflowType workflowType = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -544,10 +544,57 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-        
+
+        #region Activities and Actions
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddActivity_Click( object sender, EventArgs e )
         {
-
+            ActivityEditor activityEditor = new ActivityEditor();
+            activityEditor.ActivityGuid = Guid.NewGuid();
+            activityEditor.ID = "activityEditor_" + activityEditor.ActivityGuid.ToString();
+            activityEditor.ActivityName = "Activity 01";
+            activityEditor.ActivityDescription = "Description of Activity 01";
+            activityEditor.ActivityIsActivatedWithWorkflow = true;
+            activityEditor.ActivityIsActive = false;
+            activityEditor.DeleteActivityClick += activityEditor_DeleteActivityClick;
+            phActivities.Controls.Add( activityEditor );
         }
-}
+
+        /// <summary>
+        /// Handles the DeleteActivityClick event of the activityEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void activityEditor_DeleteActivityClick( object sender, EventArgs e )
+        {
+            string temp = sender.ToString();
+        }
+
+        #endregion
+    }
 }
