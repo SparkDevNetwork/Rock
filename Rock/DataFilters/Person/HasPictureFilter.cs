@@ -32,6 +32,17 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Demographic Info"; }
+        }
+
+        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
