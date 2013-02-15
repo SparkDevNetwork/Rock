@@ -187,7 +187,7 @@ if ($ActiveWhen.text() != '')
                             foreach ( var groupAttendance in locationAttendance.Groups )
                             {
                                 var gUl = new HtmlGenericControl( "ul" );
-                                lUl.Controls.Add( gUl );
+                                lLi.Controls.Add( gUl );
 
                                 var gLi = new HtmlGenericControl( "li" );
                                 gUl.Controls.Add( gLi );
@@ -196,7 +196,7 @@ if ($ActiveWhen.text() != '')
                                 foreach ( var scheduleAttendance in groupAttendance.Schedules )
                                 {
                                     var sUl = new HtmlGenericControl( "ul" );
-                                    gUl.Controls.Add( sUl );
+                                    gLi.Controls.Add( sUl );
 
                                     var sLi = new HtmlGenericControl( "li" );
                                     sUl.Controls.Add( sLi );
