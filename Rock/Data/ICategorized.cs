@@ -18,7 +18,7 @@ namespace Rock.Data
         /// <value>
         /// The id.
         /// </value>
-        int Id { get; set; }
+        int Id { get; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -26,7 +26,7 @@ namespace Rock.Data
         /// <value>
         /// The name.
         /// </value>
-        string Name { get; set; }
+        string Name { get; }
 
         /// <summary>
         /// Gets or sets the category id.
@@ -34,7 +34,7 @@ namespace Rock.Data
         /// <value>
         /// The category id.
         /// </value>
-        int? CategoryId { get; set; }
+        int? CategoryId { get; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -42,7 +42,7 @@ namespace Rock.Data
         /// <value>
         /// The category.
         /// </value>
-        Category Category { get; set; }
+        Category Category { get; }
 
     }
 }

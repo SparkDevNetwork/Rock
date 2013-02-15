@@ -18,7 +18,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Report" )]
     [DataContract( IsReference = true )]
-    public partial class Report : Model<Report>
+    public partial class Report : Model<Report>, ICategorized
     {
 
         #region Entity Properties
