@@ -52,19 +52,19 @@ namespace Rock.Rest.Controllers
 
             if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                var entityType = EntityTypeCache.Read( entityTypeName );
-                if ( entityType != null )
+                var cachedEntityType = EntityTypeCache.Read( entityTypeName );
+                if ( cachedEntityType != null )
                 {
-                    entityTypeId = entityType.Id;
+                    entityTypeId = cachedEntityType.Id;
                     qry = qry.Where( a => a.EntityTypeId == entityTypeId );
 
                     // Get the GetByCategory method
-                    if ( entityType.AssemblyName != null )
+                    if ( cachedEntityType.AssemblyName != null )
                     {
-                        Type type = Type.GetType( entityType.AssemblyName );
-                        if ( type != null )
+                        Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                        if ( entityType != null )
                         {
-                            Type[] modelType = { type };
+                            Type[] modelType = { entityType };
                             Type genericServiceType = typeof( Rock.Data.Service<> );
                             Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
@@ -85,7 +85,7 @@ namespace Rock.Rest.Controllers
                 var categoryItem = new CategoryItem();
                 categoryItem.Id = category.Id;
                 categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
-                categoryItem.EntityTypeName = typeof( Category ).Name;
+                categoryItem.IsCategory = true;
 
                 // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
                 if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
@@ -112,7 +112,7 @@ namespace Rock.Rest.Controllers
                         var categoryItem = new CategoryItem();
                         categoryItem.Id = categorizedItem.Id;
                         categoryItem.Name = categorizedItem.Name;
-                        categoryItem.EntityTypeName = typeof( WorkflowType ).Name;
+                        categoryItem.IsCategory = false;
                         categoryItem.IconCssClass = "icon-list-ol";
                         categoryItem.IconSmallUrl = string.Empty;
                         categoryItemList.Add( categoryItem );
@@ -132,7 +132,7 @@ namespace Rock.Rest.Controllers
             MethodInfo anyMethod = serviceInstance.GetType().GetMethod( "Any", new Type[] { typeof(ParameterExpression), typeof(Expression) } );
             foreach ( var g in categoryItemList )
             {
-                if ( g.EntityTypeName.Equals( typeof( Category ).Name ) )
+                if ( g.IsCategory )
                 {
                     g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
                     if ( !g.HasChildren && serviceInstance != null && getMethod != null )
@@ -185,12 +185,12 @@ namespace Rock.Rest.Controllers
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the entity type.
+        /// Gets or sets a value indicating whether this instance is category.
         /// </summary>
         /// <value>
-        /// The name of the entity type.
+        /// <c>true</c> if this instance is category; otherwise, <c>false</c>.
         /// </value>
-        public string EntityTypeName { get; set; }
+        public bool IsCategory { get; set; }
 
         /// <summary>
         /// Gets or sets the group type icon CSS class.
