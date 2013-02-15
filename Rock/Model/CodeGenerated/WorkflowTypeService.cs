@@ -58,16 +58,6 @@ namespace Rock.Model
     public static class WorkflowTypeExtensionMethods
     {
         /// <summary>
-        /// Services the type.
-        /// </summary>
-        /// <param name="PaymentGateway">The payment gateway.</param>
-        /// <returns></returns>
-        public static Type ServiceType( this WorkflowType source)
-        {
-            return typeof( PaymentGatewayService );
-        }
-
-        /// <summary>
         /// Clones this WorkflowType object to a new WorkflowType object
         /// </summary>
         /// <param name="source">The source.</param>
@@ -84,9 +74,7 @@ namespace Rock.Model
                 var target = new WorkflowType();
                 target.IsSystem = source.IsSystem;
                 target.IsActive = source.IsActive;
-                target.Name = source.Name;
                 target.Description = source.Description;
-                target.CategoryId = source.CategoryId;
                 target.Order = source.Order;
                 target.WorkTerm = source.WorkTerm;
                 target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
