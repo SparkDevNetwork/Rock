@@ -8,8 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -21,8 +24,7 @@ namespace RockWeb.Blocks.Reporting
     /// </summary>
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
-        int? itemId;
-        private DataView _dataView;
+        #region Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -52,21 +54,16 @@ $(document).ready(function() {
         {
             base.OnLoad( e );
 
-            int id;
-            if ( int.TryParse( PageParameter( "DataViewId" ), out id ) )
-            {
-                itemId = id;
-            }
-
             if ( !Page.IsPostBack )
             {
-                if (itemId.HasValue)
+                string itemId = PageParameter( "DataViewId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowView( itemId.Value );
+                    ShowDetail( "DataViewId", int.Parse( itemId ) );
                 }
                 else
                 {
-                    ShowEdit( 0 );
+                    pnlDetails.Visible = false;
                 }
             }
         }
@@ -74,17 +71,318 @@ $(document).ready(function() {
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            _dataView = DataView.FromJson( ViewState["DataView"].ToString() );
-            CreateFilterControl(false);
+            CreateFilterControl( DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false );
         }
 
         protected override object SaveViewState()
         {
-            _dataView.DataViewFilter = GetFilterControl();
-
-            ViewState["DataView"] = _dataView.ToJson();
+            ViewState["DataViewFilter"] = GetFilterControl().ToJson();
             return base.SaveViewState();
         }
+
+        #endregion
+
+        #region Edit Events
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfDataViewId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  Return to Grid
+                NavigateToParentPage();
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                DataViewService service = new DataViewService();
+                DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
+                ShowReadonlyDetails( item );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            DataViewService service = new DataViewService();
+            DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
+            ShowEditDetails( item );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+        }
+
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            DataView dataView = null;
+
+            using ( new UnitOfWorkScope() )
+            {
+                DataViewService service = new DataViewService();
+
+                int dataViewId = int.Parse( hfDataViewId.Value );
+                int? dataViewFilterId = null;
+
+                if ( dataViewId == 0 )
+                {
+                    dataView = new DataView();
+                    dataView.IsSystem = false;
+                }
+                else
+                {
+                    dataView = service.Get( dataViewId );
+                    dataViewFilterId = dataView.DataViewFilterId;
+                }
+
+                dataView.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
+                dataView.Name = tbName.Text;
+                dataView.Description = tbDescription.Text;
+                dataView.CategoryId = ddlCategory.SelectedValueAsInt();
+                dataView.DataViewFilter = GetFilterControl();
+
+                // check for duplicates within Category
+                if ( service.Queryable()
+                    .Where( g => ( g.CategoryId == dataView.CategoryId ) )
+                    .Count( a => a.Name.Equals( dataView.Name, StringComparison.OrdinalIgnoreCase ) &&
+                        !a.Id.Equals( dataView.Id ) ) > 0 )
+                {
+                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", DataView.FriendlyTypeName ) );
+                    return;
+                }
+
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
+
+                if ( !dataView.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( dataView.Id.Equals( 0 ) )
+                    {
+                        service.Add( dataView, CurrentPersonId );
+                    }
+
+                    service.Save( dataView, CurrentPersonId );
+
+                    // Delete old report filter
+                    if ( dataViewFilterId.HasValue )
+                    {
+                        DataViewFilterService dataViewFilterService = new DataViewFilterService();
+                        DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
+                        DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
+                        dataViewFilterService.Save( dataViewFilter, CurrentPersonId );
+                    }
+
+                } );
+            }
+
+            // reload item from db using a new context
+            dataView = new DataViewService().Get( dataView.Id );
+            ShowReadonlyDetails( dataView );
+
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            ddlCategory.Items.Clear();
+            ddlCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
+
+            var service = new CategoryService();
+            LoadChildCategories( service, null, Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Model.DataView" ), 0 );
+
+            // Only entity types that are entities, have a friendly name, and actually have existing
+            // DataFilter componenets will be displayed in the drop down list
+            var entityTypeNames = Rock.DataFilters.DataFilterContainer.GetAvailableFilteredEntityTypeNames();
+            var entityTypeService = new EntityTypeService();
+            ddlEntityType.DataSource = entityTypeService
+                .Queryable()
+                .Where( e =>
+                    e.IsEntity &&
+                    e.FriendlyName != null &&
+                    entityTypeNames.Contains( e.Name ) )
+                .OrderBy( e => e.FriendlyName )
+                .ToList();
+            ddlEntityType.DataBind();
+
+        }
+
+        private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
+        {
+            foreach ( var category in service.Get( parentId, entityTypeId ) )
+            {
+                ddlCategory.Items.Add( new ListItem( ( new string( '-', level ) ) + category.Name, category.Id.ToString() ) );
+                LoadChildCategories( service, category.Id, entityTypeId, level + 1 );
+            }
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue )
+        {
+            if ( !itemKey.Equals( "DataViewId" ) )
+            {
+                pnlDetails.Visible = false;
+                return;
+            }
+
+            DataView dataView = null;
+
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                dataView = new DataViewService().Get( itemKeyValue );
+            }
+            else
+            {
+                dataView = new DataView { Id = 0, IsSystem = false };
+            }
+
+            if ( dataView == null )
+            {
+                return;
+            }
+
+            pnlDetails.Visible = true;
+            hfDataViewId.Value = dataView.Id.ToString();
+
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            }
+
+            if ( dataView.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                btnEdit.Visible = false;
+                ShowReadonlyDetails( dataView );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                if ( dataView.Id > 0 )
+                {
+                    ShowReadonlyDetails( dataView );
+                }
+                else
+                {
+                    ShowEditDetails( dataView );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        public void ShowEditDetails( DataView dataView )
+        {
+            if ( dataView.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( DataView.FriendlyTypeName );
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( DataView.FriendlyTypeName );
+            }
+
+            SetEditMode( true );
+
+            LoadDropDowns();
+
+            if ( dataView.DataViewFilter == null || dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
+            {
+                dataView.DataViewFilter = new DataViewFilter();
+                dataView.DataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+            }
+
+            tbName.Text = dataView.Name;
+            tbDescription.Text = dataView.Description;
+            ddlCategory.SetValue( dataView.CategoryId );
+            ddlEntityType.SetValue( dataView.EntityTypeId );
+
+            CreateFilterControl( dataView.DataViewFilter, true );
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        private void ShowReadonlyDetails( DataView dataView )
+        {
+            SetEditMode( false );
+            hfDataViewId.SetValue( dataView.Id );
+            lReadOnlyTitle.Text = dataView.Name;
+
+            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+            lblMainDetails.Text = @"
+<div>
+    <dl>";
+
+            if ( dataView.EntityType != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Applies To", dataView.EntityType.FriendlyName );
+            }
+
+            if ( dataView.Category != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Category", dataView.Category.Name );
+            }
+
+            lblMainDetails.Text += string.Format( descriptionFormat, "Description", dataView.Description );
+
+            if ( dataView.DataViewFilter != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Filter", dataView.DataViewFilter.ToString() );
+            }
+
+            lblMainDetails.Text += @"
+    </dl>
+</div>";
+        }
+
+        #endregion
+
+        #region Activities and Actions
 
         void groupControl_AddFilterClick( object sender, EventArgs e )
         {
@@ -118,67 +416,6 @@ $(document).ready(function() {
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
-        protected void btnEdit_Click( object sender, EventArgs e )
-        {
-            if ( itemId.HasValue )
-            {
-                ShowEdit( itemId.Value );
-            }
-        }
-
-        protected void btnBack_Click( object sender, EventArgs e )
-        {
-            NavigateToParentPage();
-        }
-
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            DataView dataView = null;
-            int? dataViewFilterId = null;
-
-            DataViewService dataViewService = new DataViewService();
-
-            if (_dataView.Id != 0)
-            {
-                dataView = dataViewService.Get(_dataView.Id);
-                dataViewFilterId = dataView.DataViewFilterId;
-            }
-            else
-            {
-                dataView = new DataView();
-                dataViewService.Add( dataView, CurrentPersonId );
-            }
-
-            dataView.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
-            dataView.Name = tbName.Text;
-            dataView.Description = tbDescription.Text;
-            dataView.DataViewFilter = GetFilterControl();
-            dataViewService.Save( dataView, CurrentPersonId );
-
-            // Delete old report filter
-            if ( dataViewFilterId.HasValue )
-            {
-                DataViewFilterService dataViewFilterService = new DataViewFilterService();
-                DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
-                dataViewFilterService.Save( dataViewFilter, CurrentPersonId );
-            }
-
-            ShowView(dataView.Id);
-        }
-
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( itemId.HasValue && itemId.Value != 0 )
-            {
-                ShowView( itemId.Value );
-            }
-            else
-            {
-                NavigateToParentPage();
-            }
-        }
-
         private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
         {
             if ( dataViewFilter != null )
@@ -191,92 +428,12 @@ $(document).ready(function() {
             }
         }
 
-        public void ShowView( int id )
-        {
-            _dataView = new DataViewService().Get( id );
-            if ( _dataView != null )
-            {
-                lName.Text = _dataView.Name;
-                ltAppliedTo.Text = _dataView.EntityType.FriendlyName ?? _dataView.EntityType.Name;
-                ltDescription.Text = _dataView.Description;
-                ltFilter.Text = _dataView.DataViewFilter.ToString().TrimStart( '(' ).TrimEnd( ')' );
-
-                pnlEdit.Visible = false;
-                pnlView.Visible = true;
-            }
-            else
-            {
-                ShowEdit( 0 );
-            }
-        }
-
-        public void ShowEdit( int id )
-        {
-            // Only entity types that are entities, have a friendly name, and actually have existing
-            // DataFilter componenets will be displayed in the drop down list
-            var entityTypeNames = Rock.DataFilters.DataFilterContainer.GetAvailableFilteredEntityTypeNames();
-            var entityTypeService = new EntityTypeService();
-            ddlEntityType.DataSource = entityTypeService
-                .Queryable()
-                .Where( e => 
-                    e.IsEntity && 
-                    e.FriendlyName != null &&
-                    entityTypeNames.Contains(e.Name))
-                .OrderBy( e => e.FriendlyName )
-                .ToList();
-            ddlEntityType.DataBind();
-
-            _dataView = new DataViewService().Get( id );
-            if ( _dataView == null )
-            {
-                _dataView = new DataView();
-            }
-
-            if ( _dataView.DataViewFilter == null || _dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
-            {
-                _dataView.DataViewFilter = new DataViewFilter();
-                _dataView.DataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
-            }
-
-            if ( _dataView.EntityTypeId.HasValue )
-            {
-                ddlEntityType.SelectedValue = _dataView.EntityTypeId.Value.ToString();
-            }
-
-            tbName.Text = _dataView.Name;
-            tbDescription.Text = _dataView.Description;
-
-            CreateFilterControl( true );
-
-            pnlView.Visible = false;
-            pnlEdit.Visible = true;
-        }
-
-        public void ShowDetail( string itemKey, int itemKeyValue )
-        {
-            if ( !itemKey.Equals( "dataViewId" ) )
-            {
-                return;
-            }
-
-            itemId = itemKeyValue;
-
-            if ( itemId == 0 )
-            {
-                ShowEdit( itemId.Value );
-            }
-            else
-            {
-                ShowView( itemId.Value );
-            }
-        }
-
-        private void CreateFilterControl(bool setSelection)
+        private void CreateFilterControl( DataViewFilter filter, bool setSelection )
         {
             phFilters.Controls.Clear();
-            if ( _dataView.DataViewFilter != null )
+            if ( filter != null )
             {
-                CreateFilterControl( phFilters, _dataView.DataViewFilter, "Rock.Model.Person", setSelection );
+                CreateFilterControl( phFilters, filter, "Rock.Model.Person", setSelection );
             }
         }
 
@@ -291,7 +448,7 @@ $(document).ready(function() {
                 if ( filter.EntityTypeId.HasValue )
                 {
                     var entityTypeCache = Rock.Web.Cache.EntityTypeCache.Read( filter.EntityTypeId.Value );
-                    if (entityTypeCache != null)
+                    if ( entityTypeCache != null )
                     {
                         filterControl.FilterEntityTypeName = entityTypeCache.Name;
                     }
@@ -317,7 +474,7 @@ $(document).ready(function() {
                 groupControl.AddFilterClick += groupControl_AddFilterClick;
                 groupControl.AddGroupClick += groupControl_AddGroupClick;
                 groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
-                foreach ( var childFilter in filter.ChildFilters)
+                foreach ( var childFilter in filter.ChildFilters )
                 {
                     CreateFilterControl( groupControl, childFilter, filteredEntityTypeName, setSelection );
                 }
@@ -328,13 +485,13 @@ $(document).ready(function() {
         {
             if ( phFilters.Controls.Count > 0 )
             {
-                return GetFilterControl(phFilters.Controls[0]);
+                return GetFilterControl( phFilters.Controls[0] );
             }
 
             return null;
         }
 
-        private DataViewFilter GetFilterControl(Control control)
+        private DataViewFilter GetFilterControl( Control control )
         {
             FilterGroup groupControl = control as FilterGroup;
             if ( groupControl != null )
@@ -351,7 +508,7 @@ $(document).ready(function() {
             return null;
         }
 
-        private DataViewFilter GetFilterGroupControl(FilterGroup filterGroup)
+        private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
         {
             DataViewFilter filter = new DataViewFilter();
             filter.ExpressionType = filterGroup.FilterType;
@@ -379,5 +536,7 @@ $(document).ready(function() {
 
             return filter;
         }
+
+        #endregion
     }
 }

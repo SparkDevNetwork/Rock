@@ -250,7 +250,7 @@ namespace Rock.Model
                     }
                 }
 
-                if (children.Count > 1)
+                if (children.Count > 1 && Parent != null)
                 {
                     sb.Insert(0, "( ");
                     sb.Append(" )");
