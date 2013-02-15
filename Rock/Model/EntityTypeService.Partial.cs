@@ -136,8 +136,13 @@ namespace Rock.Model
             // Add the newly discovered entities
             foreach ( var entityTypeInfo in entityTypes )
             {
-                this.Add( entityTypeInfo.Value, null );
-                this.Save( entityTypeInfo.Value, null );
+                // Don't add the EntityType entity as it will probably have been automatically 
+                // added by the audit on a previous save in this method.
+                if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                {
+                    this.Add( entityTypeInfo.Value, null );
+                    this.Save( entityTypeInfo.Value, null );
+                }
             }
         }
 
