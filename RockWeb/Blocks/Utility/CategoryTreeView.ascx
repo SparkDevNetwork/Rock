@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upCategoryTree" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
-        <asp:HiddenField ID="hfInitialEntityTypeName" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfInitialEntityIsCategory" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <div class="treeview-back">
@@ -18,21 +18,21 @@
             }
 
             function showItemDetails(dataItem) {
-                var itemSearch = '?' + dataItem.EntityTypeName + 'Id=' + dataItem.Id
+                var itemSearch = '?' + (dataItem.IsCategory ? 'CategoryId' : '<%=PageParameterName%>') + '=' + dataItem.Id
                 if (window.location.search != itemSearch) {
                     window.location.search = itemSearch;
                 }
             }
 
-            function findItemInData(data, entityTypeName, itemId) {
+            function findItemInData(data, isCategory, itemId) {
                 for (var i = 0; i < data.length; i++) {
                     dataItem = data[i];
-                    if (dataItem.id == itemId && dataItem.EntityTypeName.toLowerCase() == entityTypeName.toLowerCase()) {
+                    if (dataItem.id == itemId && (dataItem.IsCategory == isCategory)) {
                         return dataItem;
                     }
                     if (dataItem.hasChildren) {
                         var childrenData = dataItem.children.data();
-                        var childItemData = findItemInData(childrenData, entityTypeName, itemId);
+                        var childItemData = findItemInData(childrenData, isCategory, itemId);
                         if (childItemData) {
                             return childItemData;
                         }
@@ -40,13 +40,13 @@
                 }
             }
 
-            function findChildItemInTree(treeViewData, entityTypeName, itemId, itemParentIds) {
+            function findChildItemInTree(treeViewData, isCategory, itemId, itemParentIds) {
 
                 if (itemParentIds != '') {
                     var itemParentList = itemParentIds.split(",");
                     for (var i = 0; i < itemParentList.length; i++) {
                         var parentItemId = itemParentList[i];
-                        var parentItem = treeViewData.dataSource.get(parentItemId);
+                        var parentItem = findItemInData(treeViewData.dataSource.data(), true, parentItemId);
                         var parentNodeItem = treeViewData.findByUid(parentItem.uid);
                         if (!parentItem.expanded && parentItem.hasChildren) {
                             // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
@@ -56,12 +56,8 @@
                     }
                 }
 
-                if (entityTypeName == '') {
-                    return null;
-                }
-
                 var data = treeViewData.dataSource.data();
-                var dataItem = findItemInData(data, entityTypeName, itemId);
+                var dataItem = findItemInData(data, isCategory, itemId);
                 return dataItem;
 
                 return null;
@@ -74,10 +70,10 @@
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
-                    var initialEntityTypeName = $('#hfInitialEntityTypeName').val();
+                    var initialEntityIsCategory = ($('#hfInitialEntityIsCategory').val() === 'True');
                     var initialItemId = $('#hfInitialItemId').val();
                     var initialCategoryParentIds = $('#hfInitialCategoryParentIds').val();
-                    var initialItem = findChildItemInTree(treeViewData, initialEntityTypeName, initialItemId, initialCategoryParentIds);
+                    var initialItem = findChildItemInTree(treeViewData, initialEntityIsCategory, initialItemId, initialCategoryParentIds);
                     if (initialItemId) {
                         if (initialItem) {
                             var firstItem = treeViewData.findByUid(initialItem.uid);
@@ -111,7 +107,7 @@
                     model: {
                         id: 'Id',
                         hasChildren: 'HasChildren',
-                        entityTypeName: 'EntityTypeName'
+                        isCategory: 'IsCategory'
                     }
                 }
             });

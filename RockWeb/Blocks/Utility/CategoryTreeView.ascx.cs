@@ -28,6 +28,11 @@ namespace RockWeb.Blocks.Utility
         protected string EntityTypeName;
 
         /// <summary>
+        /// The page parameter name
+        /// </summary>
+        protected string PageParameterName;
+        
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -47,7 +52,8 @@ namespace RockWeb.Blocks.Utility
                 EntityTypeName = entityType.Name;
             }
 
-            string itemId = PageParameter( GetAttributeValue( "PageParameterKey" ) );
+            PageParameterName = GetAttributeValue( "PageParameterKey" );
+            string itemId = PageParameter( PageParameterName );
             string selectedEntityType = EntityTypeName;
             if ( string.IsNullOrWhiteSpace( itemId ) )
             {
@@ -58,7 +64,7 @@ namespace RockWeb.Blocks.Utility
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 hfInitialItemId.Value = itemId;
-                hfInitialEntityTypeName.Value = selectedEntityType;
+                hfInitialEntityIsCategory.Value = (selectedEntityType == "category").ToString();
                 List<string> parentIdList = new List<string>();
 
                 Category category = null;
