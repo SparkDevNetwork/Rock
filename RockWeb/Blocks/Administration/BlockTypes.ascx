@@ -12,8 +12,8 @@
             <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                     <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
+                    <asp:BoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                     <Rock:BadgeField HeaderText="Usage" DataField="Blocks.Count" SortExpression="Blocks.Count"
                         ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
                     <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
