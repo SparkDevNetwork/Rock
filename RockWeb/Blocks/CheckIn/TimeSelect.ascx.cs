@@ -46,7 +46,8 @@ namespace RockWeb.Blocks.CheckIn
                                     var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
                                     if ( group != null )
                                     {
-                                        lTitle.Text = person.ToString() + " <div class=\"checkin-sub-title\"> " + group.ToString() + "</div>";
+                                        lTitle.Text = person.ToString();
+                                        lSubTitle.Text = group.ToString();
 
                                         if ( group.Schedules.Count == 1 )
                                         {
