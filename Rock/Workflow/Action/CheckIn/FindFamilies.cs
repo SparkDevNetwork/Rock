@@ -52,7 +52,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     family.Group = group.Clone( false );
                                     family.Group.LoadAttributes();
                                     family.Caption = group.ToString();
-                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( "," );
+                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
                                     checkInState.CheckIn.Families.Add( family );
                                 }
                             }
