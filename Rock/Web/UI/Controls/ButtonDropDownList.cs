@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -15,13 +16,13 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : CompositeControl
+    public class ButtonDropDownList : ListControl
     {
         private HtmlGenericControl divControl;
         private HtmlGenericControl btnSelect;
         private HiddenField hfSelectedItemId;
+        private HiddenField hfSelectedItemText;
         private HtmlGenericControl listControl;
-        private ListItemCollection items = new ListItemCollection();
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -39,7 +40,6 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( eventArgs[0] == this.ID )
                     {
-                        hfSelectedItemId.Value = eventArgs[1];
                         if ( SelectionChanged != null )
                         {
                             SelectionChanged( this, new EventArgs() );
@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
             string postbackControlId;
             if ( updatePanel != null )
             {
-                postbackControlId = updatePanel.ID;
+                postbackControlId = updatePanel.ClientID;
             }
             else
             {
@@ -73,19 +73,20 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
 $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
     {{
-        var text = $(this).html() + "" <span class='caret'></span>"";
+        var text =  $(this).html();
+        var textHtml = $(this).html() + "" <span class='caret'></span>"";
         var idvalue = $(this).attr('idvalue');
-        $('#ButtonDropDown_btn_{0}').html(text);
-        debugger
+        $('#ButtonDropDown_btn_{0}').html(textHtml);
         $('#hfSelectedItemId_{0}').val(idvalue);
+        $('#hfSelectedItemText_{0}').val(text);
         {1}
     }}
 }});";
-            
+
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )
             {
-                postbackScript = string.Format("__doPostBack('{1}', '{0}=' + idvalue);", this.ID, postbackControlId);        
+                postbackScript = string.Format( "__doPostBack('{1}', '{0}=' + idvalue);", this.ID, postbackControlId );
             }
 
             string script = string.Format( scriptFormat, this.ID, postbackScript );
@@ -94,66 +95,45 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         }
 
         /// <summary>
-        /// Saves any state that was modified after the <see cref="M:System.Web.UI.WebControls.Style.TrackViewState" /> method was invoked.
+        /// Gets the selected item with the lowest index in the list control.
         /// </summary>
-        /// <returns>
-        /// An object that contains the current view state of the control; otherwise, if there is no view state associated with the control, null.
-        /// </returns>
-        protected override object SaveViewState()
-        {
-            EnsureChildControls();
-            this.ViewState["SelectedItemId"] = hfSelectedItemId.Value;
-            return base.SaveViewState();
-        }
-
-        /// <summary>
-        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An object that represents the control state to restore.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            EnsureChildControls();
-            base.LoadViewState( savedState );
-            hfSelectedItemId.Value = this.ViewState["SelectedItemId"] as string;
-        }
-
-        /// <summary>
-        /// Gets or sets the items.
-        /// </summary>
-        /// <value>
-        /// The items.
-        /// </value>
-        public ListItemCollection Items
+        /// <returns>A <see cref="T:System.Web.UI.WebControls.ListItem" /> that represents the lowest indexed item selected from the list control. The default is null.</returns>
+        public override ListItem SelectedItem
         {
             get
             {
-                return items;
-            }
-
-            set
-            {
-                items = value;
+                ListItem result = Items.FindByValue( hfSelectedItemId.Value );
+                return result;
             }
         }
 
         /// <summary>
-        /// Gets or sets the selected item.
+        /// Gets the value of the selected item in the list control, or selects the item in the list control that contains the specified value.
         /// </summary>
-        /// <value>
-        /// The selected item.
-        /// </value>
-        public string SelectedItemId
+        /// <returns>The value of the selected item in the list control. The default is an empty string ("").</returns>
+        public override string SelectedValue
         {
             get
             {
-                EnsureChildControls();
                 return hfSelectedItemId.Value;
             }
 
             set
             {
-                EnsureChildControls();
                 hfSelectedItemId.Value = value;
+                base.SelectedValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the lowest ordinal index of the selected items in the list.
+        /// </summary>
+        /// <returns>The lowest ordinal index of the selected items in the list. The default is -1, which indicates that nothing is selected.</returns>
+        public override int SelectedIndex
+        {
+            get
+            {
+                return Items.IndexOf( SelectedItem );
             }
         }
 
@@ -164,8 +144,8 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         {
             base.CreateChildControls();
 
-            Controls.Clear(); 
-            
+            Controls.Clear();
+
             divControl = new HtmlGenericControl( "div" );
             divControl.Attributes["class"] = "btn-group";
             divControl.ClientIDMode = ClientIDMode.Static;
@@ -175,21 +155,24 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
             hfSelectedItemId.ClientIDMode = ClientIDMode.Static;
             hfSelectedItemId.ID = string.Format( "hfSelectedItemId_{0}", this.ID );
 
+            hfSelectedItemText = new HiddenField();
+            hfSelectedItemText.ClientIDMode = ClientIDMode.Static;
+            hfSelectedItemText.ID = string.Format( "hfSelectedItemText_{0}", this.ID );
+
             btnSelect = new HtmlGenericControl( "button" );
             btnSelect.ClientIDMode = ClientIDMode.Static;
             btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
             btnSelect.Attributes["class"] = "btn dropdown-toggle";
             btnSelect.Attributes["data-toggle"] = "dropdown";
-            string selectedText = "TODO";
-            btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
             divControl.Controls.Add( btnSelect );
 
             listControl = new HtmlGenericControl( "ul" );
             listControl.Attributes["class"] = "dropdown-menu";
-            
+
             Controls.Add( divControl );
             Controls.Add( hfSelectedItemId );
+            Controls.Add( hfSelectedItemText );
         }
 
         /// <summary>
@@ -198,7 +181,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            foreach ( var item in this.Items.OfType<ListItem>())
+            foreach ( var item in this.Items.OfType<ListItem>() )
             {
                 string controlHtmlFormat = "<li><a href='#' idvalue='{0}'>{1}</a></li>";
                 listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
@@ -206,9 +189,14 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
 
             divControl.Controls.Add( listControl );
 
+            string selectedText = SelectedItem != null ? SelectedItem.Text : string.Empty;
+            btnSelect.Controls.Clear();
+            btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
+
             divControl.RenderControl( writer );
 
             hfSelectedItemId.RenderControl( writer );
+            hfSelectedItemText.RenderControl( writer );
         }
 
         /// <summary>
