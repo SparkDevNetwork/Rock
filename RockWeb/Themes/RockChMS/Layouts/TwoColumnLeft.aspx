@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <footer class="page-footer navbar-fixed-bottom">
+    <footer class="page-footer">
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">

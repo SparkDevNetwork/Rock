@@ -1,325 +1,58 @@
 /*!
- * Rock ChMS Theme v 2.0
+ * Rock ChMS Adventure Kids Checkin Theme
  *
- * Copyright 2012 Spark Development Network
+ * Copyright 2013 Spark Development Network
  *
  * 
  */
-
-// [Table of Contents]
-// 
-// 1. Bootstrap Overides
-// 2. Global Page Settings
-// 3. Components
-// 4. Page Styles
-// 5. Re-usable styles
 
 
 //
 // Variables
 // --------------------------------------------------
-@import "./rock-global-variables.less";
+
+@checkinHeaderColor:                #54412b;
+@checkinHeaderFontFamily:           'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+
+@checkinSubHeadingColor:            #54412b;
+@checkinSubHeaderFontFamily:        'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif; 
+
+@checkinBodyColor:                 #92724C;
+
+@checkinButtonColor:                #92724c;
+@checkinButtonBackground:           #ecdebf;
+@checkinButtonFontFamily:           'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+@checkinButtonSubtitleFontFamily:   'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+@checkinButtonBorderColor:          #91876f;
+
+@checkinPrimaryButtonColor:         #fff;
+@checkinPrimaryButtonBackground:    #4e2727;
+@checkinPrimaryButtonBorderColor:   #361c1b;
+
+
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+  	background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+}
+
+.checkinBackgroundRetina()
+{
+    background-image: url('../Assets/Images/background@2x.jpg');
+    background-size: 1348px 768px; // should be 1/2 of the actual
+}
+
+//
+// Imports
+// --------------------------------------------------
+
 @import "./rock-bootstrap-variables.less";
 @import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
-//@import "../../../Css/rock-core.less";
-
-//
-// 1. Bootstrap Overides
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-h1, h2, h3 {
-	letter-spacing: -0.03em;
-}
-
-h1 {
-	font-size: 28px;
-    color: #54412b;
-}
-
-.navbar-inner {
-	padding: 0;
-}
-
-
-.close
-{
-    color: @rockLightTextColor;
-}
-
-.btn-mini
-{
-    padding: 0 6px;
-}
-
-.control-label
-{
-    font-size: 18px;
-    margin-bottom: 6px;
-}
-
-.btn
-{
-	text-shadow:
-		0px -1px 0px rgba(000,000,000,0.6),
-		0px 1px 0px rgba(255,255,255,0.1);
-    color: #92724c;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
-}
-
-.btn:active,
-.btn:hover
-{
-    color: #755b3c;
-}
-
-.btn-primary
-{
-    color: #fff;
-}
-
-.btn-primary:hover,
-.btn-primary:active
-{
-    color: #ededed;
-}
-
-.btn-checkin-select
-{
-    font-family: @rockSansFontFamilySemiBold;
-    font-size: 24px;
-    margin-bottom: 20px;
-    padding-top: 14px;
-    padding-bottom: 14px;
-}
-
-// 
-// 2. Global Page Settings 
-// 
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
-
-// turn off configuration items 
-#cms-admin-footer
-{
-    display: none;
-}
-
-.config-bar
-{
-    display: none;
-}
-
-// set page background
-body {  
-	background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
-}
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 768px;
-  }
-}
+@import "../../../Css/checkin-core.less";
 
 
 //
-// 3. Components
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// --------------------------------------
-#checkin-content {
-    --max-width: 960px;
-}
-
-// checkin header items
-
-.checkin-header
-{
-    margin-top: 45px;
-}
-
-.checkin-header h1
-{
-    font-size: 48px;
-}
-
-.checkin-header .checkin-sub-title
-{
-    font-size: 24px;
-    font-family: @rockSansFontFamilyLight;
-    font-weight: normal;
-    margin-top: 12px;
-}
-
-// checkin body items 
-
-.checkin-body
-{
-    margin-top: 24px;
-}
-
-.checkin-search-actions a
-{
-    padding: 20px 48px;
-    font-size: 48px;
-    line-height: 48px;
-    font-family: @rockSansFontFamilyBold;
-}
-
-// checkin footer 
-
-.checkin-footer
-{
-    position: absolute; 
-    bottom: 0; 
-    margin-bottom: 12px;
-    width: 80%;
-}
-
-
-// checkin counts 
-
-.checkin-count h3,
-.checkin-count li
-{
-    color: #92724C;
-}
-
-.checkin-count-locations, 
-.checkin-count-groups,
-.checkin-count-schedules
-{
-    list-style: none;
-}
-
-.checkin-count-locations > li
-{
-    float: left;
-}
-
-.checkin-counts ul li
-{
-    float: left;
-    margin-right: 24px;
-}
-
-.checkin-actions a
-{
-    font-size: 22px;
-    font-family: @rockSansFontFamilySemiBold;
-    padding: 12px 24px;
-}
-
-.checkin-actions a.btn-primary
-{
-    font-size: 28px;
-    padding: 14px 26px;
-}
-
-.checkin-body-container
-{
-    width: 80%;
-}
-
-// time select checkbox 
-.btn-checkbox
-{
-    padding: 24px 48px;
-}
-
-.btn-checkbox.active
-{
-    .buttonBackground(@btnPrimaryBackground, @btnPrimaryBackgroundHighlight);
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
-}
-
-button.btn-checkbox.btn i
-{
-    font-size: 48px;
-    display: block;
-    line-height: 48px;
-}
-
-.btn-checkbox.active i:before
-{
-    content: "\f046";
-}
-
-.btn-checkbox div
-{
-    font-size: 26px;
-    line-height: 26px;
-    margin-top: 8px;
-}
-
-.checkin-summary
-{
-    list-style-type: none;
-}
-
-.checkin-summary li
-{
-    font-size: 22px;
-    margin-bottom: 18px;
-}
-
-//
-// 4. Page Styles
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// --------------------------------------
-
-// search page
-// on landscape the keypad should be on the right, portrait it should be below
-
-input.checkin-phone-entry
-{
-    height: 50px;
-    font-family: @rockSansFontFamilySemiBold;
-    font-size: 36px;
-    padding: 6px 24px;
-    width: 272px; // keypad is 320 - padding (24px x 2)
-    float: left;
-    margin-right: 36px;
-}
-
-.checkin-phone-keypad
-{
-    float: left;
-}
-
-@media screen and (orientation:portrait) {
-	 /* Portrait styles */
-    .checkin-search-body
-    {
-        margin-right: auto !important;
-        margin-left: auto !important;
-        width: 320px;
-    }
-     
-     input.checkin-phone-entry
-    {
-        float: none;
-        margin-bottom: 12px;
-    }
-    .checkin-phone-keypad
-    {
-        float: none;
-    }
-}
-
-
-//
-// 5. Reusable Styles
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// --------------------------------------
-
-
-@import "./adventurekids-theme-responsive.less";
-
+// Custom Overides
+// --------------------------------------------------
