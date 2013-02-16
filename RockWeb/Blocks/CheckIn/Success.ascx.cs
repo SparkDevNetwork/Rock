@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
                                     foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
                                     {
                                         var li = new HtmlGenericControl("li");
-                                        li.InnerText = string.Format("{0} was checked into {1} at {2} at {3}",
+                                        li.InnerText = string.Format("{0} was checked into {1} for the {2} at {3}",
                                             person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), schedule.SecurityCode);
                                         phResults.Controls.Add(li);
                                     }
