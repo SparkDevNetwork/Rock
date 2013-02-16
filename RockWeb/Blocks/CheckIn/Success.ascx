@@ -14,7 +14,7 @@
     <div class="row-fluid checkin-body">
         <div class="span12">
             
-            <ol class="checkin-summary">
+            <ol class="checkin-summary checkin-body-container">
                 <asp:PlaceHolder ID="phResults" runat="server"></asp:PlaceHolder>
             </ol>
         </div>

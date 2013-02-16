@@ -1,0 +1,315 @@
+﻿/*!
+ * Rock Checkin Core
+ *
+ * Copyright 2013 Spark Development Network
+ *
+ * 
+ */
+
+// [Table of Contents]
+// 
+// 1. Bootstrap Overides
+// 2. Global Page Settings
+// 3. Components
+// 4. Page Styles
+
+
+//
+// 1. Bootstrap Overides
+//
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+h1, h2, h3 {
+	letter-spacing: -0.03em;
+}
+
+h1 {
+	font-size: 28px;
+    color: @checkinHeaderColor;
+}
+
+.navbar-inner {
+	padding: 0;
+}
+
+
+.close
+{
+    color: @rockLightTextColor;
+}
+
+.btn-mini
+{
+    padding: 0 6px;
+}
+
+.control-label
+{
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.btn
+{
+	.buttonBackground(@checkinButtonBackground, darken(@checkinButtonBackground, 10%) , @grayDark, 0 1px 1px rgba(255,255,255,.75));
+	border-color: @checkinButtonBorderColor;
+	text-shadow:
+		0px -1px 0px rgba(000,000,000,0.6),
+		0px 1px 0px rgba(255,255,255,0.1);
+    color: @checkinButtonColor;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
+}
+
+.btn:active,
+.btn:hover
+{
+    color: darken(@checkinButtonColor, 10%);
+}
+
+.btn-primary
+{
+    .buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
+	color: @checkinPrimaryButtonColor;
+	border-color: @checkinPrimaryButtonBorderColor;
+}
+
+.btn-primary:hover,
+.btn-primary:active
+{
+    color: darken(@checkinPrimaryButtonColor, 10%);
+}
+
+.btn-checkin-select
+{
+    font-family: @rockSansFontFamilySemiBold;
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+// 
+// 2. Global Page Settings 
+// 
+// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+
+// turn off configuration items 
+#cms-admin-footer
+{
+    display: none;
+}
+
+.config-bar
+{
+    display: none;
+}
+
+// set page background
+body {  
+	.checkinBackground;
+}
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+  body {
+    .checkinBackgroundRetina()
+  }
+}
+
+
+//
+// 3. Components
+//
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+// --------------------------------------
+
+// checkin header items
+
+.checkin-header
+{
+    margin-top: 45px;
+}
+
+.checkin-header h1
+{
+    font-size: 48px;
+	font-family: @checkinHeaderFontFamily;
+	font-weight: normal;
+}
+
+.checkin-header .checkin-sub-title
+{
+    color: @checkinSubHeadingColor;
+	font-size: 24px;
+    font-family: @checkinSubHeaderFontFamily;
+    font-weight: normal;
+    margin-top: 12px;
+}
+
+.btn .checkin-sub-title
+{
+    font-size: 20px;
+    font-family: @checkinButtonSubtitleFontFamily;
+    font-weight: normal;
+    margin-left: 20px;
+}
+
+// checkin body items 
+
+.checkin-body
+{
+    margin-top: 24px;
+}
+
+.checkin-search-actions a
+{
+    padding: 20px 48px;
+    font-size: 48px;
+    line-height: 48px;
+    font-family: @checkinButtonFontFamily;
+}
+
+// checkin footer 
+
+.checkin-footer
+{
+    position: absolute; 
+    bottom: 0; 
+    margin-bottom: 12px;
+    width: 80%;
+}
+
+
+// checkin counts 
+
+.checkin-count h3,
+.checkin-count li
+{
+    color: @checkinCountColor;
+}
+
+.checkin-count-locations, 
+.checkin-count-groups,
+.checkin-count-schedules
+{
+    list-style: none;
+}
+
+.checkin-count-locations > li
+{
+    float: left;
+}
+
+.checkin-counts ul li
+{
+    float: left;
+    margin-right: 24px;
+}
+
+.checkin-actions a
+{
+    font-size: 22px;
+    font-family: @checkinButtonFontFamily; 
+    padding: 12px 24px;
+}
+
+.checkin-actions a.btn-primary
+{
+    font-size: 28px;
+    padding: 14px 26px;
+}
+
+.checkin-body-container
+{
+    width: 80%;
+}
+
+// time select checkbox 
+.btn-checkbox
+{
+    padding: 24px 48px;
+}
+
+.btn-checkbox.active
+{
+    .buttonBackground(@btnPrimaryBackground, @btnPrimaryBackgroundHighlight);   //TODO
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
+}
+
+button.btn-checkbox.btn i
+{
+    font-size: 48px;
+    display: block;
+    line-height: 48px;
+}
+
+.btn-checkbox.active i:before
+{
+    content: "\f046";
+}
+
+.btn-checkbox div
+{
+    font-size: 26px;
+    line-height: 26px;
+    margin-top: 8px;
+}
+
+.checkin-summary
+{
+    list-style-type: none;
+}
+
+.checkin-summary li
+{
+    font-size: 22px;
+    margin-bottom: 18px;
+}
+
+//
+// 4. Page Styles
+//
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// --------------------------------------
+
+// search page
+// on landscape the keypad should be on the right, portrait it should be below
+
+input.checkin-phone-entry
+{
+    height: 50px;
+    font-family: @checkinButtonFontFamily;
+    font-size: 36px;
+    padding: 6px 24px;
+    width: 272px; // keypad is 320 - padding (24px x 2)
+    float: left;
+    margin-right: 36px;
+}
+
+.checkin-phone-keypad
+{
+    float: left;
+}
+
+@media screen and (orientation:portrait) {
+	 /* Portrait styles */
+    .checkin-search-body
+    {
+        margin-right: auto !important;
+        margin-left: auto !important;
+        width: 320px;
+    }
+     
+     input.checkin-phone-entry
+    {
+        float: none;
+        margin-bottom: 12px;
+    }
+    .checkin-phone-keypad
+    {
+        float: none;
+    }
+}
