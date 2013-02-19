@@ -24,11 +24,43 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
         #region Private BlockType Attributes
+        /// <summary>
+        /// The prayer comment key parameter seen in the QueryString
+        /// </summary>
         private static readonly string PrayerCommentKeyParameter = "noteId";
-        int _blockInstanceGroupCategoryId = -1;
+
+        /// <summary>
+        /// The block instance configured group category id.  This causes only comments for the appropriate root/group-level category to be seen.
+        /// </summary>
+        protected int _blockInstanceGroupCategoryId = -1;
+        /// <summary>
+        /// The PrayerRequest entity type id.  This causes only comments/categories that are appropriate to the PrayerRequest entity to be listed.
+        /// </summary>
         protected int? _prayerRequestEntityTypeId = null;
+        /// <summary>
+        /// The NoteType which corresponds to "Prayer Comments".
+        /// </summary>
         protected NoteType _noteType;
+        /// <summary>
+        /// Holds whether or not the person can add, edit, and delete.
+        /// </summary>
         bool canAddEditDelete = false;
+        /// <summary>
+        /// Holds whether or not the person can approve.
+        /// </summary>
+        bool canApprove = false;
+        #endregion
+
+        #region Filter's User Preference Setting Keys
+        /// <summary>
+        /// Constant like string-key-settings that are tied to user saved filter preferences.
+        /// </summary>
+        public static class FilterSetting
+        {
+            public static readonly string FromDate = "From Date";
+            public static readonly string ToDate = "To Date";
+            public static readonly string ApprovalStatus = "Approval Status";
+        }
         #endregion
 
         #region Control Methods
@@ -46,10 +78,13 @@ namespace RockWeb.Blocks.Prayer
             Type type = prayerRequest.GetType();
             _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
 
+            BindFilter();
+
             // Block Security and special attributes (RockPage takes care of "View")
             canAddEditDelete = IsUserAuthorized( "Edit" );
+            canApprove = IsUserAuthorized( "Approve" );
 
-            // Prayer Comment stuff...
+            // grid stuff...
             gPrayerComments.Actions.IsAddEnabled = false;
             gPrayerComments.IsDeleteEnabled = canAddEditDelete;
 
@@ -88,6 +123,32 @@ namespace RockWeb.Blocks.Prayer
 
             SortProperty sortProperty = gPrayerComments.SortProperty;
 
+            // TODO: filter out comments that do not belong to the configured "category" grouping.
+            //if ( _blockInstanceGroupCategoryId != All.Id )
+            //{
+            //    prayerComments = prayerComments.Where( c => c.CategoryId == _blockInstanceGroupCategoryId );
+            //}
+
+            // TODO: Filter by approved/unapproved
+            //if ( rblApprovedFilter.SelectedValue == "unapproved" )
+            //{
+            //    prayerComments = prayerComments.Where( a => a.IsApproved == false || !a.IsApproved.HasValue );
+            //}
+            //else if ( rblApprovedFilter.SelectedValue == "approved" )
+            //{
+            //    prayerComments = prayerComments.Where( a => a.IsApproved == true );
+            //}
+
+            // Filter by EnteredDate
+            if ( dtDateRangeStartDate.SelectedDate != null )
+            {
+                prayerComments = prayerComments.Where( a => a.Date >= dtDateRangeStartDate.SelectedDate );
+            }
+            if ( dtDateRangeEndDate.SelectedDate != null )
+            {
+                prayerComments = prayerComments.Where( a => a.Date <= dtDateRangeEndDate.SelectedDate );
+            }
+
             // Sort by the given property otherwise sort by the EnteredDate
             if ( sortProperty != null )
             {
@@ -119,6 +180,45 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
             NavigateToDetailPage( PrayerCommentKeyParameter, (int)e.RowKeyValue );
+        }
+
+        /// <summary>
+        /// Handles the CheckChanged event of the grid's IsApproved field.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gPrayerComments_CheckChanged( object sender, RowEventArgs e )
+        {
+            bool failure = true;
+
+            if ( e.RowKeyValue != null )
+            {
+                NoteService noteService = new NoteService();
+                Note prayerComment = noteService.Get( (int)e.RowKeyValue );
+
+                if ( prayerComment != null )
+                {
+                    failure = false;
+                    // if it was approved, set it to unapproved... otherwise
+                    //if ( prayerComment.IsApproved ?? false )
+                    //{
+                    //    prayerComment.IsApproved = false;
+                    //}
+                    //else
+                    //{
+                    //    prayerComment.IsApproved = true;
+                    //}
+
+                    noteService.Save( prayerComment, CurrentPersonId );
+                }
+
+                BindCommentsGrid();
+            }
+
+            if ( failure )
+            {
+                mdGridWarning.Show( "Unable to approve that prayer comment", ModalAlertType.Warning );
+            }
         }
 
         /// <summary>
@@ -160,6 +260,80 @@ namespace RockWeb.Blocks.Prayer
             BindCommentsGrid();
         }
 
+        /// <summary>
+        /// Handles disabling the Toggle fields if the user does not have Approval rights.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs" /> instance containing the event data.</param>
+        protected void gPrayerComments_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( canApprove )
+                return;
+
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                foreach ( TableCell cell in e.Row.Cells )
+                {
+                    foreach ( Control c in cell.Controls )
+                    {
+                        Toggle toggle = c as Toggle;
+                        if ( toggle != null )
+                        {
+                            toggle.Enabled = false;
+                        }
+                    }
+                }
+            }
+        }
         #endregion
+        
+        #region Grid Filter
+        /// <summary>
+        /// Binds any needed data to the Grid Filter also using the user's stored
+        /// preferences.
+        /// </summary>
+        private void BindFilter()
+        {
+            dtDateRangeStartDate.Text = rFilter.GetUserPreference( FilterSetting.FromDate );
+            dtDateRangeEndDate.Text = rFilter.GetUserPreference( FilterSetting.ToDate );
+
+            // Set the Approval Status radio options.
+            var item = rblApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+            if ( item != null )
+            {
+                item.Selected = true;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Apply Filter event for the GridFilter
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( FilterSetting.FromDate, dtDateRangeStartDate.Text );
+            rFilter.SaveUserPreference( FilterSetting.ToDate, dtDateRangeEndDate.Text );
+
+            // only save settings that are not the default "all" preference...
+            if ( rblApprovedFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, rblApprovedFilter.SelectedValue );
+            }
+
+            BindCommentsGrid();
+        }
+
+        /// <summary>
+        /// Handles displaying the stored filter values.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e as DisplayFilterValueArgs (hint: e.Key and e.Value).</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            // not necessary yet.
+        }
+        #endregion
+
     }
 }

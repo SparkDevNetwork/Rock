@@ -141,9 +141,8 @@ namespace RockWeb.Blocks.Prayer
             ShowStatus( prayerRequest, this.CurrentPerson, litFlaggedMessageRO );
             ShowPrayerCount( prayerRequest, litPrayerCountRO );
 
-            litStatus.Text = ( ! prayerRequest.IsApproved ?? false ) ? "<dt><span class='label label-important'>unapproved</span></dt>" : "";
-            litUrgent.Text = ( prayerRequest.IsUrgent ?? false ) ? "<dt><span class='label label-info'><i class='icon-exclamation-sign'></i> urgent</span></dt>" : "";
-
+            litStatus.Text = ( ! prayerRequest.IsApproved ?? false ) ? "<span class='label label-important'>unapproved</span>" : "";
+            litUrgent.Text = ( prayerRequest.IsUrgent ?? false ) ? "<span class='label label-info'><i class='icon-exclamation-sign'></i> urgent</span>" : "";
         }
 
         private void ShowEditDetails( PrayerRequest prayerRequest )
@@ -202,7 +201,7 @@ namespace RockWeb.Blocks.Prayer
         private void ShowStatus( PrayerRequest prayerRequest, Person person, Literal lFlagged )
         {
             int flagCount = prayerRequest.FlagCount ?? 0;
-            lFlagged.Text = ( flagCount == 0 ) ? "" : string.Format( "<dt><span class='label label-warning'><i class='icon-flag'></i> flagged {0} times</span></dt>", flagCount );
+            lFlagged.Text = ( flagCount == 0 ) ? "" : string.Format( "<span class='label label-warning'><i class='icon-flag'></i> flagged {0} times</span>", flagCount );
 
             cbApproved.Enabled = IsUserAuthorized( "Approve" );
             cbApproved.Checked = prayerRequest.IsApproved ?? false;

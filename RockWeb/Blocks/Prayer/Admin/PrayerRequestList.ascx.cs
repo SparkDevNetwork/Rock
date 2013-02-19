@@ -25,12 +25,44 @@ namespace RockWeb.Blocks.Prayer
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock
     {
         #region Private BlockType Attributes
+        /// <summary>
+        /// The prayer request key parameter used in the QueryString for detail page.
+        /// </summary>
         private static readonly string PrayerRequestKeyParameter = "prayerRequestId";
-        int _blockInstanceGroupCategoryId = -1;
+        /// <summary>
+        /// The block instance configured group category id.  This causes only requests for the appropriate root/group-level category to be seen.
+        /// </summary>
+        protected int _blockInstanceGroupCategoryId = -1;
+        /// <summary>
+        /// The PrayerRequest entity type id.  This causes only categories that are appropriate to the PrayerRequest entity to be listed.
+        /// </summary>
         protected int? _prayerRequestEntityTypeId = null;
-        protected NoteType _noteType;
+        /// <summary>
+        /// Holds whether or not the person can add, edit, and delete.
+        /// </summary>
         bool canAddEditDelete = false;
+        /// <summary>
+        /// Holds whether or not the person can approve requests.
+        /// </summary>
         bool canApprove = false;
+        #endregion
+
+        #region Filter's User Preference Setting Keys
+        /// <summary>
+        /// Constant like string-key-settings that are tied to user saved filter preferences.
+        /// </summary>
+        public static class FilterSetting
+        {
+            public static readonly string GroupCategory = "Group Category";
+            public static readonly string PrayerCategory = "Prayer Category";
+            public static readonly string FromDate = "From Date";
+            public static readonly string ToDate = "To Date";
+            public static readonly string ApprovalStatus = "Approval Status";
+            public static readonly string UrgentStatus = "Urgent Status";
+            public static readonly string ActiveStatus = "Active Status";
+            public static readonly string PublicStatus = "Public/Private";
+            public static readonly string CommentingStatus = "Commenting Status";
+        }
         #endregion
 
         #region Control Methods
@@ -83,6 +115,44 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
+            // Set the Approval Status radio options.
+            var item = rblApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+            if ( item != null )
+            {
+                item.Selected = true;
+            }
+
+            // Set the Public Status radio options.
+            var itemPublic = rblPublicFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.PublicStatus ) );
+            if ( itemPublic != null )
+            {
+                itemPublic.Selected = true;
+            }
+
+            // Set the Commenting Status radio options.
+            var itemAllowComments = rblAllowCommentsFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
+            if ( itemAllowComments != null )
+            {
+                itemAllowComments.Selected = true;
+            }
+
+            // Set the Active Status radio options.
+            var itemActiveStatus = rblActiveFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
+            if ( itemActiveStatus != null )
+            {
+                itemActiveStatus.Selected = true;
+            }
+
+            // Set the Active Status radio options.
+            var itemUrgentStatus = rblUrgentFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
+            if ( itemUrgentStatus != null )
+            {
+                itemUrgentStatus.Selected = true;
+            }
+
+            dtRequestEnteredDateRangeStartDate.Text = rFilter.GetUserPreference( FilterSetting.FromDate );
+            dtRequestEnteredDateRangeEndDate.Text = rFilter.GetUserPreference( FilterSetting.ToDate );
+
             int selectedGroupCategoryId = All.Id;
 
             // Set the selected prayer group category to the block instance attribute unless defaulted to "All".
@@ -92,12 +162,13 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                int.TryParse( rFilter.GetUserPreference( "Group Category" ), out selectedGroupCategoryId );
+                int.TryParse( rFilter.GetUserPreference( FilterSetting.GroupCategory ), out selectedGroupCategoryId );
             }
 
             CategoryService categoryService = new CategoryService();
 
             var categories = categoryService.GetByEntityTypeId( _prayerRequestEntityTypeId ).AsQueryable();
+            // subcategories are set from the same set.
             var subCategories = categories;
 
             ddlGroupCategoryFilter.Items.Clear();
@@ -121,7 +192,10 @@ namespace RockWeb.Blocks.Prayer
                 ddlGroupCategoryFilter.Items.Add( li );
             }
 
-            // If the first dropdownlist is still set to all, then don't populate the sub list yet.
+            // Remove the categories that are root level items.
+            subCategories = subCategories.Except( prayerGroupCategories );
+
+            // If the first dropdownlist is still set to all, then don't enable the sub list yet.
             if ( selectedGroupCategoryId == All.Id )
             {
                 ddlPrayerCategoryFilter.Enabled = false;
@@ -131,16 +205,16 @@ namespace RockWeb.Blocks.Prayer
                 ddlPrayerCategoryFilter.Enabled = true;
                 // Bind the correct prayer sub Categories based on the SELECTED prayer group category
                 subCategories = subCategories.Where( c => c.ParentCategoryId == selectedGroupCategoryId );
+            }
 
-                ddlPrayerCategoryFilter.Items.Clear();
-                ddlPrayerCategoryFilter.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
+            ddlPrayerCategoryFilter.Items.Clear();
+            ddlPrayerCategoryFilter.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
 
-                foreach ( Category category in subCategories.OrderBy( a => a.Name ) )
-                {
-                    ListItem li = new ListItem( category.Name, category.Id.ToString() );
-                    li.Selected = category.Id.ToString() == rFilter.GetUserPreference( "Prayer Category" );
-                    ddlPrayerCategoryFilter.Items.Add( li );
-                }
+            foreach ( Category category in subCategories.OrderBy( a => a.Name ) )
+            {
+                ListItem li = new ListItem( category.Name, category.Id.ToString() );
+                li.Selected = category.Id.ToString() == rFilter.GetUserPreference( FilterSetting.PrayerCategory );
+                ddlPrayerCategoryFilter.Items.Add( li );
             }
         }
 
@@ -152,7 +226,7 @@ namespace RockWeb.Blocks.Prayer
         protected void ddlGroupCategoryFilter_TextChanged( object sender, EventArgs e )
         {
             // Reset the selected category if the prayer GROUP category changes.
-            ddlPrayerCategoryFilter.SelectedIndex = 0;
+            ddlPrayerCategoryFilter.SelectedIndex = -1;
         }
 
         /// <summary>
@@ -162,10 +236,38 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            // Here we'll only save the Category preferences since the other filters are
-            // typically more transient in nature.
-            rFilter.SaveUserPreference( "Group Category", ddlGroupCategoryFilter.SelectedValue );
-            rFilter.SaveUserPreference( "Prayer Category", ddlPrayerCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.GroupCategory, ddlGroupCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, ddlPrayerCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.FromDate, dtRequestEnteredDateRangeStartDate.Text );
+            rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
+
+            // only save settings that are not the default "all" preference...
+            if ( rblApprovedFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, rblApprovedFilter.SelectedValue );
+            }
+
+            if ( rblUrgentFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, rblUrgentFilter.SelectedValue );
+            }
+
+            if ( rblPublicFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.PublicStatus, rblPublicFilter.SelectedValue );
+            }
+
+            if ( rblActiveFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, rblActiveFilter.SelectedValue );
+            }
+
+            if ( rblAllowCommentsFilter.SelectedValue != "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, rblAllowCommentsFilter.SelectedValue );
+            }
+
+            // Rebind the filter because the prayer request group category may have changed...
             BindFilter();
             BindGrid();
         }
@@ -237,9 +339,16 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Filter by approved/unapproved
-            if ( !cbShowApproved.Checked )
+            if ( rblApprovedFilter.SelectedIndex > -1 )
             {
-                prayerRequests = prayerRequests.Where( a => a.IsApproved == false || !a.IsApproved.HasValue );
+                if ( rblApprovedFilter.SelectedValue == "unapproved" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsApproved == false || !a.IsApproved.HasValue );
+                }
+                else if ( rblApprovedFilter.SelectedValue == "approved" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsApproved == true );
+                }
             }
 
             // Filter by EnteredDate

@@ -138,6 +138,15 @@ namespace RockWeb.Blocks.Prayer
             }
         }
 
+        /// <summary>
+        /// Adds the note HTML in the form:
+        ///    <article class="alert alert-info">
+	    ///      <div class="detail"><i class="icon-comment"></i> <strong>Name/Caption</strong> <span class="muted">relative date</span><br>
+        ///          <p>text</p>
+        ///      </div>
+        ///   </article>
+        /// </summary>
+        /// <param name="note">The note.</param>
         private void AddNoteHtml( Note note )
         {
             var article = new HtmlGenericControl( "article" );
@@ -145,21 +154,29 @@ namespace RockWeb.Blocks.Prayer
             phNotes.Controls.Add( article );
             article.AddCssClass( "alert alert-info" );
 
-            var icon = new HtmlGenericControl( "i" );
-            article.Controls.Add( icon );
+            var divDetail = new HtmlGenericControl( "div" );
+            article.Controls.Add( divDetail );
+            divDetail.AddCssClass( "detail" );
 
-            string iconClassName = "icon-comment";
-            icon.AddCssClass( iconClassName );
+            //var icon = new HtmlGenericControl( "i" );
+            //divDetail.Controls.Add( icon );
+            //icon.AddCssClass( "icon-comment" );
 
-            var div = new HtmlGenericControl( "div" );
-            article.Controls.Add( div );
-            div.AddCssClass( "detail" );
+            //var heading = new HtmlGenericControl( "strong" );
+            //divDetail.Controls.Add( heading );
+            //heading.Controls.Add( new LiteralControl( note.Caption ) );
 
-            var heading = new HtmlGenericControl( "strong" );
-            div.Controls.Add( heading );
-            heading.Controls.Add( new LiteralControl( string.Format( "{0} - {1}", note.Date.ToShortDateString(), note.Caption ) ) );
+            //var spanDate = new HtmlGenericControl( "span" );
+            //divDetail.Controls.Add( spanDate );
+            //icon.AddCssClass( "muted" );
+            //spanDate.Controls.Add( new LiteralControl( note.Date.ToRelativeDateString() ) );
 
-            div.Controls.Add( new LiteralControl( note.Text ) );
+            // Add the name/caption
+            divDetail.Controls.Add( new LiteralControl( string.Format("<i class='icon-comment'></i> <strong>{0}</strong> <span class='muted'>{1}</span>", note.Caption, note.Date.ToRelativeDateString() ) ) );
+
+            var pText = new HtmlGenericControl( "p" );
+            divDetail.Controls.Add( pText );
+            pText.Controls.Add( new LiteralControl( HttpUtility.HtmlEncode( note.Text ) ) );
         }
 
         /// <summary>
