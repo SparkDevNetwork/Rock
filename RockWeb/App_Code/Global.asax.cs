@@ -122,6 +122,9 @@ namespace RockWeb
             Rock.Security.Authorization.Load();
 
             AddEventHandlers();
+
+            new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
+
         }
 
         /// <summary>
@@ -231,118 +234,118 @@ namespace RockWeb
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void Application_Error( object sender, EventArgs e )
-        {
-            // log error
-            System.Web.HttpContext context = HttpContext.Current;
-            System.Exception ex = Context.Server.GetLastError();
+        //protected void Application_Error( object sender, EventArgs e )
+        //{
+        //    // log error
+        //    System.Web.HttpContext context = HttpContext.Current;
+        //    System.Exception ex = Context.Server.GetLastError();
 
-            if ( ex != null )
-            {
-                bool logException = true;
+        //    if ( ex != null )
+        //    {
+        //        bool logException = true;
 
-                // string to send a message to the error page to prevent infinite loops
-                // of error reporting from incurring if there is an exception on the error page
-                string errorQueryParm = "?error=1";
+        //        // string to send a message to the error page to prevent infinite loops
+        //        // of error reporting from incurring if there is an exception on the error page
+        //        string errorQueryParm = "?error=1";
 
-                if ( context.Request.Url.ToString().Contains( "?error=1" ) )
-                {
-                    errorQueryParm = "?error=2";
-                }
-                else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
-                {
-                    // something really bad is occurring stop logging errors as we're in an infinate loop
-                    logException = false;
-                }
+        //        if ( context.Request.Url.ToString().Contains( "?error=1" ) )
+        //        {
+        //            errorQueryParm = "?error=2";
+        //        }
+        //        else if ( context.Request.Url.ToString().Contains( "?error=2" ) )
+        //        {
+        //            // something really bad is occurring stop logging errors as we're in an infinate loop
+        //            logException = false;
+        //        }
 
 
-                if ( logException )
-                {
-                    string status = "500";
+        //        if ( logException )
+        //        {
+        //            string status = "500";
 
-                    var globalAttributesCache = GlobalAttributesCache.Read();
+        //            var globalAttributesCache = GlobalAttributesCache.Read();
 
-                    // determine if 404's should be tracked as exceptions
-                    bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
+        //            // determine if 404's should be tracked as exceptions
+        //            bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
 
-                    // set status to 404
-                    if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
-                    {
-                        status = "404";
-                    }
+        //            // set status to 404
+        //            if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
+        //            {
+        //                status = "404";
+        //            }
 
-                    if ( status == "500" || track404 )
-                    {
-                        LogError( ex, -1, status, context );
-                        context.Server.ClearError();
+        //            if ( status == "500" || track404 )
+        //            {
+        //                LogError( ex, -1, status, context );
+        //                context.Server.ClearError();
 
-                        string errorPage = string.Empty;
+        //                string errorPage = string.Empty;
 
-                        // determine error page based on the site
-                        SiteService service = new SiteService();
-                        Site site = null;
-                        string siteName = string.Empty;
+        //                // determine error page based on the site
+        //                SiteService service = new SiteService();
+        //                Site site = null;
+        //                string siteName = string.Empty;
 
-                        if ( context.Items["Rock:SiteId"] != null )
-                        {
-                            int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+        //                if ( context.Items["Rock:SiteId"] != null )
+        //                {
+        //                    int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
 
-                            // load site
-                            site = service.Get( siteId );
+        //                    // load site
+        //                    site = service.Get( siteId );
 
-                            siteName = site.Name;
-                            errorPage = site.ErrorPage;
-                        }
+        //                    siteName = site.Name;
+        //                    errorPage = site.ErrorPage;
+        //                }
 
-                        // store exception in session
-                        Session["Exception"] = ex;
+        //                // store exception in session
+        //                Session["Exception"] = ex;
 
-                        // email notifications if 500 error
-                        if ( status == "500" )
-                        {
-                            // setup merge codes for email
-                            var mergeObjects = new Dictionary<string, object>();
-                            mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+        //                // email notifications if 500 error
+        //                if ( status == "500" )
+        //                {
+        //                    // setup merge codes for email
+        //                    var mergeObjects = new Dictionary<string, object>();
+        //                    mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
-                            // get email addresses to send to
-                            string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-                            if ( emailAddressesList != null )
-                            {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+        //                    // get email addresses to send to
+        //                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+        //                    if ( emailAddressesList != null )
+        //                    {
+        //                        string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                var recipients = new Dictionary<string, Dictionary<string, object>>();
+        //                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
-                                foreach ( string emailAddress in emailAddresses )
-                                {
-                                    recipients.Add( emailAddress, mergeObjects );
-                                }
+        //                        foreach ( string emailAddress in emailAddresses )
+        //                        {
+        //                            recipients.Add( emailAddress, mergeObjects );
+        //                        }
 
-                                if ( recipients.Count > 0 )
-                                {
-                                    Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
-                                    email.Send( recipients );
-                                }
-                            }
-                        }
+        //                        if ( recipients.Count > 0 )
+        //                        {
+        //                            Email email = new Email( Rock.SystemGuid.EmailTemplate.CONFIG_EXCEPTION_NOTIFICATION );
+        //                            email.Send( recipients );
+        //                        }
+        //                    }
+        //                }
 
-                        // redirect to error page
-                        if ( errorPage != null && errorPage != string.Empty )
-                        {
-                            Response.Redirect( errorPage + errorQueryParm, false );
-                            Context.ApplicationInstance.CompleteRequest();
-                        }
-                        else
-                        {
-                            Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
-                            Context.ApplicationInstance.CompleteRequest();
-                        }
+        //                // redirect to error page
+        //                if ( errorPage != null && errorPage != string.Empty )
+        //                {
+        //                    Response.Redirect( errorPage + errorQueryParm, false );
+        //                    Context.ApplicationInstance.CompleteRequest();
+        //                }
+        //                else
+        //                {
+        //                    Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
+        //                    Context.ApplicationInstance.CompleteRequest();
+        //                }
 
-                        // intentially throw ThreadAbort
-                        Response.End();
-                    }
-                }
-            }
-        }
+        //                // intentially throw ThreadAbort
+        //                Response.End();
+        //            }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Formats the exception.

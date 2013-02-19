@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using Rock;
@@ -11,6 +12,8 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -28,6 +31,12 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // assign attributes grid actions
+            gWorkflowTypeAttributes.DataKeyNames = new string[] { "Guid" };
+            gWorkflowTypeAttributes.Actions.IsAddEnabled = true;
+            gWorkflowTypeAttributes.Actions.AddClick += gWorkflowTypeAttributes_Add;
+            gWorkflowTypeAttributes.GridRebind += gWorkflowTypeAttributes_GridRebind;
         }
 
         /// <summary>
@@ -127,7 +136,11 @@ namespace RockWeb.Blocks.Administration
             workflowType.CategoryId = ddlCategory.SelectedValueAsInt();
             workflowType.Order = int.Parse( tbOrder.Text );
             workflowType.WorkTerm = tbWorkTerm.Text;
-            workflowType.ProcessingIntervalSeconds = int.Parse( tbProcessingInterval.Text );
+            if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
+            {
+                workflowType.ProcessingIntervalSeconds = int.Parse( tbProcessingInterval.Text );
+            }
+
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IsActive = cbIsActive.Checked;
@@ -176,7 +189,7 @@ namespace RockWeb.Blocks.Administration
         {
             CategoryService categoryService = new CategoryService();
             var catList = categoryService.Queryable().OrderBy( a => a.Name ).ToList();
-            catList.Insert( 0, new Category { Id = None.Id, Name = None.TextHtml } );
+            catList.Insert( 0, new Category { Id = None.Id, Name = None.Text } );
             ddlCategory.DataSource = catList;
             ddlCategory.DataBind();
 
@@ -196,7 +209,6 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            pnlDetails.Visible = true;
             WorkflowType workflowType = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -208,6 +220,12 @@ namespace RockWeb.Blocks.Administration
                 workflowType = new WorkflowType { Id = 0, IsActive = true, IsSystem = false };
             }
 
+            if ( workflowType == null )
+            {
+                return;
+            }
+
+            pnlDetails.Visible = true;
             hfWorkflowTypeId.Value = workflowType.Id.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -243,6 +261,8 @@ namespace RockWeb.Blocks.Administration
                     ShowEditDetails( workflowType );
                 }
             }
+
+            BindWorkflowTypeAttributesGrid();
         }
 
         /// <summary>
@@ -287,7 +307,7 @@ namespace RockWeb.Blocks.Administration
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( workflowType.IsActive ?? false )
             {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-success", "Active" );
+                lblActiveHtml.Text = string.Empty;
             }
             else
             {
@@ -296,7 +316,7 @@ namespace RockWeb.Blocks.Administration
 
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
-<div class='span5'>
+<div>
     <dl>";
 
             lblMainDetails.Text += string.Format( descriptionFormat, "Description", workflowType.Description );
@@ -309,18 +329,272 @@ namespace RockWeb.Blocks.Administration
             lblMainDetails.Text += @"
     </dl>
 </div>";
+
+
+            if ( workflowType.ActivityTypes.Count > 0 )
+            {
+
+                // Activities
+                lblWorkflowActivitiesReadonly.Text = @"
+<div>
+    <ol>";
+
+                foreach ( var activityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                {
+                    string activityTypeTextFormat = @"
+        <li>
+            <strong>{0}</strong>
+            {1}
+            <br />
+            Actions:
+            <ol>
+                {2}
+            </ol>
+        </li>
+";
+
+                    string actionTypeText = string.Empty;
+
+                    foreach ( var actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
+                    {
+                        actionTypeText += string.Format( "<li>{0}</li>" + Environment.NewLine, actionType.Name );
+                    }
+
+                    lblWorkflowActivitiesReadonly.Text += string.Format( activityTypeTextFormat, activityType.Name, activityType.Description, actionTypeText );
+                }
+
+                lblWorkflowActivitiesReadonly.Text += @"
+    </ol>
+</div>
+";
+            }
+            else
+            {
+                lblWorkflowActivitiesReadonly.Text = "<div>" + None.TextHtml + "</div>";
+            }
         }
 
         #endregion
-        
-        protected void gWorkflows_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
 
-        }
-        
-        protected void gWorkflows_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
+        #region WorkflowTypeAttributes Grid and Picker
 
+        /// <summary>
+        /// Handles the Add event of the gWorkflowTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gWorkflowTypeAttributes_Add( object sender, EventArgs e )
+        {
+            gWorkflowTypeAttributes_ShowEdit( Guid.Empty );
         }
-}
+
+        /// <summary>
+        /// Handles the Edit event of the gWorkflowTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gWorkflowTypeAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            gWorkflowTypeAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the workflow type attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gWorkflowTypeAttributes_ShowEdit( Guid attributeGuid )
+        {
+            pnlDetails.Visible = false;
+            vsDetails.Enabled = false;
+            pnlWorkflowTypeAttributes.Visible = true;
+            Attribute attribute;
+            string actionTitle;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                actionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
+            }
+            else
+            {
+                AttributeService attributeService = new AttributeService();
+                attribute = attributeService.Get( attributeGuid );
+                actionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
+            }
+
+            edtWorkflowTypeAttributes.EditAttribute( attribute, actionTitle );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gWorkflowTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gWorkflowTypeAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = (Guid)e.RowKeyValue;
+            AttributeService attributeService = new AttributeService();
+            Attribute attribute = attributeService.Get( attributeGuid );
+
+            if ( attribute != null )
+            {
+                string errorMessage;
+                if ( !attributeService.CanDelete( attribute, out errorMessage ) )
+                {
+                    mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                attributeService.Delete( attribute, CurrentPersonId );
+                attributeService.Save( attribute, CurrentPersonId );
+            }
+
+            // reload page so that other blocks respond to any data that was changed
+            var qryParams = new Dictionary<string, string>();
+            qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gWorkflowTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gWorkflowTypeAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindWorkflowTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveWorkflowTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
+        {
+            Attribute attribute;
+            AttributeService attributeService = new AttributeService();
+            if ( edtWorkflowTypeAttributes.AttributeId.Equals( 0 ) )
+            {
+                attribute = new Attribute();
+            }
+            else
+            {
+                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId );
+            }
+
+            edtWorkflowTypeAttributes.GetAttributeValues( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                if ( attribute.Id.Equals( 0 ) )
+                {
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Workflow().TypeName ).Id;
+                    attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
+                    attribute.EntityTypeQualifierValue = hfWorkflowTypeId.Value;
+                    attributeService.Add( attribute, CurrentPersonId );
+                }
+
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                attributeService.Save( attribute, CurrentPersonId );
+            } );
+
+            pnlDetails.Visible = true;
+            pnlWorkflowTypeAttributes.Visible = false;
+
+            // reload page so that other blocks respond to any data that was changed
+            var qryParams = new Dictionary<string, string>();
+            qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelWorkflowTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancelWorkflowTypeAttribute_Click( object sender, EventArgs e )
+        {
+            pnlDetails.Visible = true;
+            pnlWorkflowTypeAttributes.Visible = false;
+        }
+
+        /// <summary>
+        /// Binds the workflow type attributes grid.
+        /// </summary>
+        private void BindWorkflowTypeAttributesGrid()
+        {
+            AttributeService attributeService = new AttributeService();
+
+            int WorkflowTypeId = hfWorkflowTypeId.ValueAsInt();
+
+            var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
+                .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
+                && a.EntityTypeQualifierValue.Equals( WorkflowTypeId.ToString() ) );
+
+            gWorkflowTypeAttributes.DataSource = qryWorkflowTypeAttributes.OrderBy( a => a.Name ).ToList();
+            gWorkflowTypeAttributes.DataBind();
+        }
+
+        #endregion
+
+        #region Activities and Actions
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbAddActivity_Click( object sender, EventArgs e )
+        {
+            ActivityEditor activityEditor = new ActivityEditor();
+            activityEditor.ActivityGuid = Guid.NewGuid();
+            activityEditor.ID = "activityEditor_" + activityEditor.ActivityGuid.ToString();
+            activityEditor.ActivityName = "Activity 01";
+            activityEditor.ActivityDescription = "Description of Activity 01";
+            activityEditor.ActivityIsActivatedWithWorkflow = true;
+            activityEditor.ActivityIsActive = false;
+            activityEditor.DeleteActivityClick += activityEditor_DeleteActivityClick;
+            phActivities.Controls.Add( activityEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteActivityClick event of the activityEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void activityEditor_DeleteActivityClick( object sender, EventArgs e )
+        {
+            string temp = sender.ToString();
+        }
+
+        #endregion
+    }
 }

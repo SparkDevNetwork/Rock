@@ -1,12 +1,12 @@
 ﻿/* 
     Please add developer CSS changes here.  These will be merged into the appropriate CSS file
     and optimized for our styling strategy.
+
+    !!!! PLEASE ADD YOUR INITIALS NEXT TO YOUR CHANGES SO I CAN GET CLARIFICATION IF NEEDED !!!!
+
     */
 
-.grid-icon-cell.delete a.aspNetDisabled {
-    cursor:default;
-    color:#CCCCCC;
-}
+
 
 /* A definition for these classes exist in the default bootstrap, however their "disabled" color does not look disabled with our theme. */
 .btn-primary.disabled, .btn-primary[disabled] {
@@ -15,11 +15,6 @@
     cursor: not-allowed;
 }
 
-/* This is for the theme... if you want the bg color below the footer to be the same color */
-html
-{
- background-color: #3a3a3a;   
-}
 
 /* Rock Person Picker classes */
 .rock-picker-person {
@@ -116,146 +111,33 @@ ul.rock-picker-select input[type="checkbox"] {
 	border-bottom: 1px solid #515151;
 }
 
-/* Remove the dotted-line around the help icon */
-a.help {
-    margin-left: 6px;
-    outline: 0;
+
+/* DRT - Added to make asp.net panels look disabled when enabled is false */
+div.aspNetDisabled {
+    opacity: 0.5;
 }
 
-a.help:hover { 
-    text-decoration:none;
-}
 
-.grid-table .item-count
+
+/* Ten Key Keypad */
+.tenkey
 {
-    float: left;
-    font-style:italic;
-    margin-left: 50px;
+    width: 320px;
 }
 
-ul.card_logos {
-	display: inline-block;
-	margin: 10;
-	padding: 0;
+.tenkey a.btn {
+    margin: 2px;
+    font-size: 20px;
+    width: 60px;
+    height: 38px;
+    padding-top: 33px;
 }
 
-.card_visa, .card_mastercard, .card_amex, .card_discover {
-	display: inline-block;
-	width: 50px;
-	height: 30px;
-	overflow: hidden;
-	background: url(../../../assets/images/sprite-cards.png) 0 0 no-repeat;
+.tenkey a.digit {
+    font-size: 48px;
+    height: 43px;
+    padding-top: 28px;
+    font-family: 'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; //  @rockSansFontFamilyBold;
 }
 
-.card_mastercard {
-	background-position: -55px 0;
-}
 
-.card_amex {
-	background-position: -110px 0;
-}
-
-.card_discover {
-	background-position: -165px 0;
-}
-
-.is_visa li, .is_mastercard li, .is_amex li, .is_discover li, .is_diners li, .is_jcb li, .is_nothing li {
-	opacity: .2;
-}
-
-.is_visa li.card_visa, .is_mastercard li.card_mastercard, .is_amex li.card_amex, .is_discover li.card_discover, .is_diners li.card_diners, .is_jcb li.card_jcb {
-	opacity: 1;
-}
-
-/* =================================================
-   Modified "pretty" selects using Bootstrap classes.
-   Credit for code goes to bootstrap-select library
-   https://github.com/silviomoreto/bootstrap-select
-   =================================================
-*/
-
-.clearfix:after {
-	visibility: hidden;
-	display: block;
-	font-size: 0;
-	content: " ";
-	clear: both;
-	height: 0;
-}
-
-.bootstrap-select.btn-group, .bootstrap-select.btn-group[class*="span"] {
-	float:none; 
-	display: inline-block;
-	margin-bottom: 10px;
-	margin-left:0;
-}
-
-.bootstrap-select {width: 171px;}
-.bootstrap-select .btn {width: 171px;}
-.bootstrap-select .btn:focus {
-	outline: thin dotted #333333 !important;
-	outline: 5px auto -webkit-focus-ring-color !important;
-	outline-offset: -2px;
-}
-
-.bootstrap-select.btn-group .btn .filter-option {
-	overflow:hidden; 
-	position:absolute;
-	left:12px; 
-	right:25px;
-	text-align:center;
-}
-
-.bootstrap-select.btn-group .btn .caret {
-	position:absolute;
-	right:12px;
-}
-
-.bootstrap-select.btn-group .disabled {cursor: not-allowed;}
-.bootstrap-select.btn-group[class*="span"] .btn {
-	width:100%;
-}
-
-.bootstrap-select.btn-group .dropdown-menu {
-	min-width:100%;
-	-moz-box-sizing:border-box;
-	-webkit-box-sizing:border-box;
-	box-sizing:border-box;
-}
-
-.bootstrap-select.btn-group .dropdown-menu ul {
-	margin:0;
-	list-style:none;
-}
-
-.bootstrap-select.btn-group .dropdown-menu ul dt {
-	display:block; 
-	padding:3px 20px; 
-	cursor:default;
-}
-
-.bootstrap-select.btn-group .dropdown-menu li a[class^="opt"] {padding-left:35px;}
-.bootstrap-select.btn-group .dropdown-menu ul .optgroup-div {border-bottom:1px solid #e5e5e5;}
-
-/*issues for bootstrap 2.3*/
-.bootstrap-select.btn-group .dropdown-menu li > a {
-    display: block;
-    padding: 3px 20px;
-    clear: both;
-    font-weight: normal;
-    line-height: 20px;
-    color: #333333;
-    white-space: nowrap;
-}
-.bootstrap-select.btn-group .dropdown-menu li > a:hover, .bootstrap-select.btn-group .dropdown-menu li > a:focus {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #0081c2;
-    background-image: -moz-linear-gradient(top, #0088cc, #0077b3);
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0077b3));
-    background-image: -webkit-linear-gradient(top, #0088cc, #0077b3);
-    background-image: -o-linear-gradient(top, #0088cc, #0077b3);
-    background-image: linear-gradient(to bottom, #0088cc, #0077b3);
-    background-repeat: repeat-x;
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
-}

@@ -226,10 +226,13 @@ INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])
 DELETE [DeviceLocation]
 DELETE [Device]
 
+
+DECLARE @fieldTypeIdText int = (select Id from FieldType where Guid = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+
 -- Device Types
 DELETE [Definedtype] WHERE Name = 'Device Type'
 DECLARE @DefinedTypeId int
-INSERT INTO [DefinedType] ([IsSystem],[Order],[Name],[Guid]) VALUES (1,0,'Device Type',NEWID())
+INSERT INTO [DefinedType] ([IsSystem],[FieldTypeId], [Order],[Name],[Guid]) VALUES (1, @fieldTypeIdText, 0,'Device Type',NEWID())
 SET @DefinedTypeId = SCOPE_IDENTITY()
 DECLARE @DeviceTypeValueId int
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,0,'Check-in Kiosk','BC809626-1389-4543-B8BB-6FAC79C27AFD')
@@ -239,7 +242,7 @@ INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VA
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,3,'Digital Signage','01B585B1-389D-4C86-A9DA-267A8564699D')
 
 DELETE [Definedtype] WHERE Name = 'CheckIn Search Type'
-INSERT INTO [DefinedType] ([IsSystem],[Order],[Name],[Guid]) VALUES (1,0,'CheckIn Search Type',NEWID())
+INSERT INTO [DefinedType] ([IsSystem],[FieldTypeId], [Order],[Name],[Guid]) VALUES (1, @fieldTypeIdText, 0,'CheckIn Search Type',NEWID())
 SET @DefinedTypeId = SCOPE_IDENTITY()
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,0,'Phone Number','F3F66040-C50F-4D13-9652-780305FFFE23')
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,1,'Barcode','9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE')

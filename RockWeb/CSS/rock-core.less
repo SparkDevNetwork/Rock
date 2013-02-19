@@ -1,5 +1,11 @@
-// import module files
+// import module files 
 @import "grid.less";
+
+/* global classes */
+.clickable
+{
+    cursor: pointer;
+}
 
 /* Zone Config */
 .zone-instance.outline 
@@ -116,39 +122,16 @@
     margin-top: 4px;
 }
 
-/* context help 
-a.help-tip {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-	margin-left: 6px;
-	font-size: 18px;
-    color: #747474;
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @rockLightTextColor;
 }
 
-a.help-tip::before 
-{
-    font-family: "FontAwesome";
-    content: "\f059";
+a.help:hover { 
+    text-decoration:none;
 }
-
-a.help-tip span {
-    display: none; 
-    padding: 2px 3px; 
-    margin-left: 8px; 
-    width: 130px;
-    margin: -4px 0 0 10px;
-    font-size: 14px;
-}
-
-a.help-tip:hover span {
-    display:inline; 
-    position:absolute; 
-    background:#ffffff; 
-    border:1px solid #cccccc; 
-    color:#6c6c6c;
-}*/
 
 /* Admin Footer */
 #cms-admin-footer {
@@ -277,12 +260,19 @@ span.cke_skin_kama {
     opacity: 0.7;    
 }
 
-.modal, .modal2 {
+.bootbox.modal {
+    width:500px;
+    left: 50%;
+    margin-left:-250px;
+}
+
+.modal {
   position: fixed;
   top: 50%;
   left: 50%;
   z-index: 11000;
   width: 750px;
+  margin-left: 0px;
   background-color: #ffffff;
   border: 1px solid #999;
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -298,11 +288,11 @@ span.cke_skin_kama {
   background-clip: padding-box;
 }
 
-.modal .close, .modal2 .close {
+.modal .close {
   margin-top: 7px;
   color: #fff;
 }
-.modal.fade, .modal2.fade {
+.modal.fade {
   -webkit-transition: opacity .3s linear, top .3s ease-out;
   -moz-transition: opacity .3s linear, top .3s ease-out;
   -ms-transition: opacity .3s linear, top .3s ease-out;
@@ -310,7 +300,7 @@ span.cke_skin_kama {
   transition: opacity .3s linear, top .3s ease-out;
   top: -25%;
 }
-.modal.fade.in, .modal2.fade.in {
+.modal.fade.in {
   top: 50%;
 }
 
@@ -472,6 +462,7 @@ span.cke_skin_kama {
     background-color: @rockWidgetBackground;
     border: 1px solid @tableBorder;
     border-radius: @baseBorderRadius;
+    margin-bottom: 2em;
 }
 
 .widget h3 
@@ -486,8 +477,17 @@ span.cke_skin_kama {
     .header-gradient ();
     padding: 6px;
     border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
-    border-bottom: 1px solid @tableBorder;
-    margin-bottom: 24px;
+}
+
+.widget.widget-dark > header
+{
+    .header-gradient-dark ();
+    color: #fff;
+}
+
+.widget-content
+{
+    padding: 20px 15px 15px;
 }
 
 /* page list as blocks */

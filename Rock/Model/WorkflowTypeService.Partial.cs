@@ -17,6 +17,5 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowTypeService 
     {
-
     }
 }

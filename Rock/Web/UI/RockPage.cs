@@ -714,6 +714,22 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Dims the other blocks.
+        /// </summary>
+        /// <param name="caller">The caller.</param>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void DimOtherBlocks( RockBlock caller, bool dimmed )
+        {
+            foreach ( IDimmableBlock dimmableBlock in this.RockBlocks.Where( a => a is IDimmableBlock ) )
+            {
+                if ( dimmableBlock != caller )
+                {
+                    dimmableBlock.SetDimmed( dimmed );
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the control list. 
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
@@ -1180,21 +1196,6 @@ namespace Rock.Web.UI
         public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms )
         {
             return BuildUrl( pageRef, parms, null );
-        }
-
-        /// <summary>
-        /// Builds the URL.
-        /// </summary>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="queryKey">The query key.</param>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static string BuildUrlForDetailPage( int pageId, string queryKey, int id )
-        {
-            NameValueCollection queryString = new NameValueCollection();
-            Dictionary<string, string> parms = new Dictionary<string, string>();
-            queryString.Add( queryKey, id.ToString() );
-            return BuildUrl( new PageReference( pageId, -1 ), parms, queryString ); 
         }
 
         /// <summary>
