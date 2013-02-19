@@ -5,15 +5,12 @@
 //
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Web.UI.WebControls;
-using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -22,14 +19,15 @@ namespace RockWeb.Blocks.Finance
     /// </summary>    
     [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?" )]
     [BooleanField( 0, "Show Campus dropdown", false, "ShowCampusSelect", "", "Should giving be associated with a specific campus?" )]
-
+    [IntegerField(0, "Maximum number of funds to display","2")]
+    [GroupTypesField(0, "Primary fund name", false)]
     public partial class OneTimeGift : RockBlock
     {
         #region Fields
 
         protected bool UseStackedLayout = false;
         protected bool ShowCampusSelect = false;
-        protected bool ShowSaveCard = false;
+        protected bool ShowSaveDetails = false;
         protected string spanClass;
 
         #endregion
@@ -47,8 +45,15 @@ namespace RockWeb.Blocks.Finance
             UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "UseStackedLayout" ) );
             ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusSelect" ) );
 
-            // if logged in
-            ShowSaveCard = true;
+            if ( CurrentPerson != null )
+            {
+                ShowSaveDetails = true;
+            }
+
+            BindCampuses();
+            BindFunds();
+            //TestBind();
+
         }
 
         /// <summary>
@@ -87,13 +92,81 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnBack_Click( object sender, EventArgs e )
         {
-
+            
             pnlConfirm.Visible = false;
             pnlDetails.Visible = true;            
 
         }
 
         #endregion
+
+        #region Internal Methods
+
+        protected void BindCampuses()
+        {
+            
+            CampusService campusService = new CampusService();
+            var items = campusService.Queryable().OrderBy( a => a.Name).Select( a => a.Name).Distinct().ToList();
+
+            foreach ( string item in items )
+            {
+                HtmlGenericControl campus = new HtmlGenericControl( "li" );
+                listCampuses.Controls.Add( campus );
+
+                HtmlGenericControl anchor = new HtmlGenericControl( "a" );
+                anchor.Attributes.Add( "href", "#" );
+                anchor.InnerText = item;
+
+                campus.Controls.Add( anchor );
+            }            
+        }
+
+        protected void BindFunds()
+        {
+            DefinedTypeService typeService = new DefinedTypeService();
+            var items = typeService.Queryable().OrderBy( a => a.Category ).Select( a => a.Category ).Distinct().ToList();
+            
+            foreach ( string item in items ) {
+                                
+                HtmlGenericControl fundOption = new HtmlGenericControl( "li" );
+                listFunds.Controls.Add( fundOption );
+                
+                HtmlGenericControl anchor = new HtmlGenericControl( "a" );
+                anchor.Attributes.Add( "id", "selectFund" );
+                anchor.Attributes.Add( "href", "#" );                
+                anchor.InnerText = item;
+
+                fundOption.Controls.Add( anchor );
+
+                
+            }
+
+        }
+
+        protected void TestBind()
+        {
+            DefinedTypeService typeService = new DefinedTypeService();
+            var items = typeService.Queryable().OrderBy( a => a.Category ).Select( a => a.Category ).Distinct().ToList();
+
+            foreach ( string item in items )
+            {
+
+                //HtmlGenericControl fundOption = new HtmlGenericControl( "li" );
+                //listFunds.Controls.Add( fundOption );
+
+                HtmlGenericControl anchor = new HtmlGenericControl( "option" );
+                //anchor.Attributes.Add( "id", "selectFund" );
+                //anchor.Attributes.Add( "href", "#" );
+                anchor.InnerText = item;
+
+                fundSelect.Controls.Add( anchor );
+
+
+            }
+
+        }
+        #endregion  
+
 
     }
 }
