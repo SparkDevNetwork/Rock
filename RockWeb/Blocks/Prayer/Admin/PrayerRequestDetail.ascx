@@ -15,13 +15,11 @@
                     </div>
 
                      <div class="pull-right">
-                         <dl>
                             <asp:Literal ID="litFlaggedMessageRO" runat="server"></asp:Literal>
                             <asp:Literal ID="litStatus" runat="server"></asp:Literal>
                             <asp:Literal ID="litUrgent" runat="server"></asp:Literal>
-                            <dt><a href="#" data-toggle="tooltip" data-placement="top" data-trigger="hover focus" title="current prayer count" >
-                                <asp:Literal ID="litPrayerCountRO" runat="server">0</asp:Literal></a></dt>
-                         </dl>
+                            <a href="#" data-toggle="tooltip" data-placement="top" data-trigger="hover focus" title="current prayer count" >
+                                <asp:Literal ID="litPrayerCountRO" runat="server">0</asp:Literal></a>
                     </div>
 
                     <div class="row-fluid">
@@ -54,10 +52,10 @@
                         <asp:Literal ID="lFlaggedMessage" runat="server"></asp:Literal>
                         <dt class="muted"><asp:Label ID="lblApprovedByPerson" runat="server" Visible="false" /></dt>
                         <dt><asp:CheckBox ID="cbIsActive" Text="Active " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbApproved" Text="Approved? " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbIsPublic" Text="Public? " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbIsUrgent" Text="Urgent? " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbAllowComments" Text="Allow Comments? " runat="server" /></dt>
+                        <dt><asp:CheckBox ID="cbApproved" Text="Approved " runat="server" /></dt>
+                        <dt><asp:CheckBox ID="cbIsPublic" Text="Public " runat="server" /></dt>
+                        <dt><asp:CheckBox ID="cbIsUrgent" Text="Urgent " runat="server" /></dt>
+                        <dt><asp:CheckBox ID="cbAllowComments" Text="Allow Comments " runat="server" /></dt>
                     </dl>
                 </div>
 

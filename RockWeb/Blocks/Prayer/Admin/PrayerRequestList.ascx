@@ -1,48 +1,49 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PrayerRequestList.ascx.cs" Inherits="RockWeb.Blocks.Prayer.PrayerRequestList" %>
 <asp:UpdatePanel ID="upPrayerRequests" runat="server">
     <ContentTemplate>
-        <script>
-            function updateSubCategories() {
-                
-                var e = document.getElementById("<%= ddlPrayerCategoryFilter.ClientID %>");
-                var v = e.options[e.selectedIndex].value;
-                alert("The selected index for "+ "<%= ddlPrayerCategoryFilter.ClientID %>" +" is: " + v );
-
-                var restUrl = "<%=ResolveUrl( "~/api/categories/getchildren/" ) %>";
-                var selectedPrayerCategoryId = $('#<%= ddlPrayerCategoryFilter.ClientID %> option:selected').val();
-
-                var dataList = new kendo.data.DataSource({
-                    transport: {
-                        read: {
-                            url: function (options) {
-                                alert('option was: ' + selectedPrayerCategoryId);
-                                var requestUrl = restUrl + (selectedPrayerCategoryId || 0) + '/' + 'PrayerRequest'
-                                return requestUrl;
-                            }
-                        }
-                    }
-                });
-
-                var $ddlPrayerCategoryFilter = $('#<%= ddlPrayerCategoryFilter.ClientID %>');
-                $ddlPrayerCategoryFilter.kendoDropDownList({
-                    dataTextField: "Name",
-                    dataValueField: "Id",
-                    cascadeFrom: '#<%= ddlGroupCategoryFilter.ClientID %>',
-                    dataSource: dataList
-                });
-            }
-        </script>
         <asp:Panel ID="pnlLists" runat="server" Visible="true">
-            <h3>Prayer Requests</h3>
             <Rock:GridFilter ID="rFilter" runat="server" OnApplyFilterClick="rFilter_ApplyFilterClick" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" LabelText="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
-                <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" LabelText="Prayer Category" />
                 <Rock:DateTimePicker ID="dtRequestEnteredDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" LabelText="From date" />
                 <Rock:DateTimePicker ID="dtRequestEnteredDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" LabelText="To date" />
-                <Rock:LabeledCheckBox ID="cbShowApproved" runat="server" LabelText="Show approved" />
+
+                <Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" LabelText="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
+                <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" LabelText="Prayer Category" />
+
+                <Rock:LabeledRadioButtonList ID="rblApprovedFilter" runat="server" LabelText="Approval Status">
+                    <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
+                    <asp:ListItem Text="only approved" Value="approved"></asp:ListItem>
+                    <asp:ListItem Text="only unapproved" Value="unapproved"></asp:ListItem>
+                </Rock:LabeledRadioButtonList>
+
+                <Rock:LabeledRadioButtonList ID="rblUrgentFilter" runat="server" LabelText="Urgent Status">
+                    <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
+                    <asp:ListItem Text="only urgent" Value="urgent"></asp:ListItem>
+                    <asp:ListItem Text="only non-urgent" Value="non-urgent"></asp:ListItem>
+                </Rock:LabeledRadioButtonList>
+
+                <Rock:LabeledRadioButtonList ID="rblPublicFilter" runat="server" LabelText="Private/Public">
+                    <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
+                    <asp:ListItem Text="only public" Value="public"></asp:ListItem>
+                    <asp:ListItem Text="only non-public" Value="non-public"></asp:ListItem>
+                </Rock:LabeledRadioButtonList>
+
+                <Rock:LabeledRadioButtonList ID="rblActiveFilter" runat="server" LabelText="Active Status">
+                    <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
+                    <asp:ListItem Text="only active" Value="active"></asp:ListItem>
+                    <asp:ListItem Text="only inactive" Value="inactive"></asp:ListItem>
+                </Rock:LabeledRadioButtonList>
+
+                <Rock:LabeledRadioButtonList ID="rblAllowCommentsFilter" runat="server" LabelText="Commenting Status">
+                    <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
+                    <asp:ListItem Text="only allow" Value="allow"></asp:ListItem>
+                    <asp:ListItem Text="only unallow" Value="unallow"></asp:ListItem>
+                </Rock:LabeledRadioButtonList>
+
             </Rock:GridFilter>
+
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" ShowActionExcelExport="false">
+
+            <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                 <Columns>
                     <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FirstName" />
                     <asp:BoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />

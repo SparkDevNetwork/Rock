@@ -197,7 +197,7 @@ namespace Rock.Web.UI.Controls
             {
                 toggle.AddCssClass( "disabled" );
                 toggle.Enabled = false;
-                toggle.AutoPostBack = false; // TODO remove if unnecessary
+                //toggle.AutoPostBack = false; // TODO remove if unnecessary
             }
         }
 
@@ -210,14 +210,13 @@ namespace Rock.Web.UI.Controls
         {
             Toggle toggle = sender as Toggle;
             GridViewRow dgi = toggle.NamingContainer as GridViewRow;
-            if ( dgi.DataItem != null )
+            if ( dgi.DataItem != null && DataField != null )
             {
                 object dataValue = DataBinder.Eval( dgi.DataItem, DataField );
 
                 toggle.Checked = ( (Boolean)dataValue );
-                
             }
-            toggle.AutoPostBack = true;  // TODO remove if unnecessary
+            //toggle.AutoPostBack = true;  // TODO remove if unnecessary
         }
 
         /// <summary>
