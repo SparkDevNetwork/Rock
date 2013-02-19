@@ -1,67 +1,48 @@
 declare
-   @entityTypeIdWFType int = (select id from EntityType where Name = 'Rock.Model.DataView'),
+   @entityTypeIdDVType int = (select id from EntityType where Name = 'Rock.Model.DataView'),
+   @entityTypeIdPersonType int = (select id from EntityType where Name = 'Rock.Model.Person'),
    @parentCategoryId int = null,
    @categoryName nvarchar(max),
    @iconCssClass nvarchar(max) = null,
    @categoryId int = null,
    @order int = 0
 begin
-   if (@entityTypeIdWFType is null) begin
+   if (@entityTypeIdDVType is null) begin
      INSERT INTO [EntityType] ([Name],[FriendlyName],[Guid],[AssemblyName],[IsEntity],[IsSecured])
-       VALUES ('Rock.Model.WorkflowType',null,NEWID(),null,0,0)
-     set @entityTypeIdWFType = SCOPE_IDENTITY()
+       VALUES ('Rock.Model.DataView',null,NEWID(),null,0,0)
+     set @entityTypeIdDVType = SCOPE_IDENTITY()
    end
 
-   delete from WorkflowType where CategoryId is not null    
-   delete from Category where EntityTypeId in (@entityTypeIdWFType)  
+   delete from DataView where CategoryId is not null    
+   delete from Category where EntityTypeId in (@entityTypeIdDVType)  
    
 
    -- root wf cats
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
      VALUES
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'CT Requests',NEWID(),null,null,'icon-beaker'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'HR Stuff',NEWID(),null,null,'icon-user-md'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Random Stuff',NEWID(),null,null,'icon-lightbulb') 
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Person Views',NEWID(),null,null,'icon-user'),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Group Views',NEWID(),null,null,'icon-group'),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Financial Views',NEWID(),null,null,'icon-money') 
 
    -- 2nd level cats
-   set @parentCategoryId = (select id from Category where Name = 'CT Requests')
+   set @parentCategoryId = (select id from Category where Name = 'Person Views' and EntityTypeId = @entityTypeIdDVType)
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
      VALUES
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'IT Requests',NEWID(),null,null,'icon-wrench'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'IT Wishlists',NEWID(),null,null,'icon-truck'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'IT Secrets',NEWID(),null,null,'icon-thumbs-up') 
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Neighborhoods',NEWID(),null,null,'icon-building'),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Missions',NEWID(),null,null,'icon-globe'),
+      (0,@parentCategoryId,@entityTypeIdDVType,null,null,'Jr. High',NEWID(),null,null,'icon-question-sign') 
 
-   set @parentCategoryId = (select id from Category where Name = 'HR Stuff')
-   INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
-     VALUES
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'New Hire Processes',NEWID(),null,null,'icon-book'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Volunteer Processes',NEWID(),null,null,'icon-film'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Severe Reprimand Processes',NEWID(),null,null,'icon-ok'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Just Kidding Processes',NEWID(),null,null,'icon-pencil') 
-
-   set @parentCategoryId = (select id from Category where Name = 'Random Stuff')
-   INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
-     VALUES
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'asdf',NEWID(),null,null,@iconCssClass),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'12354',NEWID(),null,null,'icon-random'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'qwerty',NEWID(),null,null,@iconCssClass),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'zxcvzxcvzxcv',NEWID(),null,null,@iconCssClass) 
-
-   -- example workflow types
-   set @categoryId = (select id from Category where Name = 'IT Requests')
-   INSERT INTO [WorkflowType]([IsSystem],[IsActive],[Name],[Description],[CategoryId],[Order],[WorkTerm],[ProcessingIntervalSeconds],[IsPersisted],[LoggingLevel],[Guid])
+   -- example data views
+   set @categoryId = (select id from Category where Name = 'Neighborhoods' and EntityTypeId = @entityTypeIdDVType )
+   INSERT INTO [DataView]([IsSystem],[Name],[Description],[CategoryId],[EntityTypeId],[Guid])
      VALUES 
-        (0,1,'Desktop','Desktop Workflow Type Description',@categoryId,0,'SomeWorkTermA','60',0,0,NEWID()),
-        (0,1,'Reports','Reports Workflow Type Description',@categoryId,1,'SomeWorkTermB','60',0,0,NEWID()),
-        (0,1,'ExampleWorkflowType asdf','Some Description',@categoryId,2,'SomeWorkTermC','60',0,0,NEWID()),
-        (0,1,'ExampleWorkflowType qwert','Some Description',@categoryId,3,'SomeWorkTermD','60',0,0,NEWID())
+        (0,'Men','All Men',@categoryId,@entityTypeIdPersonType,NEWID()),
+        (0,'Women','All Women',@categoryId,@entityTypeIdPersonType,NEWID())
 
-    set @categoryId = (select id from Category where Name = 'Severe Reprimand Processes')
-   INSERT INTO [WorkflowType]([IsSystem],[IsActive],[Name],[Description],[CategoryId],[Order],[WorkTerm],[ProcessingIntervalSeconds],[IsPersisted],[LoggingLevel],[Guid])
+   -- example data views
+   set @categoryId = (select id from Category where Name = 'Jr. High' and EntityTypeId = @entityTypeIdDVType )
+   INSERT INTO [DataView]([IsSystem],[Name],[Description],[CategoryId],[EntityTypeId],[Guid])
      VALUES 
-        (0,1,'Make Example','Some Description',@categoryId,0,'SomeWorkTermEE','60',0,0,NEWID()),
-        (0,1,'Another Example','Some Description',@categoryId,1,'SomeWorkTermFF','60',0,0,NEWID()),
-        (0,1,'Blue Example ','Some Description',@categoryId,2,'SomeWorkTermGG','60',0,0,NEWID()),
-        (0,1,'Purple Example','Some Description',@categoryId,3,'SomeWorkTermHH','60',0,0,NEWID())
+        (0,'David''s','All David''s',@categoryId,@entityTypeIdPersonType,NEWID())
 
 end
