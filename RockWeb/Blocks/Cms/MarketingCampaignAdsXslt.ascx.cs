@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Cms
     [MarketingCampaignAdTypesField( 7, "Ad Types", false )]
     [DetailPage]
     [BooleanField( 8, "Show Debug", false, null, "Advanced", "Output XML" )]
-    [ContextAware( "Rock.Model.Campus" )]
+    [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
     {
         /// <summary>
@@ -124,15 +124,13 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Campus Context
-            if ( this.ContextEntities.ContainsKey( "Rock.Model.Campus" ) )
+            Campus campusContext = this.ContextEntity<Campus>();
+            if ( campusContext != null )
             {
-                Campus campusContext = this.ContextEntities["Rock.Model.Campus"] as Campus;
-                if ( campusContext != null )
-                {
-                    // limit to ads that are targeted to the current campus context
-                    qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.Id.Equals( campusContext.Id ) ) );
-                }
+                // limit to ads that are targeted to the current campus context
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => x.Id.Equals( campusContext.Id ) ) );
             }
+            
 
             // Max Items
             string maxItems = GetAttributeValue( "MaxItems" );
@@ -174,7 +172,9 @@ namespace RockWeb.Blocks.Cms
                     Rock.Model.Page detailPage = new PageService().Get( new Guid( "detailPageGuid" ) );
                     if ( detailPage != null )
                     {
-                        detailPageUrl = CurrentPage.BuildUrlForDetailPage( detailPage.Id, "marketingCampaignAd", marketingCampaignAd.Id );
+                        Dictionary<string, string> queryString = new Dictionary<string, string>();
+                        queryString.Add( "marketingCampaignAd", marketingCampaignAd.Id.ToString() );
+                        detailPageUrl = CurrentPage.BuildUrl( detailPage.Id, queryString );
                     }
                 }
 

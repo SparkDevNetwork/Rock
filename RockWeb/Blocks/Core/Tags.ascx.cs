@@ -33,21 +33,13 @@ namespace RockWeb.Blocks.Core
             var sb = new StringBuilder();
 
             // Get the context entity
-            int? contextTypeId = null;
-            Rock.Data.IEntity contextEntity = null;
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
-                contextTypeId = entry.Value.TypeId;
-                contextEntity = entry.Value;
-                // Should only be one.
-                break;
-            }
+            Rock.Data.IEntity contextEntity = this.ContextEntity();
 
-            if ( contextTypeId.HasValue && contextEntity != null )
+            if ( contextEntity != null )
             {
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.Get(
-                    contextTypeId.Value, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
+                    contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
                     .Select( i => new {
                         OwnerId = i.Tag.OwnerId,
                         Name = i.Tag.Name
@@ -143,7 +135,7 @@ namespace RockWeb.Blocks.Core
     }}
 
 ",
-    contextTypeId.Value, CurrentPersonId, contextEntity.Id,
+    contextEntity.TypeId, CurrentPersonId, contextEntity.Id,
     string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
     string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.CurrentBlock.Id.ToString(), script, true );

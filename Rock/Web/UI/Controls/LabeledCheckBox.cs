@@ -19,12 +19,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The label
         /// </summary>
-        protected Literal label;
+        private Literal label;
 
         /// <summary>
         /// The help block
         /// </summary>
-        protected HelpBlock helpBlock;
+        private HelpBlock helpBlock;
 
         /// <summary>
         /// Gets or sets the help tip.
@@ -45,6 +45,7 @@ namespace Rock.Web.UI.Controls
                 string s = ViewState["Tip"] as string;
                 return s == null ? string.Empty : s;
             }
+
             set
             {
                 ViewState["Tip"] = value;
@@ -70,6 +71,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return helpBlock.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -96,6 +98,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return label.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -139,8 +142,22 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            base.RenderControl( writer );
+            
+            if ( Enabled )
+            {
+                base.RenderControl( writer );
+            }
+            else
+            {
+                if ( this.Checked )
+                {
+                    writer.WriteLine( "<i class=\"icon-check\"></i>" );
+                }
+                else
+                {
+                    writer.WriteLine( "<i class=\"icon-check-empty\"></i>" );
+                }
+            }
 
             if ( label.Text.Trim() == string.Empty)
             {
@@ -162,6 +179,5 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
         }
-
     }
 }
