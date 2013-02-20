@@ -180,7 +180,7 @@ namespace Rock.Attribute
                 attribute.Order = property.Order;
                 attribute.IsRequired = property.IsRequired;
 
-                foreach ( var qualifier in attribute.AttributeQualifiers )
+                foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
                 {
                     attributeQualifierService.Delete( qualifier, currentPersonId );
                 }

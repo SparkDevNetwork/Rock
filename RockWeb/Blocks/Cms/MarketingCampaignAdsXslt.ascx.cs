@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Cms
     [MarketingCampaignAdTypesField("Ad Types", "Types of Ads to display", true, "", "Filter", 0 )]
     [CampusesField("Campuses", "Display Ads for selected campus", false, "", "Filter", 1 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 2 )]
-    [AudiencesPrimarySecondaryField( "Audience Primary Secondary", "Primary or Secondary Audience", false, "1,2", "Filter", 3 )]
+    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 3 )]
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
     {
