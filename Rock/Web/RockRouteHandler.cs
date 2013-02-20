@@ -70,7 +70,7 @@ namespace Rock.Web
                     else
                     {
                         var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_CHMS ) );
                         if ( rockSite != null )
                         {
                             siteId = rockSite.Id;

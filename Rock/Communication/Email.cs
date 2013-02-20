@@ -111,6 +111,15 @@ namespace Rock.Communication
         public string Password { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Email" /> class.
+        /// </summary>
+        /// <param name="templateGuid">The template GUID.</param>
+        public Email( string templateGuid )
+            : this( new Guid( templateGuid ) )
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Email"/> class.
         /// </summary>
         /// <param name="templateGuid">The template GUID.</param>

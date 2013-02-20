@@ -104,7 +104,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
-    <Compile Include="Attribute\DefinedValueAttribute.cs" />
+    <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\AudiencesPrimarySecondaryFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
     <Compile Include="Attribute\EntityTypeAttribute.cs" />

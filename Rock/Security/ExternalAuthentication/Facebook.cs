@@ -131,8 +131,8 @@ namespace Rock.Security.ExternalAuthentication
 
                                 person = new Person();
                                 person.IsSystem = false;
-                                person.RecordTypeValueId = dvService.GetIdByGuid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON );
-                                person.RecordStatusValueId = dvService.GetIdByGuid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                                person.RecordTypeValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ) );
+                                person.RecordStatusValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) );
 
                                 person.GivenName = me.first_name.ToString();
                                 person.LastName = me.last_name.ToString();

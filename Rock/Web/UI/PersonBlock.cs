@@ -41,6 +41,16 @@ namespace Rock.Web.UI
         /// <summary>
         /// The groups of a particular type that current person belongs to
         /// </summary>
+        /// <param name="groupTypeGuid">The group type GUID.</param>
+        /// <returns></returns>
+        protected IEnumerable<Group> PersonGroups( string groupTypeGuid )
+        {
+            return PersonGroups( new Guid( groupTypeGuid ) );
+        }
+
+        /// <summary>
+        /// The groups of a particular type that current person belongs to
+        /// </summary>
         /// <returns></returns>
         protected IEnumerable<Group> PersonGroups(Guid groupTypeGuid)
         {
