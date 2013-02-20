@@ -368,7 +368,6 @@
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
-    <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\DataView.cs" />
     <Compile Include="Model\DataViewFilter.cs" />
     <Compile Include="Model\Report.cs" />
