@@ -87,9 +87,19 @@ namespace Rock.Field.Types
             CheckBoxList editControl = new CheckBoxList();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
-                foreach ( string value in configurationValues["values"].Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    editControl.Items.Add( new ListItem( value ) );
-
+            {
+                foreach ( string keyvalue in configurationValues["values"].Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var keyValueArray = keyvalue.Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( keyValueArray.Length > 0 )
+                    {
+                        ListItem li = new ListItem();
+                        li.Value = keyValueArray[0];
+                        li.Text = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
+                        editControl.Items.Add( li );
+                    }
+                }
+            }
             return editControl;
         }
 
