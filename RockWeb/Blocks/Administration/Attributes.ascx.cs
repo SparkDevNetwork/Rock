@@ -21,11 +21,11 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [TextField( 0, "Entity", "Applies To", "Entity Name", false, "" )]
-    [TextField( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BooleanField( 3, "Allow Setting of Values", false, "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?" )]
-    [TextField( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
+    [TextField( "Entity", "Entity Name", false, "", "Applies To", 0 )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
+    [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Set Values", 0 )]
+    [TextField( "Entity Id", "The entity id that values apply to", false, "", "Set Values", 1 )]
     public partial class Attributes : RockBlock
     {
         #region Fields
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Administration
                 _entityQualifierValue = PageParameter( "EntityQualifierValue" );
             }
 
-            _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "SetValues" ) );
+            _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "AllowSettingofValues" ) );
 
             string entityIdString = GetAttributeValue( "EntityId" );
             if ( string.IsNullOrWhiteSpace( entityIdString ) )

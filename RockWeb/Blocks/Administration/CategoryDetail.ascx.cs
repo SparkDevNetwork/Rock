@@ -18,7 +18,7 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
-    [TextField( 0, "EntityTypeName", "Category Entity Type", false )]
+    [TextField( "EntityTypeName", "Category Entity Type", false )]
     public partial class CategoryDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

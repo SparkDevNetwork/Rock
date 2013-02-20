@@ -18,15 +18,15 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="IntegerFieldAttribute" /> class.
         /// </summary>
-        /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        public IntegerFieldAttribute( int order, string name, string defaultValue, string key = null, string category = "", string description = "", bool required = false )
-            : base( order, name, required, defaultValue, key, category, description, typeof(Rock.Field.Types.Integer).FullName)
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public IntegerFieldAttribute( string name, string description = "", bool required = true, int defaultValue = int.MinValue, string category = "", int order = 0, string key = null )
+            : base( name, description, required, ( defaultValue == int.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.Integer ).FullName )
         {
         }
     }

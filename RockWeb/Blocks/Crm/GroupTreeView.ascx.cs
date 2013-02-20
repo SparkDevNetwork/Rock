@@ -15,10 +15,10 @@ namespace RockWeb.Blocks.Crm
     /// <summary>
     /// 
     /// </summary>
-    [TextField( 0, "Treeview Title", "", "", false, "Group Tree View" )]
-    [GroupTypesField( 1, "Group Types", false, "", "", "", "Select group types to show in this block.  Leave all unchecked to show all group types." )]
-    [GroupField( 2, "Group", false, "", "", "", "Select the root group to show in this block." )]
-    [BooleanField( 3, "Limit to Security Role Groups", false )]
+    [TextField( "Treeview Title", "Group Tree View", false )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
+    [GroupField( "Group", "Select the root group to show in this block.", false )]
+    [BooleanField( "Limit to Security Role Groups" )]
     [DetailPage]
     public partial class GroupTreeView : RockBlock
     {

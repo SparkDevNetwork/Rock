@@ -62,7 +62,7 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    blockProperties.Add( new TextFieldAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, contextAttribute.DefaultParameterName ) );
+                    blockProperties.Add( new TextFieldAttribute( "Context Entity Type", "Context Entity Type", false, contextAttribute.DefaultParameterName, "Filter", 0, propertyKeyName ) );
                 }
             }
 
@@ -452,11 +452,13 @@ namespace Rock.Attribute
                     parentControl.Controls.Add( fieldSet );
                     fieldSet.Controls.Clear();
 
-                    HtmlGenericControl legend = new HtmlGenericControl( "legend" );
-                    fieldSet.Controls.Add( legend );
-                    legend.Controls.Clear();
-
-                    legend.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : "Attributes";
+                    if ( !string.IsNullOrEmpty( category.Key ) )
+                    {
+                        HtmlGenericControl legend = new HtmlGenericControl( "legend" );
+                        fieldSet.Controls.Add( legend );
+                        legend.Controls.Clear();
+                        legend.InnerText = category.Key.Trim();
+                    }
 
                     foreach ( string key in category.Value )
                     {

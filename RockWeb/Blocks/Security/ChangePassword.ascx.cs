@@ -11,9 +11,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( 0, "Invalid UserName", "InvalidUserNameCaption", "Captions", "", false,"The User Name/Password combination is not valid." )]
-    [TextField( 1, "Invalid Password", "InvalidPasswordCaption", "Captions", "", false,"The User Name/Password combination is not valid." )]
-    [TextField( 2, "Success", "SuccessCaption", "Captions", "", false,"Your password has been changed" )]
+    [TextField( "Invalid UserName Caption","", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
+    [TextField( "Invalid Password Caption","", false, "The User Name/Password combination is not valid.", "Captions", 1 )]
+    [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 2 )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 

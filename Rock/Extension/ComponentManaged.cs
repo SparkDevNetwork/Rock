@@ -34,8 +34,8 @@ namespace Rock.Extension
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [IntegerField( 0, "Order", "", null, "", "The order that this service should be used (priority)" )]
-    [BooleanField( 0, "Active", false, null, "", "Should Service be used?")]
+    [IntegerField( "Order", "The order that this service should be used (priority)" )]
+    [BooleanField( "Active", "Should Service be used?", false, "", 0)]
     public abstract class ComponentManaged : Rock.Attribute.IHasAttributes, Rock.Security.ISecured
     {
         /// <summary>

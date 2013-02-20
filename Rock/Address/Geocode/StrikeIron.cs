@@ -18,8 +18,8 @@ namespace Rock.Address.Geocode
     [Description( "Address Standardization and Geocoding service from StrikeIron" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "StrikeIron" )]
-    [TextField( 1, "User ID", "Security", "The Strike Iron User ID", true, "" )]
-    [TextField( 2, "Password", "Security", "The Strike Iron Password", true, "" )]
+    [TextField( "User ID", "The Strike Iron User ID", true, "", "Security", 0 )]
+    [TextField( "Password", "The Strike Iron Password", true, "", "Security", 1 )]
     public class StrikeIron : GeocodeComponent
     {
         /// <summary>
