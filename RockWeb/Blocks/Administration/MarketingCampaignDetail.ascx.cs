@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Administration
         {
             // Controls on Main Campaign Panel
             GroupService groupService = new GroupService();
-            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES ) ).OrderBy( a => a.Name ).ToList();
+            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid(Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES) ) ).OrderBy( a => a.Name ).ToList();
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
