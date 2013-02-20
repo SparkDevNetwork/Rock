@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Cms
                     foreach ( AttributeValue attributeValue in attributeValues )
                     {
                         // If Block Attributes limit image types, limit images 
-                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.IMAGE ) )
+                        if ( attribute.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.IMAGE ) ) )
                         {
                             if ( imageAttributeKeyFilter != null )
                             {
