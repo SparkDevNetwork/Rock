@@ -73,20 +73,26 @@ namespace Rock.Attribute
             }
 
             // Create any attributes that need to be created
+            var attributeService = new Model.AttributeService();
+            var attributeQualifierService = new Model.AttributeQualifierService();
+            var fieldTypeService = new Model.FieldTypeService();
+
             foreach ( var blockProperty in blockProperties )
             {
-                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
+                attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService,
+                    blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
                 existingKeys.Add( blockProperty.Key );
             }
 
             // Remove any old attributes
-            Model.AttributeService attributeService = new Model.AttributeService();
             foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+            {
                 if ( !existingKeys.Contains( a.Key ) )
                 {
                     attributeService.Delete( a, currentPersonId );
                     attributeService.Save( a, currentPersonId );
                 }
+            }
 
             return attributesUpdated;
         }
@@ -100,12 +106,10 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( Model.AttributeService attributeService, Model.AttributeQualifierService attributeQualifierService, Model.FieldTypeService fieldTypeService, 
+            FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
-
-            Model.AttributeService attributeService = new Model.AttributeService();
-            Model.FieldTypeService fieldTypeService = new Model.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             Model.Attribute attribute = attributeService.Get(
@@ -121,6 +125,14 @@ namespace Rock.Attribute
                 attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
                 attribute.IsGridColumn = false;
+
+                foreach ( var fieldConfigValue in property.FieldConfigurationValues )
+                {
+                    var qualifier = new Model.AttributeQualifier();
+                    qualifier.Key = fieldConfigValue.Key;
+                    qualifier.Value = fieldConfigValue.Value.Value;
+                    attribute.AttributeQualifiers.Add( qualifier );
+                }
             }
             else
             {
@@ -133,7 +145,29 @@ namespace Rock.Attribute
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
+                {
                     updated = true;
+                }
+
+                // Check the qualifier values
+                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
+                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attribute.AttributeQualifiers.Select( q => q.Key ) ).Any() )
+                {
+                    updated = true;
+                }
+                else
+                {
+                    foreach ( var attributeQualifier in attribute.AttributeQualifiers )
+                    {
+                        if ( !property.FieldConfigurationValues.ContainsKey( attributeQualifier.Key ) ||
+                            property.FieldConfigurationValues[attributeQualifier.Key].Value != attributeQualifier.Value )
+                        {
+                            updated = true;
+                            break;
+                        }
+                    }
+                }
+
             }
 
             if ( updated )
@@ -145,6 +179,20 @@ namespace Rock.Attribute
                 attribute.DefaultValue = property.DefaultValue;
                 attribute.Order = property.Order;
                 attribute.IsRequired = property.IsRequired;
+
+                foreach ( var qualifier in attribute.AttributeQualifiers )
+                {
+                    attributeQualifierService.Delete( qualifier, currentPersonId );
+                }
+                attribute.AttributeQualifiers.Clear();
+
+                foreach ( var configValue in property.FieldConfigurationValues )
+                {
+                    var qualifier = new Model.AttributeQualifier();
+                    qualifier.Key = configValue.Key;
+                    qualifier.Value = configValue.Value.Value;
+                    attribute.AttributeQualifiers.Add( qualifier );
+                }
 
                 // Try to set the field type by searching for an existing field type with the same assembly and class name
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
@@ -166,7 +214,9 @@ namespace Rock.Attribute
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         /// <summary>

@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using Rock.Field;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -123,5 +125,24 @@ namespace Rock.Attribute
         /// The field type class.
         /// </value>
         public string FieldTypeClass { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field configuration values.
+        /// </summary>
+        /// <value>
+        /// The field configuration values.
+        /// </value>
+        public Dictionary<string, ConfigurationValue> FieldConfigurationValues
+        {
+            get
+            {
+                return fieldConfigurationValues;
+            }
+            set
+            {
+                FieldConfigurationValues = value;
+            }
+        }
+        private Dictionary<string, ConfigurationValue> fieldConfigurationValues = new Dictionary<string, ConfigurationValue>(); 
     }
 }
