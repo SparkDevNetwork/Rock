@@ -4,6 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
@@ -45,29 +47,16 @@ $('.workflow-activity > header').click(function () {
     $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
 });
 
+// fix so that the Remove button will fire its event, but not the parent event 
 $('.workflow-activity .icon-remove').click(function (event) {
     event.stopImmediatePropagation();
 });
 
+// fix so that the Reorder button will fire its event, but not the parent event 
 $('.workflow-activity .icon-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 
-// action animation
-$('.workflow-action > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
-
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
-    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
-});
-
-$('.workflow-action .icon-remove').click(function (event) {
-    event.stopImmediatePropagation();
-});
-
-$('.workflow-action .icon-reorder').click(function (event) {
-    event.stopImmediatePropagation();
-});
 ";
 
             ScriptManager.RegisterStartupScript( hfActivityTypeGuid, hfActivityTypeGuid.GetType(), "WorkflowActivityTypeEditorScript", script, true );
@@ -99,31 +88,36 @@ $('.workflow-action .icon-reorder').click(function (event) {
         /// <value>
         /// The type of the workflow activity.
         /// </value>
-        public WorkflowActivityType WorkflowActivityType
+        public WorkflowActivityType GetWorkflowActivityType()
         {
-            get
+            EnsureChildControls();
+            WorkflowActivityType result = new WorkflowActivityType();
+            result.Guid = new Guid( hfActivityTypeGuid.Value );
+            result.Name = tbActivityTypeName.Text;
+            result.Description = tbActivityTypeDescription.Text;
+            result.IsActive = cbActivityTypeIsActive.Checked;
+            result.IsActivatedWithWorkflow = cbActivityTypeIsActivatedWithWorkflow.Checked;
+            result.ActionTypes = new List<WorkflowActionType>();
+            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
             {
-                EnsureChildControls();
-                WorkflowActivityType result = new WorkflowActivityType();
-                result.Guid = new Guid( hfActivityTypeGuid.Value );
-                result.Name = tbActivityTypeName.Text;
-                result.Description = tbActivityTypeDescription.Text;
-                result.IsActive = cbActivityTypeIsActive.Checked;
-                result.IsActivatedWithWorkflow = cbActivityTypeIsActivatedWithWorkflow.Checked;
-                return result;
+                result.ActionTypes.Add( workflowActionTypeEditor.WorkflowActionType );
             }
 
-            set
-            {
-                EnsureChildControls();
-                hfActivityTypeGuid.Value = value.Guid.ToString();
-                lbDeleteActivityType.CommandName = "WorkflowActivityTypeGuid";
-                lbDeleteActivityType.CommandArgument = value.Guid.ToString();
-                tbActivityTypeName.Text = value.Name;
-                tbActivityTypeDescription.Text = value.Description;
-                cbActivityTypeIsActive.Checked = value.IsActive ?? false;
-                cbActivityTypeIsActivatedWithWorkflow.Checked = value.IsActivatedWithWorkflow;
-            }
+            return result;
+        }
+
+        /// <summary>
+        /// Sets the type of the workflow activity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetWorkflowActivityType( WorkflowActivityType value )
+        {
+            EnsureChildControls();
+            hfActivityTypeGuid.Value = value.Guid.ToString();
+            tbActivityTypeName.Text = value.Name;
+            tbActivityTypeDescription.Text = value.Description;
+            cbActivityTypeIsActive.Checked = value.IsActive ?? false;
+            cbActivityTypeIsActivatedWithWorkflow.Checked = value.IsActivatedWithWorkflow;
         }
 
         /// <summary>
@@ -156,7 +150,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
             tbActivityTypeName = new DataTextBox();
             tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
             tbActivityTypeName.LabelText = "Name";
-            
+
             // set label when they exit the edit field
             tbActivityTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeName.ID );
             tbActivityTypeName.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
@@ -165,7 +159,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
             tbActivityTypeDescription = new DataTextBox();
             tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
             tbActivityTypeDescription.LabelText = "Description";
-            
+
             // set label when they exit the edit field
             tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeDescription.ID );
             tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
@@ -227,7 +221,6 @@ $('.workflow-action .icon-reorder').click(function (event) {
             if ( IsDeleteEnabled )
             {
                 lbDeleteActivityType.Visible = true;
-                
                 lbDeleteActivityType.RenderControl( writer );
             }
             else
@@ -242,7 +235,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
-            if ( !string.IsNullOrEmpty( WorkflowActivityType.Name ) )
+            if ( !string.IsNullOrEmpty( tbActivityTypeName.Text ) )
             {
                 // hide details if the name has already been filled in
                 writer.AddStyleAttribute( "display", "none" );
@@ -279,12 +272,9 @@ $('.workflow-action .icon-reorder').click(function (event) {
             writer.RenderEndTag();
             writer.RenderEndTag();
 
-            foreach ( Control control in this.Controls )
+            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
             {
-                if ( control is ActionEditor )
-                {
-                    control.RenderControl( writer );
-                }
+                workflowActionTypeEditor.RenderControl( writer );
             }
 
             // actions fieldset
@@ -306,7 +296,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
         {
             if ( DeleteActivityTypeClick != null )
             {
-                DeleteActivityTypeClick( sender, e );
+                DeleteActivityTypeClick( this, e );
             }
         }
 
@@ -319,7 +309,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
         {
             if ( AddActionTypeClick != null )
             {
-                AddActionTypeClick( sender, e );
+                AddActionTypeClick( this, e );
             }
         }
 
