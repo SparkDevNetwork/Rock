@@ -60,7 +60,7 @@ namespace Rock.Attribute
         /// <value>
         /// The name.
         /// </value>
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the description of the attribute
@@ -68,7 +68,7 @@ namespace Rock.Attribute
         /// <value>
         /// The description.
         /// </value>
-        public string Description { get; set; }
+        public virtual string Description { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is required.
@@ -76,7 +76,7 @@ namespace Rock.Attribute
         /// <value>
         /// <c>true</c> if this instance is required; otherwise, <c>false</c>.
         /// </value>
-        public bool IsRequired { get; set; }
+        public virtual bool IsRequired { get; set; }
 
         /// <summary>
         /// Gets or sets the default value of the attribute.  This is the value that will be used if a specific value has not yet been created
@@ -84,7 +84,7 @@ namespace Rock.Attribute
         /// <value>
         /// The default value.
         /// </value>
-        public string DefaultValue { get; set; }
+        public virtual string DefaultValue { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -92,7 +92,7 @@ namespace Rock.Attribute
         /// <value>
         /// The category.
         /// </value>
-        public string Category { get; set; }
+        public virtual string Category { get; set; }
 
         /// <summary>
         /// Gets or sets the order of the attribute.
@@ -100,7 +100,7 @@ namespace Rock.Attribute
         /// <value>
         /// The order.
         /// </value>
-        public int Order { get; set; }
+        public virtual int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the key.
@@ -108,7 +108,7 @@ namespace Rock.Attribute
         /// <value>
         /// The key.
         /// </value>
-        public string Key { get; set; }
+        public virtual string Key { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly name of the <see cref="Rock.Field.IFieldType"/> to be used for the attribute
@@ -116,7 +116,7 @@ namespace Rock.Attribute
         /// <value>
         /// The field type assembly.
         /// </value>
-        public string FieldTypeAssembly { get; set; }
+        public virtual string FieldTypeAssembly { get; set; }
 
         /// <summary>
         /// Gets or sets the class name of the <see cref="Rock.Field.IFieldType"/> to be used for the attribute.
@@ -124,7 +124,7 @@ namespace Rock.Attribute
         /// <value>
         /// The field type class.
         /// </value>
-        public string FieldTypeClass { get; set; }
+        public virtual string FieldTypeClass { get; set; }
 
         /// <summary>
         /// Gets or sets the field configuration values.
@@ -132,7 +132,7 @@ namespace Rock.Attribute
         /// <value>
         /// The field configuration values.
         /// </value>
-        public Dictionary<string, ConfigurationValue> FieldConfigurationValues
+        public virtual Dictionary<string, ConfigurationValue> FieldConfigurationValues
         {
             get
             {

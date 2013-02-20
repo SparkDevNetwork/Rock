@@ -34,7 +34,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            LabeledCheckBoxList editControl = new LabeledCheckBoxList();
+            CheckBoxList editControl = new CheckBoxList();
 
             foreach ( var item in ListSource )
             {
@@ -57,7 +57,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                LabeledCheckBoxList cbl = (LabeledCheckBoxList)control;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
                     if ( li.Selected )
                         values.Add( li.Value );
@@ -80,7 +80,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                LabeledCheckBoxList cbl = (LabeledCheckBoxList)control;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
                     li.Selected = values.Contains( li.Value );
             }
