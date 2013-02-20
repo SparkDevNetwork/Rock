@@ -14,6 +14,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 
 namespace RockWeb.Blocks.Administration
@@ -36,11 +37,11 @@ namespace RockWeb.Blocks.Administration
     Date Range (Start Date – End Date) (sortable)
     Is Closed (sortable)
     Control Amount
-    Transaction Total
-    Variance (Control Amt – Transaction Total) if not zero would be nice if the table cell (td) was marked with class="warning" so we could style it red.
-    Transaction Count
+    Batch Total
+    Variance (Control Amt – Batch Total) if not zero would be nice if the table cell (td) was marked with class="warning" so we could style it red.
+    Batch Count
     Batch Type
-    Funds listed w/ transaction totals
+    Funds listed w/ Batch totals
     Edit Button
     Delete Button (should warn though)
          */
@@ -72,6 +73,7 @@ namespace RockWeb.Blocks.Administration
 
                 grdFinancialBatch.Actions.AddClick += gridFinancialBatch_Add;
                 grdFinancialBatch.GridRebind += grdFinancialBatch_GridRebind;
+                grdFinancialBatch.GridReorder += grdFinancialBatch_GridReorder;
 
                 modalValue.SaveClick += btnSaveFinancialBatch_Click;
                 modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
@@ -109,37 +111,30 @@ namespace RockWeb.Blocks.Administration
         {
             switch ( e.Key )
             {
-
-
                 case "From Date":
+                case "Through Date":
 
-                    //DateTime fromdate = DateTime.Now;
-                    //if ( DateTime.TryParse( e.Value, out fromdate ) )
-                    //{
-                    //    var service = new FinancialBatchService();
-                    //    var fund = service.Get( fundId );
-                    //    if ( fund != null )
-                    //    {
-                    //        e.Value = fund.Name;
-                    //    }
-                    //}
+                    DateTime fromdate = DateTime.Now;
+                    e.Value = fromdate.ToString();
+                    
 
                     break;
 
-                case "Through Date":
                 case "IsClosed":
                 case "Title":
+                    break;
+
                 case "Batch Type":
 
-                    //int definedValueId = 0;
-                    //if ( int.TryParse( e.Value, out definedValueId ) )
-                    //{
-                    //    var definedValue = DefinedValueCache.Read( definedValueId );
-                    //    if ( definedValue != null )
-                    //    {
-                    //        e.Value = definedValue.Name;
-                    //    }
-                    //}
+                    int definedValueId = 0;
+                    if ( int.TryParse( e.Value, out definedValueId ) )
+                    {
+                        var definedValue = DefinedValueCache.Read( definedValueId );
+                        if ( definedValue != null )
+                        {
+                            e.Value = definedValue.Name;
+                        }
+                    }
 
                     break;
             }
@@ -153,7 +148,6 @@ namespace RockWeb.Blocks.Administration
         protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
         {
 
-            BindGrid();
             rFBFilter.SaveUserPreference( "From Date", dtFromDate.Text );
             rFBFilter.SaveUserPreference( "Through Date", dtThroughDate.Text );
             rFBFilter.SaveUserPreference( "Title", txtTitle.Text );
@@ -197,7 +191,25 @@ namespace RockWeb.Blocks.Administration
             //}
 
         }
+        void grdFinancialBatch_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            //var tagService = new Rock.Model.TagService();
+            //var queryable = tagService.Queryable().
+            //    Where( t => t.EntityTypeId == _entityTypeId &&
+            //        ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
+            //        ( t.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
 
+            //if ( _ownerId.HasValue )
+            //    queryable = queryable.Where( t => t.OwnerId == _ownerId.Value );
+            //else
+            //    queryable = queryable.Where( t => t.OwnerId == null );
+
+            //var items = queryable
+            //    .OrderBy( t => t.Order )
+            //    .ToList();
+            //FinancialBatchService.Reorder( mylist, e.OldIndex, e.NewIndex, CurrentPersonId );
+            BindGrid();
+        }
         void grdFinancialBatch_GridRebind( object sender, EventArgs e )
         {
             this.ConfigureFilterLists();
@@ -206,47 +218,28 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            //TransactionSearchValue searchValue = GetSearchValue();
+            BatchSearchValue searchValue = GetSearchValue();
 
-            //var transactionService = new FinancialTransactionService();
-            //grdFinancialBatch.DataSource = transactionService.Get( searchValue ).ToList();
-            //grdFinancialBatch.DataBind();
+            var batchService = new FinancialBatchService();
+            grdFinancialBatch.DataSource = batchService.Get( searchValue ).ToList();
+            grdFinancialBatch.DataBind();
         }
 
-        //private TransactionSearchValue GetSearchValue()
-        //{
-        //    //TransactionSearchValue searchValue = new TransactionSearchValue();
+        private BatchSearchValue GetSearchValue()
+        {
+            BatchSearchValue searchValue = new BatchSearchValue();
 
-        //    //decimal? fromAmountRange = null;
-        //    //if ( !String.IsNullOrEmpty( txtFromAmount.Text ) )
-        //    //{
-        //    //    fromAmountRange = Decimal.Parse( txtFromAmount.Text );
-        //    //}
-        //    //decimal? toAmountRange = null;
-        //    //if ( !String.IsNullOrEmpty( txtToAmount.Text ) )
-        //    //{
-        //    //    toAmountRange = Decimal.Parse( txtToAmount.Text );
-        //    //}
-        //    //searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
-        //    //if ( ddlCreditCardType.SelectedValue != All.Id.ToString() )
-        //    //{
-        //    //    searchValue.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
-        //    //}
-        //    //if ( ddlCurrencyType.SelectedValue != All.Id.ToString() )
-        //    //{
-        //    //    searchValue.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
-        //    //}
-        //    //DateTime? fromTransactionDate = dtStartDate.SelectedDate;
-        //    //DateTime? toTransactionDate = dtEndDate.SelectedDate;
-        //    //searchValue.DateRange = new RangeValue<DateTime?>( fromTransactionDate, toTransactionDate );
-        //    //if ( ddlFundType.SelectedValue != "-1" )
-        //    //{
-        //    //    searchValue.FundId = int.Parse( ddlFundType.SelectedValue );
-        //    //}
-        //    //searchValue.TransactionCode = txtTransactionCode.Text;
-
-        //    return searchValue;
-        //}
+            DateTime? fromBatchDate = dtFromDate.SelectedDate;
+            DateTime? toBatchDate = dtThroughDate.SelectedDate;
+            searchValue.DateRange = new RangeValue<DateTime?>( fromBatchDate, toBatchDate );
+            if ( ddlBatchType.SelectedValue != "-1" )
+            {
+                searchValue.BatchTypeValueId = int.Parse( ddlBatchType.SelectedValue );
+            }
+            searchValue.Title = txtTitle.Text;
+            searchValue.IsClosed = cbIsClosedFilter.Checked ? true : false;
+            return searchValue;
+        }
 
         #endregion
 
