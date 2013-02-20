@@ -512,7 +512,7 @@ namespace RockWeb.Blocks.Administration
             DefinedValueService definedValueService = new DefinedValueService();
 
             // populate dropdown with all MarketingCampaignAudiences that aren't already MarketingCampaignAudiences
-            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ).AsQueryable()
+            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ) ).AsQueryable()
                       where !( from mcaudience in MarketingCampaignAudiencesState
                                select mcaudience.AudienceTypeValueId ).Contains( audienceTypeValue.Id )
                       select audienceTypeValue;

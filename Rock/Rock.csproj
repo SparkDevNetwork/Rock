@@ -104,7 +104,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
-    <Compile Include="Attribute\AudiencesFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedValueAttribute.cs" />
     <Compile Include="Attribute\AudiencesPrimarySecondaryFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
     <Compile Include="Attribute\EntityTypeAttribute.cs" />
@@ -140,7 +140,6 @@
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
-    <Compile Include="Field\Types\AudiencesField.cs" />
     <Compile Include="Field\Types\CampusesField.cs" />
     <Compile Include="Field\Types\AudiencePrimarySecondaryField.cs" />
     <Compile Include="Field\Types\EntityType.cs" />
