@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -22,6 +23,29 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class WorkflowTypeDetail : RockBlock, IDetailBlock
     {
+        #region WorkflowActivityType ViewStateList
+
+        /// <summary>
+        /// Gets or sets the state of the workflow activity types.
+        /// </summary>
+        /// <value>
+        /// The state of the workflow activity types.
+        /// </value>
+        private ViewStateList<WorkflowActivityType> WorkflowActivityTypesState
+        {
+            get
+            {
+                return ViewState["WorkflowActivityTypesState"] as ViewStateList<WorkflowActivityType>;
+            }
+
+            set
+            {
+                ViewState["WorkflowActivityTypesState"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -330,10 +354,8 @@ namespace RockWeb.Blocks.Administration
     </dl>
 </div>";
 
-
             if ( workflowType.ActivityTypes.Count > 0 )
             {
-
                 // Activities
                 lblWorkflowActivitiesReadonly.Text = @"
 <div>
@@ -533,11 +555,11 @@ namespace RockWeb.Blocks.Administration
         {
             AttributeService attributeService = new AttributeService();
 
-            int WorkflowTypeId = hfWorkflowTypeId.ValueAsInt();
+            int workflowTypeId = hfWorkflowTypeId.ValueAsInt();
 
             var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( WorkflowTypeId.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( workflowTypeId.ToString() ) );
 
             gWorkflowTypeAttributes.DataSource = qryWorkflowTypeAttributes.OrderBy( a => a.Name ).ToList();
             gWorkflowTypeAttributes.DataBind();
@@ -554,6 +576,11 @@ namespace RockWeb.Blocks.Administration
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+
+            foreach ( WorkflowActivityType workflowActivityType in WorkflowActivityTypesState )
+            {
+                CreateWorkflowActivityTypeEditorControl( workflowActivityType );
+            }
         }
 
         /// <summary>
@@ -564,6 +591,13 @@ namespace RockWeb.Blocks.Administration
         /// </returns>
         protected override object SaveViewState()
         {
+            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityTypeEditor>() )
+            {
+                WorkflowActivityType workflowActivityType = activityEditor.WorkflowActivityType;
+                WorkflowActivityTypesState.Add( workflowActivityType );
+            }
+
             return base.SaveViewState();
         }
 
@@ -572,27 +606,48 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAddActivity_Click( object sender, EventArgs e )
+        protected void lbAddActivityType_Click( object sender, EventArgs e )
         {
-            ActivityEditor activityEditor = new ActivityEditor();
-            activityEditor.ActivityGuid = Guid.NewGuid();
-            activityEditor.ID = "activityEditor_" + activityEditor.ActivityGuid.ToString();
-            activityEditor.ActivityName = "Activity 01";
-            activityEditor.ActivityDescription = "Description of Activity 01";
-            activityEditor.ActivityIsActivatedWithWorkflow = true;
-            activityEditor.ActivityIsActive = false;
-            activityEditor.DeleteActivityClick += activityEditor_DeleteActivityClick;
-            phActivities.Controls.Add( activityEditor );
+            WorkflowActivityType workflowActivityType = new WorkflowActivityType();
+            workflowActivityType.Guid = Guid.NewGuid();
+
+            CreateWorkflowActivityTypeEditorControl( workflowActivityType );
         }
 
         /// <summary>
-        /// Handles the DeleteActivityClick event of the activityEditor control.
+        /// Creates the workflow activity type editor control.
+        /// </summary>
+        /// <param name="workflowActivityType">Type of the workflow activity.</param>
+        private void CreateWorkflowActivityTypeEditorControl( WorkflowActivityType workflowActivityType )
+        {
+            WorkflowActivityTypeEditor workflowActivityTypeEditor = new WorkflowActivityTypeEditor();
+            workflowActivityTypeEditor.ID = "WorkflowActivityTypeEditor_" + workflowActivityType.Guid.ToString();
+            workflowActivityTypeEditor.WorkflowActivityType = workflowActivityType;
+            workflowActivityTypeEditor.DeleteActivityTypeClick += workflowActivityTypeEditor_DeleteActivityClick;
+            phActivities.Controls.Add( workflowActivityTypeEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteActivityClick event of the workflowActivityTypeEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void activityEditor_DeleteActivityClick( object sender, EventArgs e )
+        protected void workflowActivityTypeEditor_DeleteActivityClick( object sender, EventArgs e )
         {
-            string temp = sender.ToString();
+            if ( sender is LinkButton )
+            {
+                LinkButton deleteButton = sender as LinkButton;
+                if ( deleteButton.CommandName.Equals( "WorkflowActivityTypeGuid" ) )
+                {
+                    Guid guid = new Guid( deleteButton.CommandArgument );
+                    WorkflowActivityTypesState.RemoveEntity( guid );
+                    var editor = phActivities.Controls.OfType<WorkflowActivityTypeEditor>().FirstOrDefault( a => a.ID.Equals( "WorkflowActivityTypeEditor_" + guid.ToString() ) );
+                    if ( editor != null )
+                    {
+                        phActivities.Controls.Remove( editor );
+                    }
+                }
+            }
         }
 
         #endregion

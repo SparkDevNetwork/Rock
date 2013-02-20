@@ -363,6 +363,7 @@
           <Value>cb</Value>
           <Value>lb</Value>
           <Value>tb</Value>
+          <Value>hf</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>

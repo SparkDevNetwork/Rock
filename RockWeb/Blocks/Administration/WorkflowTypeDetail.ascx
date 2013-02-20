@@ -36,7 +36,7 @@
                     <legend>
                         <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivity" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivity_Click"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
                         </span>
                     </legend>
 
@@ -93,26 +93,5 @@
         <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
             <RockWeb:RockAttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
         </asp:Panel>
-        <script>
-            Sys.Application.add_load(function () {
-                // activity annimation
-                $('.workflow-activity > header').click(function () {
-                    $(this).siblings('.widget-content').slideToggle();
-
-                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
-                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
-
-                });
-
-                // action annimation
-                $('.workflow-action > header').click(function () {
-                    $(this).siblings('.widget-content').slideToggle();
-
-                    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
-                    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
-
-                });
-            });
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
