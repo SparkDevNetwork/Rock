@@ -14,8 +14,8 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Utility
 {
     [Description( "Redirects user to a new url after a specific number of idle seconds" )]
-    [TextField( 0, "New Location", "The new location URL to send user to after idle time", true )]
-    [IntegerField( 1, "Idle Seconds", "20", "IdleSeconds", "", "How many seconds of idle time to wait before redirecting user" )]
+    [TextField( "New Location", "The new location URL to send user to after idle time" )]
+    [IntegerField( "Idle Seconds", "How many seconds of idle time to wait before redirecting user", false, 20 )]
     public partial class IdleRedirect : RockBlock
     {
         protected override void OnInit( EventArgs e )

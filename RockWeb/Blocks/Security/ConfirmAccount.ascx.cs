@@ -12,12 +12,12 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( 0, "Confirmed", "ConfirmedCaption", "Captions", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account" )]
-    [TextField( 1, "Reset Password", "ResetPasswordCaption", "Captions", "", false,"{0}, Enter a new password for your '{1}' account" )]
-    [TextField( 2, "Password Reset", "PasswordResetCaption", "Captions", "", false,"{0}, The password for your '{1}' account has been changed" )]
-    [TextField( 3, "Delete", "DeleteCaption", "Captions", "", false,"Are you sure you want to delete the '{0}' account?" )]
-    [TextField( 4, "Deleted", "DeletedCaption", "Captions", "", false,"The account has been deleted." )]
-    [TextField( 5, "Invalid", "InvalidCaption", "Captions", "", false,"The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>" )]
+    [TextField( "Confirmed Caption", "", false,"{0}, Your account has been confirmed.  Thank you for creating the account", "Captions", 0  )]
+    [TextField( "Reset Password Caption", "", false, "{0}, Enter a new password for your '{1}' account", "Captions", 1 )]
+    [TextField( "Password Reset Caption", "", false, "{0}, The password for your '{1}' account has been changed", "Captions", 2 )]
+    [TextField( "Delete Caption", "", false, "Are you sure you want to delete the '{0}' account?", "Captions", 3 )]
+    [TextField( "Deleted Caption", "", false, "The account has been deleted.", "Captions", 4 )]
+    [TextField( "Invalid Caption", "", false, "The confirmation code you've entered is not valid.  Please enter a valid confirmation code or <a href='{0}'>create a new account</a>", "Captions", 5 )]
     public partial class ConfirmAccount : Rock.Web.UI.RockBlock
     {
         private UserLoginService userLoginService = null;

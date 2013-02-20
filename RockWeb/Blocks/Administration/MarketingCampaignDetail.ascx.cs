@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Event Page", "EventPageGuid")]
+    [LinkedPage("Event Page")]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.Administration
             if ( marketingCampaign.EventGroup != null )
             {
                 string eventGroupHtml = marketingCampaign.EventGroup.Name;
-                string eventPageGuid = this.GetAttributeValue( "EventPageGuid" );
+                string eventPageGuid = this.GetAttributeValue( "EventPage" );
 
                 if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
                 {

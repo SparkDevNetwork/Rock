@@ -25,7 +25,9 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<Attribute> GetByEntityTypeId( int? entityTypeId )
         {
-            return Repository.Find( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) )
+                .OrderBy( t => t.Category ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Utility
     /// </summary>
     [DetailPage]
     [EntityType("Entity Type", "The types of entities to display categories for")]
-    [TextField( 0, "Page Parameter Key", "The page parameter to look for", true )]
+    [TextField( "Page Parameter Key", "The page parameter to look for" )]
     public partial class CategoryTreeView : RockBlock
     {
         /// <summary>

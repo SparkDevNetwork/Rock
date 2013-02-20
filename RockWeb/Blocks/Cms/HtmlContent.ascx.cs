@@ -18,13 +18,13 @@ using Rock.Security;
 namespace RockWeb.Blocks.Cms
 {
     [AdditionalActions( new string[] { "Approve" } )]
-    [TextField( 0, "Pre-Text", "PreText", "", "HTML text to render before the blocks main content.", false, "" )]
-    [TextField( 1, "Post-Text", "PostText", "", "HTML text to render after the blocks main content.", false, "" )]
-    [IntegerField( 2, "Cache Duration", "", null, "", "Number of seconds to cache the content.")]
-    [TextField( 3, "Context Parameter", "ContextParameter", "", "Query string parameter to use for 'personalizing' content based on unique values.", false, "" )]
-    [TextField( 4, "Context Name", "ContextName", "", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "" )]
-    [BooleanField( 5, "Support Versions", false, null, "Advanced", "Support content versioning?")]
-    [BooleanField( 6, "Require Approval", false, null, "Advanced", "Require that content be approved?")]
+    [TextField( "Pre-Text", "HTML text to render before the blocks main content.", false, "", "", 0, "PreText" )]
+    [TextField( "Post-Text", "HTML text to render after the blocks main content.", false, "", "", 1, "PostText" )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 2 )]
+    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 3 )]
+    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false )]
+    [BooleanField( "Support Versions", "Support content versioning?", false )]
     public partial class HtmlContent : Rock.Web.UI.RockBlock
     {
         #region Private Global Variables
