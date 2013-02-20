@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using DotLiquid.Exceptions;
 using NuGet;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Services.NuGet
@@ -26,7 +28,7 @@ namespace Rock.Services.NuGet
             string packageId = Guid.NewGuid().ToString();
             var packageDirectory = CreatePackageDirectory( page.Name, packageId );
             var webRootPath = HttpContext.Current.Server.MapPath( "~" );
-            
+
             // Create a manifest for this page export...
             Manifest manifest = new Manifest();
             manifest.Metadata = new ManifestMetadata();
@@ -40,7 +42,7 @@ namespace Rock.Services.NuGet
             var json = GetJson( page, isRecursive );
             using ( var file = new StreamWriter( Path.Combine( packageDirectory.FullName, "export.json" ) ) )
             {
-                file.Write( json );   
+                file.Write( json );
             }
             AddToManifest( manifest, packageDirectory.FullName, webRootPath, "export.json", SearchOption.TopDirectoryOnly );
 
@@ -107,12 +109,13 @@ namespace Rock.Services.NuGet
             }
 
             var package = new ZipPackage( path );
-            var packageFiles = package.GetFiles();
+            var packageFiles = package.GetFiles().ToList();
             var exportFile = packageFiles.FirstOrDefault( f => f.Path.Contains( "export.json" ) );
+            
+            Page page = null;
 
             if ( exportFile != null )
             {
-                // TODO: Consider busting this `if` block out into a method call
                 string json;
 
                 using ( var stream = exportFile.GetStream() )
@@ -120,12 +123,16 @@ namespace Rock.Services.NuGet
                     json = stream.ReadToEnd();
                 }
 
-                var pageService = new PageService();
-                var page = Page.FromJson( json );
-
-                // TODO: Validate Page object, strip ID's and Guid's, write to DB, etc
+                page = Page.FromJson( json );
             }
 
+            if ( page != null )
+            {
+                var installedBlockTypes = new BlockTypeService().Queryable();
+                var newBlockTypes = FindNewBlockTypes( page, installedBlockTypes );
+                ValidateImportData( page, newBlockTypes );
+                ExpandFiles( package, packageFiles, path );   
+            }
 
             // Validate package...
             // * Does it have any executable .dll files? Should those go to the bin folder, or into a plugins directory to be loaded via MEF?
@@ -202,7 +209,7 @@ namespace Rock.Services.NuGet
 
                     if ( !directories.ContainsKey( directory ) )
                     {
-                        directories.Add(directory, directory);
+                        directories.Add( directory, directory );
                     }
                 }
             }
@@ -239,11 +246,90 @@ namespace Rock.Services.NuGet
                         let pathSuffix = file.Substring( webRootPath.Length + 1 )
                         select new ManifestFile()
                         {
-                            Source = Path.Combine( "..", "..", "..", pathSuffix ), 
-                            Target = Path.Combine( "content",  pathSuffix )
+                            Source = Path.Combine( "..", "..", "..", pathSuffix ),
+                            Target = Path.Combine( "content", pathSuffix )
                         };
 
             manifest.Files.AddRange( files );
+        }
+
+        private IEnumerable<BlockType> FindNewBlockTypes( Page page, IEnumerable<BlockType> installedBlockTypes )
+        {
+            var newBlockTypes = new List<BlockType>();
+            
+
+
+            return newBlockTypes;
+        }
+
+        /// <summary>
+        /// Validates the import data.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="newBlockTypes">Collection of newly created BlockTypes</param>
+        private void ValidateImportData( Page page, IEnumerable<BlockType> newBlockTypes )
+        {
+            ScrubIds( page );
+            page.PageContexts.ToList().ForEach( ScrubIds );
+            page.PageRoutes.ToList().ForEach( ScrubIds );
+            var blockTypes = newBlockTypes.ToList();
+
+            foreach ( var block in page.Blocks )
+            {
+                var blockType = blockTypes.FirstOrDefault( bt => block.BlockType.Path == bt.Path );
+
+                if ( blockType == null )
+                {
+                    throw new System.ArgumentException(string.Format( "BlockType was not found by its path: {0}", block.BlockType.Path ));
+                }
+
+                ScrubIds( block );
+                block.PageId = 0;
+                block.BlockTypeId = blockType.Id;
+
+                // TODO: Remove any BlockTypes that are already installed...
+            }
+
+            foreach ( var childPage in page.Pages )
+            {
+                if ( childPage.Pages.Count > 0 )
+                {
+                    ValidateImportData( childPage, blockTypes );
+                }
+            }
+        }
+
+        private static void ScrubIds( IEntity entity )
+        {
+            entity.Id = 0;
+            entity.Guid = Guid.NewGuid();
+        }
+
+        /// <summary>
+        /// Expands the files.
+        /// </summary>
+        /// <param name="package">The package.</param>
+        /// <param name="packageFiles">The package files.</param>
+        /// <param name="path">The path.</param>
+        private void ExpandFiles( IPackage package, IEnumerable<IPackageFile> packageFiles, string path )
+        {
+            // Remove any currently installed BlockTypes from the list of files to be unzipped
+            var filesToUnzip = packageFiles.Where( f => !f.Path.Contains( "export.json" ) ).ToList();
+            var blockTypeService = new BlockTypeService();
+            var installedBlockTypes = blockTypeService.Queryable();
+
+            foreach ( var blockType in installedBlockTypes )
+            {
+                var blockFileName = blockType.Path.Substring( blockType.Path.LastIndexOf( "/", StringComparison.InvariantCultureIgnoreCase ) );
+                blockFileName = blockFileName.Replace( '/', Path.PathSeparator );  // Convert relative URL separator to OS file system path separator
+                filesToUnzip.RemoveAll( f => f.Path.Contains( blockFileName ) );
+            }
+
+            // Unzip files into the correct locations
+            var fileSystem = new PhysicalFileSystem( HttpContext.Current.Server.MapPath( "~" ) );
+            var pathResolver = new DefaultPackagePathResolver( path );
+            var packageDirectory = pathResolver.GetPackageDirectory( package );
+            fileSystem.AddFiles( filesToUnzip, packageDirectory );
         }
     }
 }
