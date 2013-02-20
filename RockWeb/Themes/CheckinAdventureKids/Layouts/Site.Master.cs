@@ -5,7 +5,7 @@
 //
 using System;
 
-namespace RockWeb.Themes.CheckinAdventureKids.Layouts
+namespace RockWeb.Themes.CheckinGeneric.Layouts
 {
     public partial class Site : System.Web.UI.MasterPage
     {
