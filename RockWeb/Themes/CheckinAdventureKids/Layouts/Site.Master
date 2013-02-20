@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="RockWeb.Themes.CheckinAdventureKids.Layouts.Site" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="RockWeb.Themes.CheckinGeneric.Layouts.Site" %>
 <!DOCTYPE html>
 
 <html>
@@ -14,9 +14,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/rock-boot.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Css/checkin-theme.less") %>">
+    <link rel="stylesheet" href="../CSS/rock-boot.less">
+    <link rel="stylesheet" href="../CSS/rock-boot-responsive.less">
+    <link rel="stylesheet" href="../CSS/checkin-theme.less">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
