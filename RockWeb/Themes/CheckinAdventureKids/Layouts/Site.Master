@@ -35,7 +35,6 @@
 
 </head>
 <body>
-    <h1>AK</h1>
     <form id="form1" runat="server">
             
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
