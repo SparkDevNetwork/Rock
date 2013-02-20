@@ -270,6 +270,19 @@ namespace RockWeb.Blocks.Crm
             ddlDefaultGroupRole.Enabled = !readOnly;
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
+            tbGroupTerm.ReadOnly = readOnly;
+            tbGroupMemberTerm.ReadOnly = readOnly;
+            cbShowInGroupList.Enabled = !readOnly;
+            tbIconCssClass.ReadOnly = readOnly;
+            imgIconLarge.Enabled = !readOnly;
+            imgIconSmall.Enabled = !readOnly;
+            cbTakesAttendance.Enabled = !readOnly;
+            ddlAttendanceRule.Enabled = !readOnly;
+            ddlAttendancePrintTo.Enabled = !readOnly;
+            cbAllowMultipleLocations.Enabled = !readOnly;
+            gGroupTypeAttributes.Enabled = !readOnly;
+            gGroupAttributes.Enabled = !readOnly;
+
             gChildGroupTypes.Enabled = !readOnly;
             gLocationTypes.Enabled = !readOnly;
             btnSave.Visible = !readOnly;

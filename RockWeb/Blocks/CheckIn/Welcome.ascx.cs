@@ -178,6 +178,7 @@ if ($ActiveWhen.text() != '')
                         if ( locationAttendance != null )
                         {
                             var lUl = new HtmlGenericControl( "ul" );
+                            lUl.AddCssClass("checkin-count-locations");
                             phCounts.Controls.Add( lUl );
 
                             var lLi = new HtmlGenericControl( "li" );
@@ -187,7 +188,8 @@ if ($ActiveWhen.text() != '')
                             foreach ( var groupAttendance in locationAttendance.Groups )
                             {
                                 var gUl = new HtmlGenericControl( "ul" );
-                                lUl.Controls.Add( gUl );
+                                gUl.AddCssClass("checkin-count-groups");
+                                lLi.Controls.Add( gUl );
 
                                 var gLi = new HtmlGenericControl( "li" );
                                 gUl.Controls.Add( gLi );
@@ -196,7 +198,8 @@ if ($ActiveWhen.text() != '')
                                 foreach ( var scheduleAttendance in groupAttendance.Schedules )
                                 {
                                     var sUl = new HtmlGenericControl( "ul" );
-                                    gUl.Controls.Add( sUl );
+                                    sUl.AddCssClass("checkin-count-schedules");
+                                    gLi.Controls.Add( sUl );
 
                                     var sLi = new HtmlGenericControl( "li" );
                                     sUl.Controls.Add( sLi );

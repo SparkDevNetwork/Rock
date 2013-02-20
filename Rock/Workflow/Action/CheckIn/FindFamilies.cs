@@ -51,7 +51,8 @@ namespace Rock.Workflow.Action.CheckIn
                                     family = new CheckInFamily();
                                     family.Group = group.Clone( false );
                                     family.Group.LoadAttributes();
-                                    family.Caption = string.Format( "{0} ({1})", group.ToString(), memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " ) );
+                                    family.Caption = group.ToString();
+                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
                                     checkInState.CheckIn.Families.Add( family );
                                 }
                             }

@@ -95,12 +95,14 @@ namespace Rock.Web.UI.Controls
 
             toggleAllAny = new Toggle();
             Controls.Add( toggleAllAny );
+            toggleAllAny.ID = this.ID + "_toggleAllAny";
             toggleAllAny.AddCssClass( "switch-mini" );
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
 
             btnAddGroup = new HtmlButton();
             Controls.Add( btnAddGroup );
+            btnAddGroup.ID = this.ID + "_btnAddGroup";
             btnAddGroup.ServerClick += btnAddGroup_ServerClick;
             btnAddGroup.AddCssClass( "btn btn-inverse" );
 
@@ -111,6 +113,7 @@ namespace Rock.Web.UI.Controls
 
             btnAddFilter = new HtmlButton();
             Controls.Add( btnAddFilter );
+            btnAddFilter.ID = this.ID + "_btnAddFilter";
             btnAddFilter.ServerClick += btnAddFilter_ServerClick;
             btnAddFilter.AddCssClass( "btn btn-inverse" );
 
@@ -121,6 +124,7 @@ namespace Rock.Web.UI.Controls
 
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
+            lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.Click += lbDelete_Click;
             lbDelete.AddCssClass( "btn btn-mini btn-danger" );
 

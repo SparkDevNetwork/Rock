@@ -122,6 +122,9 @@ namespace RockWeb
             Rock.Security.Authorization.Load();
 
             AddEventHandlers();
+
+            new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
+
         }
 
         /// <summary>

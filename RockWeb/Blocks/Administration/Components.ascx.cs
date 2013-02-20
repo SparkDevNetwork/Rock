@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Administration
     /// of the attributes specified in each class
     /// </summary>
     [TextField( 0, "Component Container", "The Rock Extension Managed Component Container to manage", true)]
-    public partial class Components : RockBlock
+    public partial class Components : RockBlock, IDimmableBlock
     {
         #region Private Variables
 
@@ -62,6 +62,11 @@ namespace RockWeb.Blocks.Administration
                         if ( containerType.BaseType.GenericTypeArguments.Length > 0 )
                         {
                             rGrid.RowItemText = containerType.BaseType.GenericTypeArguments[0].Name.SplitCase();
+                            lTitle.Text = rGrid.RowItemText.Pluralize();
+                        }
+                        else
+                        {
+                            lTitle.Text = "Components";
                         }
                     }
                     else
@@ -172,8 +177,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            pnlList.Visible = true;
-            pnlDetails.Visible = false;
+            SetEditMode( false );
         }
 
         /// <summary>
@@ -191,7 +195,7 @@ namespace RockWeb.Blocks.Administration
 
             BindGrid();
 
-            pnlDetails.Visible = false;
+            SetEditMode( false );
         }
 
         #endregion
@@ -219,8 +223,6 @@ namespace RockWeb.Blocks.Administration
 
             rGrid.DataSource = dataSource;
             rGrid.DataBind();
-
-            pnlList.Visible = true;
         }
 
         /// <summary>
@@ -236,8 +238,19 @@ namespace RockWeb.Blocks.Administration
 
             lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
 
-            pnlList.Visible = false;
-            pnlDetails.Visible = true;
+            SetEditMode( true );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode (bool editable)
+        {
+            pnlDetails.Visible = editable;
+            pnlList.Visible = !editable;
+
+            this.DimOtherBlocks( editable );
         }
 
         private void LoadEditControls()
@@ -250,14 +263,24 @@ namespace RockWeb.Blocks.Administration
 
         private void DisplayError( string message )
         {
-            pnlMessage.Controls.Clear();
-            pnlMessage.Controls.Add( new LiteralControl( message ) );
-            pnlMessage.Visible = true;
-
-            pnlList.Visible = false;
-            pnlDetails.Visible = false;
+            mdAlert.Show( message, ModalAlertType.Alert );
         }
 
+        #region IDimmableBlock
+
+        /// <summary>
+        /// Sets the dimmed.
+        /// </summary>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void SetDimmed( bool dimmed )
+        {
+            pnlList.Enabled = !dimmed;
+            pnlDetails.Enabled = !dimmed;
+            rGrid.Enabled = !dimmed;
+        }
+
+        #endregion
+        
         #endregion
     }
 }

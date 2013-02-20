@@ -98,10 +98,13 @@
                         
 					</div> <!-- end row -->
                     <div class="row-fluid">
-						<div class="span6">
+						<div class="span2">
                             <div class="personimage-wrap">
                                 <img src="/Assets/Mockup/jon.jpg" width="140" alt="Jon Edmiston" />
                             </div>
+                        </div>
+
+                        <div class="span4">
                             <div class="personsummary">
                                 <div class="personsummary-tags">#tags here#</div>
                                 <div class="personsummary-demographics">
@@ -111,6 +114,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="span6">
                             <div class="personcontact">
                                 <div class="personcontact-phone">
@@ -220,12 +224,12 @@
             background-color: #fff;
             border: 1px solid #bdbdbd;
             display: table;
-            float: left;
+            width: 100%;
         }
-        
-        .personsummary {
-            float: left;
-            margin-left: 12px;
+
+        .personimage-wrap img
+        {
+            width: 100%;
         }
 
         .personsummary-tags
