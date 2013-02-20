@@ -7,7 +7,7 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
