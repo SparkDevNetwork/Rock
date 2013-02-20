@@ -304,6 +304,8 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\BatchSearchValue.cs" />
+    <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\ReportFilter.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
