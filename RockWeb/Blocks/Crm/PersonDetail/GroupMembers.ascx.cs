@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( GroupTypeId == 0 )
                 GroupTypeId = new GroupTypeService().Queryable()
-                    .Where( g => g.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
+                    .Where( g => g.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
                     .Select( g => g.Id )
                     .FirstOrDefault();
 
