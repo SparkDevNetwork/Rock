@@ -20,15 +20,16 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MarketingCampaignAdTypesField]
-    [CampusesField]
-    [MarketingCampaignAdImageAttributeNameField]
-    [IntegerField( "Max Items" )]
+    [MarketingCampaignAdImageAttributeNameField("Image Attribute Keys", "The types of images to display")]
     [DetailPage]
-    [AudiencesField( "Audience", "The audience", false, "", "", 0, "Audience" )]
-    [AudiencesPrimarySecondaryField( "AudiencePrimarySecondary", "Primary or Secondary Audience", false, "1,2", "Audience", 1 )]
+    [IntegerField( "Max Items" )]
+    [BooleanField( "Show Debug", "Output XML", false )]
     [TextField( "XSLT File", "The path to the XSLT File ", true, "~/Assets/XSLT/AdList.xslt" )]
-    [BooleanField( "Show Debug", "Output XML", false, "Advanced" )]
+        
+    [MarketingCampaignAdTypesField("Ad Types", "Types of Ads to display", true, "", "Filter", 0 )]
+    [CampusesField("Campuses", "Display Ads for selected campus", false, "", "Filter", 1 )]
+    [AudiencesField( "Audience", "The audience", false, "", "Filter", 2 )]
+    [AudiencesPrimarySecondaryField( "Audience Primary Secondary", "Primary or Secondary Audience", false, "1,2", "Filter", 3 )]
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
     {
