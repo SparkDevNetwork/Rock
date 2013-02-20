@@ -21,14 +21,16 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [MarketingCampaignAdImageAttributeNameField("Image Attribute Keys", "The types of images to display")]
+    [CustomCheckboxListField("Image Attribute Keys", "The types of images to display",  
+        "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '97F8157D-A8C8-4AB3-96A2-9CB2A9049E6D' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]")]
     [DetailPage]
     [IntegerField( "Max Items" )]
     [BooleanField( "Show Debug", "Output XML", false )]
     [TextField( "XSLT File", "The path to the XSLT File ", true, "~/Assets/XSLT/AdList.xslt" )]
-        
-    [MarketingCampaignAdTypesField("Ad Types", "Types of Ads to display", true, "", "Filter", 0 )]
-    [CampusesField("Campuses", "Display Ads for selected campus", false, "", "Filter", 1 )]
+
+    [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 0 )]
+    [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 1 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 2 )]
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 3 )]
     [ContextAware( typeof(Campus) )]
