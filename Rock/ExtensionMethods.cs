@@ -633,6 +633,25 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Parents the update panel.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static System.Web.UI.UpdatePanel ParentUpdatePanel( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is System.Web.UI.UpdatePanel )
+                {
+                    return (System.Web.UI.UpdatePanel)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
         #endregion
 
         #region WebControl Extensions

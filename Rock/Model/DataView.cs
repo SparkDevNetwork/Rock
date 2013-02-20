@@ -18,7 +18,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "DataView" )]
     [DataContract( IsReference = true )]
-    public partial class DataView : Model<DataView>
+    public partial class DataView : Model<DataView>, ICategorized
     {
 
         #region Entity Properties

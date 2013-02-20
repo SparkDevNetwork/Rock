@@ -15,6 +15,72 @@ namespace Rock.Migrations
     public abstract class RockMigration : DbMigration
     {
 
+        #region Field Type Methods
+
+        /// <summary>
+        /// Adds the type of the field.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddFieldType( string name, string description, string assembly, string className, string guid )
+        {
+            Sql( string.Format( @"
+                
+                INSERT INTO [FieldType] (
+                    [IsSystem],[Name],[Description],[Assembly],[Class],
+                    [Guid])
+                VALUES(
+                    1,'{0}','{1}','{2}','{3}',
+                    '{4}')
+",
+                    name,
+                    description.Replace( "'", "''" ),
+                    assembly,
+                    className,
+                    guid
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the type of the field.
+        /// </summary>
+        /// <param name="fieldType">Type of the field.</param>
+        public void AddFieldType( FieldType fieldType )
+        {
+            Sql( string.Format( @"
+                INSERT INTO [FieldType] (
+                    [IsSystem],[Name],[Description],[Assembly],[Class],
+                    [Guid])
+                VALUES(
+                    {0},'{1}','{2}','{3}','{4}',
+                    '{5}')
+",
+                    fieldType.IsSystem.Bit(),
+                    fieldType.Name,
+                    fieldType.Assembly,
+                    fieldType.Class,
+                    fieldType.Description.Replace( "'", "''" ),
+                    fieldType.Guid ) );
+        }
+
+        /// <summary>
+        /// Deletes the type of the field.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteFieldType( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [FieldType] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
         #region Block Type Methods
 
         /// <summary>
@@ -96,7 +162,7 @@ namespace Rock.Migrations
         }
 
         #endregion
-
+        
         #region Page Methods
 
         /// <summary>

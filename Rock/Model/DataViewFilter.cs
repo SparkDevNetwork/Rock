@@ -238,15 +238,19 @@ namespace Rock.Model
             {
                 StringBuilder sb = new StringBuilder();
 
-                string conjuction = this.ExpressionType == FilterExpressionType.GroupAll ? " OR " : " AND ";
+                string conjuction = this.ExpressionType == FilterExpressionType.GroupAll ? " AND " : " OR ";
 
                 var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
                 for(int i = 0; i < children.Count; i++)
                 {
-                    sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, children[i].ToString() );
+                    string childString = children[i].ToString();
+                    if ( !string.IsNullOrWhiteSpace( childString ) )
+                    {
+                        sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, childString );
+                    }
                 }
 
-                if (children.Count > 1)
+                if (children.Count > 1 && Parent != null)
                 {
                     sb.Insert(0, "( ");
                     sb.Append(" )");

@@ -23,7 +23,6 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( 6, "Limit to Security Role Groups", false )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
-
         #region Child Grid Dictionarys
 
         /// <summary>
@@ -62,6 +61,8 @@ namespace RockWeb.Blocks.Crm
             gGroupMemberAttributes.Actions.AddClick += gGroupMemberAttributes_Add;
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Group.FriendlyTypeName );
         }
 
         /// <summary>
@@ -143,6 +144,63 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? parentGroupId = null;
+            
+            // NOTE: Very similar code in GroupList.gGroups_Delete
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                GroupService groupService = new GroupService();
+                AuthService authService = new AuthService();
+                Group group = groupService.Get( int.Parse( hfGroupId.Value ) );
+
+                if ( group != null )
+                {
+                    parentGroupId = group.ParentGroupId;
+                    string errorMessage;
+                    if ( !groupService.CanDelete( group, out errorMessage ) )
+                    {
+                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    bool isSecurityRoleGroup = group.IsSecurityRole;
+                    if ( isSecurityRoleGroup )
+                    {
+                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
+                        {
+                            authService.Delete( auth, CurrentPersonId );
+                            authService.Save( auth, CurrentPersonId );
+                        }
+                    }
+
+                    groupService.Delete( group, CurrentPersonId );
+                    groupService.Save( group, CurrentPersonId );
+
+                    if ( isSecurityRoleGroup )
+                    {
+                        Rock.Security.Authorization.Flush();
+                        Rock.Security.Role.Flush( group.Id );
+                    }
+                }
+            } );
+
+            // reload page, selecting the deleted group's parent
+            var qryParams = new Dictionary<string, string>();
+            if ( parentGroupId != null )
+            {
+                qryParams["groupId"] = parentGroupId.ToString();
+            }
+         
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
+
+        /// <summary>
         /// Sets the edit mode.
         /// </summary>
         /// <param name="editable">if set to <c>true</c> [editable].</param>
@@ -178,6 +236,12 @@ namespace RockWeb.Blocks.Crm
             {
                 group = groupService.Get( groupId );
                 wasSecurityRole = group.IsSecurityRole;
+            }
+
+            if ( (ddlGroupType.SelectedValueAsInt() ?? 0) == 0 )
+            {
+                ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
+                return;
             }
 
             group.Name = tbName.Text;
@@ -298,11 +362,13 @@ namespace RockWeb.Blocks.Crm
         {
             GroupService groupService = new GroupService();
 
-            // optimization to only fetch Id, Name from db
+            // optimization to only fetch Id, Name from db.  Also, only get groups of a GroupType that allow children
             var qryGroup = from g in groupService.Queryable()
                            where g.Id != currentGroupId
+                           where g.GroupType.ChildGroupTypes.Any()
                            orderby g.Name
                            select new { Id = g.Id, Name = g.Name };
+
             List<Group> groups = qryGroup.ToList().ConvertAll<Group>( a => new Group { Id = a.Id, Name = a.Name } );
 
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
@@ -343,6 +409,11 @@ namespace RockWeb.Blocks.Crm
             }
 
             List<GroupType> groupTypes = groupTypeQry.OrderBy( a => a.Name ).ToList();
+            if ( groupTypes.Count() > 1 )
+            {
+                // add a empty option so they are forced to choose
+                groupTypes.Insert( 0, new GroupType { Id = 0, Name = string.Empty } );
+            }
 
             // If the currently selected GroupType isn't an option anymore, set selected GroupType to null
             if ( ddlGroupType.SelectedValue != null )
@@ -419,11 +490,13 @@ namespace RockWeb.Blocks.Crm
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
             {
                 btnEdit.Visible = true;
+                btnDelete.Visible = true;
                 if ( group.Id > 0 )
                 {
                     ShowReadonlyDetails( group );
@@ -461,11 +534,22 @@ namespace RockWeb.Blocks.Crm
 
             GroupMemberAttributesState = new ViewStateList<Attribute>();
 
-            ddlGroupType.SetValue( group.GroupTypeId );
             ddlParentGroup.SetValue( group.ParentGroupId );
-            ddlParentGroup_SelectedIndexChanged( null, null );
 
+            // GroupType depends on Selected ParentGroup
+            ddlParentGroup_SelectedIndexChanged( null, null );
             ddlParentGroup.LabelText = "Parent Group";
+
+            if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
+            {
+                // if this is a new group, and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
+                ddlGroupType.SelectedIndex = 0;
+            }
+            else
+            {
+                ddlGroupType.SetValue( group.GroupTypeId );
+            }
+
             ddlCampus.SetValue( group.CampusId );
 
             phGroupTypeAttributes.Controls.Clear();

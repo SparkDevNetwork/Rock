@@ -44,6 +44,17 @@ namespace Rock.DataFilters
         public abstract string Title { get; }
 
         /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public virtual string Section 
+        {
+            get { return string.Empty; }
+        }
+
+        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
@@ -71,7 +82,7 @@ namespace Rock.DataFilters
                 value = options[1];
             }
 
-            return string.Format( "{0} {1} {2}", Title, comparisonType.ConvertToString(), value );
+            return string.Format( "{0} {1} '{2}'", Title, comparisonType.ConvertToString(), value );
         }
 
         /// <summary>

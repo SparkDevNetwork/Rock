@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:FilterField runat=server></{0}:FilterField>" )]
     public class FilterField : CompositeControl
     {
-        Dictionary<string, string> AuthorizedComponents;
+        SortedDictionary<string, Dictionary<string, string>> AuthorizedComponents;
 
         protected DropDownList ddlFilterType;
         protected LinkButton lbDelete;
@@ -52,11 +52,11 @@ namespace Rock.Web.UI.Controls
                     string itemKey = "FilterFieldComponents:" + value;
                     if ( HttpContext.Current.Items.Contains( itemKey ) )
                     {
-                        AuthorizedComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, string>;
+                        AuthorizedComponents = HttpContext.Current.Items[itemKey] as SortedDictionary<string, Dictionary<string, string>>;
                     }
                     else
                     {
-                        AuthorizedComponents = new Dictionary<string, string>();
+                        AuthorizedComponents = new SortedDictionary<string, Dictionary<string, string>>();
                         RockPage rockPage = this.Page as RockPage;
                         if ( rockPage != null )
                         {
@@ -65,7 +65,12 @@ namespace Rock.Web.UI.Controls
                             {
                                 if ( component.IsAuthorized( "View", rockPage.CurrentPerson ) )
                                 {
-                                    AuthorizedComponents.Add( component.TypeName, component.Title );
+                                    if ( !AuthorizedComponents.ContainsKey( component.Section ) )
+                                    {
+                                        AuthorizedComponents.Add( component.Section, new Dictionary<string, string>() );
+                                    }
+
+                                    AuthorizedComponents[component.Section].Add( component.TypeName, component.Title );
                                 }
                             }
 
@@ -113,7 +118,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 bool expanded = true;
-                if (!bool.TryParse(hfExpanded.Value, out expanded))
+                if ( !bool.TryParse( hfExpanded.Value, out expanded ) )
                     expanded = true;
                 return expanded;
             }
@@ -166,7 +171,9 @@ namespace Rock.Web.UI.Controls
 
             ddlFilterType = new DropDownList();
             Controls.Add( ddlFilterType );
+            ddlFilterType.ID = this.ID + "_ddlFilter";
 
+            int i = 0;
             var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
@@ -176,6 +183,7 @@ namespace Rock.Web.UI.Controls
                     foreach ( var filterControl in filterControls )
                     {
                         Controls.Add( filterControl );
+                        filterControl.ID = string.Format( "{0}_fc_{1}", this.ID, i++ );
                     }
                 }
             }
@@ -189,24 +197,35 @@ namespace Rock.Web.UI.Controls
 
             ddlFilterType.Items.Clear();
             ddlFilterType.Items.Add( new ListItem( string.Empty ) );
-            foreach ( var item in AuthorizedComponents )
+
+            foreach ( var section in AuthorizedComponents )
             {
-                ListItem li = new ListItem( item.Value, item.Key );
-                li.Selected = item.Key == FilterEntityTypeName;
-                ddlFilterType.Items.Add( li );
+                foreach ( var item in section.Value )
+                {
+                    ListItem li = new ListItem( item.Value, item.Key );
+                    if ( !string.IsNullOrWhiteSpace( section.Key ) )
+                    {
+                        li.Attributes.Add( "optiongroup", section.Key );
+                    }
+                    li.Selected = item.Key == FilterEntityTypeName;
+                    ddlFilterType.Items.Add( li );
+                }
             }
 
             hfExpanded = new HiddenField();
             Controls.Add( hfExpanded );
+            hfExpanded.ID = this.ID + "_hfExpanded";
+            hfExpanded.Value = "True";
 
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
+            lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.CssClass = "btn btn-mini btn-danger ";
             lbDelete.Click += lbDelete_Click;
 
-            var i = new HtmlGenericControl( "i" );
-            lbDelete.Controls.Add( i );
-            i.AddCssClass( "icon-remove" );
+            var iDelete = new HtmlGenericControl( "i" );
+            lbDelete.Controls.Add( iDelete );
+            iDelete.AddCssClass( "icon-remove" );
         }
 
         /// <summary>
@@ -216,7 +235,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             DataFilterComponent component = null;
-            if (!string.IsNullOrWhiteSpace(FilterEntityTypeName))
+            if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
             {
                 component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             }
@@ -297,7 +316,7 @@ namespace Rock.Web.UI.Controls
                 SelectionChanged( this, e );
             }
         }
-        
+
         void lbDelete_Click( object sender, EventArgs e )
         {
             if ( DeleteClick != null )

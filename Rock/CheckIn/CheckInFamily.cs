@@ -50,6 +50,15 @@ namespace Rock.CheckIn
         public string Caption { get; set; }
 
         /// <summary>
+        /// Gets or sets the sub caption.
+        /// </summary>
+        /// <value>
+        /// The sub caption.
+        /// </value>
+        [DataMember]
+        public string SubCaption { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
         /// </summary>
         public CheckInFamily()
