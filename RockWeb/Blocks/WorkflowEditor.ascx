@@ -139,23 +139,39 @@
 </fieldset>
 
 <script>
-    /*
-    // activity annimation
+    // activity animation
     $('.workflow-activity > header').click(function () {
         $(this).siblings('.widget-content').slideToggle();
 
         $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
         $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
-
     });
 
-    // action annimation
+    // fix so that the Remove button will fire its event, but not the parent event 
+    $('.workflow-activity .icon-remove').click(function (event) {
+        event.stopImmediatePropagation();
+    });
+
+    // fix so that the Reorder button will fire its event, but not the parent event 
+    $('.workflow-activity .icon-reorder').click(function (event) {
+        event.stopImmediatePropagation();
+    });
+
+    // action animation
     $('.workflow-action > header').click(function () {
         $(this).siblings('.widget-content').slideToggle();
 
         $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
         $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
-
     });
-    */
+
+    // fix so that the Remove button will fire its event, but not the parent event 
+    $('.workflow-action .icon-remove').click(function (event) {
+        event.stopImmediatePropagation();
+    });
+
+    // fix so that the Reorder button will fire its event, but not the parent event 
+    $('.workflow-action .icon-reorder').click(function (event) {
+        event.stopImmediatePropagation();
+    });
 </script>
