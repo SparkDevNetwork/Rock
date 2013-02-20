@@ -128,8 +128,7 @@ namespace Rock.Services.NuGet
 
             if ( page != null )
             {
-                var installedBlockTypes = new BlockTypeService().Queryable();
-                var newBlockTypes = FindNewBlockTypes( page, installedBlockTypes );
+                var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService().Queryable() );
                 ValidateImportData( page, newBlockTypes );
                 ExpandFiles( package, packageFiles, path );   
             }
@@ -253,11 +252,26 @@ namespace Rock.Services.NuGet
             manifest.Files.AddRange( files );
         }
 
+
         private IEnumerable<BlockType> FindNewBlockTypes( Page page, IEnumerable<BlockType> installedBlockTypes )
         {
             var newBlockTypes = new List<BlockType>();
+            installedBlockTypes = installedBlockTypes.ToList();
             
+            foreach ( var block in page.Blocks )
+            {
+                var blockType = block.BlockType;
 
+                if ( installedBlockTypes.All( b => b.Path != blockType.Path ) && !newBlockTypes.Contains( blockType ) )
+                {
+                    newBlockTypes.Add( blockType );
+                }
+            }
+
+            foreach ( var p in page.Pages )
+            {
+                newBlockTypes.AddRange( FindNewBlockTypes( p, installedBlockTypes ) );
+            }
 
             return newBlockTypes;
         }
