@@ -109,6 +109,7 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( "fieldtype" ) && configurationValues["fieldtype"].Value == "rb" )
                 {
                     editControl = new RadioButtonList();
+                    ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
                 }
                 else
                 {
