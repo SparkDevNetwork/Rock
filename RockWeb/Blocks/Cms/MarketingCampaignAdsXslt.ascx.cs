@@ -12,6 +12,7 @@ using System.Web;
 using System.Web.UI;
 using System.Xml.Linq;
 using System.Xml.Xsl;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -20,15 +21,19 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
-    [TextField( 0, "XSLT File", "Ad Display XSLT", "The path to the XSLT File ", true, "~/Assets/XSLT/AdList.xslt" )]
-    [AudiencesField( 2, "Audience", false )]
-    [AudiencesPrimarySecondaryField( 3, "AudiencePrimarySecondary", false )]
-    [CampusessField( 4, "Campuses", false )]
-    [MarketingCampaignAdImageAttributeNameField( 5, "Image Attribute Keys", false )]
-    [IntegerField( 6, "Max Items", "" )]
-    [MarketingCampaignAdTypesField( 7, "Ad Types", false )]
+    [CustomCheckboxListField("Image Attribute Keys", "The types of images to display",  
+        "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
+        Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]")]
     [DetailPage]
-    [BooleanField( 8, "Show Debug", false, null, "Advanced", "Output XML" )]
+    [IntegerField( "Max Items" )]
+    [BooleanField( "Show Debug", "Output XML", false )]
+    [TextField( "XSLT File", "The path to the XSLT File ", true, "~/Assets/XSLT/AdList.xslt" )]
+
+    [CustomCheckboxListField( "Ad Types", "Types of Ads to display",
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [MarketingCampaignAdType] ORDER BY [Name]", true, "", "Filter", 0 )]
+    [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 1 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 2 )]
+    [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 3 )]
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
     {
@@ -210,7 +215,7 @@ namespace RockWeb.Blocks.Cms
                     foreach ( AttributeValue attributeValue in attributeValues )
                     {
                         // If Block Attributes limit image types, limit images 
-                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.IMAGE ) )
+                        if ( attribute.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.IMAGE ) ) )
                         {
                             if ( imageAttributeKeyFilter != null )
                             {

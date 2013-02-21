@@ -18,9 +18,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
-
-    [IntegerField(0, "Hours to Keep Unconfirmed Accounts", "48", "HoursKeepUnconfirmedAccounts", "General", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)")]
-    [IntegerField(0, "Days to Keep Exceptions in Log", "14", "DaysKeepExceptions", "General", "The number of days to keep exceptions in the exception log (default is 14 days.)")]
+    [IntegerField("Hours to Keep Unconfirmed Accounts", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)", false, 48, "General", 0, "HoursKeepUnconfirmedAccounts" )]
+    [IntegerField("Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1,"DaysKeepExceptions" )]
     public class RockCleanup : IJob
     {        
         /// <summary> 

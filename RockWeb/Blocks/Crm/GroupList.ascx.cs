@@ -18,12 +18,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
-    [GroupTypesField( 0, "Group Types", false, "", "", "", "Select group types to show in this block.  Leave all unchecked to show all group types." )]
-    [BooleanField( 1, "Show User Count", true )]
-    [BooleanField( 2, "Show Description", true )]
-    [BooleanField( 3, "Show Edit", true )]
-    [BooleanField( 5, "Show Notification", false )]
-    [BooleanField( 6, "Limit to Security Role Groups", false )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
+    [BooleanField( "Show User Count", "", true )]
+    [BooleanField( "Show Description", "", true )]
+    [BooleanField( "Show Edit", "", true )]
+    [BooleanField( "Show Notification" )]
+    [BooleanField( "Limit to Security Role Groups" )]
     [ContextAware( typeof(Group) )]
     [DetailPage]
     public partial class GroupList : RockBlock

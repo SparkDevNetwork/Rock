@@ -317,7 +317,7 @@ namespace Rock.Model
             if ( attribute == null )
             {
                 var fieldTypeService = new Model.FieldTypeService();
-                var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
+                var fieldType = fieldTypeService.GetByGuid( new Guid( Rock.SystemGuid.FieldType.TEXT ) );
 
                 attribute = new Model.Attribute();
                 attribute.IsSystem = false;

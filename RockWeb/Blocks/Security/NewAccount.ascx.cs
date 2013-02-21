@@ -16,13 +16,13 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [BooleanField( 0, "Check for Duplicates", true, "Duplicates", "", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.")]
-    [TextField( 1, "Confirm Route", "The URL Route for Confirming an account", true)]
-    [TextField( 2, "Found Duplicate", "FoundDuplicateCaption", "Captions", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?" )]
-    [TextField( 3, "Existing Account", "ExistingAccountCaption", "Captions", "", false,"{0}, you already have an existing account.  Would you like us to email you the username?" )]
-    [TextField( 4, "Sent Login", "SentLoginCaption", "Captions", "", false,"Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password." )]
-    [TextField( 5, "Confirm", "ConfirmCaption", "Captions", "", false,"Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue." )]
-    [TextField( 6, "Success", "SuccessCaption", "Captions", "", false,"{0}, Your account has been created" )]
+    [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true)]
+    [TextField( "Confirm Route", "The URL Route for Confirming an account", true)]
+    [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 0 )]
+    [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 1 )]
+    [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 2 )]
+    [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 3 )]
+    [TextField( "Success Caption", "", false, "{0}, Your account has been created", "Captions", 4 )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
         PlaceHolder[] PagePanels = new PlaceHolder[6];

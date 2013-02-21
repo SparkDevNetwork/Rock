@@ -28,13 +28,13 @@ namespace RockWeb.Blocks.Reporting
     /// Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure.
     /// </summary>
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
-    [BooleanField( 0, "Update Page", true, "UpdatePage", "", "If True, provides fields for updating the parent page's Name and Description" )] 
-    [TextField( 1, "Query", "The query to execute", false )]
-    [TextField( 2, "Query Params", "Parameters to pass to query", false )]
-    [TextField( 3, "Url Mask", "The Url to redirect to when a row is clicked", false )]
-    [BooleanField( 4, "Show Columns", false, "ShowColumns", "", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)")]
-    [TextField( 5, "Columns", "The columns to hide or show", false )]
-    [TextField( 6, "Xslt File Path", "The Xslt file path relative to the current theme's Assets/Xslt folder (if query returns xml that should be transformed)", false)]
+    [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true )] 
+    [TextField( "Query", "The query to execute", false )]
+    [TextField( "Query Params", "Parameters to pass to query", false )]
+    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false )]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)")]
+    [TextField( "Columns", "The columns to hide or show", false )]
+    [TextField( "Xslt File Path", "The Xslt file path relative to the current theme's Assets/Xslt folder (if query returns xml that should be transformed)", false)]
     public partial class DynamicData : RockBlock
     { 
         #region Control Methods

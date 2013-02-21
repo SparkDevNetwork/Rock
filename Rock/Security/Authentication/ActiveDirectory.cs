@@ -19,8 +19,8 @@ namespace Rock.Security.Authentication
     [Description( "Active Directory Authentication Provider" )]
     [Export(typeof(AuthenticationComponent))]
     [ExportMetadata("ComponentName", "Active Directory")]
-    [TextField( 1, "Server", "Server", "The Active Directory server name", true, "" )]
-    [TextField( 2, "Domain", "Server", "The network domain that users belongs to", true, "" )]
+    [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
+    [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
     public class ActiveDirectory : AuthenticationComponent
     {
         /// <summary>

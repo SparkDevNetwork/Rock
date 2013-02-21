@@ -15,7 +15,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// User control for viewing key attributes
     /// </summary>
-    [TextField( 1, "Xslt File", "Behavior", "XSLT File to use.", false, "AttributeValues.xslt" )]
+    [TextField( "Xslt File", "XSLT File to use.", false, "AttributeValues.xslt" )]
     public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
         private XDocument xDocument = null;

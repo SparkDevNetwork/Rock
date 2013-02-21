@@ -20,8 +20,8 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
-        public EntityTypeAttribute(string name, string description)
-            : base( 0, name, false, "", null, string.Empty, description, typeof( Rock.Field.Types.EntityType).FullName )
+        public EntityTypeAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null)
+            : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityType ).FullName )
         {
         }
     }

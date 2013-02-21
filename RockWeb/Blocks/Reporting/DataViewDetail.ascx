@@ -48,25 +48,13 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click"/>
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
                     </div>
                 </div>
             </fieldset>
 
         </asp:Panel>
-
-        <script>
-            Sys.Application.add_load(function () {
-                $('a.filter-view-state').click(function () {
-                    $header = $(this).parent().parent();
-                    $header.siblings('.widget-content').slideToggle();
-                    $header.children('div.pull-left').children('div').slideToggle();
-                    $enabled = $header.children('input.filter-expanded');
-                    $enabled.val($enabled.val() == "True" ? "False" : "True");
-                    $('i', this).toggleClass('icon-chevron-down');
-                    $('i', this).toggleClass('icon-chevron-up');
-                });
-            });
-        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

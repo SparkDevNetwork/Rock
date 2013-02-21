@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Administration
                 hfBlockId.Value = "0";
 
                 // Select HTML Content block by default
-                var blockType = new Rock.Model.BlockTypeService().GetByGuid( Rock.SystemGuid.BlockType.HTML_CONTENT );
+                var blockType = new Rock.Model.BlockTypeService().GetByGuid( new Guid( Rock.SystemGuid.BlockType.HTML_CONTENT ) );
                 if (blockType != null)
                     ddlBlockType.SelectedValue = blockType.Id.ToString();                
                 else

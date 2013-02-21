@@ -139,9 +139,9 @@ namespace RockWeb.Blocks.Administration
                 ddlFundType.Items.Add( li );
             }
 
-            BindDefinedTypeDropdown( ddlCurrencyType, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Currency Type" );
-            BindDefinedTypeDropdown( ddlCreditCardType, Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE, "Credit Card Type" );
-            BindDefinedTypeDropdown( ddlSourceType, Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source" );
+            BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
+            BindDefinedTypeDropdown( ddlCreditCardType,new Guid(  Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
+            BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source" );
         }
 
         private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )

@@ -20,8 +20,8 @@ namespace Rock.Workflow.Action
     [Description( "Set the workflow status" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Set Status")]
-    [TextField( 0, "EmailTemplate", "The email template to send", true )]
-    [TextField( 1, "Recipient", "The email address to send to", true )]
+    [TextField( "EmailTemplate", "The email template to send" )]
+    [TextField( "Recipient", "The email address to send to" )]
     public class SendEmail : ActionComponent
     {
         /// <summary>

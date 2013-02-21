@@ -57,26 +57,24 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Creates the child controls.
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
         /// </summary>
-        /// <returns></returns>
-        public override Control[] CreateChildControls()
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public override string ClientFormatSelection
         {
-            DropDownList ddlGroupType = new DropDownList();
-            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
+            get
             {
-                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+                return "'Attended ' + " + 
+                    "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
+                    "$('select:last', $content).find(':selected').text() + ' ' + " + 
+                    "$('input:first', $content).val() + ' times in the last ' + " +
+                    "$('input:last', $content).val() + ' week(s)'";
             }
-
-            var controls = new Control[4] {
-                ddlGroupType,  ComparisonControl( NumericFilterComparisonTypes ),
-                new TextBox(), new TextBox() };
-
-            SetSelection( controls, string.Format( "{0}|{1}|4|16", 
-                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
-                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
-
-            return controls;
         }
 
         /// <summary>
@@ -104,6 +102,29 @@ namespace Rock.DataFilters.Person
             }
 
             return s;
+        }
+
+        /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <returns></returns>
+        public override Control[] CreateChildControls()
+        {
+            DropDownList ddlGroupType = new DropDownList();
+            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
+            {
+                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+            }
+
+            var controls = new Control[4] {
+                ddlGroupType,  ComparisonControl( NumericFilterComparisonTypes ),
+                new TextBox(), new TextBox() };
+
+            SetSelection( controls, string.Format( "{0}|{1}|4|16",
+                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
+                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+
+            return controls;
         }
 
         /// <summary>

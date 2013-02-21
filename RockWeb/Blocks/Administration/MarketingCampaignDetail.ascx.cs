@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Event Page", "EventPageGuid")]
+    [LinkedPage("Event Page")]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States
@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Administration
         {
             // Controls on Main Campaign Panel
             GroupService groupService = new GroupService();
-            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES ) ).OrderBy( a => a.Name ).ToList();
+            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid(Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES) ) ).OrderBy( a => a.Name ).ToList();
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
@@ -421,7 +421,7 @@ namespace RockWeb.Blocks.Administration
             if ( marketingCampaign.EventGroup != null )
             {
                 string eventGroupHtml = marketingCampaign.EventGroup.Name;
-                string eventPageGuid = this.GetAttributeValue( "EventPageGuid" );
+                string eventPageGuid = this.GetAttributeValue( "EventPage" );
 
                 if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
                 {
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Administration
             {
                 tbContactEmail.Text = contactPerson.Email;
                 tbContactFullName.Text = contactPerson.FullName;
-                PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY );
+                PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY ) );
                 tbContactPhoneNumber.Text = phoneNumber == null ? string.Empty : phoneNumber.Number;
             }
         }
@@ -512,7 +512,7 @@ namespace RockWeb.Blocks.Administration
             DefinedValueService definedValueService = new DefinedValueService();
 
             // populate dropdown with all MarketingCampaignAudiences that aren't already MarketingCampaignAudiences
-            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ).AsQueryable()
+            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ) ).AsQueryable()
                       where !( from mcaudience in MarketingCampaignAudiencesState
                                select mcaudience.AudienceTypeValueId ).Contains( audienceTypeValue.Id )
                       select audienceTypeValue;
