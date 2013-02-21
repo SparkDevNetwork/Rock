@@ -28,6 +28,36 @@ namespace Rock.Web.UI.Controls
         protected HiddenField hfExpanded;
         protected Control[] filterControls;
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+// activity animation
+$('.filter-item > header').click(function () {
+    $(this).siblings('.widget-content').slideToggle();
+    $(this).children('div.pull-left').children('div').slideToggle();
+
+    $enabled = $(this).children('input.filter-expanded');
+    $enabled.val($enabled.val() == 'True' ? 'False' : 'True');
+
+    $('a.filter-view-state > i', this).toggleClass('icon-chevron-down');
+    $('a.filter-view-state > i', this).toggleClass('icon-chevron-up');
+});
+
+// fix so that the Remove button will fire its event, but not the parent event 
+$('.filter-item .icon-remove').click(function (event) {
+    event.stopImmediatePropagation();
+});
+
+$('.filter-item-select').click(function (event) {
+    event.stopImmediatePropagation();
+});
+
+";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "FilterFieldEditorScript", script, true );
+        }
+        
         /// <summary>
         /// Gets or sets the name of entity type that is being filtered.
         /// </summary>
