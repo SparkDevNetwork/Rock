@@ -46,7 +46,7 @@ $('.filter-item > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.filter-item .icon-remove').click(function (event) {
+$('.filter-item a.btn-danger').click(function (event) {
     event.stopImmediatePropagation();
 });
 
