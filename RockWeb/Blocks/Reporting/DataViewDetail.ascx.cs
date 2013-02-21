@@ -57,9 +57,17 @@ $(document).ready(function() {
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "DataViewId" );
+                string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "DataViewId", int.Parse( itemId ) );
+                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
+                    {
+                        ShowDetail( "DataViewId", int.Parse( itemId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "DataViewId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                    }
                 }
                 else
                 {
@@ -250,9 +258,20 @@ $(document).ready(function() {
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            ShowDetail( itemKey, itemKeyValue, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="parentCategoryId">The parent category id.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        {
+            pnlDetails.Visible = false;
             if ( !itemKey.Equals( "DataViewId" ) )
             {
-                pnlDetails.Visible = false;
                 return;
             }
 
@@ -264,7 +283,7 @@ $(document).ready(function() {
             }
             else
             {
-                dataView = new DataView { Id = 0, IsSystem = false };
+                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
             if ( dataView == null )
@@ -326,7 +345,6 @@ $(document).ready(function() {
             }
 
             SetEditMode( true );
-
             LoadDropDowns();
 
             if ( dataView.DataViewFilter == null || dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
