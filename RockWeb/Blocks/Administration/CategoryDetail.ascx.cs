@@ -18,7 +18,7 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
-    [TextField( "EntityTypeName", "Category Entity Type", false )]
+    [EntityType( "Entity Type", "The Category Entity Type" )]
     public partial class CategoryDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -39,9 +39,17 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "categoryId" );
+                string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "categoryId", int.Parse( itemId ) );
+                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
+                    {
+                        ShowDetail( "categoryId", int.Parse( itemId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "categoryId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                    }
                 }
                 else
                 {
@@ -113,11 +121,11 @@ namespace RockWeb.Blocks.Administration
             {
                 category = new Category();
                 category.IsSystem = false;
-                category.Name = string.Empty;
-                string entityTypeName = GetAttributeValue( "EntityTypeName" );
-                if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
+
+                int entityTypeId = 0;
+                if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
                 {
-                    category.EntityTypeId = EntityTypeCache.GetId( entityTypeName ).Value;
+                    category.EntityTypeId = entityTypeId;
                 }
             }
             else
@@ -161,6 +169,7 @@ namespace RockWeb.Blocks.Administration
 
             // reload group from db using a new context
             category = new CategoryService().Get( category.Id );
+
             ShowReadonlyDetails( category );
         }
 
@@ -173,14 +182,23 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            CategoryService service = new CategoryService();
-            var qry = service.Queryable();
-            List<Category> cats = qry.OrderBy( a => a.Name ).ToList();
             ddlParentCategory.Items.Clear();
-            ddlParentCategory.Items.Add(None.ListItem);
-            foreach ( var item in cats )
+            ddlParentCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
+
+            int entityTypeId = 0;
+            if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
             {
-                ddlParentCategory.Items.Add(new ListItem(item.Name, item.Id.ToString()));
+                var service = new CategoryService();
+                LoadChildCategories( service, null, entityTypeId, 0 );
+            }
+        }
+
+        private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
+        {
+            foreach ( var category in service.Get( parentId, entityTypeId ) )
+            {
+                ddlParentCategory.Items.Add( new ListItem( ( new string( '-', level ) ) + category.Name, category.Id.ToString() ) );
+                LoadChildCategories( service, category.Id, entityTypeId, level + 1 );
             }
         }
 
@@ -191,13 +209,23 @@ namespace RockWeb.Blocks.Administration
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            ShowDetail( itemKey, itemKeyValue, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="parentCategoryId">The parent category id.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        {
+            pnlDetails.Visible = false;
             if ( !itemKey.Equals( "categoryId" ) )
             {
-                pnlDetails.Visible = false;
                 return;
             }
 
-            pnlDetails.Visible = true;
             Category category = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -206,9 +234,20 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                category = new Category { Id = 0, IsSystem = false};
+                category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
+                int entityTypeId = 0;
+                if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
+                {
+                    category.EntityTypeId = entityTypeId;
+                }
             }
 
+            if ( category == null )
+            {
+                return;
+            }
+
+            pnlDetails.Visible = true;
             hfCategoryId.Value = category.Id.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -266,7 +305,15 @@ namespace RockWeb.Blocks.Administration
             
             tbName.Text = category.Name;
             ddlParentCategory.SetValue( category.ParentCategoryId );
-            lblEntityTypeName.Text = category.EntityType.Name;
+
+            if ( category.EntityTypeId != 0 )
+            {
+                lblEntityTypeName.Text = EntityTypeCache.Read( category.EntityTypeId ).Name;
+            }
+            else
+            {
+                lblEntityTypeName.Text = string.Empty;
+            }
             lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
             lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
