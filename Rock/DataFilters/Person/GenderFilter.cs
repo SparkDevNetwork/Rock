@@ -88,7 +88,6 @@ namespace Rock.DataFilters.Person
         public override Control[] CreateChildControls()
         {
             RadioButtonList rbl = new RadioButtonList();
-            rbl.RepeatLayout = RepeatLayout.Flow;
             rbl.RepeatDirection = RepeatDirection.Horizontal;
             rbl.Items.Add( new ListItem( "Male", "Male" ) );
             rbl.Items.Add( new ListItem( "Female", "Female" ) );

@@ -56,7 +56,7 @@
                         <HeaderStyle HorizontalAlign="Left" />
                         <ItemStyle Wrap="false" HorizontalAlign="Left" />
                         <ItemTemplate>
-                            <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list"
+                            <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list"
                                 OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">
                                 <asp:ListItem Value="A" Text="Allow"></asp:ListItem>
                                 <asp:ListItem Value="D" Text="Deny"></asp:ListItem>
@@ -98,7 +98,7 @@
                     <dt></dt>
                     <dd>
                         <a class="show-action-list" href="#">...</a>
-                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatLayout="UnorderedList" CssClass="inputs-list" ></asp:CheckBoxList>
+                        <asp:CheckBoxList ID="cblRoleActionList" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list" ></asp:CheckBoxList>
                     </dd>
                 </dl>
             </fieldset>
@@ -119,7 +119,7 @@
                     <dt></dt>
                     <dd>
                         <asp:LinkButton ID="lbUserSearch" runat="server" Text="Search" onclick="lbUserSearch_Click" CssClass="btn x-small"></asp:LinkButton>
-                        <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list"></asp:CheckBoxList>
+                        <asp:CheckBoxList ID="cbUsers" runat="server" CssClass="inputs-list" RepeatDirection="Vertical"></asp:CheckBoxList>
                     </dd>
                 </dl>
             </fieldset>

@@ -915,7 +915,7 @@ namespace Rock.Web.UI
             fsZoneSelect.Controls.Add( ddlZones );
 
             LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
-            rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
+            rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
