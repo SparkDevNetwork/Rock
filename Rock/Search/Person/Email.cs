@@ -22,8 +22,8 @@ namespace Rock.Search.Person
     [Description( "Person Email Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Email")]
-    [TextField( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Email" )]
-    [TextField( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
+    [TextField( "Search Label", "The text to display in the search type dropdown", false, "Email" )]
+    [TextField( "Result URL", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
     public class Email : SearchComponent
     {
         /// <summary>

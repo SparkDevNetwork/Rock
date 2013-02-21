@@ -16,6 +16,6 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the default RockChMS Site guid
         /// </summary>
-        public static Guid SITE_ROCK_CHMS { get { return new Guid( "C2D29296-6A87-47A9-A753-EE4E9159C4C4" ); } }
+        public const string SITE_ROCK_CHMS= "C2D29296-6A87-47A9-A753-EE4E9159C4C4";
     }
 }

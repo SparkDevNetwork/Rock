@@ -35,7 +35,7 @@ public partial class error : System.Web.UI.Page
             var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
             GroupService service = new GroupService();
-            Group adminGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS );
+            Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
 
             if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
             {

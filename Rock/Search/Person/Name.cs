@@ -18,8 +18,8 @@ namespace Rock.Search.Person
     [Description("Person Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
-    [TextField( 1, "Search Label", "Behavior", "The text to display in the search type dropdown", false, "Name" )]
-    [TextField( 2, "Result URL", "Behavior", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)", true, "" )]
+    [TextField( "Search Label", "The text to display in the search type dropdown", false, "Name" )]
+    [TextField( "Result URL", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
     public class Name : SearchComponent
     {
         /// <summary>

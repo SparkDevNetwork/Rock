@@ -51,6 +51,8 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
                     </div>
                 </div>
             </fieldset>
