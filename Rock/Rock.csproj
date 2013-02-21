@@ -138,6 +138,7 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Data\PreviewableAttribute.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
