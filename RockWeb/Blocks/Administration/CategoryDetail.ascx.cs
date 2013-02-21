@@ -15,6 +15,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -23,9 +24,19 @@ namespace RockWeb.Blocks.Administration
     {
         #region Control Methods
 
+        private int entityTypeId = 0;
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId );
+            
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
         }
 
         /// <summary>
@@ -96,6 +107,45 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? parentCategoryId = null;
+
+            var categoryService = new CategoryService();
+            var category = categoryService.Get( int.Parse( hfCategoryId.Value ) );
+
+            if ( category != null )
+            {
+                string errorMessage;
+                if ( !categoryService.CanDelete( category, out errorMessage ) )
+                {
+                    ShowReadonlyDetails( category );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                }
+                else
+                {
+                    parentCategoryId = category.ParentCategoryId;
+
+                    categoryService.Delete( category, CurrentPersonId );
+                    categoryService.Save( category, CurrentPersonId );
+
+                    // reload page, selecting the deleted category's parent
+                    var qryParams = new Dictionary<string, string>();
+                    if ( parentCategoryId != null )
+                    {
+                        qryParams["CategoryId"] = parentCategoryId.ToString();
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+            }
+        }
+
+        /// <summary>
         /// Sets the edit mode.
         /// </summary>
         /// <param name="editable">if set to <c>true</c> [editable].</param>
@@ -121,12 +171,7 @@ namespace RockWeb.Blocks.Administration
             {
                 category = new Category();
                 category.IsSystem = false;
-
-                int entityTypeId = 0;
-                if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
-                {
-                    category.EntityTypeId = entityTypeId;
-                }
+                category.EntityTypeId = entityTypeId;
             }
             else
             {
@@ -167,10 +212,9 @@ namespace RockWeb.Blocks.Administration
                 categoryService.Save( category, CurrentPersonId );
             } );
 
-            // reload group from db using a new context
-            category = new CategoryService().Get( category.Id );
-
-            ShowReadonlyDetails( category );
+            var qryParams = new Dictionary<string, string>();
+            qryParams["CategoryId"] = category.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         #endregion
@@ -185,12 +229,8 @@ namespace RockWeb.Blocks.Administration
             ddlParentCategory.Items.Clear();
             ddlParentCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
 
-            int entityTypeId = 0;
-            if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
-            {
-                var service = new CategoryService();
-                LoadChildCategories( service, null, entityTypeId, 0 );
-            }
+            var service = new CategoryService();
+            LoadChildCategories( service, null, entityTypeId, 0 );
         }
 
         private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
@@ -226,20 +266,17 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
+            var categoryService = new CategoryService();
             Category category = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                category = new CategoryService().Get( itemKeyValue );
+                category = categoryService.Get( itemKeyValue );
             }
             else
             {
                 category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
-                int entityTypeId = 0;
-                if ( int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
-                {
-                    category.EntityTypeId = entityTypeId;
-                }
+                category.EntityTypeId = entityTypeId;
             }
 
             if ( category == null )
@@ -269,11 +306,14 @@ namespace RockWeb.Blocks.Administration
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 ShowReadonlyDetails( category );
             }
             else
             {
                 btnEdit.Visible = true;
+                string errorMessage = string.Empty;
+                btnDelete.Visible = categoryService.CanDelete(category, out errorMessage);
                 if ( category.Id > 0 )
                 {
                     ShowReadonlyDetails( category );
