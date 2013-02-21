@@ -38,8 +38,8 @@ $('.filter-item > header').click(function () {
     $(this).siblings('.widget-content').slideToggle();
     $(this).children('div.pull-left').children('div').slideToggle();
 
-    $enabled = $(this).children('input.filter-expanded');
-    $enabled.val($enabled.val() == 'True' ? 'False' : 'True');
+    $expanded = $(this).children('input.filter-expanded');
+    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
     $('a.filter-view-state > i', this).toggleClass('icon-chevron-down');
     $('a.filter-view-state > i', this).toggleClass('icon-chevron-up');
@@ -265,9 +265,12 @@ $('.filter-item-select').click(function (event) {
         public override void RenderControl( HtmlTextWriter writer )
         {
             DataFilterComponent component = null;
+            string clientFormatString = string.Empty;
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
             {
                 component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                clientFormatString = 
+                    string.Format("if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.ClientFormatSelection);
             }
 
             if ( component == null )
@@ -308,8 +311,13 @@ $('.filter-item-select').click(function (event) {
 
             writer.RenderEndTag();
 
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            if (!string.IsNullOrEmpty(clientFormatString))
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString);
+            }
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
