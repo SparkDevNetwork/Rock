@@ -30,6 +30,8 @@ namespace Rock.Web.UI.Controls
 
         private LinkButton lbAddActionType;
 
+        public bool ForceContentVisible { private get; set; }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -53,7 +55,7 @@ $('.workflow-activity a.btn-danger').click(function (event) {
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 
-$('.workflow-activity a.btn-reorder').click(function (event) {
+$('.workflow-activity a.workflow-activity-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -98,9 +100,12 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
             result.IsActive = cbActivityTypeIsActive.Checked;
             result.IsActivatedWithWorkflow = cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
+            int order = 0;
             foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
             {
-                result.ActionTypes.Add( workflowActionTypeEditor.WorkflowActionType );
+                WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
+                workflowActionType.Order = order++;
+                result.ActionTypes.Add( workflowActionType );
             }
 
             return result;
@@ -193,6 +198,7 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+            writer.AddAttribute( "data-key", hfActivityTypeGuid.Value );
             writer.RenderBeginTag( "section" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
@@ -215,7 +221,7 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini btn-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-mini workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
             writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
@@ -234,7 +240,7 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            bool forceContentVisible = !GetWorkflowActivityType().IsValid;
+            bool forceContentVisible = !GetWorkflowActivityType().IsValid || ForceContentVisible;
 
             if ( !forceContentVisible )
             {
@@ -277,6 +283,7 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
             writer.RenderEndTag();
 
             // actions
+            
             writer.RenderBeginTag( "fieldset" );
 
             writer.RenderBeginTag( "legend" );
@@ -287,11 +294,16 @@ $('.workflow-activity a.btn-reorder').click(function (event) {
             writer.RenderEndTag();
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
             {
                 workflowActionTypeEditor.RenderControl( writer );
             }
-
+            
+            // workflow-action-list div
+            writer.RenderEndTag();
+            
             // actions fieldset
             writer.RenderEndTag();
 
