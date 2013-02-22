@@ -21,7 +21,7 @@
                         </div>
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
-                            <Rock:DataTextBox  ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
                 </fieldset>
@@ -33,7 +33,7 @@
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
                     <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn pull-right" OnClick="btnPreview_Click" />
                 </div>
-    
+
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
@@ -45,12 +45,13 @@
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
                     <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click"/>
+                        <asp:LinkButton ID="btnEdit"   runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
                         <asp:LinkButton ID="btnPreview2" runat="server" Text="Preview" CssClass="btn btn-mini pull-right" OnClick="btnPreview2_Click" />
                     </div>
                 </div>

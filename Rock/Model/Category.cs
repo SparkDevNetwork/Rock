@@ -10,6 +10,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -18,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Category" )]
     [DataContract( IsReference = true )]
-    public partial class Category : Entity<Category>
+    public partial class Category : Model<Category>
     {
 
         #region Entity Properties
@@ -157,6 +158,25 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( ParentCategory != null )
+                {
+                    return ParentCategory;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
 
         #endregion
 

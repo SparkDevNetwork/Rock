@@ -51,6 +51,7 @@ $(document).ready(function() {
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
+            btnSecurity.EntityType = typeof( Rock.Model.DataView );
         }
 
         /// <summary>
@@ -370,7 +371,7 @@ $(document).ready(function() {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
-            if ( dataView == null )
+            if ( dataView == null || !dataView.IsAuthorized( "View", CurrentPerson ) )
             {
                 return;
             }
@@ -381,11 +382,20 @@ $(document).ready(function() {
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
+            btnPreview2.Visible = true;
+
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !dataView.IsAuthorized( "Edit", CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            }
+
+            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            {
+                readOnly = true;
+                btnPreview2.Visible = false;
+                nbEditModeMessage.Text = "INFO: This Data View contains a filter that you do not have access to view.";
             }
 
             if ( dataView.IsSystem )
@@ -393,6 +403,10 @@ $(document).ready(function() {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
             }
+
+            btnSecurity.Visible = dataView.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Title = "Secure " + dataView.Name;
+            btnSecurity.EntityTypeId = dataView.Id;
 
             if ( readOnly )
             {
@@ -513,7 +527,8 @@ $(document).ready(function() {
                         if ( getMethod != null )
                         {
                             var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                            gPreview.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, filter.GetExpression( paramExpression ) } );
+                            var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
+                            gPreview.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
                             gPreview.DataBind();
 
                             modalPreview.Show();

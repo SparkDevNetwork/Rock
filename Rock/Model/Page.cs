@@ -314,7 +314,14 @@ namespace Rock.Model
         {
             get
             {
-                return this.Site;
+                if ( this.ParentPage != null )
+                {
+                    return this.ParentPage;
+                }
+                else
+                {
+                    return this.Site;
+                }
             }
         }
 

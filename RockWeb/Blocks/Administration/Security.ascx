@@ -72,7 +72,7 @@
                 <asp:LinkButton ID="lbShowUser" runat="server" Text="Add User" CssClass="btn btn-primary" onclick="lbShowUser_Click"></asp:LinkButton>
             </asp:panel>
 
-            <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" >
+            <Rock:Grid ID="rGridParentRules" runat="server" AllowPaging="false" RowItemText="Inherited Security Rule">
                 <Columns>
                     <asp:BoundField DataField="DisplayName" HeaderText="Inherited Security" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" />
                     <asp:TemplateField>
