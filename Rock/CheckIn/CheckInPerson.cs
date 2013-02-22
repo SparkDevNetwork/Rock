@@ -53,6 +53,15 @@ namespace Rock.CheckIn
         public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
+        /// Gets or sets the the unique code for check-in labels
+        /// </summary>
+        /// <value>
+        /// The security code.
+        /// </value>
+        [DataMember]
+        public string SecurityCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the group types available for the current person.
         /// </summary>
         /// <value>
@@ -60,6 +69,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public List<CheckInGroupType> GroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the labels to be printed after succesful checkin
+        /// </summary>
+        /// <value>
+        /// The labels.
+        /// </value>
+        [DataMember]
+        public List<CheckInLabel> Labels { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.

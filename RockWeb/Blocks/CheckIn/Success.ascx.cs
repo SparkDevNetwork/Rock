@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
+using Rock;
 using Rock.CheckIn;
 
 namespace RockWeb.Blocks.CheckIn
@@ -42,12 +44,16 @@ namespace RockWeb.Blocks.CheckIn
                                     {
                                         var li = new HtmlGenericControl("li");
                                         li.InnerText = string.Format("{0} was checked into {1} for the {2} at {3}",
-                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), schedule.SecurityCode);
+                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode);
+
                                         phResults.Controls.Add(li);
                                     }
                                 }
                             }
                         }
+
+                        phResults.Controls.Add( new LiteralControl( person.Labels.ToJson() ) );
+
                     }
                 }
             }
