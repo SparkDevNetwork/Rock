@@ -53,7 +53,7 @@ $('.workflow-action a.btn-danger').click(function (event) {
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 
-$('.workflow-action a.btn-reorder').click(function (event) {
+$('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 ";
@@ -176,6 +176,7 @@ $('.workflow-action a.btn-reorder').click(function (event) {
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget workflow-action" );
+            writer.AddAttribute( "data-key", hfActionTypeGuid.Value );
             writer.RenderBeginTag( "article" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
@@ -190,7 +191,7 @@ $('.workflow-action a.btn-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini btn-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-mini workflow-action-reorder'><i class='icon-reorder'></i></a>" );
             writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-action-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )

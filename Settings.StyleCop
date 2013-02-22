@@ -320,7 +320,15 @@
           </RuleSettings>
         </Rule>
       </Rules>
-      <AnalyzerSettings />
+      <AnalyzerSettings>
+        <CollectionProperty Name="Hungarian">
+          <Value>cb</Value>
+          <Value>lb</Value>
+          <Value>tb</Value>
+          <Value>hf</Value>
+          <Value>i</Value>
+        </CollectionProperty>
+      </AnalyzerSettings>
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
       <Rules>
@@ -357,17 +365,6 @@
       </Rules>
       <AnalyzerSettings />
     </Analyzer>
-	<Analyzer AnalyzerId="StyleCop.CSharp.NamingRules">
-      <AnalyzerSettings>
-        <CollectionProperty Name="Hungarian">
-          <Value>cb</Value>
-          <Value>lb</Value>
-          <Value>tb</Value>
-          <Value>hf</Value>
-          <Value>i</Value>
-        </CollectionProperty>
-      </AnalyzerSettings>
-    </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.SpacingRules">
       <Rules>
         <Rule Name="OpeningParenthesisMustBeSpacedCorrectly">
@@ -386,6 +383,11 @@
           </RuleSettings>
         </Rule>
         <Rule Name="SymbolsMustBeSpacedCorrectly">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="ClosingSquareBracketsMustBeSpacedCorrectly">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
