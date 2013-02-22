@@ -1,10 +1,15 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using DotLiquid.Exceptions;
 using NuGet;
 using Rock.Data;
 using Rock.Model;
@@ -16,6 +21,22 @@ namespace Rock.Services.NuGet
     /// </summary>
     public class PackageService
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackageService"/> class.
+        /// </summary>
+        public PackageService()
+        {
+            ErrorMessages = new List<string>();
+        }
+
+        /// <summary>
+        /// Gets or sets the error messages.
+        /// </summary>
+        /// <value>
+        /// The error messages.
+        /// </value>
+        public List<string> ErrorMessages { get; set; }  
+
         /// <summary>
         /// Exports the page.
         /// </summary>
@@ -99,7 +120,8 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="uploadedPackage">Byte array of the uploaded package</param>
         /// <param name="fileName">File name of uploaded package</param>
-        public void ImportPage( byte[] uploadedPackage, string fileName )
+        /// <param name="personId">Id of the Person performing the import</param>
+        public bool ImportPage( byte[] uploadedPackage, string fileName, int personId )
         {
             // Write .nupkg file to the PackageStaging folder...
             var path = Path.Combine( HttpContext.Current.Server.MapPath( "~/App_Data/PackageStaging" ), fileName );
@@ -111,7 +133,6 @@ namespace Rock.Services.NuGet
             var package = new ZipPackage( path );
             var packageFiles = package.GetFiles().ToList();
             var exportFile = packageFiles.FirstOrDefault( f => f.Path.Contains( "export.json" ) );
-            
             Page page = null;
 
             if ( exportFile != null )
@@ -130,8 +151,25 @@ namespace Rock.Services.NuGet
             {
                 var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService().Queryable() );
                 ValidateImportData( page, newBlockTypes );
-                ExpandFiles( package, packageFiles, path );   
+
+                try
+                {
+                    var pageService = new PageService();
+                    pageService.Add( page, personId );
+                    pageService.Save( page, personId );
+                    ExpandFiles( package, packageFiles, path );
+                }
+                catch ( Exception e )
+                {
+                    ErrorMessages.Add( e.Message );
+                    return false;
+                }
+
+                return true;
             }
+
+            ErrorMessages.Add( "The export package uploaded does not appear to have any data associated with it." );
+            return false;
 
             // Validate package...
             // * Does it have any executable .dll files? Should those go to the bin folder, or into a plugins directory to be loaded via MEF?
@@ -252,13 +290,19 @@ namespace Rock.Services.NuGet
             manifest.Files.AddRange( files );
         }
 
-
+        /// <summary>
+        /// Iterates recursively through all BlockTypes associated with a Page and its children and compares them with
+        /// the list of BlockTypes that are currently installed.
+        /// </summary>
+        /// <param name="page">The page to interrogate</param>
+        /// <param name="installedBlockTypes">The list of currently installed Blocks</param>
+        /// <returns>A List&lt;BlockType&gt; of BlockTypes that are not currently installed.</returns>
         private IEnumerable<BlockType> FindNewBlockTypes( Page page, IEnumerable<BlockType> installedBlockTypes )
         {
             var newBlockTypes = new List<BlockType>();
             installedBlockTypes = installedBlockTypes.ToList();
             
-            foreach ( var block in page.Blocks )
+            foreach ( var block in page.Blocks ?? new List<Block>() )
             {
                 var blockType = block.BlockType;
 
@@ -268,7 +312,7 @@ namespace Rock.Services.NuGet
                 }
             }
 
-            foreach ( var p in page.Pages )
+            foreach ( var p in page.Pages ?? new List<Page>() )
             {
                 newBlockTypes.AddRange( FindNewBlockTypes( p, installedBlockTypes ) );
             }
@@ -288,20 +332,18 @@ namespace Rock.Services.NuGet
             page.PageRoutes.ToList().ForEach( ScrubIds );
             var blockTypes = newBlockTypes.ToList();
 
-            foreach ( var block in page.Blocks )
+            foreach ( var block in page.Blocks ?? new List<Block>() )
             {
                 var blockType = blockTypes.FirstOrDefault( bt => block.BlockType.Path == bt.Path );
 
                 if ( blockType == null )
                 {
-                    throw new System.ArgumentException(string.Format( "BlockType was not found by its path: {0}", block.BlockType.Path ));
+                    throw new ArgumentException(string.Format( "BlockType was not found by its path: {0}", block.BlockType.Path ));
                 }
 
                 ScrubIds( block );
                 block.PageId = 0;
                 block.BlockTypeId = blockType.Id;
-
-                // TODO: Remove any BlockTypes that are already installed...
             }
 
             foreach ( var childPage in page.Pages )
