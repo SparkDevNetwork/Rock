@@ -120,6 +120,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the list.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public List<T> GetList( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression ).ToList();
+        }
+
+        /// <summary>
         /// Anies the specified parameter expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>

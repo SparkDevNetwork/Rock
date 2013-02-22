@@ -87,6 +87,7 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             CheckBoxList editControl = new CheckBoxList();
+            editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
             {

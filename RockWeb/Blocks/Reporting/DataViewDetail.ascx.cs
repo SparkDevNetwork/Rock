@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -14,6 +15,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -189,6 +191,11 @@ $(document).ready(function() {
             fieldsetViewDetails.Visible = !editable;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             DataView dataView = null;
@@ -262,6 +269,29 @@ $(document).ready(function() {
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
             NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnPreview_Click( object sender, EventArgs e )
+        {
+            ShowPreview( int.Parse(ddlEntityType.SelectedValue), GetFilterControl());
+        }
+
+        protected void btnPreview2_Click( object sender, EventArgs e )
+        {
+            int dataViewId = int.Parse( hfDataViewId.Value );
+
+            var service = new DataViewService();
+            var dataView = service.Get( dataViewId );
+
+            if ( dataView != null && dataView.EntityTypeId.HasValue)
+            {
+                ShowPreview( dataView.EntityTypeId.Value, dataView.DataViewFilter );
+            }
         }
 
         #endregion
@@ -453,6 +483,104 @@ $(document).ready(function() {
             lblMainDetails.Text += @"
     </dl>
 </div>";
+        }
+
+        /// <summary>
+        /// Shows the preview.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="filter">The filter.</param>
+        private void ShowPreview( int entityTypeId, DataViewFilter filter )
+        {
+            var cachedEntityType = EntityTypeCache.Read( entityTypeId );
+            if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+            {
+                Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                if ( entityType != null )
+                {
+                    BuildGridColumns( entityType );
+
+                    Type[] modelType = { entityType };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                    object serviceInstance = Activator.CreateInstance( modelServiceType );
+
+                    if ( serviceInstance != null )
+                    {
+                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+
+                        if ( getMethod != null )
+                        {
+                            var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                            gPreview.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, filter.GetExpression( paramExpression ) } );
+                            gPreview.DataBind();
+
+                            modalPreview.Show();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the grid columns.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        private void BuildGridColumns( Type modelType )
+        {
+            gPreview.Columns.Clear();
+
+            var previewColumns = new Dictionary<string, BoundField>();
+            var allColumns = new Dictionary<string, BoundField>();
+
+            foreach ( var property in modelType.GetProperties() )
+            {
+                if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                {
+                    previewColumns.Add( property.Name, GetGridField( property ) );
+                }
+                else if ( previewColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                {
+                    allColumns.Add( property.Name, GetGridField( property ) );
+                }
+            }
+
+            Dictionary<string, BoundField> columns = previewColumns.Count > 0 ? previewColumns : allColumns;
+
+            foreach ( var column in columns )
+            {
+                var bf = column.Value;
+                bf.DataField = column.Key;
+                bf.SortExpression = column.Key;
+                bf.HeaderText = column.Key.SplitCase();
+                gPreview.Columns.Add( bf );
+            }
+        }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        private BoundField GetGridField( PropertyInfo property )
+        {
+            BoundField bf = new BoundField();
+
+            if ( property.PropertyType == typeof( Boolean ) )
+            {
+                bf = new BoolField();
+            }
+            else if ( property.PropertyType == typeof( DateTime ) )
+            {
+                bf = new DateField();
+            }
+            else if ( property.PropertyType.IsEnum )
+            {
+                bf = new EnumField();
+            }
+
+            return bf;
         }
 
         #endregion

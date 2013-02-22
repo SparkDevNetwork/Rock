@@ -48,12 +48,12 @@ $('.workflow-activity > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-activity .icon-remove').click(function (event) {
+$('.workflow-activity a.btn-danger').click(function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 
-$('.workflow-activity .icon-reorder').click(function (event) {
+$('.workflow-activity a.btn-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -215,7 +215,7 @@ $('.workflow-activity .icon-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-mini btn-reorder'><i class='icon-reorder'></i></a>" );
             writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
@@ -234,10 +234,25 @@ $('.workflow-activity .icon-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
-            if ( !string.IsNullOrEmpty( tbActivityTypeName.Text ) )
+            bool forceContentVisible = !GetWorkflowActivityType().IsValid;
+
+            if ( !forceContentVisible )
             {
-                // hide details if the name has already been filled in
+                foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+                {
+                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid )
+                    {
+                        forceContentVisible = true;
+                        break;
+                    }
+                }
+            }
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            
+            if ( !forceContentVisible )
+            {
+                // hide details if the activity and actions are valid
                 writer.AddStyleAttribute( "display", "none" );
             }
 
