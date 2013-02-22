@@ -37,6 +37,7 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnCancelView" runat="server" Text="Back" CssClass="btn btn-mini" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
             </fieldset>

@@ -326,6 +326,10 @@
     <Compile Include="Migrations\201302211249281_EntityTypeAttributeValue.Designer.cs">
       <DependentUpon>201302211249281_EntityTypeAttributeValue.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.cs" />
+    <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.Designer.cs">
+      <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1113,6 +1117,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302211249281_EntityTypeAttributeValue.resx">
       <DependentUpon>201302211249281_EntityTypeAttributeValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302211842372_AddPrayerRequestAdminPages.resx">
+      <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

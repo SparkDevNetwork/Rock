@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [DetailPage( Order = 0 )]
-    [IntegerField( 1, "Group Category Id", "-1", null, "Filtering", "The id of the 'top level' Category.  Only prayer request comments under this category will be shown." )]
+    [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests comments under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
         #region Private BlockType Attributes

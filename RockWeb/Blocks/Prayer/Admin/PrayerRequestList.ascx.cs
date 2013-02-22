@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Prayer
 {
     [AdditionalActions( new string[] { "Approve" } )]
     [DetailPage( Order = 0 )]
-    [IntegerField( 1, "Group Category Id", "-1", null, "Filtering", "The id of a 'top level' Category.  Only prayer requests under this category will be shown." )]
+    [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock
     {
         #region Private BlockType Attributes
@@ -242,27 +242,47 @@ namespace RockWeb.Blocks.Prayer
             rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
 
             // only save settings that are not the default "all" preference...
-            if ( rblApprovedFilter.SelectedValue != "all" )
+            if ( rblApprovedFilter.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, "" );
+            }
+            else
             {
                 rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, rblApprovedFilter.SelectedValue );
             }
 
-            if ( rblUrgentFilter.SelectedValue != "all" )
+            if ( rblUrgentFilter.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, "" );
+            }
+            else
             {
                 rFilter.SaveUserPreference( FilterSetting.UrgentStatus, rblUrgentFilter.SelectedValue );
             }
 
-            if ( rblPublicFilter.SelectedValue != "all" )
+            if ( rblPublicFilter.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.PublicStatus, "" );
+            }
+            else
             {
                 rFilter.SaveUserPreference( FilterSetting.PublicStatus, rblPublicFilter.SelectedValue );
             }
 
-            if ( rblActiveFilter.SelectedValue != "all" )
+            if ( rblActiveFilter.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, "" );
+            }
+            else
             {
                 rFilter.SaveUserPreference( FilterSetting.ActiveStatus, rblActiveFilter.SelectedValue );
             }
 
-            if ( rblAllowCommentsFilter.SelectedValue != "all" )
+            if ( rblAllowCommentsFilter.SelectedValue == "all" )
+            {
+                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, "" );
+            }
+            else
             {
                 rFilter.SaveUserPreference( FilterSetting.CommentingStatus, rblAllowCommentsFilter.SelectedValue );
             }
@@ -351,6 +371,58 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
+            // Filter by urgent/non-urgent
+            if ( rblUrgentFilter.SelectedIndex > -1 )
+            {
+                if ( rblUrgentFilter.SelectedValue == "non-urgent" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsUrgent == false || !a.IsUrgent.HasValue );
+                }
+                else if ( rblUrgentFilter.SelectedValue == "urgent" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsUrgent == true );
+                }
+            }
+
+            // Filter by public/non-public
+            if ( rblPublicFilter.SelectedIndex > -1 )
+            {
+                if ( rblPublicFilter.SelectedValue == "non-public" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsPublic == false || !a.IsPublic.HasValue );
+                }
+                else if ( rblPublicFilter.SelectedValue == "public" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsPublic == true );
+                }
+            }
+
+            // Filter by active/inactive
+            if ( rblActiveFilter.SelectedIndex > -1 )
+            {
+                if ( rblActiveFilter.SelectedValue == "inactive" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsActive == false || !a.IsActive.HasValue );
+                }
+                else if ( rblActiveFilter.SelectedValue == "active" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.IsActive == true );
+                }
+            }
+
+            // Filter by active/inactive
+            if ( rblAllowCommentsFilter.SelectedIndex > -1 )
+            {
+                if ( rblAllowCommentsFilter.SelectedValue == "unallow" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.AllowComments == false || !a.AllowComments.HasValue );
+                }
+                else if ( rblAllowCommentsFilter.SelectedValue == "allow" )
+                {
+                    prayerRequests = prayerRequests.Where( a => a.AllowComments == true );
+                }
+            }
+
             // Filter by EnteredDate
             if ( dtRequestEnteredDateRangeStartDate.SelectedDate != null )
             {
@@ -423,7 +495,7 @@ namespace RockWeb.Blocks.Prayer
                     {
                         prayerRequest.IsApproved = true;
                         prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                        prayerRequest.ApprovedOnDate = DateTime.UtcNow;
+                        prayerRequest.ApprovedOnDate = DateTime.Now;
                         // reset the flag count only to zero ONLY if it had a value previously.
                         if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                         {
