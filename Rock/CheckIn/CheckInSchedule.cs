@@ -26,15 +26,6 @@ namespace Rock.CheckIn
         public Schedule Schedule { get; set; }
 
         /// <summary>
-        /// Gets or sets the the unique code for check-in labels
-        /// </summary>
-        /// <value>
-        /// The security code.
-        /// </value>
-        [DataMember]
-        public string SecurityCode { get; set; }
-
-        /// <summary>
         /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
         /// </summary>
         /// <value>
