@@ -19,7 +19,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [IntegerField( 0, "Group Category Id", "-1", null, "Filtering", "The id of the 'prayer group category'. Only prayer requests under this category will be shown." )]
+    [IntegerField( "Group Category Id", "The id of 'prayer group category'.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
@@ -79,6 +79,11 @@ namespace RockWeb.Blocks.Prayer
             ShowEditDetails( item );
         }
 
+        /// <summary>
+        /// Shows the prayer request's detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             if ( !itemKey.Equals( PrayerRequestKeyParameter ) )
@@ -111,7 +116,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( readOnly )
             {
-                //btnEdit.Visible = false;
+                btnEdit.Visible = false;
                 ShowReadonlyDetails( prayerRequest );
             }
             else
@@ -130,6 +135,10 @@ namespace RockWeb.Blocks.Prayer
 
         #region View & Edit Details
 
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
         private void ShowReadonlyDetails( PrayerRequest prayerRequest )
         {
             SetEditMode( false );
@@ -145,6 +154,10 @@ namespace RockWeb.Blocks.Prayer
             litUrgent.Text = ( prayerRequest.IsUrgent ?? false ) ? "<span class='label label-info'><i class='icon-exclamation-sign'></i> urgent</span>" : "";
         }
 
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
         private void ShowEditDetails( PrayerRequest prayerRequest )
         {
             SetEditMode(true);
@@ -176,12 +189,21 @@ namespace RockWeb.Blocks.Prayer
             cbAllowComments.Checked = prayerRequest.AllowComments ?? false;
         }
 
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="enableEdit">if set to <c>true</c> [enable edit].</param>
         private void SetEditMode(bool enableEdit)
         {
             fieldsetViewDetails.Visible = !enableEdit;
             fieldsetEditDetails.Visible = enableEdit;
         }
 
+        /// <summary>
+        /// Shows the prayer count.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="lPrayerCount">The l prayer count.</param>
         private void ShowPrayerCount( PrayerRequest prayerRequest, Literal lPrayerCount )
         {
             string cssClass = "badge";
@@ -198,6 +220,12 @@ namespace RockWeb.Blocks.Prayer
             lPrayerCount.Text = string.Format( "<span class='{0}' title='current prayer count'>{1}</span>", cssClass, prayerRequest.PrayerCount ?? 0 );
         }
 
+        /// <summary>
+        /// Shows the status flags
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="lFlagged">The l flagged.</param>
         private void ShowStatus( PrayerRequest prayerRequest, Person person, Literal lFlagged )
         {
             int flagCount = prayerRequest.FlagCount ?? 0;
@@ -217,12 +245,19 @@ namespace RockWeb.Blocks.Prayer
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             SaveRequest();
-            pnlDetails.Visible = false;
         }
 
+        /// <summary>
+        /// Saves the prayer request.
+        /// </summary>
         private void SaveRequest()
         {
             PrayerRequest prayerRequest;
@@ -235,7 +270,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest = new PrayerRequest();
                 prayerRequestService.Add( prayerRequest, CurrentPersonId );
-                prayerRequest.EnteredDate = DateTime.UtcNow;
+                prayerRequest.EnteredDate = DateTime.Now;
             }
             else
             {
@@ -246,7 +281,7 @@ namespace RockWeb.Blocks.Prayer
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
-                prayerRequest.ApprovedOnDate = DateTime.UtcNow;
+                prayerRequest.ApprovedOnDate = DateTime.Now;
                 // reset the flag count only to zero ONLY if it had a value previously.
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
@@ -287,8 +322,15 @@ namespace RockWeb.Blocks.Prayer
             }
 
             prayerRequestService.Save( prayerRequest, CurrentPersonId );
+
+            NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();       

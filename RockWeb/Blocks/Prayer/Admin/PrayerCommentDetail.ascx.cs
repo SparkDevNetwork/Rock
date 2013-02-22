@@ -21,7 +21,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [ContextAware(typeof(PrayerRequest))]
-    [TextField( 1, "Note Type", "Behavior", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment" )]
+    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment", "Behavior", 0, "NoteType" )]
     public partial class PrayerCommentDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
