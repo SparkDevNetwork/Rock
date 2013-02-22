@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Administration
             int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId );
             
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
+            btnSecurity.EntityType = typeof( Rock.Model.Category );
         }
 
         /// <summary>
@@ -279,7 +280,7 @@ namespace RockWeb.Blocks.Administration
                 category.EntityTypeId = entityTypeId;
             }
 
-            if ( category == null )
+            if ( category == null || !category.IsAuthorized( "View", CurrentPerson ) )
             {
                 return;
             }
@@ -291,7 +292,7 @@ namespace RockWeb.Blocks.Administration
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !category.IsAuthorized( "Edit", CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Category.FriendlyTypeName );
@@ -302,6 +303,10 @@ namespace RockWeb.Blocks.Administration
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Category.FriendlyTypeName );
             }
+
+            btnSecurity.Visible = category.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Title = "Secure " + category.Name;
+            btnSecurity.EntityTypeId = category.Id;
 
             if ( readOnly )
             {

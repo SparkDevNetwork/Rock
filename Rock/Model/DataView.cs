@@ -111,6 +111,18 @@ namespace Rock.Model
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Category != null )
+                {
+                    return this.Category;
+                }
+
+                return base.ParentAuthority;
+            }
+        }
         #endregion
 
         #region Methods

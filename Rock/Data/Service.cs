@@ -115,8 +115,13 @@ namespace Rock.Data
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression )
         {
-            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
-            return this.Queryable().Where(lambda);
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                return this.Queryable().Where( lambda );
+            }
+
+            return this.Queryable();
         }
 
         /// <summary>

@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
@@ -15,6 +16,7 @@ namespace Rock.Attribute
     /// </summary>
     public class CustomCheckboxListFieldAttribute : FieldAttribute
     {
+        [Description("This si a test")]
         /// <summary>
         /// Initializes a new instance of the <see cref="AudiencesPrimarySecondaryFieldAttribute" /> class.
         /// </summary>
