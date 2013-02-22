@@ -125,6 +125,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Previewable]
         public string GivenName { get; set; }
 
         /// <summary>
@@ -145,6 +146,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Previewable]
         public string LastName { get; set; }
         
         /// <summary>
@@ -200,6 +202,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -237,6 +240,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 75 )]
         [DataMember]
+        [Previewable]
         public string Email { get; set; }
         
         /// <summary>

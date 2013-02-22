@@ -4,11 +4,14 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -23,6 +26,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton lbDeleteActionType;
 
         private DataTextBox tbActionTypeName;
+        private LabeledDropDownList ddlEntityType;
         private LabeledCheckBox cbIsActionCompletedOnSuccess;
         private LabeledCheckBox cbIsActivityCompletedOnSuccess;
 
@@ -44,12 +48,12 @@ $('.workflow-action > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-action .icon-remove').click(function (event) {
+$('.workflow-action a.btn-danger').click(function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 
-$('.workflow-action .icon-reorder').click(function (event) {
+$('.workflow-action a.btn-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 ";
@@ -91,6 +95,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
                 WorkflowActionType result = new WorkflowActionType();
                 result.Guid = new Guid( hfActionTypeGuid.Value );
                 result.Name = tbActionTypeName.Text;
+                result.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = cbIsActivityCompletedOnSuccess.Checked;
                 return result;
@@ -101,6 +106,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
                 EnsureChildControls();
                 hfActionTypeGuid.Value = value.Guid.ToString();
                 tbActionTypeName.Text = value.Name;
+                ddlEntityType.SetValue( value.EntityTypeId );
                 cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
             }
@@ -133,6 +139,16 @@ $('.workflow-action .icon-reorder').click(function (event) {
             tbActionTypeName = new DataTextBox();
             tbActionTypeName.ID = this.ID + "_tbActionTypeName";
             tbActionTypeName.LabelText = "Name";
+
+            ddlEntityType = new LabeledDropDownList();
+            ddlEntityType.ID = this.ID + "_ddlEntityType";
+            ddlEntityType.LabelText = "Entity Type";
+
+            var entityTypes = new EntityTypeService().GetEntities();
+            foreach ( var item in entityTypes.OrderBy( a => a.FriendlyName ).ThenBy(a => a.Name ))
+            {
+                ddlEntityType.Items.Add( new ListItem( item.FriendlyName, item.Id.ToString() ) );
+            }
 
             // set label when they exit the edit field
             tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActionTypeName.ID );
@@ -174,7 +190,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-mini btn-reorder'><i class='icon-reorder'></i></a>" );
             writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-action-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
@@ -205,6 +221,7 @@ $('.workflow-action .icon-reorder').click(function (event) {
 
             // action edit fields
             tbActionTypeName.RenderControl( writer );
+            ddlEntityType.RenderControl( writer );
             cbIsActionCompletedOnSuccess.RenderControl( writer );
             cbIsActivityCompletedOnSuccess.RenderControl( writer );
 

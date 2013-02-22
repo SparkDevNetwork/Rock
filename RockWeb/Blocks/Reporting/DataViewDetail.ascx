@@ -31,6 +31,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn pull-right" OnClick="btnPreview_Click" />
                 </div>
     
             </div>
@@ -50,9 +51,16 @@
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click"/>
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                        <asp:LinkButton ID="btnPreview2" runat="server" Text="Preview" CssClass="btn btn-mini pull-right" OnClick="btnPreview2_Click" />
                     </div>
                 </div>
             </fieldset>
+
+            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview">
+                <Content>
+                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" />
+                </Content>
+            </Rock:ModalDialog>
 
         </asp:Panel>
 
