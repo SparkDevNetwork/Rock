@@ -40,7 +40,7 @@
                         </span>
                     </legend>
 
-                    <div class="row-fluid">
+                    <div class="row-fluid workflow-activity-list">
                         <asp:PlaceHolder ID="phActivities" runat="server" />
                     </div>
                 </fieldset>
@@ -93,5 +93,49 @@
         <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
             <RockWeb:RockAttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
         </asp:Panel>
+        <script>
+            Sys.Application.add_load(function () {
+                var fixHelper = function (e, ui) {
+                    ui.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
+
+                $('.workflow-activity-list').sortable({
+                    helper: fixHelper,
+                    handle: '.workflow-activity-reorder',
+                    containment: 'parent',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                        }
+                    }
+                }).disableSelection();
+
+                $('.workflow-action-list').sortable({
+                    helper: fixHelper,
+                    handle: '.workflow-action-reorder',
+                    containment: 'parent',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                        }
+                    }
+                }).disableSelection();
+            });
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
