@@ -345,6 +345,7 @@ namespace Rock.Model
 
             foreach ( var value in values )
             {
+                // TODO - if guarding against null/empty values, how would someone "clear" a particular preference? -NickA
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
                     var attributeValue = new Model.AttributeValue();
