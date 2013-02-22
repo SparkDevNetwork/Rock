@@ -90,6 +90,27 @@
                     <div class="span6">
                         <fieldset>
                             <legend>Import Pages</legend>
+                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
+                                <div class="span12 alert alert-success">
+                                    <p><strong>Sweet!</strong> Your package was imported successfully.</p>
+                                </div>
+                            </asp:Panel>
+                            <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
+                                <HeaderTemplate>
+                                    <div class="row-fluid">
+                                        <div class="span12 alert alert-error">
+                                            <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
+                                            <ul>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <li><%# Container.DataItem %></li>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </FooterTemplate>
+                            </asp:Repeater>
                             <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
                             <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-small" OnClick="lbImport_Click">
                                 <i class="icon-arrow-up"></i> Import

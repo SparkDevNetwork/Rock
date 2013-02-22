@@ -266,10 +266,18 @@ namespace RockWeb.Blocks.Administration
             if ( fuImport.PostedFile != null )
             {
                 var packageService = new PackageService();
-                packageService.ImportPage( fuImport.FileBytes, fuImport.FileName );
+                var importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id );
+
+                if ( !importResult )
+                {
+                    rptImportErrors.DataSource = packageService.ErrorMessages;
+                    rptImportErrors.DataBind();
+                    rptImportErrors.Visible = true;
+                }
             }
 
-            // TODO: Display some kind of feedback to the admin notifying them of status, success, etc?
+            // TODO: How will state change after successful import?
+            pnlImportSuccess.Visible = true;
         }
 
         #endregion
