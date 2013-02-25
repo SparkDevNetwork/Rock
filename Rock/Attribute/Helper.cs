@@ -125,14 +125,6 @@ namespace Rock.Attribute
                 attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
                 attribute.IsGridColumn = false;
-
-                foreach ( var fieldConfigValue in property.FieldConfigurationValues )
-                {
-                    var qualifier = new Model.AttributeQualifier();
-                    qualifier.Key = fieldConfigValue.Key;
-                    qualifier.Value = fieldConfigValue.Value.Value;
-                    attribute.AttributeQualifiers.Add( qualifier );
-                }
             }
             else
             {
