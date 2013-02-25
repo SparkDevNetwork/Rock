@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OneTimeGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.OneTimeGift" %>
 
-<script type="text/javascript" src="../scripts/jquery.creditCardTypeDetector.js"></script>
+<script type="text/javascript" src="~/Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
 
@@ -25,10 +25,6 @@
             $(this).parent().next('div').toggle();
         }
 
-        $('.togglePanel').on('change', checkboxChange);
-
-        $('select').selectpicker();
-        
     });
 
 </script>
@@ -55,12 +51,8 @@
                         <div class="row-fluid">
 
                             <div class="input-prepend btn-group">
-                            
-                                <button class="btn select dropdown-toggle" data-toggle="dropdown">Select your Campus <span class="caret"></span> </button>
                                 
-                                <ul id="listCampuses" class="dropdown-menu" runat="server">
-                                    <asp:PlaceHolder ID="plcCampus" runat="server"> </asp:PlaceHolder>
-                                </ul>
+                                <Rock:ButtonDropDownList ID="ddlCampusList" runat="server" CssClass="btn btn-mini" ></Rock:ButtonDropDownList>
                             
                             </div>
                         
@@ -72,15 +64,9 @@
 
                             <div class="input-prepend">
 
-                                <div class="btn-group bootstrap-select">
-                            
-                                    <button ID="btnFund1" class="btn dropdown-toggle clearfix" data-toggle="dropdown">Select Fund &nbsp;<span class="caret"></span> </button>
+                                <div class="btn-group">
                                     
-                                    <div class="dropdown-menu">
-                                        <ul ID="listFunds" runat="server" style="max-height: none; overflow-y: auto;">
-                                            <asp:PlaceHolder ID="plcFunds" runat="server"> </asp:PlaceHolder>                                        
-                                        </ul>    
-                                    </div>
+                                    <Rock:ButtonDropDownList ID="btnFundList" runat="server" CssClass="btn btn-mini" OnClick="bbGetNoPostBackText_Click" DataTextField="Select Fund"></Rock:ButtonDropDownList>
                                     <span class="add-on">$</span>
                                     <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
 
@@ -90,26 +76,6 @@
 
                         </div>
                         
-                        <div class="row-fluid">
-
-                            <div class="input-prepend">
-
-                                <div class="btn-group">
-                                    
-                                    <select class="selectpicker" id="fundSelect" runat="server">                                                             
-                                         <option>Building</option>
-                                        <option>General</option>
-                                    </select>
-                                    
-
-                                    <span class="add-on">$</span>
-                                    <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
-
-                                </div>
-                           
-                            </div>
-
-                        </div>
 
                         <div class="row-fluid">
                         
