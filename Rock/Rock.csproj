@@ -332,6 +332,10 @@
     <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.Designer.cs">
       <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302251516310_PageProperties.cs" />
+    <Compile Include="Migrations\201302251516310_PageProperties.Designer.cs">
+      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1124,6 +1128,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302211842372_AddPrayerRequestAdminPages.resx">
       <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302251516310_PageProperties.resx">
+      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
