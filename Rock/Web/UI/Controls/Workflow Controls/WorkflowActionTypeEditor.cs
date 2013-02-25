@@ -12,6 +12,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
 {
@@ -142,12 +143,12 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             ddlEntityType = new LabeledDropDownList();
             ddlEntityType.ID = this.ID + "_ddlEntityType";
-            ddlEntityType.LabelText = "Entity Type";
+            ddlEntityType.LabelText = "Action Type";
 
-            var entityTypes = new EntityTypeService().GetEntities();
-            foreach ( var item in entityTypes.OrderBy( a => a.FriendlyName ).ThenBy(a => a.Name ))
+            foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy(a => a.Value.EntityType.FriendlyName) )
             {
-                ddlEntityType.Items.Add( new ListItem( item.FriendlyName, item.Id.ToString() ) );
+                var entityType = item.Value.EntityType;
+                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ));
             }
 
             // set label when they exit the edit field
