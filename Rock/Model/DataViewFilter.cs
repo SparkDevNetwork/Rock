@@ -123,17 +123,27 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
+            // First check if user is authorized for model
             bool authorized = base.IsAuthorized( action, person );
 
-            // Authorization to view a filter is dependent on being able to view all 
-            // of it's child filters
+            // If viewing, make sure user is authorized to view the component that filter is using
+            // and all the child models/components
             if ( authorized && string.Compare( action, "View", true ) == 0 )
             {
-                foreach(var childFilter in ChildFilters)
+                if ( EntityType != null )
                 {
-                    if (!childFilter.IsAuthorized(action, person))
+                    var filterComponent = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    authorized = filterComponent.IsAuthorized( action, person );
+                }
+
+                if ( authorized )
+                {
+                    foreach ( var childFilter in ChildFilters )
                     {
-                        return false;
+                        if ( !childFilter.IsAuthorized( action, person ) )
+                        {
+                            return false;
+                        }
                     }
                 }
             }

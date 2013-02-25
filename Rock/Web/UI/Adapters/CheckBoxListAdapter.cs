@@ -7,6 +7,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
 
+using Rock;
+
 namespace Rock.Web.UI.Adapters
 {
     /// <summary>
@@ -43,7 +45,8 @@ namespace Rock.Web.UI.Adapters
                 foreach ( ListItem li in cbl.Items )
                 {
                     writer.WriteLine();
-                    writer.AddAttribute( "class", "checkbox inline" );
+
+                    writer.AddAttribute( "class", "checkbox" + ( cbl.RepeatDirection == RepeatDirection.Horizontal ? " inline" : string.Empty ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
                     string itemId = string.Format( "{0}_{1}", cbl.ClientID, i );

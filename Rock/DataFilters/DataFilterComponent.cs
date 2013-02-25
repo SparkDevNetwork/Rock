@@ -63,6 +63,23 @@ namespace Rock.DataFilters
         public abstract string FilteredEntityTypeName { get; }
 
         /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public virtual string ClientFormatSelection
+        {
+            get
+            {
+                return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", Title );
+            }
+        }
+
+        /// <summary>
         /// Formats the selection.
         /// </summary>
         /// <param name="selection">The selection.</param>

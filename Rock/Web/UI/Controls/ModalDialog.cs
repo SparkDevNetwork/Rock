@@ -186,8 +186,17 @@ namespace Rock.Web.UI.Controls
             _closeLink.Attributes["onclick"] = string.Format(
                 "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
-            if ( SaveClick == null && !IsDefaultSaveDisabled )
-                this.OkControlID = _saveLink.ID;
+            if ( SaveClick == null )
+            {
+                _saveLink.Visible = false;
+                _cancelLink.InnerText = "Ok";
+
+                if ( !IsDefaultSaveDisabled )
+                {
+                    this.OkControlID = _cancelLink.ID;
+                }
+            }
+
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )

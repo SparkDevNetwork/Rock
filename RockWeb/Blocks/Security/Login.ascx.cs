@@ -17,7 +17,7 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [BooleanField( 0, "Enable Facebook Login", false, "FacebookEnabled", "", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.")]
+    [BooleanField( "Enable Facebook Login", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>

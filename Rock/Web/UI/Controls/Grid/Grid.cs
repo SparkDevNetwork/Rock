@@ -172,26 +172,28 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                object rowItemText = this.ViewState["RowItemText"];
-                if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
+                string rowItemText = this.ViewState["RowItemText"] as string;
+                if (!string.IsNullOrWhiteSpace(rowItemText))
+                {
+                    return rowItemText;
+                }
+
+                if ( DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
 
                     Type[] genericArgs = dataSourceType.GetGenericArguments();
                     if ( genericArgs.Length > 0 )
                     {
-                        Type itemType = dataSourceType.GetGenericArguments()[0];
+                        Type itemType = genericArgs[0];
                         if ( itemType != null )
                         {
-                            rowItemText = itemType.GetFriendlyTypeName();
+                            return itemType.GetFriendlyTypeName();
                         }
                     }
-                    else
-                    {
-                        return "Item";
-                    }
                 }
-                return ( rowItemText as string );
+
+                return "Item";
             }
 
             set
@@ -211,15 +213,7 @@ namespace Rock.Web.UI.Controls
                 string result = base.EmptyDataText;
                 if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
                 {
-                    if ( DataSource != null )
-                    {
-                        Type dataSourceType = DataSource.GetType();
-                        Type itemType = dataSourceType.GetGenericArguments()[0];
-                        if ( itemType != null )
-                        {
-                            result = string.Format( "No {0} Found", itemType.GetFriendlyTypeName().Pluralize() );
-                        }
-                    }
+                    result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
                 return result;
             }

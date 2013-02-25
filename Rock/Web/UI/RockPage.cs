@@ -88,20 +88,28 @@ namespace Rock.Web.UI
             get
             {
                 if ( _CurrentUser != null )
+                {
                     return _CurrentUser;
+                }
 
                 if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
+                {
                     _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
+                }
 
                 if ( _CurrentUser == null )
                 {
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
+                    {
                         Context.Items.Add( "CurrentUser", _CurrentUser );
+                    }
                 }
 
                 if ( _CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                {
                     CurrentPerson = _CurrentUser.Person;
+                }
 
                 return _CurrentUser;
             }
@@ -112,9 +120,14 @@ namespace Rock.Web.UI
                 _CurrentUser = value;
 
                 if ( _CurrentUser != null )
+                {
                     Context.Items.Add( "CurrentUser", _CurrentUser );
-
-                CurrentPerson = _CurrentUser.Person;
+                    CurrentPerson = _CurrentUser.Person;
+                }
+                else
+                {
+                    CurrentPerson = null;
+                }
             }
         }
         private Rock.Model.UserLogin _CurrentUser;
@@ -129,11 +142,15 @@ namespace Rock.Web.UI
             get
             {
                 if ( _CurrentPerson != null )
+                {
                     return _CurrentPerson;
+                }
 
                 if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                {
                     _CurrentPerson = Context.Items["CurrentPerson"] as Person;
-
+                }
+                
                 return null;
             }
 
@@ -143,7 +160,9 @@ namespace Rock.Web.UI
                 _CurrentPerson = value;
 
                 if ( _CurrentPerson != null )
+                {
                     Context.Items.Add( "CurrentPerson", value );
+                }
             }
         }
         private Person _CurrentPerson;
@@ -156,9 +175,13 @@ namespace Rock.Web.UI
             get
             {
                 if ( CurrentPerson != null )
+                {
                     return CurrentPerson.Id;
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -915,7 +938,7 @@ namespace Rock.Web.UI
             fsZoneSelect.Controls.Add( ddlZones );
 
             LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
-            rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
+            rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";

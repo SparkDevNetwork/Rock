@@ -18,7 +18,7 @@ namespace Rock.Address.Standardize
     [Description( "Address Standardization service from Melissa Data" )]
     [Export( typeof( StandardizeComponent ) )]
     [ExportMetadata( "ComponentName", "MelissaData" )]
-    [TextField( 1, "Customer Id", "Security", "The Melissa Data Customer ID", true, "" )]
+    [TextField( "Customer Id", "The Melissa Data Customer ID", true, "", "Security" )]
     public class MelissaData : StandardizeComponent
     {
         /// <summary>

@@ -18,9 +18,9 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
-    [GroupTypesField( 0, "Group Types", false, "", "", "", "Select group types to show in this block.  Leave all unchecked to show all group types." )]
-    [BooleanField( 3, "Show Edit", true )]
-    [BooleanField( 6, "Limit to Security Role Groups", false )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false  )]
+    [BooleanField( "Show Edit", "", true )]
+    [BooleanField( "Limit to Security Role Groups" )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys

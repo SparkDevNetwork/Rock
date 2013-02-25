@@ -22,6 +22,29 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class WorkflowTypeDetail : RockBlock, IDetailBlock
     {
+        #region WorkflowActivityType ViewStateList
+
+        /// <summary>
+        /// Gets or sets the state of the workflow activity types.
+        /// </summary>
+        /// <value>
+        /// The state of the workflow activity types.
+        /// </value>
+        private ViewStateList<WorkflowActivityType> WorkflowActivityTypesState
+        {
+            get
+            {
+                return ViewState["WorkflowActivityTypesState"] as ViewStateList<WorkflowActivityType>;
+            }
+
+            set
+            {
+                ViewState["WorkflowActivityTypesState"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -59,6 +82,94 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
             }
+
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-activity" ) || eventParam.Equals( "re-order-action" ) )
+                    {
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortWorkflowActivityListContents( eventParam, values );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the workflow activity list contents.
+        /// </summary>
+        /// <param name="eventParam">The event param.</param>
+        /// <param name="values">The values.</param>
+        private void SortWorkflowActivityListContents( string eventParam, string[] values )
+        {
+            // put viewstate list into a new list, shuffle the contents, then save it back to the viewstate list
+            SaveWorkflowActivityControlsToViewState();
+            List<WorkflowActivityType> workflowActivityTypeSortList = WorkflowActivityTypesState.ToList();
+            Guid? activeWorkflowActivityTypeGuid = null;
+
+            if ( eventParam.Equals( "re-order-activity" ) )
+            {
+                Guid workflowActivityTypeGuid = new Guid( values[0] );
+                int newIndex = int.Parse( values[1] );
+                WorkflowActivityType workflowActivityType = workflowActivityTypeSortList.FirstOrDefault( a => a.Guid.Equals( workflowActivityTypeGuid ) );
+                workflowActivityTypeSortList.RemoveEntity( workflowActivityTypeGuid );
+                if ( workflowActivityType != null )
+                {
+                    if ( newIndex >= workflowActivityTypeSortList.Count() )
+                    {
+                        workflowActivityTypeSortList.Add( workflowActivityType );
+                    }
+                    else
+                    {
+                        workflowActivityTypeSortList.Insert( newIndex, workflowActivityType );
+                    }
+                }
+
+                int order = 0;
+                foreach ( var item in workflowActivityTypeSortList )
+                {
+                    item.Order = order++;
+                }
+            }
+            else if ( eventParam.Equals( "re-order-action" ) )
+            {
+                Guid workflowActionTypeGuid = new Guid( values[0] );
+                int newIndex = int.Parse( values[1] );
+                WorkflowActivityType workflowActivityType = workflowActivityTypeSortList.FirstOrDefault( a => a.ActionTypes.Any( b => b.Guid.Equals( workflowActionTypeGuid ) ) );
+                WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( workflowActionTypeGuid ) );
+                workflowActivityTypeSortList.RemoveEntity( workflowActionTypeGuid );
+                if ( workflowActivityType != null )
+                {
+                    activeWorkflowActivityTypeGuid = workflowActivityType.Guid;
+                    List<WorkflowActionType> workflowActionTypes = workflowActivityType.ActionTypes.ToList();
+                    workflowActionTypes.Remove( workflowActionType );
+                    if ( newIndex >= workflowActionTypes.Count() )
+                    {
+                        workflowActionTypes.Add( workflowActionType );
+                    }
+                    else
+                    {
+                        workflowActionTypes.Insert( newIndex, workflowActionType );
+                    }
+
+                    int order = 0;
+                    foreach ( var item in workflowActionTypes )
+                    {
+                        item.Order = order++;
+                    }
+                }
+            }
+
+            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
+            WorkflowActivityTypesState.AddAll( workflowActivityTypeSortList );
+            BuildWorkflowActivityControlsFromViewState( activeWorkflowActivityTypeGuid );
         }
 
         #endregion
@@ -165,6 +276,88 @@ namespace RockWeb.Blocks.Administration
 
             RockTransactionScope.WrapTransaction( () =>
             {
+                List<WorkflowActivityTypeEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityTypeEditor>().ToList();
+
+                // delete WorkflowActionTypes that aren't assigned in the UI anymore
+                WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService();
+                List<WorkflowActionType> actionTypesInDB = workflowActionTypeService.Queryable().Where( a => a.ActivityType.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
+                List<WorkflowActionType> actionTypesInUI = new List<WorkflowActionType>();
+                foreach ( WorkflowActivityTypeEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
+                {
+                    foreach ( WorkflowActionTypeEditor editor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionTypeEditor>() )
+                    {
+                        actionTypesInUI.Add( editor.WorkflowActionType );
+                    }
+                }
+
+                var deletedActionTypes = from actionType in actionTypesInDB
+                                         where !actionTypesInUI.Select( u => u.Id ).Contains( actionType.Id )
+                                         select actionType;
+
+                deletedActionTypes.ToList().ForEach( actionType =>
+                {
+                    workflowActionTypeService.Delete( actionType, CurrentPersonId );
+                    workflowActionTypeService.Save( actionType, CurrentPersonId );
+                } );
+
+                // delete WorkflowActivityTypes that aren't assigned in the UI anymore
+                WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService();
+                List<WorkflowActivityType> activityTypesInDB = workflowActivityTypeService.Queryable().Where( a => a.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
+                List<WorkflowActivityType> activityTypesInUI = workflowActivityTypeEditorList.Select( a => a.GetWorkflowActivityType() ).ToList();
+
+                var deletedActivityTypes = from activityType in activityTypesInDB
+                                           where !activityTypesInUI.Select( u => u.Id ).Contains( activityType.Id )
+                                           select activityType;
+
+                deletedActivityTypes.ToList().ForEach( activityType =>
+                {
+                    workflowActivityTypeService.Delete( activityType, CurrentPersonId );
+                    workflowActivityTypeService.Save( activityType, CurrentPersonId );
+                } );
+
+                // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
+                int workflowActivityTypeOrder = 0;
+                foreach ( WorkflowActivityTypeEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
+                {
+                    WorkflowActivityType editorWorkflowActivityType = workflowActivityTypeEditor.GetWorkflowActivityType();
+                    WorkflowActivityType workflowActivityType = workflowType.ActivityTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActivityType.Guid ) );
+
+                    if ( workflowActivityType == null )
+                    {
+                        workflowActivityType = editorWorkflowActivityType;
+                        workflowType.ActivityTypes.Add( workflowActivityType );
+                    }
+                    else
+                    {
+                        workflowActivityType.Name = editorWorkflowActivityType.Name;
+                        workflowActivityType.Description = editorWorkflowActivityType.Description;
+                        workflowActivityType.IsActive = editorWorkflowActivityType.IsActive;
+                        workflowActivityType.IsActivatedWithWorkflow = editorWorkflowActivityType.IsActivatedWithWorkflow;
+                    }
+
+                    workflowActivityType.Order = workflowActivityTypeOrder++;
+
+                    int workflowActionTypeOrder = 0;
+                    foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionTypeEditor>() )
+                    {
+                        WorkflowActionType editorWorkflowActionType = workflowActionTypeEditor.WorkflowActionType;
+                        WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActionType.Guid ) );
+                        if ( workflowActionType == null )
+                        {
+                            workflowActionType = editorWorkflowActionType;
+                            workflowActivityType.ActionTypes.Add( workflowActionType );
+                        }
+                        else
+                        {
+                            workflowActionType.Name = editorWorkflowActionType.Name;
+                            workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
+                            workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
+                        }
+
+                        workflowActionType.Order = workflowActionTypeOrder++;
+                    }
+                }
+
                 if ( workflowType.Id.Equals( 0 ) )
                 {
                     service.Add( workflowType, CurrentPersonId );
@@ -293,6 +486,12 @@ namespace RockWeb.Blocks.Administration
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+
+            phActivities.Controls.Clear();
+            foreach ( WorkflowActivityType workflowActivityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
+            {
+                CreateWorkflowActivityTypeEditorControls( workflowActivityType );
+            }
         }
 
         /// <summary>
@@ -330,10 +529,8 @@ namespace RockWeb.Blocks.Administration
     </dl>
 </div>";
 
-
             if ( workflowType.ActivityTypes.Count > 0 )
             {
-
                 // Activities
                 lblWorkflowActivitiesReadonly.Text = @"
 <div>
@@ -346,9 +543,9 @@ namespace RockWeb.Blocks.Administration
             <strong>{0}</strong>
             {1}
             <br />
-            Actions:
+            {2}
             <ol>
-                {2}
+                {3}
             </ol>
         </li>
 ";
@@ -360,7 +557,9 @@ namespace RockWeb.Blocks.Administration
                         actionTypeText += string.Format( "<li>{0}</li>" + Environment.NewLine, actionType.Name );
                     }
 
-                    lblWorkflowActivitiesReadonly.Text += string.Format( activityTypeTextFormat, activityType.Name, activityType.Description, actionTypeText );
+                    string actionsTitle = activityType.ActionTypes.Count > 0 ? "Actions:" : "No Actions";
+
+                    lblWorkflowActivitiesReadonly.Text += string.Format( activityTypeTextFormat, activityType.Name, activityType.Description, actionsTitle, actionTypeText );
                 }
 
                 lblWorkflowActivitiesReadonly.Text += @"
@@ -533,11 +732,11 @@ namespace RockWeb.Blocks.Administration
         {
             AttributeService attributeService = new AttributeService();
 
-            int WorkflowTypeId = hfWorkflowTypeId.ValueAsInt();
+            int workflowTypeId = hfWorkflowTypeId.ValueAsInt();
 
             var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( WorkflowTypeId.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( workflowTypeId.ToString() ) );
 
             gWorkflowTypeAttributes.DataSource = qryWorkflowTypeAttributes.OrderBy( a => a.Name ).ToList();
             gWorkflowTypeAttributes.DataBind();
@@ -554,6 +753,20 @@ namespace RockWeb.Blocks.Administration
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
+            BuildWorkflowActivityControlsFromViewState();
+        }
+
+        /// <summary>
+        /// Builds the state of the workflow activity controls from view.
+        /// </summary>
+        private void BuildWorkflowActivityControlsFromViewState( Guid? activeWorkflowActivityTypeGuid = null )
+        {
+            phActivities.Controls.Clear();
+
+            foreach ( WorkflowActivityType workflowActivityType in WorkflowActivityTypesState )
+            {
+                CreateWorkflowActivityTypeEditorControls( workflowActivityType, workflowActivityType.Guid.Equals( activeWorkflowActivityTypeGuid ?? Guid.Empty ) );
+            }
         }
 
         /// <summary>
@@ -564,7 +777,24 @@ namespace RockWeb.Blocks.Administration
         /// </returns>
         protected override object SaveViewState()
         {
+            SaveWorkflowActivityControlsToViewState();
+
             return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Saves the state of the workflow activity controls to view.
+        /// </summary>
+        private void SaveWorkflowActivityControlsToViewState()
+        {
+            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
+            int order = 0;
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityTypeEditor>() )
+            {
+                WorkflowActivityType workflowActivityType = activityEditor.GetWorkflowActivityType();
+                workflowActivityType.Order = order++;
+                WorkflowActivityTypesState.Add( workflowActivityType );
+            }
         }
 
         /// <summary>
@@ -572,27 +802,95 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAddActivity_Click( object sender, EventArgs e )
+        protected void lbAddActivityType_Click( object sender, EventArgs e )
         {
-            ActivityEditor activityEditor = new ActivityEditor();
-            activityEditor.ActivityGuid = Guid.NewGuid();
-            activityEditor.ID = "activityEditor_" + activityEditor.ActivityGuid.ToString();
-            activityEditor.ActivityName = "Activity 01";
-            activityEditor.ActivityDescription = "Description of Activity 01";
-            activityEditor.ActivityIsActivatedWithWorkflow = true;
-            activityEditor.ActivityIsActive = false;
-            activityEditor.DeleteActivityClick += activityEditor_DeleteActivityClick;
-            phActivities.Controls.Add( activityEditor );
+            WorkflowActivityType workflowActivityType = new WorkflowActivityType();
+            workflowActivityType.Guid = Guid.NewGuid();
+
+            CreateWorkflowActivityTypeEditorControls( workflowActivityType );
         }
 
         /// <summary>
-        /// Handles the DeleteActivityClick event of the activityEditor control.
+        /// Creates the workflow activity type editor control.
+        /// </summary>
+        /// <param name="workflowActivityType">Type of the workflow activity.</param>
+        /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
+        private void CreateWorkflowActivityTypeEditorControls( WorkflowActivityType workflowActivityType, bool forceContentVisible = false )
+        {
+            WorkflowActivityTypeEditor workflowActivityTypeEditor = new WorkflowActivityTypeEditor();
+            workflowActivityTypeEditor.ID = "WorkflowActivityTypeEditor_" + workflowActivityType.Guid.ToString( "N" );
+            workflowActivityTypeEditor.SetWorkflowActivityType( workflowActivityType );
+            workflowActivityTypeEditor.DeleteActivityTypeClick += workflowActivityTypeEditor_DeleteActivityClick;
+            workflowActivityTypeEditor.AddActionTypeClick += workflowActivityTypeEditor_AddActionTypeClick;
+            workflowActivityTypeEditor.ForceContentVisible = forceContentVisible;
+            foreach ( WorkflowActionType actionType in workflowActivityType.ActionTypes.OrderBy( a => a.Order ) )
+            {
+                CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, actionType );
+            }
+
+            phActivities.Controls.Add( workflowActivityTypeEditor );
+        }
+
+        /// <summary>
+        /// Handles the AddActionTypeClick event of the workflowActivityTypeEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void activityEditor_DeleteActivityClick( object sender, EventArgs e )
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void workflowActivityTypeEditor_AddActionTypeClick( object sender, EventArgs e )
         {
-            string temp = sender.ToString();
+            if ( sender is WorkflowActivityTypeEditor )
+            {
+                WorkflowActivityTypeEditor workflowActivityTypeEditor = sender as WorkflowActivityTypeEditor;
+                CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, new WorkflowActionType { Guid = Guid.NewGuid() } );
+            }
+        }
+
+        /// <summary>
+        /// Creates the workflow action type editor control.
+        /// </summary>
+        /// <param name="workflowActivityTypeEditor">The workflow activity type editor.</param>
+        /// <param name="workflowActionType">Type of the workflow action.</param>
+        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityTypeEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType )
+        {
+            WorkflowActionTypeEditor workflowActionTypeEditor = new WorkflowActionTypeEditor();
+            workflowActionTypeEditor.ID = "WorkflowActionTypeEditor_" + workflowActionType.Guid.ToString( "N" );
+            workflowActionTypeEditor.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
+            workflowActionTypeEditor.WorkflowActionType = workflowActionType;
+            workflowActivityTypeEditor.Controls.Add( workflowActionTypeEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteActionTypeClick event of the workflowActionTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void workflowActionTypeEditor_DeleteActionTypeClick( object sender, EventArgs e )
+        {
+            if ( sender is WorkflowActionTypeEditor )
+            {
+                WorkflowActionTypeEditor workflowActionTypeEditor = sender as WorkflowActionTypeEditor;
+                WorkflowActivityTypeEditor workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityTypeEditor;
+                workflowActivityTypeEditor.Controls.Remove( workflowActionTypeEditor );
+            }
+        }
+
+        /// <summary>
+        /// Handles the DeleteActivityClick event of the workflowActivityTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void workflowActivityTypeEditor_DeleteActivityClick( object sender, EventArgs e )
+        {
+            if ( sender is WorkflowActivityTypeEditor )
+            {
+                WorkflowActivityTypeEditor editor = sender as WorkflowActivityTypeEditor;
+                if ( editor != null )
+                {
+                    phActivities.Controls.Remove( editor );
+                }
+            }
         }
 
         #endregion

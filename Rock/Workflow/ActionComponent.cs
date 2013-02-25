@@ -16,7 +16,7 @@ namespace Rock.Workflow
     /// <summary>
     /// Base class for components that perform actions for a workflow
     /// </summary>
-    public abstract class ActionComponent : IComponent
+    public abstract class ActionComponent : ComponentManaged
     {
         /// <summary>
         /// Gets the type of the entity.
@@ -35,7 +35,11 @@ namespace Rock.Workflow
 
             var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ).FullName );
             this.EntityType = EntityTypeCache.Read( type.FullName );
-            Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
+
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
+            }
         }
 
         /// <summary>

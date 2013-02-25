@@ -317,7 +317,7 @@ namespace Rock.Model
             if ( attribute == null )
             {
                 var fieldTypeService = new Model.FieldTypeService();
-                var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
+                var fieldType = fieldTypeService.GetByGuid( new Guid( Rock.SystemGuid.FieldType.TEXT ) );
 
                 attribute = new Model.Attribute();
                 attribute.IsSystem = false;
@@ -345,6 +345,7 @@ namespace Rock.Model
 
             foreach ( var value in values )
             {
+                // TODO - if guarding against null/empty values, how would someone "clear" a particular preference? -NickA
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
                     var attributeValue = new Model.AttributeValue();

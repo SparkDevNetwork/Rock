@@ -14,11 +14,11 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    [IntegerField( 0, "Group Type", "0", null, "Behavior", "The type of group to display.  Any group of this type that person belongs to will be displayed" )]
-    [TextField( 1, "Group Role Filter", "Behavior", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
-    [BooleanField( 2, "Include Self", false, null, "Behavior", "Should the current person be included in list of group members?" )]
-    [BooleanField( 3, "Include Locations", false, null, "Behavior", "Should locations be included?" )]
-    [TextField( 4, "Xslt File", "Behavior", "XSLT File to use.", false, "GroupMembers.xslt" )]
+    [IntegerField( "Group Type", "The type of group to display.  Any group of this type that person belongs to will be displayed", false )]
+    [TextField( "Group Role Filter", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
+    [BooleanField( "Include Self", "Should the current person be included in list of group members?", false )]
+    [BooleanField( "Include Locations", "Should locations be included?", false )]
+    [TextField( "Xslt File", "XSLT File to use.", false, "GroupMembers.xslt" )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         private XDocument xDocument = null;
@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( GroupTypeId == 0 )
                 GroupTypeId = new GroupTypeService().Queryable()
-                    .Where( g => g.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
+                    .Where( g => g.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
                     .Select( g => g.Id )
                     .FirstOrDefault();
 

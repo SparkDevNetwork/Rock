@@ -15,11 +15,11 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Group
 {
-    [IntegerField( 0, "Group Id", "", null, "Behavior", "The Group Id of the parent group")]
-    [IntegerField( 1, "Group Levels", "", null, "Behavior", "The Group Role to use when person is added to group", true )]
-    [IntegerField( 2, "Group Role", "", null, "Behavior", "The Group Role to use when person is added to group", true )]
-    [TextField( 3, "Duration Attribute Key", "Behavior", "The key of the duration attribute", false, "Duration" )]
-    [TextField( 3, "Video Attribute Key", "Behavior", "The key of the video attribute", false, "Video" )]
+    [IntegerField( "Group Id", "The Group Id of the parent group")]
+    [IntegerField( "Group Levels", "The Group Role to use when person is added to group" )]
+    [IntegerField( "Group Role", "The Group Role to use when person is added to group" )]
+    [TextField( "Duration Attribute Key", "The key of the duration attribute", false, "Duration" )]
+    [TextField( "Video Attribute Key", "The key of the video attribute", false, "Video" )]
     public partial class ClassVideo : Rock.Web.UI.RockBlock
     {
         GroupService groupService = new GroupService();

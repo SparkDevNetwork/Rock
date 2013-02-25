@@ -18,7 +18,7 @@ namespace Rock.Model
         private static readonly Object obj = new object();
 
         private char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
-        private List<string> noGood = new List<string> { "666", "KKK" };
+        private List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
 
         /// <summary>
         /// Gets the specified day.
