@@ -34,7 +34,7 @@ namespace Rock.Model
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public EntityType Get(string entityName, bool createIfNotFound, int? personId )
+        public EntityType Get( string entityName, bool createIfNotFound, int? personId )
         {
             var entityType = Get( entityName );
             if ( entityType != null )
@@ -44,8 +44,8 @@ namespace Rock.Model
             {
                 entityType = new EntityType();
                 entityType.Name = entityName;
-                this.Add(entityType, personId);
-                this.Save(entityType, personId);
+                this.Add( entityType, personId );
+                this.Save( entityType, personId );
 
                 return entityType;
             }
@@ -103,7 +103,7 @@ namespace Rock.Model
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Key, entityType);
+                    entityTypes.Add( type.Key, entityType );
                 }
             }
 
@@ -125,15 +125,21 @@ namespace Rock.Model
             {
                 var entityType = entityTypes[existingEntityType.Name];
 
-                existingEntityType.IsEntity = entityType.IsEntity;
-                existingEntityType.IsSecured = entityType.IsSecured;
-                existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
-                existingEntityType.AssemblyName = entityType.AssemblyName;
-                Save( existingEntityType, null );
+                if ( existingEntityType.IsEntity != entityType.IsEntity ||
+                    existingEntityType.IsSecured != entityType.IsSecured ||
+                    existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
+                    existingEntityType.AssemblyName != entityType.AssemblyName )
+                {
+                    existingEntityType.IsEntity = entityType.IsEntity;
+                    existingEntityType.IsSecured = entityType.IsSecured;
+                    existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
+                    existingEntityType.AssemblyName = entityType.AssemblyName;
+                    Save( existingEntityType, null );
+                }
                 entityTypes.Remove( entityType.Name );
             }
 
-            // Add the newly discovered entities
+            // Add the newly discovered entities 
             foreach ( var entityTypeInfo in entityTypes )
             {
                 // Don't add the EntityType entity as it will probably have been automatically 
