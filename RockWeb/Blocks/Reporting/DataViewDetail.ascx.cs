@@ -119,8 +119,15 @@ $(document).ready(function() {
         {
             if ( hfDataViewId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to Grid
-                NavigateToParentPage();
+                // Cancelling on Add.  Return to tree view with parent category selected
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
             }
             else
             {
