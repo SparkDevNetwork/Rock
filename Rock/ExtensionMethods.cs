@@ -473,6 +473,99 @@ namespace Rock
 
         }
 
+        /// <summary>
+        /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// </summary>
+        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm) </param>
+        /// <returns></returns>
+        public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
+        {
+            try
+            {
+                DateTime now = DateTime.Now;
+                TimeSpan timeSince = now - dateTime;
+
+                double inSeconds = timeSince.TotalSeconds;
+                double inMinutes = timeSince.TotalMinutes;
+                double inHours = timeSince.TotalHours;
+                double inDays = timeSince.TotalDays;
+                double inWeeks = inDays / 7;
+                double inMonths = inDays / 30;
+                double inYears = inDays / 365;
+
+                // Just return in FB time format if max days has passed.
+                if ( maxDays.HasValue && inDays > maxDays )
+                {
+                    if ( now.Year == dateTime.Year )
+                    {
+                        return dateTime.ToString( "MMMM d at h:mmtt" ).ToLowerInvariant();
+                    }
+                    else
+                    {
+                        return dateTime.ToString( "MMMM d, yyyy at h:mmtt" ).ToLowerInvariant();
+                    }
+                }
+
+                if ( Math.Round( inSeconds ) == 1 )
+                {
+                    return "1 second ago";
+                }
+                else if ( inMinutes < 1.0 )
+                {
+                    return Math.Floor( inSeconds ) + " seconds ago";
+                }
+                else if ( Math.Floor( inMinutes ) == 1 )
+                {
+                    return "1 minute ago";
+                }
+                else if ( inHours < 1.0 )
+                {
+                    return Math.Floor( inMinutes ) + " minutes ago";
+                }
+                else if ( Math.Floor( inHours ) == 1 )
+                {
+                    return "about an hour ago";
+                }
+                else if ( inDays < 1.0 )
+                {
+                    return Math.Floor( inHours ) + " hours ago";
+                }
+                else if ( Math.Floor( inDays ) == 1 )
+                {
+                    return "1 day ago";
+                }
+                else if ( inWeeks < 1 )
+                {
+                    return Math.Floor( inDays ) + " days ago";
+                }
+                else if ( Math.Floor( inWeeks ) == 1 )
+                {
+                    return "1 week ago";
+                }
+                else if ( inMonths < 3 )
+                {
+                    return Math.Floor( inWeeks ) + " weeks ago";
+                }
+                else if ( inMonths <= 12 )
+                {
+                    return Math.Floor( inMonths ) + " months ago ";
+                }
+                else if ( Math.Floor( inYears ) <= 1 )
+                {
+                    return "1 year ago";
+                }
+                else
+                {
+                    return Math.Floor( inYears ) + " years ago";
+                }
+            }
+            catch ( Exception )
+            {
+            }
+            return "";
+        }
         #endregion
 
         #region Control Extensions

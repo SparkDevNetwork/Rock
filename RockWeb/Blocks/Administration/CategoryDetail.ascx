@@ -14,8 +14,6 @@
                         <asp:Literal ID="lActionTitle" runat="server" />
                     </legend>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                     <Rock:LabeledDropDownList ID="ddlParentCategory" runat="server" LabelText="Parent Category" />
                     <Rock:LabeledText ID="lblEntityTypeName" runat="server" LabelText="Entity Type" />
@@ -44,13 +42,16 @@
                 <asp:Literal ID="lblActiveHtml" runat="server" />
                 <div class="well">
                     <div class="row-fluid">
-                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
                     <div class="row-fluid">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
                     </div>
                 </div>
             </fieldset>

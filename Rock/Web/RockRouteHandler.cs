@@ -70,7 +70,7 @@ namespace Rock.Web
                     else
                     {
                         var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_CHMS ) );
                         if ( rockSite != null )
                         {
                             siteId = rockSite.Id;
@@ -102,7 +102,7 @@ namespace Rock.Web
                 }
             }
 
-            string theme = "RockCms";
+            string theme = "RockChMS";
             string layout = "Default";
             string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
@@ -129,15 +129,14 @@ namespace Rock.Web
             }
             catch ( System.Web.HttpException )
             {
-                // The Selected theme and/or layout didn't exist, attempt first to use the default layout in the selected theme
-                layout = "Default";
-
-                // If not using the Rock theme, verify that default Layout exists in the selected theme directory
-                if ( theme != "RockCms" &&
-                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/{0}/Layouts/Default.aspx", theme ) ) ) )
+                // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
+                theme = "RockChMS";
+                
+                // If not using the default layout, verify that Layout exists in the default theme directory
+                if ( layout != "Default" &&
+                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/RockChMS/Layouts/{0}.aspx", layout ) ) ) )
                 {
-                    // If default layout doesn't exist in the selected theme, switch to the Default layout
-                    theme = "RockCms";
+                    // If selected layout doesn't exist in the default theme, switch to the Default layout
                     layout = "Default";
                 }
 

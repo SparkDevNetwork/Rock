@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Administration
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 definedValues = definedValueService.Queryable().
-                    Where( definedValue => definedValue.DefinedType.Guid == Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ).
+                    Where( definedValue => definedValue.DefinedType.Guid == new Guid( Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ) ).
                     OrderBy( v => v.Order).
                     ToList();
             }

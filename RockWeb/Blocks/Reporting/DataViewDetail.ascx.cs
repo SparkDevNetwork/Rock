@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -14,6 +15,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -26,6 +28,10 @@ namespace RockWeb.Blocks.Reporting
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -44,8 +50,10 @@ $(document).ready(function() {
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
-
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
+            btnSecurity.EntityType = typeof( Rock.Model.DataView );
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -57,9 +65,17 @@ $(document).ready(function() {
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "DataViewId" );
+                string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "DataViewId", int.Parse( itemId ) );
+                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
+                    {
+                        ShowDetail( "DataViewId", int.Parse( itemId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "DataViewId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                    }
                 }
                 else
                 {
@@ -68,12 +84,22 @@ $(document).ready(function() {
             }
         }
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
             CreateFilterControl( DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false );
         }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
         protected override object SaveViewState()
         {
             ViewState["DataViewFilter"] = GetFilterControl().ToJson();
@@ -112,9 +138,48 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            DataViewService service = new DataViewService();
-            DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
+            var service = new DataViewService();
+            var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowEditDetails( item );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? categoryId = null;
+
+            var dataViewService = new DataViewService();
+            var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
+
+            if ( dataView != null )
+            {
+                string errorMessage;
+                if ( !dataViewService.CanDelete( dataView, out errorMessage ) )
+                {
+                    ShowReadonlyDetails( dataView );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                }
+                else
+                {
+                    categoryId = dataView.CategoryId;
+
+                    dataViewService.Delete( dataView, CurrentPersonId );
+                    dataViewService.Save( dataView, CurrentPersonId );
+
+                    // reload page, selecting the deleted data view's parent
+                    var qryParams = new Dictionary<string, string>();
+                    if ( categoryId != null )
+                    {
+                        qryParams["CategoryId"] = categoryId.ToString();
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+            }
         }
 
         /// <summary>
@@ -127,6 +192,11 @@ $(document).ready(function() {
             fieldsetViewDetails.Visible = !editable;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             DataView dataView = null;
@@ -197,10 +267,32 @@ $(document).ready(function() {
                 } );
             }
 
-            // reload item from db using a new context
-            dataView = new DataViewService().Get( dataView.Id );
-            ShowReadonlyDetails( dataView );
+            var qryParams = new Dictionary<string, string>();
+            qryParams["DataViewId"] = dataView.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
+        }
 
+        /// <summary>
+        /// Handles the Click event of the btnPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnPreview_Click( object sender, EventArgs e )
+        {
+            ShowPreview( int.Parse(ddlEntityType.SelectedValue), GetFilterControl());
+        }
+
+        protected void btnPreview2_Click( object sender, EventArgs e )
+        {
+            int dataViewId = int.Parse( hfDataViewId.Value );
+
+            var service = new DataViewService();
+            var dataView = service.Get( dataViewId );
+
+            if ( dataView != null && dataView.EntityTypeId.HasValue)
+            {
+                ShowPreview( dataView.EntityTypeId.Value, dataView.DataViewFilter );
+            }
         }
 
         #endregion
@@ -250,24 +342,36 @@ $(document).ready(function() {
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            ShowDetail( itemKey, itemKeyValue, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="parentCategoryId">The parent category id.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        {
+            pnlDetails.Visible = false;
             if ( !itemKey.Equals( "DataViewId" ) )
             {
-                pnlDetails.Visible = false;
                 return;
             }
 
+            var dataViewService = new DataViewService();
             DataView dataView = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                dataView = new DataViewService().Get( itemKeyValue );
+                dataView = dataViewService.Get( itemKeyValue );
             }
             else
             {
-                dataView = new DataView { Id = 0, IsSystem = false };
+                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
-            if ( dataView == null )
+            if ( dataView == null || !dataView.IsAuthorized( "View", CurrentPerson ) )
             {
                 return;
             }
@@ -278,11 +382,20 @@ $(document).ready(function() {
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
+            btnPreview2.Visible = true;
+
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !dataView.IsAuthorized( "Edit", CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            }
+
+            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            {
+                readOnly = true;
+                btnPreview2.Visible = false;
+                nbEditModeMessage.Text = "INFO: This Data View contains a filter that you do not have access to view.";
             }
 
             if ( dataView.IsSystem )
@@ -291,14 +404,21 @@ $(document).ready(function() {
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
             }
 
+            btnSecurity.Visible = dataView.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Title = "Secure " + dataView.Name;
+            btnSecurity.EntityTypeId = dataView.Id;
+
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 ShowReadonlyDetails( dataView );
             }
             else
             {
                 btnEdit.Visible = true;
+                string errorMessage = string.Empty;
+                btnDelete.Visible = dataViewService.CanDelete( dataView, out errorMessage );
                 if ( dataView.Id > 0 )
                 {
                     ShowReadonlyDetails( dataView );
@@ -326,7 +446,6 @@ $(document).ready(function() {
             }
 
             SetEditMode( true );
-
             LoadDropDowns();
 
             if ( dataView.DataViewFilter == null || dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
@@ -378,6 +497,105 @@ $(document).ready(function() {
             lblMainDetails.Text += @"
     </dl>
 </div>";
+        }
+
+        /// <summary>
+        /// Shows the preview.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="filter">The filter.</param>
+        private void ShowPreview( int entityTypeId, DataViewFilter filter )
+        {
+            var cachedEntityType = EntityTypeCache.Read( entityTypeId );
+            if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+            {
+                Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                if ( entityType != null )
+                {
+                    BuildGridColumns( entityType );
+
+                    Type[] modelType = { entityType };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                    object serviceInstance = Activator.CreateInstance( modelServiceType );
+
+                    if ( serviceInstance != null )
+                    {
+                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+
+                        if ( getMethod != null )
+                        {
+                            var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                            var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
+                            gPreview.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                            gPreview.DataBind();
+
+                            modalPreview.Show();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the grid columns.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        private void BuildGridColumns( Type modelType )
+        {
+            gPreview.Columns.Clear();
+
+            var previewColumns = new Dictionary<string, BoundField>();
+            var allColumns = new Dictionary<string, BoundField>();
+
+            foreach ( var property in modelType.GetProperties() )
+            {
+                if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                {
+                    previewColumns.Add( property.Name, GetGridField( property ) );
+                }
+                else if ( previewColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                {
+                    allColumns.Add( property.Name, GetGridField( property ) );
+                }
+            }
+
+            Dictionary<string, BoundField> columns = previewColumns.Count > 0 ? previewColumns : allColumns;
+
+            foreach ( var column in columns )
+            {
+                var bf = column.Value;
+                bf.DataField = column.Key;
+                bf.SortExpression = column.Key;
+                bf.HeaderText = column.Key.SplitCase();
+                gPreview.Columns.Add( bf );
+            }
+        }
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        private BoundField GetGridField( PropertyInfo property )
+        {
+            BoundField bf = new BoundField();
+
+            if ( property.PropertyType == typeof( Boolean ) )
+            {
+                bf = new BoolField();
+            }
+            else if ( property.PropertyType == typeof( DateTime ) )
+            {
+                bf = new DateField();
+            }
+            else if ( property.PropertyType.IsEnum )
+            {
+                bf = new EnumField();
+            }
+
+            return bf;
         }
 
         #endregion

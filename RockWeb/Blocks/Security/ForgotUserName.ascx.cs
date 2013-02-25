@@ -13,9 +13,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
-    [TextField( 0, "Heading", "HeadingCaption", "Captions", "", false,"Enter your email address below and we'll send you your account user name" )]
-    [TextField( 1, "Invalid Email", "InvalidEmailCaption", "Captions", "", false,"There are not any accounts for the email address you entered" )]
-    [TextField( 2, "Success", "SuccessCaption", "Captions", "", false,"Your user name has been sent to the email address you entered" )]
+    [TextField( "Heading Caption", "", false, "Enter your email address below and we'll send you your account user name", "Captions", 0 )]
+    [TextField( "Invalid Email Caption", "", false, "There are not any accounts for the email address you entered", "Captions", 1 )]
+    [TextField( "Success Caption", "", false, "Your user name has been sent to the email address you entered", "Captions", 2 )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Overridden RockPage Methods

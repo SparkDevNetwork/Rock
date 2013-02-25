@@ -18,7 +18,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     [ContextAware]
-    [TextField( 1, "Note Type", "Behavior", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
+    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
     public partial class Notes : RockBlock
     {
         private IEntity contextEntity = null;

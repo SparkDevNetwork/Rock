@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Utility
     /// </summary>
     [DetailPage]
     [EntityType("Entity Type", "The types of entities to display categories for")]
-    [TextField( 0, "Page Parameter Key", "The page parameter to look for", true )]
+    [TextField( "Page Parameter Key", "The page parameter to look for" )]
     public partial class CategoryTreeView : RockBlock
     {
         /// <summary>
@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Utility
             if ( entityType != null )
             {
                 EntityTypeName = entityType.Name;
+                lbAddItem.ToolTip = "Add " + entityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
@@ -113,6 +114,34 @@ namespace RockWeb.Blocks.Utility
                 }
 
                 hfInitialCategoryParentIds.Value = parentIdList.AsDelimited( "," );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbAddCategory_Click( object sender, EventArgs e )
+        {
+            int parentCategoryId = 0;
+            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
+            {
+                NavigateToDetailPage( "CategoryId", 0, "parentCategoryId", parentCategoryId );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbAddItem_Click( object sender, EventArgs e )
+        {
+            int parentCategoryId = 0;
+            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
+            {
+                NavigateToDetailPage( PageParameterName, 0, "parentCategoryId", parentCategoryId );
             }
         }
     }

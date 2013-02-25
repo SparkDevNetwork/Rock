@@ -36,11 +36,11 @@
                     <legend>
                         <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivity" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivity_Click"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
                         </span>
                     </legend>
 
-                    <div class="row-fluid">
+                    <div class="row-fluid workflow-activity-list">
                         <asp:PlaceHolder ID="phActivities" runat="server" />
                     </div>
                 </fieldset>
@@ -95,23 +95,46 @@
         </asp:Panel>
         <script>
             Sys.Application.add_load(function () {
-                // activity annimation
-                $('.workflow-activity > header').click(function () {
-                    $(this).siblings('.widget-content').slideToggle();
+                var fixHelper = function (e, ui) {
+                    ui.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
 
-                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
-                    $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
+                $('.workflow-activity-list').sortable({
+                    helper: fixHelper,
+                    handle: '.workflow-activity-reorder',
+                    containment: 'parent',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                        }
+                    }
+                }).disableSelection();
 
-                });
-
-                // action annimation
-                $('.workflow-action > header').click(function () {
-                    $(this).siblings('.widget-content').slideToggle();
-
-                    $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
-                    $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
-
-                });
+                $('.workflow-action-list').sortable({
+                    helper: fixHelper,
+                    handle: '.workflow-action-reorder',
+                    containment: 'parent',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                        }
+                    }
+                }).disableSelection();
             });
         </script>
     </ContentTemplate>

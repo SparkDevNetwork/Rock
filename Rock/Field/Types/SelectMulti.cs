@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -52,7 +53,8 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "values", new ConfigurationValue( "Values", "Comma-delimited list of values to display", "" ) );
+            configurationValues.Add( "values", new ConfigurationValue( "Values", 
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1:text1,value2:text2,value3:text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
@@ -85,11 +87,40 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
             CheckBoxList editControl = new CheckBoxList();
+            editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
-                foreach ( string value in configurationValues["values"].Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    editControl.Items.Add( new ListItem( value ) );
+            {
+                string listSource = configurationValues["values"].Value;
 
+                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
+                {
+                    var tableValues = new List<string>();
+                    DataTable dataTable = new Rock.Data.Service().GetDataTable( listSource, CommandType.Text, null );
+                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
+                    {
+                        foreach ( DataRow row in dataTable.Rows )
+                        {
+                            editControl.Items.Add( new ListItem( row["text"].ToString(), row["value"].ToString() ) );
+                        }
+                    }
+                }
+
+                else
+                {
+                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    {
+                        var keyValueArray = keyvalue.Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( keyValueArray.Length > 0 )
+                        {
+                            ListItem li = new ListItem();
+                            li.Value = keyValueArray[0];
+                            li.Text = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
+                            editControl.Items.Add( li );
+                        }
+                    }
+                }
+            }
             return editControl;
         }
 

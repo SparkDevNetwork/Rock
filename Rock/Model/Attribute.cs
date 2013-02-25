@@ -4,11 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -175,8 +175,13 @@ namespace Rock.Model
         /// Collection of Attribute Qualifiers.
         /// </value>
         [DataMember]
-        public virtual ICollection<AttributeQualifier> AttributeQualifiers { get; set; }
-        
+        public virtual ICollection<AttributeQualifier> AttributeQualifiers
+        {
+            get { return _attributeQualifiers ?? ( _attributeQualifiers = new Collection<AttributeQualifier>() ); }
+            set { _attributeQualifiers = value; }
+        }
+        private ICollection<AttributeQualifier> _attributeQualifiers;
+       
         /// <summary>
         /// Gets or sets the Field Type.
         /// </summary>

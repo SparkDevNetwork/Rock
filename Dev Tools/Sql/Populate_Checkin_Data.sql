@@ -345,6 +345,10 @@ IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.Check
 INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
 VALUES ('Rock.Workflow.Action.CheckIn.SaveAttendance', NEWID(), 0, 0)
 
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CreateLabels')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
+VALUES ('Rock.Workflow.Action.CheckIn.CreateLabels', NEWID(), 0, 0)
+
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended')
 INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
 VALUES ('Rock.Workflow.Action.CheckIn.CalculateLastAttended', NEWID(), 0, 0)
@@ -444,4 +448,6 @@ SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Save Attendance', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.SaveAttendance'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Create Labels', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CreateLabels'
 

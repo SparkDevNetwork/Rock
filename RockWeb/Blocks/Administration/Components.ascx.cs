@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// Used to manage the <see cref="Rock.Extension.ComponentManaged"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
-    [TextField( 0, "Component Container", "The Rock Extension Managed Component Container to manage", true)]
+    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
     public partial class Components : RockBlock, IDimmableBlock
     {
         #region Private Variables

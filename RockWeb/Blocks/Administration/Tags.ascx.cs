@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using Rock.Attribute;
@@ -16,11 +17,11 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [TextField( 0, "Entity", "Entity", "Entity Name", false, "" )]
-    [TextField( 1, "Entity Qualifier Column", "Entity", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Entity", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BooleanField( 3, "Global Tags", false, null, "Entity", "Edit global tags (vs. personal tags)?")]
-    [System.ComponentModel.Description( "Block for administrating the tags for a given entity type" )]
+    [Description( "Block for administrating the tags for a given entity type" )]
+    [TextField( "Entity", "Entity Name", false, "", "Applies To", 0 )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
+    [BooleanField( "Global Tags", "Edit global tags (vs. personal tags)?", false, "Applies To" )]
     public partial class Tags : Rock.Web.UI.RockBlock
     {
         #region Fields

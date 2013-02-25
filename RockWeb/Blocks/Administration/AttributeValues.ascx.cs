@@ -17,10 +17,10 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [TextField( 0, "Entity", "Applies To", "Entity Name", false, "" )]
-    [TextField( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [TextField( 3, "Entity Id", "Entity", "The entity id that values apply to", false, "" )]
+    [TextField( "Entity", "Entity Name", false, "", "Applies To", 0 )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
+    [IntegerField( "Entity Id", "The entity id that values apply to", false, int.MinValue, "Applies To" )]
     public partial class AttributeValues : Rock.Web.UI.RockBlock
     {
         #region Fields
