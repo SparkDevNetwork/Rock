@@ -15,8 +15,8 @@ namespace Rock.Extension
     /// <summary>
     /// Singleton generic class that uses MEF to load and cache all of the component classes
     /// </summary>
-    public abstract class ContainerManaged<T, TData> : IContainerManaged, IDisposable
-        where T : ComponentManaged
+    public abstract class Container<T, TData> : IContainer, IDisposable
+        where T : Component
         where TData : IComponentData
     {
         // MEF Container
@@ -31,14 +31,14 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the component names and their attributes
         /// </summary>
-        public Dictionary<int, KeyValuePair<string, ComponentManaged>> Dictionary
+        public Dictionary<int, KeyValuePair<string, Component>> Dictionary
         {
             get
             {
-                var dictionary = new Dictionary<int, KeyValuePair<string, ComponentManaged>>();
+                var dictionary = new Dictionary<int, KeyValuePair<string, Component>>();
                 foreach ( var component in Components )
                 {
-                    dictionary.Add( component.Key, new KeyValuePair<string, ComponentManaged>(
+                    dictionary.Add( component.Key, new KeyValuePair<string, Component>(
                         component.Value.Metadata.ComponentName, component.Value.Value ) );
                 }
 
@@ -57,7 +57,7 @@ namespace Rock.Extension
         /// <summary>
         /// Constructor
         /// </summary>
-        public ContainerManaged()
+        public Container()
         {
             IsDisposed = false;
         }
