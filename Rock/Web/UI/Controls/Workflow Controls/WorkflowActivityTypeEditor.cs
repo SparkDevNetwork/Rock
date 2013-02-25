@@ -158,7 +158,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
 
             cbActivityTypeIsActive = new LabeledCheckBox { LabelText = "Active" };
             cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
-            cbActivityTypeIsActive.InputAttributes["onchange"] = string.Format( "javascript: debugger; if ($(this).is(':checked')) {{ $('#{0}').hide(); }} else {{ $('#{0}').show(); }}", lblInactive.ID );
+            cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( "javascript: if ($(this).is(':checked')) {{ $('#{0}').hide(); }} else {{ $('#{0}').show(); }}", lblInactive.ID ) );
 
             tbActivityTypeName = new DataTextBox();
             tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
