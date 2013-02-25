@@ -104,21 +104,18 @@ namespace RockWeb.Blocks.Finance
 
         protected void BindCampuses()
         {
-            
+            ddlCampusList.Items.Clear();
             CampusService campusService = new CampusService();
-            var items = campusService.Queryable().OrderBy( a => a.Name).Select( a => a.Name).Distinct().ToList();
+            var items = campusService.Queryable().OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
 
             foreach ( string item in items )
             {
-                HtmlGenericControl campus = new HtmlGenericControl( "li" );
-                listCampuses.Controls.Add( campus );
+                ddlCampusList.Items.Add( item );
+                
+            }
 
-                HtmlGenericControl anchor = new HtmlGenericControl( "a" );
-                anchor.Attributes.Add( "href", "#" );
-                anchor.InnerText = item;
+            ddlCampusList.Title = "Select Your Campus";
 
-                campus.Controls.Add( anchor );
-            }            
         }
 
         protected void BindFunds()
@@ -128,45 +125,14 @@ namespace RockWeb.Blocks.Finance
             
             foreach ( string item in items ) {
                                 
-                HtmlGenericControl fundOption = new HtmlGenericControl( "li" );
-                listFunds.Controls.Add( fundOption );
-                
-                HtmlGenericControl anchor = new HtmlGenericControl( "a" );
-                anchor.Attributes.Add( "id", "selectFund" );
-                anchor.Attributes.Add( "href", "#" );                
-                anchor.InnerText = item;
-
-                fundOption.Controls.Add( anchor );
+               // add a fund template to the page
 
                 
             }
 
         }
 
-        protected void TestBind()
-        {
-            DefinedTypeService typeService = new DefinedTypeService();
-            var items = typeService.Queryable().OrderBy( a => a.Category ).Select( a => a.Category ).Distinct().ToList();
-
-            foreach ( string item in items )
-            {
-
-                //HtmlGenericControl fundOption = new HtmlGenericControl( "li" );
-                //listFunds.Controls.Add( fundOption );
-
-                HtmlGenericControl anchor = new HtmlGenericControl( "option" );
-                //anchor.Attributes.Add( "id", "selectFund" );
-                //anchor.Attributes.Add( "href", "#" );
-                anchor.InnerText = item;
-
-                fundSelect.Controls.Add( anchor );
-
-
-            }
-
-        }
-        #endregion  
-
+        #endregion
 
     }
 }

@@ -18,12 +18,13 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl
     {
+        protected String btnTitle = "";
         private HtmlGenericControl divControl;
         private HtmlGenericControl btnSelect;
         private HiddenField hfSelectedItemId;
         private HiddenField hfSelectedItemText;
         private HtmlGenericControl listControl;
-
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -137,6 +138,18 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
             }
         }
 
+        public string Title
+        {
+            get
+            {
+                return btnTitle;
+            }
+            set
+            {
+                btnTitle = value;
+            }
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -164,7 +177,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
             btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
             btnSelect.Attributes["class"] = "btn dropdown-toggle";
             btnSelect.Attributes["data-toggle"] = "dropdown";
-
+            
             divControl.Controls.Add( btnSelect );
 
             listControl = new HtmlGenericControl( "ul" );
@@ -189,7 +202,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
 
             divControl.Controls.Add( listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : string.Empty;
+            string selectedText = SelectedItem != null ? SelectedItem.Text : btnTitle;
             btnSelect.Controls.Clear();
             btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
