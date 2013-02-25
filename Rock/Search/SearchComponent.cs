@@ -14,7 +14,7 @@ namespace Rock.Search
     /// <summary>
     /// 
     /// </summary>
-    public abstract class SearchComponent : ComponentManaged
+    public abstract class SearchComponent : Component
     {
         /// <summary>
         /// The label to display for the type of search

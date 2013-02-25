@@ -332,6 +332,10 @@
     <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.Designer.cs">
       <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302251516310_PageProperties.cs" />
+    <Compile Include="Migrations\201302251516310_PageProperties.Designer.cs">
+      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -558,12 +562,9 @@
     <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
-    <Compile Include="Extension\ComponentManaged.cs" />
-    <Compile Include="Extension\Container.cs" />
-    <Compile Include="Extension\IContainer.cs" />
-    <Compile Include="Extension\IComponent.cs" />
+    <Compile Include="Extension\Component.cs" />
     <Compile Include="Extension\IComponentData.cs" />
-    <Compile Include="Extension\ContainerManaged.cs" />
+    <Compile Include="Extension\Container.cs" />
     <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
@@ -597,7 +598,7 @@
     <Compile Include="Model\EmailTemplate.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
-    <Compile Include="Extension\IContainerManaged.cs" />
+    <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
     <Compile Include="Field\Types\SelectMulti.cs" />
     <Compile Include="Field\Types\Document.cs" />
@@ -1124,6 +1125,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302211842372_AddPrayerRequestAdminPages.resx">
       <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302251516310_PageProperties.resx">
+      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

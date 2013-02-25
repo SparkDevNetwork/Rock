@@ -15,7 +15,7 @@ namespace Rock.Workflow
     /// <summary>
     /// MEF Container class for WorkflowAction Componenets
     /// </summary>
-    public class WorkflowActionContainer : ContainerManaged<ActionComponent, IComponentData>
+    public class WorkflowActionContainer : Container<ActionComponent, IComponentData>
     {
         private static WorkflowActionContainer instance;
 

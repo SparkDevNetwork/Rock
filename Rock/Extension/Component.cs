@@ -36,7 +36,7 @@ namespace Rock.Extension
     /// </summary>
     [IntegerField( "Order", "The order that this service should be used (priority)" )]
     [BooleanField( "Active", "Should Service be used?", false, "", 0)]
-    public abstract class ComponentManaged : Rock.Attribute.IHasAttributes, Rock.Security.ISecured
+    public abstract class Component : Rock.Attribute.IHasAttributes, Rock.Security.ISecured
     {
         /// <summary>
         /// Gets the id.
@@ -49,7 +49,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute categories.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        public Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
@@ -177,9 +177,9 @@ namespace Rock.Extension
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ComponentManaged"/> class.
+        /// Initializes a new instance of the <see cref="Component"/> class.
         /// </summary>
-        public ComponentManaged()
+        public Component()
         {
             this.LoadAttributes();
         }
