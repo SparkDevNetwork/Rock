@@ -17,7 +17,7 @@ namespace Rock.DataFilters
     /// <summary>
     /// 
     /// </summary>
-    public abstract class DataFilterComponent : ComponentManaged
+    public abstract class DataFilterComponent : Component
     {
         /// <summary>
         /// Gets the attribute value defaults.
