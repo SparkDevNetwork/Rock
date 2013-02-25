@@ -49,7 +49,7 @@ namespace Rock.Extension
         /// <value>
         /// The attribute categories.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        public Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
