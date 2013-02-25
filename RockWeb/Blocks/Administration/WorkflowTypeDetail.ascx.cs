@@ -503,15 +503,7 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( false );
             hfWorkflowTypeId.SetValue( workflowType.Id );
             lReadOnlyTitle.Text = workflowType.Name;
-            string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
-            if ( workflowType.IsActive ?? false )
-            {
-                lblActiveHtml.Text = string.Empty;
-            }
-            else
-            {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
-            }
+            lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
 
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"

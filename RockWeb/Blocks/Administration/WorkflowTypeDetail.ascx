@@ -39,7 +39,6 @@
                             <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
                         </span>
                     </legend>
-
                     <div class="row-fluid workflow-activity-list">
                         <asp:PlaceHolder ID="phActivities" runat="server" />
                     </div>
@@ -56,7 +55,7 @@
                 <legend>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </legend>
-                <asp:Literal ID="lblActiveHtml" runat="server" />
+                <asp:Label ID="lblWorkflowTypeInactive" runat="server" CssClass="label label-important pull-right" Text="Inactive" />
                 <div class="well">
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -106,6 +105,7 @@
                     helper: fixHelper,
                     handle: '.workflow-activity-reorder',
                     containment: 'parent',
+                    tolerance: 'pointer',
                     start: function (event, ui) {
                         {
                             var start_pos = ui.item.index();
@@ -117,12 +117,13 @@
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-activity:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }
-                }).disableSelection();
+                });
 
                 $('.workflow-action-list').sortable({
                     helper: fixHelper,
                     handle: '.workflow-action-reorder',
                     containment: 'parent',
+                    tolerance: 'pointer',
                     start: function (event, ui) {
                         {
                             var start_pos = ui.item.index();
@@ -134,7 +135,7 @@
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-action:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }
-                }).disableSelection();
+                });
             });
         </script>
     </ContentTemplate>
