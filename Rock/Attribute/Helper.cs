@@ -576,12 +576,12 @@ namespace Rock.Attribute
                     if ( attribute.IsRequired && ( attributeControl is TextBox ) )
                     {
                         RequiredFieldValidator rfv = new RequiredFieldValidator();
-                        divControls.Controls.Add( rfv );
                         rfv.CssClass = "help-inline";
                         rfv.ControlToValidate = attributeControl.ID;
                         rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
                         rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
                         rfv.Display = ValidatorDisplay.None;
+                        divControls.Controls.Add( rfv );
 
                         if ( !setValue && !rfv.IsValid )
                             div.Attributes.Add( "class", "error" );

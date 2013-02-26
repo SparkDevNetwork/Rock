@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 var deletedActionTypes = from actionType in actionTypesInDB
-                                         where !actionTypesInUI.Select( u => u.Id ).Contains( actionType.Id )
+                                         where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
                                          select actionType;
 
                 deletedActionTypes.ToList().ForEach( actionType =>
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Administration
                 List<WorkflowActivityType> activityTypesInUI = workflowActivityTypeEditorList.Select( a => a.GetWorkflowActivityType() ).ToList();
 
                 var deletedActivityTypes = from activityType in activityTypesInDB
-                                           where !activityTypesInUI.Select( u => u.Id ).Contains( activityType.Id )
+                                           where !activityTypesInUI.Select( u => u.Guid ).Contains( activityType.Guid )
                                            select activityType;
 
                 deletedActivityTypes.ToList().ForEach( activityType =>
@@ -350,9 +350,13 @@ namespace RockWeb.Blocks.Administration
                         else
                         {
                             workflowActionType.Name = editorWorkflowActionType.Name;
+                            workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
                             workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
                             workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
+                            workflowActionType.Attributes = editorWorkflowActionType.Attributes;
+                            workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
                         }
+                        
 
                         workflowActionType.Order = workflowActionTypeOrder++;
                     }
@@ -364,11 +368,21 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 service.Save( workflowType, CurrentPersonId );
-            } );
 
-            // reload item from db using a new context
-            workflowType = new WorkflowTypeService().Get( workflowType.Id );
-            ShowReadonlyDetails( workflowType );
+                foreach ( var activityType in workflowType.ActivityTypes )
+                {
+                    foreach ( var workflowActionType in activityType.ActionTypes )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeValues( workflowActionType, CurrentPersonId );
+                    }
+                }
+
+                
+            } );
+            
+            var qryParams = new Dictionary<string, string>();
+            qryParams["workflowTypeId"] = workflowType.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         #endregion

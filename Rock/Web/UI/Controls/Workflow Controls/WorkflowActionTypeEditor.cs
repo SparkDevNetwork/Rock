@@ -30,6 +30,7 @@ namespace Rock.Web.UI.Controls
         private LabeledDropDownList ddlEntityType;
         private LabeledCheckBox cbIsActionCompletedOnSuccess;
         private LabeledCheckBox cbIsActivityCompletedOnSuccess;
+        private PlaceHolder phActionAttributes;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -99,6 +100,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = cbIsActivityCompletedOnSuccess.Checked;
+                result.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phActionAttributes, result );
+                Rock.Attribute.Helper.SetErrorIndicators( phActionAttributes, result );
                 return result;
             }
 
@@ -110,6 +114,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 ddlEntityType.SetValue( value.EntityTypeId );
                 cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+                value.LoadAttributes();
+                phActionAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true );
             }
         }
 
@@ -162,11 +169,15 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             cbIsActivityCompletedOnSuccess = new LabeledCheckBox { LabelText = "Activity is Completed on Success" };
             cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
+            phActionAttributes = new PlaceHolder();
+            phActionAttributes.ID = this.ID + "_phActionAttributes";
+
             Controls.Add( hfActionTypeGuid );
             Controls.Add( lblActionTypeName );
             Controls.Add( tbActionTypeName );
             Controls.Add( cbIsActionCompletedOnSuccess );
             Controls.Add( cbIsActivityCompletedOnSuccess );
+            Controls.Add( phActionAttributes );
             Controls.Add( lbDeleteActionType );
         }
 
@@ -226,6 +237,16 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             ddlEntityType.RenderControl( writer );
             cbIsActionCompletedOnSuccess.RenderControl( writer );
             cbIsActivityCompletedOnSuccess.RenderControl( writer );
+
+            // action attributes
+            /*WorkflowActionType workflowActionType = WorkflowActionType;
+            EntityType actionEntityType = workflowActionType.EntityType;
+
+            workflowActionType.LoadAttributes();
+            phActionAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( workflowActionType, phActionAttributes, false );
+             */ 
+            phActionAttributes.RenderControl( writer );
 
             // widget-content div
             writer.RenderEndTag();

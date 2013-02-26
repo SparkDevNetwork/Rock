@@ -145,6 +145,21 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
+            // if this isn't currently a persisted workflow type, and there are no records, hide the panel
+            if ( !workflowType.IsPersisted )
+            {
+                if ( qry.Count() == 0 )
+                {
+                    pnlWorkflowList.Visible = false;
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(workflowType.WorkTerm))
+            {
+                gWorkflows.RowItemText = workflowType.WorkTerm;
+                lGridTitle.Text = workflowType.WorkTerm.Pluralize();
+            }
 
             AttributeService attributeService = new AttributeService();
 
