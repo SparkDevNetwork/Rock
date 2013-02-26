@@ -113,5 +113,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
 
+        public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
+
     }
 }
