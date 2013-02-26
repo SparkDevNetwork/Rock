@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
+        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
             <Rock:DateTimePicker ID="dtFromDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="From Date" />

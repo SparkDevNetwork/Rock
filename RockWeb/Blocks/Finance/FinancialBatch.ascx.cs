@@ -15,6 +15,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using System.Collections.Generic;
 
 
 namespace RockWeb.Blocks.Administration
@@ -44,6 +45,8 @@ namespace RockWeb.Blocks.Administration
     Funds listed w/ Batch totals
     Edit Button
     Delete Button (should warn though)
+         * 
+         * 
          */
         #endregion
 
@@ -63,8 +66,6 @@ namespace RockWeb.Blocks.Administration
             rFBFilter.DisplayFilterValue += rFBFilter_DisplayFilterValue;
 
             _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
-
-            ConfigureFilterLists();
 
             if ( _canConfigure )
             {
@@ -157,16 +158,7 @@ namespace RockWeb.Blocks.Administration
             BindGrid();
         }
 
-        #endregion
-
-        #region Internal Methods
-        private void ConfigureFilterLists()
-        {
-
-            //    <Rock:LabeledDropDownList ID="ddlBatchType" runat="server" LabelText="Batch Type" />
-
-
-        }
+        #endregion        
 
         private void BindFilter()
         {
@@ -180,39 +172,33 @@ namespace RockWeb.Blocks.Administration
             txtTitle.Text = rFBFilter.GetUserPreference( "Title" );
             cbIsClosed.Checked = rFBFilter.GetUserPreference( "Is Closed" ) == "checked" ? true : false;
 
-            //ddlBatchType.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
-
-            //var FinancialBatchService = new FinancialBatchService();
-            //foreach ( Fund fund in FinancialBatchService.Queryable() )
-            //{
-            //    ListItem li = new ListItem( fund.Name, fund.Id.ToString() );
-            //    li.Selected = fund.Id.ToString() == rFBFilter.GetUserPreference( "Fund" );
-            //    ddlFundType.Items.Add( li );
-            //}
+            BindDefinedTypeDropdown( ddlBatchType, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE, "Batch Type" );
+            
 
         }
+
+        private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
+        {
+            ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+            ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
+
+            if ( !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( userPreferenceKey ) ) )
+            {
+                ListControl.SelectedValue = rFBFilter.GetUserPreference( userPreferenceKey );
+            }
+        }
+
         void grdFinancialBatch_GridReorder( object sender, GridReorderEventArgs e )
         {
-            //var tagService = new Rock.Model.TagService();
-            //var queryable = tagService.Queryable().
-            //    Where( t => t.EntityTypeId == _entityTypeId &&
-            //        ( t.EntityTypeQualifierColumn ?? string.Empty ) == _entityQualifierColumn &&
-            //        ( t.EntityTypeQualifierValue ?? string.Empty ) == _entityQualifierValue );
+            var batchService = new Rock.Model.FinancialBatchService();
+            var queryable = batchService.Queryable();
 
-            //if ( _ownerId.HasValue )
-            //    queryable = queryable.Where( t => t.OwnerId == _ownerId.Value );
-            //else
-            //    queryable = queryable.Where( t => t.OwnerId == null );
-
-            //var items = queryable
-            //    .OrderBy( t => t.Order )
-            //    .ToList();
-            //FinancialBatchService.Reorder( mylist, e.OldIndex, e.NewIndex, CurrentPersonId );
+            List<Rock.Model.FinancialBatch> items = queryable.ToList();
+            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
             BindGrid();
         }
         void grdFinancialBatch_GridRebind( object sender, EventArgs e )
         {
-            this.ConfigureFilterLists();
             BindGrid();
         }
 
@@ -240,10 +226,7 @@ namespace RockWeb.Blocks.Administration
             searchValue.IsClosed = cbIsClosedFilter.Checked ? true : false;
             return searchValue;
         }
-
-        #endregion
-
-
+     
         #region edit and delete blocks
 
         protected void grdFinancialBatch_Delete( object sender, RowEventArgs e )
@@ -275,51 +258,57 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowEditValue( int attributeId, bool setValues )
+        protected void ShowEditValue( int batchId, bool setValues )
         {
-            //<Rock:DataTextBox ID="tbName" runat="server" LabelText="Title"
-            //               SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
-            //            <Rock:DateTimePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Batch Date" />
 
-            //           <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
-            //           <Rock:LabeledDropDownList ID="ddlEntity" runat="server" LabelText="Entity" />
+            hfIdValue.Value = batchId.ToString();           
+           
+            var batchValue = new Rock.Model.FinancialBatchService().Get( batchId );
 
-            //           <Rock:LabeledCheckBox ID="cbIsClosed" runat="server" LabelText="Is Closed"
-            //               SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="IsClosed" />
+            if ( batchValue != null )
+            {
+                lValue.Text = "Edit";
+                tbName.Text = batchValue.Name;
+                dtBatchDate.SelectedDate = batchValue.BatchDate;
+                ddlCampus.SetValue( batchValue.CampusId);
+                ddlEntity.SetValue(batchValue.EntityId);
+                cbIsClosed.Checked = batchValue.IsClosed;
+            }
+            else
+            {
+                lValue.Text = "Add";
+                emptyInputs();
+            }
 
+            modalValue.Show();
+            
         }
 
         protected void btnSaveFinancialBatch_Click( object sender, EventArgs e )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                var FinancialBatchService = new Rock.Model.FinancialBatchService();
-                Rock.Model.FinancialBatch FinancialBatch;
-                int FinancialBatchId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
+                var financialBatchService = new Rock.Model.FinancialBatchService();
+                Rock.Model.FinancialBatch financialBatch = null;
+                int financialBatchId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
 
-                if ( FinancialBatchId == 0 )
+                if ( financialBatchId == 0 )
                 {
-                    FinancialBatch = new Rock.Model.FinancialBatch();
-                    // FinancialBatch.IsSystem = false;
-                    FinancialBatchService.Add( FinancialBatch, CurrentPersonId );
+                    financialBatch = new Rock.Model.FinancialBatch();
+                    financialBatchService.Add( financialBatch, CurrentPersonId );
                 }
                 else
                 {
-                    FinancialBatch = FinancialBatchService.Get( FinancialBatchId );
+                    financialBatch = financialBatchService.Get( financialBatchId );
                 }
 
-                //FinancialBatch.Category = tbCategory.Text;
-                //FinancialBatch.Title = tbTitle.Text;
-                //FinancialBatch.Subtitle = tbSubtitle.Text;
-                //FinancialBatch.Description = tbDescription.Text;
-                //FinancialBatch.MinValue = tbMinValue.Text != "" ? Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands ) : (int?)null;
-                //FinancialBatch.MaxValue = tbMinValue.Text != "" ? Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands ) : (int?)null;
-                //FinancialBatch.Type = cbType.Checked;
-                //FinancialBatch.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
-                //FinancialBatch.Source = tbSource.Text;
-                //FinancialBatch.SourceSQL = tbSourceSQL.Text;
+                financialBatch.Name = tbName.Text;
+                financialBatch.BatchDate = dtBatchDate.SelectedDate;
+                financialBatch.CampusId = ddlCampus.SelectedValueAsInt();
+                financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
+                financialBatch.IsClosed = cbIsClosed.Checked;
 
-                FinancialBatchService.Save( FinancialBatch, CurrentPersonId );
+                financialBatchService.Save( financialBatch, CurrentPersonId );
             }
 
             BindFilter();
@@ -327,10 +316,19 @@ namespace RockWeb.Blocks.Administration
 
         }
 
+        protected void emptyInputs()
+        {
+            tbName.Text = string.Empty;
+            dtBatchDate.SelectedDate = null;
+            ddlCampus.SetValue( -1 );
+            ddlEntity.SetValue( -1 );
+            cbIsClosed.Checked = false;
+        }
+
         protected void btnCancelFinancialBatch_Click( object sender, EventArgs e )
         {
-            //pnlFinancialBatchDetails.Visible = false;
-            //pnlFinancialBatchList.Visible = true;
+            emptyInputs();
+            modalValue.Hide();
         }
 
         protected void gridFinancialBatch_Add( object sender, EventArgs e )
@@ -342,12 +340,10 @@ namespace RockWeb.Blocks.Administration
 
         private void DisplayError( string message )
         {
-            //pnlMessage.Controls.Clear();
-            //pnlMessage.Controls.Add( new LiteralControl( message ) );
-            //pnlMessage.Visible = true;
+            pnlMessage.Controls.Clear();
+            pnlMessage.Controls.Add( new LiteralControl( message ) );
+            pnlMessage.Visible = true;
 
-            //pnlList.Visible = false;
-            //pnlDetails.Visible = false;
         }
     }
 }

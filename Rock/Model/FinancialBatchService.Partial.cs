@@ -34,8 +34,7 @@ namespace Rock.Model
             }
             if (searchValue.BatchTypeValueId.HasValue)
             {
-                //need this
-              //  batches = batches.Where(batch => batch.CreditCardTypeValue.Id == searchValue.batchTypeValueId.Value);
+                batches = batches.Where(batch => batch.BatchTypeValueId == searchValue.BatchTypeValueId.Value);
             }
             
             if (searchValue.IsClosed.HasValue)

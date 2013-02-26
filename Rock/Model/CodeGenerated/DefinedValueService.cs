@@ -66,6 +66,8 @@ namespace Rock.Model
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
             // ignoring FinancialTransaction,SourceTypeValueId 
+
+            // ignoring FinancialBatch,BatchTypeValueId
  
             if ( new Service<Fund>().Queryable().Any( a => a.FundTypeValueId == item.Id ) )
             {
