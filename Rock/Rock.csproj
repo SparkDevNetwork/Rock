@@ -19,8 +19,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>Rock.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -62,9 +61,9 @@
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NuGet.Core, Version=2.2.31210.9045, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.0.30619.9119, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\packages\NuGet.Core.2.0.1\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="SanitizerProviders, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
@@ -104,20 +103,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
-    <Compile Include="Attribute\CampusFieldAttribute.cs" />
-    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\DateFieldAttribute.cs" />
-    <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
-    <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Attribute\CustomRadioListFieldAttribute.cs" />
-    <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
-    <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
-    <Compile Include="Attribute\CampusesFieldAttribute.cs" />
-    <Compile Include="Attribute\EntityTypeAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
@@ -135,8 +120,6 @@
     <Compile Include="CheckIn\CheckInSchedule.cs" />
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
-    <Compile Include="CheckIn\CheckInLabel.cs" />
-    <Compile Include="CheckIn\LabelCache.cs" />
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskGroupAttendance.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
@@ -146,40 +129,9 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
-    <Compile Include="Migrations\201304162319340_AddNewFields.cs" />
-    <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
-      <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Reporting\DataTransformComponent.cs" />
-    <Compile Include="Reporting\DataTransformContainer.cs" />
-    <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
-    <Compile Include="Reporting\DataFilter\PropertyFilter.cs" />
-    <Compile Include="Reporting\DataFilter\OtherDataViewFilter.cs" />
-    <Compile Include="Data\DefinedValueAttribute.cs" />
-    <Compile Include="Data\PreviewableAttribute.cs" />
-    <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
-    <Compile Include="Extension\SafeDirectoryCatalog.cs" />
-    <Compile Include="Field\SelectFromListFieldType.cs" />
-    <Compile Include="Field\Types\BinaryFileFieldType.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Field\Types\CampusesFieldType.cs" />
-    <Compile Include="Field\Types\CampusFieldType.cs" />
-    <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
-    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
-    <Compile Include="Field\Types\GroupTypeFieldType.cs" />
-    <Compile Include="Field\Types\FileFieldType.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Field\Types\KeyValueListFieldType.cs" />
-    <Compile Include="Field\Types\EmailTemplateFieldType.cs" />
-    <Compile Include="Field\Types\EntityTypeFieldType.cs" />
-    <Compile Include="Field\Types\GroupFieldType.cs" />
-    <Compile Include="Field\Types\GroupTypesFieldType.cs" />
-    <Compile Include="Financial\BankAccount.cs" />
-    <Compile Include="Financial\CreditCard.cs" />
-    <Compile Include="Financial\IGateway.cs" />
+    <Compile Include="Field\Types\GroupField.cs" />
+    <Compile Include="Field\Types\GroupTypesField.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -308,183 +260,8 @@
     <Compile Include="Migrations\201301310052455_WorkflowUI01.Designer.cs">
       <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.cs" />
-    <Compile Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.Designer.cs">
-      <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.cs" />
-    <Compile Include="Migrations\201302042346570_FixBlockLayoutData.Designer.cs">
-      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302062119470_CategoryDetail.cs" />
-    <Compile Include="Migrations\201302062119470_CategoryDetail.Designer.cs">
-      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302072347100_FixMissingLoginStatusTwoColumnLeft.cs" />
-    <Compile Include="Migrations\201302072347100_FixMissingLoginStatusTwoColumnLeft.Designer.cs">
-      <DependentUpon>201302072347100_FixMissingLoginStatusTwoColumnLeft.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302112227304_WorkflowListUI.cs" />
-    <Compile Include="Migrations\201302112227304_WorkflowListUI.Designer.cs">
-      <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302120034051_MarketingCampaignChildBlocks.cs" />
-    <Compile Include="Migrations\201302120034051_MarketingCampaignChildBlocks.Designer.cs">
-      <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302121305161_AddDataView.cs" />
-    <Compile Include="Migrations\201302121305161_AddDataView.Designer.cs">
-      <DependentUpon>201302121305161_AddDataView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302122058443_FixInactiveSecurityGroups.cs" />
-    <Compile Include="Migrations\201302122058443_FixInactiveSecurityGroups.Designer.cs">
-      <DependentUpon>201302122058443_FixInactiveSecurityGroups.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302122358491_GroupMemberListDetail.cs" />
-    <Compile Include="Migrations\201302122358491_GroupMemberListDetail.Designer.cs">
-      <DependentUpon>201302122358491_GroupMemberListDetail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302150233346_CategoryTreeView.cs" />
-    <Compile Include="Migrations\201302150233346_CategoryTreeView.Designer.cs">
-      <DependentUpon>201302150233346_CategoryTreeView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302152230138_BlockTypeListDetail.cs" />
-    <Compile Include="Migrations\201302152230138_BlockTypeListDetail.Designer.cs">
-      <DependentUpon>201302152230138_BlockTypeListDetail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302201159017_RenameBlockProperties.cs" />
-    <Compile Include="Migrations\201302201159017_RenameBlockProperties.Designer.cs">
-      <DependentUpon>201302201159017_RenameBlockProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302211249281_EntityTypeAttributeValue.cs" />
-    <Compile Include="Migrations\201302211249281_EntityTypeAttributeValue.Designer.cs">
-      <DependentUpon>201302211249281_EntityTypeAttributeValue.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.cs" />
-    <Compile Include="Migrations\201302211842372_AddPrayerRequestAdminPages.Designer.cs">
-      <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302251516310_PageProperties.cs" />
-    <Compile Include="Migrations\201302251516310_PageProperties.Designer.cs">
-      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302252219134_UpdateReport.cs" />
-    <Compile Include="Migrations\201302252219134_UpdateReport.Designer.cs">
-      <DependentUpon>201302252219134_UpdateReport.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201302261559183_ScheduleDescription.cs" />
-    <Compile Include="Migrations\201302261559183_ScheduleDescription.Designer.cs">
-      <DependentUpon>201302261559183_ScheduleDescription.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303012246258_AddBinaryFileType.cs" />
-    <Compile Include="Migrations\201303012246258_AddBinaryFileType.Designer.cs">
-      <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303041612175_MenuToolsGroupViewer.cs" />
-    <Compile Include="Migrations\201303041612175_MenuToolsGroupViewer.Designer.cs">
-      <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303051350444_WorkflowTrigger.cs" />
-    <Compile Include="Migrations\201303051350444_WorkflowTrigger.Designer.cs">
-      <DependentUpon>201303051350444_WorkflowTrigger.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303051729314_WorkflowNameNotRequired.cs" />
-    <Compile Include="Migrations\201303051729314_WorkflowNameNotRequired.Designer.cs">
-      <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.cs" />
-    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.Designer.cs">
-      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303082053321_StandardizeFieldTypeNames.cs" />
-    <Compile Include="Migrations\201303082053321_StandardizeFieldTypeNames.Designer.cs">
-      <DependentUpon>201303082053321_StandardizeFieldTypeNames.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303111705586_DataViewEntityType.cs" />
-    <Compile Include="Migrations\201303111705586_DataViewEntityType.Designer.cs">
-      <DependentUpon>201303111705586_DataViewEntityType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303111750096_EntityTypeAttributeValueByName.cs" />
-    <Compile Include="Migrations\201303111750096_EntityTypeAttributeValueByName.Designer.cs">
-      <DependentUpon>201303111750096_EntityTypeAttributeValueByName.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303120513496_AddDeviceBlocks.cs" />
-    <Compile Include="Migrations\201303120513496_AddDeviceBlocks.Designer.cs">
-      <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303141823555_DataForLabels.cs" />
-    <Compile Include="Migrations\201303141823555_DataForLabels.Designer.cs">
-      <DependentUpon>201303141823555_DataForLabels.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303152128532_UpdateSomeText.cs" />
-    <Compile Include="Migrations\201303152128532_UpdateSomeText.Designer.cs">
-      <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303191826126_UpdateLocation.cs" />
-    <Compile Include="Migrations\201303191826126_UpdateLocation.Designer.cs">
-      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303221324315_AddPageDisplayProperties.cs" />
-    <Compile Include="Migrations\201303221324315_AddPageDisplayProperties.Designer.cs">
-      <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303261236459_UpdateSecureRoute.cs" />
-    <Compile Include="Migrations\201303261236459_UpdateSecureRoute.Designer.cs">
-      <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303262220512_Communication.cs" />
-    <Compile Include="Migrations\201303262220512_Communication.Designer.cs">
-      <DependentUpon>201303262220512_Communication.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303271713457_CommunicationEmail.cs" />
-    <Compile Include="Migrations\201303271713457_CommunicationEmail.Designer.cs">
-      <DependentUpon>201303271713457_CommunicationEmail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201303282315545_RemoveCommEmail.cs" />
-    <Compile Include="Migrations\201303282315545_RemoveCommEmail.Designer.cs">
-      <DependentUpon>201303282315545_RemoveCommEmail.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304041745182_PledgeBlocks.cs" />
-    <Compile Include="Migrations\201304041745182_PledgeBlocks.Designer.cs">
-      <DependentUpon>201304041745182_PledgeBlocks.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304051218073_DataViewTransform.cs" />
-    <Compile Include="Migrations\201304051218073_DataViewTransform.Designer.cs">
-      <DependentUpon>201304051218073_DataViewTransform.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304100003385_zHeader.cs" />
-    <Compile Include="Migrations\201304100003385_zHeader.Designer.cs">
-      <DependentUpon>201304100003385_zHeader.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304101246154_GivingBlocks.cs" />
-    <Compile Include="Migrations\201304101246154_GivingBlocks.Designer.cs">
-      <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.cs" />
-    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.Designer.cs">
-      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.cs" />
-    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.Designer.cs">
-      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304102138354_NewFinancialSchema.cs" />
-    <Compile Include="Migrations\201304102138354_NewFinancialSchema.Designer.cs">
-      <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304102332542_DateTimeNamingSweep.cs" />
-    <Compile Include="Migrations\201304102332542_DateTimeNamingSweep.Designer.cs">
-      <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304151305475_ScheduledTransaction.cs" />
-    <Compile Include="Migrations\201304151305475_ScheduledTransaction.Designer.cs">
-      <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigration.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Migrations\RockMigration_4.cs" />
-    <Compile Include="Migrations\RockMigration_3.cs" />
+    <Compile Include="Migrations\20130224130600_AddFinancialBatchType.cs" />
+    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -495,26 +272,13 @@
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
     <Compile Include="Model\AttendanceCode.cs" />
-    <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCodeService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AuthService.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileService.cs" />
-    <Compile Include="Model\CodeGenerated\BinaryFileTypeService.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\CommunicationRecipientService.cs" />
-    <Compile Include="Model\CodeGenerated\CommunicationService.cs" />
-    <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
-    <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionImageService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
@@ -528,6 +292,7 @@
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
     <Compile Include="Model\CodeGenerated\PrayerRequestService.cs" />
+    <Compile Include="Model\CodeGenerated\ReportFilterService.cs" />
     <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
@@ -540,27 +305,15 @@
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
-    <Compile Include="Model\BinaryFileType.cs" />
-    <Compile Include="Model\Communication.cs" />
-    <Compile Include="Model\CommunicationRecipient.cs" />
-    <Compile Include="Model\FinancialScheduledTransaction.cs" />
-    <Compile Include="Model\FinancialTransactionImage.cs" />
-    <Compile Include="Model\DeviceService.Partial.cs" />
-    <Compile Include="Model\DataViewService.Partial.cs" />
-    <Compile Include="Model\FinancialTransactionService.Partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\PrayerRequestService.partial.cs" />
-    <Compile Include="Model\DataView.cs" />
-    <Compile Include="Model\DataViewFilter.cs" />
+    <Compile Include="Model\BatchSearchValue.cs" />
+    <Compile Include="Model\FinancialBatchService.Partial.cs" />
+    <Compile Include="Model\ReportFilter.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
     <Compile Include="Model\MarketingCampaignAdType.cs" />
+    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Model\MarketingCampaignAudience.cs" />
     <Compile Include="Model\MarketingCampaignCampus.cs" />
     <Compile Include="Model\Note.cs" />
@@ -592,13 +345,13 @@
     <Compile Include="Model\CodeGenerated\AuditService.cs" />
     <Compile Include="Model\CodeGenerated\CategoryService.cs" />
     <Compile Include="Model\CodeGenerated\EntityTypeService.cs" />
-    <Compile Include="Field\Types\HtmlFieldType.cs" />
-    <Compile Include="Field\Types\MemoFieldType.cs" />
+    <Compile Include="Field\Types\HtmlField.cs" />
+    <Compile Include="Field\Types\MemoField.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
+    <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
-    <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
-    <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
-      <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
@@ -620,62 +373,24 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
-    <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
-    <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
-    <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
-    <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\NumberBox.cs" />
-    <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
-    <Compile Include="Web\UI\Controls\PageDescription.cs" />
-    <Compile Include="Web\UI\Controls\PageIcon.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\AccountPicker.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\UI\Controls\Pickers\WorkflowTypePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\GroupPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\ItemPicker.cs" />
-    <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />
-    <Compile Include="Web\UI\Controls\FileUploader.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Web\UI\Controls\Pickers\PagePicker.cs" />
-    <Compile Include="Web\UI\Controls\KeyValueList.cs" />
-    <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
-    <Compile Include="Web\UI\Controls\Badge.cs" />
-    <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
-    <Compile Include="Web\UI\Controls\SecurityButton.cs" />
-    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
-    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
-    <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
-    <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
-    <Compile Include="Web\UI\Controls\Toggle.cs" />
-    <Compile Include="Web\UI\Controls\HelpBlock.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
-    <Compile Include="Reporting\DataFilterComponent.cs" />
-    <Compile Include="Reporting\DataFilterContainer.cs" />
-    <Compile Include="Reporting\DataFilter\Person\GroupTypeAttendanceFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Person\HasPictureFilter.cs" />
+    <Compile Include="Web\UI\Controls\PersonPicker.cs" />
+    <Compile Include="Reporting\FilterComponent.cs" />
+    <Compile Include="Reporting\FilterContainer.cs" />
+    <Compile Include="Reporting\PersonFilters\GroupTypeAttendanceFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\FirstNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\HasPictureFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\LastNameFilter.cs" />
+    <Compile Include="Reporting\PersonFilters\GenderFilter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
-    <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
-    <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterGroup.cs" />
+    <Compile Include="Web\UI\Controls\Report\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
-    <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
-    <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
-    <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
@@ -691,7 +406,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
-    <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -749,9 +463,12 @@
     <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
-    <Compile Include="Extension\Component.cs" />
-    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ComponentManaged.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IComponent.cs" />
+    <Compile Include="Extension\IComponentData.cs" />
+    <Compile Include="Extension\ContainerManaged.cs" />
     <Compile Include="Address\Geocode\TeleAtlas.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Address\Standardize\MelissaData.cs" />
@@ -785,41 +502,47 @@
     <Compile Include="Model\EmailTemplate.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
-    <Compile Include="Extension\IContainer.cs" />
+    <Compile Include="Extension\IContainerManaged.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
-    <Compile Include="Field\Types\SelectMultiFieldType.cs" />
-    <Compile Include="Field\Types\DocumentFieldType.cs" />
-    <Compile Include="Field\Types\PersonFieldType.cs" />
-    <Compile Include="Field\Types\UrlFieldType.cs" />
-    <Compile Include="Field\Types\CurrencyFieldType.cs" />
-    <Compile Include="Field\Types\DecimalFieldType.cs" />
-    <Compile Include="Field\Types\DefinedValueFieldType.cs" />
-    <Compile Include="Field\Types\DefinedTypeFieldType.cs" />
-    <Compile Include="Field\Types\DateFieldType.cs" />
-    <Compile Include="Field\Types\ImageFieldType.cs" />
-    <Compile Include="Field\Types\VideoFieldType.cs" />
+    <Compile Include="Field\Types\SelectMulti.cs" />
+    <Compile Include="Field\Types\Document.cs" />
+    <Compile Include="Field\Types\Person.cs" />
+    <Compile Include="Field\Types\Url.cs" />
+    <Compile Include="Field\Types\Currency.cs" />
+    <Compile Include="Field\Types\Decimal.cs" />
+    <Compile Include="Field\Types\DefinedValue.cs" />
+    <Compile Include="Field\Types\DefinedType.cs" />
+    <Compile Include="Field\Types\Date.cs" />
+    <Compile Include="Field\Types\Image.cs" />
+    <Compile Include="Field\Types\Video.cs" />
     <Compile Include="Model\FinancialBatch.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\FinancialAccount.cs">
+    <Compile Include="Model\Fund.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\FinancialGateway.cs">
+    <Compile Include="Model\CodeGenerated\FundService.cs" />
+    <Compile Include="Model\PaymentGateway.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\PersonAccount.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\FinancialPledge.cs">
+    <Compile Include="Model\Pledge.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\CodeGenerated\PledgeService.cs" />
     <Compile Include="Model\FinancialTransaction.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\FinancialTransactionFund.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
+    <Compile Include="Model\FinancialTransactionService.Partial.cs" />
     <Compile Include="Model\Group.cs" />
     <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
@@ -916,11 +639,11 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
+    <Compile Include="Web\UI\Controls\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
+    <Compile Include="Web\UI\Controls\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
@@ -928,7 +651,7 @@
     <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
-    <Compile Include="Web\UI\Controls\ImageUploader.cs" />
+    <Compile Include="Web\UI\Controls\ImageSelector.cs" />
     <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBoxList.cs" />
@@ -969,18 +692,21 @@
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\RowEventArgs.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Field\Types\BooleanFieldType.cs" />
-    <Compile Include="Field\Types\PageReferenceFieldType.cs" />
-    <Compile Include="Field\Types\IntegerFieldType.cs" />
-    <Compile Include="Field\Types\SelectSingleFieldType.cs" />
-    <Compile Include="Field\Types\ColorFieldType.cs" />
+    <Compile Include="Field\Types\Boolean.cs" />
+    <Compile Include="Field\Types\PageReference.cs" />
+    <Compile Include="Field\Types\Integer.cs" />
+    <Compile Include="Field\Types\SelectSingle.cs" />
+    <Compile Include="Field\Types\Color.cs" />
     <Compile Include="Field\FieldType.cs" />
     <Compile Include="Field\Helper.cs" />
     <Compile Include="Field\IFieldType.cs" />
-    <Compile Include="Field\Types\TextFieldType.cs" />
+    <Compile Include="Field\Types\Text.cs" />
     <Compile Include="Attribute\Helper.cs" />
+    <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />
-    <Compile Include="Web\PageReference.cs" />
+    <Compile Include="Web\UI\PageReference.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
@@ -1154,19 +880,14 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201211292334047_CreateDatabase.resx">
-      <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041249372_EntityTypesAdmin.resx">
       <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041823461_RockModel.resx">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212042327447_ToolsMenuAdCampaigns.resx">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -1263,138 +984,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201301310052455_WorkflowUI01.resx">
       <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201301312356110_MarketingCampaignAdDisplay01.resx">
-      <DependentUpon>201301312356110_MarketingCampaignAdDisplay01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302042346570_FixBlockLayoutData.resx">
-      <DependentUpon>201302042346570_FixBlockLayoutData.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302062119470_CategoryDetail.resx">
-      <DependentUpon>201302062119470_CategoryDetail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302072347100_FixMissingLoginStatusTwoColumnLeft.resx">
-      <DependentUpon>201302072347100_FixMissingLoginStatusTwoColumnLeft.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302112227304_WorkflowListUI.resx">
-      <DependentUpon>201302112227304_WorkflowListUI.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302120034051_MarketingCampaignChildBlocks.resx">
-      <DependentUpon>201302120034051_MarketingCampaignChildBlocks.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302121305161_AddDataView.resx">
-      <DependentUpon>201302121305161_AddDataView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302122058443_FixInactiveSecurityGroups.resx">
-      <DependentUpon>201302122058443_FixInactiveSecurityGroups.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302122358491_GroupMemberListDetail.resx">
-      <DependentUpon>201302122358491_GroupMemberListDetail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302150233346_CategoryTreeView.resx">
-      <DependentUpon>201302150233346_CategoryTreeView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302152230138_BlockTypeListDetail.resx">
-      <DependentUpon>201302152230138_BlockTypeListDetail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302201159017_RenameBlockProperties.resx">
-      <DependentUpon>201302201159017_RenameBlockProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302211249281_EntityTypeAttributeValue.resx">
-      <DependentUpon>201302211249281_EntityTypeAttributeValue.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302211842372_AddPrayerRequestAdminPages.resx">
-      <DependentUpon>201302211842372_AddPrayerRequestAdminPages.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302251516310_PageProperties.resx">
-      <DependentUpon>201302251516310_PageProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302252219134_UpdateReport.resx">
-      <DependentUpon>201302252219134_UpdateReport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302261559183_ScheduleDescription.resx">
-      <DependentUpon>201302261559183_ScheduleDescription.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303012246258_AddBinaryFileType.resx">
-      <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303041612175_MenuToolsGroupViewer.resx">
-      <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303051350444_WorkflowTrigger.resx">
-      <DependentUpon>201303051350444_WorkflowTrigger.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303051729314_WorkflowNameNotRequired.resx">
-      <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303072129452_CategoryDetailBlockEntityType.resx">
-      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303082053321_StandardizeFieldTypeNames.resx">
-      <DependentUpon>201303082053321_StandardizeFieldTypeNames.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303111705586_DataViewEntityType.resx">
-      <DependentUpon>201303111705586_DataViewEntityType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303111750096_EntityTypeAttributeValueByName.resx">
-      <DependentUpon>201303111750096_EntityTypeAttributeValueByName.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303120513496_AddDeviceBlocks.resx">
-      <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303141823555_DataForLabels.resx">
-      <DependentUpon>201303141823555_DataForLabels.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303152128532_UpdateSomeText.resx">
-      <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303191826126_UpdateLocation.resx">
-      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303221324315_AddPageDisplayProperties.resx">
-      <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303261236459_UpdateSecureRoute.resx">
-      <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303262220512_Communication.resx">
-      <DependentUpon>201303262220512_Communication.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303271713457_CommunicationEmail.resx">
-      <DependentUpon>201303271713457_CommunicationEmail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303282315545_RemoveCommEmail.resx">
-      <DependentUpon>201303282315545_RemoveCommEmail.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304041745182_PledgeBlocks.resx">
-      <DependentUpon>201304041745182_PledgeBlocks.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304051218073_DataViewTransform.resx">
-      <DependentUpon>201304051218073_DataViewTransform.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304100003385_zHeader.resx">
-      <DependentUpon>201304100003385_zHeader.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304101246154_GivingBlocks.resx">
-      <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304101854297_GivingBlocksSeedData.resx">
-      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304102107326_DbCalculatedPersonNameFields.resx">
-      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304102138354_NewFinancialSchema.resx">
-      <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304102332542_DateTimeNamingSweep.resx">
-      <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304151305475_ScheduledTransaction.resx">
-      <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304162319340_AddNewFields.resx">
-      <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

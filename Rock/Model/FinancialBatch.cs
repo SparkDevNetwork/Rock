@@ -93,6 +93,16 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
+        /// Gets or sets the Batch Type Value Id.
+        /// </summary>
+        /// <value>
+        /// Batch Type Value Id.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int BatchTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
