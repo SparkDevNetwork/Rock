@@ -19,6 +19,22 @@ namespace Rock.Workflow
     public abstract class ActionComponent : Component
     {
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                defaults.Add( "Order", "0" );
+                return defaults;
+            }
+        }
+        /// <summary>
         /// Gets the type of the entity.
         /// </summary>
         /// <value>
@@ -40,6 +56,8 @@ namespace Rock.Workflow
             {
                 Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
             }
+
+            this.LoadAttributes();
         }
 
         /// <summary>
