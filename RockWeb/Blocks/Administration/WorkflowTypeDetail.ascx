@@ -27,7 +27,7 @@
                             <Rock:DataDropDownList ID="ddlCategory" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" LabelText="Category" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" LabelText="Processing Interval (seconds)" />
                             <Rock:LabeledCheckBox ID="cbIsPersisted" runat="server" LabelText="Persisted" />
-                            <Rock:DataTextBox ID="tbOrder" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" LabelText="Order" Required="true" />
+                            <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" LabelText="Order" Required="true" />
                         </div>
                     </div>
                 </fieldset>

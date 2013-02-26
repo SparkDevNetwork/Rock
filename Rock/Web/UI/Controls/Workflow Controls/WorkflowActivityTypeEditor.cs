@@ -158,7 +158,19 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
 
             cbActivityTypeIsActive = new LabeledCheckBox { LabelText = "Active" };
             cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
-            cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( "javascript: if ($(this).is(':checked')) {{ $('#{0}').hide(); }} else {{ $('#{0}').show(); }}", lblInactive.ID ) );
+            string checkboxScriptFormat = @"
+javascript: 
+    if ($(this).is(':checked')) {{ 
+        $('#{0}').hide(); 
+        $('#{1}').removeClass('workflow-activity-inactive'); 
+    }} 
+    else {{ 
+        $('#{0}').show(); 
+        $('#{1}').addClass('workflow-activity-inactive'); 
+    }}
+";
+
+            cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, lblInactive.ID, this.ID + "_section" ) );
 
             tbActivityTypeName = new DataTextBox();
             tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
@@ -206,8 +218,17 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+            if ( cbActivityTypeIsActive.Checked )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+            }
+            else
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity workflow-activity-inactive" );
+            }
+
             writer.AddAttribute( "data-key", hfActivityTypeGuid.Value );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
