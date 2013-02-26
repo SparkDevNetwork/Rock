@@ -1,9 +1,9 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataViewDetail.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DataViewDetail" %>
-<asp:UpdatePanel ID="upDataView" runat="server">
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ReportDetail.ascx.cs" Inherits="RockWeb.Blocks.Reporting.ReportDetail" %>
+<asp:UpdatePanel ID="upReport" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-            <asp:HiddenField ID="hfDataViewId" runat="server" />
+            <asp:HiddenField ID="hfReportId" runat="server" />
 
             <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
 
@@ -17,21 +17,19 @@
                     <div class="row-fluid">
                         <div class="span6">
                             <Rock:DataDropDownList ID="ddlCategory" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" LabelText="Category" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" LabelText="Applies To" DataValueField="Id" />
+                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" LabelText="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                            <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" LabelText="Data View" />
                         </div>
                         <div class="span6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" CssClass="" />
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
                 </fieldset>
 
-                <asp:PlaceHolder ID="phFilters" runat="server"></asp:PlaceHolder>
-
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-                    <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn pull-right" OnClick="btnPreview_Click" />
                 </div>
 
             </div>
@@ -52,16 +50,12 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
-                        <asp:LinkButton ID="btnPreview2" runat="server" Text="Preview" CssClass="btn btn-mini pull-right" OnClick="btnPreview2_Click" />
                     </div>
+
+                    <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+
                 </div>
             </fieldset>
-
-            <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview">
-                <Content>
-                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" />
-                </Content>
-            </Rock:ModalDialog>
 
         </asp:Panel>
 

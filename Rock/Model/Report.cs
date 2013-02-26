@@ -63,6 +63,15 @@ namespace Rock.Model
         public int? CategoryId { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity type that this view applies to.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the root filter id.
         /// </summary>
         /// <value>
@@ -83,6 +92,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the data view for the report.
