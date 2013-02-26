@@ -340,6 +340,10 @@
     <Compile Include="Migrations\201302252219134_UpdateReport.Designer.cs">
       <DependentUpon>201302252219134_UpdateReport.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201302261559183_ScheduleDescription.cs" />
+    <Compile Include="Migrations\201302261559183_ScheduleDescription.Designer.cs">
+      <DependentUpon>201302261559183_ScheduleDescription.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1136,6 +1140,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201302252219134_UpdateReport.resx">
       <DependentUpon>201302252219134_UpdateReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201302261559183_ScheduleDescription.resx">
+      <DependentUpon>201302261559183_ScheduleDescription.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

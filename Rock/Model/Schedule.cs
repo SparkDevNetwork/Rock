@@ -39,6 +39,15 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Notes about the job..
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
         /// Gets or sets the frequency.
         /// </summary>
         /// <value>
