@@ -260,6 +260,7 @@
     <Compile Include="Migrations\201301310052455_WorkflowUI01.Designer.cs">
       <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\20130224130600_AddFinancialBatchType.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -351,10 +352,6 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
-    <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
-    <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
-      <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
@@ -883,9 +880,6 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201211292334047_CreateDatabase.resx">
-      <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212031749206_MarketingCampaignAdAttributes.resx">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </EmbeddedResource>
