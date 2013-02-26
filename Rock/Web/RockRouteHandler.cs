@@ -95,7 +95,12 @@ namespace Rock.Web
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
-                page = Rock.Web.Cache.PageCache.Read( Convert.ToInt32( pageId ) );
+                int pageIdNumber = 0;
+                if ( Int32.TryParse( pageId, out pageIdNumber ) )
+                {
+                    page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
+                }
+
                 if ( page == null )
                 {
                     return new HttpHandlerError( 404 );
