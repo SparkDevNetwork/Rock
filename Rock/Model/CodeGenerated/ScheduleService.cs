@@ -73,6 +73,7 @@ namespace Rock.Model
             {
                 var target = new Schedule();
                 target.Name = source.Name;
+                target.Description = source.Description;
                 target.Frequency = source.Frequency;
                 target.FrequencyQualifier = source.FrequencyQualifier;
                 target.StartTime = source.StartTime;
