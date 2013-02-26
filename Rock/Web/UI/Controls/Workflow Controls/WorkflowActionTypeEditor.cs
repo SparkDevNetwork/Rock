@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -116,7 +117,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
                 value.LoadAttributes();
                 phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true );
+                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" }  );
             }
         }
 
