@@ -974,6 +974,27 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the page route and query string parameters
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> PageParameters()
+        {
+            var parameters = new Dictionary<string, object>();
+
+            foreach ( var key in Page.RouteData.Values.Keys )
+            {
+                parameters.Add( key, Page.RouteData.Values[key] );
+            }
+
+            foreach( string param in Request.QueryString.Keys)
+            {
+                parameters.Add( param, Request.QueryString[param]);
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
         /// <param name="page">The page.</param>
