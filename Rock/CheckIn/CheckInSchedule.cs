@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -14,7 +15,7 @@ namespace Rock.CheckIn
     /// A shedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule 
+    public class CheckInSchedule : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the schedule.
@@ -53,5 +54,20 @@ namespace Rock.CheckIn
         {
             return Schedule != null ? Schedule.ToString() : string.Empty;
         }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Schedule", Schedule );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Selected", Selected );
+            return dictionary;
+        }
+
     }
 }

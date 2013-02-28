@@ -591,6 +591,21 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// To the dictionary.
+        /// </summary>
+        /// <returns></returns>
+        public override Dictionary<string, object> ToDictionary()
+        {
+            var dictionary =  base.ToDictionary();
+            dictionary.Add( "FirstName", FirstName );
+            dictionary.Add( "FullName", FullName );
+            dictionary.Add( "FullNameLastFirst", FullNameLastFirst );
+            dictionary.Add( "BirthDate", BirthDate );
+            dictionary.Add( "Age", AgePrecise );
+            return dictionary;
+        }
+ 
         #endregion
 
         #region Methods
