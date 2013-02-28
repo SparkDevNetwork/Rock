@@ -33,6 +33,8 @@ namespace Rock.Web.UI.Controls
         private LabeledCheckBox cbIsActivityCompletedOnSuccess;
         private PlaceHolder phActionAttributes;
 
+        public bool ForceContentVisible { get; set; }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -117,7 +119,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
                 value.LoadAttributes();
                 phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" }  );
+                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" } );
             }
         }
 
@@ -153,10 +155,14 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             ddlEntityType.ID = this.ID + "_ddlEntityType";
             ddlEntityType.LabelText = "Action Type";
 
-            foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy(a => a.Value.EntityType.FriendlyName) )
+            // make it autopostback since Attributes are dependant on which EntityType is selected
+            ddlEntityType.AutoPostBack = true;
+            ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
+
+            foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
                 var entityType = item.Value.EntityType;
-                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ));
+                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
             }
 
             // set label when they exit the edit field
@@ -176,10 +182,24 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             Controls.Add( hfActionTypeGuid );
             Controls.Add( lblActionTypeName );
             Controls.Add( tbActionTypeName );
+            Controls.Add( ddlEntityType );
             Controls.Add( cbIsActionCompletedOnSuccess );
             Controls.Add( cbIsActivityCompletedOnSuccess );
             Controls.Add( phActionAttributes );
             Controls.Add( lbDeleteActionType );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            WorkflowActionType workflowActionType = WorkflowActionType;
+            workflowActionType.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            WorkflowActionType = workflowActionType;
+            this.ForceContentVisible = true;
         }
 
         /// <summary>
@@ -225,7 +245,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
-            if ( !string.IsNullOrEmpty( WorkflowActionType.Name ) )
+
+            bool forceContentVisible = !WorkflowActionType.IsValid || ForceContentVisible;
+
+            if ( !forceContentVisible )
             {
                 // hide details if the name has already been filled in
                 writer.AddStyleAttribute( "display", "none" );
@@ -240,13 +263,6 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             cbIsActivityCompletedOnSuccess.RenderControl( writer );
 
             // action attributes
-            /*WorkflowActionType workflowActionType = WorkflowActionType;
-            EntityType actionEntityType = workflowActionType.EntityType;
-
-            workflowActionType.LoadAttributes();
-            phActionAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( workflowActionType, phActionAttributes, false );
-             */ 
             phActionAttributes.RenderControl( writer );
 
             // widget-content div

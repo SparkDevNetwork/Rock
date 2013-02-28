@@ -279,7 +279,7 @@ javascript:
             {
                 foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
                 {
-                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid )
+                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
                     {
                         forceContentVisible = true;
                         break;
