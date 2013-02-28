@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -197,14 +198,18 @@ namespace RockWeb.Blocks.Administration
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
                     page.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     page.Description = tbDescription.Text;
-                    
-                    foreach ( var pageRoute in page.PageRoutes.ToList() )
-                        routeService.Delete( pageRoute, CurrentPersonId );
-                    page.PageRoutes.Clear();
 
-                    foreach ( var pageContext in page.PageContexts.ToList() )
-                        contextService.Delete( pageContext, CurrentPersonId);
-                    page.PageContexts.Clear();
+                    // new or updated route
+                    foreach ( var pageRoute in page.PageRoutes.ToList() )
+                    {
+                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+                        if ( existingRoute != null )
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                        routeService.Delete( pageRoute, CurrentPersonId );
+                    }
+                    page.PageRoutes.Clear();
 
                     foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
                     {
@@ -214,7 +219,11 @@ namespace RockWeb.Blocks.Administration
                         page.PageRoutes.Add( pageRoute );
                     }
 
-                    if (phContextPanel.Visible)
+                    foreach ( var pageContext in page.PageContexts.ToList() )
+                        contextService.Delete( pageContext, CurrentPersonId );
+                    page.PageContexts.Clear();
+
+                    if ( phContextPanel.Visible )
                         foreach ( var control in phContext.Controls)
                             if ( control is LabeledTextBox )
                             {
@@ -226,6 +235,11 @@ namespace RockWeb.Blocks.Administration
                             }
 
                     pageService.Save( page, CurrentPersonId );
+
+                    foreach ( var pageRoute in new Rock.Model.PageRouteService().GetByPageId(page.Id) )
+                    {
+                        RouteTable.Routes.AddPageRoute( pageRoute );
+                    }
 
                     Rock.Attribute.Helper.GetEditValues( phAttributes, _page );
                     _page.SaveAttributeValues( CurrentPersonId );

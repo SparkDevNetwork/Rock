@@ -174,8 +174,10 @@ namespace RockWeb.Blocks.Reporting
             {
                 try
                 {
+                    query = query.ResolveMergeFields( PageParameters() );
+
                     var parameters = GetParameters();
-                    DataTable dataTable = new Service().GetDataTable( GetAttributeValue( "Query" ), (parameters != null ? CommandType.StoredProcedure : CommandType.Text), parameters );
+                    DataTable dataTable = new Service().GetDataTable( query, ( parameters != null ? CommandType.StoredProcedure : CommandType.Text ), parameters );
 
                     if ( dataTable.Columns.Count == 1 && dataTable.Rows.Count == 1 && dataTable.Columns[0].ColumnName.ToLower() == "html" )
                     {
