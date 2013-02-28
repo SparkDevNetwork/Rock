@@ -277,7 +277,6 @@ namespace RockWeb.Blocks.Security
                         if ( user.ServiceType == AuthenticationServiceType.Internal )
                         {
                             var userDictionary = user.ToDictionary();
-                            userDictionary.Add( "ConfirmationCodeEncoded", user.ConfirmationCodeEncoded );
                             users.Add( userDictionary );
                         }
                     }
@@ -285,7 +284,6 @@ namespace RockWeb.Blocks.Security
                     if ( users.Count > 0 )
                     {
                         IDictionary<string, object> personDictionary = person.ToDictionary();
-                        personDictionary.Add( "FirstName", person.FirstName );
                         personDictionary.Add( "Users", users.ToArray() );
                         personDictionaries.Add( personDictionary );
                     }
@@ -318,7 +316,6 @@ namespace RockWeb.Blocks.Security
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
                 var personDictionary = person.ToDictionary();
-                personDictionary.Add( "FirstName", person.FirstName );
                 mergeObjects.Add( "Person", personDictionary );
 
                 mergeObjects.Add( "User", user.ToDictionary() );
@@ -351,7 +348,6 @@ namespace RockWeb.Blocks.Security
                     mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
 
                     var personDictionary = person.ToDictionary();
-                    personDictionary.Add("FirstName", person.FirstName);
                     mergeObjects.Add( "Person", personDictionary );
 
                     mergeObjects.Add( "User", user.ToDictionary() );

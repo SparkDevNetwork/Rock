@@ -50,10 +50,10 @@ namespace RockWeb.Blocks.CheckIn
                                     }
                                 }
                             }
+
+                            AddLabelScript( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client).ToJson() );
+
                         }
-
-                        phResults.Controls.Add( new LiteralControl( person.Labels.ToJson() ) );
-
                     }
                 }
             }
@@ -90,6 +90,40 @@ namespace RockWeb.Blocks.CheckIn
             {
                 GoToWelcomePage();
             }
+        }
+
+        private void AddLabelScript( string jsonObject )
+        {
+            string script = string.Format( @"
+    // label data
+    var labelData = {0};
+            
+    // setup deviceready event to wait for cordova
+	document.addEventListener('deviceready', onDeviceReady, false);
+
+	function onDeviceReady() {{
+
+		// send label data to the zebra plugin for printing
+		printLabels();
+	           
+	}}
+		   
+	function printLabels() {{
+		ZebraPrintPlugin.printTags(
+	    JSON.stringify(labelData), 
+	    function(result) {{
+				console.log('I printed that tag like a champ!!!');
+			}},
+			function(error) {{   
+				// error is an array where:
+				// error[0] is the error message
+				// error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
+				console.log('An error occurred: ' + error[0]);
+			}}
+	    );
+	}}
+", jsonObject );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 
     }

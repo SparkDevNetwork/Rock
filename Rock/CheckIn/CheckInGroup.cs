@@ -15,7 +15,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup 
+    public class CheckInGroup : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the group.
@@ -73,5 +73,19 @@ namespace Rock.CheckIn
             return Group != null ? Group.ToString() : string.Empty;
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Group", Group );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Schedules", Schedules );
+            return dictionary;
+        }
     }
 }
