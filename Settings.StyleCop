@@ -327,6 +327,7 @@
           <Value>tb</Value>
           <Value>hf</Value>
           <Value>i</Value>
+          <Value>ph</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>
