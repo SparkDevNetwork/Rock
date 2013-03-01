@@ -40,7 +40,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlAdTypeAttribute" runat="server" Visible="false">
-            <RockWeb:RockAttributeEditor ID="edtAdTypeAttributes" runat="server" OnSaveClick="btnSaveAttribute_Click" OnCancelClick="btnCancelAttribute_Click" />
+            <Rock:RockAttributeEditor ID="edtAdTypeAttributes" runat="server" OnSaveClick="btnSaveAttribute_Click" OnCancelClick="btnCancelAttribute_Click" />
         </asp:Panel>
 
         <Rock:NotificationBox ID="nbWarning" runat="server" Title="Warning" NotificationBoxType="Warning" Visible="false" />

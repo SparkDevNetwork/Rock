@@ -475,6 +475,7 @@
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
+    <Compile Include="Web\UI\Controls\RockAttributeEditor.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
