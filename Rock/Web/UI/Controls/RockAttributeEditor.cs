@@ -1,4 +1,4 @@
-//
+﻿//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -14,13 +14,164 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Controls
+namespace Rock.Web.UI.Controls
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class RockAttributeEditor : UserControl
+    public class RockAttributeEditor : CompositeControl
     {
+        #region UI Controls
+
+        private HiddenField hfAttributeGuid;
+        private HiddenField hfAttributeId;
+        private Literal lAttributeActionTitle;
+
+        // column 1
+        private DataTextBox tbAttributeName;
+        private DataTextBox tbAttributeKey;
+        private DataTextBox tbAttributeCategory;
+        private DataTextBox tbAttributeDescription;
+
+        // column 2
+        private DataDropDownList ddlAttributeFieldType;
+        private PlaceHolder phAttributeFieldTypeQualifiers;
+        private PlaceHolder phAttributeDefaultValue;
+        private LabeledCheckBox cbAttributeMultiValue;
+        private LabeledCheckBox cbAttributeRequired;
+        private LabeledCheckBox cbShowInGrid;
+
+        // buttons
+        private LinkButton btnSaveAttribute;
+        private LinkButton btnCancelAttribute;
+
+        #endregion
+
+        #region CompositeControl stuff
+
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            Controls.Clear();
+
+            hfAttributeGuid = new HiddenField { ID = string.Format( "hfAttributeGuid_{0}", this.ID ) };
+            hfAttributeId = new HiddenField { ID = string.Format( "hfAttributeId_{0}", this.ID ) };
+            lAttributeActionTitle = new Literal { ID = string.Format( "lAttributeActionTitle_{0}", this.ID ) };
+
+            tbAttributeName = new DataTextBox { ID = string.Format( "tbAttributeName_{0}", this.ID ) };
+            tbAttributeName.SourceTypeName = "Rock.Model.Attribute, Rock";
+            tbAttributeName.PropertyName = "Name";
+
+            tbAttributeKey = new DataTextBox { ID = string.Format( "tbAttributeKey_{0}", this.ID ) };
+            tbAttributeKey.SourceTypeName = "Rock.Model.Attribute, Rock";
+            tbAttributeKey.PropertyName = "Name";
+
+            tbAttributeCategory = new DataTextBox { ID = string.Format( "tbAttributeCategory_{0}", this.ID ) };
+            tbAttributeCategory.SourceTypeName = "Rock.Model.Attribute, Rock";
+            tbAttributeCategory.PropertyName = "Category";
+
+            tbAttributeDescription = new DataTextBox { ID = string.Format( "tbAttributeDescription_{0}", this.ID ) };
+            tbAttributeDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
+            tbAttributeDescription.PropertyName = "Description";
+
+            ddlAttributeFieldType = new DataDropDownList { ID = string.Format( "ddlAttributeFieldType_{0}", this.ID ) };
+            ddlAttributeFieldType.LabelText = "Field Type";
+            ddlAttributeFieldType.SourceTypeName = "Rock.Model.FieldType, Rock";
+            ddlAttributeFieldType.PropertyName = "Name";
+            ddlAttributeFieldType.DataValueField = "Id";
+            ddlAttributeFieldType.DataTextField = "Name";
+            ddlAttributeFieldType.AutoPostBack = true;
+            ddlAttributeFieldType.SelectedIndexChanged += ddlAttributeFieldType_SelectedIndexChanged;
+            
+
+            phAttributeFieldTypeQualifiers = new PlaceHolder { ID = string.Format( "phAttributeFieldTypeQualifiers_{0}", this.ID ) };
+
+            phAttributeDefaultValue = new PlaceHolder { ID = string.Format( "phAttributeDefaultValue_{0}", this.ID ) };
+            phAttributeDefaultValue.EnableViewState = false;
+
+            cbAttributeMultiValue = new LabeledCheckBox { ID = string.Format( "cbAttributeMultiValue_{0}", this.ID ) };
+            cbAttributeMultiValue.LabelText = "Allow Multiple Values";
+
+            cbAttributeRequired = new LabeledCheckBox { ID = string.Format( "cbAttributeRequired_{0}", this.ID ) };
+            cbAttributeRequired.LabelText = "Required";
+
+            cbShowInGrid = new LabeledCheckBox { ID = string.Format( "cbShowInGrid_{0}", this.ID ) };
+            cbShowInGrid.LabelText = "Show in Grid";
+
+            btnSaveAttribute = new LinkButton { ID = string.Format( "btnSaveAttribute_{0}", this.ID ) };
+            btnSaveAttribute.Text = "OK";
+            btnSaveAttribute.CssClass = "btn btn-primary";
+            btnSaveAttribute.Click += btnSaveAttribute_Click;
+
+            btnCancelAttribute = new LinkButton { ID = string.Format( "btnCancelAttribute_{0}", this.ID ) };
+            btnCancelAttribute.Text = "Cancel";
+            btnCancelAttribute.CssClass = "btn";
+            btnCancelAttribute.CausesValidation = false;
+            btnCancelAttribute.Click += btnCancelAttribute_Click;
+
+            Controls.Add( hfAttributeGuid );
+            Controls.Add( hfAttributeId );
+            Controls.Add( lAttributeActionTitle );
+            Controls.Add( tbAttributeName );
+            Controls.Add( tbAttributeKey );
+            Controls.Add( tbAttributeCategory );
+            Controls.Add( tbAttributeDescription );
+            Controls.Add( ddlAttributeFieldType );
+            Controls.Add( phAttributeFieldTypeQualifiers );
+            Controls.Add( phAttributeDefaultValue );
+            Controls.Add( cbAttributeMultiValue );
+            Controls.Add( cbAttributeRequired );
+            Controls.Add( cbShowInGrid );
+            Controls.Add( btnSaveAttribute );
+            Controls.Add( btnCancelAttribute );
+        }
+
+        protected override void Render( HtmlTextWriter writer )
+        {
+            hfAttributeGuid.RenderControl( writer );
+            hfAttributeId.RenderControl( writer );
+            
+            writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
+            
+            writer.RenderBeginTag( HtmlTextWriterTag.Legend );
+            lAttributeActionTitle.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            tbAttributeName.RenderControl( writer );
+            tbAttributeKey.RenderControl( writer );
+            tbAttributeCategory.RenderControl( writer );
+            tbAttributeDescription.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            ddlAttributeFieldType.RenderControl( writer );
+            phAttributeFieldTypeQualifiers.RenderControl( writer );
+            writer.WriteLine( "<p>Default Value</p>" );
+            phAttributeDefaultValue.RenderControl( writer );
+            cbAttributeMultiValue.RenderControl( writer );
+            cbAttributeRequired.RenderControl( writer );
+            cbShowInGrid.RenderControl( writer );
+            writer.RenderEndTag();
+            
+            // row-fluid </div>
+            writer.RenderEndTag();
+
+            // </fieldset>
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            btnSaveAttribute.RenderControl( writer );
+            btnCancelAttribute.RenderControl( writer );
+            writer.RenderEndTag();
+        }
+
+        #endregion
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -28,6 +179,8 @@ namespace RockWeb.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            EnsureChildControls();
 
             if ( Page.IsPostBack )
             {
@@ -72,7 +225,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         /// Gets the attribute values.
         /// </summary>
         /// <param name="attribute">The attribute.</param>
-        public void GetAttributeValues( Attribute attribute )
+        public void GetAttributeValues( Rock.Model.Attribute attribute )
         {
             attribute.Guid = new Guid( hfAttributeGuid.Value );
             attribute.Id = int.Parse( hfAttributeId.Value );
@@ -115,7 +268,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="actionTitle">The action title.</param>
-        public void EditAttribute( Attribute attribute, string actionTitle )
+        public void EditAttribute( Rock.Model.Attribute attribute, string actionTitle )
         {
             FieldTypeService fieldTypeService = new FieldTypeService();
             List<FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
@@ -203,17 +356,17 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute;
+            Rock.Model.Attribute attribute;
             if ( hfAttributeId.IsZero() )
             {
-                attribute = new Attribute();
+                attribute = new Rock.Model.Attribute();
             }
             else
             {
                 AttributeService attributeService = new AttributeService();
                 attribute = attributeService.Get( hfAttributeId.ValueAsInt() );
             }
-            
+
             GetAttributeValues( attribute );
             if ( !attribute.IsValid )
             {
@@ -300,5 +453,6 @@ function populateAttributeKey(nameControlId, keyControlId ) {
                 }
             }
         }
+
     }
 }

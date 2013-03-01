@@ -90,7 +90,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
-            <RockWeb:RockAttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
+            <Rock:RockAttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
         </asp:Panel>
         <script>
             Sys.Application.add_load(function () {
