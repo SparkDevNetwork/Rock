@@ -125,7 +125,7 @@ namespace Rock
 
                 if ( type.Namespace.Equals( "Rock.Model" ) )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
                 }
                 else

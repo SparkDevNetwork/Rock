@@ -231,7 +231,7 @@ namespace Rock.Attribute
             Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType.FullName ).Id;
+            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
             foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
