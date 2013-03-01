@@ -333,11 +333,11 @@ namespace Rock.Model
         {
             get
             {
-                string result = Title.PadRight( 100, ' ' );
+                string result = Order.ToString("00000000000") + Title.PadRight( 100, ' ' );
                 var _parentPage = ParentPage;
                 while ( _parentPage != null )
                 {
-                    result = _parentPage.Title.PadRight( 100, ' ' ) + result;
+                    result = _parentPage.Order.ToString( "00000000000" ) + _parentPage.Title.PadRight( 100, ' ' ) + result;
                     _parentPage = _parentPage.ParentPage;
                 }
 
