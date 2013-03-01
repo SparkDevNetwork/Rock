@@ -49,8 +49,8 @@ namespace Rock.Workflow
         {
             Type type = this.GetType();
 
-            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ).FullName );
-            this.EntityType = EntityTypeCache.Read( type.FullName );
+            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ) );
+            this.EntityType = EntityTypeCache.Read( type );
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
