@@ -51,21 +51,6 @@ namespace Rock.Migrations
             AddBlock( "19CAC4D5-FE82-4AE0-BFD3-3C12E3024574", "02D0A037-446B-403B-9719-5EF7D98239EF", "File Type", "", "Content", 0, "E7073D89-23B7-44A5-BD74-90FD80930889" );
             AddBlockTypeAttribute( "0926B82C-CBA2-4943-962E-F788C8A80037", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page Guid", "DetailPageGuid", "", "", 0, "", "7019CC73-589F-43CC-8A8C-97A5E06AC0BA" );
             
-            /*
-            // Attrib Value for l:Active
-            AddBlockAttributeValue( "A5E0DD78-BB67-41E5-BDDA-73E2277482DA", "16C3A9B7-F2ED-4440-AA3F-DC3BB011FA0A", "False" );
-            // Attrib Value for l:Order
-            AddBlockAttributeValue( "A5E0DD78-BB67-41E5-BDDA-73E2277482DA", "AB53E541-C2AC-4530-A73C-ACE8055E1D93", "" );
-            // Attrib Value for Menu:Active
-            AddBlockAttributeValue( "CC8F4186-870D-4CF3-8226-D49F1A0D0DDF", "78885845-A802-4E96-B642-A40648E954B3", "False" );
-            // Attrib Value for Menu:Order
-            AddBlockAttributeValue( "CC8F4186-870D-4CF3-8226-D49F1A0D0DDF", "B49E3022-EA33-48C3-82DA-4F1FF79AB54E", "" );
-            // Attrib Value for Person Edit:Active
-            AddBlockAttributeValue( "6E189D68-C4EC-443F-B409-1EEC0F12D427", "F5026F18-4279-4AC2-8F6F-B2BA35E9AD7A", "False" );
-            // Attrib Value for Person Edit:Order
-            AddBlockAttributeValue( "6E189D68-C4EC-443F-B409-1EEC0F12D427", "4C4C9EDC-8414-4B0D-BC68-901CD8835788", "" );
-            */
-
             // Attrib Value for File Type List:Detail Page Guid
             AddBlockAttributeValue( "3C3FF5B1-342A-4240-8264-D815FFF7BD9C", "7019CC73-589F-43CC-8A8C-97A5E06AC0BA", "19cac4d5-fe82-4ae0-bfd3-3c12e3024574" );
 
