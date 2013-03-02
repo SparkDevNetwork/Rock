@@ -473,6 +473,7 @@
     </Compile>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
+    <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxAdapter.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
