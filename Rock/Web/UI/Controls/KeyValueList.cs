@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
 
         $('a.key-value-add').click(function (e) {{
             e.preventDefault();
-            var newKeyValue = '<div class=""controls controls-row""><input class=""span2 key-value-key"" type=""text"" placeholder=""Key""></input><input class=""span3 key-value-value"" type=""text"" placeholder=""Value""></input><a href=""#"" class=""btn key-value-remove""><i class=""icon-minus-sign""></i></a></div>';
+            var newKeyValue = '<div class=""controls controls-row""><input class=""span3 key-value-key"" type=""text"" placeholder=""Key""></input><input class=""span4 key-value-value"" type=""text"" placeholder=""Value""></input><a href=""#"" class=""btn key-value-remove""><i class=""icon-minus-sign""></i></a></div>';
             $(this).prev().append(newKeyValue);
         }});
 
@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
                     writer.WriteLine();
 
                     // Write Name
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span2 key-value-key" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-key" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                     writer.AddAttribute( "placeholder", "Key" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
@@ -87,7 +87,7 @@ namespace Rock.Web.UI.Controls
                     writer.WriteLine();
 
                     // Write Value
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-value" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span4 key-value-value" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                     writer.AddAttribute( "placeholder", "Value" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );

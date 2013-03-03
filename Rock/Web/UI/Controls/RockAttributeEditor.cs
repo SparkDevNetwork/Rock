@@ -271,6 +271,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         public void EditAttribute( Rock.Model.Attribute attribute, string actionTitle )
         {
             FieldTypeService fieldTypeService = new FieldTypeService();
+            fieldTypeService.RegisterFieldTypes( this.Page.Server.MapPath( "~" ) );
             List<FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
 
             ddlAttributeFieldType.DataSource = fieldTypes;

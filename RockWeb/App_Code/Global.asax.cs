@@ -122,7 +122,7 @@ namespace RockWeb
             AddEventHandlers();
 
             new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
-
+            new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
         }
 
         /// <summary>
