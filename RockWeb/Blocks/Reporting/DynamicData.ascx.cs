@@ -319,8 +319,8 @@ namespace RockWeb.Blocks.Reporting
             foreach(DataColumn dtColumn in dataTable.Columns)
             {
                 if ( columnList.Count > 0 && 
-                    ((showColumns && !columnList.Contains(dtColumn.ColumnName)) ||
-                        (!showColumns && columnList.Contains(dtColumn.ColumnName))))
+                    ((showColumns && !columnList.Contains(dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase)) ||
+                        ( !showColumns && columnList.Contains( dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase ) ) ) )
                 {
                     continue;
                 }
