@@ -18,7 +18,7 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false  )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [BooleanField( "Show Edit", "", true )]
     [BooleanField( "Limit to Security Role Groups" )]
     public partial class GroupDetail : RockBlock, IDetailBlock
@@ -119,8 +119,23 @@ namespace RockWeb.Blocks.Crm
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to Grid
-                NavigateToParentPage();
+                if ( this.CurrentPage.Layout.Equals( "TwoColumnLeft" ) )
+                {
+                    // Cancelling on Add.  Return to tree view with parent category selected
+                    var qryParams = new Dictionary<string, string>();
+
+                    string parentGroupId = PageParameter( "parentGroupId" );
+                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
+                    {
+                        qryParams["groupId"] = parentGroupId;
+                    }
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
             }
             else
             {
@@ -151,7 +166,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             int? parentGroupId = null;
-            
+
             // NOTE: Very similar code in GroupList.gGroups_Delete
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -196,7 +211,7 @@ namespace RockWeb.Blocks.Crm
             {
                 qryParams["groupId"] = parentGroupId.ToString();
             }
-         
+
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
@@ -238,7 +253,7 @@ namespace RockWeb.Blocks.Crm
                 wasSecurityRole = group.IsSecurityRole;
             }
 
-            if ( (ddlGroupType.SelectedValueAsInt() ?? 0) == 0 )
+            if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
             {
                 ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
                 return;
@@ -293,9 +308,9 @@ namespace RockWeb.Blocks.Crm
                     && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
 
                 var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
-                                             where !( from d in GroupMemberAttributesState
-                                                      select d.Guid ).Contains( attr.Guid )
-                                             select attr;
+                                                   where !( from d in GroupMemberAttributesState
+                                                            select d.Guid ).Contains( attr.Guid )
+                                                   select attr;
 
                 deletedGroupMemberAttributes.ToList().ForEach( a =>
                 {
@@ -399,7 +414,7 @@ namespace RockWeb.Blocks.Crm
                 groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
             }
 
-            // also, limit GroupType to ChildGroupTypes that the ParentGroup allows
+            // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
             int? parentGroupId = ddlParentGroup.SelectedValueAsInt();
             if ( parentGroupId != null )
             {
@@ -542,8 +557,24 @@ namespace RockWeb.Blocks.Crm
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {
-                // if this is a new group, and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
-                ddlGroupType.SelectedIndex = 0;
+                if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+                {
+                    // default GroupType for new Group to "Security Roles"  if LimittoSecurityRoleGroups
+                    var securityRoleGroupType = new GroupTypeService().Queryable().FirstOrDefault( a => a.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE ) ) );
+                    if ( securityRoleGroupType != null )
+                    {
+                        ddlGroupType.SetValue( securityRoleGroupType.Id );
+                    }
+                    else
+                    {
+                        ddlGroupType.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    // if this is a new group (and not "LimitToSecurityRoleGroups", and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
+                    ddlGroupType.SelectedIndex = 0;
+                }
             }
             else
             {
