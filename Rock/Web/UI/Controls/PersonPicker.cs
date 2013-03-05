@@ -52,6 +52,11 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                if ( string.IsNullOrWhiteSpace( hfPersonId.Value ) )
+                {
+                    hfPersonId.Value = Rock.Constants.None.IdValue;
+                }
+
                 return hfPersonId.Value;
             }
 
@@ -110,6 +115,11 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                if ( string.IsNullOrWhiteSpace( hfPersonName.Value ) )
+                {
+                    hfPersonName.Value = Rock.Constants.None.TextHtml;
+                }
+
                 return hfPersonName.Value;
             }
 

@@ -36,6 +36,9 @@ namespace Rock.Rest.Controllers
         /// Gets the children.
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="rootGroupId">The root group id.</param>
+        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <returns></returns>
         public IQueryable<GroupName> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
@@ -70,8 +73,7 @@ namespace Rock.Rest.Controllers
 
             List<Group> groupList = qry.ToList();
             List<GroupName> groupNameList = new List<GroupName>();
-
-
+            
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
             string imageUrlFormat = Path.Combine(appPath, "Image.ashx?id={0}&width=25&height=25");
 
@@ -96,8 +98,7 @@ namespace Rock.Rest.Controllers
                 
                 groupNameList.Add(groupName);
             }
-
-
+            
             // try to quickly figure out which items have Children
             List<int> resultIds = groupNameList.Select( a => a.Id ).ToList();
 
