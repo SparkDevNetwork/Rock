@@ -269,7 +269,8 @@ namespace RockWeb.Blocks.Administration
             {
                 lValue.Text = "Edit";
                 tbName.Text = batchValue.Name;
-                dtBatchDate.SelectedDate = batchValue.BatchDate;
+                dtBatchDateStart.SelectedDate = batchValue.BatchDateStart;
+                dtBatchDateEnd.SelectedDate = batchValue.BatchDateEnd;
                 ddlCampus.SetValue( batchValue.CampusId);
                 ddlEntity.SetValue(batchValue.EntityId);
                 cbIsClosed.Checked = batchValue.IsClosed;
@@ -303,7 +304,8 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 financialBatch.Name = tbName.Text;
-                financialBatch.BatchDate = dtBatchDate.SelectedDate;
+                financialBatch.BatchDateStart = dtBatchDateStart.SelectedDate;
+                financialBatch.BatchDateEnd = dtBatchDateEnd.SelectedDate;
                 financialBatch.CampusId = ddlCampus.SelectedValueAsInt();
                 financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
                 financialBatch.IsClosed = cbIsClosed.Checked;
@@ -319,7 +321,8 @@ namespace RockWeb.Blocks.Administration
         protected void emptyInputs()
         {
             tbName.Text = string.Empty;
-            dtBatchDate.SelectedDate = null;
+            dtBatchDateStart.SelectedDate = null;
+            dtBatchDateEnd.SelectedDate = null;
             ddlCampus.SetValue( -1 );
             ddlEntity.SetValue( -1 );
             cbIsClosed.Checked = false;

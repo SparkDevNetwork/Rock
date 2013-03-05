@@ -260,9 +260,9 @@
     <Compile Include="Migrations\201301310052455_WorkflowUI01.Designer.cs">
       <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201302261729333_financialBatchNewField.cs" />
-    <Compile Include="Migrations\201302261729333_financialBatchNewField.Designer.cs">
-      <DependentUpon>201302261729333_financialBatchNewField.cs</DependentUpon>
+    <Compile Include="Migrations\201303032120222_FinancialBatchNewFields.cs" />
+    <Compile Include="Migrations\201303032120222_FinancialBatchNewFields.Designer.cs">
+      <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -988,8 +988,8 @@
     <EmbeddedResource Include="Migrations\201301310052455_WorkflowUI01.resx">
       <DependentUpon>201301310052455_WorkflowUI01.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201302261729333_financialBatchNewField.resx">
-      <DependentUpon>201302261729333_financialBatchNewField.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201303032120222_FinancialBatchNewFields.resx">
+      <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
