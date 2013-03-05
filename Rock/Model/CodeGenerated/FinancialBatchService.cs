@@ -79,15 +79,14 @@ namespace Rock.Model
             {
                 var target = new FinancialBatch();
                 target.Name = source.Name;
-                target.BatchDate = source.BatchDate;
+                //target.BatchStartDate = source.BatchStartDate;
                 target.Status = source.Status;
                 target.CampusId = source.CampusId;
                 target.AccountingSystemCode = source.AccountingSystemCode;
                 target.ControlAmount = source.ControlAmount;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
-
-            
+           
                 return target;
             }
         }

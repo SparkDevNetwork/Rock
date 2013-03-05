@@ -35,13 +35,22 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the batch date.
+        /// Gets or sets the batch date start.
         /// </summary>
         /// <value>
-        /// The batch date.
+        /// The batch date start.
         /// </value>
         [DataMember]
-        public DateTime? BatchDate { get; set; }
+        public DateTime? BatchDateStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch date end.
+        /// </summary>
+        /// <value>
+        /// The batch date end.
+        /// </value>
+        [DataMember]
+        public DateTime? BatchDateEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
@@ -101,6 +110,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int BatchTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Control Amount.
+        /// </summary>
+        /// <value>
+        /// Control Amount.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public float ControlAmount { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
