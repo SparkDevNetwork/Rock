@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Administration
             tbQualifierValue.Text = WorkflowTrigger.EntityTypeQualifierValue;
             ddlWorkflowType.SetValue( WorkflowTrigger.WorkflowTypeId );
             rblTriggerType.SelectedValue = WorkflowTrigger.WorkflowTriggerType.ConvertToInt().ToString();
-            tbWorkflowName.Text = WorkflowTrigger.WorkflowName;
+            tbWorkflowName.Text = WorkflowTrigger.WorkflowName ?? string.Empty;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -227,7 +227,14 @@ namespace RockWeb.Blocks.Administration
             WorkflowTrigger.EntityTypeQualifierValue = tbQualifierValue.Text;
             WorkflowTrigger.WorkflowTypeId = ddlWorkflowType.SelectedValueAsInt().Value;
             WorkflowTrigger.WorkflowTriggerType = (WorkflowTriggerType)System.Enum.Parse( typeof( WorkflowTriggerType ), rblTriggerType.SelectedValue );
-            WorkflowTrigger.WorkflowName = tbWorkflowName.Text;
+            if ( string.IsNullOrWhiteSpace( tbWorkflowName.Text ) )
+            {
+                WorkflowTrigger.WorkflowName = null;
+            }
+            else
+            {
+                WorkflowTrigger.WorkflowName = tbWorkflowName.Text;
+            }
 
             if ( !WorkflowTrigger.IsValid )
             {
@@ -236,6 +243,8 @@ namespace RockWeb.Blocks.Administration
             }
 
             WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonId );
+
+            Rock.Workflow.TriggerCache.Refresh();
 
             NavigateToParentPage();
         }
