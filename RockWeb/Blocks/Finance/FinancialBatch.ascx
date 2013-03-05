@@ -5,8 +5,8 @@
         <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
-            <Rock:DateTimePicker ID="dtFromDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="From Date" />
-            <Rock:DateTimePicker ID="dtThroughDate" runat="server"  SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Through Date" />
+            <Rock:DateTimePicker ID="dtFromDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="From Date" />
+            <Rock:DateTimePicker ID="dtThroughDate" runat="server"  SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Through Date" />
             <Rock:LabeledTextBox ID="txtTitle" runat="server" LabelText="Title"></Rock:LabeledTextBox>            
             <Rock:LabeledCheckBox ID="cbIsClosedFilter" runat="server" LabelText="Is Closed" />        
             <Rock:LabeledDropDownList ID="ddlBatchType" runat="server" LabelText="Batch Type" />
@@ -16,7 +16,7 @@
             <Columns> 
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                <asp:BoundField DataField="BatchDate" HeaderText="Date Range" SortExpression="BatchDate" />
+                <asp:TemplateField  HeaderText="Date Range"  />  <%--SortExpression="BatchDateStart"--%>
                 <Rock:BoolField DataField="IsClosed" HeaderText="Is Closed" SortExpression="IsClosed" />
                 
                 <asp:TemplateField HeaderText="Control Amount" />
@@ -47,7 +47,8 @@
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" LabelText="Title"
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
-                         <Rock:DateTimePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Batch Date" />
+                         <Rock:DateTimePicker ID="dtBatchDateStart" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="Batch Date Start" />
+                         <Rock:DateTimePicker ID="dtBatchDateEnd" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Batch Date End" />
            
                         <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
                         <Rock:LabeledDropDownList ID="ddlEntity" runat="server" LabelText="Entity" />
