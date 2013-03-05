@@ -20,7 +20,7 @@ namespace Rock.Workflow.Action
     [Description( "Set the workflow status" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Set Status")]
-    [TextField( "EmailTemplate", "The email template to send" )]
+    [EmailTemplateField( "EmailTemplate", "The email template to send" )]
     [TextField( "Recipient", "The email address to send to" )]
     public class SendEmail : ActionComponent
     {
@@ -41,7 +41,7 @@ namespace Rock.Workflow.Action
 
             if ( entity != null )
             {
-                mergeObjects.Add( "Entity", entity );
+                mergeObjects.Add( entity.GetType().Name, entity );
             }
 
             recipients.Add( recipientEmail, mergeObjects );
