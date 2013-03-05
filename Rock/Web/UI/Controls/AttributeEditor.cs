@@ -16,7 +16,7 @@ using Attribute = Rock.Model.Attribute;
 
 namespace Rock.Web.UI.Controls
 {
-    public class RockAttributeEditor : CompositeControl
+    public class AttributeEditor : CompositeControl
     {
         #region UI Controls
 

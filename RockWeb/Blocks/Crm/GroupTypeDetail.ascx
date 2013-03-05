@@ -113,11 +113,11 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlGroupTypeAttribute" runat="server" Visible="false">
-            <Rock:RockAttributeEditor ID="edtGroupTypeAttributes" runat="server" OnSaveClick="btnSaveGroupTypeAttribute_Click" OnCancelClick="btnCancelGroupTypeAttribute_Click" />
+            <Rock:AttributeEditor ID="edtGroupTypeAttributes" runat="server" OnSaveClick="btnSaveGroupTypeAttribute_Click" OnCancelClick="btnCancelGroupTypeAttribute_Click" />
         </asp:Panel>
 
         <asp:Panel ID="pnlGroupAttribute" runat="server" Visible="false">
-            <Rock:RockAttributeEditor ID="edtGroupAttributes" runat="server" OnSaveClick="btnSaveGroupAttribute_Click" OnCancelClick="btnCancelGroupAttribute_Click" />
+            <Rock:AttributeEditor ID="edtGroupAttributes" runat="server" OnSaveClick="btnSaveGroupAttribute_Click" OnCancelClick="btnCancelGroupAttribute_Click" />
         </asp:Panel>
 
     </ContentTemplate>

@@ -78,7 +78,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlDefinedTypeAttributes" runat="server" Visible="false">
-            <Rock:RockAttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" />
+            <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" />
         </asp:Panel>
 
         <asp:Panel ID="pnlDefinedValueEditor" runat="server" Visible="false">
