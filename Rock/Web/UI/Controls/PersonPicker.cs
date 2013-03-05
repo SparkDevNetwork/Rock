@@ -175,6 +175,26 @@ namespace Rock.Web.UI.Controls
             }}
         }});
 
+        $('a.rock-picker').click(function (e) {{
+            e.preventDefault();
+            $(this).next('.rock-picker').show();
+        }});
+
+        $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {{
+            var selectedItem = $(this).attr('data-person-id');
+
+            // hide other open details
+            $('.rock-picker-select-item-details').each(function (index) {{
+                var currentItem = $(this).parent().attr('data-person-id');
+
+                if (currentItem != selectedItem) {{
+                    $(this).slideUp();
+                }}
+            }});
+
+            $(this).find('.rock-picker-select-item-details:hidden').slideDown();
+        }});
+
         $('#btnCancel_{0}').click(function (e) {{
             $(this).parent().slideUp();
         }});
