@@ -355,6 +355,10 @@
     <Compile Include="Migrations\201303041612175_MenuToolsGroupViewer.Designer.cs">
       <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303051350444_WorkflowTrigger.cs" />
+    <Compile Include="Migrations\201303051350444_WorkflowTrigger.Designer.cs">
+      <DependentUpon>201303051350444_WorkflowTrigger.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1166,6 +1170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303041612175_MenuToolsGroupViewer.resx">
       <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303051350444_WorkflowTrigger.resx">
+      <DependentUpon>201303051350444_WorkflowTrigger.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

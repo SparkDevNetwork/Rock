@@ -36,7 +36,7 @@ WHERE [Guid] = '1A233978-5BF4-4A09-9B86-6CC4C081F48B'
 " );
 
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
