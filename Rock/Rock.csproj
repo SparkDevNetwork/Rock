@@ -351,6 +351,10 @@
     <Compile Include="Migrations\201303012246258_AddBinaryFileType.Designer.cs">
       <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303051333062_WorkflowTrigger.cs" />
+    <Compile Include="Migrations\201303051333062_WorkflowTrigger.Designer.cs">
+      <DependentUpon>201303051333062_WorkflowTrigger.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1158,6 +1162,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303012246258_AddBinaryFileType.resx">
       <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303051333062_WorkflowTrigger.resx">
+      <DependentUpon>201303051333062_WorkflowTrigger.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
