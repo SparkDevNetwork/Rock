@@ -351,9 +351,9 @@
     <Compile Include="Migrations\201303012246258_AddBinaryFileType.Designer.cs">
       <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201303051333062_WorkflowTrigger.cs" />
-    <Compile Include="Migrations\201303051333062_WorkflowTrigger.Designer.cs">
-      <DependentUpon>201303051333062_WorkflowTrigger.cs</DependentUpon>
+    <Compile Include="Migrations\201303041612175_MenuToolsGroupViewer.cs" />
+    <Compile Include="Migrations\201303041612175_MenuToolsGroupViewer.Designer.cs">
+      <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
@@ -484,6 +484,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
@@ -1163,8 +1164,8 @@
     <EmbeddedResource Include="Migrations\201303012246258_AddBinaryFileType.resx">
       <DependentUpon>201303012246258_AddBinaryFileType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303051333062_WorkflowTrigger.resx">
-      <DependentUpon>201303051333062_WorkflowTrigger.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201303041612175_MenuToolsGroupViewer.resx">
+      <DependentUpon>201303041612175_MenuToolsGroupViewer.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

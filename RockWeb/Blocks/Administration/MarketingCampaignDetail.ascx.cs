@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Event Page")]
+    [LinkedPage( "Event Page" )]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Administration
                 // Controls will render the error messages                    
                 return;
             }
-            
+
             RockTransactionScope.WrapTransaction( () =>
             {
                 /* Save MarketingCampaignAudiences to db */
@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Administration
         {
             // Controls on Main Campaign Panel
             GroupService groupService = new GroupService();
-            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid(Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES) ) ).OrderBy( a => a.Name ).ToList();
+            List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES ) ) ).OrderBy( a => a.Name ).ToList();
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlEventGroup.DataSource = groups;
             ddlEventGroup.DataBind();
@@ -390,7 +390,10 @@ namespace RockWeb.Blocks.Administration
             cpCampuses.SelectedCampusIds = marketingCampaign.MarketingCampaignCampuses.Select( a => a.CampusId ).ToList();
 
             MarketingCampaignAudiencesState = new ViewStateList<MarketingCampaignAudience>();
-            MarketingCampaignAudiencesState.AddAll( marketingCampaign.MarketingCampaignAudiences.ToList() );
+            foreach ( var item in marketingCampaign.MarketingCampaignAudiences.ToList() )
+            {
+                MarketingCampaignAudiencesState.Add( new MarketingCampaignAudience { Id = item.Id, AudienceTypeValue = item.AudienceTypeValue, IsPrimary = item.IsPrimary, AudienceTypeValueId = item.AudienceTypeValueId } );
+            }
 
             BindMarketingCampaignAudiencesGrid();
         }
@@ -402,10 +405,10 @@ namespace RockWeb.Blocks.Administration
         private void ShowReadonlyDetails( MarketingCampaign marketingCampaign )
         {
             SetEditMode( false );
-            
+
             // set title.text value even though it is hidden so that Ad Edit can get the title of the campaign
             tbTitle.Text = marketingCampaign.Title;
-            
+
             // make a Description section for nonEdit mode
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -425,7 +428,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
                 {
-                    var page = new PageService().Get(new Guid(eventPageGuid));
+                    var page = new PageService().Get( new Guid( eventPageGuid ) );
 
                     Dictionary<string, string> queryString = new Dictionary<string, string>();
                     queryString.Add( "groupId", marketingCampaign.EventGroupId.ToString() );
