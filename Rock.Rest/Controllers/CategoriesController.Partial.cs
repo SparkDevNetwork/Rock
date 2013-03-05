@@ -66,7 +66,7 @@ namespace Rock.Rest.Controllers
                     // Get the GetByCategory method
                     if ( cachedEntityType.AssemblyName != null )
                     {
-                        Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                        Type entityType = cachedEntityType.GetEntityType();
                         if ( entityType != null )
                         {
                             Type[] modelType = { entityType };
