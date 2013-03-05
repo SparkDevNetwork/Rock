@@ -12,22 +12,24 @@
         if (e.originalEvent.propertyName && e.originalEvent.propertyName != "isvalid") return;
 
         var controlToValidate = $("#" + this.controltovalidate);
-        var validators = controlToValidate.attr("Validators");
-        if (validators == null) return;
+        if (controlToValidate == null) return;
 
         var isValid = true;
-        $(validators).each(function () {
-            if (this.isvalid !== true) {
-                isValid = false;
-            }
+        
+        $(controlToValidate).each(function () {
+            $(this.Validators).each(function () {
+                if (this.isvalid !== true) {
+                    isValid = false;
+                }
+            });
         });
 
         this.innerHTML = '';
 
         if (isValid) {
-            controlToValidate.parents($('dl')).removeClass("error");
+            controlToValidate.parents($('div.control-group')).removeClass("error");
         } else {
-            controlToValidate.parents($('dl')).addClass("error");
+            controlToValidate.parents($('div.control-group')).addClass("error");
         }
     });
 
