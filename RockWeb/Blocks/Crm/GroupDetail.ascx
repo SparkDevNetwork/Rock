@@ -86,7 +86,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlGroupMemberAttribute" runat="server" Visible="false">
-            <Rock:RockAttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
+            <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
         </asp:Panel>
 
     </ContentTemplate>

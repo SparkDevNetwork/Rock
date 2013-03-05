@@ -49,7 +49,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlBinaryFileAttribute" runat="server" Visible="false">
-            <Rock:RockAttributeEditor ID="edtBinaryFileAttributes" runat="server" OnSaveClick="btnSaveBinaryFileAttribute_Click" OnCancelClick="btnCancelBinaryFileAttribute_Click" />
+            <Rock:AttributeEditor ID="edtBinaryFileAttributes" runat="server" OnSaveClick="btnSaveBinaryFileAttribute_Click" OnCancelClick="btnCancelBinaryFileAttribute_Click" />
         </asp:Panel>
 
     </ContentTemplate>
