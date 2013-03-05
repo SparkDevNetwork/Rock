@@ -46,11 +46,11 @@ namespace RockWeb.Blocks.Utility
             {
                 entityTypeId = 0;
             }
-            var entityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
-            if ( entityType != null )
+            var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
+            if ( cachedEntityType != null )
             {
-                EntityTypeName = entityType.Name;
-                lbAddItem.ToolTip = "Add " + entityType.FriendlyName;
+                EntityTypeName = cachedEntityType.Name;
+                lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
@@ -78,13 +78,13 @@ namespace RockWeb.Blocks.Utility
                     int id = 0;
                     if ( int.TryParse( itemId, out id ) )
                     {
-                        if ( entityType != null )
+                        if ( cachedEntityType != null )
                         {
-                            Type type = Type.GetType( entityType.AssemblyName );
+                            Type entityType = cachedEntityType.GetEntityType();
                             if ( entityType != null )
                             {
                                 Type serviceType = typeof( Rock.Data.Service<> );
-                                Type[] modelType = { type };
+                                Type[] modelType = { entityType };
                                 Type service = serviceType.MakeGenericType( modelType );
                                 var serviceInstance = Activator.CreateInstance( service );
                                 var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );

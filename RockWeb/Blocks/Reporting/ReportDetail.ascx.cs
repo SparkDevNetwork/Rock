@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Reporting
                 var cachedEntityType = EntityTypeCache.Read( report.EntityTypeId.Value );
                 if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
                 {
-                    Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                    Type entityType = cachedEntityType.GetEntityType();
                     if ( entityType != null )
                     {
                         BuildGridColumns( entityType );

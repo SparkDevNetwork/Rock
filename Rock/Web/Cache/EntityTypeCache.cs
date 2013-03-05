@@ -104,6 +104,19 @@ namespace Rock.Web.Cache
         #region Methods
 
         /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <returns></returns>
+        public Type GetEntityType()
+        {
+            if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+            {
+                return Type.GetType( this.AssemblyName );
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>

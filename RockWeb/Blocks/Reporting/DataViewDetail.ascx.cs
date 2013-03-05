@@ -516,7 +516,7 @@ $(document).ready(function() {
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
             {
-                Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                Type entityType = cachedEntityType.GetEntityType();
                 if ( entityType != null )
                 {
                     BuildGridColumns( entityType );
