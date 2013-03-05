@@ -24,14 +24,14 @@ namespace Rock.Model
         public IQueryable<FinancialBatch> Get(BatchSearchValue searchValue)
         {
             var batches = Repository.AsQueryable();
-           if (searchValue.DateRange.From.HasValue)
-            {
-                batches = batches.Where(batch => batch.BatchDate >= searchValue.DateRange.From.Value);
-            }
-            if (searchValue.DateRange.To.HasValue)
-            {
-                batches = batches.Where(batch => batch.BatchDate <= searchValue.DateRange.To.Value);
-            }
+           //if (searchValue.DateRange.From.HasValue)
+           // {
+           //     batches = batches.Where(batch => batch.BatchStartDate >= searchValue.DateRange.From.Value);
+           // }
+           // if (searchValue.DateRange.To.HasValue)
+           // {
+           //     batches = batches.Where(batch => batch.BatchEndDate <= searchValue.DateRange.To.Value);
+           // }
             if (searchValue.BatchTypeValueId.HasValue)
             {
                 batches = batches.Where(batch => batch.BatchTypeValueId == searchValue.BatchTypeValueId.Value);
