@@ -15,7 +15,7 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <Rock:DataDropDownList ID="ddlPageName" runat="server" DataTextField="DropDownListText" DataValueField="Id" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" LabelText="Page Title" />
+                <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
                 <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Model.PageRoute, Rock" PropertyName="Route" />
             </fieldset>
 

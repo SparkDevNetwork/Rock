@@ -8,7 +8,6 @@
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
-        AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
     }
     
 </script>

@@ -10,6 +10,11 @@
  * @version 1.81
  * @author Maarten Baijs
  *
+    Rock specific changes:
+        + Fixed up issues when a tinyscrollbar container is used within another tinyscrollbar container
+            + function wheel( event ) and function drag ( event ) now only adjusts the content if the event.target's scroll container matches this's scrollbar's container
+            + new function getParentScrollContainerNode()
+        + Proper functionality now requires the scroll container to have css class 'scroll-container'
  */
 ;( function( $ ) 
 {
@@ -64,7 +69,7 @@
 
         function initialize()
         {
-            oSelf.update();
+			oSelf.update();
             setEvents();
 
             return oSelf;
@@ -72,7 +77,7 @@
 
         this.update = function( sScroll )
         {
-            oViewport[ options.axis ] = oViewport.obj[0][ 'offset'+ sSize ];
+			oViewport[ options.axis ] = oViewport.obj[0][ 'offset'+ sSize ];
             oContent[ options.axis ]  = oContent.obj[0][ 'scroll'+ sSize ];
             oContent.ratio            = oViewport[ options.axis ] / oContent[ options.axis ];
 
@@ -91,7 +96,7 @@
 
         function setSize()
         {
-            var sCssSize = sSize.toLowerCase();
+			var sCssSize = sSize.toLowerCase();
 
             oThumb.obj.css( sDirection, iScroll / oScrollbar.ratio );
             oContent.obj.css( sDirection, -iScroll );
@@ -104,7 +109,7 @@
 
         function setEvents()
         {
-            if( ! touchEvents )
+			if( ! touchEvents )
             {
                 oThumb.obj.bind( 'mousedown', start );
                 oTrack.obj.bind( 'mouseup', drag );
@@ -137,7 +142,7 @@
 
         function start( event )
         {
-            $( "body" ).addClass( "noSelect" );
+			$( "body" ).addClass( "noSelect" );
 
             var oThumbDir   = parseInt( oThumb.obj.css( sDirection ), 10 );
             iMouse.start    = sAxis ? event.pageX : event.pageY;
@@ -160,11 +165,30 @@
             }
         }
 
+        function getParentScrollContainerNode(sender) {
+            var parent = sender.parentNode;
+            while (parent) {
+                if (parent.className) {
+                    if (parent.className.split(' ').indexOf('scroll-container') >= 0) {
+                        return parent;
+                    }
+                }
+                var parent = parent.parentNode;
+            }
+
+            return null;
+        }
+
         function wheel( event )
         {
-            if( oContent.ratio < 1 )
+            if (getParentScrollContainerNode(oScrollbar.obj[0]) != getParentScrollContainerNode(event.target)) {
+                // do nothing if this event target was for another scroll-container 
+                return true;
+            }
+			
+			if( oContent.ratio < 1 )
             {
-                var oEvent = event || window.event
+			    var oEvent = event || window.event
                 ,   iDelta = oEvent.wheelDelta ? oEvent.wheelDelta / 120 : -oEvent.detail / 3
                 ;
 
@@ -184,7 +208,12 @@
 
         function drag( event )
         {
-            if( oContent.ratio < 1 )
+            if (getParentScrollContainerNode(oScrollbar.obj[0]) != getParentScrollContainerNode(event.target)) {
+                // do nothing if this event target was for another scroll-container 
+                return true;
+            }
+
+			if( oContent.ratio < 1 )
             {
                 if( options.invertscroll && touchEvents )
                 {
@@ -192,7 +221,7 @@
                 }
                 else
                 {
-                     iPosition.now = Math.min( ( oTrack[ options.axis ] - oThumb[ options.axis ] ), Math.max( 0, ( iPosition.start + ( ( sAxis ? event.pageX : event.pageY ) - iMouse.start))));
+                    iPosition.now = Math.min( ( oTrack[ options.axis ] - oThumb[ options.axis ] ), Math.max( 0, ( iPosition.start + ( ( sAxis ? event.pageX : event.pageY ) - iMouse.start))));
                 }
 
                 iScroll = iPosition.now * oScrollbar.ratio;
@@ -203,7 +232,7 @@
         
         function end()
         {
-            $( "body" ).removeClass( "noSelect" );
+			$( "body" ).removeClass( "noSelect" );
             $( document ).unbind( 'mousemove', drag );
             $( document ).unbind( 'mouseup', end );
             oThumb.obj.unbind( 'mouseup', end );
