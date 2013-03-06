@@ -6,6 +6,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -101,11 +102,11 @@ namespace Rock.Web.UI.Controls
                 var parentPage = page.ParentPage;
                 while ( parentPage != null )
                 {
-                    parentPageIds += parentPage.Id + ",";
+                    parentPageIds = parentPage.Id + "," + parentPageIds;
                     parentPage = parentPage.ParentPage;
                 }
 
-                hfInitialPageParentIds.Value = parentPageIds;
+                hfInitialPageParentIds.Value = parentPageIds.TrimEnd( new char[] { ',' } );
                 PageName = page.Name;
             }
             else
@@ -157,10 +158,8 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
         $('a.rock-picker').click(function (e) {{
             e.preventDefault();
-            $(this).next('.rock-picker').show();
-
-            debugger 
-
+            $(this).next('.rock-picker').toggle();
+            updateScrollbar(e);
         }});
 
         $('#btnCancel_{0}').click(function (e) {{
@@ -168,8 +167,6 @@ namespace Rock.Web.UI.Controls
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
-            
-            debugger
             var treeViewData = $('#treeviewPages_{0}').data('kendoTreeView');
             var selectedNode = treeViewData.select();
             var nodeData = treeViewData.dataItem(selectedNode);
@@ -222,13 +219,25 @@ namespace Rock.Web.UI.Controls
         return initialPageItem;
     }}
 
+    function updateScrollbar(e) {{
+        $('#treeview-scroll-container_{0}').tinyscrollbar_update('relative');
+
+        var modalDialog = $('#modal-scroll-container');
+        if (modalDialog) {{
+            if (modalDialog.is(':visible')) {{
+                modalDialog.tinyscrollbar_update('relative');
+            }}
+        }}
+    }}
+
     function onDataBound(e) {{
         // select the item specified in the page param in the treeview if there isn't one currently selected
         var treeViewData = $('#treeviewPages_{0}').data('kendoTreeView');
         var selectedNode = treeViewData.select();
         var nodeData = this.dataItem(selectedNode);
+
         if (!nodeData) {{
-            var initialPageId = $('#hfInitialPageId_{0}').val();
+            var initialPageId = $('#hfPageId_{0}').val();
             var initialPageParentIds = $('#hfInitialPageParentIds_{0}').val();
             var initialPageItem = findChildItemInTree(treeViewData, initialPageId, initialPageParentIds);
             if (initialPageId) {{
@@ -242,7 +251,7 @@ namespace Rock.Web.UI.Controls
             }}
         }}
 
-        $('#treeview-scroll-container_{0}').tinyscrollbar_update('relative');
+        updateScrollbar(e);        
     }}
 
     var restUrl = '{1}';
@@ -273,10 +282,12 @@ namespace Rock.Web.UI.Controls
         template: ""<i class='icon-file-alt'></i> #= item.Name #"",
         dataSource: pageList,
         dataTextField: 'Name',
-        dataBound: onDataBound
+        dataBound: onDataBound,
+        expand: updateScrollbar,
+        collapse: updateScrollbar
     }});
 
-    $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 100 }});
+    $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
 ";
 
             string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( "~/api/pages/getchildren/" ) );
@@ -336,6 +347,8 @@ namespace Rock.Web.UI.Controls
         {
             if ( SelectPage != null )
             {
+                var page = new PageService().Get( hfPageId.ValueAsInt() );
+                this.SetValue( page );
                 SelectPage( sender, e );
             }
         }
@@ -366,7 +379,7 @@ namespace Rock.Web.UI.Controls
                 </div>
                 <div class='viewport'>
                     <div class='overview'>
-                        <div id='treeviewPages_{0}' class='tree-view tree-view-pages'></div>
+                        <div id='treeviewPages_{0}' class='tree-view tree-view-pages'></div>        
                     </div>
                 </div>
             </div>
@@ -375,11 +388,22 @@ namespace Rock.Web.UI.Controls
 ";
             string controlHtmlFormatEnd = @"
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
+            
         </div>
     </div>
 </div>
 ";
 
+            string controlHtmlFormatDisabled = @"
+<div class='control-group' id='{0}'>
+    <div class='controls'>
+
+            <i class='icon-file-alt'></i>
+            <span id='selectedPageLabel_{0}'>{1}</span>
+
+    </div>
+</div>
+";
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -394,19 +418,26 @@ namespace Rock.Web.UI.Controls
             hfInitialPageParentIds.RenderControl( writer );
             hfPageName.RenderControl( writer );
 
-            writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PageName ) );
-
-            // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-            if ( SelectPage != null )
+            if ( this.Enabled )
             {
-                btnSelect.RenderControl( writer );
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PageName ) );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectPage != null )
+                {
+                    btnSelect.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select Page</a>", this.ID ) );
+                }
+
+                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PageName ) );
             }
             else
             {
-                writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select Page</a>", this.ID ) );
+                writer.Write( string.Format(controlHtmlFormatDisabled, this.ID, this.PageName) );
             }
-
-            writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PageName ) );
 
             writer.RenderEndTag();
 

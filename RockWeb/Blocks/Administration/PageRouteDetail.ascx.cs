@@ -58,17 +58,6 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            PageService pageService = new PageService();
-            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
-            ddlPageName.DataSource = allPages.OrderBy( a => a.PageSortHash );
-            ddlPageName.DataBind();
-        }
-
-        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -95,10 +84,8 @@ namespace RockWeb.Blocks.Administration
                 lActionTitle.Text = ActionTitle.Add( PageRoute.FriendlyTypeName );
             }
 
-            LoadDropDowns();
-
             hfPageRouteId.Value = pageRoute.Id.ToString();
-            ddlPageName.SetValue( pageRoute.PageId );
+            ppPage.SetValue( pageRoute.Page );
             tbRoute.Text = pageRoute.Route;
 
             // render UI based on Authorized and IsSystem
@@ -123,7 +110,7 @@ namespace RockWeb.Blocks.Administration
                 btnCancel.Text = "Close";
             }
 
-            ddlPageName.Enabled = !readOnly;
+            ppPage.Enabled = !readOnly;
             tbRoute.ReadOnly = readOnly;
             btnSave.Visible = !readOnly;
         }
@@ -161,7 +148,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             pageRoute.Route = tbRoute.Text.Trim();
-            int selectedPageId = int.Parse( ddlPageName.SelectedValue );
+            int selectedPageId = int.Parse( ppPage.SelectedValue );
             pageRoute.PageId = selectedPageId;
 
             // check for duplicates
