@@ -56,6 +56,11 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
+            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            {
+                HttpInternals.RockWebFileChangeMonitor();
+            }
+            
             // Check if database should be auto-migrated
             bool autoMigrate = true;
             if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
@@ -500,7 +505,7 @@ namespace RockWeb
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
                     string shutDownStack = (string)runtime.GetType().InvokeMember( "_shutDownStack", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
-                    WriteToEventLog( String.Format( "shutDownMessage:\r\n{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ), EventLogEntryType.Warning );
+                    WriteToEventLog( String.Format( "shutDownMessage:{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ), EventLogEntryType.Warning );
                 }
             }
             catch
