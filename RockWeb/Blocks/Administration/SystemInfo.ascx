@@ -46,8 +46,9 @@
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
         </div>
         
-        <a id="show-cache-objects" href="#">Show Cache Objects</a>
-        
+        <a id="show-cache-objects" href="#">Show Cache Objects</a> 
+        <asp:Button runat="server" ID="btnFlushCache" CssClass="btn" Text="Flush Cache" OnClick="btnFlushCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />
+
         <div id="cache-objects" style="display:none">
             <asp:Literal ID="lCacheObjects" runat="server"></asp:Literal>
         </div>
