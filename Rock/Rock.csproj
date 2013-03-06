@@ -492,6 +492,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />
     <Compile Include="Web\UI\Controls\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
