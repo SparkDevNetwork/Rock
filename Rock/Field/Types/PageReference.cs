@@ -65,7 +65,7 @@ namespace Rock.Field.Types
             if ( ppPage != null )
             {
                 Guid pageGuid = Guid.Empty;
-                int? pageId = ppPage.PageId.AsInteger();
+                int? pageId = ppPage.ItemId.AsInteger();
 
                 var page = new PageService().Get( pageId ?? 0 );
                 if ( page != null )
