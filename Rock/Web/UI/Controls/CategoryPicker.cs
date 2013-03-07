@@ -65,17 +65,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the item rest URL extra params.
-        /// </summary>
-        /// <value>
-        /// The item rest URL extra params.
-        /// </value>
-        public override string ItemRestUrlExtraParams
-        {
-            get { return "/" + ViewState["CategoryEntityTypeName"] as string + "/false"; }
-        }
-
-        /// <summary>
         /// Sets the type of the category entity.
         /// </summary>
         /// <value>
@@ -85,7 +74,7 @@ namespace Rock.Web.UI.Controls
         {
             set
             {
-                ViewState["CategoryEntityTypeName"] = value;
+                ItemRestUrlExtraParams = "/" + value + "/false";
             }
         }
     }

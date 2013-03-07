@@ -21,6 +21,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfItemId;
         private HiddenField hfInitialItemParentIds;
         private HiddenField hfItemName;
+        private HiddenField hfItemRestUrlExtraParams;
         private LinkButton btnSelect;
 
         /// <summary>
@@ -29,7 +30,27 @@ namespace Rock.Web.UI.Controls
         protected HiddenFieldValidator requiredValidator;
 
         public abstract string ItemRestUrl { get; }
-        public abstract string ItemRestUrlExtraParams { get; }
+
+        /// <summary>
+        /// Gets or sets the item rest URL extra params.
+        /// </summary>
+        /// <value>
+        /// The item rest URL extra params.
+        /// </value>
+        public string ItemRestUrlExtraParams
+        {
+            get
+            {
+                EnsureChildControls();
+                return hfItemRestUrlExtraParams.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                hfItemRestUrlExtraParams.Value = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the label text.
@@ -312,7 +333,8 @@ namespace Rock.Web.UI.Controls
         transport: {{
             read: {{
                 url: function (options) {{
-                    var requestUrl = '{1}' + (options.Id || 0) + '{2}'
+                    var extraParams = $('#hfItemRestUrlExtraParams_{0}').val(); 
+                    var requestUrl = '{1}' + (options.Id || 0) + '' + extraParams + '';
                     return requestUrl;
                 }},
                 error: function (xhr, status, error) {{
@@ -343,7 +365,7 @@ namespace Rock.Web.UI.Controls
     $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
 ";
 
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ), ItemRestUrlExtraParams );
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ));
             
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID.ToString(), treeViewScript, true );
             
@@ -419,14 +441,17 @@ namespace Rock.Web.UI.Controls
             label = new Label();
             literal = new Literal();
             hfItemId = new HiddenField();
-            hfItemId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            hfItemId.ClientIDMode = ClientIDMode.Static;
             hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
             hfInitialItemParentIds = new HiddenField();
             hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
             hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
             hfItemName = new HiddenField();
-            hfItemName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            hfItemName.ClientIDMode = ClientIDMode.Static;
             hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
+            hfItemRestUrlExtraParams = new HiddenField();
+            hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
+            hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
 
             btnSelect = new LinkButton();
             btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
@@ -441,6 +466,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( hfItemId );
             Controls.Add( hfInitialItemParentIds );
             Controls.Add( hfItemName );
+            Controls.Add( hfItemRestUrlExtraParams );
             Controls.Add( btnSelect );
 
             requiredValidator = new HiddenFieldValidator();
@@ -527,6 +553,7 @@ namespace Rock.Web.UI.Controls
             hfItemId.RenderControl( writer );
             hfInitialItemParentIds.RenderControl( writer );
             hfItemName.RenderControl( writer );
+            hfItemRestUrlExtraParams.RenderControl( writer );
 
             if ( this.Enabled )
             {

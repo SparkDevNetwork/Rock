@@ -363,6 +363,10 @@
     <Compile Include="Migrations\201303051729314_WorkflowNameNotRequired.Designer.cs">
       <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.cs" />
+    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.Designer.cs">
+      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1184,6 +1188,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303051729314_WorkflowNameNotRequired.resx">
       <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303072129452_CategoryDetailBlockEntityType.resx">
+      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

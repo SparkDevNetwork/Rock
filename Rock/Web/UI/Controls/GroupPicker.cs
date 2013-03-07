@@ -17,6 +17,16 @@ namespace Rock.Web.UI.Controls
     public class GroupPicker : ItemPicker
     {
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            ItemRestUrlExtraParams = "/0/false/0";
+        }
+        
+        /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -63,18 +73,5 @@ namespace Rock.Web.UI.Controls
         {
             get { return "~/api/groups/getchildren/"; }
         }
-
-        /// <summary>
-        /// Gets the item rest URL extra params.
-        /// </summary>
-        /// <value>
-        /// The item rest URL extra params.
-        /// </value>
-        public override string ItemRestUrlExtraParams
-        {
-            get { return "/0/false/0"; }
-        }
-
-        
     }
 }
