@@ -72,6 +72,7 @@ namespace Rock.Rest.Controllers
             foreach ( var g in pageItemList )
             {
                 g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
+                g.IconCssClass = "icon-file-alt";
             }
 
             return pageItemList.AsQueryable();
@@ -106,5 +107,13 @@ namespace Rock.Rest.Controllers
         /// <c>true</c> if this instance has children; otherwise, <c>false</c>.
         /// </value>
         public bool HasChildren { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass { get; set; }
     }
 }

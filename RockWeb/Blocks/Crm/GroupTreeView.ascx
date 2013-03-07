@@ -96,10 +96,10 @@
             });
 
             $('#treeviewGroups').kendoTreeView({
-                template: "<i class='#= item.GroupTypeIconCssClass #'></i> #= item.Name #",
+                template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
                 dataSource: groupList,
                 dataTextField: 'Name',
-                dataImageUrlField: 'GroupTypeIconSmallUrl',
+                dataImageUrlField: 'IconSmallUrl',
                 select: onSelect,
                 dataBound: onDataBound
             });
