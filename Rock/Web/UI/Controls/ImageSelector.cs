@@ -96,11 +96,11 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
 
-            string script = string.Format( 
+            string script = string.Format(
 @"
     $(document).ready(function() {{
 
-        function ConfigureImageUploaders(sender, args) {{
+        function ConfigureImageUploader{0}(sender, args) {{
             $('#{0}').kendoUpload({{
                 multiple: false,
                 showFileList: false,
@@ -112,7 +112,7 @@ namespace Rock.Web.UI.Controls
 
                     if (e.operation == 'upload' && e.response != '0') {{
                         $('#{1}').val(e.response);
-                        $('#{2}').attr('src','')
+                        $('#{2}').attr('src','');
                         $('#{2}').hide();             
                         $('#{2}').attr('src','{4}Image.ashx?id=' + e.response + '&width=50&height=50');
                         $('#{2}').show('fast', function() {{ 
@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
         }}
 
         // configure image uploaders         
-        ConfigureImageUploaders(null, null);
+        ConfigureImageUploader{0}(null, null);
     }});
         ",
                             fileUpload.ClientID,

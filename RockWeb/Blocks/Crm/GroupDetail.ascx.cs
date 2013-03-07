@@ -129,6 +129,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         qryParams["groupId"] = parentGroupId;
                     }
+
                     NavigateToPage( this.CurrentPage.Guid, qryParams );
                 }
                 else
@@ -263,9 +264,15 @@ namespace RockWeb.Blocks.Crm
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
             group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
-            group.ParentGroupId = ddlParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlParentGroup.SelectedValue );
+            group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+
+            if ( group.ParentGroupId == group.Id )
+            {
+                gpParentGroup.ShowErrorMessage( "Group cannot be a Parent Group of itself." );
+                return;
+            }
 
             // check for duplicates within GroupType
             if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
@@ -373,23 +380,8 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns( int currentGroupId )
+        private void LoadDropDowns()
         {
-            GroupService groupService = new GroupService();
-
-            // optimization to only fetch Id, Name from db.  Also, only get groups of a GroupType that allow children
-            var qryGroup = from g in groupService.Queryable()
-                           where g.Id != currentGroupId
-                           where g.GroupType.ChildGroupTypes.Any()
-                           orderby g.Name
-                           select new { Id = g.Id, Name = g.Name };
-
-            List<Group> groups = qryGroup.ToList().ConvertAll<Group>( a => new Group { Id = a.Id, Name = a.Name } );
-
-            groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
-            ddlParentGroup.DataSource = groups;
-            ddlParentGroup.DataBind();
-
             CampusService campusService = new CampusService();
             List<Campus> campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
             campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
@@ -415,8 +407,8 @@ namespace RockWeb.Blocks.Crm
             }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
-            int? parentGroupId = ddlParentGroup.SelectedValueAsInt();
-            if ( parentGroupId != null )
+            int? parentGroupId = gpParentGroup.SelectedValueAsInt;
+            if ( (parentGroupId ?? 0) != 0 )
             {
                 Group parentGroup = new GroupService().Get( parentGroupId.Value );
                 List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
@@ -545,15 +537,15 @@ namespace RockWeb.Blocks.Crm
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
 
-            LoadDropDowns( group.Id );
+            LoadDropDowns();
 
             GroupMemberAttributesState = new ViewStateList<Attribute>();
 
-            ddlParentGroup.SetValue( group.ParentGroupId );
+            gpParentGroup.SetValue( group.ParentGroup );
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
-            ddlParentGroup.LabelText = "Parent Group";
+            gpParentGroup.LabelText = "Parent Group";
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {

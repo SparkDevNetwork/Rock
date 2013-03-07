@@ -14,19 +14,22 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class PagePicker : CompositeControl, ILabeledControl
+    public abstract class ItemPicker : CompositeControl, ILabeledControl
     {
         private Label label;
         private Literal literal;
-        private HiddenField hfPageId;
-        private HiddenField hfInitialPageParentIds;
-        private HiddenField hfPageName;
+        private HiddenField hfItemId;
+        private HiddenField hfInitialItemParentIds;
+        private HiddenField hfItemName;
         private LinkButton btnSelect;
 
         /// <summary>
         /// The required validator
         /// </summary>
         protected HiddenFieldValidator requiredValidator;
+
+        public abstract string ItemRestUrl { get; }
+        public abstract string ItemRestUrlExtraParams { get; }
 
         /// <summary>
         /// Gets or sets the label text.
@@ -50,28 +53,54 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the page id.
+        /// Gets or sets the item id.
         /// </summary>
         /// <value>
-        /// The page id.
+        /// The item id.
         /// </value>
-        public string PageId
+        public string ItemId
         {
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfPageId.Value ) )
+                if ( string.IsNullOrWhiteSpace( hfItemId.Value ) )
                 {
-                    hfPageId.Value = Rock.Constants.None.IdValue;
+                    hfItemId.Value = Rock.Constants.None.IdValue;
                 }
 
-                return hfPageId.Value;
+                return hfItemId.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfPageId.Value = value;
+                hfItemId.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the initial item parent ids.
+        /// </summary>
+        /// <value>
+        /// The initial item parent ids.
+        /// </value>
+        public string InitialItemParentIds
+        {
+            get
+            {
+                EnsureChildControls();
+                if ( string.IsNullOrWhiteSpace( hfInitialItemParentIds.Value ) )
+                {
+                    hfInitialItemParentIds.Value = Rock.Constants.None.IdValue;
+                }
+
+                return hfInitialItemParentIds.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                hfInitialItemParentIds.Value = value;
             }
         }
 
@@ -85,71 +114,69 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return PageId;
+                return ItemId;
             }
 
             private set
             {
-                PageId = value;
+                ItemId = value;
             }
         }
 
         /// <summary>
-        /// Sets the value.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        public void SetValue( Rock.Model.Page page )
-        {
-            if ( page != null )
-            {
-                PageId = page.Id.ToString();
-                
-                string parentPageIds = string.Empty;
-                var parentPage = page.ParentPage;
-                while ( parentPage != null )
-                {
-                    parentPageIds = parentPage.Id + "," + parentPageIds;
-                    parentPage = parentPage.ParentPage;
-                }
-
-                hfInitialPageParentIds.Value = parentPageIds.TrimEnd( new char[] { ',' } );
-                PageName = page.Name;
-            }
-            else
-            {
-                PageId = Rock.Constants.None.IdValue;
-                PageName = Rock.Constants.None.TextHtml;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the page.
+        /// Gets the selected value as int.
         /// </summary>
         /// <value>
-        /// The name of the page.
+        /// The selected value as int.
         /// </value>
-        public string PageName
+        public int? SelectedValueAsInt
+        {
+            get
+            {
+                if ( string.IsNullOrWhiteSpace( ItemId ) )
+                {
+                    return null;
+                }
+                else
+                {
+                    return int.Parse(ItemId);
+                }
+            }
+
+            private set
+            {
+                ItemId = value == null ? string.Empty : value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>
+        /// The name of the item.
+        /// </value>
+        public string ItemName
         {
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfPageName.Value ) )
+                if ( string.IsNullOrWhiteSpace( hfItemName.Value ) )
                 {
-                    hfPageName.Value = Rock.Constants.None.TextHtml;
+                    hfItemName.Value = Rock.Constants.None.TextHtml;
                 }
 
-                return hfPageName.Value;
+                return hfItemName.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfPageName.Value = value;
+                hfItemName.Value = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="PagePicker"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="ItemPicker"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -176,11 +203,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Occurs when [select page].
-        /// </summary>
-        public event EventHandler SelectPage;
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -200,7 +222,7 @@ namespace Rock.Web.UI.Controls
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
-            var treeViewData = $('#treeviewPages_{0}').data('kendoTreeView');
+            var treeViewData = $('#treeviewItems_{0}').data('kendoTreeView');
             var selectedNode = treeViewData.select();
             var nodeData = treeViewData.dataItem(selectedNode);
             var selectedValue = '0';
@@ -211,16 +233,16 @@ namespace Rock.Web.UI.Controls
                 selectedText = nodeData.Name;
             }}
 
-            var selectedPageLabel = $('#selectedPageLabel_{0}');
+            var selectedItemLabel = $('#selectedItemLabel_{0}');
 
-            var hiddenPageId = $('#hfPageId_{0}');
-            var hiddenPageName = $('#hfPageName_{0}');
+            var hiddenItemId = $('#hfItemId_{0}');
+            var hiddenItemName = $('#hfItemName_{0}');
 
-            hiddenPageId.val(selectedValue);
-            hiddenPageName.val(selectedText);
+            hiddenItemId.val(selectedValue);
+            hiddenItemName.val(selectedText);
 
-            selectedPageLabel.val(selectedValue);
-            selectedPageLabel.text(selectedText);
+            selectedItemLabel.val(selectedValue);
+            selectedItemLabel.text(selectedText);
 
             $(this).parent().slideUp();
         }});
@@ -228,16 +250,16 @@ namespace Rock.Web.UI.Controls
 
             string script = string.Format( scriptFormat, this.ID);
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "page_picker-" + this.ID.ToString(), script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-" + this.ID.ToString(), script, true );
 
             string treeViewScriptFormat = @"
 
-    function findChildItemInTree{0}(treeViewData, pageId, pageParentIds) {{
-        if (pageParentIds != '') {{
-            var pageParentList = pageParentIds.split(',');
-            for (var i = 0; i < pageParentList.length; i++) {{
-                var parentPageId = pageParentList[i];
-                var parentItem = treeViewData.dataSource.get(parentPageId);
+    function findChildItemInTree{0}(treeViewData, itemId, itemParentIds) {{
+        if (itemParentIds != '') {{
+            var itemParentList = itemParentIds.split(',');
+            for (var i = 0; i < itemParentList.length; i++) {{
+                var parentItemId = itemParentList[i];
+                var parentItem = treeViewData.dataSource.get(parentItemId);
                 var parentNodeItem = treeViewData.findByUid(parentItem.uid);
                 if (!parentItem.expanded && parentItem.hasChildren) {{
                     // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
@@ -247,14 +269,13 @@ namespace Rock.Web.UI.Controls
             }}
         }}
 
-        var initialPageItem = treeViewData.dataSource.get(pageId);
+        var initialItemItem = treeViewData.dataSource.get(itemId);
 
-        return initialPageItem;
+        return initialItemItem;
     }}
 
     function updateScrollbar{0}(e) {{
         $('#treeview-scroll-container_{0}').tinyscrollbar_update('relative');
-
         var modalDialog = $('#modal-scroll-container');
         if (modalDialog) {{
             if (modalDialog.is(':visible')) {{
@@ -264,18 +285,18 @@ namespace Rock.Web.UI.Controls
     }}
 
     function onDataBound{0}(e) {{
-        // select the item specified in the page param in the treeview if there isn't one currently selected
-        var treeViewData = $('#treeviewPages_{0}').data('kendoTreeView');
+        // select the item specified in the item param in the treeview if there isn't one currently selected
+        var treeViewData = $('#treeviewItems_{0}').data('kendoTreeView');
         var selectedNode = treeViewData.select();
         var nodeData = this.dataItem(selectedNode);
 
         if (!nodeData) {{
-            var initialPageId = $('#hfPageId_{0}').val();
-            var initialPageParentIds = $('#hfInitialPageParentIds_{0}').val();
-            var initialPageItem = findChildItemInTree{0}(treeViewData, initialPageId, initialPageParentIds);
-            if (initialPageId) {{
-                if (initialPageItem) {{
-                    var firstItem = treeViewData.findByUid(initialPageItem.uid);
+            var initialItemId = $('#hfItemId_{0}').val();
+            var initialItemParentIds = $('#hfInitialItemParentIds_{0}').val();
+            var initialItemItem = findChildItemInTree{0}(treeViewData, initialItemId, initialItemParentIds);
+            if (initialItemId) {{
+                if (initialItemItem) {{
+                    var firstItem = treeViewData.findByUid(initialItemItem.uid);
                     var firstDataItem = this.dataItem(firstItem);
                     if (firstDataItem) {{
                         treeViewData.select(firstItem);
@@ -287,11 +308,11 @@ namespace Rock.Web.UI.Controls
         updateScrollbar{0}(e);        
     }}
 
-    var pageList{0} = new kendo.data.HierarchicalDataSource({{
+    var itemList{0} = new kendo.data.HierarchicalDataSource({{
         transport: {{
             read: {{
                 url: function (options) {{
-                    var requestUrl = '{1}' + (options.id || 0);
+                    var requestUrl = '{1}' + (options.Id || 0) + '{2}'
                     return requestUrl;
                 }},
                 error: function (xhr, status, error) {{
@@ -309,9 +330,9 @@ namespace Rock.Web.UI.Controls
         }}
     }});
 
-    $('#treeviewPages_{0}').kendoTreeView({{
+    $('#treeviewItems_{0}').kendoTreeView({{
         template: ""<i class='#= item.IconCssClass #'></i> #= item.Name #"",
-        dataSource: pageList{0},
+        dataSource: itemList{0},
         dataTextField: 'Name',
         dataImageUrlField: 'IconSmallUrl',
         dataBound: onDataBound{0},
@@ -322,9 +343,9 @@ namespace Rock.Web.UI.Controls
     $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
 ";
 
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( "~/api/pages/getchildren/" ) );
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ), ItemRestUrlExtraParams );
             
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "page_picker-treeviewscript_" + this.ID.ToString(), treeViewScript, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID.ToString(), treeViewScript, true );
             
             var sm = ScriptManager.GetCurrent( this.Page );
 
@@ -347,6 +368,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <summary>
+        /// Handles the Click event of the btnSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void btnSelect_Click( object sender, EventArgs e )
+        {
+            SetValueOnSelect();
+            if ( SelectItem != null )
+            {
+                SelectItem( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Sets the value on select.
+        /// </summary>
+        protected abstract void SetValueOnSelect();
+
+        /// <summary>
+        /// Occurs when [select item].
+        /// </summary>
+        public event EventHandler SelectItem;
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public void ShowErrorMessage( string errorMessage )
+        {
+            requiredValidator.ErrorMessage = errorMessage;
+            requiredValidator.IsValid = false;
+        }
+        
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -357,56 +418,40 @@ namespace Rock.Web.UI.Controls
 
             label = new Label();
             literal = new Literal();
-            hfPageId = new HiddenField();
-            hfPageId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            hfPageId.ID = string.Format( "hfPageId_{0}", this.ID );
-            hfInitialPageParentIds = new HiddenField();
-            hfInitialPageParentIds.ClientIDMode = ClientIDMode.Static;
-            hfInitialPageParentIds.ID = string.Format( "hfInitialPageParentIds_{0}", this.ID );
-            hfPageName = new HiddenField();
-            hfPageName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            hfPageName.ID = string.Format( "hfPageName_{0}", this.ID );
+            hfItemId = new HiddenField();
+            hfItemId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
+            hfInitialItemParentIds = new HiddenField();
+            hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
+            hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
+            hfItemName = new HiddenField();
+            hfItemName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
 
             btnSelect = new LinkButton();
             btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             btnSelect.CssClass = "btn btn-mini btn-primary";
             btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            btnSelect.Text = "Select Page";
+            btnSelect.Text = "Select Item";
             btnSelect.CausesValidation = false;
             btnSelect.Click += btnSelect_Click;
 
             Controls.Add( label );
             Controls.Add( literal );
-            Controls.Add( hfPageId );
-            Controls.Add( hfInitialPageParentIds );
-            Controls.Add( hfPageName );
+            Controls.Add( hfItemId );
+            Controls.Add( hfInitialItemParentIds );
+            Controls.Add( hfItemName );
             Controls.Add( btnSelect );
 
             requiredValidator = new HiddenFieldValidator();
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.InitialValue = "0";
-            requiredValidator.ControlToValidate = hfPageId.ID;
+            requiredValidator.ControlToValidate = hfItemId.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
             requiredValidator.CssClass = "validation-error";
             requiredValidator.Enabled = false;
 
             Controls.Add( requiredValidator );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSelect control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnSelect_Click( object sender, EventArgs e )
-        {
-            if ( SelectPage != null )
-            {
-                var page = new PageService().Get( hfPageId.ValueAsInt() );
-                this.SetValue( page );
-                SelectPage( sender, e );
-            }
         }
 
         /// <summary>
@@ -420,10 +465,10 @@ namespace Rock.Web.UI.Controls
     <div class='controls'>
         <a class='rock-picker' href='#'>
             <i class='icon-folder-open'></i>
-            <span id='selectedPageLabel_{0}'>{1}</span>
+            <span id='selectedItemLabel_{0}'>{1}</span>
             <b class='caret'></b>
         </a>
-        <div class='dropdown-menu rock-picker rock-picker-page'>
+        <div class='dropdown-menu rock-picker rock-picker-item'>
 
             <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
                 <div class='scrollbar'>
@@ -435,7 +480,7 @@ namespace Rock.Web.UI.Controls
                 </div>
                 <div class='viewport'>
                     <div class='overview'>
-                        <div id='treeviewPages_{0}' class='tree-view tree-view-pages'></div>        
+                        <div id='treeviewItems_{0}' class='tree-view tree-view-items'></div>        
                     </div>
                 </div>
             </div>
@@ -455,7 +500,7 @@ namespace Rock.Web.UI.Controls
     <div class='controls'>
 
             <i class='icon-file-alt'></i>
-            <span id='selectedPageLabel_{0}'>{1}</span>
+            <span id='selectedItemLabel_{0}'>{1}</span>
 
     </div>
 </div>
@@ -479,29 +524,29 @@ namespace Rock.Web.UI.Controls
             }
 
 
-            hfPageId.RenderControl( writer );
-            hfInitialPageParentIds.RenderControl( writer );
-            hfPageName.RenderControl( writer );
+            hfItemId.RenderControl( writer );
+            hfInitialItemParentIds.RenderControl( writer );
+            hfItemName.RenderControl( writer );
 
             if ( this.Enabled )
             {
-                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PageName ) );
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.ItemName ) );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectPage != null )
+                if ( SelectItem != null )
                 {
                     btnSelect.RenderControl( writer );
                 }
                 else
                 {
-                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select Page</a>", this.ID ) );
+                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
                 }
 
-                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PageName ) );
+                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.ItemName ) );
             }
             else
             {
-                writer.Write( string.Format(controlHtmlFormatDisabled, this.ID, this.PageName) );
+                writer.Write( string.Format(controlHtmlFormatDisabled, this.ID, this.ItemName) );
             }
 
             writer.RenderEndTag();
