@@ -35,7 +35,7 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The error messages.
         /// </value>
-        public List<string> ErrorMessages { get; set; }  
+        public List<string> ErrorMessages { get; set; }
 
         /// <summary>
         /// Exports the page.
@@ -135,6 +135,11 @@ namespace Rock.Services.NuGet
             var exportFile = packageFiles.FirstOrDefault( f => f.Path.Contains( "export.json" ) );
             Page page = null;
 
+            // If export.json is present, deserialize data
+            // * Are there any new BlockTypes to register? If so, save them first.
+            // * Scrub out any `Id` and `Guid` fields that came over from export
+            // * Save page data via PageService
+
             if ( exportFile != null )
             {
                 string json;
@@ -147,42 +152,47 @@ namespace Rock.Services.NuGet
                 page = Page.FromJson( json );
             }
 
+            // Validate package...
+            // + Does it have any executable .dll files? Should those go to the bin folder, or into a plugins directory to be loaded via MEF?
+            // - Does it have code or asset files that need to go on the file system? (Done)
+            // - Does it have an export.json file? Should that be a requirement? (Done)
+            // + Does it have any corresponding SQL, migrations, seed methods to run, etc.
+
             if ( page != null )
             {
-                var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService().Queryable() );
-                ValidateImportData( page, newBlockTypes );
+                // Find new block types and save them prior to scrubbing data...
+                var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService().Queryable() ).ToList();
+                RockTransactionScope.WrapTransaction( () =>
+                    {
+                        try
+                        {
+                            var service = new BlockTypeService();
+                            var pageService = new PageService();
 
-                try
-                {
-                    var pageService = new PageService();
-                    pageService.Add( page, personId );
-                    pageService.Save( page, personId );
-                    ExpandFiles( package, packageFiles, path );
-                }
-                catch ( Exception e )
-                {
-                    ErrorMessages.Add( e.Message );
-                    return false;
-                }
+                            foreach ( var blockType in newBlockTypes )
+                            {
+                                service.Add( blockType, personId );
+                                service.Save( blockType, personId );
+                            }
 
-                return true;
+                            ValidateImportData( page, newBlockTypes );
+                            pageService.Add( page, personId );
+                            pageService.Save( page, personId );
+                            ExpandFiles( package, packageFiles, path );
+                        }
+                        catch ( Exception e )
+                        {
+                            ErrorMessages.Add( e.Message );
+                        }
+                    });
+
+                // Clean up PackageStaging folder.
+                // Once data is saved, do we want to save the .nuspec file for later?
+                return ErrorMessages.Count <= 0;
             }
 
             ErrorMessages.Add( "The export package uploaded does not appear to have any data associated with it." );
             return false;
-
-            // Validate package...
-            // * Does it have any executable .dll files? Should those go to the bin folder, or into a plugins directory to be loaded via MEF?
-            // * Does it have code or asset files that need to go on the file system?
-            // * Does it have an export.json file? Should that be a requirement?
-
-            // If export.json is present, deserialize data
-            // * Are there any new BlockTypes to register? If so, save them first.
-            // * Scrub out any `Id` and `Guid` fields that came over from export
-            // * Save page data via PageService
-
-            // Clean up PackageStaging folder.
-            // Once data is saved, do we want to save the .nuspec file for later?
         }
 
         /// <summary>
@@ -301,13 +311,15 @@ namespace Rock.Services.NuGet
         {
             var newBlockTypes = new List<BlockType>();
             installedBlockTypes = installedBlockTypes.ToList();
-            
+
             foreach ( var block in page.Blocks ?? new List<Block>() )
             {
                 var blockType = block.BlockType;
 
                 if ( installedBlockTypes.All( b => b.Path != blockType.Path ) && !newBlockTypes.Contains( blockType ) )
                 {
+                    // Scrub out the Id from any previous Rock installation
+                    blockType.Id = 0;
                     newBlockTypes.Add( blockType );
                 }
             }
@@ -330,6 +342,8 @@ namespace Rock.Services.NuGet
             ScrubIds( page );
             page.PageContexts.ToList().ForEach( ScrubIds );
             page.PageRoutes.ToList().ForEach( ScrubIds );
+            // TODO: HtmlContent is no longer a property of Block. Need to engineer a way
+            // for an entity to register a collection of things it needs to import and export.
             var blockTypes = newBlockTypes.ToList();
 
             foreach ( var block in page.Blocks ?? new List<Block>() )
@@ -338,7 +352,8 @@ namespace Rock.Services.NuGet
 
                 if ( blockType == null )
                 {
-                    throw new ArgumentException(string.Format( "BlockType was not found by its path: {0}", block.BlockType.Path ));
+                    // If we get here, we should be able to assume the blockType is already installed.
+                    continue;
                 }
 
                 ScrubIds( block );

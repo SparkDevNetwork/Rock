@@ -13,6 +13,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Services.NuGet;
 using Rock.Web.UI.Controls;
@@ -266,7 +267,12 @@ namespace RockWeb.Blocks.Administration
             if ( fuImport.PostedFile != null )
             {
                 var packageService = new PackageService();
-                var importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id );
+                bool importResult;
+
+                using ( new UnitOfWorkScope() )
+                {
+                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id );   
+                }
 
                 if ( !importResult )
                 {
