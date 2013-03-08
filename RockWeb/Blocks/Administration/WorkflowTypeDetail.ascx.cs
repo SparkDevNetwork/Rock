@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Administration
 
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
-            workflowType.CategoryId = ddlCategory.SelectedValueAsInt();
+            workflowType.CategoryId = cpCategory.SelectedValueAsInt;
             workflowType.Order = int.Parse( tbOrder.Text );
             workflowType.WorkTerm = tbWorkTerm.Text;
             if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
@@ -394,12 +394,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            CategoryService categoryService = new CategoryService();
-            var catList = categoryService.Queryable().OrderBy( a => a.Name ).ToList();
-            catList.Insert( 0, new Category { Id = None.Id, Name = None.Text } );
-            ddlCategory.DataSource = catList;
-            ddlCategory.DataBind();
-
             ddlLoggingLevel.BindToEnum( typeof( WorkflowLoggingLevel ) );
         }
 
@@ -494,7 +488,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cbIsActive.Checked = workflowType.IsActive ?? false;
-            ddlCategory.SetValue( workflowType.CategoryId );
+            cpCategory.SetValue( workflowType.Category );
             tbWorkTerm.Text = workflowType.WorkTerm;
             tbOrder.Text = workflowType.Order.ToString();
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
