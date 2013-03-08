@@ -358,8 +358,7 @@ namespace Rock.Web.UI.Controls
         dataTextField: 'Name',
         dataImageUrlField: 'IconSmallUrl',
         dataBound: onDataBound{0},
-        expand: updateScrollbar{0},
-        collapse: updateScrollbar{0}
+        select: updateScrollbar{0}
     }});
 
     $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
