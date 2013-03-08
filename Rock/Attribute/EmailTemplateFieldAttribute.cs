@@ -26,7 +26,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public EmailTemplateFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeIds = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultGroupTypeIds, category, order, key, typeof( Rock.Field.Types.EmailTemplateField ).FullName )
+            : base( name, description, required, defaultGroupTypeIds, category, order, key, typeof( Rock.Field.Types.EmailTemplateFieldType ).FullName )
         {
         }
     }

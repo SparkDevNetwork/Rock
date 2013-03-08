@@ -16,7 +16,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) Group
     /// </summary>
-    public class GroupField : FieldType
+    public class GroupFieldType : FieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value

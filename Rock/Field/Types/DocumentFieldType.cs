@@ -11,7 +11,7 @@ namespace Rock.Field.Types
     /// Field used to save and dispaly a document
     /// </summary>
     [Serializable]
-    public class Document : FieldType
+    public class DocumentFieldType : FieldType
     {
     }
 }
