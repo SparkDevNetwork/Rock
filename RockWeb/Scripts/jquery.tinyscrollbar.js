@@ -53,11 +53,11 @@
     {
         var oSelf       = this
         ,   oWrapper    = root
-        ,   oViewport   = { obj: $( '.viewport', root ) }
-        ,   oContent    = { obj: $( '.overview', root ) }
-        ,   oScrollbar  = { obj: $( '.scrollbar', root ) }
-        ,   oTrack      = { obj: $( '.track', oScrollbar.obj ) }
-        ,   oThumb      = { obj: $( '.thumb', oScrollbar.obj ) }
+        ,   oViewport   = { obj: $( '.viewport', root ).first() }
+        ,   oContent    = { obj: $( '.overview', root).first() }
+        ,   oScrollbar  = { obj: $( '.scrollbar', root).first() }
+        ,   oTrack      = { obj: $( '.track', oScrollbar.obj).first() }
+        ,   oThumb      = { obj: $( '.thumb', oScrollbar.obj).first() }
         ,   sAxis       = options.axis === 'x'
         ,   sDirection  = sAxis ? 'left' : 'top'
         ,   sSize       = sAxis ? 'Width' : 'Height'
@@ -77,11 +77,11 @@
 
         this.update = function( sScroll )
         {
-			oViewport[ options.axis ] = oViewport.obj[0][ 'offset'+ sSize ];
-            oContent[ options.axis ]  = oContent.obj[0][ 'scroll'+ sSize ];
+            oViewport[options.axis] = oViewport.obj[0]['offset' + sSize];
+            oContent[ options.axis ]  = oContent.obj[0][ 'scroll'+ sSize ] + 10;
             oContent.ratio            = oViewport[ options.axis ] / oContent[ options.axis ];
-
-            oScrollbar.obj.toggleClass( 'disable', oContent.ratio >= 1 );
+                
+            oScrollbar.obj.toggleClass('disable', oContent.ratio >= 1);
 
             oTrack[ options.axis ] = options.size === 'auto' ? oViewport[ options.axis ] : options.size;
             oThumb[ options.axis ] = Math.min( oTrack[ options.axis ], Math.max( 0, ( options.sizethumb === 'auto' ? ( oTrack[ options.axis ] * oContent.ratio ) : options.sizethumb ) ) );
