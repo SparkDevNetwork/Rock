@@ -235,10 +235,12 @@ DECLARE @DefinedTypeId int
 INSERT INTO [DefinedType] ([IsSystem],[FieldTypeId], [Order],[Name],[Guid]) VALUES (1, @fieldTypeIdText, 0,'Device Type',NEWID())
 SET @DefinedTypeId = SCOPE_IDENTITY()
 DECLARE @DeviceTypeValueId int
+DECLARE @PrinterTypevalueId int
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,0,'Check-in Kiosk','BC809626-1389-4543-B8BB-6FAC79C27AFD')
 SET @DeviceTypeValueId = SCOPE_IDENTITY()
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,1,'Giving Kiosk','64A1DBE5-10AD-42F1-A9BA-646A781D4112')
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,2,'Printer','8284B128-E73B-4863-9FC2-43E6827B65E6')
+SET @PrinterTypevalueId = SCOPE_IDENTITY()
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,3,'Digital Signage','01B585B1-389D-4C86-A9DA-267A8564699D')
 
 DELETE [Definedtype] WHERE Name = 'CheckIn Search Type'
@@ -247,8 +249,13 @@ SET @DefinedTypeId = SCOPE_IDENTITY()
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,0,'Phone Number','F3F66040-C50F-4D13-9652-780305FFFE23')
 INSERT INTO [DefinedValue] ([IsSystem],[DefinedTypeId],[Order],[Name],[Guid]) VALUES (1,@DefinedTypeId,1,'Barcode','9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE')
 
-INSERT INTO [Device] ([Name],[DeviceTypeValueId],[PrintFrom],[PrintToOverride],[Guid])
-SELECT C.Name + ':' + B.Name + ':' + R.Name, @DeviceTypeValueId, 0, 1, NEWID()
+DECLARE @PrinterDeviceId int
+INSERT INTO [Device] ([Name],[DeviceTypeValueId],[IPAddress],[PrintFrom],[PrintToOverride],[Guid])
+VALUES ('Test Label Printer',@PrinterTypevalueId, '10.1.20.200',0,1,NEWID())
+SET @PrinterDeviceId = SCOPE_IDENTITY()
+
+INSERT INTO [Device] ([Name],[DeviceTypeValueId],[PrinterDeviceId],[PrintFrom],[PrintToOverride],[Guid])
+SELECT C.Name + ':' + B.Name + ':' + R.Name, @DeviceTypeValueId, @PrinterDeviceId, 0, 1, NEWID()
 FROM Location C
 INNER JOIN Location B
 	ON B.ParentLocationId = C.Id
