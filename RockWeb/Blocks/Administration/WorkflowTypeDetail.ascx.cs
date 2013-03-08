@@ -613,21 +613,21 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = false;
             vsDetails.Enabled = false;
             pnlWorkflowTypeAttributes.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
             }
             else
             {
                 AttributeService attributeService = new AttributeService();
                 attribute = attributeService.Get( attributeGuid );
-                actionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
             }
 
-            edtWorkflowTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtWorkflowTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -678,18 +678,19 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute;
+            Attribute attribute = null;
             AttributeService attributeService = new AttributeService();
-            if ( edtWorkflowTypeAttributes.AttributeId.Equals( 0 ) )
+            if ( edtWorkflowTypeAttributes.AttributeId.HasValue )
+            {
+                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId.Value );
+            }
+
+            if (attribute == null)
             {
                 attribute = new Attribute();
             }
-            else
-            {
-                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId );
-            }
 
-            edtWorkflowTypeAttributes.GetAttributeValues( attribute );
+            edtWorkflowTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

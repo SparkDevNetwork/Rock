@@ -80,9 +80,9 @@ namespace Rock.Web.UI.Controls
                     // Write Name
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-key" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue[0] );
                     writer.AddAttribute( "placeholder", "Key" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.Write( nameAndValue[0] );
                     writer.RenderEndTag();
                     writer.WriteLine();
 
@@ -90,8 +90,8 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "span4 key-value-value" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                     writer.AddAttribute( "placeholder", "Value" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue[1] );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.Write( nameAndValue[1] );
                     writer.RenderEndTag();
                     writer.WriteLine();
 
@@ -99,7 +99,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-remove" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-ninus-sign" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-minus-sign" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();

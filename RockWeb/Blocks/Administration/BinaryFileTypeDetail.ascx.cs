@@ -305,20 +305,20 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = false;
             pnlBinaryFileAttribute.Visible = true;
+            
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for binary files of type " + tbName.Text );
+                edtBinaryFileAttributes.ActionTitle = ActionTitle.Add( "attribute for binary files of type " + tbName.Text );
             }
             else
             {
                 attribute = BinaryFileAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for binary files of type " + tbName.Text );
+                edtBinaryFileAttributes.ActionTitle = ActionTitle.Edit( "attribute for binary files of type " + tbName.Text );
             }
 
-            edtBinaryFileAttributes.EditAttribute( attribute, actionTitle );
+            edtBinaryFileAttributes.SetAttributeProperties( attribute);
         }
 
         /// <summary>
@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnSaveBinaryFileAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtBinaryFileAttributes.GetAttributeValues( attribute );
+            edtBinaryFileAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

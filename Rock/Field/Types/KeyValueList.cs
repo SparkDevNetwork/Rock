@@ -73,7 +73,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            if ( value!= null && control != null && control is Rock.Web.UI.Controls.KeyValueList )
             {
                 ( (Rock.Web.UI.Controls.KeyValueList)control ).Value = value;
             }

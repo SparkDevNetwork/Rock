@@ -32,7 +32,9 @@ namespace Rock.Field.Types
             Type colors = typeof( System.Drawing.Color );
             PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );
             foreach ( PropertyInfo info in colorInfo )
+            {
                 ddl.Items.Add( new ListItem( info.Name, info.Name ) );
+            }
 
             return ddl;
         }
@@ -46,7 +48,10 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is DropDownList )
-                return ( ( DropDownList )control ).SelectedValue;
+            {
+                return ( (DropDownList)control ).SelectedValue;
+            }
+            
             return null;
         }
 
@@ -58,8 +63,14 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is DropDownList )
-                ( ( DropDownList )control ).SelectedValue = value;
+            if ( value != null )
+            {
+                if ( control != null && control is DropDownList )
+                {
+                    ( (DropDownList)control ).SelectedValue = value;
+                }
+            }
         }
+
     }
 }
