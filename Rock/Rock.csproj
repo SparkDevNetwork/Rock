@@ -104,6 +104,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\CampusFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
       <SubType>Code</SubType>
@@ -146,6 +148,8 @@
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\CampusesFieldType.cs" />
+    <Compile Include="Field\Types\CampusFieldType.cs" />
+    <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
       <SubType>Code</SubType>
     </Compile>

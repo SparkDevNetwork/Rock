@@ -183,7 +183,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 if ( string.IsNullOrWhiteSpace( hfItemName.Value ) )
                 {
-                    hfItemName.Value = Rock.Constants.None.TextHtml;
+                    hfItemName.Value = Rock.Constants.None.Text;
                 }
 
                 return hfItemName.Value;
@@ -247,7 +247,7 @@ namespace Rock.Web.UI.Controls
             var selectedNode = treeViewData.select();
             var nodeData = treeViewData.dataItem(selectedNode);
             var selectedValue = '0';
-            var selectedText = '&lt;none&gt;';
+            var selectedText = '<none>';
 
             if (nodeData) {{
                 selectedValue = nodeData.Id;
