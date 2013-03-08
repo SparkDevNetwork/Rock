@@ -28,6 +28,15 @@ namespace Rock.CheckIn
         public int? PrinterDeviceId { get; set; }
 
         /// <summary>
+        /// Gets or sets the printer address.
+        /// </summary>
+        /// <value>
+        /// The printer address.
+        /// </value>
+        [DataMember]
+        public string PrinterAddress { get; set; }
+
+        /// <summary>
         /// Gets or sets the print from.
         /// </summary>
         /// <value>
@@ -90,6 +99,7 @@ namespace Rock.CheckIn
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "PrinterDeviceId", PrinterDeviceId );
+            dictionary.Add( "PrinterAddress", PrinterAddress );
             dictionary.Add( "PrintFrom", PrintFrom.ConvertToString() );
             dictionary.Add( "PrintTo", PrintTo.ConvertToString() );
             dictionary.Add( "LabelFile", LabelFile );

@@ -530,6 +530,28 @@ namespace Rock.Model
             }
         }
 
+        public virtual int DaysToBirthday
+        {
+            get
+            {
+                if ( BirthDay == null || BirthMonth == null )
+                {
+                    return int.MaxValue;
+                }
+                else
+                {
+                    var today = DateTime.Today;
+                    var birthdate = Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + today.Year.ToString() );
+                    if ( birthdate.CompareTo( today ) < 0 )
+                    {
+                        birthdate = birthdate.AddYears( 1 );
+                    }
+
+                    return Convert.ToInt32( birthdate.Subtract( today ).TotalDays );
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the fractional age
         /// </summary>
@@ -603,6 +625,7 @@ namespace Rock.Model
             dictionary.Add( "FullNameLastFirst", FullNameLastFirst );
             dictionary.Add( "BirthDate", BirthDate );
             dictionary.Add( "Age", AgePrecise );
+            dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
  
