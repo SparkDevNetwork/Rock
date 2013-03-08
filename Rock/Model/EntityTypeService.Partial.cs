@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Rock;
 using Rock.Data;
 
@@ -30,27 +31,68 @@ namespace Rock.Model
         /// <summary>
         /// Gets the specified type, and optionally creates new type if not found.
         /// </summary>
-        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="type">The type.</param>
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public EntityType Get(string entityName, bool createIfNotFound, int? personId )
+        public EntityType Get( Type type, bool createIfNotFound, int? personId )
         {
-            var entityType = Get( entityName );
+            var entityType = Get( type.FullName );
             if ( entityType != null )
                 return entityType;
 
             if ( createIfNotFound )
             {
                 entityType = new EntityType();
-                entityType.Name = entityName;
-                this.Add(entityType, personId);
-                this.Save(entityType, personId);
+                entityType.Name = type.FullName;
+                entityType.FriendlyName = type.Name.SplitCase();
+                entityType.AssemblyName = type.AssemblyQualifiedName;
+
+                this.Add( entityType, personId );
+                this.Save( entityType, personId );
 
                 return entityType;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="friendlyName">Name of the friendly.</param>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        public EntityType Get( string name, bool createIfNotFound, int? personId )
+        {
+            var entityType = Get( name );
+            if ( entityType != null )
+                return entityType;
+
+            if ( createIfNotFound )
+            {
+                entityType = new EntityType();
+                entityType.Name = name;
+
+                this.Add( entityType, personId );
+                this.Save( entityType, personId );
+
+                return entityType;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the entities that have the IsEntity flag set to true
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<EntityType> GetEntities()
+        {
+            return Repository.AsQueryable()
+                .Where( e => e.IsEntity );
         }
 
         /// <summary>
@@ -68,12 +110,12 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
                 var entityType = new EntityType();
-                entityType.Name = type.Value.FullName;
+                entityType.Name = type.Key;
                 entityType.FriendlyName = type.Value.Name.SplitCase();
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                 entityType.IsEntity = true;
                 entityType.IsSecured = false;
-                entityTypes.Add( type.Value.FullName, entityType );
+                entityTypes.Add( type.Key, entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
@@ -81,19 +123,19 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
-                if ( entityTypes.ContainsKey( type.Value.FullName ) )
+                if ( entityTypes.ContainsKey( type.Key ) )
                 {
-                    entityTypes[type.Value.FullName].IsSecured = true;
+                    entityTypes[type.Key].IsSecured = true;
                 }
                 else
                 {
                     var entityType = new EntityType();
-                    entityType.Name = type.Value.FullName;
+                    entityType.Name = type.Key;
                     entityType.FriendlyName = type.Value.Name.SplitCase();
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Value.FullName, entityType);
+                    entityTypes.Add( type.Key, entityType );
                 }
             }
 
@@ -115,19 +157,30 @@ namespace Rock.Model
             {
                 var entityType = entityTypes[existingEntityType.Name];
 
-                existingEntityType.IsEntity = entityType.IsEntity;
-                existingEntityType.IsSecured = entityType.IsSecured;
-                existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
-                existingEntityType.AssemblyName = entityType.AssemblyName;
-                Save( existingEntityType, null );
+                if ( existingEntityType.IsEntity != entityType.IsEntity ||
+                    existingEntityType.IsSecured != entityType.IsSecured ||
+                    existingEntityType.FriendlyName != ( existingEntityType.FriendlyName ?? entityType.FriendlyName ) ||
+                    existingEntityType.AssemblyName != entityType.AssemblyName )
+                {
+                    existingEntityType.IsEntity = entityType.IsEntity;
+                    existingEntityType.IsSecured = entityType.IsSecured;
+                    existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
+                    existingEntityType.AssemblyName = entityType.AssemblyName;
+                    Save( existingEntityType, null );
+                }
                 entityTypes.Remove( entityType.Name );
             }
 
-            // Add the newly discovered entities
+            // Add the newly discovered entities 
             foreach ( var entityTypeInfo in entityTypes )
             {
-                this.Add( entityTypeInfo.Value, null );
-                this.Save( entityTypeInfo.Value, null );
+                // Don't add the EntityType entity as it will probably have been automatically 
+                // added by the audit on a previous save in this method.
+                if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                {
+                    this.Add( entityTypeInfo.Value, null );
+                    this.Save( entityTypeInfo.Value, null );
+                }
             }
         }
 

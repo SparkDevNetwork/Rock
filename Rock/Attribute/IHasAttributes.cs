@@ -24,7 +24,7 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute categories.
         /// </value>
-        SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
@@ -45,6 +45,15 @@ namespace Rock.Attribute
         /// </value>
         Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
+        /// <summary>
+        /// Gets the attribute value defaults.  This property can be used by a subclass to override the parent class's default
+        /// value for an attribute
+        /// </summary>
+        /// <value>
+        /// The attribute value defaults.
+        /// </value>
+        Dictionary<string, string> AttributeValueDefaults { get; }        
+        
         /// <summary>
         /// Gets the first value of an attribute key.
         /// </summary>

@@ -15,6 +15,72 @@ namespace Rock.Migrations
     public abstract class RockMigration : DbMigration
     {
 
+        #region Field Type Methods
+
+        /// <summary>
+        /// Adds the type of the field.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddFieldType( string name, string description, string assembly, string className, string guid )
+        {
+            Sql( string.Format( @"
+                
+                INSERT INTO [FieldType] (
+                    [IsSystem],[Name],[Description],[Assembly],[Class],
+                    [Guid])
+                VALUES(
+                    1,'{0}','{1}','{2}','{3}',
+                    '{4}')
+",
+                    name,
+                    description.Replace( "'", "''" ),
+                    assembly,
+                    className,
+                    guid
+                    ) );
+        }
+
+        /// <summary>
+        /// Adds the type of the field.
+        /// </summary>
+        /// <param name="fieldType">Type of the field.</param>
+        public void AddFieldType( FieldType fieldType )
+        {
+            Sql( string.Format( @"
+                INSERT INTO [FieldType] (
+                    [IsSystem],[Name],[Description],[Assembly],[Class],
+                    [Guid])
+                VALUES(
+                    {0},'{1}','{2}','{3}','{4}',
+                    '{5}')
+",
+                    fieldType.IsSystem.Bit(),
+                    fieldType.Name,
+                    fieldType.Assembly,
+                    fieldType.Class,
+                    fieldType.Description.Replace( "'", "''" ),
+                    fieldType.Guid ) );
+        }
+
+        /// <summary>
+        /// Deletes the type of the field.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteFieldType( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [FieldType] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
         #region Block Type Methods
 
         /// <summary>
@@ -96,7 +162,7 @@ namespace Rock.Migrations
         }
 
         #endregion
-
+        
         #region Page Methods
 
         /// <summary>
@@ -224,6 +290,25 @@ namespace Rock.Migrations
         }
 
         /// <summary>
+        /// Adds the page route.
+        /// </summary>
+        /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="route">The route.</param>
+        public void AddPageRoute( string parentPageGuid, string route )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                INSERT INTO [PageRoute] (
+                    [IsSystem],[PageId],[Route],[Guid])
+                VALUES(
+                    1, @PageId, '{1}', newid())
+", parentPageGuid, route ) );
+
+        }
+        /// <summary>
         /// Defaults the system page.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -264,9 +349,18 @@ namespace Rock.Migrations
         /// <param name="zone">The zone.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid)
+        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid )
         {
             var sb = new StringBuilder();
+            string layoutParam;
+            if ( string.IsNullOrWhiteSpace( layout ) )
+            {
+                layoutParam = "NULL";
+            }
+            else
+            {
+                layoutParam = string.Format( "'{0}'", layout );
+            }
 
             sb.Append( @"
                 DECLARE @PageId int
@@ -293,7 +387,7 @@ namespace Rock.Migrations
                     [Order],[Name],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,'{5}',@BlockTypeId,'{1}',
+                    1,@PageId,{5},@BlockTypeId,'{1}',
                     {2},'{3}',0,
                     '{4}')
                 SET @BlockId = SCOPE_IDENTITY()
@@ -303,7 +397,7 @@ namespace Rock.Migrations
                     order,
                     name,
                     guid,
-                    layout);
+                    layoutParam );
 
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )

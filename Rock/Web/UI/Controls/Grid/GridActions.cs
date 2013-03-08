@@ -127,10 +127,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl"/> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object, for display on the client.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             aAdd.Visible = IsAddEnabled && !String.IsNullOrWhiteSpace( ClientAddScript );
             lbAdd.Visible = IsAddEnabled && String.IsNullOrWhiteSpace( ClientAddScript );
@@ -138,7 +138,7 @@ namespace Rock.Web.UI.Controls
             aExcelExport.Visible = IsExcelExportEnabled && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
             lbExcelExport.Visible = IsExcelExportEnabled && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
-            base.Render( writer );
+            base.RenderControl( writer );
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( aAdd );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
-            aAdd.Attributes.Add( "class", "add" );
+            aAdd.Attributes.Add( "class", "btn" );
             aAdd.InnerText = "Add";
 
             lbAdd = new LinkButton();

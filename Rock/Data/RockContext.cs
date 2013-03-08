@@ -31,6 +31,14 @@ namespace Rock.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance codes.
+        /// </summary>
+        /// <value>
+        /// The attendance codes.
+        /// </value>
+        public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attributes.
         /// </summary>
         /// <value>
@@ -79,6 +87,14 @@ namespace Rock.Data
         public DbSet<BinaryFile> BinaryFiles { get; set; }
 
         /// <summary>
+        /// Gets or sets the Binary File Types.
+        /// </summary>
+        /// <value>
+        /// the Binary File Types.
+        /// </value>
+        public DbSet<BinaryFileType> BinaryFileTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
@@ -109,6 +125,22 @@ namespace Rock.Data
         /// The categories.
         /// </value>
         public DbSet<Category> Categories { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the data views.
+        /// </summary>
+        /// <value>
+        /// The data views.
+        /// </value>
+        public DbSet<DataView> DataViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view filters.
+        /// </summary>
+        /// <value>
+        /// The data view filters.
+        /// </value>
+        public DbSet<DataViewFilter> DataViewFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the Defined Types.
@@ -141,14 +173,6 @@ namespace Rock.Data
         /// the Email Templates.
         /// </value>
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Entity Changes.
-        /// </summary>
-        /// <value>
-        /// the Entity Changes.
-        /// </value>
-        public DbSet<EntityChange> EntityChanges { get; set; }
 
         /// <summary>
         /// Gets or sets the entity types.
@@ -423,6 +447,22 @@ namespace Rock.Data
         public DbSet<Pledge> Pledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the prayer requests.
+        /// </summary>
+        /// <value>
+        /// The prayer requests.
+        /// </value>
+        public DbSet<PrayerRequest> PrayerRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reports.
+        /// </summary>
+        /// <value>
+        /// The reports.
+        /// </value>
+        public DbSet<Report> Reports { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedules.
         /// </summary>
         /// <value>
@@ -599,21 +639,24 @@ namespace Rock.Data
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
 
             modelBuilder.Configurations.Add( new AttendanceConfiguration() );
+            modelBuilder.Configurations.Add( new AttendanceCodeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
             modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
             modelBuilder.Configurations.Add( new AuditConfiguration() );
             modelBuilder.Configurations.Add( new AuthConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
+            modelBuilder.Configurations.Add( new BinaryFileTypeConfiguration() );
             modelBuilder.Configurations.Add( new BlockConfiguration() );
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new CampusConfiguration() );
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
+            modelBuilder.Configurations.Add( new DataViewConfiguration() );
+            modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
             modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
             modelBuilder.Configurations.Add( new DeviceConfiguration() );
             modelBuilder.Configurations.Add( new EmailTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new EntityChangeConfiguration() );
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
@@ -648,6 +691,8 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
             modelBuilder.Configurations.Add( new PledgeConfiguration() );
+            modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
+            modelBuilder.Configurations.Add( new ReportConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );
             modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
             modelBuilder.Configurations.Add( new ServiceLogConfiguration() );

@@ -18,10 +18,9 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     [ContextAware]
-    [TextField( 1, "Note Type", "Behavior", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
+    [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
     public partial class Notes : RockBlock
     {
-        private string contextTypeName = string.Empty;
         private IEntity contextEntity = null;
 
         private NoteType noteType;
@@ -36,11 +35,11 @@ namespace RockWeb.Blocks.Core
                 string script = @"
 Sys.Application.add_load(function () {
 
-    $('#note-add').click(function () {
-        $('#note-entry').slideToggle(""slow"");
+    $('.note-add').click(function () {
+        $(this).parent().siblings('.note-entry').slideToggle(""slow"");
     });
 
-    $('#person-notes').tinyscrollbar({ size: 150 });
+    $('.person-notes').tinyscrollbar({ size: 150 });
 
 });";
                 this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
@@ -53,15 +52,9 @@ Sys.Application.add_load(function () {
         {
             base.OnLoad( e );
 
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
-                contextTypeName = entry.Key;
-                contextEntity = entry.Value;
-                // Should only be one.
-                break;
-            }
+            contextEntity = this.ContextEntity();
 
-            if ( !String.IsNullOrEmpty( contextTypeName ) && contextEntity != null )
+            if ( contextEntity != null )
             {
                 GetNoteType();
                 if ( !Page.IsPostBack )
@@ -148,11 +141,15 @@ Sys.Application.add_load(function () {
         {
             var article = new HtmlGenericControl( "article" );
             phNotes.Controls.Add( article );
-            article.AddCssClass( "group" );
+            article.AddCssClass( "alert" );
 
-            if ( note.IsAlert.HasValue && note.IsAlert.Value )
+            if (note.IsAlert.HasValue && note.IsAlert.Value)
             {
-                article.AddCssClass( "alert" );
+                article.AddCssClass("alert-error");
+            }
+            else
+            {
+                article.AddCssClass("alert-info");
             }
 
             if ( note.IsPrivate( "View", CurrentPerson ) )
@@ -181,9 +178,9 @@ Sys.Application.add_load(function () {
 
             var div = new HtmlGenericControl( "div" );
             article.Controls.Add( div );
-            div.AddCssClass( "details" );
+            div.AddCssClass( "detail" );
 
-            var heading = new HtmlGenericControl( "h5" );
+            var heading = new HtmlGenericControl( "strong" );
             div.Controls.Add( heading );
             heading.Controls.Add( new LiteralControl( string.Format( "{0} - {1}", note.Date.ToShortDateString(), note.Caption ) ) );
 

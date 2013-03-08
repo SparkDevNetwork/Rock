@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 
 using Rock.Web.UI;
 
@@ -61,7 +62,7 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    blockProperties.Add( new TextFieldAttribute( 0, "Context Entity Type", propertyKeyName, "Filter", "Context Entity Type", false, "" ) );
+                    blockProperties.Add( new TextFieldAttribute( "Context Entity Type", "Context Entity Type", false, contextAttribute.DefaultParameterName, "Filter", 0, propertyKeyName ) );
                 }
             }
 
@@ -72,20 +73,26 @@ namespace Rock.Attribute
             }
 
             // Create any attributes that need to be created
+            var attributeService = new Model.AttributeService();
+            var attributeQualifierService = new Model.AttributeQualifierService();
+            var fieldTypeService = new Model.FieldTypeService();
+
             foreach ( var blockProperty in blockProperties )
             {
-                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
+                attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService,
+                    blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
                 existingKeys.Add( blockProperty.Key );
             }
 
             // Remove any old attributes
-            Model.AttributeService attributeService = new Model.AttributeService();
             foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
+            {
                 if ( !existingKeys.Contains( a.Key ) )
                 {
                     attributeService.Delete( a, currentPersonId );
                     attributeService.Save( a, currentPersonId );
                 }
+            }
 
             return attributesUpdated;
         }
@@ -99,12 +106,10 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
+        private static bool UpdateAttribute( Model.AttributeService attributeService, Model.AttributeQualifierService attributeQualifierService, Model.FieldTypeService fieldTypeService, 
+            FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
-
-            Model.AttributeService attributeService = new Model.AttributeService();
-            Model.FieldTypeService fieldTypeService = new Model.FieldTypeService();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             Model.Attribute attribute = attributeService.Get(
@@ -132,7 +137,29 @@ namespace Rock.Attribute
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
+                {
                     updated = true;
+                }
+
+                // Check the qualifier values
+                else if ( attribute.AttributeQualifiers.Select( q => q.Key ).Except( property.FieldConfigurationValues.Select( c => c.Key ) ).Any() ||
+                    property.FieldConfigurationValues.Select( c => c.Key ).Except( attribute.AttributeQualifiers.Select( q => q.Key ) ).Any() )
+                {
+                    updated = true;
+                }
+                else
+                {
+                    foreach ( var attributeQualifier in attribute.AttributeQualifiers )
+                    {
+                        if ( !property.FieldConfigurationValues.ContainsKey( attributeQualifier.Key ) ||
+                            property.FieldConfigurationValues[attributeQualifier.Key].Value != attributeQualifier.Value )
+                        {
+                            updated = true;
+                            break;
+                        }
+                    }
+                }
+
             }
 
             if ( updated )
@@ -144,6 +171,20 @@ namespace Rock.Attribute
                 attribute.DefaultValue = property.DefaultValue;
                 attribute.Order = property.Order;
                 attribute.IsRequired = property.IsRequired;
+
+                foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
+                {
+                    attributeQualifierService.Delete( qualifier, currentPersonId );
+                }
+                attribute.AttributeQualifiers.Clear();
+
+                foreach ( var configValue in property.FieldConfigurationValues )
+                {
+                    var qualifier = new Model.AttributeQualifier();
+                    qualifier.Key = configValue.Key;
+                    qualifier.Value = configValue.Value.Value;
+                    attribute.AttributeQualifiers.Add( qualifier );
+                }
 
                 // Try to set the field type by searching for an existing field type with the same assembly and class name
                 if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
@@ -165,7 +206,9 @@ namespace Rock.Attribute
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         /// <summary>
@@ -174,7 +217,7 @@ namespace Rock.Attribute
         /// <param name="entity">The item.</param>
         public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
         {
-            var attributes = new Dictionary<int, Rock.Web.Cache.AttributeCache>();
+            var attributes = new List<Rock.Web.Cache.AttributeCache>();
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
             Type entityType = entity.GetType();
@@ -188,7 +231,7 @@ namespace Rock.Attribute
             Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType.FullName ).Id;
+            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
             foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
                 if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
@@ -196,27 +239,28 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
-                    attributes.Add(attribute.Id, Rock.Web.Cache.AttributeCache.Read(attribute));
+                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                 }
             }
 
-            var attributeCategories = new SortedDictionary<string, List<string>>();
+            var attributeCategories = new Dictionary<string, List<string>>();
             var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
-            foreach ( var attribute in attributes )
+            foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name) )
             {
                 // Categorize the attributes
-                if ( !attributeCategories.ContainsKey( attribute.Value.Category ) )
-                    attributeCategories.Add( attribute.Value.Category, new List<string>() );
-                attributeCategories[attribute.Value.Category].Add( attribute.Value.Key );
+                if ( !attributeCategories.ContainsKey( attribute.Category ) )
+                    attributeCategories.Add( attribute.Category, new List<string>() );
+                attributeCategories[attribute.Category].Add( attribute.Key );
 
                 // Add a placeholder for this item's value for each attribute
-                attributeValues.Add( attribute.Value.Key, new List<Rock.Model.AttributeValue>() );
+                attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
             }
 
             // Read this item's value(s) for each attribute 
+            List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
             foreach ( dynamic item in attributeValueService.Queryable()
-                .Where( v => v.EntityId == entity.Id && attributes.Keys.Contains( v.AttributeId ) )
+                .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) )
                 .Select( v => new
                 {
                     Value = v,
@@ -227,24 +271,31 @@ namespace Rock.Attribute
             }
 
             // Look for any attributes that don't have a value and create a default value entry
-            foreach ( var attributeEntry in attributes )
+            foreach ( var attribute in attributes )
             {
-                if ( attributeValues[attributeEntry.Value.Key].Count == 0 )
+                if ( attributeValues[attribute.Key].Count == 0 )
                 {
                     var attributeValue = new Rock.Model.AttributeValue();
-                    attributeValue.AttributeId = attributeEntry.Value.Id;
-                    attributeValue.Value = attributeEntry.Value.DefaultValue;
-                    attributeValues[attributeEntry.Value.Key].Add( attributeValue );
+                    attributeValue.AttributeId = attribute.Id;
+                    if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
+                    {
+                        attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
+                    }
+                    else
+                    {
+                        attributeValue.Value = attribute.DefaultValue;
+                    }
+                    attributeValues[attribute.Key].Add( attributeValue );
                 }
                 else
                 {
-                    if ( !String.IsNullOrWhiteSpace( attributeEntry.Value.DefaultValue ) )
+                    if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) )
                     {
-                        foreach ( var value in attributeValues[attributeEntry.Value.Key] )
+                        foreach ( var value in attributeValues[attribute.Key] )
                         {
                             if ( String.IsNullOrWhiteSpace( value.Value ) )
                             {
-                                value.Value = attributeEntry.Value.DefaultValue;
+                                value.Value = attribute.DefaultValue;
                             }
 
                         }
@@ -255,7 +306,7 @@ namespace Rock.Attribute
             entity.AttributeCategories = attributeCategories;
 
             entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
-            attributes.Values.ToList().ForEach( a => entity.Attributes.Add( a.Key, a ) );
+            attributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -322,7 +373,7 @@ namespace Rock.Attribute
                 {
                     attributeValue = attributeValues[i];
                 }
-                else 
+                else
                 {
                     attributeValue = new Rock.Model.AttributeValue();
                     attributeValue.AttributeId = attribute.Id;
@@ -349,12 +400,81 @@ namespace Rock.Attribute
         }
 
         /// <summary>
+        /// Copies the attributes from one entity to another
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
+        public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
+        {
+            // Copy Categories
+            if ( source.AttributeCategories != null )
+            {
+                target.AttributeCategories = new Dictionary<string, List<string>>();
+                foreach ( var item in source.AttributeCategories )
+                {
+                    var list = new List<string>();
+                    foreach ( string value in item.Value )
+                    {
+                        list.Add( value );
+                    }
+                    target.AttributeCategories.Add( item.Key, list );
+                }
+            }
+            else
+            {
+                target.AttributeCategories = null;
+            }
+
+            // Copy Attributes
+            if ( source.Attributes != null )
+            {
+                target.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
+                foreach ( var item in source.Attributes )
+                {
+                    target.Attributes.Add( item.Key, item.Value );
+                }
+            }
+            else
+            {
+                target.Attributes = null;
+            }
+
+            // Copy Attribute Values
+            if ( source.AttributeValues != null )
+            {
+                target.AttributeValues = new Dictionary<string, List<Model.AttributeValue>>();
+                foreach ( var item in source.AttributeValues )
+                {
+                    var list = new List<Model.AttributeValue>();
+                    foreach ( var value in item.Value )
+                    {
+                        var attributeValue = new Model.AttributeValue();
+                        attributeValue.IsSystem = value.IsSystem;
+                        attributeValue.AttributeId = value.AttributeId;
+                        attributeValue.EntityId = value.EntityId;
+                        attributeValue.Order = value.Order;
+                        attributeValue.Value = value.Value;
+                        attributeValue.Id = value.Id;
+                        attributeValue.Guid = value.Guid;
+                        list.Add( attributeValue );
+                    }
+                    target.AttributeValues.Add( item.Key, list );
+                }
+            }
+            else
+            {
+                target.AttributeValues = null;
+            }
+
+        }
+
+        /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
         /// <param name="item"></param>
         /// <param name="parentControl"></param>
         /// <param name="setValue"></param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue)
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue )
         {
             AddEditControls( item, parentControl, setValue, new List<string>() );
         }
@@ -369,17 +489,127 @@ namespace Rock.Attribute
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
         {
             if ( item.Attributes != null )
+            {
+                if ( item.AttributeCategories.ContainsKey( string.Empty ) )
+                {
+                    AddEditControls( string.Empty, item.AttributeCategories[string.Empty], item, parentControl, setValue, exclude );
+                }
+
+                foreach ( var category in item.AttributeCategories.Where( i => i.Key != string.Empty ) )
+                {
+                    AddEditControls( category.Key, category.Value, item, parentControl, setValue, exclude );
+                }
+            }
+        }
+
+        private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
+        {
+            HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
+            parentControl.Controls.Add( fieldSet );
+            fieldSet.Controls.Clear();
+
+            if ( !string.IsNullOrEmpty( category ) )
+            {
+                HtmlGenericControl legend = new HtmlGenericControl( "legend" );
+                fieldSet.Controls.Add( legend );
+                legend.Controls.Clear();
+                legend.InnerText = category.Trim();
+            }
+
+            foreach ( string key in attributeKeys )
+            {
+                var attribute = item.Attributes[key];
+
+                if ( !exclude.Contains( attribute.Name ) )
+                {
+                    HtmlGenericControl div = new HtmlGenericControl( "div" );
+                    fieldSet.Controls.Add( div );
+                    div.Controls.Clear();
+
+                    div.ID = string.Format( "attribute_{0}", attribute.Id );
+                    div.AddCssClass( "control-group" );
+                    if ( attribute.IsRequired )
+                        div.AddCssClass( "required" );
+                    div.Attributes.Add( "attribute-key", attribute.Key );
+                    div.ClientIDMode = ClientIDMode.AutoID;
+
+                    Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue, true );
+                    if ( !( attributeControl is CheckBox ) )
+                    {
+                        HtmlGenericControl labelDiv = new HtmlGenericControl( "div" );
+                        div.Controls.Add( labelDiv );
+                        labelDiv.AddCssClass( "control-label" );
+                        labelDiv.ClientIDMode = ClientIDMode.AutoID;
+
+                        Literal lbl = new Literal();
+                        labelDiv.Controls.Add( lbl );
+                        lbl.Text = attribute.Name;
+
+                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        {
+                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            labelDiv.Controls.Add( HelpBlock );
+                            HelpBlock.Text = attribute.Description;
+                        }
+                    }
+
+                    HtmlGenericControl divControls = new HtmlGenericControl( "div" );
+                    div.Controls.Add( divControls );
+                    divControls.AddCssClass( "controls" );
+                    divControls.Controls.Clear();
+
+                    divControls.Controls.Add( attributeControl );
+
+                    if ( attributeControl is CheckBox )
+                    {
+                        ( attributeControl as CheckBox ).Text = attribute.Name;
+                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        {
+                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            divControls.Controls.Add( HelpBlock );
+                            HelpBlock.Text = attribute.Description;
+                        }
+                    }
+
+                    if ( attribute.IsRequired && ( attributeControl is TextBox ) )
+                    {
+                        RequiredFieldValidator rfv = new RequiredFieldValidator();
+                        divControls.Controls.Add( rfv );
+                        rfv.CssClass = "validation-error";
+                        rfv.ControlToValidate = attributeControl.ID;
+                        rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
+                        rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
+                        rfv.Display = ValidatorDisplay.None;
+
+                        if ( !setValue && !rfv.IsValid )
+                            div.Attributes.Add( "class", "error" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the display HTML.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <returns></returns>
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
+        {
+            exclude = exclude ?? new List<string>();
+            string result = string.Empty;
+
+            if ( item.Attributes != null )
+            {
                 foreach ( var category in item.AttributeCategories )
                 {
-                    HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
-                    parentControl.Controls.Add( fieldSet );
-                    fieldSet.Controls.Clear();
-
-                    HtmlGenericControl legend = new HtmlGenericControl( "legend" );
-                    fieldSet.Controls.Add( legend );
-                    legend.Controls.Clear();
-
-                    legend.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : "Attributes";
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
+                    header.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : item.GetType().GetFriendlyTypeName() +  " Attributes";
+                    parentControl.Controls.Add( header );
+                    
+                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                    parentControl.Controls.Add( dl );
 
                     foreach ( string key in category.Value )
                     {
@@ -387,68 +617,26 @@ namespace Rock.Attribute
 
                         if ( !exclude.Contains( attribute.Name ) )
                         {
-                            HtmlGenericControl div = new HtmlGenericControl( "div" );
-                            fieldSet.Controls.Add( div );
-                            div.Controls.Clear();
+                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                            dt.InnerText = attribute.Name;
+                            dl.Controls.Add( dt );
 
-                            div.ID = string.Format( "attribute_{0}", attribute.Id );
-                            div.AddCssClass( "control-group" );
-                            if ( attribute.IsRequired )
-                                div.AddCssClass( "required" );
-                            div.Attributes.Add( "attribute-key", attribute.Key );
-                            div.ClientIDMode = ClientIDMode.AutoID;
-
-                            Label lbl = new Label();
-                            div.Controls.Add( lbl );
-                            lbl.ClientIDMode = ClientIDMode.AutoID;
-                            lbl.AddCssClass( "control-label" );
-                            lbl.Text = attribute.Name;
-                            lbl.AssociatedControlID = string.Format( "attribute_field_{0}", attribute.Id );
-
-                            HtmlGenericControl divControls = new HtmlGenericControl( "div" );
-                            div.Controls.Add( divControls );
-                            divControls.Controls.Clear();
-
-                            divControls.AddCssClass( "controls" );
-
-                            Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue );
-                            if ( attributeControl is CheckBox )
+                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                            string value = item.AttributeValues[attribute.Key][0].Value;
+                            string controlHtml = attribute.FieldType.Field.FormatValue( parentControl, value, attribute.QualifierValues, false );
+                            if ( string.IsNullOrWhiteSpace( controlHtml ) )
                             {
-                                ( attributeControl as CheckBox ).Text = attribute.Name;
-                                lbl.Visible = false;
+                                controlHtml = None.TextHtml;
                             }
 
-                            attributeControl.ID = string.Format( "attribute_field_{0}", attribute.Id );
-                            attributeControl.ClientIDMode = ClientIDMode.AutoID;
-                            divControls.Controls.Add( attributeControl );
-
-                            if ( attribute.IsRequired && ( attributeControl is TextBox ) )
-                            {
-                                RequiredFieldValidator rfv = new RequiredFieldValidator();
-                                divControls.Controls.Add( rfv );
-                                rfv.CssClass = "help-inline";
-                                rfv.ControlToValidate = attributeControl.ID;
-                                rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
-                                rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
-                                rfv.Display = ValidatorDisplay.None;
-
-                                if ( !setValue && !rfv.IsValid )
-                                    div.Attributes.Add( "class", "error" );
-                            }
-
-                            if ( !string.IsNullOrEmpty( attribute.Description ) )
-                            {
-                                HtmlGenericControl helpBlock = new HtmlGenericControl( "div" );
-                                divControls.Controls.Add( helpBlock );
-                                helpBlock.ClientIDMode = ClientIDMode.AutoID;
-                                helpBlock.AddCssClass( "alert alert-info" );
-                                helpBlock.InnerHtml = attribute.Description;
-                            }
+                            dd.InnerHtml = controlHtml;
+                            dl.Controls.Add( dd );
                         }
                     }
                 }
+            }
         }
-
+        
         /// <summary>
         /// Sets any missing required field error indicators.
         /// </summary>

@@ -58,22 +58,36 @@ namespace Rock.Model
     public static class ScheduleExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Schedule entity
+        /// Clones this Schedule object to a new Schedule object
         /// </summary>
-        public static void CopyPropertiesFrom( this Schedule target, Schedule source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Schedule Clone( this Schedule source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.Frequency = source.Frequency;
-            target.FrequencyQualifier = source.FrequencyQualifier;
-            target.StartTime = source.StartTime;
-            target.EndTime = source.EndTime;
-            target.CheckInStartTime = source.CheckInStartTime;
-            target.CheckInEndTime = source.CheckInEndTime;
-            target.EffectiveStartDate = source.EffectiveStartDate;
-            target.EffectiveEndDate = source.EffectiveEndDate;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Schedule;
+            }
+            else
+            {
+                var target = new Schedule();
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Frequency = source.Frequency;
+                target.FrequencyQualifier = source.FrequencyQualifier;
+                target.StartTime = source.StartTime;
+                target.EndTime = source.EndTime;
+                target.CheckInStartTime = source.CheckInStartTime;
+                target.CheckInEndTime = source.CheckInEndTime;
+                target.EffectiveStartDate = source.EffectiveStartDate;
+                target.EffectiveEndDate = source.EffectiveEndDate;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

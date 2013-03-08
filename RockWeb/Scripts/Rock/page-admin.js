@@ -85,11 +85,11 @@ function showBlockConfig() {
     $('.block-instance').toggleClass('outline');
 
     // Bind the block configure icon so that edit icons are displayed on hover
-    $(".block-configuration").hover(function () {
+    $(".block-configuration").hover(function (e) {
         var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
         $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
     }, function () {
-        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
+        $(this).stop().animate({ width: '26px' }, 200).css({ 'z-index': '1' });
     });
 
     // Bind the block instance delete anchor
@@ -162,6 +162,6 @@ function showPageZones() {
         var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
         $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
     }, function () {
-        $(this).stop().animate({ width: '24px' }, 200).css({ 'z-index': '1' });
+        $(this).stop().animate({ width: '26px' }, 200).css({ 'z-index': '1' });
     });
 }

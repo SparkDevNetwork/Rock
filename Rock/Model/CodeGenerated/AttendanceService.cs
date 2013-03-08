@@ -58,23 +58,36 @@ namespace Rock.Model
     public static class AttendanceExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Attendance entity
+        /// Clones this Attendance object to a new Attendance object
         /// </summary>
-        public static void CopyPropertiesFrom( this Attendance target, Attendance source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Attendance Clone( this Attendance source, bool deepCopy )
         {
-            target.LocationId = source.LocationId;
-            target.ScheduleId = source.ScheduleId;
-            target.GroupId = source.GroupId;
-            target.PersonId = source.PersonId;
-            target.QualifierValueId = source.QualifierValueId;
-            target.StartDateTime = source.StartDateTime;
-            target.EndDateTime = source.EndDateTime;
-            target.DidAttend = source.DidAttend;
-            target.SecurityCode = source.SecurityCode;
-            target.Note = source.Note;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Attendance;
+            }
+            else
+            {
+                var target = new Attendance();
+                target.LocationId = source.LocationId;
+                target.ScheduleId = source.ScheduleId;
+                target.GroupId = source.GroupId;
+                target.PersonId = source.PersonId;
+                target.AttendanceCodeId = source.AttendanceCodeId;
+                target.QualifierValueId = source.QualifierValueId;
+                target.StartDateTime = source.StartDateTime;
+                target.EndDateTime = source.EndDateTime;
+                target.DidAttend = source.DidAttend;
+                target.Note = source.Note;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

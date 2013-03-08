@@ -18,7 +18,7 @@ namespace Rock.Address
     /// <summary>
     /// Singleton class that uses MEF to load and cache all of the GeocodeComponent classes
     /// </summary>
-    public class GeocodeContainer : ContainerManaged<GeocodeComponent, IComponentData>
+    public class GeocodeContainer : Container<GeocodeComponent, IComponentData>
     {
         #region Singleton Support
 

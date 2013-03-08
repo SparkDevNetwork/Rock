@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -61,6 +60,15 @@ namespace Rock.Model
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance code id.
+        /// </summary>
+        /// <value>
+        /// The attendance code id.
+        /// </value>
+        [DataMember]
+        public int? AttendanceCodeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the qualifier value id.
         /// </summary>
         /// <value>
@@ -94,17 +102,12 @@ namespace Rock.Model
         ///   <c>true</c> if [did attend]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool DidAttend { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique security code.
-        /// </summary>
-        /// <value>
-        /// The security code.
-        /// </value>
-        [MaxLength(10)]
-        [DataMember]
-        public string SecurityCode { get; set; }
+        public bool DidAttend 
+        {
+            get { return _didAttend; }
+            set { _didAttend = value; }
+        }
+        private bool _didAttend = true;
 
         /// <summary>
         /// Gets or sets the note.
@@ -154,6 +157,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendance code.
+        /// </summary>
+        /// <value>
+        /// The attendance code.
+        /// </value>
+        [DataMember]
+        public virtual AttendanceCode AttendanceCode { get; set; }
 
         /// <summary>
         /// Gets or sets the qualifier.
@@ -211,8 +223,9 @@ namespace Rock.Model
             this.HasOptional( a => a.Location).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
-            this.HasOptional( a => a.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Person ).WithMany( p => p.Attendances ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }
     }
 

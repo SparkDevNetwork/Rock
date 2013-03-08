@@ -3,11 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -17,7 +14,7 @@ namespace Rock.CheckIn
     /// A family option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInFamily
+    public class CheckInFamily : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the group.
@@ -38,13 +35,28 @@ namespace Rock.CheckIn
         public bool Selected { get; set; }
 
         /// <summary>
-        /// Gets or sets the members of the family
+        /// Gets or sets the people that this family can check-in
         /// </summary>
         /// <value>
-        /// The members.
+        /// The people.
         /// </value>
         [DataMember]
-        public List<CheckInPerson> FamilyMembers { get; set; }
+        public List<CheckInPerson> People { get; set; }
+
+        /// <summary>
+        /// An optional value that can be set to display family name.  If not set, the Group name will be used
+        /// </summary>
+        [DataMember]
+        public string Caption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sub caption.
+        /// </summary>
+        /// <value>
+        /// The sub caption.
+        /// </value>
+        [DataMember]
+        public string SubCaption { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.
@@ -52,7 +64,7 @@ namespace Rock.CheckIn
         public CheckInFamily()
             : base()
         {
-            FamilyMembers = new List<CheckInPerson>();
+            People = new List<CheckInPerson>();
         }
 
         /// <summary>
@@ -63,7 +75,30 @@ namespace Rock.CheckIn
         /// </returns>
         public override string ToString()
         {
-            return Group != null ? Group.ToString() : string.Empty;
+            if ( !string.IsNullOrWhiteSpace( Caption ) )
+            {
+                return Caption;
+            }
+            else
+            {
+                return Group != null ? Group.ToString() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Group", Group );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "People", People );
+            dictionary.Add( "Caption", Caption );
+            dictionary.Add( "SubCaption", SubCaption );
+            return dictionary;
         }
     }
 }

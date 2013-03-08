@@ -5,27 +5,20 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     /// 
     /// </summary>
-    [TextField( 0, "Treeview Title", "", "", false, "Group Tree View" )]
-    [GroupTypesField( 1, "Group Types", false, "", "", "", "Select group types to show in this block.  Leave all unchecked to show all group types." )]
-    [GroupField( 2, "Group", false, "", "", "", "Select the root group to show in this block." )]
-    [BooleanField( 3, "Limit to Security Role Groups", false )]
+    [TextField( "Treeview Title", "Group Tree View", false )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
+    [GroupField( "Group", "Select the root group to show in this block.", false )]
+    [BooleanField( "Limit to Security Role Groups" )]
     [DetailPage]
     public partial class GroupTreeView : RockBlock
     {
@@ -39,25 +32,56 @@ namespace RockWeb.Blocks.Crm
 
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
+            string groupTypes = GetAttributeValue( "GroupTypes" );
+            groupTypes = string.IsNullOrWhiteSpace(groupTypes) ? "0" : groupTypes;
+            hfGroupTypes.Value = groupTypes;
+            string groupId = PageParameter( "groupId" );
 
-            string[] eventArgs = ( Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
-            if ( eventArgs.Length == 2 )
+            if ( !string.IsNullOrWhiteSpace( groupId ) )
             {
-                if ( eventArgs[0] == "groupId" )
+                hfInitialGroupId.Value = groupId;
+                hfSelectedGroupId.Value = groupId.ToString();
+                Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
+                
+                if ( group != null )
                 {
-                    groupItem_Click( eventArgs[1] );
+                    // show the Add button if the selected Group's GroupType can have children
+                    lbAddGroup.Visible = group.GroupType.ChildGroupTypes.Count > 0;
                 }
+                else
+                {
+                    // hide the Add Button when adding a new Group
+                    lbAddGroup.Visible = false;
+                }
+
+                List<string> parentIdList = new List<string>();
+                while ( group != null )
+                {
+                    group = group.ParentGroup;
+                    if ( group != null )
+                    {
+                        parentIdList.Insert( 0, group.Id.ToString() );
+                    }
+                }
+
+                hfInitialGroupParentIds.Value = parentIdList.AsDelimited( "," );
+            }
+            else
+            {
+                // let the Add button be visible if there is nothing selected
+                lbAddGroup.Visible = true;
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the groupItem control.
+        /// Handles the Click event of the lbAddGroup control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void groupItem_Click( string groupId )
+        protected void lbAddGroup_Click( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupId", int.Parse( groupId ) );
+            int groupId = hfSelectedGroupId.ValueAsInt();
+            NavigateToDetailPage( "groupId", 0, "parentGroupId", groupId );
         }
-    }
+}
 }

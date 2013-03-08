@@ -1,0 +1,64 @@
+/*!
+ * Rock ChMS Adventure Kids Checkin Theme
+ *
+ * Copyright 2013 Spark Development Network
+ *
+ * 
+ */
+
+
+//
+// Variables
+// --------------------------------------------------
+
+@checkinHeaderColor:                #fff;
+@checkinHeaderFontFamily:           'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+
+@checkinSubHeadingColor:            #4c4c4b;
+@checkinSubHeaderFontFamily:        'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif; 
+
+@checkinBodyColor:                 #fff;
+
+@checkinButtonColor:                #7f7e7e;
+@checkinButtonBackground:           #d5d5d5;
+@checkinButtonFontFamily:           'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+@checkinButtonSubtitleFontFamily:   'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+@checkinButtonBorderColor:          #9d9c9c;
+
+@checkinPrimaryButtonColor:         #fff;
+@checkinPrimaryButtonBackground:    #e3151a;
+@checkinPrimaryButtonBorderColor:   #b00a0e;
+
+
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+  	background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;
+}
+
+.checkinBackgroundRetina()
+{
+    background-image: url('../Assets/Images/background@2x.jpg');
+    background-size: 1348px 768px; // should be 1/2 of the actual
+}
+
+//
+// Imports
+// --------------------------------------------------
+
+@import "./rock-bootstrap-variables.less";
+@import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
+@import "../../../Css/checkin-core.less";
+
+
+//
+// Custom Overides
+// --------------------------------------------------
+
+.checkin-count h3,
+.checkin-count li {
+	color: #4c4c4b;
+}
+

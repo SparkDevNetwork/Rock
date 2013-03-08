@@ -31,6 +31,14 @@ namespace Rock.Extension
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>
+        /// The type.
+        /// </value>
+        public Type Type { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -59,7 +67,7 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="service">The service.</param>
-        public ComponentDescription( int id, KeyValuePair<string, ComponentManaged> service )
+        public ComponentDescription( int id, KeyValuePair<string, Component> service )
         {
             Id = id;
 
@@ -68,6 +76,7 @@ namespace Rock.Extension
             Name = service.Key;
             Order = service.Value.Order;
             IsActive = service.Value.IsActive;
+            Type = type;
 
             // Look for a DescriptionAttribute on the class and if found, use its value for the description
             // property of this class

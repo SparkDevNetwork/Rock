@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class NoteExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Note entity
+        /// Clones this Note object to a new Note object
         /// </summary>
-        public static void CopyPropertiesFrom( this Note target, Note source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Note Clone( this Note source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.NoteTypeId = source.NoteTypeId;
-            target.EntityId = source.EntityId;
-            target.SourceTypeValueId = source.SourceTypeValueId;
-            target.Caption = source.Caption;
-            target.Date = source.Date;
-            target.IsAlert = source.IsAlert;
-            target.Text = source.Text;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Note;
+            }
+            else
+            {
+                var target = new Note();
+                target.IsSystem = source.IsSystem;
+                target.NoteTypeId = source.NoteTypeId;
+                target.EntityId = source.EntityId;
+                target.SourceTypeValueId = source.SourceTypeValueId;
+                target.Caption = source.Caption;
+                target.Date = source.Date;
+                target.IsAlert = source.IsAlert;
+                target.Text = source.Text;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

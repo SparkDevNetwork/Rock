@@ -70,7 +70,7 @@ namespace Rock.Web
                     else
                     {
                         var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_CHMS ) );
                         if ( rockSite != null )
                         {
                             siteId = rockSite.Id;
@@ -95,75 +95,63 @@ namespace Rock.Web
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
-                page = Rock.Web.Cache.PageCache.Read( Convert.ToInt32( pageId ) );
+                int pageIdNumber = 0;
+                if ( Int32.TryParse( pageId, out pageIdNumber ) )
+                {
+                    page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
+                }
+
                 if ( page == null )
                 {
                     return new HttpHandlerError( 404 );
                 }
             }
 
-            if ( page != null && !String.IsNullOrEmpty( page.LayoutPath ) )
+            string theme = "RockChMS";
+            string layout = "Default";
+            string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+
+            if ( page != null )
             {
                 // load the route id
                 page.RouteId = routeId;
 
-                // Return the page using the cached route
-                Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( page.LayoutPath, typeof( Rock.Web.UI.RockPage ) );
-                cmsPage.CurrentPage = page;
-                return cmsPage;
+                theme = page.Site.Theme;
+                layout = page.Layout;
+                layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
             }
             else
             {
-                string theme = "RockCms";
-                string layout = "Default";
-                string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+                page = Cache.PageCache.Read( new Model.Page() );
+            }
 
-                if ( page != null )
+            try
+            {
+                // Return the page for the selected theme and layout
+                Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+                cmsPage.CurrentPage = page;
+                return cmsPage;
+            }
+            catch ( System.Web.HttpException )
+            {
+                // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
+                theme = "RockChMS";
+                
+                // If not using the default layout, verify that Layout exists in the default theme directory
+                if ( layout != "Default" &&
+                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/RockChMS/Layouts/{0}.aspx", layout ) ) ) )
                 {
-                    // load the route id
-                    page.RouteId = routeId;
-
-                    theme = page.Site.Theme;
-                    layout = page.Layout;
-                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
-
-                    page.LayoutPath = layoutPath;
-                }
-                else
-                    page = Cache.PageCache.Read( new Model.Page() );
-
-                try
-                {
-                    // Return the page for the selected theme and layout
-                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                    cmsPage.CurrentPage = page;
-                    return cmsPage;
-                }
-                catch ( System.Web.HttpException )
-                {
-                    // The Selected theme and/or layout didn't exist, attempt first to use the default layout in the selected theme
+                    // If selected layout doesn't exist in the default theme, switch to the Default layout
                     layout = "Default";
-
-                    // If not using the Rock theme, verify that default Layout exists in the selected theme directory
-                    if ( theme != "RockCms" &&
-                        !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/{0}/Layouts/Default.aspx", theme ) ) ) )
-                    {
-                        // If default layout doesn't exist in the selected theme, switch to the Default layout
-                        theme = "RockCms";
-                        layout = "Default";
-                    }
-
-                    // Build the path to the aspx file to
-                    layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
-
-                    if ( page != null )
-                        page.LayoutPath = layoutPath;
-
-                    // Return the default layout and/or theme
-                    Rock.Web.UI.RockPage cmsPage = ( Rock.Web.UI.RockPage )BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
-                    cmsPage.CurrentPage = page;
-                    return cmsPage;
                 }
+
+                // Build the path to the aspx file to
+                layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
+
+                // Return the default layout and/or theme
+                Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
+                cmsPage.CurrentPage = page;
+                return cmsPage;
             }
         }
     }

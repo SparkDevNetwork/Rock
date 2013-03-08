@@ -58,18 +58,31 @@ namespace Rock.Model
     public static class FinancialTransactionDetailExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another FinancialTransactionDetail entity
+        /// Clones this FinancialTransactionDetail object to a new FinancialTransactionDetail object
         /// </summary>
-        public static void CopyPropertiesFrom( this FinancialTransactionDetail target, FinancialTransactionDetail source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static FinancialTransactionDetail Clone( this FinancialTransactionDetail source, bool deepCopy )
         {
-            target.TransactionId = source.TransactionId;
-            target.Entity = source.Entity;
-            target.EntityId = source.EntityId;
-            target.Amount = source.Amount;
-            target.Summary = source.Summary;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as FinancialTransactionDetail;
+            }
+            else
+            {
+                var target = new FinancialTransactionDetail();
+                target.TransactionId = source.TransactionId;
+                target.Entity = source.Entity;
+                target.EntityId = source.EntityId;
+                target.Amount = source.Amount;
+                target.Summary = source.Summary;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

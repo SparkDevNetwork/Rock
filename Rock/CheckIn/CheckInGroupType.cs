@@ -5,9 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -17,7 +15,7 @@ namespace Rock.CheckIn
     /// A group type option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroupType 
+    public class CheckInGroupType : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the type of the group.
@@ -44,7 +42,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the locations that are available for the current group type
@@ -56,12 +54,48 @@ namespace Rock.CheckIn
         public List<CheckInLocation> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the labels to be printed after succesful checkin
+        /// </summary>
+        /// <value>
+        /// The labels.
+        /// </value>
+        [DataMember]
+        public List<CheckInLabel> Labels { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInGroupType" /> class.
         /// </summary>
         public CheckInGroupType()
             : base()
         {
             Locations = new List<CheckInLocation>();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return GroupType != null ? GroupType.ToString() : string.Empty;
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "GroupType", GroupType );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Locations", Locations );
+            dictionary.Add( "Labels", Labels );
+            return dictionary;
         }
     }
 }

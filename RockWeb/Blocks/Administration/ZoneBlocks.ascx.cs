@@ -29,8 +29,6 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            CurrentPage.AddScriptLink( Page, "~/Scripts/bootstrap-tabs.js" );
-
             int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
             _page = Rock.Web.Cache.PageCache.Read( pageId );
             _zoneName = this.PageParameter( "ZoneName" );
@@ -58,7 +56,7 @@ namespace RockWeb.Blocks.Administration
 
             string script = string.Format( @"
         Sys.Application.add_load(function () {{
-            $('#modal-popup div.modal-header h3 small', window.parent.document).html('{0}');
+            $('div.modal-header h3').html('{0} Zone');
             $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
             $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
         }});
@@ -312,7 +310,7 @@ namespace RockWeb.Blocks.Administration
                 hfBlockId.Value = "0";
 
                 // Select HTML Content block by default
-                var blockType = new Rock.Model.BlockTypeService().GetByGuid( Rock.SystemGuid.BlockType.HTML_CONTENT );
+                var blockType = new Rock.Model.BlockTypeService().GetByGuid( new Guid( Rock.SystemGuid.BlockType.HTML_CONTENT ) );
                 if (blockType != null)
                     ddlBlockType.SelectedValue = blockType.Id.ToString();                
                 else

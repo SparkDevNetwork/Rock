@@ -29,8 +29,8 @@
                     <div class="span6">
                         <fieldset>
                             <Rock:DataDropDownList ID="ddlParentPage" runat="server" LabelText="Parent Page" SourceTypeName="Rock.Model.Page, Rock" PropertyName="ParentPageId"/>
-                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name"/>
-                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title"/>
+                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
                         </fieldset>
                     </div>
@@ -45,9 +45,9 @@
              <asp:Panel ID="pnlMenuDisplay" runat="server" Visible="false" >
                 <fieldset>
                     <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
-                    <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" LabelText="Show Description"/>
-                    <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" LabelText="Show Child Pages"/>
-                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" LabelText="Show Icon"/>
+                    <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" Text="Show Description"/>
+                    <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" Text="Show Child Pages" Help="Should child pages be displayed in a menu"/>
+                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
                     <div class="control-group">
                         <label class="control-label">Icon Image</label>
                         <div class="controls">
@@ -62,9 +62,9 @@
                 <div class="row">
                     <div class="span6">
                         <fieldset>
-                            <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" LabelText="Force SSL"/>
-                            <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" LabelText="Enable ViewState"/>
-                            <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" LabelText="Allow Configuration"/>
+                            <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
+                            <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
+                            <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
                             <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                         </fieldset>
                     </div>

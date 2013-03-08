@@ -1,18 +1,26 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Components.ascx.cs" Inherits="RockWeb.Blocks.Administration.Components" %>
+﻿ <%@ Control Language="C#" AutoEventWireup="true" CodeFile="Components.ascx.cs" Inherits="RockWeb.Blocks.Administration.Components" %>
 
 <asp:UpdatePanel runat="server">
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
+    <Rock:ModalAlert ID="mdAlert" runat="server" />
 
-    <asp:Panel ID="pnlList" runat="server" Visible="false" >
+    <asp:Panel ID="pnlList" runat="server" Visible="true" >
         
+        <h4><asp:Literal ID="lTitle" runat="server" /></h4>
         <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
                 <Rock:BoolField DataField="IsActive" HeaderText="Active" />
+                <asp:TemplateField>
+                    <HeaderStyle CssClass="span1" />
+                    <ItemStyle HorizontalAlign="Center"/>
+                    <ItemTemplate>
+                        <a id="aSecure" runat="server" class="btn btn-mini" height="500px"><i class="icon-lock"></i></a>
+                    </ItemTemplate>
+                </asp:TemplateField>
             </Columns>
         </Rock:Grid>
 

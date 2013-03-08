@@ -58,17 +58,30 @@ namespace Rock.Model
     public static class GroupMemberExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another GroupMember entity
+        /// Clones this GroupMember object to a new GroupMember object
         /// </summary>
-        public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static GroupMember Clone( this GroupMember source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.GroupId = source.GroupId;
-            target.PersonId = source.PersonId;
-            target.GroupRoleId = source.GroupRoleId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as GroupMember;
+            }
+            else
+            {
+                var target = new GroupMember();
+                target.IsSystem = source.IsSystem;
+                target.GroupId = source.GroupId;
+                target.PersonId = source.PersonId;
+                target.GroupRoleId = source.GroupRoleId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -18,15 +18,15 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupFieldAttribute" /> class.
         /// </summary>
-        /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultGroupId">The default group id.</param>
-        /// <param name="key">The key.</param>
         /// <param name="category">The category.</param>
-        /// <param name="description">The description.</param>
-        public GroupFieldAttribute( int order, string name, bool required, string defaultGroupId = "", string key = null, string category = "", string description = "" )
-            : base( order, name, required, defaultGroupId, key, category, description, typeof(Rock.Field.Types.GroupField).FullName )
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public GroupFieldAttribute( string name, string description = "", bool required = true, int defaultGroupId = int.MinValue, string category = "", int order = 0, string key = null )
+            : base( name, description, required, ( defaultGroupId == int.MinValue ? "" : defaultGroupId.ToString() ), category, order, key, typeof( Rock.Field.Types.GroupField ).FullName )
         {
         }
     }

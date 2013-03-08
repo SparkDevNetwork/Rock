@@ -115,7 +115,7 @@ namespace Rock.Data
         /// <value>
         /// The attribute categories.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        public Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
@@ -139,6 +139,17 @@ namespace Rock.Data
         [NotMapped]
         [DataMember]
         public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public virtual Dictionary<string, string> AttributeValueDefaults
+        {
+            get { return null; }
+        }
 
         /// <summary>
         /// Gets the first value of an attribute key.

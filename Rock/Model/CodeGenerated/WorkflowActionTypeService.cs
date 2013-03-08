@@ -64,19 +64,32 @@ namespace Rock.Model
     public static class WorkflowActionTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another WorkflowActionType entity
+        /// Clones this WorkflowActionType object to a new WorkflowActionType object
         /// </summary>
-        public static void CopyPropertiesFrom( this WorkflowActionType target, WorkflowActionType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static WorkflowActionType Clone( this WorkflowActionType source, bool deepCopy )
         {
-            target.ActivityTypeId = source.ActivityTypeId;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.EntityTypeId = source.EntityTypeId;
-            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
-            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as WorkflowActionType;
+            }
+            else
+            {
+                var target = new WorkflowActionType();
+                target.ActivityTypeId = source.ActivityTypeId;
+                target.Name = source.Name;
+                target.Order = source.Order;
+                target.EntityTypeId = source.EntityTypeId;
+                target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
+                target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -21,9 +21,9 @@ namespace RockWeb.Blocks.Core
     /// User control for editing the value(s) of a set of attributes for a given entity and category
     /// </summary>
     [ContextAware]
-    [TextField( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [TextField( 3, "Attribute Category", "Filter", "Attribute Category", true, "" )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Filter", 0 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Filter", 1 )]
+    [TextField( "Attribute Categories", "Delimited List of Attribute Category Names", true, "", "Filter", 2 )]
     public partial class ContextAttributeValues : RockBlock
     {
         protected string _category = string.Empty;
@@ -45,20 +45,12 @@ namespace RockWeb.Blocks.Core
                 _category = PageParameter( "AttributeCategory" );
 
             // Get the context entity
-            int? contextEntityTypeId = null;
-            Rock.Data.IEntity contextEntity = null;
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
-                contextEntityTypeId = entry.Value.TypeId;
-                contextEntity = entry.Value;
-                // Should only be one.
-                break;
-            }
+            Rock.Data.IEntity contextEntity = this.ContextEntity();
 
-            if ( contextEntityTypeId.HasValue && contextEntity != null)
+            if ( contextEntity != null)
             {
                 ObjectCache cache = MemoryCache.Default;
-                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextEntityTypeId, entityQualifierColumn, entityQualifierValue );
+                string cacheKey = string.Format( "Attributes:{0}:{1}:{2}", contextEntity.TypeId, entityQualifierColumn, entityQualifierValue );
 
                 Dictionary<string, List<int>> cachedAttributes = cache[cacheKey] as Dictionary<string, List<int>>;
                 if ( cachedAttributes == null )
@@ -67,7 +59,7 @@ namespace RockWeb.Blocks.Core
 
                     AttributeService attributeService = new AttributeService();
                     foreach ( var item in attributeService
-                        .Get( contextEntityTypeId, entityQualifierColumn, entityQualifierValue )
+                        .Get( contextEntity.TypeId, entityQualifierColumn, entityQualifierValue )
                         .OrderBy( a => a.Category )
                         .ThenBy( a => a.Order )
                         .Select( a => new { a.Category, a.Id } ) )

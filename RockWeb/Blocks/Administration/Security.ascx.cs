@@ -378,32 +378,37 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-            rGrid.DataSource = Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction ); ;
+            var itemRules = Authorization.AuthRules( iSecured.TypeId, iSecured.Id, CurrentAction );
+            rGrid.DataSource = itemRules;
             rGrid.DataBind();
 
             var parentRules = new List<MyAuthRule>();
-            AddParentRules( parentRules, iSecured.ParentAuthority, CurrentAction );
+            AddParentRules( itemRules, parentRules, iSecured.ParentAuthority, CurrentAction );
             rGridParentRules.DataSource = parentRules;
             rGridParentRules.DataBind();
         }
 
-        private void AddParentRules( List<MyAuthRule> rules, ISecured parent, string action )
+        private void AddParentRules( List<AuthRule> itemRules, List<MyAuthRule> parentRules, ISecured parent, string action )
         {
             if ( parent != null )
             {
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( parent.TypeId );
                 foreach ( AuthRule rule in Authorization.AuthRules( parent.TypeId, parent.Id, action ) )
-                    if ( !rules.Exists( r =>
-                        r.SpecialRole == rule.SpecialRole &&
-                        r.PersonId == rule.PersonId &&
-                        r.GroupId == rule.GroupId ) )
+                    if ( !itemRules.Exists( r =>
+                            r.SpecialRole == rule.SpecialRole &&
+                            r.PersonId == rule.PersonId &&
+                            r.GroupId == rule.GroupId ) &&
+                        !parentRules.Exists( r => 
+                            r.SpecialRole == rule.SpecialRole &&
+                            r.PersonId == rule.PersonId &&
+                            r.GroupId == rule.GroupId ) )
                     {
                         var myRule = new MyAuthRule( rule );
                         myRule.EntityTitle = string.Format( "{0} ({1})", parent.ToString(), entityType.FriendlyName ?? entityType.Name ).TrimStart();
-                        rules.Add( myRule );
+                        parentRules.Add( myRule );
                     }
 
-                AddParentRules( rules, parent.ParentAuthority, action );
+                AddParentRules( itemRules, parentRules, parent.ParentAuthority, action );
             }
         }
 

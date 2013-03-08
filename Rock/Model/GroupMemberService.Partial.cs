@@ -71,7 +71,22 @@ namespace Rock.Model
             return Repository.Find( t => t.GroupId == groupId &&
                 ( includeDeceased || !t.Person.IsDeceased.HasValue || !t.Person.IsDeceased.Value ) );
         }
-        
+
+        /// <summary>
+        /// Gets Mebers by group id and person id.
+        /// </summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="personId">The person id.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
+        {
+            return Repository.Find( g =>
+                g.GroupId == groupId &&
+                g.PersonId == personId &&
+                ( includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value ) );
+        }
+
         /// <summary>
         /// Gets Member by Group Id And Person Id And Group Role Id
         /// </summary>
@@ -107,6 +122,24 @@ namespace Rock.Model
         public IEnumerable<GroupMember> GetByPersonId( int personId )
         {
             return Repository.Find( t => t.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets the first names of each person in the group ordered by group role, age, and gender
+        /// </summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased = false )
+        {
+            return Repository.AsQueryable().
+                Where( m => m.GroupId == groupId &&
+                    ( includeDeceased || !m.Person.IsDeceased.HasValue || !m.Person.IsDeceased.Value ) ).
+                OrderBy( m => m.GroupRole.SortOrder ).
+                ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
+                ThenBy( m => m.Person.Gender ).
+                Select( m => m.Person.NickName ?? m.Person.GivenName ).
+                ToList();
         }
     }
 }

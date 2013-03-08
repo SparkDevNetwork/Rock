@@ -8,8 +8,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -262,6 +262,36 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
+        /// <summary>
+        /// Gets the group query.
+        /// </summary>
+        /// <value>
+        /// The group query.
+        /// </value>
+        public virtual int GroupCount
+        {
+            get
+            {
+                return GroupQuery.Count();
+            }
+        }
+
+        /// <summary>
+        /// Gets the group query.
+        /// </summary>
+        /// <value>
+        /// The group query.
+        /// </value>
+        public virtual IQueryable<Group> GroupQuery
+        {
+            get
+            {
+                var groupService = new GroupService();
+                var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
+                return qry;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -278,7 +308,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration

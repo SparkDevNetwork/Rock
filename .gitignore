@@ -15,12 +15,12 @@ web.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
 pageviews.csv
+RockLogster.csv
 Quartz.xml
 StyleCop.Cache
 
 #specific folders
 [Oo]bj/
-[Bb]in
 [Dd]ebug*/
 [Rr]elease*/
 RockWeb/Cache/*
