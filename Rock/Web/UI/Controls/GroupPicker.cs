@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class PagePicker : ItemPicker
+    public class GroupPicker : ItemPicker
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -23,29 +23,29 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            ItemRestUrlExtraParams = string.Empty;
+            ItemRestUrlExtraParams = "/0/false/0";
         }
-
+        
         /// <summary>
         /// Sets the value.
         /// </summary>
-        /// <param name="page">The page.</param>
-        public void SetValue( Rock.Model.Page page )
+        /// <param name="group">The group.</param>
+        public void SetValue( Rock.Model.Group group )
         {
-            if ( page != null )
+            if ( group != null )
             {
-                ItemId = page.Id.ToString();
-
-                string parentPageIds = string.Empty;
-                var parentPage = page.ParentPage;
-                while ( parentPage != null )
+                ItemId = group.Id.ToString();
+                
+                string parentGroupIds = string.Empty;
+                var parentGroup = group.ParentGroup;
+                while ( parentGroup != null )
                 {
-                    parentPageIds = parentPage.Id + "," + parentPageIds;
-                    parentPage = parentPage.ParentPage;
+                    parentGroupIds = parentGroup.Id + "," + parentGroupIds;
+                    parentGroup = parentGroup.ParentGroup;
                 }
 
-                InitialItemParentIds = parentPageIds.TrimEnd( new char[] { ',' } );
-                ItemName = page.Name;
+                InitialItemParentIds = parentGroupIds.TrimEnd( new char[] { ',' } );
+                ItemName = group.Name;
             }
             else
             {
@@ -55,15 +55,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelect control.
+        /// Sets the value on select.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected override void SetValueOnSelect()
         {
-            var page = new PageService().Get( int.Parse( ItemId ) );
-            this.SetValue( page );
+            var group = new GroupService().Get( int.Parse( ItemId ) );
+            SetValue( group );
         }
 
         /// <summary>
@@ -74,7 +71,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public override string ItemRestUrl
         {
-            get { return "~/api/pages/getchildren/"; }
+            get { return "~/api/groups/getchildren/"; }
         }
     }
 }

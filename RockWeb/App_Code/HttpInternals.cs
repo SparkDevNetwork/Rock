@@ -91,6 +91,12 @@ internal static class HttpInternals
             }
         }
 
+        if ( dirIgnoreFilter.Contains( fileInfo.Directory.Name ) )
+        {
+            // a file within an ignored folder changed
+            return;
+        }
+
         if ( !extensionIgnoreFilter.Contains( fileInfo.Extension ) )
         {
             if ( !dirIgnoreFilter.Contains( fileInfo.Name ) )

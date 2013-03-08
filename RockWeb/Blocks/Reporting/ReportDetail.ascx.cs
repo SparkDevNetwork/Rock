@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
 
                 report.Name = tbName.Text;
                 report.Description = tbDescription.Text;
-                report.CategoryId = ddlCategory.SelectedValueAsInt();
+                report.CategoryId = cpCategory.SelectedValueAsInt;
                 report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 report.DataViewId = ddlDataView.SelectedValueAsInt();
 
@@ -242,26 +242,15 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlCategory.Items.Clear();
-            ddlCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
-
-            var service = new CategoryService();
-            LoadChildCategories( service, null, Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Model.Report" ), 0 );
-
             ddlEntityType.DataSource = new DataViewService().GetAvailableEntityTypes().ToList();
             ddlEntityType.DataBind();
             ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
         }
 
-        private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
-        {
-            foreach ( var category in service.Get( parentId, entityTypeId ) )
-            {
-                ddlCategory.Items.Add( new ListItem( ( new string( '-', level ) ) + category.Name, category.Id.ToString() ) );
-                LoadChildCategories( service, category.Id, entityTypeId, level + 1 );
-            }
-        }
-
+        /// <summary>
+        /// Loads the data view dropdown.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type id.</param>
         private void LoadDataViewDropdown(int? entityTypeId)
         {
             if ( entityTypeId.HasValue )
@@ -384,7 +373,7 @@ namespace RockWeb.Blocks.Reporting
 
             tbName.Text = report.Name;
             tbDescription.Text = report.Description;
-            ddlCategory.SetValue( report.CategoryId );
+            cpCategory.SetValue( report.Category );
             ddlEntityType.SetValue( report.EntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
         }

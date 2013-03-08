@@ -6,14 +6,11 @@
         <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
-        <div class="treeview-back">
-            <h3><asp:Literal ID="ltlTreeViewTitle" runat="server" /></h3>
-            <span id="add-buttons"class="pull-right" style="display:none">
-                <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click"><i class="icon-plus-sign"></i></asp:LinkButton>
-                <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click"><i class="icon-plus-sign"></i></asp:LinkButton>
-            </span>
-            <div id="treeviewCategories" class="tree-view tree-view-categories"></div>
-        </div>
+        <span id="add-buttons" class="pull-right" style="display: none">
+            <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click"><i class="icon-plus-sign"></i></asp:LinkButton>
+            <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click"><i class="icon-plus-sign"></i></asp:LinkButton>
+        </span>
+        <div id="treeviewCategories" class="tree-view tree-view-categories"></div>
         <script>
             function onSelect(e) {
                 var dataItem = this.dataItem(e.node);
@@ -106,7 +103,7 @@
                 transport: {
                     read: {
                         url: function (options) {
-                            var requestUrl = restUrl + (options.id || 0) + '/' + '<%=EntityTypeName%>'
+                            var requestUrl = restUrl + (options.id || 0) + '/' + '<%=EntityTypeName%>' + '/true';
                             return requestUrl;
                         },
                         error: function (xhr, status, error) {

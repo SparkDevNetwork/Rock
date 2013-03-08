@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -19,6 +20,11 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfPersonId;
         private HiddenField hfPersonName;
         private LinkButton btnSelect;
+
+        /// <summary>
+        /// The required validator
+        /// </summary>
+        protected HiddenFieldValidator requiredValidator;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -131,6 +137,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="PersonPicker"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get
+            {
+                if ( ViewState["Required"] != null )
+                    return (bool)ViewState["Required"];
+                else
+                    return false;
+            }
+            set
+            {
+                ViewState["Required"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the select person.
         /// </summary>
         /// <value>
@@ -177,7 +210,7 @@ namespace Rock.Web.UI.Controls
 
         $('a.rock-picker').click(function (e) {{
             e.preventDefault();
-            $(this).next('.rock-picker').show();
+            $(this).next('.rock-picker').toggle();
         }});
 
         $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {{
@@ -229,6 +262,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || requiredValidator.IsValid;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -259,6 +306,16 @@ namespace Rock.Web.UI.Controls
             Controls.Add( hfPersonId );
             Controls.Add( hfPersonName );
             Controls.Add( btnSelect );
+
+            requiredValidator = new HiddenFieldValidator();
+            requiredValidator.ID = this.ID + "_rfv";
+            requiredValidator.InitialValue = "0";
+            requiredValidator.ControlToValidate = hfPersonId.ID;
+            requiredValidator.Display = ValidatorDisplay.Dynamic;
+            requiredValidator.CssClass = "validation-error";
+            requiredValidator.Enabled = false;
+
+            Controls.Add( requiredValidator );
         }
 
         /// <summary>
@@ -316,6 +373,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "controls" );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( Required )
+            {
+                requiredValidator.Enabled = true;
+                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.RenderControl( writer );
+            }
+
             hfPersonId.RenderControl( writer );
             hfPersonName.RenderControl( writer );
 

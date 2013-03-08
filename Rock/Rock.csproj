@@ -366,6 +366,10 @@
     <Compile Include="Migrations\201303051729314_WorkflowNameNotRequired.Designer.cs">
       <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.cs" />
+    <Compile Include="Migrations\201303072129452_CategoryDetailBlockEntityType.Designer.cs">
+      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -495,6 +499,10 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\CategoryPicker.cs" />
+    <Compile Include="Web\UI\Controls\GroupPicker.cs" />
+    <Compile Include="Web\UI\Controls\ItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />
     <Compile Include="Web\UI\Controls\FileSelector.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1186,6 +1194,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303051729314_WorkflowNameNotRequired.resx">
       <DependentUpon>201303051729314_WorkflowNameNotRequired.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303072129452_CategoryDetailBlockEntityType.resx">
+      <DependentUpon>201303072129452_CategoryDetailBlockEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
