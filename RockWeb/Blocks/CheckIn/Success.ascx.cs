@@ -12,12 +12,21 @@ using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.CheckIn;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-In Success block" )]
     public partial class Success : CheckInBlock
     {
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+
+            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js");
+            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js");
+        }
+        
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
