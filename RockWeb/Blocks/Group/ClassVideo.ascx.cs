@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Group
             base.OnInit( e );
 
             // Add the neccessary CSS and Scripts required for video field types
-            Rock.Field.Types.Video.AddLinks( this.Page );
+            Rock.Field.Types.VideoFieldType.AddLinks( this.Page );
 
             if ( !Int32.TryParse( GetAttributeValue( "GroupLevels" ), out _levels ) )
                 _levels = int.MaxValue;

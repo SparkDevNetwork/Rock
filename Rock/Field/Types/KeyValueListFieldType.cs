@@ -3,21 +3,41 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Types
+    /// Field used to save and dispaly a text value
     /// </summary>
     [Serializable]
-    public class DefinedType : FieldType
+    public class KeyValueListFieldType : FieldType
     {
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string[] KeyValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            if ( KeyValues.Length == 1 )
+            {
+                return "1 Key Value Pair";
+            }
+            else
+            {
+                return string.Format( "{0:N0} Key Value Pairs", KeyValues.Length );
+            }
+        }
+
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
@@ -27,13 +47,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            ListControl editControl = new DropDownList();
-
-            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
-            foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
-                editControl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
-
-            return editControl;
+            return new Rock.Web.UI.Controls.KeyValueList();
         }
 
         /// <summary>
@@ -44,9 +58,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is ListControl )
-                return ( (ListControl)control ).SelectedValue;
-
+            if ( control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            {
+                return ( (Rock.Web.UI.Controls.KeyValueList)control ).Value;
+            }
             return null;
         }
 
@@ -58,12 +73,10 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            if ( value!= null && control != null && control is Rock.Web.UI.Controls.KeyValueList )
             {
-                if ( control != null && control is ListControl )
-                    ( (ListControl)control ).SelectedValue = value;
+                ( (Rock.Web.UI.Controls.KeyValueList)control ).Value = value;
             }
         }
-
     }
 }

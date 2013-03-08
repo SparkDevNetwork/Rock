@@ -26,7 +26,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public IntegerFieldAttribute( string name, string description = "", bool required = true, int defaultValue = int.MinValue, string category = "", int order = 0, string key = null )
-            : base( name, description, required, ( defaultValue == int.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.Integer ).FullName )
+            : base( name, description, required, ( defaultValue == int.MinValue ? "" : defaultValue.ToString() ), category, order, key, typeof( Rock.Field.Types.IntegerFieldType ).FullName )
         {
         }
     }

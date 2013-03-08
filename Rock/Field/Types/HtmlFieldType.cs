@@ -12,7 +12,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class HtmlField : FieldType
+    public class HtmlFieldType : FieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value

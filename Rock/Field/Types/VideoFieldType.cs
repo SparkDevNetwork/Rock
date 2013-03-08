@@ -14,7 +14,7 @@ namespace Rock.Field.Types
     /// Video field type
     /// </summary>
     [Serializable]
-    public class Video : FieldType
+    public class VideoFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)

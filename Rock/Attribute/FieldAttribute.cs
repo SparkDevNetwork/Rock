@@ -33,7 +33,7 @@ namespace Rock.Attribute
         /// <param name="key">The key.</param>
         /// <param name="fieldTypeAssembly">The field type assembly.</param>
         /// <param name="fieldTypeClass">The field type class.</param>
-        public FieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = "Rock.Field.Types.Text", string fieldTypeAssembly = "Rock" )
+        public FieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
             : base()
         {
             if ( string.IsNullOrWhiteSpace( key ) )
@@ -44,6 +44,12 @@ namespace Rock.Attribute
             {
                 Key = key;
             }
+            
+            if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
+            {
+                fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
+            }
+
             Name = name;
             Category = category;
             Description = description;
