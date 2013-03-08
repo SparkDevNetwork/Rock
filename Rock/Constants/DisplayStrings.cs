@@ -120,7 +120,21 @@ namespace Rock.Constants
         /// <summary>
         /// 
         /// </summary>
-        public const string Text = "<All>";
+        public const string Text = "[All]";
+
+        /// <summary>
+        /// Gets the list item.
+        /// </summary>
+        /// <value>
+        /// The list item.
+        /// </value>
+        public static System.Web.UI.WebControls.ListItem ListItem
+        {
+            get
+            {
+                return new System.Web.UI.WebControls.ListItem( All.Text, All.IdValue );
+            }
+        }
     }
 
     /// <summary>

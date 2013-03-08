@@ -59,7 +59,7 @@ namespace Rock.Data
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.TypeName ).Id;
+                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).Id;
             }
         }
 
@@ -162,7 +162,7 @@ namespace Rock.Data
         #region Methods
 
         /// <summary>
-        /// Clones this instance.
+        /// Creates a deep copy of this instance
         /// </summary>
         /// <returns></returns>
         public virtual IEntity Clone()

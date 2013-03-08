@@ -333,7 +333,7 @@ namespace Rock.Model
         {
             var workflow = new Workflow();
             workflow.WorkflowTypeId = workflowType.Id;
-            workflow.Name = name;
+            workflow.Name = name ?? workflowType.Name;
             workflow.Status = "Activated";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = DateTime.Now;

@@ -14,9 +14,17 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledCheckBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledCheckBox : CheckBox
+    public class LabeledCheckBox : CheckBox, ILabeledControl
     {
-        private Label label;
+        /// <summary>
+        /// The label
+        /// </summary>
+        private Literal label;
+
+        /// <summary>
+        /// The help block
+        /// </summary>
+        private HelpBlock helpBlock;
 
         /// <summary>
         /// Gets or sets the help tip.
@@ -37,6 +45,7 @@ namespace Rock.Web.UI.Controls
                 string s = ViewState["Tip"] as string;
                 return s == null ? string.Empty : s;
             }
+
             set
             {
                 ViewState["Tip"] = value;
@@ -59,12 +68,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string s = ViewState["Help"] as string;
-                return s == null ? string.Empty : s;
+                EnsureChildControls();
+                return helpBlock.Text;
             }
+
             set
             {
-                ViewState["Help"] = value;
+                EnsureChildControls();
+                helpBlock.Text = value;
             }
         }
 
@@ -87,6 +98,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return label.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -103,33 +115,54 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Label();
-            label.AssociatedControlID = this.ID;
-
+            label = new Literal();
             Controls.Add( label );
+
+            helpBlock = new HelpBlock();
+            Controls.Add( helpBlock );
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            label.AddCssClass( "control-label" );
-            label.RenderControl( writer );
+            if ( label.Text.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.RenderControl( writer );
+                helpBlock.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
+            if ( Enabled )
+            {
+                base.RenderControl( writer );
+            }
+            else
+            {
+                if ( this.Checked )
+                {
+                    writer.WriteLine( "<i class=\"icon-check\"></i>" );
+                }
+                else
+                {
+                    writer.WriteLine( "<i class=\"icon-check-empty\"></i>" );
+                }
+            }
 
-            writer.AddAttribute( "class", "checkbox" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Label );
-
-            base.Render( writer );
-
-            writer.RenderEndTag();
+            if ( label.Text.Trim() == string.Empty)
+            {
+                helpBlock.RenderControl( writer );
+            }
 
             if ( Tip.Trim() != string.Empty )
             {
@@ -142,18 +175,9 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            if ( Help.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
-                writer.Write( Help.Trim() );
-                writer.RenderEndTag();
-            }
-
             writer.RenderEndTag();
 
             writer.RenderEndTag();
         }
-
     }
 }

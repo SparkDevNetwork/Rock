@@ -6,20 +6,20 @@
     <title></title>
     
     <!--[if lt IE 9]>
-        <script src="<%# ResolveUrl("~/Themes/RockCms/Scripts/html5.js") %>" ></script>
+        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
     <![endif]-->
 
     <!-- Set the viewport width to device width for mobile -->
     <meta name="viewport" content="width=device-width" />
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/bootstrap-responsive.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/RockCore.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/CSS/RockTheme.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Css/rock-core.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.8.3.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.8.23.custom.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
 
 </head>
@@ -28,9 +28,9 @@
     <form id="form1" runat="server">
 
             <div id="content">
-                <h1>Rock ChMS</h1>
+                <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
                 
-                <div id="content-box" class="group">
+                <div id="content-box" class="clearfix">
                     <Rock:Zone ID="Content" runat="server" />
                 </div>
             </div>

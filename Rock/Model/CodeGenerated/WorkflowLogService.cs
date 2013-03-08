@@ -58,16 +58,29 @@ namespace Rock.Model
     public static class WorkflowLogExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another WorkflowLog entity
+        /// Clones this WorkflowLog object to a new WorkflowLog object
         /// </summary>
-        public static void CopyPropertiesFrom( this WorkflowLog target, WorkflowLog source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static WorkflowLog Clone( this WorkflowLog source, bool deepCopy )
         {
-            target.WorkflowId = source.WorkflowId;
-            target.LogDateTime = source.LogDateTime;
-            target.LogText = source.LogText;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as WorkflowLog;
+            }
+            else
+            {
+                var target = new WorkflowLog();
+                target.WorkflowId = source.WorkflowId;
+                target.LogDateTime = source.LogDateTime;
+                target.LogText = source.LogText;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

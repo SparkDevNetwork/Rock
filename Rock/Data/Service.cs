@@ -3,11 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-
+using System.Linq.Expressions;
 using Rock.Model;
 using Rock.Workflow;
 
@@ -34,6 +35,20 @@ namespace Rock.Data
         public IRepository<T> Repository
         {
             get { return _repository; }
+        }
+
+        /// <summary>
+        /// Gets a LINQ expression parameter.
+        /// </summary>
+        /// <value>
+        /// The parameter expression.
+        /// </value>
+        public ParameterExpression ParameterExpression
+        {
+            get
+            {
+                return Expression.Parameter( typeof( T ), "p" );
+            }
         }
 
         /// <summary>
@@ -91,6 +106,45 @@ namespace Rock.Data
         public virtual T Get( Guid guid )
         {
             return _repository.FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns></returns>
+        public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                return this.Queryable().Where( lambda );
+            }
+
+            return this.Queryable();
+        }
+
+        /// <summary>
+        /// Gets the list.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public List<T> GetList( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression ).ToList();
+        }
+
+        /// <summary>
+        /// Anies the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public bool Any( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+            return this.Queryable().Any( lambda );
         }
 
         /// <summary>
@@ -409,20 +463,11 @@ namespace Rock.Data
             if ( item != null && item.Guid == Guid.Empty )
                 item.Guid = Guid.NewGuid();
 
-            List<EntityChange> changes;
             List<Audit> audits;
             List<string> errorMessages;
 
-            if ( _repository.Save( personId, out changes, out audits, out errorMessages ) )
+            if ( _repository.Save( personId, out audits, out errorMessages ) )
             {
-                if ( changes != null && changes.Count > 0 )
-                {
-                    var transaction = new Rock.Transactions.EntityChangeTransaction();
-                    transaction.Changes = changes;
-                    transaction.PersonId = personId;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-
                 if ( audits != null && audits.Count > 0 )
                 {
                     var transaction = new Rock.Transactions.AuditTransaction();
@@ -472,46 +517,119 @@ namespace Rock.Data
                 order++;
             }
         }
+
+        /// <summary>
+        /// Creates a raw sql query that will return entities
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
+        {
+            return _repository.ExecuteQuery( query, parameters );
+        }
+
     }
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    ///// <typeparam name="T"></typeparam>
-    ///// <typeparam name="D"></typeparam>
-    //public class Service<T, D> : Service<T>
-    //    where T : Rock.Data.Entity<T>
-    //    where D : Rock.Data.IDto
-    //{
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
-    //    /// </summary>
-    //    public Service() : base() { }
+    /// <summary>
+    /// Service class for non entity specific methods
+    /// </summary>
+    public class Service
+    {
+        private IRepository _repository;
+        /// <summary>
+        /// Gets the Repository.
+        /// </summary>
+        public IRepository Repository
+        {
+            get { return _repository; }
+        }
 
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="Service{D}" /> class.
-    //    /// </summary>
-    //    /// <param name="repository">The repository.</param>
-    //    public Service( IRepository<T> repository ) : base( repository ) { }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
+        /// </summary>
+        public Service()
+        {
+            var factory = new RepositoryFactory();
+            _repository = factory.FindRepository();
+        }
 
-    //    /// <summary>
-    //    /// Gets an <see cref="IQueryable{D}"/> list of DTO objects
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    public virtual IQueryable<D> QueryableDto()
-    //    {
-    //        throw new System.NotImplementedException();
-    //    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        public Service( IRepository repository )
+        {
+            _repository = repository;
+        }
 
-    //    /// <summary>
-    //    /// Creates the new.
-    //    /// </summary>
-    //    /// <returns></returns>
-    //    /// <exception cref="System.NotImplementedException"></exception>
-    //    public virtual T CreateNew()
-    //    {
-    //        throw new System.NotImplementedException();
-    //    }
-    //}
+        /// <summary>
+        /// Creates a raw SQL query that will return elements of the given type.  The
+        /// type can be any type that has properties that match the names of the columns
+        /// returned from the query, or can be a simple primitive type. The type does
+        /// not have to be an entity type. The results of this query are never tracked
+        /// by the context even if the type of object returned is an entity type. Use
+        /// the SqlQuery(System.String,System.Object[]) method
+        /// to return entities that are tracked by the context.
+        /// </summary>
+        /// <param name="elementType">Type of the element.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IEnumerable ExecuteQuery( Type elementType, string query, params object[] parameters )
+        {
+            return _repository.ExecuteQuery( elementType, query, parameters );
+        }
+
+        /// <summary>
+        /// Gets a data set.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return _repository.GetDataSet( query, commandType, parameters );
+        }
+
+        /// <summary>
+        /// Gets a data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return _repository.GetDataTable( query, commandType, parameters );
+        }
+
+        /// <summary>
+        /// Gets a data reader.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            return _repository.GetDataReader( query, commandType, parameters );
+        }
+
+        /// <summary>
+        /// Executes the SQL command.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int ExecuteCommand( string query, params object[] parameters )
+        {
+            return _repository.ExecuteCommand( query, parameters );
+        }
+
+    }
 
 }

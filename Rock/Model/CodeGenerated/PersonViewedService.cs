@@ -58,18 +58,31 @@ namespace Rock.Model
     public static class PersonViewedExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another PersonViewed entity
+        /// Clones this PersonViewed object to a new PersonViewed object
         /// </summary>
-        public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static PersonViewed Clone( this PersonViewed source, bool deepCopy )
         {
-            target.ViewerPersonId = source.ViewerPersonId;
-            target.TargetPersonId = source.TargetPersonId;
-            target.ViewDateTime = source.ViewDateTime;
-            target.IpAddress = source.IpAddress;
-            target.Source = source.Source;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as PersonViewed;
+            }
+            else
+            {
+                var target = new PersonViewed();
+                target.ViewerPersonId = source.ViewerPersonId;
+                target.TargetPersonId = source.TargetPersonId;
+                target.ViewDateTime = source.ViewDateTime;
+                target.IpAddress = source.IpAddress;
+                target.Source = source.Source;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

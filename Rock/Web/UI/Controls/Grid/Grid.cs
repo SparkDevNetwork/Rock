@@ -172,18 +172,28 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                object rowItemText = this.ViewState["RowItemText"];
-                if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
+                string rowItemText = this.ViewState["RowItemText"] as string;
+                if (!string.IsNullOrWhiteSpace(rowItemText))
+                {
+                    return rowItemText;
+                }
+
+                if ( DataSource != null )
                 {
                     Type dataSourceType = DataSource.GetType();
-                    Type itemType = dataSourceType.GetGenericArguments()[0];
-                    if ( itemType != null )
-                    {
-                        rowItemText = itemType.GetFriendlyTypeName().ToLower();
-                    }
 
+                    Type[] genericArgs = dataSourceType.GetGenericArguments();
+                    if ( genericArgs.Length > 0 )
+                    {
+                        Type itemType = genericArgs[0];
+                        if ( itemType != null )
+                        {
+                            return itemType.GetFriendlyTypeName();
+                        }
+                    }
                 }
-                return ( rowItemText as string );
+
+                return "Item";
             }
 
             set
@@ -203,15 +213,7 @@ namespace Rock.Web.UI.Controls
                 string result = base.EmptyDataText;
                 if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
                 {
-                    if ( DataSource != null )
-                    {
-                        Type dataSourceType = DataSource.GetType();
-                        Type itemType = dataSourceType.GetGenericArguments()[0];
-                        if ( itemType != null )
-                        {
-                            result = string.Format( "No {0} Found", itemType.GetFriendlyTypeName().Pluralize() );
-                        }
-                    }
+                    result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
                 return result;
             }
@@ -354,7 +356,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public Grid()
         {
-            base.CssClass = "grid-table";
+            base.CssClass = "grid-table table";
             base.AutoGenerateColumns = false;
             base.RowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
             base.HeaderStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
@@ -474,7 +476,7 @@ namespace Rock.Web.UI.Controls
                 {
                     for ( int i = 0; i < data.Columns.Count; i++ )
                     {
-                        worksheet.Cells[rowCounter, i].Value = row[i].ToString();
+                        worksheet.Cells[rowCounter, i+1].Value = row[i].ToString();
 
                         // format background color for alternating rows
                         if ( rowCounter % 2 == 1 )
@@ -606,7 +608,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
+            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
 
             UseAccessibleHeader = true;
 
@@ -649,7 +651,7 @@ namespace Rock.Web.UI.Controls
                 this.Actions.IsExcelExportEnabled = false;
 
                 this.RemoveCssClass( "table-bordered" );
-                this.RemoveCssClass( "table-stripped" );
+                this.RemoveCssClass( "table-striped" );
                 this.RemoveCssClass( "table-hover" );
                 this.RemoveCssClass( "table-full" );
                 this.AddCssClass( "table-condensed" );
@@ -660,17 +662,35 @@ namespace Rock.Web.UI.Controls
                 this.RemoveCssClass( "table-condensed" );
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
-                this.AddCssClass( "table-stripped" );
+                this.AddCssClass( "table-striped" );
                 this.AddCssClass( "table-hover" );
                 this.AddCssClass( "table-full" );
             }
 
             base.OnDataBound( e );
 
+            // Get ItemCount
+            int itemCount = 0;
+            if ( this.DataSource is DataTable || this.DataSource is DataView )
+            {
+                if ( this.DataSource is DataTable )
+                {
+                    itemCount = ( (DataTable)this.DataSource ).Rows.Count;
+                }
+                else if ( this.DataSource is DataView )
+                {
+                    itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
+                }
+            }
+            else
+            {
+                itemCount = ( (IList)this.DataSource ).Count;
+            }
+
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
             if ( PagerTemplate != null )
             {
-                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize );
+                pagerTemplate.SetNavigation( this.PageCount, this.PageIndex, this.PageSize, itemCount, this.RowItemText );
             }
         }
 
@@ -760,7 +780,7 @@ namespace Rock.Web.UI.Controls
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
-                if ( column != null )
+                if ( column != null && !( column is INotRowSelectedField ) )
                 {
                     DataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
@@ -795,6 +815,7 @@ namespace Rock.Web.UI.Controls
 
                 TableCell cell = new TableCell();
                 cell.ColumnSpan = this.Columns.Count;
+                cell.CssClass = "grid-footer";
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
@@ -1146,6 +1167,27 @@ namespace Rock.Web.UI.Controls
         public System.Web.UI.WebControls.SortDirection Direction { get; set; }
 
         /// <summary>
+        /// Gets the direction as an ASC or DESC string.
+        /// </summary>
+        /// <value>
+        /// The direction string.
+        /// </value>
+        public string DirectionString 
+        { 
+            get
+            {
+                if (Direction == SortDirection.Descending)
+                {
+                    return "DESC";
+                }
+                else
+                {
+                    return "ASC";
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the property name
         /// </summary>
         /// <value>
@@ -1182,6 +1224,8 @@ namespace Rock.Web.UI.Controls
         HtmlGenericContainer[] PageLinkListItem = new HtmlGenericContainer[12];
         LinkButton[] PageLink = new LinkButton[12];
 
+       Literal itemCountDisplay;
+
         HtmlGenericContainer[] ItemLinkListItem = new HtmlGenericContainer[4];
         LinkButton[] ItemLink = new LinkButton[4];
 
@@ -1200,14 +1244,6 @@ namespace Rock.Web.UI.Controls
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
 
-            // RockPage Status
-            //HtmlGenericControl divStatus = new HtmlGenericControl( "div" );
-            //divStatus.Attributes.Add( "class", "page-status" );
-            //divPagination.Controls.Add( divStatus );
-
-            //lStatus = new Literal(); 
-            //divStatus.Controls.Add( lStatus );
-
             // Pagination
             NavigationPanel = new HtmlGenericControl( "div" );
             NavigationPanel.Attributes.Add( "class", "page-navigation" );
@@ -1225,18 +1261,22 @@ namespace Rock.Web.UI.Controls
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].Click += new EventHandler( lbPage_Click );
             }
-
+            
             PageLink[0].Text = "&larr; Previous";
             PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
+
+            // itemCount
+            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
+            divItemCount.Attributes.Add( "class", "item-count" );
+            divPagination.Controls.Add( divItemCount );
+
+            itemCountDisplay = new Literal();
+            divItemCount.Controls.Add( itemCountDisplay );
 
             // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
             divPagination.Controls.Add( divSize );
-
-            //Label lblPageSize = new Label();
-            //lblPageSize.Text = "Items per page:";
-            //divSize.Controls.Add( lblPageSize );
 
             HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
             divSizeOptions.Attributes.Add( "class", "page-size-options" );
@@ -1267,12 +1307,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageCount">The number of total pages</param>
         /// <param name="pageIndex">The current page index</param>
         /// <param name="pageSize">The number of items on each page</param>
-        public void SetNavigation( int pageCount, int pageIndex, int pageSize )
+        /// <param name="itemCount">The item count.</param>
+        public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
         {
-            //// Set status
-            //if (lStatus != null)
-            //    lStatus.Text = string.Format( "RockPage {0:N0} of {1:N0}", pageIndex+1, pageCount );
-
             // Set navigation controls
             if ( NavigationPanel != null )
             {
@@ -1338,6 +1375,12 @@ namespace Rock.Web.UI.Controls
                 {
                     NavigationPanel.Visible = false;
                 }
+            }
+
+            // Set Item Count
+            if ( itemCountDisplay != null )
+            {
+                itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, itemCount == 1 ? rowItemText : rowItemText.Pluralize() );
             }
 
             // Set page size controls

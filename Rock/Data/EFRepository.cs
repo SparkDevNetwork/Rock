@@ -5,14 +5,16 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Objects;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-
 using Rock;
 using Rock.Model;
 
@@ -341,13 +343,11 @@ namespace Rock.Data
         /// need to be logged
         /// </summary>
         /// <param name="PersonId">The id of the person making the change</param>
-        /// <param name="changes">The changes.</param>
         /// <param name="audits">The audits.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages )
         {
-            changes = new List<EntityChange>();
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
@@ -477,6 +477,18 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Creates a raw sql query that will return entities
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
+        {
+            return _objectSet.SqlQuery( query, parameters );
+        }
+
+        /// <summary>
         /// Sets the configuration value.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -523,58 +535,218 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the entity changes.
+        /// Dispose object
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="baseType">Type of the base.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        private List<Rock.Model.EntityChange> GetEntityChanges( object entity, Type baseType, int? personId )
+        public void Dispose()
         {
-            List<Rock.Model.EntityChange> entityChanges = new List<Model.EntityChange>();
+            Dispose( true );
+            GC.SuppressFinalize( this );
+        }
 
-            // Do not track changes on the 'EntityChange' entity type. 
-            if ( !( entity is Rock.Model.EntityChange ) )
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose( bool disposing )
+        {
+            if ( !IsDisposed )
             {
-                Guid changeSet = Guid.NewGuid();
-
-                // Look for properties that have the "TrackChanges" attribute
-                foreach ( PropertyInfo propInfo in entity.GetType().GetProperties() )
+                if ( disposing )
                 {
-                    object[] customAttributes = propInfo.GetCustomAttributes( typeof( TrackChangesAttribute ), true );
-                    if ( customAttributes.Length > 0 )
+                    if ( _context != null )
                     {
-                        var currentValue = Context.Entry( entity ).Property( propInfo.Name ).CurrentValue;
-                        var originalValue = Context.Entry( entity ).State != System.Data.EntityState.Added ?
-                            Context.Entry( entity ).Property( propInfo.Name ).OriginalValue : string.Empty;
-
-                        string currentValueStr = currentValue == null ? string.Empty : currentValue.ToString();
-                        string originalValueStr = originalValue == null ? string.Empty : originalValue.ToString();
-
-                        if ( currentValueStr != originalValueStr )
-                        {
-                            if ( entityChanges == null )
-                            {
-                                entityChanges = new List<Model.EntityChange>();
-                            }
-
-                            Rock.Model.EntityChange change = new Model.EntityChange();
-                            change.ChangeSet = changeSet;
-                            change.ChangeType = Context.Entry( entity ).State.ToString();
-                            change.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( baseType.Name ).Id;
-                            change.Property = propInfo.Name;
-                            change.OriginalValue = originalValueStr;
-                            change.CurrentValue = currentValueStr;
-                            change.CreatedByPersonId = personId;
-                            change.CreatedDateTime = DateTime.Now;
-
-                            entityChanges.Add( change );
-                        }
+                        _context.Dispose();
                     }
                 }
+
+                _context = null;
+                IsDisposed = true;
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// Entity Framework repository for providing non entity specific methods
+    /// </summary>
+    public class EFRepository : IRepository, IDisposable
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        private bool IsDisposed;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private DbContext _context;
+
+        /// <summary>
+        /// Gets the context.
+        /// </summary>
+        internal DbContext Context
+        {
+            get
+            {
+                if ( UnitOfWorkScope.CurrentObjectContext != null )
+                {
+                    return UnitOfWorkScope.CurrentObjectContext;
+                }
+
+                if ( _context == null )
+                {
+                    _context = new RockContext();
+                }
+
+                return _context;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
+        /// </summary>
+        public EFRepository() :
+            this( new RockContext() )
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EFRepository&lt;T&gt;"/> class.
+        /// </summary>
+        /// <param name="objectContext">The object context.</param>
+        public EFRepository( DbContext objectContext )
+        {
+            IsDisposed = false;
+            _context = objectContext;
+        }
+
+        /// <summary>
+        /// Creates a raw SQL query that will return elements of the given type.  The
+        /// type can be any type that has properties that match the names of the columns
+        /// returned from the query, or can be a simple primitive type. The type does
+        /// not have to be an entity type. The results of this query are never tracked
+        /// by the context even if the type of object returned is an entity type. Use
+        /// the SqlQuery(System.String,System.Object[]) method
+        /// to return entities that are tracked by the context.
+        /// </summary>
+        /// <param name="elementType">Type of the element.</param>
+        /// <param name="query">The query.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IEnumerable ExecuteQuery( Type elementType, string query, params object[] parameters )
+        {
+            return _context.Database.SqlQuery( elementType, query, parameters );
+        }
+
+        /// <summary>
+        /// Gets a data adapter.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IDataAdapter GetDataAdapter( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
+            if ( sqlCommand != null )
+            {
+                return new SqlDataAdapter( sqlCommand );
             }
 
-            return entityChanges;
+            return null;
+        }
+
+
+        /// <summary>
+        /// Gets the data set.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
+            if ( sqlCommand != null )
+            {
+                SqlDataAdapter adapter =new SqlDataAdapter( sqlCommand );
+                DataSet dataSet = new DataSet( "rockDs" );
+                adapter.Fill( dataSet );
+                return dataSet;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the data table.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public DataTable GetDataTable( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            DataSet dataSet = GetDataSet( query, commandType, parameters );
+            if ( dataSet.Tables.Count > 0 )
+            {
+                return dataSet.Tables[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the data set.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IDataReader GetDataReader( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
+            if (sqlCommand != null)
+            {
+                return sqlCommand.ExecuteReader();
+            }
+            return null;
+        }
+
+        private SqlCommand GetCommand( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            if ( _context.Database.Connection is SqlConnection )
+            {
+                SqlConnection sqlConnection = (SqlConnection)_context.Database.Connection;
+
+                SqlCommand sqlCommand = new SqlCommand( query, sqlConnection );
+                sqlCommand.CommandType = commandType;
+                if ( parameters != null )
+                {
+                    foreach ( var parameter in parameters )
+                    {
+                        SqlParameter sqlParam = new SqlParameter();
+                        sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                        sqlParam.Value = parameter.Value;
+                        sqlCommand.Parameters.Add( sqlParam );
+                    }
+                }
+
+                return sqlCommand;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Executes a SQL command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public int ExecuteCommand( string command, params object[] parameters )
+        {
+            return _context.Database.ExecuteSqlCommand( command, parameters );
         }
 
         /// <summary>

@@ -261,16 +261,26 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
+        /// Creates a <see cref="System.Web.UI.Control" /> based on the attribute's field type.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="setValue">if set to <c>true</c> set the control's value</param>
+        /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <returns></returns>
-        public Control CreateControl( string value, bool setValue)
+        public Control CreateControl( string value, bool setValue, bool setId)
         {
             Control editControl = this.FieldType.Field.EditControl( QualifierValues);
+            if ( setId )
+            {
+                editControl.ID = string.Format( "attribute_field_{0}", this.Id );
+                editControl.ClientIDMode = ClientIDMode.AutoID;
+            }
+
             if ( setValue )
+            {
                 this.FieldType.Field.SetEditValue( editControl, QualifierValues, value );
+            }
+
             return editControl;
         }
 

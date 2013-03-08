@@ -3,12 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
@@ -19,7 +19,7 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-In Welcome block" )]
-    [IntegerField( 11, "Refresh Interval", "10", "RefreshInterval", "", "How often (seconds) should page automatically query server for new check-in data" )]
+    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new check-in data", false, 10 )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -41,6 +41,18 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( !Page.IsPostBack && CurrentCheckInState != null )
             {
+                string script = string.Format( @"
+    <script>
+        $(document).ready(function (e) {{
+            if (localStorage) {{
+                localStorage.checkInKiosk = '{0}';
+                localStorage.checkInGroupTypes = '{1}';
+            }}
+        }});
+    </script>
+", CurrentKioskId, CurrentGroupTypeIds.AsDelimited(",") );
+                phScript.Controls.Add( new LiteralControl( script ) );
+
                 CurrentWorkflow = null;
                 SaveState();
                 RefreshView();
@@ -127,6 +139,12 @@ if ($ActiveWhen.text() != '')
 
             lblActiveWhen.Text = string.Empty;
 
+            if ( CurrentCheckInState == null )
+            {
+                GoToAdminPage();
+                return;
+            }
+
             if (CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
             {
                 pnlNotActive.Visible = true;
@@ -144,6 +162,53 @@ if ($ActiveWhen.text() != '')
             else
             {
                 pnlActive.Visible = true;
+            }
+
+            List<int> locations = new List<int>();
+
+            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
+            {
+                foreach ( var location in  groupType.KioskLocations )
+                {
+                    if ( !locations.Contains( location.Location.Id ) )
+                    {
+                        locations.Add( location.Location.Id );
+                        var locationAttendance = Rock.CheckIn.KioskCache.GetLocationAttendance( location.Location.Id );
+
+                        if ( locationAttendance != null )
+                        {
+                            var lUl = new HtmlGenericControl( "ul" );
+                            lUl.AddCssClass("checkin-count-locations");
+                            phCounts.Controls.Add( lUl );
+
+                            var lLi = new HtmlGenericControl( "li" );
+                            lUl.Controls.Add( lLi );
+                            lLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", locationAttendance.LocationName, locationAttendance.CurrentCount );
+
+                            foreach ( var groupAttendance in locationAttendance.Groups )
+                            {
+                                var gUl = new HtmlGenericControl( "ul" );
+                                gUl.AddCssClass("checkin-count-groups");
+                                lLi.Controls.Add( gUl );
+
+                                var gLi = new HtmlGenericControl( "li" );
+                                gUl.Controls.Add( gLi );
+                                gLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", groupAttendance.GroupName, groupAttendance.CurrentCount );
+
+                                foreach ( var scheduleAttendance in groupAttendance.Schedules )
+                                {
+                                    var sUl = new HtmlGenericControl( "ul" );
+                                    sUl.AddCssClass("checkin-count-schedules");
+                                    gLi.Controls.Add( sUl );
+
+                                    var sLi = new HtmlGenericControl( "li" );
+                                    sUl.Controls.Add( sLi );
+                                    sLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -16,8 +16,8 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     [ContextAware]
-    [TextField( 1, "Entity Qualifier Column", "Filter", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Filter", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Filter", 0 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Filter", 1 )]
     public partial class Tags : RockBlock
     {
         protected void Page_Load( object sender, EventArgs e )
@@ -33,21 +33,13 @@ namespace RockWeb.Blocks.Core
             var sb = new StringBuilder();
 
             // Get the context entity
-            int? contextTypeId = null;
-            Rock.Data.IEntity contextEntity = null;
-            foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
-            {
-                contextTypeId = entry.Value.TypeId;
-                contextEntity = entry.Value;
-                // Should only be one.
-                break;
-            }
+            Rock.Data.IEntity contextEntity = this.ContextEntity();
 
-            if ( contextTypeId.HasValue && contextEntity != null )
+            if ( contextEntity != null )
             {
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.Get(
-                    contextTypeId.Value, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
+                    contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
                     .Select( i => new {
                         OwnerId = i.Tag.OwnerId,
                         Name = i.Tag.Name
@@ -85,6 +77,10 @@ namespace RockWeb.Blocks.Core
                 }});
             }},
             autoCompleteAppendTo: 'div.tag-wrap',
+            autoCompleteMessages: {{
+              noResults: function () {{ }},
+              results: function () {{ }}
+            }},
             'height': 'auto',
             'width': '100%',
             'interactive': true,
@@ -139,7 +135,7 @@ namespace RockWeb.Blocks.Core
     }}
 
 ",
-    contextTypeId.Value, CurrentPersonId, contextEntity.Id,
+    contextEntity.TypeId, CurrentPersonId, contextEntity.Id,
     string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
     string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.CurrentBlock.Id.ToString(), script, true );

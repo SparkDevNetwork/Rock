@@ -70,65 +70,76 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Site site;
-            SiteService siteService = new SiteService();
-            bool newSite = false;
-
-            int siteId = int.Parse( hfSiteId.Value );
-
-            if ( siteId == 0 )
+            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                newSite = true;
-                site = new Rock.Model.Site();
-                siteService.Add( site, CurrentPersonId );
-            }
-            else
-            {
-                site = siteService.Get( siteId );
+                Site site;
+                SiteService siteService = new SiteService();
                 SiteDomainService siteDomainService = new SiteDomainService();
-                foreach ( var domain in site.SiteDomains.ToList() )
+                bool newSite = false;
+
+                int siteId = int.Parse( hfSiteId.Value );
+
+                if ( siteId == 0 )
                 {
+                    newSite = true;
+                    site = new Rock.Model.Site();
+                    siteService.Add( site, CurrentPersonId );
+                }
+                else
+                {
+                    site = siteService.Get( siteId );
+                }
+
+                site.Name = tbSiteName.Text;
+                site.Description = tbDescription.Text;
+                site.Theme = ddlTheme.Text;
+                site.DefaultPageId = int.Parse( ppDefaultPage.SelectedValue );
+
+                var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
+                site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
+
+                // Remove any deleted domains
+                foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
+                {
+                    site.SiteDomains.Remove( domain );
                     siteDomainService.Delete( domain, CurrentPersonId );
                 }
 
-                site.SiteDomains.Clear();
-            }
-
-            site.Name = tbSiteName.Text;
-            site.Description = tbDescription.Text;
-            site.Theme = ddlTheme.Text;
-            site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
-
-            foreach ( string domain in tbSiteDomains.Text.SplitDelimitedValues() )
-            {
-                SiteDomain sd = new SiteDomain();
-                sd.Domain = domain;
-                sd.Guid = Guid.NewGuid();
-                site.SiteDomains.Add( sd );
-            }
-
-            site.FaviconUrl = tbFaviconUrl.Text;
-            site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
-            site.FacebookAppId = tbFacebookAppId.Text;
-            site.FacebookAppSecret = tbFacebookAppSecret.Text;
-
-            if ( !site.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                siteService.Save( site, CurrentPersonId );
-
-                if ( newSite )
+                foreach ( string domain in currentDomains )
                 {
-                    Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                    SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
+                    if ( sd == null )
+                    {
+                        sd = new SiteDomain();
+                        sd.Domain = domain;
+                        sd.Guid = Guid.NewGuid();
+                        site.SiteDomains.Add( sd );
+                    }
                 }
-            } );
 
-            SiteCache.Flush( site.Id );
+                site.FaviconUrl = tbFaviconUrl.Text;
+                site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
+                site.FacebookAppId = tbFacebookAppId.Text;
+                site.FacebookAppSecret = tbFacebookAppSecret.Text;
+
+                if ( !site.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    siteService.Save( site, CurrentPersonId );
+
+                    if ( newSite )
+                    {
+                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                    }
+                } );
+
+                SiteCache.Flush( site.Id );
+            }
 
             NavigateToParentPage();
         }
@@ -142,11 +153,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            PageService pageService = new PageService();
-            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
-            ddlDefaultPage.DataSource = allPages.OrderBy( a => a.PageSortHash );
-            ddlDefaultPage.DataBind();
-
             ddlTheme.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
@@ -189,11 +195,7 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.Text = site.Name;
             tbDescription.Text = site.Description;
             ddlTheme.SetValue( site.Theme );
-            if ( site.DefaultPageId.HasValue )
-            {
-                ddlDefaultPage.SetValue( site.DefaultPageId );
-            }
-
+            ppDefaultPage.SetValue( site.DefaultPage );
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbFaviconUrl.Text = site.FaviconUrl;
             tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
@@ -225,7 +227,7 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             ddlTheme.Enabled = !readOnly;
-            ddlDefaultPage.Enabled = !readOnly;
+            ppDefaultPage.Enabled = !readOnly;
             tbSiteDomains.ReadOnly = readOnly;
             tbFaviconUrl.ReadOnly = readOnly;
             tbAppleTouchIconUrl.ReadOnly = readOnly;

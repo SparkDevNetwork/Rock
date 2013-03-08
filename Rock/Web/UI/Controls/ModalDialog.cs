@@ -129,7 +129,7 @@ namespace Rock.Web.UI.Controls
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "modal2";
+            _dialogPanel.CssClass = "modal";
             _dialogPanel.Attributes.Add("style","display:none");
 
             _headerPanel = new Panel();
@@ -186,8 +186,17 @@ namespace Rock.Web.UI.Controls
             _closeLink.Attributes["onclick"] = string.Format(
                 "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
-            if ( SaveClick == null && !IsDefaultSaveDisabled )
-                this.OkControlID = _saveLink.ID;
+            if ( SaveClick == null )
+            {
+                _saveLink.Visible = false;
+                _cancelLink.InnerText = "Ok";
+
+                if ( !IsDefaultSaveDisabled )
+                {
+                    this.OkControlID = _cancelLink.ID;
+                }
+            }
+
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )

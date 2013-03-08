@@ -23,8 +23,8 @@ namespace Rock.Security.ExternalAuthentication
     [Description( "Facebook Authentication Provider" )]
     [Export( typeof( ExternalAuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
-    [TextField( 1, "App ID", "Facebook", "The Facebook App ID", true, "" )]
-    [TextField( 2, "App Secret", "Faceboook", "The Facebook App Secret", true, "" )]
+    [TextField( "App ID", "The Facebook App ID" )]
+    [TextField( "App Secret", "The Facebook App Secret" )]
     public class Facebook : ExternalAuthenticationComponent
     {
         /// <summary>
@@ -131,8 +131,8 @@ namespace Rock.Security.ExternalAuthentication
 
                                 person = new Person();
                                 person.IsSystem = false;
-                                person.RecordTypeValueId = dvService.GetIdByGuid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON );
-                                person.RecordStatusValueId = dvService.GetIdByGuid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                                person.RecordTypeValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ) );
+                                person.RecordStatusValueId = dvService.GetIdByGuid( new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) );
 
                                 person.GivenName = me.first_name.ToString();
                                 person.LastName = me.last_name.ToString();

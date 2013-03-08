@@ -16,8 +16,8 @@ namespace Rock.Jobs
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [TextField( 0, "Domain", "EmailServer", "Email Server", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
-    [TextField( 1, "Port", "EmailServerPort", "Email Server", "Port of the email server", true, "25" )]
+    [TextField( "Domain", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
+    [TextField( "Port", "Port of the email server", true, "25" )]
     public class TestJob : IJob
     {
         

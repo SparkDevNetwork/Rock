@@ -73,9 +73,15 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<EntityChange>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<DataView>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, EntityChange.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
                 return false;
             }  
  
@@ -88,6 +94,12 @@ namespace Rock.Model
             if ( new Service<NoteType>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, NoteType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Report>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
             }  
  
@@ -112,18 +124,31 @@ namespace Rock.Model
     public static class EntityTypeExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another EntityType entity
+        /// Clones this EntityType object to a new EntityType object
         /// </summary>
-        public static void CopyPropertiesFrom( this EntityType target, EntityType source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static EntityType Clone( this EntityType source, bool deepCopy )
         {
-            target.Name = source.Name;
-            target.AssemblyName = source.AssemblyName;
-            target.FriendlyName = source.FriendlyName;
-            target.IsEntity = source.IsEntity;
-            target.IsSecured = source.IsSecured;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as EntityType;
+            }
+            else
+            {
+                var target = new EntityType();
+                target.Name = source.Name;
+                target.AssemblyName = source.AssemblyName;
+                target.FriendlyName = source.FriendlyName;
+                target.IsEntity = source.IsEntity;
+                target.IsSecured = source.IsSecured;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

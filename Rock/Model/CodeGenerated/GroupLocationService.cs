@@ -58,16 +58,29 @@ namespace Rock.Model
     public static class GroupLocationExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another GroupLocation entity
+        /// Clones this GroupLocation object to a new GroupLocation object
         /// </summary>
-        public static void CopyPropertiesFrom( this GroupLocation target, GroupLocation source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static GroupLocation Clone( this GroupLocation source, bool deepCopy )
         {
-            target.GroupId = source.GroupId;
-            target.LocationId = source.LocationId;
-            target.LocationTypeValueId = source.LocationTypeValueId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as GroupLocation;
+            }
+            else
+            {
+                var target = new GroupLocation();
+                target.GroupId = source.GroupId;
+                target.LocationId = source.LocationId;
+                target.LocationTypeValueId = source.LocationTypeValueId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

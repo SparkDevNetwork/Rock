@@ -64,15 +64,28 @@ namespace Rock.Model
     public static class CampusExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Campus entity
+        /// Clones this Campus object to a new Campus object
         /// </summary>
-        public static void CopyPropertiesFrom( this Campus target, Campus source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Campus Clone( this Campus source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Campus;
+            }
+            else
+            {
+                var target = new Campus();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

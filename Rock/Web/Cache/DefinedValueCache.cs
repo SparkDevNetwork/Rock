@@ -193,6 +193,16 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
+        public static DefinedValueCache Read( string guid )
+        {
+            return Read( new Guid( guid ) );
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
         public static DefinedValueCache Read( Guid guid )
         {
             ObjectCache cache = MemoryCache.Default;

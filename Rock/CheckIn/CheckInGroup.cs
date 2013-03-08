@@ -5,9 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 
 using Rock.Model;
 
@@ -17,7 +15,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup 
+    public class CheckInGroup : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the group.
@@ -26,7 +24,7 @@ namespace Rock.CheckIn
         /// The group.
         /// </value>
         [DataMember]
-        public Group group { get; set; }
+        public Group Group { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInGroup" /> is selected for check-in
@@ -44,7 +42,7 @@ namespace Rock.CheckIn
         /// The last check in.
         /// </value>
         [DataMember]
-        public DateTime LastCheckIn { get; set; }
+        public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
         /// Gets or sets the schedules that are available for the current group
@@ -62,6 +60,32 @@ namespace Rock.CheckIn
             : base()
         {
             Schedules = new List<CheckInSchedule>();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Group != null ? Group.ToString() : string.Empty;
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Group", Group );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Schedules", Schedules );
+            return dictionary;
         }
     }
 }

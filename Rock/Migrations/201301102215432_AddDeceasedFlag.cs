@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddDeceasedFlag : RockMigration
+    public partial class AddDeceasedFlag : RockMigration_3
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

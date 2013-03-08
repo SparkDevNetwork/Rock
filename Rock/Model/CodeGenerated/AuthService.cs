@@ -58,21 +58,34 @@ namespace Rock.Model
     public static class AuthExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Auth entity
+        /// Clones this Auth object to a new Auth object
         /// </summary>
-        public static void CopyPropertiesFrom( this Auth target, Auth source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Auth Clone( this Auth source, bool deepCopy )
         {
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Order = source.Order;
-            target.Action = source.Action;
-            target.AllowOrDeny = source.AllowOrDeny;
-            target.SpecialRole = source.SpecialRole;
-            target.PersonId = source.PersonId;
-            target.GroupId = source.GroupId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Auth;
+            }
+            else
+            {
+                var target = new Auth();
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
+                target.Order = source.Order;
+                target.Action = source.Action;
+                target.AllowOrDeny = source.AllowOrDeny;
+                target.SpecialRole = source.SpecialRole;
+                target.PersonId = source.PersonId;
+                target.GroupId = source.GroupId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

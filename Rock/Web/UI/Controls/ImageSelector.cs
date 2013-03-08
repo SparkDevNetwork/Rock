@@ -3,13 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -17,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:ImageSelector runat=server></{0}:ImageSelector>" )]
-    public class ImageSelector : CompositeControl
+    public class ImageSelector : CompositeControl, ILabeledControl
     {
         private Label label;
         private Image image;
@@ -44,13 +41,14 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 int id = 0;
-                if ( Int32.TryParse( hiddenField.Value, out id ) )
+                if ( int.TryParse( hiddenField.Value, out id ) )
                 {
                     if ( id > 0 )
                     {
                         return id;
                     }
                 }
+
                 return null;
             }
 
@@ -80,6 +78,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return label.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -97,10 +96,11 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
 
-            string script = string.Format( @"
+            string script = string.Format(
+@"
     $(document).ready(function() {{
 
-        function ConfigureImageUploaders(sender, args) {{
+        function ConfigureImageUploader{0}(sender, args) {{
             $('#{0}').kendoUpload({{
                 multiple: false,
                 showFileList: false,
@@ -112,7 +112,7 @@ namespace Rock.Web.UI.Controls
 
                     if (e.operation == 'upload' && e.response != '0') {{
                         $('#{1}').val(e.response);
-                        $('#{2}').attr('src','')
+                        $('#{2}').attr('src','');
                         $('#{2}').hide();             
                         $('#{2}').attr('src','{4}Image.ashx?id=' + e.response + '&width=50&height=50');
                         $('#{2}').show('fast', function() {{ 
@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
         }}
 
         // configure image uploaders         
-        ConfigureImageUploaders(null, null);
+        ConfigureImageUploader{0}(null, null);
     }});
         ",
                             fileUpload.ClientID,
@@ -224,6 +224,25 @@ namespace Rock.Web.UI.Controls
             fileUpload = new FileUpload();
             fileUpload.ID = "fu";
             Controls.Add( fileUpload );
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Web server control is enabled.
+        /// </summary>
+        /// <returns>true if control is enabled; otherwise, false. The default is true.</returns>
+        public override bool Enabled
+        {
+            get
+            {
+                return base.Enabled;
+            }
+
+            set
+            {
+                base.Enabled = value;
+                fileUpload.Visible = value;
+                htmlAnchor.Visible = value;
+            }
         }
     }
 }

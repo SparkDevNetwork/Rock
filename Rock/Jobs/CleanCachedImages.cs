@@ -20,8 +20,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
-    [IntegerField( 0, "Days to Expire", "100", null, "General", "The number of days to leave an image in the cache directory.")]
-    [TextField( 0, "Starting Directory", "StartingDirectory", "General", "The starting directory to iterate through.", false, "~/Cache/" )]
+    [IntegerField( "Days to Expire", "The number of days to leave an image in the cache directory.", false, 100)]
+    [TextField( "Starting Directory", "The starting directory to iterate through.", false, "~/Cache/" )]
     public class CleanCachedImages : IJob
     {
         int DAYS_TO_EXPIRE = 100;

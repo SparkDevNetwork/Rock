@@ -8,7 +8,7 @@
     <xsl:for-each select="/*/group">
       <section>
         <xsl:attribute name="class">
-          <xsl:value-of select="@class-name"/> group
+          <xsl:value-of select="@class-name"/> clearfix
         </xsl:attribute>
         <header>
           <xsl:value-of select="@name"/>

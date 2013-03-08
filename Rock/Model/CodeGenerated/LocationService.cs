@@ -64,36 +64,49 @@ namespace Rock.Model
     public static class LocationExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Location entity
+        /// Clones this Location object to a new Location object
         /// </summary>
-        public static void CopyPropertiesFrom( this Location target, Location source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Location Clone( this Location source, bool deepCopy )
         {
-            target.ParentLocationId = source.ParentLocationId;
-            target.Name = source.Name;
-            target.IsActive = source.IsActive;
-            target.LocationPoint = source.LocationPoint;
-            target.Perimeter = source.Perimeter;
-            target.LocationTypeValueId = source.LocationTypeValueId;
-            target.Street1 = source.Street1;
-            target.Street2 = source.Street2;
-            target.City = source.City;
-            target.State = source.State;
-            target.Country = source.Country;
-            target.Zip = source.Zip;
-            target.FullAddress = source.FullAddress;
-            target.AssessorParcelId = source.AssessorParcelId;
-            target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
-            target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
-            target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
-            target.StandardizedDateTime = source.StandardizedDateTime;
-            target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
-            target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
-            target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
-            target.GeocodedDateTime = source.GeocodedDateTime;
-            target.PrinterDeviceId = source.PrinterDeviceId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Location;
+            }
+            else
+            {
+                var target = new Location();
+                target.ParentLocationId = source.ParentLocationId;
+                target.Name = source.Name;
+                target.IsActive = source.IsActive;
+                target.LocationPoint = source.LocationPoint;
+                target.Perimeter = source.Perimeter;
+                target.LocationTypeValueId = source.LocationTypeValueId;
+                target.Street1 = source.Street1;
+                target.Street2 = source.Street2;
+                target.City = source.City;
+                target.State = source.State;
+                target.Country = source.Country;
+                target.Zip = source.Zip;
+                target.FullAddress = source.FullAddress;
+                target.AssessorParcelId = source.AssessorParcelId;
+                target.StandardizeAttemptedDateTime = source.StandardizeAttemptedDateTime;
+                target.StandardizeAttemptedServiceType = source.StandardizeAttemptedServiceType;
+                target.StandardizeAttemptedResult = source.StandardizeAttemptedResult;
+                target.StandardizedDateTime = source.StandardizedDateTime;
+                target.GeocodeAttemptedDateTime = source.GeocodeAttemptedDateTime;
+                target.GeocodeAttemptedServiceType = source.GeocodeAttemptedServiceType;
+                target.GeocodeAttemptedResult = source.GeocodeAttemptedResult;
+                target.GeocodedDateTime = source.GeocodedDateTime;
+                target.PrinterDeviceId = source.PrinterDeviceId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

@@ -117,33 +117,21 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = false;
             pnlAdTypeAttribute.Visible = true;
-
-            if ( attributeGuid != Guid.Empty )
+            Attribute attribute;
+            string actionTitle;
+            if ( attributeGuid.Equals( Guid.Empty ) )
             {
-                Attribute attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                lAttributeActionTitle.Text = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
-                hfAttributeGuid.Value = attribute.Guid.ToString();
-                tbAttributeKey.Text = attribute.Key;
-                tbAttributeName.Text = attribute.Name;
-                tbAttributeCategory.Text = attribute.Category;
-                tbAttributeDescription.Text = attribute.Description;
-                tbAttributeDefaultValue.Text = attribute.DefaultValue;
-                ddlAttributeFieldType.SelectedValue = attribute.FieldTypeId.ToString();
-                cbAttributeMultiValue.Checked = attribute.IsMultiValue;
-                cbAttributeRequired.Checked = attribute.IsRequired;
+                attribute = new Attribute();
+                actionTitle = ActionTitle.Add( "attribute for ad type " + tbName.Text );
+
             }
             else
             {
-                hfAttributeGuid.Value = Guid.NewGuid().ToString();
-                lAttributeActionTitle.Text = ActionTitle.Add( "attribute for ad type " + tbName.Text );
-                tbAttributeKey.Text = string.Empty;
-                tbAttributeName.Text = string.Empty;
-                tbAttributeCategory.Text = string.Empty;
-                tbAttributeDescription.Text = string.Empty;
-                tbAttributeDefaultValue.Text = string.Empty;
-                cbAttributeMultiValue.Checked = false;
-                cbAttributeRequired.Checked = false;
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                actionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
             }
+
+            edtAdTypeAttributes.EditAttribute( attribute, actionTitle );
         }
 
         /// <summary>
@@ -177,16 +165,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute = new Attribute();
-            attribute.Guid = new Guid( hfAttributeGuid.Value );
-            attribute.Key = tbAttributeKey.Text;
-            attribute.Name = tbAttributeName.Text;
-            attribute.Category = tbAttributeCategory.Text;
-            attribute.Description = tbAttributeDescription.Text;
-            attribute.DefaultValue = tbAttributeDefaultValue.Text;
-            attribute.FieldTypeId = int.Parse( ddlAttributeFieldType.SelectedValue );
-            attribute.IsMultiValue = cbAttributeMultiValue.Checked;
-            attribute.IsRequired = cbAttributeRequired.Checked;
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtAdTypeAttributes.GetAttributeValues( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -296,6 +276,7 @@ namespace RockWeb.Blocks.Administration
                 deletedAttributes.ToList().ForEach( a =>
                     {
                         var attr = attributeService.Get( a.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                         attributeService.Delete( attr, CurrentPersonId );
                         attributeService.Save( attr, CurrentPersonId );
                     } );
@@ -318,6 +299,7 @@ namespace RockWeb.Blocks.Administration
                     attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
                     attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
                     attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new MarketingCampaignAd().TypeName ).Id;
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                     attributeService.Save( attribute, CurrentPersonId );
                 }
             } );
@@ -335,12 +317,6 @@ namespace RockWeb.Blocks.Administration
         private void LoadDropDowns()
         {
             ddlDateRangeType.BindToEnum( typeof( DateRangeTypeEnum ) );
-
-            FieldTypeService fieldTypeService = new FieldTypeService();
-            List<FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-
-            ddlAttributeFieldType.DataSource = fieldTypes;
-            ddlAttributeFieldType.DataBind();
         }
 
         /// <summary>
@@ -417,5 +393,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }

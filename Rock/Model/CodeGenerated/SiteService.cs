@@ -64,25 +64,38 @@ namespace Rock.Model
     public static class SiteExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Site entity
+        /// Clones this Site object to a new Site object
         /// </summary>
-        public static void CopyPropertiesFrom( this Site target, Site source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Site Clone( this Site source, bool deepCopy )
         {
-            target.IsSystem = source.IsSystem;
-            target.Name = source.Name;
-            target.Description = source.Description;
-            target.Theme = source.Theme;
-            target.DefaultPageId = source.DefaultPageId;
-            target.FaviconUrl = source.FaviconUrl;
-            target.AppleTouchIconUrl = source.AppleTouchIconUrl;
-            target.FacebookAppId = source.FacebookAppId;
-            target.FacebookAppSecret = source.FacebookAppSecret;
-            target.LoginPageReference = source.LoginPageReference;
-            target.RegistrationPageReference = source.RegistrationPageReference;
-            target.ErrorPage = source.ErrorPage;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Site;
+            }
+            else
+            {
+                var target = new Site();
+                target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
+                target.Description = source.Description;
+                target.Theme = source.Theme;
+                target.DefaultPageId = source.DefaultPageId;
+                target.FaviconUrl = source.FaviconUrl;
+                target.AppleTouchIconUrl = source.AppleTouchIconUrl;
+                target.FacebookAppId = source.FacebookAppId;
+                target.FacebookAppSecret = source.FacebookAppSecret;
+                target.LoginPageReference = source.LoginPageReference;
+                target.RegistrationPageReference = source.RegistrationPageReference;
+                target.ErrorPage = source.ErrorPage;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

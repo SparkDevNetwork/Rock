@@ -88,20 +88,28 @@ namespace Rock.Web.UI
             get
             {
                 if ( _CurrentUser != null )
+                {
                     return _CurrentUser;
+                }
 
                 if ( _CurrentUser == null && Context.Items.Contains( "CurrentUser" ) )
+                {
                     _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
+                }
 
                 if ( _CurrentUser == null )
                 {
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
+                    {
                         Context.Items.Add( "CurrentUser", _CurrentUser );
+                    }
                 }
 
                 if ( _CurrentUser != null && _CurrentUser.Person != null && _CurrentPerson == null )
+                {
                     CurrentPerson = _CurrentUser.Person;
+                }
 
                 return _CurrentUser;
             }
@@ -112,9 +120,14 @@ namespace Rock.Web.UI
                 _CurrentUser = value;
 
                 if ( _CurrentUser != null )
+                {
                     Context.Items.Add( "CurrentUser", _CurrentUser );
-
-                CurrentPerson = _CurrentUser.Person;
+                    CurrentPerson = _CurrentUser.Person;
+                }
+                else
+                {
+                    CurrentPerson = null;
+                }
             }
         }
         private Rock.Model.UserLogin _CurrentUser;
@@ -129,11 +142,15 @@ namespace Rock.Web.UI
             get
             {
                 if ( _CurrentPerson != null )
+                {
                     return _CurrentPerson;
+                }
 
                 if ( _CurrentPerson == null && Context.Items.Contains( "CurrentPerson" ) )
+                {
                     _CurrentPerson = Context.Items["CurrentPerson"] as Person;
-
+                }
+                
                 return null;
             }
 
@@ -143,7 +160,9 @@ namespace Rock.Web.UI
                 _CurrentPerson = value;
 
                 if ( _CurrentPerson != null )
+                {
                     Context.Items.Add( "CurrentPerson", value );
+                }
             }
         }
         private Person _CurrentPerson;
@@ -156,9 +175,13 @@ namespace Rock.Web.UI
             get
             {
                 if ( CurrentPerson != null )
+                {
                     return CurrentPerson.Id;
+                }
                 else
+                {
                     return null;
+                }
             }
         }
 
@@ -554,9 +577,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aAttributes );
                         aAttributes.ID = "aPageProperties";
                         aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aAttributes.Attributes.Add( "class", "btn properties show-modal-iframe" );
+                        aAttributes.Attributes.Add( "class", "btn properties" );
                         aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aPageProperties'), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
+                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
@@ -567,9 +590,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aChildPages );
                         aChildPages.ID = "aChildPages";
                         aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aChildPages.Attributes.Add( "class", "btn page-child-pages show-modal-iframe" );
+                        aChildPages.Attributes.Add( "class", "btn page-child-pages" );
                         aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($('#aChildPages'), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
+                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
@@ -590,9 +613,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aPageSecurity );
                         aPageSecurity.ID = "aPageSecurity";
                         aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aPageSecurity.Attributes.Add( "class", "btn page-security show-modal-iframe" );
+                        aPageSecurity.Attributes.Add( "class", "btn page-security" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
-                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($('#aPageSecurity'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
+                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             Security.Authorization.EncodeEntityTypeName( typeof(Rock.Model.Page) ), CurrentPage.Id ) ) + "')" );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
@@ -604,9 +627,9 @@ namespace Rock.Web.UI
                         buttonBar.Controls.Add( aSystemInfo );
                         aSystemInfo.ID = "aSystemInfo";
                         aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        aSystemInfo.Attributes.Add( "class", "btn system-info show-modal-iframe" );
+                        aSystemInfo.Attributes.Add( "class", "btn system-info" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
-                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($('#aSystemInfo'), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
+                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
@@ -714,6 +737,22 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Dims the other blocks.
+        /// </summary>
+        /// <param name="caller">The caller.</param>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void DimOtherBlocks( RockBlock caller, bool dimmed )
+        {
+            foreach ( IDimmableBlock dimmableBlock in this.RockBlocks.Where( a => a is IDimmableBlock ) )
+            {
+                if ( dimmableBlock != caller )
+                {
+                    dimmableBlock.SetDimmed( dimmed );
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the control list. 
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
@@ -802,9 +841,9 @@ namespace Rock.Web.UI
                 zoneConfigBar.Controls.Add( aBlockConfig );
                 aBlockConfig.ID = string.Format( "aBlockConfig-{0}", control.ID );
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aBlockConfig.Attributes.Add( "class", "zone-blocks show-modal-iframe" );
+                aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($('#" + aBlockConfig.ID + "'), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
@@ -899,7 +938,7 @@ namespace Rock.Web.UI
             fsZoneSelect.Controls.Add( ddlZones );
 
             LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
-            rblLocation.RepeatLayout = RepeatLayout.UnorderedList;
+            rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
@@ -932,6 +971,27 @@ namespace Rock.Web.UI
                 return string.Empty;
             else
                 return Request.QueryString[name];
+        }
+
+        /// <summary>
+        /// Gets the page route and query string parameters
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> PageParameters()
+        {
+            var parameters = new Dictionary<string, object>();
+
+            foreach ( var key in Page.RouteData.Values.Keys )
+            {
+                parameters.Add( key, Page.RouteData.Values[key] );
+            }
+
+            foreach( string param in Request.QueryString.Keys)
+            {
+                parameters.Add( param, Request.QueryString[param]);
+            }
+
+            return parameters;
         }
 
         /// <summary>
@@ -1180,21 +1240,6 @@ namespace Rock.Web.UI
         public static string BuildUrl( PageReference pageRef, Dictionary<string, string> parms )
         {
             return BuildUrl( pageRef, parms, null );
-        }
-
-        /// <summary>
-        /// Builds the URL.
-        /// </summary>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="queryKey">The query key.</param>
-        /// <param name="id">The id.</param>
-        /// <returns></returns>
-        public static string BuildUrlForDetailPage( int pageId, string queryKey, int id )
-        {
-            NameValueCollection queryString = new NameValueCollection();
-            Dictionary<string, string> parms = new Dictionary<string, string>();
-            queryString.Add( queryKey, id.ToString() );
-            return BuildUrl( new PageReference( pageId, -1 ), parms, queryString ); 
         }
 
         /// <summary>

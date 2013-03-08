@@ -129,13 +129,17 @@ namespace Rock.Tests.Fakes
             db.ToList().Remove( entity );
         }
 
-        public bool Save( int? PersonId, out List<EntityChange> changes, out List<Audit> audits, out List<string> errorMessages )
+        public bool Save( int? PersonId, out List<Audit> audits, out List<string> errorMessages )
         {
-            changes = new List<EntityChange>();
             audits = new List<Audit>();
             errorMessages = new List<string>();
 
             return true;
+        }
+
+        public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
+        {
+            throw new NotImplementedException();
         }
 
         public void SetConfigurationValue( string key, string value )

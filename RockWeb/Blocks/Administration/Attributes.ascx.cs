@@ -5,17 +5,14 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
-using Rock.Field;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -24,11 +21,11 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User control for managing the attributes that are available for a specific entity
     /// </summary>
-    [TextField( 0, "Entity", "Applies To", "Entity Name", false, "" )]
-    [TextField( 1, "Entity Qualifier Column", "Applies To", "The entity column to evaluate when determining if this attribute applies to the entity", false, "" )]
-    [TextField( 2, "Entity Qualifier Value", "Applies To", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "" )]
-    [BooleanField( 3, "Allow Setting of Values", false, "SetValues", "Set Values", "Should UI be available for setting values of the specified Entity ID?")]
-    [TextField( 4, "Entity Id", "Set Values", "The entity id that values apply to", false, "" )]
+    [TextField( "Entity", "Entity Name", false, "", "Applies To", 0 )]
+    [TextField( "Entity Qualifier Column", "The entity column to evaluate when determining if this attribute applies to the entity", false, "", "Applies To", 1 )]
+    [TextField( "Entity Qualifier Value", "The entity column value to evaluate.  Attributes will only apply to entities with this value", false, "", "Applies To", 2 )]
+    [BooleanField( "Allow Setting of Values", "Should UI be available for setting values of the specified Entity ID?", false, "Set Values", 0 )]
+    [TextField( "Entity Id", "The entity id that values apply to", false, "", "Set Values", 1 )]
     public partial class Attributes : RockBlock
     {
         #region Fields
@@ -72,7 +69,7 @@ namespace RockWeb.Blocks.Administration
                 _entityQualifierValue = PageParameter( "EntityQualifierValue" );
             }
 
-            _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "SetValues" ) );
+            _displayValueEdit = Convert.ToBoolean( GetAttributeValue( "AllowSettingofValues" ) );
 
             string entityIdString = GetAttributeValue( "EntityId" );
             if ( string.IsNullOrWhiteSpace( entityIdString ) )
@@ -109,21 +106,6 @@ namespace RockWeb.Blocks.Administration
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );
-
-                // Create the dropdown list for listing the available field types
-                var fieldTypeService = new FieldTypeService();
-                var items = fieldTypeService.
-                    Queryable().
-                    Select( f => new { f.Id, f.Name } ).
-                    OrderBy( f => f.Name );
-
-                ddlFieldType.AutoPostBack = true;
-                ddlFieldType.SelectedIndexChanged += new EventHandler( ddlFieldType_SelectedIndexChanged );
-                ddlFieldType.Items.Clear();
-                foreach ( var item in items )
-                {
-                    ddlFieldType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
-                }
 
                 string editAttributeId = Request.Form[hfIdValues.UniqueID];
                 if ( Page.IsPostBack && editAttributeId != null && editAttributeId.Trim() != string.Empty )
@@ -196,11 +178,6 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack && _canConfigure )
             {
                 BindGrid();
-            }
-
-            if ( Page.IsPostBack && hfId.Value != string.Empty )
-            {
-                BuildConfigControls();
             }
 
             base.OnLoad( e );
@@ -329,100 +306,52 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlFieldType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int attributeId = 0;
-            if ( hfId.Value != string.Empty && !int.TryParse( hfId.Value, out attributeId ) )
-            {
-                attributeId = 0;
-            }
-
-            if ( attributeId != 0 )
-            {
-                var attribute = AttributeCache.Read( attributeId );
-                BuildConfigControls( attribute.QualifierValues );
-            }
-            else
-            {
-                BuildConfigControls();
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            RockTransactionScope.WrapTransaction( () =>
             {
                 var attributeService = new AttributeService();
-                var attributeQualifierService = new AttributeQualifierService();
 
-                Rock.Model.Attribute attribute;
-
-                int attributeId = 0;
-                if ( hfId.Value != string.Empty && !int.TryParse( hfId.Value, out attributeId ) )
+                Rock.Model.Attribute attribute = attributeService.Get( edtAttribute.AttributeId );
+                if ( attribute != null )
                 {
-                    attributeId = 0;
-                }
-
-                if ( attributeId == 0 )
-                {
-                    attribute = new Rock.Model.Attribute();
-                    attribute.IsSystem = false;
-                    attribute.EntityTypeId = _entityTypeId;
-                    attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
-                    attribute.EntityTypeQualifierValue = _entityQualifierValue;
-                    attributeService.Add( attribute, CurrentPersonId );
+                    // clean up old qualifier values in case they changed
+                    AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
+                    foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
+                    {
+                        attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                    }
                 }
                 else
                 {
-                    AttributeCache.Flush( attributeId );
-                    attribute = attributeService.Get( attributeId );
+                    attribute = new Rock.Model.Attribute();
                 }
 
-                attribute.Key = tbKey.Text;
-                attribute.Name = tbName.Text;
-                attribute.Category = tbCategory.Text;
-                attribute.Description = tbDescription.Text;
-                attribute.FieldTypeId = int.Parse( ddlFieldType.SelectedValue );
+                edtAttribute.GetAttributeValues( attribute );
 
-                var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+                attribute.EntityTypeId = _entityTypeId;
+                attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = _entityQualifierValue;
 
-                foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
+                // Controls will show warnings
+                if ( !attribute.IsValid )
                 {
-                    attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                    return;
                 }
 
-                attribute.AttributeQualifiers.Clear();
-
-                List<Control> configControls = new List<Control>();
-                foreach ( var key in fieldType.Field.ConfigurationKeys() )
+                if ( attribute.Id == 0 )
                 {
-                    configControls.Add( phFieldTypeQualifiers.FindControl( "configControl_" + key ) );
+                    attributeService.Add( attribute, CurrentPersonId );
                 }
 
-                foreach ( var configValue in fieldType.Field.ConfigurationValues( configControls ) )
-                {
-                    AttributeQualifier qualifier = new AttributeQualifier();
-                    qualifier.IsSystem = false;
-                    qualifier.Key = configValue.Key;
-                    qualifier.Value = configValue.Value.Value ?? string.Empty;
-                    attribute.AttributeQualifiers.Add( qualifier );
-                }
-
-                attribute.DefaultValue = tbDefaultValue.Text;
-                attribute.IsMultiValue = cbMultiValue.Checked;
-                attribute.IsRequired = cbRequired.Checked;
-
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                 attributeService.Save( attribute, CurrentPersonId );
-            }
+            } );
+
 
             BindGrid();
 
@@ -451,7 +380,7 @@ namespace RockWeb.Blocks.Administration
         private void BindFilter()
         {
             ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( "[All]" );
+            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
             AttributeService attributeService = new AttributeService();
             var items = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
@@ -477,7 +406,7 @@ namespace RockWeb.Blocks.Administration
             AttributeService attributeService = new AttributeService();
             var queryable = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
 
-            if ( ddlCategoryFilter.SelectedValue != "[All]" )
+            if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
             {
                 queryable = queryable.
                     Where( a => a.Category == ddlCategoryFilter.SelectedValue );
@@ -508,99 +437,25 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
-            if ( attributeModel != null )
+
+            string actionTitle;
+
+            if ( attributeModel == null )
             {
-                var attribute = AttributeCache.Read( attributeModel );
-
-                lActionTitle.Text = "Edit Attribute";
-                hfId.Value = attribute.Id.ToString();
-
-                tbKey.Text = attribute.Key;
-                tbName.Text = attribute.Name;
-                tbCategory.Text = attribute.Category;
-                tbDescription.Text = attribute.Description;
-                ddlFieldType.SelectedValue = attribute.FieldType.Id.ToString();
-                BuildConfigControls( attribute.QualifierValues );
-                tbDefaultValue.Text = attribute.DefaultValue;
-                cbMultiValue.Checked = attribute.IsMultiValue;
-                cbRequired.Checked = attribute.IsRequired;
+                attributeModel = new Rock.Model.Attribute();
+                attributeModel.Category = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
+                actionTitle = ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
             else
             {
-                lActionTitle.Text = "Add Attribute";
-                hfId.Value = string.Empty;
-
-                tbKey.Text = string.Empty;
-                tbName.Text = string.Empty;
-                tbCategory.Text = ddlCategoryFilter.SelectedValue != "[All]" ? ddlCategoryFilter.SelectedValue : string.Empty;
-                tbDescription.Text = string.Empty;
-
-                FieldTypeService fieldTypeService = new FieldTypeService();
-                var fieldTypeModel = fieldTypeService.GetByName( "Text" ).FirstOrDefault();
-                if ( fieldTypeModel != null )
-                {
-                    ddlFieldType.SelectedValue = fieldTypeModel.Id.ToString();
-                }
-
-                BuildConfigControls();
-
-                tbDefaultValue.Text = string.Empty;
-                cbMultiValue.Checked = false;
-                cbRequired.Checked = false;
+                actionTitle = ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
+
+
+            edtAttribute.EditAttribute( attributeModel, actionTitle );
 
             pnlList.Visible = false;
             pnlDetails.Visible = true;
-        }
-
-        /// <summary>
-        /// Builds the config controls.
-        /// </summary>
-        private void BuildConfigControls()
-        {
-            BuildConfigControls( null );
-        }
-
-        /// <summary>
-        /// Builds the config controls.
-        /// </summary>
-        /// <param name="qualifierValues">The qualifier values.</param>
-        private void BuildConfigControls( Dictionary<string, ConfigurationValue> qualifierValues )
-        {
-            var fieldType = Rock.Web.Cache.FieldTypeCache.Read( int.Parse( ddlFieldType.SelectedValue ) );
-            if ( fieldType != null )
-            {
-                phFieldTypeQualifiers.Controls.Clear();
-                var configControls = fieldType.Field.ConfigurationControls();
-
-                int i = 0;
-                foreach ( var configValue in fieldType.Field.ConfigurationValues( null ) )
-                {
-                    var ctrlGroup = new HtmlGenericControl( "div" );
-                    phFieldTypeQualifiers.Controls.Add( ctrlGroup );
-                    ctrlGroup.AddCssClass( "control-group" );
-
-                    var lbl = new Label();
-                    ctrlGroup.Controls.Add( lbl );
-                    lbl.AddCssClass( "control-label" );
-                    lbl.Text = configValue.Value.Name;
-
-                    var ctrls = new HtmlGenericControl( "div" );
-                    ctrlGroup.Controls.Add( ctrls );
-                    ctrls.AddCssClass( "controls" );
-
-                    Control control = configControls[i];
-                    ctrls.Controls.Add( control );
-                    control.ID = "configControl_" + configValue.Key;
-
-                    i++;
-                }
-
-                if ( qualifierValues != null )
-                {
-                    fieldType.Field.SetConfigurationValues( configControls, qualifierValues );
-                }
-            }
         }
 
         /// <summary>

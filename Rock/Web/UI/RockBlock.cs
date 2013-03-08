@@ -139,7 +139,42 @@ namespace Rock.Web.UI
         /// <value>
         /// The context entities.
         /// </value>
-        public virtual Dictionary<string, Rock.Data.IEntity> ContextEntities { get; private set; }
+        private Dictionary<string, Rock.Data.IEntity> ContextEntities { get; set; }
+
+        /// <summary>
+        /// Returns the ContextEntity of the Type specified
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T ContextEntity<T>() where T : Rock.Data.IEntity
+        {
+            string entityTypeName = typeof( T ).FullName;
+            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            {
+                var entity = ContextEntities[entityTypeName];
+                return (T)entity;
+            }
+            else
+            {
+                return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Return the ContextEntity for blocks that are designed to have at most one ContextEntity
+        /// </summary>
+        /// <returns></returns>
+        public Rock.Data.IEntity ContextEntity()
+        {
+            if ( ContextEntities.Count() == 1 )
+            {
+                return ContextEntities.First().Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         #endregion
 
@@ -338,18 +373,43 @@ namespace Rock.Web.UI
         //}
 
         /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        public void SaveAttributeValues( int? personId )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SaveAttributeValues( personId );
+            }
+        }
+
+        /// <summary>
         /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public string GetAttributeValue( string key )
-        {            
+        {
             if ( CurrentBlock != null )
             {
                 return CurrentBlock.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Sets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public void SetAttributeValue( string key, string value )
+        {
+            if ( CurrentBlock != null )
+            {
+                CurrentBlock.SetAttributeValue( key, value );
+            }
         }
 
         /// <summary>
@@ -390,12 +450,20 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the page route and query string parameters
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> PageParameters()
+        {
+            return ( (RockPage)this.Page ).PageParameters();
+        }
+
+        /// <summary>
         /// Navigates to parent page.
         /// </summary>
-        public void NavigateToParentPage()
+        public void NavigateToParentPage( Dictionary<string, string> queryString = null )
         {
-            Response.Redirect( CurrentPage.BuildUrl( this.CurrentPage.ParentPageId.Value, null ), false );
-            Context.ApplicationInstance.CompleteRequest();
+            NavigateToPage( this.CurrentPage.ParentPage.Guid, queryString );
         }
 
         /// <summary>
@@ -403,30 +471,53 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
-        public void NavigateToDetailPage( string itemKey, int itemKeyValue )
+        /// <param name="itemParentKey">The item parent key.</param>
+        /// <param name="itemParentValue">The item parent value.</param>
+        public void NavigateToDetailPage( string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
         {
             string pageGuid = GetAttributeValue( DetailPageAttribute.Key );
 
             if ( !string.IsNullOrWhiteSpace( pageGuid ) )
             {
-                Rock.Model.Page page = new PageService().Get( new Guid( pageGuid ) );
+                Dictionary<string, string> queryString = new Dictionary<string, string>();
+                queryString.Add( itemKey, itemKeyValue.ToString() );
+                if ( !string.IsNullOrWhiteSpace( itemParentKey ) )
+                {
+                    queryString.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
+                }
+
+                NavigateToPage( new Guid( pageGuid ), queryString );
+            }
+        }
+
+        /// <summary>
+        /// Navigates to page.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="additionalParams">The additional params.</param>
+        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
+        {
+            if ( !pageGuid.Equals( Guid.Empty ) )
+            {
+                Rock.Model.Page page = new PageService().Get( pageGuid );
                 if ( page != null )
                 {
-                    if ( page.Guid.Equals( CurrentPage.Guid ) )
-                    {
-                        RockPage rockPage = this.RockPage();
-                        foreach ( IDetailBlock detailBlock in rockPage.RockBlocks.Where( a => a is IDetailBlock ) )
-                        {
-                            detailBlock.ShowDetail( itemKey, itemKeyValue );
-                        }
-                    }
-                    else
-                    {
-                        Response.Redirect( CurrentPage.BuildUrlForDetailPage( page.Id, itemKey, itemKeyValue ), false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
+                    string pageUrl = CurrentPage.BuildUrl( page.Id, queryString );
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
                 }
             }
+        }
+
+        /// <summary>
+        /// Dims the other blocks.
+        /// </summary>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void DimOtherBlocks( bool dimmed )
+        {
+            this.RockPage().DimOtherBlocks( this, dimmed );
         }
 
         #region User Preferences
@@ -502,9 +593,9 @@ namespace Rock.Web.UI
                 HtmlGenericControl aAttributes = new HtmlGenericControl( "a" );
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aAttributes.Attributes.Add( "class", "properties show-modal-iframe" );
+                aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($('#aBlockProperties'), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -519,10 +610,10 @@ namespace Rock.Web.UI
                 HtmlGenericControl aSecureBlock = new HtmlGenericControl( "a" );
                 aSecureBlock.ID = "aSecureBlock";
                 aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aSecureBlock.Attributes.Add( "class", "security show-modal-iframe" );
+                aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($('#aSecureBlock'), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    Security.Authorization.EncodeEntityTypeName( typeof(Block) ), CurrentBlock.Id ) ) + "')" );
+                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
+                    Security.Authorization.EncodeEntityTypeName( typeof( Block ) ), CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -572,7 +663,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( typeof(Block) ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

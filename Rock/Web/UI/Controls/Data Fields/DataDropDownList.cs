@@ -73,6 +73,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                return base.IsValid && dataValidator.IsValid;
+            }
+        }
+
+        /// <summary>
         /// Shows the error message.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
@@ -92,63 +106,18 @@ namespace Rock.Web.UI.Controls
             dataValidator = new Validation.DataAnnotationValidator();
             dataValidator.ID = this.ID + "_dav";
             dataValidator.ControlToValidate = this.ID;
-            dataValidator.Display = ValidatorDisplay.Dynamic;
-            dataValidator.CssClass = "help-inline";
-
+            dataValidator.Display = ValidatorDisplay.None;
+            dataValidator.CssClass = "validation-error";
             Controls.Add( dataValidator );
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Renders any data validators.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The writer.</param>
+        protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            bool isValid = ( !Required || validator.IsValid ) && dataValidator.IsValid;
-
-            writer.AddAttribute( "class", "control-group" +
-                ( isValid ? "" : " error" ) +
-                ( Required ? " required" : "" ) );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.AddCssClass( "control-label" );
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            RenderBase( writer );
-
-            if ( Required )
-            {
-                validator.ErrorMessage = LabelText + " is Required.";
-                validator.RenderControl( writer );
-            }
-
             dataValidator.RenderControl( writer );
-
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
-
-            if ( Help.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-block" );
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
-                writer.Write( Help.Trim() );
-                writer.RenderEndTag();
-            }
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -19,6 +20,25 @@ namespace Rock.Field.Types
     public class PageReference : FieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                var service = new PageService();
+                var page = service.Get( new Guid( value ) );
+            }
+
+            return string.Empty;
+        }
+        
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -27,17 +47,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = new DropDownList();
-
-            PageService pageService = new PageService();
-            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
-            dropDownList.Items.Add( new ListItem(None.Text, None.IdValue) );
-            foreach ( var page in allPages.OrderBy(a => a.PageSortHash) )
-            {
-                dropDownList.Items.Add( new ListItem( page.DropDownListText, page.Guid.ToString() ) );
-            }
-
-            return dropDownList;
+            PagePicker ppPage = new PagePicker();
+            return ppPage;
         }
 
         /// <summary>
@@ -48,12 +59,21 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            DropDownList dropDownList = control as DropDownList;
+            PagePicker ppPage = control as PagePicker;
             string result = null;
-            
-            if ( dropDownList != null )
+
+            if ( ppPage != null )
             {
-                result = dropDownList.SelectedValue;
+                Guid pageGuid = Guid.Empty;
+                int? pageId = ppPage.ItemId.AsInteger();
+
+                var page = new PageService().Get( pageId ?? 0 );
+                if ( page != null )
+                {
+                    pageGuid = page.Guid;
+                }
+
+                result = pageGuid.ToString();
             }
 
             return result;
@@ -67,10 +87,14 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            DropDownList dropDownList = control as DropDownList;
-            if ( dropDownList != null )
+            PagePicker ppPage = control as PagePicker;
+            if ( ppPage != null )
             {
-                dropDownList.SetValue( value );
+                Guid pageGuid = Guid.Empty;
+                Guid.TryParse(value, out pageGuid);
+
+                var page = new PageService().Get( pageGuid );
+                ppPage.SetValue( page );
             }
         }
     }

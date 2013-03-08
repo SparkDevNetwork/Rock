@@ -21,7 +21,7 @@ namespace Rock.Address.Geocode
     [Description("Service Objects Geocoding service")]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
-    [TextField( 2, "License Key", "Security", "The Service Objects License Key", true, "" )]
+    [TextField( "License Key", "The Service Objects License Key" )]
     public class ServiceObjects : GeocodeComponent
     {
         /// <summary>

@@ -13,7 +13,10 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+
+using DotLiquid;
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -109,9 +112,20 @@ namespace Rock
             }
             else
             {
-                if ( typeof(IEntity).IsAssignableFrom(type) )
+                if ( type.Namespace == null )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    // Anonymous types will not have a namespace
+                    return "Item";
+                }
+
+                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+                {
+                    type = type.BaseType;
+                }
+
+                if ( type.Namespace.Equals( "Rock.Model" ) )
+                {
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
                 }
                 else
@@ -245,6 +259,46 @@ namespace Rock
         public static string AsNumeric( this string str )
         {
             return Regex.Replace( str, @"[^0-9]", "" );
+        }
+
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static int? AsInteger( this string str )
+        {
+            int value;
+            if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values 
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        {
+            if ( content == null )
+                return string.Empty;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{\{.+\}\}.*" ) )
+                return content;
+
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( content );
+
+            return template.Render( Hash.FromDictionary( mergeObjects ) );
         }
 
         #endregion
@@ -444,6 +498,99 @@ namespace Rock
 
         }
 
+        /// <summary>
+        /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// </summary>
+        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm) </param>
+        /// <returns></returns>
+        public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
+        {
+            try
+            {
+                DateTime now = DateTime.Now;
+                TimeSpan timeSince = now - dateTime;
+
+                double inSeconds = timeSince.TotalSeconds;
+                double inMinutes = timeSince.TotalMinutes;
+                double inHours = timeSince.TotalHours;
+                double inDays = timeSince.TotalDays;
+                double inWeeks = inDays / 7;
+                double inMonths = inDays / 30;
+                double inYears = inDays / 365;
+
+                // Just return in FB time format if max days has passed.
+                if ( maxDays.HasValue && inDays > maxDays )
+                {
+                    if ( now.Year == dateTime.Year )
+                    {
+                        return dateTime.ToString( "MMMM d at h:mmtt" ).ToLowerInvariant();
+                    }
+                    else
+                    {
+                        return dateTime.ToString( "MMMM d, yyyy at h:mmtt" ).ToLowerInvariant();
+                    }
+                }
+
+                if ( Math.Round( inSeconds ) == 1 )
+                {
+                    return "1 second ago";
+                }
+                else if ( inMinutes < 1.0 )
+                {
+                    return Math.Floor( inSeconds ) + " seconds ago";
+                }
+                else if ( Math.Floor( inMinutes ) == 1 )
+                {
+                    return "1 minute ago";
+                }
+                else if ( inHours < 1.0 )
+                {
+                    return Math.Floor( inMinutes ) + " minutes ago";
+                }
+                else if ( Math.Floor( inHours ) == 1 )
+                {
+                    return "about an hour ago";
+                }
+                else if ( inDays < 1.0 )
+                {
+                    return Math.Floor( inHours ) + " hours ago";
+                }
+                else if ( Math.Floor( inDays ) == 1 )
+                {
+                    return "1 day ago";
+                }
+                else if ( inWeeks < 1 )
+                {
+                    return Math.Floor( inDays ) + " days ago";
+                }
+                else if ( Math.Floor( inWeeks ) == 1 )
+                {
+                    return "1 week ago";
+                }
+                else if ( inMonths < 3 )
+                {
+                    return Math.Floor( inWeeks ) + " weeks ago";
+                }
+                else if ( inMonths <= 12 )
+                {
+                    return Math.Floor( inMonths ) + " months ago ";
+                }
+                else if ( Math.Floor( inYears ) <= 1 )
+                {
+                    return "1 year ago";
+                }
+                else
+                {
+                    return Math.Floor( inYears ) + " years ago";
+                }
+            }
+            catch ( Exception )
+            {
+            }
+            return "";
+        }
         #endregion
 
         #region Control Extensions
@@ -505,6 +652,25 @@ namespace Rock
                 if ( parentControl is Rock.Web.UI.RockPage )
                 {
                     return (Rock.Web.UI.RockPage)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Parents the update panel.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static System.Web.UI.UpdatePanel ParentUpdatePanel( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is System.Web.UI.UpdatePanel )
+                {
+                    return (System.Web.UI.UpdatePanel)parentControl;
                 }
                 parentControl = parentControl.Parent;
             }
@@ -629,7 +795,7 @@ namespace Rock
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
             {
-                dictionary.Add(Convert.ToInt32(value), Enum.GetName( enumType, value ).SplitCase() );
+                dictionary.Add( Convert.ToInt32( value ), Enum.GetName( enumType, value ).SplitCase() );
             }
 
             listControl.DataSource = dictionary;
@@ -813,12 +979,33 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
-                return source.OrderBy( sortProperty.Property );
-            else
-                return source.OrderByDescending( sortProperty.Property );
-        }
+            string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
+            IOrderedQueryable<T> qry = null;
+
+            for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
+            {
+                string column = columns[columnIndex].Trim();
+                if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
+                    if ( columnIndex == 0 )
+                    {
+                        qry = source.OrderBy( column );
+                    }
+                    else
+                    {
+                        qry = qry.ThenBy( column );
+                    }
+                }
+                else
+                {
+                    qry = ( columnIndex == 0 ) ? source.OrderByDescending( column ) : qry.ThenByDescending( column );
+                }
+            }
+
+            return qry;
+        }
 
         #endregion
 
@@ -831,6 +1018,16 @@ namespace Rock
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
         {
             Rock.Attribute.Helper.LoadAttributes( entity );
+        }
+
+        /// <summary>
+        /// Copies the attributes.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="source">The source.</param>
+        public static void CopyAttributesFrom( this Rock.Attribute.IHasAttributes entity, Rock.Attribute.IHasAttributes source )
+        {
+            Rock.Attribute.Helper.CopyAttributes( source, entity );
         }
 
         #endregion
@@ -884,7 +1081,7 @@ namespace Rock
         #endregion
 
         #region IEntity extensions
-        
+
         /// <summary>
         /// Removes the entity.
         /// </summary>
@@ -915,7 +1112,43 @@ namespace Rock
             }
 
         }
-        
+
+        #endregion
+
+        #region HiddenField Extensions
+
+        /// <summary>
+        /// Values as int.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns></returns>
+        public static int ValueAsInt( this HiddenField hiddenField )
+        {
+            return int.Parse( hiddenField.Value );
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <param name="value">The value.</param>
+        public static void SetValue( this HiddenField hiddenField, int value )
+        {
+            hiddenField.Value = value.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether the specified hidden field is zero.
+        /// </summary>
+        /// <param name="hiddenField">The hidden field.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified hidden field is zero; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsZero( this HiddenField hiddenField )
+        {
+            return hiddenField.Value.Equals( "0" );
+        }
+
         #endregion
     }
 }

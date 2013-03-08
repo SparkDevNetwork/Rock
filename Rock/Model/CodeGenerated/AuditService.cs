@@ -58,20 +58,33 @@ namespace Rock.Model
     public static class AuditExtensionMethods
     {
         /// <summary>
-        /// Copies all the entity properties from another Audit entity
+        /// Clones this Audit object to a new Audit object
         /// </summary>
-        public static void CopyPropertiesFrom( this Audit target, Audit source )
+        /// <param name="source">The source.</param>
+        /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
+        /// <returns></returns>
+        public static Audit Clone( this Audit source, bool deepCopy )
         {
-            target.EntityTypeId = source.EntityTypeId;
-            target.EntityId = source.EntityId;
-            target.Title = source.Title;
-            target.AuditType = source.AuditType;
-            target.Properties = source.Properties;
-            target.DateTime = source.DateTime;
-            target.PersonId = source.PersonId;
-            target.Id = source.Id;
-            target.Guid = source.Guid;
+            if (deepCopy)
+            {
+                return source.Clone() as Audit;
+            }
+            else
+            {
+                var target = new Audit();
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
+                target.Title = source.Title;
+                target.AuditType = source.AuditType;
+                target.Properties = source.Properties;
+                target.DateTime = source.DateTime;
+                target.PersonId = source.PersonId;
+                target.Id = source.Id;
+                target.Guid = source.Guid;
 
+            
+                return target;
+            }
         }
     }
 }

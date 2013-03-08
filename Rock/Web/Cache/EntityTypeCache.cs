@@ -104,6 +104,19 @@ namespace Rock.Web.Cache
         #region Methods
 
         /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <returns></returns>
+        public Type GetEntityType()
+        {
+            if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+            {
+                return Type.GetType( this.AssemblyName );
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -156,6 +169,16 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
+        public static int? GetId( Type type )
+        {
+            return Read( type ).Id;
+        }
+
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         public static int? GetId( string name )
         {
             if ( String.IsNullOrEmpty( name ) )
@@ -166,8 +189,36 @@ namespace Rock.Web.Cache
             return Read( name ).Id;
         }
 
-         /// <summary>
-        /// Reads the specified name.
+        /// <summary>
+        /// Reads the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read( Type type )
+        {
+            int? entityTypeId = null;
+
+            lock ( obj )
+            {
+                if ( entityTypes.ContainsKey( type.FullName ) )
+                {
+                    entityTypeId = entityTypes[type.FullName];
+                }
+            }
+
+            if ( entityTypeId.HasValue )
+            {
+                return Read( entityTypeId.Value );
+            }
+
+            var entityTypeService = new EntityTypeService();
+            var entityTypeModel = entityTypeService.Get( type, true, null );
+            return Read( entityTypeModel );
+        }
+
+        /// <summary>
+        /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
+        /// will be read and added to cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
@@ -193,7 +244,7 @@ namespace Rock.Web.Cache
             return Read( entityTypeModel );
         }
 
-       /// <summary>
+        /// <summary>
         /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
