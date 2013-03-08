@@ -289,7 +289,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             if ( Page.IsPostBack )
             {
                 FieldTypeId = ddlFieldType.SelectedValueAsInt();
-                if ( FieldTypeId.HasValue )
+                if ( FieldTypeId.HasValue && FieldTypeId != 0 )
                 {
                     var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 
@@ -419,7 +419,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             ddlFieldType.AutoPostBack = true;
             Controls.Add( ddlFieldType );
 
-            if ( FieldTypeId.HasValue )
+            if ( FieldTypeId.HasValue && FieldTypeId != 0 )
             {
                 var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 
@@ -493,7 +493,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             ddlFieldType.SetValue( FieldTypeId );
             ddlFieldType.RenderControl( writer );
 
-            if ( FieldTypeId.HasValue )
+            if ( FieldTypeId.HasValue && FieldTypeId != 0 )
             {
                 var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 

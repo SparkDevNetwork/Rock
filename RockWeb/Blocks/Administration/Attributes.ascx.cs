@@ -439,17 +439,18 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
-            edtAttribute.SetAttributeProperties( attributeModel );
-
-            if ( attributeModel != null )
+            if ( attributeModel == null )
             {
+                attributeModel = new Rock.Model.Attribute();
                 attributeModel.Category = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
-                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
             else
             {
-                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
+                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
+
+            edtAttribute.SetAttributeProperties( attributeModel );
 
             pnlList.Visible = false;
             pnlDetails.Visible = true;
