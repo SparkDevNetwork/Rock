@@ -5,71 +5,77 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Constants;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// 
     /// </summary>
     [Serializable]
-    public class Image : FieldType
+    public class EntityTypeFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            int entityTypeId = 0;
+            if (Int32.TryParse(value, out entityTypeId))
             {
-                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "Image.ashx" );
-                int imgSize = 100;
-                if ( condensed )
-                {
-                    imgSize = 50;
-                }
-
-                string imageUrlFormat = "<img src='" + imagePath + "?id={0}&width={1}&height={1}' />";
-                return string.Format( imageUrlFormat, value, imgSize );
+                return EntityTypeCache.Read(entityTypeId).FriendlyName;
             }
-            else
-            {
-                return string.Empty;
-            }
+            return string.Empty;
         }
 
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new Web.UI.Controls.ImageSelector();
+            DropDownList dropDownList = new DropDownList();
+
+            var service = new EntityTypeService();
+            var entityTypes = new EntityTypeService().GetEntities();
+
+            dropDownList.Items.Add( new ListItem(None.Text, None.IdValue) );
+            foreach ( var entityType in entityTypes.OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ))
+            {
+                dropDownList.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+            }
+
+            return dropDownList;
         }
 
         /// <summary>
         /// Reads new values entered by the user for the field
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
+            DropDownList dropDownList = control as DropDownList;
+            if ( dropDownList != null )
             {
-                int? imageId = ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId;
-                return imageId.HasValue ? imageId.Value.ToString() : string.Empty;
+                return dropDownList.SelectedValue;
             }
+
             return null;
         }
 
@@ -77,22 +83,19 @@ namespace Rock.Field.Types
         /// Sets the value.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null && control != null && control is Rock.Web.UI.Controls.ImageSelector )
+            if ( value != null )
             {
-                int imageId = 0;
-                if ( Int32.TryParse( value, out imageId ) )
+                DropDownList dropDownList = control as DropDownList;
+                if ( dropDownList != null )
                 {
-                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = imageId;
-                }
-                else
-                {
-                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = null;
+                    dropDownList.SetValue( value );
                 }
             }
         }
+
     }
 }

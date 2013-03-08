@@ -26,7 +26,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public GroupFieldAttribute( string name, string description = "", bool required = true, int defaultGroupId = int.MinValue, string category = "", int order = 0, string key = null )
-            : base( name, description, required, ( defaultGroupId == int.MinValue ? "" : defaultGroupId.ToString() ), category, order, key, typeof( Rock.Field.Types.GroupField ).FullName )
+            : base( name, description, required, ( defaultGroupId == int.MinValue ? "" : defaultGroupId.ToString() ), category, order, key, typeof( Rock.Field.Types.GroupFieldType ).FullName )
         {
         }
     }

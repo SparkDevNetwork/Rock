@@ -16,7 +16,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
     /// </summary>
     [Serializable]
-    public class DefinedValue : FieldType
+    public class DefinedValueFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)

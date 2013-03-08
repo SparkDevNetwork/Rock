@@ -19,7 +19,7 @@ namespace Rock.Field.Types
     /// Field used to save and dispaly a file 
     /// </summary>
     [Serializable]
-    public class File : FieldType
+    public class FileFieldType : FieldType
     {
         public override List<string> ConfigurationKeys()
         {

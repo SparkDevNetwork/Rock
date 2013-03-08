@@ -19,7 +19,7 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="key">The key.</param>
         public LinkedPageAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.PageReference ).FullName )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.PageReferenceFieldType ).FullName )
         {
         }
     }

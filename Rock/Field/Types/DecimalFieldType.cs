@@ -12,7 +12,7 @@ namespace Rock.Field.Types
     /// Field used to save and dispaly a decimal numeric value
     /// </summary>
     [Serializable]
-    public class Decimal : FieldType
+    public class DecimalFieldType : FieldType
     {
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
