@@ -273,8 +273,6 @@ function populateAttributeKey(nameControlId, keyControlId ) {
     }
 }
 ";
-            tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbName.ClientID, tbKey.ClientID );
-
             ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "PopulateAttributeKeyScript", populateAttributeKeyScript, true );
         }
 
@@ -482,6 +480,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbName.ClientID, tbKey.ClientID );
             tbName.RenderControl( writer );
             tbKey.RenderControl( writer );
             tbCategory.RenderControl( writer );
