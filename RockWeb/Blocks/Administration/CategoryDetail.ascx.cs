@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             category.Name = tbName.Text;
-            category.ParentCategoryId = ddlParentCategory.SelectedValueAsInt();
+            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt;
             category.IconCssClass = tbIconCssClass.Text;
             category.IconSmallFileId = imgIconSmall.ImageId;
             category.IconLargeFileId = imgIconLarge.ImageId;
@@ -228,27 +228,6 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Loads the drop downs.
-        /// </summary>
-        private void LoadDropDowns()
-        {
-            ddlParentCategory.Items.Clear();
-            ddlParentCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
-
-            var service = new CategoryService();
-            LoadChildCategories( service, null, entityTypeId, 0 );
-        }
-
-        private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
-        {
-            foreach ( var category in service.Get( parentId, entityTypeId ) )
-            {
-                ddlParentCategory.Items.Add( new ListItem( ( new string( '-', level ) ) + category.Name, category.Id.ToString() ) );
-                LoadChildCategories( service, category.Id, entityTypeId, level + 1 );
-            }
-        }
 
         /// <summary>
         /// Shows the detail.
@@ -353,19 +332,22 @@ namespace RockWeb.Blocks.Administration
             }
 
             SetEditMode( true );
-            LoadDropDowns();
             
             tbName.Text = category.Name;
-            ddlParentCategory.SetValue( category.ParentCategoryId );
 
             if ( category.EntityTypeId != 0 )
             {
-                lblEntityTypeName.Text = EntityTypeCache.Read( category.EntityTypeId ).Name;
+                var entityType = EntityTypeCache.Read( category.EntityTypeId );
+                lblEntityTypeName.Text = entityType.Name;
+                cpParentCategory.CategoryEntityTypeName = entityType.Name;
             }
             else
             {
                 lblEntityTypeName.Text = string.Empty;
+                cpParentCategory.CategoryEntityTypeName = string.Empty;
             }
+
+            cpParentCategory.SetValue( category.ParentCategory );
             lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
             lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );

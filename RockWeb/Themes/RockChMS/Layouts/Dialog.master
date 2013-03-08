@@ -21,7 +21,7 @@
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/tinyscrollbar.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
 

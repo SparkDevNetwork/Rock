@@ -120,5 +120,33 @@ namespace RockWeb.Blocks.Administration
             lRoutes.Text = sb.ToString();
         }
 
+
+        /// <summary>
+        /// Used to manually flush the attribute cache.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnFlushCache_Click( object sender, EventArgs e )
+        {
+            foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+            }
+
+            foreach ( var blockType in new Rock.Model.BlockTypeService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+            }
+
+            foreach ( var block in new Rock.Model.BlockService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
+            }
+
+            foreach ( var page in new Rock.Model.PageService().Queryable().ToList() )
+            {
+                Rock.Web.Cache.PageCache.Flush( page.Id );
+            }
+        }
     }
 }

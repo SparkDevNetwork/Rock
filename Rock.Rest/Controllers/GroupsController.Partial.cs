@@ -61,11 +61,11 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.IsSecurityRole );
             }
 
-            if (!string.IsNullOrWhiteSpace(groupTypeIds))
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
             {
                 if ( groupTypeIds != "0" )
                 {
-                    List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse(a)).ToList();
+                    List<int> groupTypes = groupTypeIds.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
 
                     qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
                 }
@@ -73,9 +73,9 @@ namespace Rock.Rest.Controllers
 
             List<Group> groupList = qry.ToList();
             List<GroupName> groupNameList = new List<GroupName>();
-            
+
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine(appPath, "Image.ashx?id={0}&width=25&height=25");
+            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=15&height=15" );
 
             GroupTypeService groupTypeService = new GroupTypeService();
 
@@ -89,16 +89,16 @@ namespace Rock.Rest.Controllers
                 // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
                 if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
                 {
-                    groupName.GroupTypeIconCssClass = group.GroupType.IconCssClass;
+                    groupName.IconCssClass = group.GroupType.IconCssClass;
                 }
                 else
                 {
-                    groupName.GroupTypeIconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty;
+                    groupName.IconSmallUrl = group.GroupType.IconSmallFileId != null ? string.Format( imageUrlFormat, group.GroupType.IconSmallFileId ) : string.Empty;
                 }
-                
-                groupNameList.Add(groupName);
+
+                groupNameList.Add( groupName );
             }
-            
+
             // try to quickly figure out which items have Children
             List<int> resultIds = groupNameList.Select( a => a.Id ).ToList();
 
@@ -144,7 +144,7 @@ namespace Rock.Rest.Controllers
         /// <value>
         /// The group type icon CSS class.
         /// </value>
-        public string GroupTypeIconCssClass { get; set; }
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the group type icon small id.
@@ -152,7 +152,7 @@ namespace Rock.Rest.Controllers
         /// <value>
         /// The group type icon small id.
         /// </value>
-        public string GroupTypeIconSmallUrl { get; set; }
+        public string IconSmallUrl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has children.
