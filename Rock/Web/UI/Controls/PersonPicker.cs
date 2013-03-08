@@ -22,6 +22,14 @@ namespace Rock.Web.UI.Controls
         private LinkButton btnSelect;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PersonPicker" /> class.
+        /// </summary>
+        public PersonPicker()
+        {
+            btnSelect = new LinkButton();
+        }
+
+        /// <summary>
         /// The required validator
         /// </summary>
         protected HiddenFieldValidator requiredValidator;
@@ -293,7 +301,6 @@ namespace Rock.Web.UI.Controls
             hfPersonName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
 
-            btnSelect = new LinkButton();
             btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             btnSelect.CssClass = "btn btn-mini btn-primary";
             btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );

@@ -33,6 +33,10 @@ namespace Rock.Field.Types
             {
                 var service = new PageService();
                 var page = service.Get( new Guid( value ) );
+                if ( page != null )
+                {
+                    return page.Name;
+                }
             }
 
             return string.Empty;
