@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
             prayerRequest.IsPublic = cbIsPublic.Checked;
-            prayerRequest.CategoryId = cpCategory.SelectedValueAsInt;
+            prayerRequest.CategoryId = cpCategory.SelectedValueAsInt();
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
             prayerRequest.Text = tbText.Text;

@@ -229,7 +229,7 @@ $(document).ready(function() {
                 dataView.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
                 dataView.Name = tbName.Text;
                 dataView.Description = tbDescription.Text;
-                dataView.CategoryId = cpCategory.SelectedValueAsInt;
+                dataView.CategoryId = cpCategory.SelectedValueAsInt();
                 dataView.DataViewFilter = GetFilterControl();
 
                 // check for duplicates within Category

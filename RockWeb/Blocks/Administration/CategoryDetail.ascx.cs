@@ -187,7 +187,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             category.Name = tbName.Text;
-            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt;
+            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
             category.IconSmallFileId = imgIconSmall.ImageId;
             category.IconLargeFileId = imgIconLarge.ImageId;

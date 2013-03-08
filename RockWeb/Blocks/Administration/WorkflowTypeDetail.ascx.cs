@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Administration
 
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
-            workflowType.CategoryId = cpCategory.SelectedValueAsInt;
+            workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = int.Parse( tbOrder.Text );
             workflowType.WorkTerm = tbWorkTerm.Text;
             if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
