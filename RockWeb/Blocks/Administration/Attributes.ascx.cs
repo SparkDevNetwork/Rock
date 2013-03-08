@@ -441,14 +441,14 @@ namespace RockWeb.Blocks.Administration
 
             edtAttribute.SetAttributeProperties( attributeModel );
 
-            if ( attributeModel == null )
+            if ( attributeModel != null )
             {
                 attributeModel.Category = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
             else
             {
-                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
 
             pnlList.Visible = false;
