@@ -4,15 +4,17 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Linq;
+using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Model;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) Group
+    /// Field Type to select a single (or null) CampusFieldType
     /// </summary>
-    public class GroupFieldType : FieldType
+    public class CampusFieldType : FieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
@@ -23,8 +25,17 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupPicker groupPicker = new GroupPicker();
-            return groupPicker;
+            DropDownList editControl = new DropDownList();
+
+            CampusService campusService = new CampusService();
+            var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            editControl.Items.Add( None.ListItem );
+            foreach ( var campus in campusList )
+            {
+                editControl.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
+            }
+
+            return editControl;
         }
 
         /// <summary>
@@ -35,10 +46,20 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            GroupPicker groupPicker = control as GroupPicker;
-            if ( groupPicker != null )
+            List<string> values = new List<string>();
+
+            DropDownList dropDownList = control as DropDownList;
+
+            if ( dropDownList != null )
             {
-                return groupPicker.SelectedValue;
+                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
+                {
+                    return null;
+                }
+                else
+                {
+                    return dropDownList.SelectedValue;
+                }
             }
 
             return null;
@@ -54,11 +75,8 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                GroupPicker groupPicker = control as GroupPicker;
-                int groupId = 0;
-                int.TryParse( value, out groupId );
-                Group group = new GroupService().Get( groupId );
-                groupPicker.SetValue( group );
+                DropDownList dropDownList = control as DropDownList;
+                dropDownList.SetValue( value );
             }
         }
     }
