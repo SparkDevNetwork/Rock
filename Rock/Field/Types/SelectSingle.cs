@@ -39,14 +39,18 @@ namespace Rock.Field.Types
             List<Control> controls = new List<Control>();
 
             TextBox tb = new TextBox();
+            controls.Add( tb );
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
-            controls.Add( tb );
+            tb.AutoPostBack = true;
+            tb.TextChanged += OnQualifierUpdated;
 
             DropDownList ddl = new DropDownList();
+            controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
-            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
 
             return controls;
         }
@@ -162,7 +166,7 @@ namespace Rock.Field.Types
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is ListControl )
-                return ((ListControl)control).SelectedValue;
+                return ( (ListControl)control ).SelectedValue;
 
             return null;
         }
@@ -175,8 +179,11 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is ListControl )
-                ( ( ListControl )control ).SelectedValue = value;
+            if ( value != null )
+            {
+                if ( control != null && control is ListControl )
+                    ( (ListControl)control ).SelectedValue = value;
+            }
         }
     }
 }

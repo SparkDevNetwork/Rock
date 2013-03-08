@@ -261,6 +261,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Creates the control.
+        /// </summary>
+        /// <returns></returns>
+        public Control CreateControl()
+        {
+            return CreateControl( string.Empty, false );
+        }
+
+        /// <summary>
         /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
         /// </summary>
         /// <param name="value">The value.</param>

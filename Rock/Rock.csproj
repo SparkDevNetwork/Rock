@@ -146,6 +146,9 @@
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\CampusesField.cs" />
+    <Compile Include="Field\Types\File.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Field\Types\KeyValueList.cs" />
     <Compile Include="Field\Types\EmailTemplateField.cs" />
     <Compile Include="Field\Types\EntityType.cs" />
@@ -492,6 +495,9 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\FileSelector.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\Controls\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />

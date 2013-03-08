@@ -1,4 +1,4 @@
-﻿//
+﻿ //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -312,46 +312,48 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            using ( new UnitOfWorkScope() )
             {
-                var attributeService = new AttributeService();
-
-                Rock.Model.Attribute attribute = attributeService.Get( edtAttribute.AttributeId );
-                if ( attribute != null )
+                RockTransactionScope.WrapTransaction( () =>
                 {
-                    // clean up old qualifier values in case they changed
-                    AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-                    foreach ( var oldQualifier in attribute.AttributeQualifiers.ToList() )
+                    var attributeService = new AttributeService();
+                    Rock.Model.Attribute attribute = null;
+
+                    // remove old qualifier values in case they changed
+                    if ( edtAttribute.AttributeId.HasValue )
                     {
-                        attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                        AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
+                        foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( edtAttribute.AttributeId.Value ).ToList() )
+                        {
+                            attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
+                            attributeQualifierService.Save( oldQualifier, CurrentPersonId );
+                        }
+                        attribute = attributeService.Get( edtAttribute.AttributeId.Value );
                     }
-                }
-                else
-                {
-                    attribute = new Rock.Model.Attribute();
-                }
 
-                edtAttribute.GetAttributeValues( attribute );
+                    if ( attribute == null )
+                    {
+                        attribute = new Rock.Model.Attribute();
+                        attributeService.Add( attribute, CurrentPersonId );
+                    }
 
-                attribute.EntityTypeId = _entityTypeId;
-                attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
-                attribute.EntityTypeQualifierValue = _entityQualifierValue;
+                    edtAttribute.GetAttributeProperties( attribute );
 
-                // Controls will show warnings
-                if ( !attribute.IsValid )
-                {
-                    return;
-                }
+                    attribute.EntityTypeId = _entityTypeId;
+                    attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                    attribute.EntityTypeQualifierValue = _entityQualifierValue;
 
-                if ( attribute.Id == 0 )
-                {
-                    attributeService.Add( attribute, CurrentPersonId );
-                }
+                    // Controls will show warnings
+                    if ( !attribute.IsValid )
+                    {
+                        return;
+                    }
 
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                attributeService.Save( attribute, CurrentPersonId );
-            } );
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                    attributeService.Save( attribute, CurrentPersonId );
 
+                } );
+            }
 
             BindGrid();
 
@@ -437,22 +439,17 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
-
-            string actionTitle;
+            edtAttribute.SetAttributeProperties( attributeModel );
 
             if ( attributeModel == null )
             {
-                attributeModel = new Rock.Model.Attribute();
                 attributeModel.Category = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
-                actionTitle = ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
+                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
             else
             {
-                actionTitle = ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
-
-
-            edtAttribute.EditAttribute( attributeModel, actionTitle );
 
             pnlList.Visible = false;
             pnlDetails.Visible = true;

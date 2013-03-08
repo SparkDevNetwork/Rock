@@ -86,11 +86,15 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            DropDownList dropDownList = control as DropDownList;
-            if ( dropDownList != null )
+            if ( value != null )
             {
-                dropDownList.SetValue( value );
+                DropDownList dropDownList = control as DropDownList;
+                if ( dropDownList != null )
+                {
+                    dropDownList.SetValue( value );
+                }
             }
         }
+
     }
 }

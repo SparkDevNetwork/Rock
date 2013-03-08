@@ -34,14 +34,18 @@ namespace Rock.Field.Types
                 {
                     var definedValue = Rock.Web.Cache.DefinedValueCache.Read( Int32.Parse( value ) );
                     if ( definedValue != null )
+                    {
                         return definedValue.Name;
+                    }
                 }
                 catch { }
 
                 return "Unknown Defined Value: " + value;
             }
             else
+            {
                 return string.Empty;
+            }
         }
 
         /// <summary>
@@ -64,12 +68,15 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             DropDownList ddl = new DropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
+            {
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
-
-            controls.Add( ddl );
+            }
 
             return controls;
         }
@@ -86,8 +93,10 @@ namespace Rock.Field.Types
 
             if ( controls != null && controls.Count == 1 &&
                 controls[0] != null && controls[0] is DropDownList )
-                configurationValues["definedtype"].Value = ( ( DropDownList )controls[0] ).SelectedValue;
-         
+            {
+                configurationValues["definedtype"].Value = ( (DropDownList)controls[0] ).SelectedValue;
+            }
+
             return configurationValues;
         }
 
@@ -99,8 +108,10 @@ namespace Rock.Field.Types
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey("definedtype") )
-                    ( ( DropDownList )controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
+                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "definedtype" ) )
+            {
+                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
+            }
         }
 
         /// <summary>
@@ -121,7 +132,9 @@ namespace Rock.Field.Types
                 {
                     Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService();
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( definedTypeId ) )
+                    {
                         editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                    }
                 }
             }
             return editControl;
@@ -150,9 +163,12 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( control != null && control is ListControl )
+            if ( value != null )
             {
-                ( (ListControl)control ).SelectedValue = value;
+                if ( control != null && control is ListControl )
+                {
+                    ( (ListControl)control ).SelectedValue = value;
+                }
             }
         }
 
