@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
 
                 report.Name = tbName.Text;
                 report.Description = tbDescription.Text;
-                report.CategoryId = cpCategory.SelectedValueAsInt;
+                report.CategoryId = cpCategory.SelectedValueAsInt();
                 report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 report.DataViewId = ddlDataView.SelectedValueAsInt();
 

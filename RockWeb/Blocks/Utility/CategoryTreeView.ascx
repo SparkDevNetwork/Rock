@@ -7,7 +7,7 @@
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
         <div class="tree-view tree-view-group">
-            <div id="add-buttons" class="tree-view-actions pull-right" style="display:none">
+            <div class="tree-view-actions pull-right">
                 <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
                         <i class="icon-plus-sign"></i> Add Category
                 </asp:LinkButton>
@@ -28,11 +28,9 @@
 
                     if (dataItem.IsCategory) {
                         $('#hfSelectedCategoryId').val(dataItem.Id);
-                        $('#add-buttons').show();
                     }
                     else {
                         $('#hfSelectedCategoryId').val('');
-                        $('#add-buttons').hide();
                     }
 
                     if (window.location.search != itemSearch) {
@@ -128,14 +126,14 @@
                     }
                 });
 
-                $('#tree-view-content').kendoTreeView({
-                    template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
-                    dataSource: dataList,
-                    dataTextField: 'Name',
-                    dataImageUrlField: 'IconSmallUrl',
-                    select: onSelect,
-                    dataBound: onDataBound
-                });
+                    $('#tree-view-content').kendoTreeView({
+                        template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
+                        dataSource: dataList,
+                        dataTextField: 'Name',
+                        dataImageUrlField: 'IconSmallUrl',
+                        select: onSelect,
+                        dataBound: onDataBound
+                    });
             </script>
         </div>
     </ContentTemplate>
