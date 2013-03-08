@@ -16,7 +16,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
     [Serializable]
-    public class SelectSingle : FieldType
+    public class SelectSingleFieldType : FieldType
     {
         /// <summary>
         /// Returns a list of the configuration keys

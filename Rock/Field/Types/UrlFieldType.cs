@@ -9,10 +9,10 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a currency value
+    /// Field used to save and dispaly a url
     /// </summary>
     [Serializable]
-    public class Currency : Decimal
+    public class UrlFieldType : FieldType
     {
     }
 }

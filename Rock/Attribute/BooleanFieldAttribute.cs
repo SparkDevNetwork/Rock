@@ -25,7 +25,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key. (null means derive from name)</param>
         public BooleanFieldAttribute( string name, string description = "", bool defaultValue = false, string category = "", int order = 0, string key = null )
-            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( Rock.Field.Types.Boolean ).FullName )
+            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( Rock.Field.Types.BooleanFieldType ).FullName )
         {
         }
     }

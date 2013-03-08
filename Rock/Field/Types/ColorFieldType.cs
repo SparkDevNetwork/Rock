@@ -3,43 +3,23 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
     [Serializable]
-    public class KeyValueList : FieldType
+    public class ColorFieldType : FieldType
     {
         /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            string[] KeyValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            if ( KeyValues.Length == 1 )
-            {
-                return "1 Key Value Pair";
-            }
-            else
-            {
-                return string.Format( "{0:N0} Key Value Pairs", KeyValues.Length );
-            }
-        }
-
-        /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
         /// <param name="configurationValues"></param>
         /// <returns>
@@ -47,7 +27,16 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new Rock.Web.UI.Controls.KeyValueList();
+            DropDownList ddl = new DropDownList();
+
+            Type colors = typeof( System.Drawing.Color );
+            PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );
+            foreach ( PropertyInfo info in colorInfo )
+            {
+                ddl.Items.Add( new ListItem( info.Name, info.Name ) );
+            }
+
+            return ddl;
         }
 
         /// <summary>
@@ -58,10 +47,11 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            if ( control != null && control is DropDownList )
             {
-                return ( (Rock.Web.UI.Controls.KeyValueList)control ).Value;
+                return ( (DropDownList)control ).SelectedValue;
             }
+            
             return null;
         }
 
@@ -73,10 +63,14 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value!= null && control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            if ( value != null )
             {
-                ( (Rock.Web.UI.Controls.KeyValueList)control ).Value = value;
+                if ( control != null && control is DropDownList )
+                {
+                    ( (DropDownList)control ).SelectedValue = value;
+                }
             }
         }
+
     }
 }

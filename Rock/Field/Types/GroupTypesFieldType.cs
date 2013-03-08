@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
@@ -11,9 +10,9 @@ using Rock.Model;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field Type to select 0 or more GroupTypes 
     /// </summary>
-    public class CampusesField : SelectFromListFieldType
+    public class GroupTypesFieldType : SelectFromListFieldType
     {
         /// <summary>
         /// Gets the list source.
@@ -25,9 +24,8 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new CampusService();
-                var qry = service.Queryable();
-                return qry.OrderBy( a => a.Name ).ToDictionary( k => k.Id.ToString(), v => v.Name );
+                GroupTypeService groupTypeService = new GroupTypeService();
+                return groupTypeService.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Id.ToString(), v => v.Name );
             }
         }
     }

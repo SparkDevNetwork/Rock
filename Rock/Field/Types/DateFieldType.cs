@@ -18,7 +18,7 @@ namespace Rock.Field.Types
     /// Field used to save and dispaly a text value
     /// </summary>
     [Serializable]
-    public class Date : FieldType
+    public class DateFieldType : FieldType
     {
         /// <summary>
         /// Formats date display
