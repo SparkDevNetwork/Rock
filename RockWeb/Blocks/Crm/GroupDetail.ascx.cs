@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
-            int? parentGroupId = gpParentGroup.SelectedValueAsInt;
+            int? parentGroupId = gpParentGroup.SelectedValueAsInt();
             if ( (parentGroupId ?? 0) != 0 )
             {
                 Group parentGroup = new GroupService().Get( parentGroupId.Value );

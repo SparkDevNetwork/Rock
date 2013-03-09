@@ -147,26 +147,28 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets the selected value as int.
         /// </summary>
+        /// <param name="NoneAsNull">if set to <c>true</c> [none as null].</param>
+        /// <returns></returns>
         /// <value>
         /// The selected value as int.
-        /// </value>
-        public int? SelectedValueAsInt
+        ///   </value>
+        public int? SelectedValueAsInt( bool NoneAsNull = true )
         {
-            get
+            if ( string.IsNullOrWhiteSpace( ItemId ) )
             {
-                if ( string.IsNullOrWhiteSpace( ItemId ) )
-                {
-                    return null;
-                }
-                else
-                {
-                    return int.Parse(ItemId);
-                }
+                return null;
             }
-
-            private set
+            else
             {
-                ItemId = value == null ? string.Empty : value.ToString();
+                int result = int.Parse( ItemId );
+                if ( NoneAsNull )
+                {
+                    if ( result == Rock.Constants.None.Id )
+                    {
+                        return null;
+                    }
+                }
+                return result;
             }
         }
 
@@ -269,7 +271,7 @@ namespace Rock.Web.UI.Controls
         }});
 ";
 
-            string script = string.Format( scriptFormat, this.ID);
+            string script = string.Format( scriptFormat, this.ID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-" + this.ID.ToString(), script, true );
 
@@ -364,10 +366,10 @@ namespace Rock.Web.UI.Controls
     $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
 ";
 
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ));
-            
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ) );
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID.ToString(), treeViewScript, true );
-            
+
             var sm = ScriptManager.GetCurrent( this.Page );
 
             EnsureChildControls();
@@ -427,7 +429,7 @@ namespace Rock.Web.UI.Controls
             requiredValidator.ErrorMessage = errorMessage;
             requiredValidator.IsValid = false;
         }
-        
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -572,7 +574,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                writer.Write( string.Format(controlHtmlFormatDisabled, this.ID, this.ItemName) );
+                writer.Write( string.Format( controlHtmlFormatDisabled, this.ID, this.ItemName ) );
             }
 
             writer.RenderEndTag();

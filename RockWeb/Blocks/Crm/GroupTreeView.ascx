@@ -8,21 +8,15 @@
         <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedGroupId" runat="server" ClientIDMode="Static" />
-        
+
         <div class="tree-view tree-view-group">
-        
-            <div class="treeview-back">
-                <h3>
-                    <asp:Literal ID="ltlTreeViewTitle" runat="server" /></h3>
-            
-                <div class="tree-view-actions pull-right">
-                    <asp:LinkButton ID="lbAddGroup" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddGroup_Click">
+            <div class="tree-view-actions pull-right">
+                <asp:LinkButton ID="lbAddGroup" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddGroup_Click">
                         <i class="icon-plus-sign"></i> Add
-                    </asp:LinkButton>
-                </div>
-            
-                <div id="tree-view-content">
-                </div>
+                </asp:LinkButton>
+            </div>
+
+            <div id="tree-view-content">
             </div>
             <script>
                 function onSelect(e) {

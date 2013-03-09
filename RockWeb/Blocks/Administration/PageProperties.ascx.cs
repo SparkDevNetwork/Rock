@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Administration
                     
                     var page = pageService.Get( _page.Id );
 
-                    int parentPageId = ppParentPage.SelectedValueAsInt ?? 0;
+                    int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
                     if ( page.ParentPageId != parentPageId )
                     {
                         if ( page.ParentPageId.HasValue )
