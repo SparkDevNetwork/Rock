@@ -62,6 +62,9 @@ namespace RockWeb.Blocks.Utility
                 selectedEntityType = "category";
             }
 
+            lbAddCategory.Visible = true;
+            lbAddItem.Visible = false;
+
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 hfInitialItemId.Value = itemId;
@@ -72,6 +75,7 @@ namespace RockWeb.Blocks.Utility
                 if ( selectedEntityType.Equals( "category" ) )
                 {
                     category = new CategoryService().Get( int.Parse( itemId ) );
+                    lbAddItem.Visible = true;
                 }
                 else
                 {
@@ -92,6 +96,7 @@ namespace RockWeb.Blocks.Utility
 
                                 if ( entity != null )
                                 {
+                                    lbAddCategory.Visible = false;
                                     category = entity.Category;
                                     if ( category != null )
                                     {
@@ -128,6 +133,10 @@ namespace RockWeb.Blocks.Utility
             if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
                 NavigateToDetailPage( "CategoryId", 0, "parentCategoryId", parentCategoryId );
+            }
+            else
+            {
+                NavigateToDetailPage( "CategoryId", 0 );
             }
         }
 
