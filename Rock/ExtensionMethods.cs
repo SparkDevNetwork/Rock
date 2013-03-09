@@ -1124,7 +1124,13 @@ namespace Rock
         /// <returns></returns>
         public static int ValueAsInt( this HiddenField hiddenField )
         {
-            return int.Parse( hiddenField.Value );
+            int intValue = 0;
+            if ( int.TryParse( hiddenField.Value, out intValue ) )
+            {
+                return intValue;
+            }
+
+            return 0;
         }
 
         /// <summary>

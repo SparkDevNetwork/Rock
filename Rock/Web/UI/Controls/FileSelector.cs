@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     /// A control to select a file and set any attributes
     /// </summary>
     [ToolboxData( "<{0}:FileSelector runat=server></{0}:FileSelector>" )]
-    public class FileSelector : CompositeControl, ILabeledControl, IPostBackEventHandler
+    public class FileSelector : CompositeControl, ILabeledControl
     {
 
         #region UI Controls
@@ -40,6 +40,7 @@ namespace Rock.Web.UI.Controls
         public FileSelector()
         {
             lblTitle = new Label();
+            hfBinaryFileId = new HiddenField();
         }
 
         #endregion
@@ -52,10 +53,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The binary file id.
         /// </value>
-        public int? BinaryFileId
+        public int BinaryFileId
         {
-            get { return ViewState["BinaryFileId"] as int?; }
-            set { ViewState["BinaryFileId"] = value; }
+            get { return hfBinaryFileId.ValueAsInt(); }
+            set { hfBinaryFileId.Value = value.ToString(); }
         }
 
         /// <summary>
@@ -85,19 +86,21 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             Controls.Add( lblTitle );
+            lblTitle.ID = "lblTitle";
 
-            hfBinaryFileId = new HiddenField();
-            hfBinaryFileId.Value = BinaryFileId.HasValue ? BinaryFileId.Value.ToString() : "0";
             Controls.Add( hfBinaryFileId );
+            hfBinaryFileId.ID = "hfBinaryFileId";
 
             aFileName = new HtmlAnchor();
             Controls.Add( aFileName );
             aFileName.ID = "fn";
+            aFileName.Target = "_blank";
             lblTitle.AssociatedControlID = aFileName.ID;
 
             aRemove = new HtmlAnchor();
             Controls.Add( aRemove );
             aRemove.ID = "rmv";
+            aRemove.HRef = "#";
             aRemove.InnerText = "Remove";
             aRemove.Attributes["class"] = "remove-file";
 
@@ -112,20 +115,36 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            lblTitle.AddCssClass( "control-label" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             lblTitle.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( BinaryFileId != 0 )
+            {
+                aFileName.HRef = string.Format( "{0}file.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
+                aFileName.Style[HtmlTextWriterStyle.Display] = "inline";
+                aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+            }
+            else
+            {
+                aFileName.HRef = string.Empty;
+                aFileName.InnerText = string.Empty;
+                aFileName.Style[HtmlTextWriterStyle.Display] = "none";
+                aRemove.Style[HtmlTextWriterStyle.Display] = "none";
+            }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             hfBinaryFileId.RenderControl( writer );
-            aFileName.RenderControl( writer ); 
+            aFileName.RenderControl( writer );
+            writer.Write( " " );
             aRemove.RenderControl( writer );
             writer.RenderEndTag();
             
@@ -155,32 +174,36 @@ namespace Rock.Web.UI.Controls
 
                 success: function(e) {{
 
-                    if (e.operation == 'upload' && e.response && e.response.Id != 0 ) {{
+                    if (e.operation == 'upload' && e.response ) {{
                         $('#{1}').val(e.response.Id);
-                        $('#{2}').attr('href','')
-                        $('#{2}').hide();             
-                        $('#{2}').attr('href','{4}file.ashx?id=' + e.response.Id);
-                        $('#{2}').show('fast', function() {{ 
+                        var $fileLink = $('#{2}');
+                        $fileLink.attr('href','')
+                        $fileLink.hide();   
+                        $fileLink.text(e.response.FileName);        
+                        $fileLink.attr('href','{4}file.ashx?id=' + e.response.Id);
+                        $fileLink.show('fast', function() {{ 
                             if ($('#modal-scroll-container').length) {{
                                 $('#modal-scroll-container').tinyscrollbar_update('relative');
                             }}
                         }});
                         $('#{3}').show('fast');
-                        {5};
+                        //{5};
                     }}
 
                 }}
             }});
 
-            $('#{3}').click( function(){{
+            $('#{3}').click( function(e){{
                 $(this).hide('fast');
-                $('#{1}').val('');
-                $('#{2}').attr('href','')
-                $('#{2}').hide('fast', function() {{ 
+                $('#{1}').val('0');
+                var $fileLink = $('#{2}');
+                $fileLink.attr('href','')
+                $fileLink.hide('fast', function() {{ 
                     if ($('#modal-scroll-container').length) {{
                         $('#modal-scroll-container').tinyscrollbar_update('relative');
                     }}
                 }});
+                return false;
             }});
 
         }}
@@ -218,15 +241,5 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Occurs when a file is uploaded.
-        /// </summary>
-        public void RaisePostBackEvent( string eventArgument )
-        {
-            if ( eventArgument == "FileUploaded" )
-            {
-                BinaryFileId = hfBinaryFileId.ValueAsInt();
-            }
-        }
     }
 }

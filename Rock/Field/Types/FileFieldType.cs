@@ -130,7 +130,7 @@ namespace Rock.Field.Types
             {
                 var fileSelector = (Rock.Web.UI.Controls.FileSelector)control;
 
-                return fileSelector.BinaryFileId.HasValue ? fileSelector.BinaryFileId.Value.ToString() : string.Empty;
+                return fileSelector.BinaryFileId != 0 ? fileSelector.BinaryFileId.ToString() : string.Empty;
             }
             return null;
         }
