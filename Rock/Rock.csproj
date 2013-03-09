@@ -142,6 +142,8 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="DataFilters\EnumPropertyFilter.cs" />
+    <Compile Include="DataFilters\TextPropertyFilter.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
