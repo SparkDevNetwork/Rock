@@ -1,24 +1,23 @@
-﻿//
+﻿using System;
+//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
+using Rock.Web.Cache;
 
-namespace Rock.DataFilters.Person
+namespace Rock.DataFilters
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on whether they have a picture or not" )]
-    [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
-    public class HasPictureFilter : DataFilterComponent
+    public abstract class EnumPropertyFilter<T> : DataFilterComponent
     {
         /// <summary>
         /// Gets the title.
@@ -28,8 +27,16 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Title
         {
-            get { return "Has Picture"; }
+            get { return PropertyName.SplitCase(); }
         }
+
+        /// <summary>
+        /// Gets the name of the column.
+        /// </summary>
+        /// <value>
+        /// The name of the column.
+        /// </value>
+        public abstract string PropertyName { get; }
 
         /// <summary>
         /// Gets the section.
@@ -39,18 +46,11 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Section
         {
-            get { return "Demographic Info"; }
-        }
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Person"; }
+            get
+            {
+                string friendlyName = EntityTypeCache.Read( FilteredEntityTypeName ).FriendlyName + " ";
+                return friendlyName.TrimStart( ' ' ) + "Properties";
+            }
         }
 
         /// <summary>
@@ -66,10 +66,10 @@ namespace Rock.DataFilters.Person
         {
             get
             {
-                return "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
+                return string.Format( "'{0} is ' + '\\'' + $('input:checked', $content).val() + '\\''", Title );
             }
         }
-
+        
         /// <summary>
         /// Formats the selection.
         /// </summary>
@@ -77,18 +77,7 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            bool hasPicture = true;
-            if (!Boolean.TryParse(selection, out hasPicture))
-                hasPicture = true;
-
-            if (hasPicture)
-            {
-                return "Has Picture";
-            }
-            else
-            {
-                return "Doesn't Have Picture";
-            }
+            return string.Format( "{0} is '{1}'", Title, selection );
         }
 
         /// <summary>
@@ -97,9 +86,20 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override Control[] CreateChildControls()
         {
-            CheckBox cb = new CheckBox();
-            cb.Checked = true;
-            return new Control[1] { cb };
+            RadioButtonList rbl = new RadioButtonList();
+            rbl.RepeatDirection = RepeatDirection.Horizontal;
+
+            foreach ( var value in Enum.GetValues( typeof(T) ) )
+            {
+                rbl.Items.Add( new ListItem( Enum.GetName( typeof(T), value ).SplitCase() ) );
+            }
+            
+            if ( rbl.Items.Count > 0 )
+            {
+                rbl.Items[0].Selected = true;
+            }
+
+            return new Control[1] { rbl };
         }
 
         /// <summary>
@@ -109,8 +109,22 @@ namespace Rock.DataFilters.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( HtmlTextWriter writer, Control[] controls )
         {
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Label
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
             writer.Write( this.Title + " " );
+            writer.RenderEndTag();
+
+            // Controls
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -120,7 +134,7 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
-            return ( (CheckBox)controls[0] ).Checked.ToString();
+            return ( (RadioButtonList)controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -130,11 +144,11 @@ namespace Rock.DataFilters.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
-
-            ( (CheckBox)controls[0] ).Checked = hasPicture;
+            var rbl = (RadioButtonList)controls[0];
+            foreach ( ListItem item in rbl.Items )
+            {
+                item.Selected = item.Value == selection;
+            }
         }
 
         /// <summary>
@@ -145,15 +159,11 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            bool hasPicture = true;
-            if ( Boolean.TryParse( selection, out hasPicture ) )
-            {
-                MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-                Expression hasValue = Expression.Property( property, "HasValue");
-                Expression value = Expression.Constant( hasPicture );
-                return Expression.Equal( hasValue, value);
-            }
-            return null;
+            T theEnum = selection.ConvertToEnum<T>();
+
+            Expression property = Expression.Property( parameterExpression, PropertyName );
+            Expression constant = Expression.Constant( theEnum );
+            return Expression.Equal( property, constant );
         }
     }
 }

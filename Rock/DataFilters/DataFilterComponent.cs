@@ -20,28 +20,20 @@ namespace Rock.DataFilters
     public abstract class DataFilterComponent : Component
     {
         /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override Dictionary<string, string> AttributeValueDefaults
-        {
-            get
-            {
-                var defaults = new Dictionary<string, string>();
-                defaults.Add( "Active", "True" );
-                return defaults;
-            }
-        }
-
-        /// <summary>
         /// Gets the title.
         /// </summary>
         /// <value>
         /// The title.
         /// </value>
         public abstract string Title { get; }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public abstract string FilteredEntityTypeName { get; }
 
         /// <summary>
         /// Gets the section.
@@ -53,14 +45,6 @@ namespace Rock.DataFilters
         {
             get { return string.Empty; }
         }
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public abstract string FilteredEntityTypeName { get; }
 
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
@@ -76,6 +60,22 @@ namespace Rock.DataFilters
             get
             {
                 return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", Title );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                return defaults;
             }
         }
 

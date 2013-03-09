@@ -8,16 +8,14 @@ using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 
 using Rock.Model;
+using Rock.Web.Cache;
 
-namespace Rock.DataFilters.Person
+namespace Rock.DataFilters
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on First Name" )]
-    [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person First Name Filter" )]
-    public class FirstNameFilter : DataFilterComponent
+    public abstract class TextPropertyFilter : DataFilterComponent
     {
         /// <summary>
         /// Gets the title.
@@ -25,21 +23,18 @@ namespace Rock.DataFilters.Person
         /// <value>
         /// The title.
         /// </value>
-        public override string Title
+        public override string Title 
         {
-            get { return "First Name"; }
+            get { return PropertyName.SplitCase(); }
         }
 
         /// <summary>
-        /// Gets the name of the filtered entity type.
+        /// Gets the name of the column.
         /// </summary>
         /// <value>
-        /// The name of the filtered entity type.
+        /// The name of the column.
         /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Person"; }
-        }
+        public abstract string PropertyName { get; }
 
         /// <summary>
         /// Gets the section.
@@ -49,7 +44,11 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Section
         {
-            get { return "Person Properties"; }
+            get
+            {
+                string friendlyName = EntityTypeCache.Read( FilteredEntityTypeName ).FriendlyName + " ";
+                return friendlyName.TrimStart( ' ' ) + "Properties";
+            }
         }
 
         /// <summary>
@@ -74,9 +73,7 @@ namespace Rock.DataFilters.Person
                 value = options[1];
             }
 
-            MemberExpression gnProperty = Expression.Property( parameterExpression, "GivenName" );
-            MemberExpression nnProperty = Expression.Property( parameterExpression, "NickName" );
-            Expression property = Expression.Coalesce( nnProperty, gnProperty );
+            MemberExpression property = Expression.Property( parameterExpression, PropertyName );
             Expression constant = Expression.Constant( value );
             return ComparisonExpression( comparisonType, property, constant );
         }
