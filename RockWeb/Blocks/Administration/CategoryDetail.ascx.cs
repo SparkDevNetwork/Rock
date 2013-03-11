@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.Administration
                 cpParentCategory.CategoryEntityTypeName = string.Empty;
             }
 
-            cpParentCategory.SetValue( category.ParentCategory );
+            cpParentCategory.SetValue( category.ParentCategoryId );
             lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
             lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
