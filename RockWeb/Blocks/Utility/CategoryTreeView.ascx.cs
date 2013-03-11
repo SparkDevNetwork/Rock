@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Utility
             {
                 EntityTypeName = cachedEntityType.Name;
                 lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
+                lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
