@@ -31,11 +31,12 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            int entityTypeId = 0;
-            if (Int32.TryParse(value, out entityTypeId))
+            string entityTypeName = value;
+            if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
             {
-                return EntityTypeCache.Read(entityTypeId).FriendlyName;
+                return EntityTypeCache.Read( entityTypeName ).FriendlyName;
             }
+
             return string.Empty;
         }
 
@@ -56,7 +57,7 @@ namespace Rock.Field.Types
             dropDownList.Items.Add( new ListItem(None.Text, None.IdValue) );
             foreach ( var entityType in entityTypes.OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ))
             {
-                dropDownList.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+                dropDownList.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
 
             return dropDownList;
@@ -96,6 +97,5 @@ namespace Rock.Field.Types
                 }
             }
         }
-
     }
 }

@@ -393,6 +393,7 @@ if ( window.parent.closeModal != null)
 
             upPanel.DataBind();
         }
+
         #endregion
     }
 }

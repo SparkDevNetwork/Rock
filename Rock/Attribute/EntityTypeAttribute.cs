@@ -12,6 +12,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Attribute used to specify an EntityType
+    /// Value returns EntityType.Name
     /// </summary>
     public class EntityTypeAttribute : FieldAttribute
     {
