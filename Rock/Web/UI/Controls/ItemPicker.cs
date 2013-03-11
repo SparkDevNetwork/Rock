@@ -328,7 +328,7 @@ namespace Rock.Web.UI.Controls
         var modalDialog = $('#modal-scroll-container');
         if (modalDialog) {{
             if (modalDialog.is(':visible')) {{
-                modalDialog.tinyscrollbar_update('relative');
+                modalDialog.tinyscrollbar_update('bottom');
             }}
         }}
     }}
