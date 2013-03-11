@@ -20,7 +20,7 @@ namespace Rock.Migrations
         {
             DropIndex( "dbo.DataView", new[] { "EntityTypeId" } );
             AlterColumn( "dbo.DataView", "EntityTypeId", c => c.Int( nullable: false ) );
-            CreateIndex( "dbo.DataView", "EntityTypeId", true );
+            CreateIndex( "dbo.DataView", "EntityTypeId", false );
         }
         
         /// <summary>
@@ -30,7 +30,7 @@ namespace Rock.Migrations
         {
             DropIndex( "dbo.DataView", new[] { "EntityTypeId" } );
             AlterColumn( "dbo.DataView", "EntityTypeId", c => c.Int() );
-            CreateIndex( "dbo.DataView", "EntityTypeId", true );
+            CreateIndex( "dbo.DataView", "EntityTypeId", false );
         }
     }
 }
