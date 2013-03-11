@@ -91,7 +91,7 @@ $(document).ready(function() {
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            CreateFilterControl( DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false );
+            CreateFilterControl( ViewState["EntityTypeId"] as int?, DataViewFilter.FromJson( ViewState["DataViewFilter"].ToString() ), false );
         }
 
         /// <summary>
@@ -103,6 +103,7 @@ $(document).ready(function() {
         protected override object SaveViewState()
         {
             ViewState["DataViewFilter"] = GetFilterControl().ToJson();
+            ViewState["EntityTypeId"] = ddlEntityType.SelectedValueAsInt();
             return base.SaveViewState();
         }
 
@@ -226,7 +227,7 @@ $(document).ready(function() {
                     dataViewFilterId = dataView.DataViewFilterId;
                 }
 
-                dataView.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
+                dataView.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 dataView.Name = tbName.Text;
                 dataView.Description = tbDescription.Text;
                 dataView.CategoryId = cpCategory.SelectedValueAsInt();
@@ -294,7 +295,7 @@ $(document).ready(function() {
             int dataViewId = int.Parse( hfDataViewId.Value );
 
             var service = new DataViewService();
-            var dataView = service.Get( dataViewId );
+            var dataView = service.Get( dataViewId);
 
             if ( dataView != null && dataView.EntityTypeId.HasValue)
             {
@@ -324,6 +325,8 @@ $(document).ready(function() {
                 .OrderBy( e => e.FriendlyName )
                 .ToList();
             ddlEntityType.DataBind();
+
+            ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
         }
 
         /// <summary>
@@ -450,7 +453,7 @@ $(document).ready(function() {
             cpCategory.SetValue( dataView.Category );
             ddlEntityType.SetValue( dataView.EntityTypeId );
 
-            CreateFilterControl( dataView.DataViewFilter, true );
+            CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true );
         }
 
         /// <summary>
@@ -637,12 +640,13 @@ $(document).ready(function() {
             }
         }
 
-        private void CreateFilterControl( DataViewFilter filter, bool setSelection )
+        private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection )
         {
             phFilters.Controls.Clear();
-            if ( filter != null )
+            if ( filter != null && filteredEntityTypeId.HasValue )
             {
-                CreateFilterControl( phFilters, filter, "Rock.Model.Person", setSelection );
+                var filteredEntityType = EntityTypeCache.Read( filteredEntityTypeId.Value );
+                CreateFilterControl( phFilters, filter, filteredEntityType.Name, setSelection );
             }
         }
 
@@ -746,6 +750,19 @@ $(document).ready(function() {
             return filter;
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var dataViewFilter = new DataViewFilter();
+            dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+            CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
+        }
+
         #endregion
+
     }
 }
