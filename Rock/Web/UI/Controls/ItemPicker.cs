@@ -432,6 +432,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        public void SetValue( int? id )
+        {
+            ItemId = id.HasValue ? id.Value.ToString() : Rock.Constants.None.IdValue;
+            SetValueOnSelect();
+        }
+
+        /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected abstract void SetValueOnSelect();
