@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Administration
 
         private Rock.Web.Cache.PageCache _page = null;
         private string _zoneName = string.Empty;
-        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings"} ;
+        private List<string> tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings", "Import/Export"} ;
         
         protected string CurrentProperty
         {
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Administration
 
             using ( new UnitOfWorkScope() )
             {
-                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, CurrentPage.Id );
+                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.SiteId );
             }
 
             if ( !importResult )

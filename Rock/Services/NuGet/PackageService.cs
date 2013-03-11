@@ -121,7 +121,9 @@ namespace Rock.Services.NuGet
         /// <param name="uploadedPackage">Byte array of the uploaded package</param>
         /// <param name="fileName">File name of uploaded package</param>
         /// <param name="personId">Id of the Person performing the import</param>
-        public bool ImportPage( byte[] uploadedPackage, string fileName, int personId, int pageId )
+        /// <param name="pageId">The Id of the Page to save new data underneath</param>
+        /// <param name="siteId">The Id of the Site tha the Page is being imported into</param>
+        public bool ImportPage( byte[] uploadedPackage, string fileName, int personId, int pageId, int? siteId )
         {
             // Write .nupkg file to the PackageStaging folder...
             var path = Path.Combine( HttpContext.Current.Server.MapPath( "~/App_Data/PackageStaging" ), fileName );
@@ -175,7 +177,7 @@ namespace Rock.Services.NuGet
                             }
 
                             ValidateImportData( page, newBlockTypes );
-                            SavePages( page, newBlockTypes, personId, pageId );
+                            SavePages( page, newBlockTypes, personId, pageId, siteId );
                             ExpandFiles( package, packageFiles, path );
                         }
                         catch ( Exception e )
@@ -347,6 +349,8 @@ namespace Rock.Services.NuGet
             foreach ( var block in page.Blocks ?? new List<Block>() )
             {
                 var blockType = blockTypes.FirstOrDefault( bt => block.BlockType.Path == bt.Path );
+                ScrubIds( block );
+                block.PageId = 0;
 
                 if ( blockType == null )
                 {
@@ -354,8 +358,6 @@ namespace Rock.Services.NuGet
                     continue;
                 }
 
-                ScrubIds( block );
-                block.PageId = 0;
                 block.BlockTypeId = blockType.Id;
             }
 
@@ -368,11 +370,22 @@ namespace Rock.Services.NuGet
             }
         }
 
-        private void SavePages( Page page, IEnumerable<BlockType> newBlockTypes, int personId, int pageId )
+        /// <summary>
+        /// Recursively saves Pages and associated Blocks, PageRoutes and PageContexts.
+        /// </summary>
+        /// <param name="page">The current Page to save</param>
+        /// <param name="newBlockTypes">List of BlockTypes not currently installed</param>
+        /// <param name="personId">Id of the Person performing the "Import" operation</param>
+        /// <param name="parentPageId">Id of the the current Page's parent</param>
+        /// <param name="siteId">Id of the site the current Page is being imported into</param>
+        private void SavePages( Page page, IEnumerable<BlockType> newBlockTypes, int personId, int parentPageId, int? siteId )
         {
-            var pg = page.Clone() as Page;
+            // Force shallow copies on entities so save operations are more atomic and don't get hosed
+            // by nested object references.
+            var pg = page.Clone(deepCopy: false);
             var blockTypes = newBlockTypes.ToList();
-            pg.ParentPageId = pageId;
+            pg.ParentPageId = parentPageId;
+            pg.SiteId = siteId;
             var pageService = new PageService();
             pageService.Add( pg, personId );
             pageService.Save( pg, personId );
@@ -382,15 +395,14 @@ namespace Rock.Services.NuGet
             foreach ( var block in page.Blocks ?? new List<Block>() )
             {
                 var blockType = blockTypes.FirstOrDefault( bt => block.BlockType.Path == bt.Path );
+                var b = block.Clone( deepCopy: false );
+                b.PageId = pg.Id;
 
-                if ( blockType == null )
+                if ( blockType != null )
                 {
-                    continue;
+                    b.BlockTypeId = blockType.Id;
                 }
 
-                var b = block.Clone() as Block;
-                b.BlockTypeId = blockType.Id;
-                b.PageId = pg.Id;
                 blockService.Add( b, personId );
                 blockService.Save( b, personId );
             }
@@ -399,7 +411,7 @@ namespace Rock.Services.NuGet
 
             foreach ( var pageRoute in page.PageRoutes ?? new List<PageRoute>() )
             {
-                var pr = pageRoute.Clone() as PageRoute;
+                var pr = pageRoute.Clone(deepCopy: false);
                 pr.PageId = pg.Id;
                 pageRouteService.Add( pr, personId );
                 pageRouteService.Save( pr, personId );
@@ -409,7 +421,7 @@ namespace Rock.Services.NuGet
 
             foreach ( var pageContext in page.PageContexts ?? new List<PageContext>() )
             {
-                var pc = pageContext.Clone() as PageContext;
+                var pc = pageContext.Clone(deepCopy: false);
                 pc.PageId = pg.Id;
                 pageContextService.Add( pc, personId );
                 pageContextService.Save( pc, personId );
@@ -417,7 +429,7 @@ namespace Rock.Services.NuGet
 
             foreach ( var p in page.Pages ?? new List<Page>() )
             {
-                SavePages( p, blockTypes, personId, pg.Id );
+                SavePages( p, blockTypes, personId, pg.Id, siteId );
             }
         }
 
@@ -443,7 +455,7 @@ namespace Rock.Services.NuGet
             foreach ( var blockType in installedBlockTypes )
             {
                 var blockFileName = blockType.Path.Substring( blockType.Path.LastIndexOf( "/", StringComparison.InvariantCultureIgnoreCase ) );
-                blockFileName = blockFileName.Replace( '/', Path.PathSeparator );  // Convert relative URL separator to OS file system path separator
+                blockFileName = blockFileName.Replace( '/', Path.DirectorySeparatorChar );  // Convert relative URL separator to OS file system path separator
                 filesToUnzip.RemoveAll( f => f.Path.Contains( blockFileName ) );
             }
 
