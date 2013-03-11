@@ -88,8 +88,7 @@ namespace Rock.Model
         /// The name of the workflow.
         /// </value>
         [MaxLength( 100 )]
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string WorkflowName { get; set; }
 
         #endregion
@@ -126,7 +125,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.WorkflowName;
+            return this.WorkflowName ?? EntityType.Name + " " + WorkflowTriggerType.ConvertToString();
         }
 
         #endregion

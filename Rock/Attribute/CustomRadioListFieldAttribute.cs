@@ -27,7 +27,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public CustomRadioListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingle ).FullName )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
         {
             FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
             FieldConfigurationValues.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );

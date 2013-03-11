@@ -325,60 +325,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Pages the sort hash.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string PageSortHash
-        {
-            get
-            {
-                string result = Title.PadRight( 100, ' ' );
-                var _parentPage = ParentPage;
-                while ( _parentPage != null )
-                {
-                    result = _parentPage.Title.PadRight( 100, ' ' ) + result;
-                    _parentPage = _parentPage.ParentPage;
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Pages the depth.
-        /// </summary>
-        /// <returns></returns>
-        public virtual int PageDepth
-        {
-            get
-            {
-                int result = 0;
-                var _parentPage = ParentPage;
-                while ( _parentPage != null )
-                {
-                    result++;
-                    _parentPage = _parentPage.ParentPage;
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Gets the drop down list text.
-        /// </summary>
-        /// <value>
-        /// The drop down list text.
-        /// </value>
-        public virtual string DropDownListText
-        {
-            get
-            {
-                return new string( '-', PageDepth ) + Title;
-            }
-        }
-
         #endregion
 
         #region Methods

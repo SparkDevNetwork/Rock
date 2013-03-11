@@ -14,6 +14,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
@@ -28,6 +29,7 @@
     <script src="<%# ResolveUrl("~/Scripts/Rock/person-picker.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>

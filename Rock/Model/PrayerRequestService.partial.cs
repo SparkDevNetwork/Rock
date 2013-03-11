@@ -27,7 +27,7 @@ namespace Rock.Model
             Type type = prayerRequest.GetType();
 
             // Not sure if I can/should rely on the Rock.Web.* here.  Is there a more correct way?
-            var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type );
 
             return GetByCategoryId( prayerRequestEntityTypeId, categoryId );
          }

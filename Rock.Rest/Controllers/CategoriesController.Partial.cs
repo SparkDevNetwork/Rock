@@ -28,7 +28,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "CategoriesGetChildren",
-                routeTemplate: "api/Categories/GetChildren/{id}/{entityTypeName}",
+                routeTemplate: "api/Categories/GetChildren/{id}/{entityTypeName}/{getCategorizedItems}",
                 defaults: new
                 {
                     controller = "Categories",
@@ -41,9 +41,10 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
         [Authenticate]
-        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName )
+        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName, bool getCategorizedItems)
         {
             var user = CurrentUser();
             Person currentPerson = user != null ? user.Person : null;
@@ -66,7 +67,7 @@ namespace Rock.Rest.Controllers
                     // Get the GetByCategory method
                     if ( cachedEntityType.AssemblyName != null )
                     {
-                        Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                        Type entityType = cachedEntityType.GetEntityType();
                         if ( entityType != null )
                         {
                             Type[] modelType = { entityType };
@@ -83,7 +84,7 @@ namespace Rock.Rest.Controllers
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" );
+            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=15&height=15" );
 
             foreach ( var category in categoryList )
             {
@@ -108,21 +109,24 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            IQueryable items = GetCategorizedItems( serviceInstance, id ) as IQueryable;
-            if (items != null)
+            if ( getCategorizedItems )
             {
-                foreach(var item in items)
+                IQueryable items = GetCategorizedItems( serviceInstance, id ) as IQueryable;
+                if ( items != null )
                 {
-                    ICategorized categorizedItem = item as ICategorized;
-                    if ( categorizedItem != null && categorizedItem.IsAuthorized("View", currentPerson ) )
+                    foreach ( var item in items )
                     {
-                        var categoryItem = new CategoryItem();
-                        categoryItem.Id = categorizedItem.Id;
-                        categoryItem.Name = categorizedItem.Name;
-                        categoryItem.IsCategory = false;
-                        categoryItem.IconCssClass = "icon-list-ol";
-                        categoryItem.IconSmallUrl = string.Empty;
-                        categoryItemList.Add( categoryItem );
+                        ICategorized categorizedItem = item as ICategorized;
+                        if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                        {
+                            var categoryItem = new CategoryItem();
+                            categoryItem.Id = categorizedItem.Id;
+                            categoryItem.Name = categorizedItem.Name;
+                            categoryItem.IsCategory = false;
+                            categoryItem.IconCssClass = "icon-list-ol";
+                            categoryItem.IconSmallUrl = string.Empty;
+                            categoryItemList.Add( categoryItem );
+                        }
                     }
                 }
             }
@@ -143,16 +147,19 @@ namespace Rock.Rest.Controllers
 
                     if ( !g.HasChildren )
                     {
-                        IQueryable childItems = GetCategorizedItems( serviceInstance, g.Id ) as IQueryable;
-                        if ( childItems != null )
+                        if ( getCategorizedItems )
                         {
-                            foreach ( var item in childItems )
+                            IQueryable childItems = GetCategorizedItems( serviceInstance, g.Id ) as IQueryable;
+                            if ( childItems != null )
                             {
-                                ICategorized categorizedItem = item as ICategorized;
-                                if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                                foreach ( var item in childItems )
                                 {
-                                    g.HasChildren = true;
-                                    break;
+                                    ICategorized categorizedItem = item as ICategorized;
+                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                                    {
+                                        g.HasChildren = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -163,6 +170,12 @@ namespace Rock.Rest.Controllers
             return categoryItemList.AsQueryable();
         }
 
+        /// <summary>
+        /// Gets the categorized items.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="categoryId">The category id.</param>
+        /// <returns></returns>
         private object GetCategorizedItems( object serviceInstance, int categoryId )
         {
             if ( serviceInstance != null )

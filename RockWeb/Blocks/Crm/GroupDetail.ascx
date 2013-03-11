@@ -19,7 +19,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                             <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
-                            <Rock:DataDropDownList ID="ddlParentGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Parent Group" AutoPostBack="true" OnSelectedIndexChanged="ddlParentGroup_SelectedIndexChanged" />
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" LabelText="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged"/>
                             <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
                         </div>
                         <div class="span6">
@@ -86,7 +86,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlGroupMemberAttribute" runat="server" Visible="false">
-            <RockWeb:RockAttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
+            <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
         </asp:Panel>
 
     </ContentTemplate>

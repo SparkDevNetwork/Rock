@@ -450,6 +450,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the page route and query string parameters
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> PageParameters()
+        {
+            return ( (RockPage)this.Page ).PageParameters();
+        }
+
+        /// <summary>
         /// Navigates to parent page.
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
@@ -654,7 +663,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( typeof(Block) ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

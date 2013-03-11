@@ -119,8 +119,15 @@ $(document).ready(function() {
         {
             if ( hfDataViewId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to Grid
-                NavigateToParentPage();
+                // Cancelling on Add.  Return to tree view with parent category selected
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
             }
             else
             {
@@ -222,7 +229,7 @@ $(document).ready(function() {
                 dataView.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
                 dataView.Name = tbName.Text;
                 dataView.Description = tbDescription.Text;
-                dataView.CategoryId = ddlCategory.SelectedValueAsInt();
+                dataView.CategoryId = cpCategory.SelectedValueAsInt();
                 dataView.DataViewFilter = GetFilterControl();
 
                 // check for duplicates within Category
@@ -304,12 +311,6 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlCategory.Items.Clear();
-            ddlCategory.Items.Add( new ListItem( None.Text, None.Id.ToString() ) );
-
-            var service = new CategoryService();
-            LoadChildCategories( service, null, Rock.Web.Cache.EntityTypeCache.GetId( "Rock.Model.DataView" ), 0 );
-
             // Only entity types that are entities, have a friendly name, and actually have existing
             // DataFilter componenets will be displayed in the drop down list
             var entityTypeNames = Rock.DataFilters.DataFilterContainer.GetAvailableFilteredEntityTypeNames();
@@ -323,16 +324,6 @@ $(document).ready(function() {
                 .OrderBy( e => e.FriendlyName )
                 .ToList();
             ddlEntityType.DataBind();
-
-        }
-
-        private void LoadChildCategories( CategoryService service, int? parentId, int? entityTypeId, int level )
-        {
-            foreach ( var category in service.Get( parentId, entityTypeId ) )
-            {
-                ddlCategory.Items.Add( new ListItem( ( new string( '-', level ) ) + category.Name, category.Id.ToString() ) );
-                LoadChildCategories( service, category.Id, entityTypeId, level + 1 );
-            }
         }
 
         /// <summary>
@@ -456,7 +447,7 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            ddlCategory.SetValue( dataView.CategoryId );
+            cpCategory.SetValue( dataView.Category );
             ddlEntityType.SetValue( dataView.EntityTypeId );
 
             CreateFilterControl( dataView.DataViewFilter, true );
@@ -509,7 +500,7 @@ $(document).ready(function() {
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
             {
-                Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                Type entityType = cachedEntityType.GetEntityType();
                 if ( entityType != null )
                 {
                     BuildGridColumns( entityType );

@@ -15,9 +15,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have a picture or not" )]
+    [Description( "Filter people on whether they have a picture or not" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Has Picture Filter" )]
+    [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
         /// <summary>

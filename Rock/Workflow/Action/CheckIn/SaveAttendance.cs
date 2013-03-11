@@ -49,11 +49,11 @@ namespace Rock.Workflow.Action.CheckIn
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
                             int securityCodeLength = 3;
-                            if ( !int.TryParse( GetAttributeValue( "SecurityCodeLength" ), out securityCodeLength ) )
+                            if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
                             {
                                 securityCodeLength = 3;
                             }
-                            var attendanceCode = attendanceCodeService.GetNew( 3 );
+                            var attendanceCode = attendanceCodeService.GetNew( securityCodeLength );
                             person.SecurityCode = attendanceCode.Code;
 
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )

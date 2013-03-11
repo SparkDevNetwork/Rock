@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Administration
 
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
-            workflowType.CategoryId = ddlCategory.SelectedValueAsInt();
+            workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = int.Parse( tbOrder.Text );
             workflowType.WorkTerm = tbWorkTerm.Text;
             if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 var deletedActionTypes = from actionType in actionTypesInDB
-                                         where !actionTypesInUI.Select( u => u.Id ).Contains( actionType.Id )
+                                         where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
                                          select actionType;
 
                 deletedActionTypes.ToList().ForEach( actionType =>
@@ -306,7 +306,7 @@ namespace RockWeb.Blocks.Administration
                 List<WorkflowActivityType> activityTypesInUI = workflowActivityTypeEditorList.Select( a => a.GetWorkflowActivityType() ).ToList();
 
                 var deletedActivityTypes = from activityType in activityTypesInDB
-                                           where !activityTypesInUI.Select( u => u.Id ).Contains( activityType.Id )
+                                           where !activityTypesInUI.Select( u => u.Guid ).Contains( activityType.Guid )
                                            select activityType;
 
                 deletedActivityTypes.ToList().ForEach( activityType =>
@@ -350,9 +350,13 @@ namespace RockWeb.Blocks.Administration
                         else
                         {
                             workflowActionType.Name = editorWorkflowActionType.Name;
+                            workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
                             workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
                             workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
+                            workflowActionType.Attributes = editorWorkflowActionType.Attributes;
+                            workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
                         }
+                        
 
                         workflowActionType.Order = workflowActionTypeOrder++;
                     }
@@ -364,11 +368,21 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 service.Save( workflowType, CurrentPersonId );
-            } );
 
-            // reload item from db using a new context
-            workflowType = new WorkflowTypeService().Get( workflowType.Id );
-            ShowReadonlyDetails( workflowType );
+                foreach ( var activityType in workflowType.ActivityTypes )
+                {
+                    foreach ( var workflowActionType in activityType.ActionTypes )
+                    {
+                        Rock.Attribute.Helper.SaveAttributeValues( workflowActionType, CurrentPersonId );
+                    }
+                }
+
+                
+            } );
+            
+            var qryParams = new Dictionary<string, string>();
+            qryParams["workflowTypeId"] = workflowType.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         #endregion
@@ -380,12 +394,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            CategoryService categoryService = new CategoryService();
-            var catList = categoryService.Queryable().OrderBy( a => a.Name ).ToList();
-            catList.Insert( 0, new Category { Id = None.Id, Name = None.Text } );
-            ddlCategory.DataSource = catList;
-            ddlCategory.DataBind();
-
             ddlLoggingLevel.BindToEnum( typeof( WorkflowLoggingLevel ) );
         }
 
@@ -480,7 +488,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cbIsActive.Checked = workflowType.IsActive ?? false;
-            ddlCategory.SetValue( workflowType.CategoryId );
+            cpCategory.SetValue( workflowType.Category );
             tbWorkTerm.Text = workflowType.WorkTerm;
             tbOrder.Text = workflowType.Order.ToString();
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
@@ -503,15 +511,7 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( false );
             hfWorkflowTypeId.SetValue( workflowType.Id );
             lReadOnlyTitle.Text = workflowType.Name;
-            string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
-            if ( workflowType.IsActive ?? false )
-            {
-                lblActiveHtml.Text = string.Empty;
-            }
-            else
-            {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
-            }
+            lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
 
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -607,21 +607,21 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = false;
             vsDetails.Enabled = false;
             pnlWorkflowTypeAttributes.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
             }
             else
             {
                 AttributeService attributeService = new AttributeService();
                 attribute = attributeService.Get( attributeGuid );
-                actionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
             }
 
-            edtWorkflowTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtWorkflowTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -672,18 +672,19 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute;
+            Attribute attribute = null;
             AttributeService attributeService = new AttributeService();
-            if ( edtWorkflowTypeAttributes.AttributeId.Equals( 0 ) )
+            if ( edtWorkflowTypeAttributes.AttributeId.HasValue )
+            {
+                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId.Value );
+            }
+
+            if (attribute == null)
             {
                 attribute = new Attribute();
             }
-            else
-            {
-                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId );
-            }
 
-            edtWorkflowTypeAttributes.GetAttributeValues( attribute );
+            edtWorkflowTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

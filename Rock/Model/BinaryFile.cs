@@ -20,6 +20,9 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class BinaryFile : Model<BinaryFile>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Temporary.
         /// </summary>
@@ -39,7 +42,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the binary file type id.
+        /// </summary>
+        /// <value>
+        /// The binary file type id.
+        /// </value>
+        [DataMember]
+        public int? BinaryFileTypeId { get; set; }
+
         /// <summary>
         /// Gets or sets the Data.
         /// </summary>
@@ -99,6 +111,23 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the binary file type.
+        /// </summary>
+        /// <value>
+        /// The binary file type.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFileType BinaryFileType { get; set; }
+
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -110,7 +139,11 @@ namespace Rock.Model
             return this.FileName;
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// File Configuration class.
@@ -122,6 +155,10 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileConfiguration()
         {
+            this.HasOptional( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

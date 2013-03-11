@@ -18,7 +18,6 @@ namespace RockWeb.Blocks
             RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
             RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/PersonDetailsCore.css" ) );
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
         }
     }
 }

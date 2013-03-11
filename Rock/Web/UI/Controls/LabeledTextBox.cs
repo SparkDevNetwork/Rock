@@ -165,7 +165,7 @@ namespace Rock.Web.UI.Controls
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.ControlToValidate = this.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "help-inline";
+            requiredValidator.CssClass = "validation-error";
             requiredValidator.Enabled = false;
             Controls.Add( requiredValidator );
 
@@ -179,10 +179,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool isValid = !Required || requiredValidator.IsValid;
-
             writer.AddAttribute( "class", "control-group" +
-                ( isValid ? "" : " error" ) +
+                ( IsValid ? "" : " error" ) +
                 ( Required ? " required" : "" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

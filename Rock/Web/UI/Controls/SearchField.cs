@@ -41,6 +41,7 @@ namespace Rock.Web.UI.Controls
             $('#{1}_hSearchFilter').val($(this).parent().attr('key'));
         }});
 
+        $('ul.ui-autocomplete').css('width', '300px');
         $('input#{0}').autocomplete({{
             source: function( request, response ) {{
                 $.ajax({{

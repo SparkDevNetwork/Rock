@@ -58,6 +58,13 @@ namespace Rock.Web.UI.Adapters
                     {
                         writer.AddAttribute( "checked", "checked" );
                     }
+
+                    foreach ( var attributeKey in li.Attributes.Keys )
+                    {
+                        var key = attributeKey as string;
+                        writer.AddAttribute( key, li.Attributes[key] );
+                    }
+
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
 

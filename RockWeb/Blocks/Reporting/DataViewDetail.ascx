@@ -16,8 +16,8 @@
 
                     <div class="row-fluid">
                         <div class="span6">
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.DataView" LabelText="Category" Required="true" />
                             <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" LabelText="Applies To" DataValueField="Id" />
-                            <Rock:DataDropDownList ID="ddlCategory" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" LabelText="Category" />
                         </div>
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />

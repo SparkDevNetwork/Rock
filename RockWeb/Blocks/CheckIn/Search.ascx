@@ -3,7 +3,8 @@
 <ContentTemplate>
 
     <script>
-        $(document).ready(function (e) {
+        
+        Sys.Application.add_load(function () {
             $('.tenkey a.digit').click(function () {
                 $phoneNumber = $("input[id$='tbPhone']");
                 $phoneNumber.val($phoneNumber.val() + $(this).html());
@@ -17,6 +18,7 @@
                 $phoneNumber.val('');
             });
         });
+
     </script>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />

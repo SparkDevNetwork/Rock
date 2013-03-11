@@ -18,7 +18,7 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
 {
-    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false  )]
+    [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [BooleanField( "Show Edit", "", true )]
     [BooleanField( "Limit to Security Role Groups" )]
     public partial class GroupDetail : RockBlock, IDetailBlock
@@ -119,8 +119,24 @@ namespace RockWeb.Blocks.Crm
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to Grid
-                NavigateToParentPage();
+                if ( this.CurrentPage.Layout.Equals( "TwoColumnLeft" ) )
+                {
+                    // Cancelling on Add.  Return to tree view with parent category selected
+                    var qryParams = new Dictionary<string, string>();
+
+                    string parentGroupId = PageParameter( "parentGroupId" );
+                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
+                    {
+                        qryParams["groupId"] = parentGroupId;
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
             }
             else
             {
@@ -151,7 +167,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             int? parentGroupId = null;
-            
+
             // NOTE: Very similar code in GroupList.gGroups_Delete
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -196,7 +212,7 @@ namespace RockWeb.Blocks.Crm
             {
                 qryParams["groupId"] = parentGroupId.ToString();
             }
-         
+
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
@@ -238,7 +254,7 @@ namespace RockWeb.Blocks.Crm
                 wasSecurityRole = group.IsSecurityRole;
             }
 
-            if ( (ddlGroupType.SelectedValueAsInt() ?? 0) == 0 )
+            if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
             {
                 ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
                 return;
@@ -248,9 +264,15 @@ namespace RockWeb.Blocks.Crm
             group.Description = tbDescription.Text;
             group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
             group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
-            group.ParentGroupId = ddlParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlParentGroup.SelectedValue );
+            group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
+
+            if ( group.ParentGroupId == group.Id )
+            {
+                gpParentGroup.ShowErrorMessage( "Group cannot be a Parent Group of itself." );
+                return;
+            }
 
             // check for duplicates within GroupType
             if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
@@ -293,9 +315,9 @@ namespace RockWeb.Blocks.Crm
                     && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
 
                 var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
-                                             where !( from d in GroupMemberAttributesState
-                                                      select d.Guid ).Contains( attr.Guid )
-                                             select attr;
+                                                   where !( from d in GroupMemberAttributesState
+                                                            select d.Guid ).Contains( attr.Guid )
+                                                   select attr;
 
                 deletedGroupMemberAttributes.ToList().ForEach( a =>
                 {
@@ -358,23 +380,8 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns( int currentGroupId )
+        private void LoadDropDowns()
         {
-            GroupService groupService = new GroupService();
-
-            // optimization to only fetch Id, Name from db.  Also, only get groups of a GroupType that allow children
-            var qryGroup = from g in groupService.Queryable()
-                           where g.Id != currentGroupId
-                           where g.GroupType.ChildGroupTypes.Any()
-                           orderby g.Name
-                           select new { Id = g.Id, Name = g.Name };
-
-            List<Group> groups = qryGroup.ToList().ConvertAll<Group>( a => new Group { Id = a.Id, Name = a.Name } );
-
-            groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
-            ddlParentGroup.DataSource = groups;
-            ddlParentGroup.DataBind();
-
             CampusService campusService = new CampusService();
             List<Campus> campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
             campuses.Insert( 0, new Campus { Id = None.Id, Name = None.Text } );
@@ -399,9 +406,9 @@ namespace RockWeb.Blocks.Crm
                 groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
             }
 
-            // also, limit GroupType to ChildGroupTypes that the ParentGroup allows
-            int? parentGroupId = ddlParentGroup.SelectedValueAsInt();
-            if ( parentGroupId != null )
+            // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
+            int? parentGroupId = gpParentGroup.SelectedValueAsInt();
+            if ( (parentGroupId ?? 0) != 0 )
             {
                 Group parentGroup = new GroupService().Get( parentGroupId.Value );
                 List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
@@ -530,20 +537,36 @@ namespace RockWeb.Blocks.Crm
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
 
-            LoadDropDowns( group.Id );
+            LoadDropDowns();
 
             GroupMemberAttributesState = new ViewStateList<Attribute>();
 
-            ddlParentGroup.SetValue( group.ParentGroupId );
+            gpParentGroup.SetValue( group.ParentGroup );
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
-            ddlParentGroup.LabelText = "Parent Group";
+            gpParentGroup.LabelText = "Parent Group";
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {
-                // if this is a new group, and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
-                ddlGroupType.SelectedIndex = 0;
+                if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
+                {
+                    // default GroupType for new Group to "Security Roles"  if LimittoSecurityRoleGroups
+                    var securityRoleGroupType = new GroupTypeService().Queryable().FirstOrDefault( a => a.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE ) ) );
+                    if ( securityRoleGroupType != null )
+                    {
+                        ddlGroupType.SetValue( securityRoleGroupType.Id );
+                    }
+                    else
+                    {
+                        ddlGroupType.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    // if this is a new group (and not "LimitToSecurityRoleGroups", and there is more than one choice for GroupType, default to no selection so they are forced to choose (vs unintentionallly choosing the default one)
+                    ddlGroupType.SelectedIndex = 0;
+                }
             }
             else
             {
@@ -690,20 +713,20 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupMemberAttribute.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
+                edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else
             {
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
+                edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
 
-            edtGroupMemberAttributes.EditAttribute( attribute, actionTitle );
+            edtGroupMemberAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -737,7 +760,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnSaveGroupMemberAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtGroupMemberAttributes.GetAttributeValues( attribute );
+            edtGroupMemberAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

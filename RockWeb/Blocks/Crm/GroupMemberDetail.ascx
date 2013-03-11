@@ -14,7 +14,7 @@
                     </legend>
                     <div class="row-fluid">
                         <div class="span6">
-                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" LabelText="Person" />
+                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" LabelText="Person" Required="true"/>
                         </div>
                         <div class="span6">
                             <Rock:DataDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Group Role" />

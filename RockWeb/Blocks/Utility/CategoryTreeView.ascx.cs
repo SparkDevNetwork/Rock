@@ -46,11 +46,11 @@ namespace RockWeb.Blocks.Utility
             {
                 entityTypeId = 0;
             }
-            var entityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
-            if ( entityType != null )
+            var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
+            if ( cachedEntityType != null )
             {
-                EntityTypeName = entityType.Name;
-                lbAddItem.ToolTip = "Add " + entityType.FriendlyName;
+                EntityTypeName = cachedEntityType.Name;
+                lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
@@ -62,6 +62,9 @@ namespace RockWeb.Blocks.Utility
                 selectedEntityType = "category";
             }
 
+            lbAddCategory.Visible = true;
+            lbAddItem.Visible = false;
+
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 hfInitialItemId.Value = itemId;
@@ -72,19 +75,20 @@ namespace RockWeb.Blocks.Utility
                 if ( selectedEntityType.Equals( "category" ) )
                 {
                     category = new CategoryService().Get( int.Parse( itemId ) );
+                    lbAddItem.Visible = true;
                 }
                 else
                 {
                     int id = 0;
                     if ( int.TryParse( itemId, out id ) )
                     {
-                        if ( entityType != null )
+                        if ( cachedEntityType != null )
                         {
-                            Type type = Type.GetType( entityType.AssemblyName );
+                            Type entityType = cachedEntityType.GetEntityType();
                             if ( entityType != null )
                             {
                                 Type serviceType = typeof( Rock.Data.Service<> );
-                                Type[] modelType = { type };
+                                Type[] modelType = { entityType };
                                 Type service = serviceType.MakeGenericType( modelType );
                                 var serviceInstance = Activator.CreateInstance( service );
                                 var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
@@ -92,6 +96,7 @@ namespace RockWeb.Blocks.Utility
 
                                 if ( entity != null )
                                 {
+                                    lbAddCategory.Visible = false;
                                     category = entity.Category;
                                     if ( category != null )
                                     {
@@ -128,6 +133,10 @@ namespace RockWeb.Blocks.Utility
             if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
                 NavigateToDetailPage( "CategoryId", 0, "parentCategoryId", parentCategoryId );
+            }
+            else
+            {
+                NavigateToDetailPage( "CategoryId", 0 );
             }
         }
 

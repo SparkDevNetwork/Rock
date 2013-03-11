@@ -93,9 +93,10 @@ namespace RockWeb.Blocks.Administration
                 site.Name = tbSiteName.Text;
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
-                site.DefaultPageId = int.Parse( ddlDefaultPage.SelectedValue );
+                site.DefaultPageId = int.Parse( ppDefaultPage.SelectedValue );
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
+                site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
 
                 // Remove any deleted domains
                 foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
@@ -152,11 +153,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            PageService pageService = new PageService();
-            List<Rock.Model.Page> allPages = pageService.Queryable().ToList();
-            ddlDefaultPage.DataSource = allPages.OrderBy( a => a.PageSortHash );
-            ddlDefaultPage.DataBind();
-
             ddlTheme.Items.Clear();
             DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( this.CurrentTheme ) );
             foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
@@ -199,11 +195,7 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.Text = site.Name;
             tbDescription.Text = site.Description;
             ddlTheme.SetValue( site.Theme );
-            if ( site.DefaultPageId.HasValue )
-            {
-                ddlDefaultPage.SetValue( site.DefaultPageId );
-            }
-
+            ppDefaultPage.SetValue( site.DefaultPage );
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbFaviconUrl.Text = site.FaviconUrl;
             tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
@@ -235,7 +227,7 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             ddlTheme.Enabled = !readOnly;
-            ddlDefaultPage.Enabled = !readOnly;
+            ppDefaultPage.Enabled = !readOnly;
             tbSiteDomains.ReadOnly = readOnly;
             tbFaviconUrl.ReadOnly = readOnly;
             tbAppleTouchIconUrl.ReadOnly = readOnly;

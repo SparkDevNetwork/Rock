@@ -17,7 +17,7 @@ namespace Rock.Security
     /// <summary>
     /// MEF Container for External Authentication Components
     /// </summary>
-    public class ExternalAuthenticationContainer : ContainerManaged<ExternalAuthenticationComponent, IComponentData>
+    public class ExternalAuthenticationContainer : Container<ExternalAuthenticationComponent, IComponentData>
     {
         private static ExternalAuthenticationContainer instance;
 

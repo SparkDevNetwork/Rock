@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ namespace Rock.CheckIn
     /// Object for maintaining the state of a check-in kiosk and workflow
     /// </summary>
     [DataContract]
-    public class CheckInState
+    public class CheckInState : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the kiosk status
@@ -52,6 +53,18 @@ namespace Rock.CheckIn
         {
             return JsonConvert.DeserializeObject( json, typeof( CheckInState ) ) as CheckInState;
           
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Kiosk", Kiosk );
+            dictionary.Add( "CheckIn", CheckIn );
+            return dictionary;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Rock.Field
             if ( type != null )
                 return ( IFieldType )Activator.CreateInstance( type );
             else
-                return ( IFieldType )Activator.CreateInstance( typeof( Rock.Field.Types.Text ) );
+                return ( IFieldType )Activator.CreateInstance( typeof( Rock.Field.Types.TextFieldType ) );
         }
     }
 }

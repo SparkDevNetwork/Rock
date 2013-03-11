@@ -50,6 +50,13 @@ namespace Rock.Web.UI.Adapters
                 {
                     writer.AddAttribute( "checked", "checked" );
                 }
+
+                foreach ( var inputAttributeKey in rb.InputAttributes.Keys )
+                {
+                    var key = inputAttributeKey as string;
+                    writer.AddAttribute( key, rb.InputAttributes[key] );
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 

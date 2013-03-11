@@ -140,48 +140,76 @@ div.aspNetDisabled {
     font-family: 'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; //  @rockSansFontFamilyBold;
 }
 
-/* DS - CSS for credit card stripe */
-
-ul.card_logos {
-	display: inline-block;
-	margin: 0;
-	padding: 0;
+/* MP - Workflow Inactive Activity section */
+.workflow-activity-inactive
+{
 }
 
-.card_visa, .card_mastercard, .card_amex, .card_discover, .card_diners, .card_jcb {
-	display: inline-block;
-	width: 50px;
-	height: 30px;
-	overflow: hidden;
-	text-align: left;
-	text-indent: -999px;
-	background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+
+/* DT - Try to fix smartsearch dropdown ui */
+.smart-search .ui-autocomplete 
+{
+    position: absolute; 
+    left: 0px; 
+    top: 4px; 
+    width: 250px;
+    z-index: 90;
+    
+    list-style: none;
+    padding: 12px;
+    background-color: #7c7c7c;
+    color: #fff;
+    border: 1px solid #515151;
+    border-radius: 4px;
+    opacity: .9;
+    z-index: 9999 !important;
+
 }
 
-.card_mastercard {
-	background-position: -55px 0;
+.ui-autocomplete li 
+{
+    margin-bottom: 4px;   
 }
 
-.card_amex {
-	background-position: -110px 0;
+.ui-autocomplete li:last-child 
+{
+    margin-bottom: 0;   
 }
 
-.card_discover {
-	background-position: -165px 0;
+.ui-autocomplete a
+{
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 4px;
 }
 
-.card_diners {
-	background-position: -220px 0;
+.ui-autocomplete a:hover
+{
+    background: #bbb;
+    border-radius: 4px;
+}
+ 
+/* MP - Additions to "jQuery Scrolling Capability" section for pickers with scrolling */
+
+.scroll-container-picker
+{ 
+    width: 360px; 
 }
 
-.card_jcb {
-	background-position: -660px 0;
+.scroll-container-picker .viewport 
+{ 
+    width: 340px;  
+    height: 190px;
 }
 
-.is_visa li, .is_mastercard li, .is_amex li, .is_discover li, .is_diners li, .is_jcb li, .is_nothing li {
-	opacity: .2;
+#dialog .scroll-container-picker 
+{
+    width: 360px;
 }
 
-.is_visa li.card_visa, .is_mastercard li.card_mastercard, .is_amex li.card_amex, .is_discover li.card_discover, .is_diners li.card_diners, .is_jcb li.card_jcb {
-	opacity: 1;
+#dialog .scroll-container-picker .viewport 
+{
+    width: 340px;  
+    height: 190px;
 }

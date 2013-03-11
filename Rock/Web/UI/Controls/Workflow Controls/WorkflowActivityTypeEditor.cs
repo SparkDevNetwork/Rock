@@ -21,6 +21,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfActivityTypeGuid;
         private Label lblActivityTypeName;
         private Label lblActivityTypeDescription;
+        private Label lblInactive;
         private LinkButton lbDeleteActivityType;
 
         private LabeledCheckBox cbActivityTypeIsActive;
@@ -142,6 +143,12 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
             lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
 
+            lblInactive = new Label();
+            lblInactive.ClientIDMode = ClientIDMode.Static;
+            lblInactive.ID = this.ID + "_lblInactive";
+            lblInactive.CssClass = "label label-important pull-right";
+            lblInactive.Text = "Inactive";
+
             lbDeleteActivityType = new LinkButton();
             lbDeleteActivityType.CausesValidation = false;
             lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
@@ -151,6 +158,19 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
 
             cbActivityTypeIsActive = new LabeledCheckBox { LabelText = "Active" };
             cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
+            string checkboxScriptFormat = @"
+javascript: 
+    if ($(this).is(':checked')) {{ 
+        $('#{0}').hide(); 
+        $('#{1}').removeClass('workflow-activity-inactive'); 
+    }} 
+    else {{ 
+        $('#{0}').show(); 
+        $('#{1}').addClass('workflow-activity-inactive'); 
+    }}
+";
+
+            cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, lblInactive.ID, this.ID + "_section" ) );
 
             tbActivityTypeName = new DataTextBox();
             tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
@@ -183,6 +203,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             Controls.Add( hfActivityTypeGuid );
             Controls.Add( lblActivityTypeName );
             Controls.Add( lblActivityTypeDescription );
+            Controls.Add( lblInactive );
             Controls.Add( tbActivityTypeName );
             Controls.Add( tbActivityTypeDescription );
             Controls.Add( cbActivityTypeIsActive );
@@ -197,8 +218,17 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+            if ( cbActivityTypeIsActive.Checked )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+            }
+            else
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity workflow-activity-inactive" );
+            }
+
             writer.AddAttribute( "data-key", hfActivityTypeGuid.Value );
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
@@ -237,6 +267,9 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             // Add/ChevronUpDown/Delete div
             writer.RenderEndTag();
 
+            lblInactive.Style[HtmlTextWriterStyle.Display] = cbActivityTypeIsActive.Checked ? "none" : string.Empty;
+            lblInactive.RenderControl( writer );
+
             // header div
             writer.RenderEndTag();
 
@@ -246,7 +279,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             {
                 foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
                 {
-                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid )
+                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
                     {
                         forceContentVisible = true;
                         break;
@@ -255,7 +288,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             }
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
-            
+
             if ( !forceContentVisible )
             {
                 // hide details if the activity and actions are valid
@@ -270,6 +303,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             tbActivityTypeName.RenderControl( writer );
             tbActivityTypeDescription.RenderControl( writer );
             writer.RenderEndTag();
@@ -283,7 +317,6 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             writer.RenderEndTag();
 
             // actions
-            
             writer.RenderBeginTag( "fieldset" );
 
             writer.RenderBeginTag( "legend" );
@@ -300,10 +333,10 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             {
                 workflowActionTypeEditor.RenderControl( writer );
             }
-            
+
             // workflow-action-list div
             writer.RenderEndTag();
-            
+
             // actions fieldset
             writer.RenderEndTag();
 
