@@ -450,7 +450,7 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            cpCategory.SetValue( dataView.Category );
+            cpCategory.SetValue( dataView.CategoryId );
             ddlEntityType.SetValue( dataView.EntityTypeId );
 
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true );

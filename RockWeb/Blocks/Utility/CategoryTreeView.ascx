@@ -12,7 +12,7 @@
                         <i class="icon-plus-sign"></i> Add Category
                 </asp:LinkButton>
                 <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-mini" ToolTip="Add Group" CausesValidation="false" OnClick="lbAddItem_Click">
-                        <i class="icon-plus-sign"></i> Add Group
+                        <i class="icon-plus-sign"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
                 </asp:LinkButton>
             </div>
             <div id="tree-view-content">

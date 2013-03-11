@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Reporting
 
             tbName.Text = report.Name;
             tbDescription.Text = report.Description;
-            cpCategory.SetValue( report.Category );
+            cpCategory.SetValue( report.CategoryId );
             ddlEntityType.SetValue( report.EntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
         }
