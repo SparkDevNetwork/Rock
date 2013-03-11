@@ -34,7 +34,8 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId );
+            string entityTypeName = GetAttributeValue( "EntityType" );
+            entityTypeId = EntityTypeCache.Read(entityTypeName).Id;
             
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
             btnSecurity.EntityType = typeof( Rock.Model.Category );
