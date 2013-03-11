@@ -23,6 +23,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfItemName;
         private HiddenField hfItemRestUrlExtraParams;
         private LinkButton btnSelect;
+        private LinkButton btnSelectNone;
 
         /// <summary>
         /// The required validator
@@ -236,12 +237,39 @@ namespace Rock.Web.UI.Controls
             string scriptFormat = @"
         $('#{0} a.rock-picker').click(function (e) {{
             e.preventDefault();
-            $(this).next('.rock-picker').toggle();
+            $(this).parent().siblings('.rock-picker').first().toggle();
             updateScrollbar{0}(e);
+        }});
+
+        $('#{0} .rock-picker-select').mouseover(function (e) {{
+            if ( $('#hfItemId_{0}').val() != '0' ) {{
+                $('#btnSelectNone_{0}').stop().show();
+            }}
+        }});
+
+        $('#{0} .rock-picker-select').mouseout(function (e) {{
+            $('#btnSelectNone_{0}').fadeOut(500);
         }});
 
         $('#btnCancel_{0}').click(function (e) {{
             $(this).parent().slideUp();
+        }});
+
+        $('#btnSelectNone_{0}').click(function (e) {{
+            $('#btnSelectNone_{0}').stop().hide();
+            e.stopImmediatePropagation();
+
+            var selectedValue = '0';
+            var selectedText = '<none>';
+
+            var selectedItemLabel = $('#selectedItemLabel_{0}');
+            var hiddenItemId = $('#hfItemId_{0}');
+            var hiddenItemName = $('#hfItemName_{0}');
+
+            hiddenItemId.val(selectedValue);
+            hiddenItemName.val(selectedText);
+            selectedItemLabel.val(selectedValue);
+            selectedItemLabel.text(selectedText);
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
@@ -257,13 +285,11 @@ namespace Rock.Web.UI.Controls
             }}
 
             var selectedItemLabel = $('#selectedItemLabel_{0}');
-
             var hiddenItemId = $('#hfItemId_{0}');
             var hiddenItemName = $('#hfItemName_{0}');
 
             hiddenItemId.val(selectedValue);
             hiddenItemName.val(selectedText);
-
             selectedItemLabel.val(selectedValue);
             selectedItemLabel.text(selectedText);
 
@@ -374,6 +400,7 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
             sm.RegisterAsyncPostBackControl( btnSelect );
+            sm.RegisterAsyncPostBackControl( btnSelectNone );
         }
 
         /// <summary>
@@ -395,12 +422,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <summary>
-        /// Handles the Click event of the btnSelect control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
             SetValueOnSelect();
@@ -462,6 +483,16 @@ namespace Rock.Web.UI.Controls
             btnSelect.CausesValidation = false;
             btnSelect.Click += btnSelect_Click;
 
+            btnSelectNone = new LinkButton();
+            btnSelectNone.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            btnSelectNone.CssClass = "rock-picker-select-none";
+            btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            btnSelectNone.Text = "<i class='icon-remove'></i>";
+            btnSelectNone.CausesValidation = false;
+            btnSelectNone.Visible = false;
+            btnSelectNone.Click += btnSelect_Click;
+
+
             Controls.Add( label );
             Controls.Add( literal );
             Controls.Add( hfItemId );
@@ -469,6 +500,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( hfItemName );
             Controls.Add( hfItemRestUrlExtraParams );
             Controls.Add( btnSelect );
+            Controls.Add( btnSelectNone );
 
             requiredValidator = new HiddenFieldValidator();
             requiredValidator.ID = this.ID + "_rfv";
@@ -487,14 +519,55 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            string controlHtmlFormatStart = @"
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            label.AddCssClass( "control-label" );
+
+            label.RenderControl( writer );
+
+            writer.AddAttribute( "class", "controls" );
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( Required )
+            {
+                requiredValidator.Enabled = true;
+                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.RenderControl( writer );
+            }
+
+            hfItemId.RenderControl( writer );
+            hfInitialItemParentIds.RenderControl( writer );
+            hfItemName.RenderControl( writer );
+            hfItemRestUrlExtraParams.RenderControl( writer );
+
+            if ( this.Enabled )
+            {
+                string controlHtmlFormatStart = @"
 <div class='control-group' id='{0}'>
     <div class='controls'>
-        <a class='rock-picker' href='#'>
-            <i class='icon-folder-open'></i>
-            <span id='selectedItemLabel_{0}'>{1}</span>
-            <b class='caret'></b>
-        </a>
+        <div class='rock-picker rock-picker-select'> 
+            <a class='rock-picker' href='#'>
+                <i class='icon-folder-open'></i>
+                <span id='selectedItemLabel_{0}'>{1}</span>
+                <b class='caret'></b>
+            </a>
+";
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.ItemName ) );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectItem != null )
+                {
+                    btnSelectNone.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( string.Format( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID ) );
+                }
+
+                string controlHtmlFormatMiddle = @"
+        </div>
         <div class='dropdown-menu rock-picker rock-picker-item'>
 
             <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
@@ -514,51 +587,7 @@ namespace Rock.Web.UI.Controls
 
             <hr />
 ";
-            string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
-            
-        </div>
-    </div>
-</div>
-";
-
-            string controlHtmlFormatDisabled = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-
-            <i class='icon-file-alt'></i>
-            <span id='selectedItemLabel_{0}'>{1}</span>
-
-    </div>
-</div>
-";
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.AddCssClass( "control-label" );
-
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
-                requiredValidator.RenderControl( writer );
-            }
-
-
-            hfItemId.RenderControl( writer );
-            hfInitialItemParentIds.RenderControl( writer );
-            hfItemName.RenderControl( writer );
-            hfItemRestUrlExtraParams.RenderControl( writer );
-
-            if ( this.Enabled )
-            {
-                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.ItemName ) );
+                writer.Write( string.Format( controlHtmlFormatMiddle, this.ID, this.ItemName ) );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )
@@ -570,10 +599,27 @@ namespace Rock.Web.UI.Controls
                     writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
                 }
 
+                string controlHtmlFormatEnd = @"
+            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
+            
+        </div>
+    </div>
+</div>
+";
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.ItemName ) );
             }
             else
             {
+                string controlHtmlFormatDisabled = @"
+<div class='control-group' id='{0}'>
+    <div class='controls'>
+
+        <i class='icon-file-alt'></i>
+        <span id='selectedItemLabel_{0}'>{1}</span>
+
+    </div>
+</div>
+"; 
                 writer.Write( string.Format( controlHtmlFormatDisabled, this.ID, this.ItemName ) );
             }
 
