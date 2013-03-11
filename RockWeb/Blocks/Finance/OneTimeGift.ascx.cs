@@ -9,6 +9,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -17,10 +18,10 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>    
-    [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?" )]
-    [BooleanField( 0, "Show Campus dropdown", false, "ShowCampusSelect", "", "Should giving be associated with a specific campus?" )]
-    [IntegerField(0, "Maximum number of funds to display","2")]
-    [GroupTypesField(0, "Primary fund name", false)]
+    [CustomCheckboxListField( "Default Funds to display", "Which funds should be displayed by default?",
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [Fund] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Filter", 1 )]
+    [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", false, "UI Options", 2 )]
+    [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]    
     public partial class OneTimeGift : RockBlock
     {
         #region Fields
@@ -29,6 +30,9 @@ namespace RockWeb.Blocks.Finance
         protected bool ShowCampusSelect = false;
         protected bool ShowSaveDetails = false;
         protected string spanClass;
+
+        protected System.Collections.Generic.List<Int32> DefaultFunds;
+        protected FundService fundService;
 
         #endregion
 
@@ -42,18 +46,21 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "UseStackedLayout" ) );
-            ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusSelect" ) );
+            fundService = new FundService();
+            UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
+            ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
+            DefaultFunds = ( GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).Select( s => int.Parse(s) ).ToList() );
 
             if ( CurrentPerson != null )
             {
                 ShowSaveDetails = true;
             }
+            
+            if (ShowCampusSelect) {
+                BindCampuses();
+            }
 
-            BindCampuses();
             BindFunds();
-            //TestBind();
-
         }
 
         /// <summary>
@@ -97,6 +104,16 @@ namespace RockWeb.Blocks.Finance
             pnlDetails.Visible = true;            
 
         }
+        
+        /// <summary>
+        /// Handles the Click event of the btnAddFund control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddFund_Click( object sender, EventArgs e )
+        {
+            
+        }
 
         #endregion
 
@@ -120,19 +137,79 @@ namespace RockWeb.Blocks.Finance
 
         protected void BindFunds()
         {
-            DefinedTypeService typeService = new DefinedTypeService();
-            var items = typeService.Queryable().OrderBy( a => a.Category ).Select( a => a.Category ).Distinct().ToList();
             
-            foreach ( string item in items ) {
-                                
-               // add a fund template to the page
 
+            var funds = fundService.Queryable()
+                .Where( a => a.IsActive ).Distinct().OrderBy( a => a.Order )
+                .Where( a => !DefaultFunds.Contains( a.Id ) )
+                .Select( a => a.PublicName ).ToList();
                 
+
+            if ( funds.Count() > 0 )
+            {
+                btnAddFund.DataSource = funds;
+                btnAddFund.DataBind();
+                btnAddFund.Title = "Add Another Gift";
+                divAddFund.Visible = true;
+            }
+
+            foreach ( var fund in DefaultFunds )
+            {
+                BindFundOption( Convert.ToInt32( fund ) );                
+            }            
+            
+            plcNewFunds.DataBind();
+            plcNewFunds.Visible = true;            
+
+        }
+
+        /// <summary>
+        /// Binds the fund options to a div.
+        /// </summary>
+        protected void BindFundOption( int fundID )
+        {
+            Fund thisFund = fundService.Get( fundID);
+            
+            if ( fundID != 0 )
+            {   
+                HtmlGenericControl newFundContainer = new HtmlGenericControl( "div" );
+                newFundContainer.Attributes.Add( "class", "row-fluid" );
+
+                HtmlGenericControl newInputDiv = new HtmlGenericControl( "div" );
+                newInputDiv.Attributes.Add( "class", "input-prepend" );
+
+                    HtmlGenericControl newButtonDiv = new HtmlGenericControl( "div" );
+                    newButtonDiv.Attributes.Add( "class", "btn-group" );
+                
+                        HtmlInputButton newFundButton = new HtmlInputButton();
+                        newFundButton.Attributes.Add( "class", "btn dropdown-toggle" );
+                        newFundButton.Attributes.Add( "readonly", "true" );
+                        newFundButton.Attributes.Add( "tabindex", "-1" );
+                        newFundButton.Value = thisFund.PublicName;
+                        newButtonDiv.Controls.Add( newFundButton );
+                                
+                        HtmlGenericControl newSpan = new HtmlGenericControl( "span" );
+                        newSpan.Attributes.Add( "class", "add-on" );
+                        newSpan.InnerText = "$";
+                        newButtonDiv.Controls.Add( newSpan );
+
+                        HtmlGenericControl newInput = new HtmlGenericControl( "input" );
+                        newInput.Attributes.Add( "class", "input-small calc" );
+                        newInput.Attributes.Add( "title", "Enter a number" );
+                        newInput.Attributes.Add( "type", "text" );
+                        newInput.Attributes.Add( "placeholder", "0.00" );
+                        newInput.Attributes.Add( "pattern", "[0-9]*" );
+                        newButtonDiv.Controls.Add( newInput );
+
+                    newInputDiv.Controls.Add( newButtonDiv );
+                    newFundContainer.Controls.Add( newInputDiv );
+
+                plcNewFunds.Controls.Add( newFundContainer );
+
             }
 
         }
 
         #endregion
-
     }
 }
