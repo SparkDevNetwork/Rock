@@ -66,7 +66,6 @@ namespace RockWeb.Blocks.Security
                 if (users.Count > 0)
                 {
                     IDictionary<string,object> personDictionary = person.ToDictionary();
-                    personDictionary.Add("FirstName", person.FirstName);
                     personDictionary.Add("Users", users.ToArray());
                     personDictionaries.Add( personDictionary );
                 }

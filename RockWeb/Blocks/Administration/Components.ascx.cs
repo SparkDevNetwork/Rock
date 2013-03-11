@@ -19,7 +19,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// Used to manage the <see cref="Rock.Extension.ComponentManaged"/> classes found through MEF.  Provides a way to edit the value
+    /// Used to manage the <see cref="Rock.Extension.Component"/> classes found through MEF.  Provides a way to edit the value
     /// of the attributes specified in each class
     /// </summary>
     [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
@@ -28,7 +28,7 @@ namespace RockWeb.Blocks.Administration
         #region Private Variables
 
         private bool _isAuthorizedToConfigure = false;
-        private IContainerManaged _container;
+        private IContainer _container;
 
         #endregion
 
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Administration
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
                 {
-                    _container = instanceProperty.GetValue( null, null ) as IContainerManaged;
+                    _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
                         if ( !Page.IsPostBack )
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Administration
                 int order = 0;
                 foreach ( var item in components )
                 {
-                    ComponentManaged component = item.Value.Value;
+                    Component component = item.Value.Value;
                     if (  component.Attributes.ContainsKey("Order") )
                     {
                         Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonId );

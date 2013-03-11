@@ -13,7 +13,10 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+
+using DotLiquid;
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -122,7 +125,7 @@ namespace Rock
 
                 if ( type.Namespace.Equals( "Rock.Model" ) )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
                 }
                 else
@@ -274,6 +277,28 @@ namespace Rock
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values 
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        {
+            if ( content == null )
+                return string.Empty;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                return content;
+
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( content );
+
+            return template.Render( Hash.FromDictionary( mergeObjects ) );
         }
 
         #endregion
@@ -1099,7 +1124,13 @@ namespace Rock
         /// <returns></returns>
         public static int ValueAsInt( this HiddenField hiddenField )
         {
-            return int.Parse( hiddenField.Value );
+            int intValue = 0;
+            if ( int.TryParse( hiddenField.Value, out intValue ) )
+            {
+                return intValue;
+            }
+
+            return 0;
         }
 
         /// <summary>

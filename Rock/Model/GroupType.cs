@@ -262,21 +262,6 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
         /// <summary>
         /// Gets the group query.
         /// </summary>
@@ -305,6 +290,21 @@ namespace Rock.Model
                 var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
                 return qry;
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
         }
 
         #endregion

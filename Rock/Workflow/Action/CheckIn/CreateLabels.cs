@@ -34,6 +34,9 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( action, out errorMessages );
+
+            var labels = new List<CheckInLabel>();
+            
             if ( checkInState != null )
             {
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
@@ -42,46 +45,79 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            person.Labels = new List<CheckInLabel>();
-
-                            CheckInLabel label = new CheckInLabel();
-                            label.PrinterAddress = "255.255.255.255";
-                            label.LabelFile = @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest1.vpl";
-                            label.MergeFields = new Dictionary<string, string>();
-                            label.MergeFields.Add( "CF0", person.SecurityCode );
-                            label.MergeFields.Add( "CF1", person.Person.FirstName );
-                            label.MergeFields.Add( "CF2", person.Person.LastName );
-                            person.Labels.Add( label );
-
-                            label = new CheckInLabel();
-                            label.PrinterAddress = "255.255.255.255";
-                            label.LabelFile = @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest2.vpl";
-                            label.MergeFields = new Dictionary<string, string>();
-                            label.MergeFields.Add( "CF0", person.SecurityCode );
-                            label.MergeFields.Add( "CF1", person.Person.FirstName );
-                            label.MergeFields.Add( "CF2", person.Person.LastName );
-                            person.Labels.Add( label );
-
-                            label = new CheckInLabel();
-                            label.PrinterAddress = "255.255.255.255";
-                            label.LabelFile = @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest3.vpl";
-                            label.MergeFields = new Dictionary<string, string>();
-                            label.MergeFields.Add( "CF0", person.SecurityCode );
-                            label.MergeFields.Add( "CF1", person.Person.FirstName );
-                            label.MergeFields.Add( "CF2", person.Person.LastName );
-                            person.Labels.Add( label );
-
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                                groupType.Labels = new List<CheckInLabel>();
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
+
+                                var mergeObjects = new Dictionary<string, object>();
+                                mergeObjects.Add( "person", person );
+                                mergeObjects.Add( "groupType", groupType );
+
+                                var labelCodes = new Dictionary<string, string>();
+                                labelCodes.Add( "1", "{{ person.SecurityCode }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "2", "{{ person.Person.FirstName }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "3", "{{ person.Person.LastName }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "4", "{% if person.Person.DaysToBirthday < 180 %}R{% endif %}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "5", "{% for location in groupType.Locations %}{% for group in location.Groups %}{% for schedule in group.Schedules %}{{ schedule.Schedule.Name }} {% endfor %}{% endfor %}{% endfor %}".ResolveMergeFields( mergeObjects ) );
+
+                                var PrinterIPs = new Dictionary<int, string>();
+
+                                foreach ( var label in groupType.Labels )
                                 {
-                                    foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                    label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
+                                    label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
+                                    label.LabelKey = new Guid( "00000000-0000-0000-0000-000000000003" );
+
+                                    if ( label.PrintTo == PrintTo.Default )
                                     {
-                                        foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                        label.PrintTo = groupType.GroupType.AttendancePrintTo;
+                                    }
+
+                                    if ( label.PrintTo == PrintTo.Kiosk )
+                                    {
+                                        var device = checkInState.Kiosk.Device;
+                                        if ( device != null )
                                         {
+                                            label.PrinterDeviceId = device.PrinterDeviceId;
                                         }
                                     }
+                                    else if ( label.PrintTo == PrintTo.Location )
+                                    {
+                                        // Should only be one
+                                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                        if (location != null)
+                                        {
+                                            var device = location.Location.PrinterDevice;
+                                            if ( device != null )
+                                            {
+                                                label.PrinterDeviceId = device.PrinterDeviceId;
+                                            }
+                                        }
+                                    }
+
+                                    if ( label.PrinterDeviceId.HasValue )
+                                    {
+                                        if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                        {
+                                            label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
+                                        }
+                                        else
+                                        {
+                                            var printerDevice = new DeviceService().Get( label.PrinterDeviceId.Value );
+                                            if ( printerDevice != null )
+                                            {
+                                                PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
+                                                label.PrinterAddress = printerDevice.IPAddress;
+                                            }
+                                        }
+                                    }
+
+                                    label.MergeFields = labelCodes;
                                 }
+
                             }
                         }
                     }

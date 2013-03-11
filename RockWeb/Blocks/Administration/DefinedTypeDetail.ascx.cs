@@ -364,21 +364,21 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = false;
             vsDetails.Enabled = false;
             pnlDefinedTypeAttributes.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
+                edtDefinedTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for defined type " + tbTypeName.Text );
             }
             else
             {
                 AttributeService attributeService = new AttributeService();
                 attribute = attributeService.Get( attributeGuid );
-                actionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
+                edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
-            edtDefinedTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtDefinedTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -427,18 +427,20 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute;
+            Attribute attribute = null;
+            
             AttributeService attributeService = new AttributeService();
-            if ( edtDefinedTypeAttributes.AttributeId.Equals( 0 ) )
+            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
+            {
+                attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId.Value );
+            }
+
+            if (attribute == null)
             {
                 attribute = new Attribute();
             }
-            else
-            {
-                attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId );
-            }
 
-            edtDefinedTypeAttributes.GetAttributeValues( attribute );
+            edtDefinedTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

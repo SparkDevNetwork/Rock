@@ -1,8 +1,3 @@
-delete from [Group] where IsSystem = 0
-delete from [GroupTypeAssociation] where [GroupTypeId] in (select id from GroupType where IsSystem = 0)
-delete from [GroupRole] where [GroupTypeId] in (select id from GroupType where IsSystem = 0)
-delete from [GroupType] where IsSystem = 0 and [Id] not in (select GroupTypeId from GroupTypeAssociation union select ChildGroupTypeId from GroupTypeAssociation)
-
 declare
   @regionGroupId int = null,
   @areaGroupId int = null,
@@ -18,15 +13,22 @@ declare
   @areaCounter int = 0,
   @maxAreasPerRegion int = 25,
   @groupCounter int = 0,
-  @maxGroupsPerArea int = 50
-
+  @maxGroupsPerArea int = 50,
+  @groupTypeNHRegionGuid nvarchar(36) = 'B31676B5-A004-4A72-AE0D-4D5E1C6BF5DB',
+  @groupTypeNHAreaGuid nvarchar(36) = '30F8F34A-5E18-461E-BEFE-5563AA372574',
+  @groupTypeNHGroupGuid nvarchar(36) = '4043A5D6-6C2F-49DB-92DD-BD6ED1937DA8'
 begin
 
 begin transaction
 
-select CONCAT('adding ', @maxRegions, ' group regions');
-select CONCAT('adding ', @maxRegions*@maxAreasPerRegion, ' group areas');
-select CONCAT('adding ', @maxRegions*@maxAreasPerRegion*@maxGroupsPerArea, ' groups');
+delete from [Group] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
+delete from [GroupRole] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
+delete from [GroupTypeAssociation] where [GroupTypeId] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
+delete from [GroupType] where [Id] in (select id from GroupType where Guid in (@groupTypeNHRegionGuid, @groupTypeNHAreaGuid, @groupTypeNHGroupGuid))
+
+select 'adding ' + CAST(@maxRegions AS VARCHAR(10)) + ' group regions';
+select 'adding ' + CAST(@maxRegions*@maxAreasPerRegion AS VARCHAR(10)) + ' group areas';
+select 'adding ' + CAST(@maxRegions*@maxAreasPerRegion*@maxGroupsPerArea AS VARCHAR(10)) + ' groups';
 
 INSERT INTO [dbo].[GroupType]
            ([IsSystem]
@@ -40,8 +42,8 @@ INSERT INTO [dbo].[GroupType]
            ,'Neighborhood Group Region'
            ,'The Neighborhood Group Regions'
            ,null
-           ,'icon-heart-empty'
-           ,newid())
+           ,'icon-globe'
+           ,@groupTypeNHRegionGuid)
 
 select @regionGroupTypeId = @@IDENTITY
 
@@ -57,8 +59,8 @@ INSERT INTO [dbo].[GroupType]
            ,'Neighborhood Group Area'
            ,'The Neighborhood Group Areas'
            ,null
-           ,'icon-random'
-           ,newid())
+           ,'icon-group'
+           ,@groupTypeNHAreaGuid)
 
 select @areaGroupTypeId = @@IDENTITY
 
@@ -75,7 +77,7 @@ INSERT INTO [dbo].[GroupType]
            ,'The Neighborhood Groups'
            ,null
            ,'icon-home'
-           ,newid())
+           ,@groupTypeNHGroupGuid)
 
 select @groupTypeId = @@IDENTITY
 
@@ -102,6 +104,11 @@ while @regionCounter < @maxRegions
     begin
         select @groupGuid = NEWID();
         select @groupName = 'Region ' + REPLACE(str(@regionCounter, 2), ' ', '0');
+		if @regionCounter = 0
+		begin
+		  set @groupName = 'Small Region';	
+		end;
+
         select @groupDescription = 'Description of ' + @groupName;
         
         INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
@@ -117,11 +124,20 @@ while @regionCounter < @maxRegions
                 select @groupName = 'Area ' + REPLACE(str(@regionCounter, 2), ' ', '0') + REPLACE(str(@areaCounter, 2), ' ', '0');
                 select @groupDescription = 'Description of ' + @groupName;
         
+				if @regionCounter = 0
+				begin
+					set @groupName = 'Small Area';
+					set @groupDescription = 'This is a pretty small area';	
+					set @areaCounter = 999; 
+				end;
+
                 INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
                                     VALUES (0,@regionGroupId,@areaGroupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
 
                 select @areaGroupId = @@IDENTITY;
+
                 select @groupCounter = 0
+				
         
                 -- NG groups
                 while @groupCounter < @maxGroupsPerArea
@@ -129,6 +145,13 @@ while @regionCounter < @maxRegions
                         select @groupGuid = NEWID();
                         select @groupName = 'Group ' + REPLACE(str(@regionCounter, 2), ' ', '0') + REPLACE(str(@areaCounter, 2), ' ', '0') + REPLACE(str(@groupCounter, 2), ' ', '0');
                         select @groupDescription = 'Description of ' + @groupName;
+
+						if @regionCounter = 0
+						begin
+							set @groupName = 'Lone Group';	
+							set @groupDescription = 'This is the only group in this area';
+							set @groupCounter = 999; 
+						end;
         
                         INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
                                             VALUES (0,@areaGroupId,@groupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);

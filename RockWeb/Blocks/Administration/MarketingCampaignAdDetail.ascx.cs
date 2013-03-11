@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Administration
             List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
             marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new SortedDictionary<string, List<string>>();
+            marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new Dictionary<string, List<string>>();
             marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValue>>();
             foreach ( var attribute in attributesForAdType )
             {

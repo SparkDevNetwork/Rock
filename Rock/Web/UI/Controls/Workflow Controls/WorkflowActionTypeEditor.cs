@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -12,6 +13,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Workflow;
 
 namespace Rock.Web.UI.Controls
 {
@@ -29,6 +31,9 @@ namespace Rock.Web.UI.Controls
         private LabeledDropDownList ddlEntityType;
         private LabeledCheckBox cbIsActionCompletedOnSuccess;
         private LabeledCheckBox cbIsActivityCompletedOnSuccess;
+        private PlaceHolder phActionAttributes;
+
+        public bool ForceContentVisible { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -98,6 +103,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = cbIsActivityCompletedOnSuccess.Checked;
+                result.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phActionAttributes, result );
+                Rock.Attribute.Helper.SetErrorIndicators( phActionAttributes, result );
                 return result;
             }
 
@@ -109,6 +117,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 ddlEntityType.SetValue( value.EntityTypeId );
                 cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+                value.LoadAttributes();
+                phActionAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" } );
             }
         }
 
@@ -142,12 +153,16 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             ddlEntityType = new LabeledDropDownList();
             ddlEntityType.ID = this.ID + "_ddlEntityType";
-            ddlEntityType.LabelText = "Entity Type";
+            ddlEntityType.LabelText = "Action Type";
 
-            var entityTypes = new EntityTypeService().GetEntities();
-            foreach ( var item in entityTypes.OrderBy( a => a.FriendlyName ).ThenBy(a => a.Name ))
+            // make it autopostback since Attributes are dependant on which EntityType is selected
+            ddlEntityType.AutoPostBack = true;
+            ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
+
+            foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
-                ddlEntityType.Items.Add( new ListItem( item.FriendlyName, item.Id.ToString() ) );
+                var entityType = item.Value.EntityType;
+                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
             }
 
             // set label when they exit the edit field
@@ -161,12 +176,30 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             cbIsActivityCompletedOnSuccess = new LabeledCheckBox { LabelText = "Activity is Completed on Success" };
             cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
+            phActionAttributes = new PlaceHolder();
+            phActionAttributes.ID = this.ID + "_phActionAttributes";
+
             Controls.Add( hfActionTypeGuid );
             Controls.Add( lblActionTypeName );
             Controls.Add( tbActionTypeName );
+            Controls.Add( ddlEntityType );
             Controls.Add( cbIsActionCompletedOnSuccess );
             Controls.Add( cbIsActivityCompletedOnSuccess );
+            Controls.Add( phActionAttributes );
             Controls.Add( lbDeleteActionType );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            WorkflowActionType workflowActionType = WorkflowActionType;
+            workflowActionType.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            WorkflowActionType = workflowActionType;
+            this.ForceContentVisible = true;
         }
 
         /// <summary>
@@ -212,7 +245,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
-            if ( !string.IsNullOrEmpty( WorkflowActionType.Name ) )
+
+            bool forceContentVisible = !WorkflowActionType.IsValid || ForceContentVisible;
+
+            if ( !forceContentVisible )
             {
                 // hide details if the name has already been filled in
                 writer.AddStyleAttribute( "display", "none" );
@@ -225,6 +261,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             ddlEntityType.RenderControl( writer );
             cbIsActionCompletedOnSuccess.RenderControl( writer );
             cbIsActivityCompletedOnSuccess.RenderControl( writer );
+
+            // action attributes
+            phActionAttributes.RenderControl( writer );
 
             // widget-content div
             writer.RenderEndTag();

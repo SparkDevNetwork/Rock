@@ -16,8 +16,24 @@ namespace Rock.Workflow
     /// <summary>
     /// Base class for components that perform actions for a workflow
     /// </summary>
-    public abstract class ActionComponent : ComponentManaged
+    public abstract class ActionComponent : Component
     {
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = new Dictionary<string, string>();
+                defaults.Add( "Active", "True" );
+                defaults.Add( "Order", "0" );
+                return defaults;
+            }
+        }
         /// <summary>
         /// Gets the type of the entity.
         /// </summary>
@@ -33,13 +49,15 @@ namespace Rock.Workflow
         {
             Type type = this.GetType();
 
-            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ).FullName );
-            this.EntityType = EntityTypeCache.Read( type.FullName );
+            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ) );
+            this.EntityType = EntityTypeCache.Read( type );
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
                 Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
             }
+
+            this.LoadAttributes();
         }
 
         /// <summary>

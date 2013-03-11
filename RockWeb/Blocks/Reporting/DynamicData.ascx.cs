@@ -174,8 +174,10 @@ namespace RockWeb.Blocks.Reporting
             {
                 try
                 {
+                    query = query.ResolveMergeFields( PageParameters() );
+
                     var parameters = GetParameters();
-                    DataTable dataTable = new Service().GetDataTable( GetAttributeValue( "Query" ), (parameters != null ? CommandType.StoredProcedure : CommandType.Text), parameters );
+                    DataTable dataTable = new Service().GetDataTable( query, ( parameters != null ? CommandType.StoredProcedure : CommandType.Text ), parameters );
 
                     if ( dataTable.Columns.Count == 1 && dataTable.Rows.Count == 1 && dataTable.Columns[0].ColumnName.ToLower() == "html" )
                     {
@@ -317,8 +319,8 @@ namespace RockWeb.Blocks.Reporting
             foreach(DataColumn dtColumn in dataTable.Columns)
             {
                 if ( columnList.Count > 0 && 
-                    ((showColumns && !columnList.Contains(dtColumn.ColumnName)) ||
-                        (!showColumns && columnList.Contains(dtColumn.ColumnName))))
+                    ((showColumns && !columnList.Contains(dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase)) ||
+                        ( !showColumns && columnList.Contains( dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase ) ) ) )
                 {
                     continue;
                 }

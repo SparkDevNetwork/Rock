@@ -15,7 +15,7 @@ namespace Rock.Security
     /// <summary>
     /// Base class for components that perform authentication based on a username and password entered by the user
     /// </summary>
-    public abstract class AuthenticationComponent : ComponentManaged
+    public abstract class AuthenticationComponent : Component
     {
         /// <summary>
         /// Authenticates the specified user name and password

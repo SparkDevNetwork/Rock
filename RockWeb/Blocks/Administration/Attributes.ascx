@@ -38,7 +38,7 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-            <RockWeb:RockAttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+            <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
 
         </asp:Panel>
 

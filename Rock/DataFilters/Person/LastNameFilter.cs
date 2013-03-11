@@ -5,41 +5,17 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq.Expressions;
-
-using Rock.Model;
 
 namespace Rock.DataFilters.Person
 {
     /// <summary>
-    /// 
+    /// Person Last Name Filter
     /// </summary>
-    [Description( "Filter persons on Last Name" )]
+    [Description( "Filter people on Last Name" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Last Name Filter" )]
-    public class LastNameFilter : DataFilterComponent
+    [ExportMetadata( "ComponentName", "Person Last Name Filter" )]
+    public class LastNameFilter : TextPropertyFilter
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public override string Title
-        {
-            get { return "Last Name"; }
-        }
-
-        /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public override string Section
-        {
-            get { return "Demographic Info"; }
-        }
 
         /// <summary>
         /// Gets the name of the filtered entity type.
@@ -53,30 +29,15 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Gets the expression.
+        /// Gets the name of the column.
         /// </summary>
-        /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        /// <value>
+        /// The name of the column.
+        /// </value>
+        public override string PropertyName
         {
-            ComparisonType comparisonType = ComparisonType.StartsWith;
-            string value = string.Empty;
-
-            string[] options = selection.Split( '|' );
-            if ( options.Length > 0 )
-            {
-                try { comparisonType = options[0].ConvertToEnum<ComparisonType>(); }
-                catch { }
-            }
-            if ( options.Length > 1 )
-            {
-                value = options[1];
-            }
-
-            MemberExpression property = Expression.Property( parameterExpression, "LastName" );
-            Expression constant = Expression.Constant( value );
-            return ComparisonExpression( comparisonType, property, constant );
+            get { return "LastName"; }
         }
+
     }
 }

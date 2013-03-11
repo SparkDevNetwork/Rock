@@ -18,9 +18,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have attended a group type a specific number of times" )]
+    [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Type Attendance Filter" )]
+    [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         /// <summary>

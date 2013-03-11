@@ -16,22 +16,49 @@ namespace Rock.CheckIn
     /// The label details
     /// </summary>
     [DataContract]
-    public class CheckInLabel
+    public class CheckInLabel : DotLiquid.ILiquidizable
     {
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the printer device id.
         /// </summary>
         /// <value>
-        /// The schedule.
+        /// The printer address.
+        /// </value>
+        [DataMember]
+        public int? PrinterDeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the printer address.
+        /// </summary>
+        /// <value>
+        /// The printer address.
         /// </value>
         [DataMember]
         public string PrinterAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the the unique code for check-in labels
+        /// Gets or sets the print from.
         /// </summary>
         /// <value>
-        /// The security code.
+        /// The print from.
+        /// </value>
+        [DataMember]
+        public PrintFrom PrintFrom { get; set; }
+
+        /// <summary>
+        /// Gets or sets the print to.
+        /// </summary>
+        /// <value>
+        /// The print to.
+        /// </value>
+        [DataMember]
+        public PrintTo PrintTo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the label file.
+        /// </summary>
+        /// <value>
+        /// The label file.
         /// </value>
         [DataMember]
         public string LabelFile { get; set; }
@@ -53,5 +80,32 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public Dictionary<string, string> MergeFields { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
+        /// </summary>
+        /// <param name="labelFile">The label file.</param>
+        public CheckInLabel( string labelFile )
+        {
+            LabelFile = labelFile;
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "PrinterDeviceId", PrinterDeviceId );
+            dictionary.Add( "PrinterAddress", PrinterAddress );
+            dictionary.Add( "PrintFrom", PrintFrom.ConvertToString() );
+            dictionary.Add( "PrintTo", PrintTo.ConvertToString() );
+            dictionary.Add( "LabelFile", LabelFile );
+            dictionary.Add( "LabelKey", LabelKey );
+            dictionary.Add( "MergeFields", MergeFields );
+            return dictionary;
+        }
     }
 }
