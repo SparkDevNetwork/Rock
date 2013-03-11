@@ -215,6 +215,51 @@ div.aspNetDisabled {
     height: 190px;
 }
 
+/* DS - CSS for credit card stripe */
+
+ul.card_logos {
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+}
+
+.card_visa, .card_mastercard, .card_amex, .card_discover, .card_diners, .card_jcb {
+	display: inline-block;
+	width: 50px;
+	height: 30px;
+	overflow: hidden;
+	text-align: left;
+	text-indent: -999px;
+	background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+}
+
+.card_mastercard {
+	background-position: -55px 0;
+}
+
+.card_amex {
+	background-position: -110px 0;
+}
+
+.card_discover {
+	background-position: -165px 0;
+}
+
+.card_diners {
+	background-position: -220px 0;
+}
+
+.card_jcb {
+	background-position: -660px 0;
+}
+
+.is_visa li, .is_mastercard li, .is_amex li, .is_discover li, .is_diners li, .is_jcb li, .is_nothing li {
+	opacity: .2;
+}
+
+.is_visa li.card_visa, .is_mastercard li.card_mastercard, .is_amex li.card_amex, .is_discover li.card_discover, .is_diners li.card_diners, .is_jcb li.card_jcb {
+	opacity: 1;
+}
 /* General and standard Note/comment styling for the icon that sits to the left of the comment */
 .note-container article i
 {
