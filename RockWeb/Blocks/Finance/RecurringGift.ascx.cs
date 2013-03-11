@@ -20,8 +20,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>    
-    [BooleanField( 0, "Stack layout vertically", false, "UseStackedLayout", "", "Should giving UI be stacked vertically or horizontally?")]
-    [BooleanField( 0, "Show Campus dropdown", false, "ShowCampusSelect", "", "Should giving be associated with a specific campus?" )]
+    
     public partial class RecurringGift : RockBlock
     {
         #region Fields
