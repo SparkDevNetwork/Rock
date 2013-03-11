@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
             ddlEntityType.DataBind();
 
             ddlWorkflowType.Items.Clear();
-            ddlWorkflowType.Items.Add( new ListItem( "<Select>", string.Empty));
+            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty));
 
             foreach ( var workflowType in new WorkflowTypeService().Queryable().OrderBy( w => w.Name ) )
             {

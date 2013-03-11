@@ -17,7 +17,8 @@
                     <div class="row-fluid">
                         <div class="span6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.DataView" LabelText="Category" Required="true" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" LabelText="Applies To" DataValueField="Id" />
+                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId" 
+                                LabelText="Applies To" DataTextField="FriendlyName" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                         </div>
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
@@ -31,7 +32,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-                    <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn pull-right" OnClick="btnPreview_Click" />
+                    <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn pull-right" CausesValidation="false" OnClick="btnPreview_Click" />
                 </div>
 
             </div>
