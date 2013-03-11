@@ -12,6 +12,7 @@
             <Rock:LabeledDropDownList ID="ddlFundType" runat="server" LabelText="Fund Type" />
             <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" LabelText="Currency Type" />
             <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" LabelText="Credit Card Type" />
+            <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" LabelText="Source Type" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="grdTransactions" runat="server" EmptyDataText="No Transactions Found">
