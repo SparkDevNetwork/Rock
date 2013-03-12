@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201303120435244_AddDeviceBlocks"; }
+            get { return "201303120513496_AddDeviceBlocks"; }
         }
         
         string IMigrationMetadata.Source
