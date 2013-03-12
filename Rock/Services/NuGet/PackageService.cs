@@ -21,13 +21,6 @@ namespace Rock.Services.NuGet
     /// </summary>
     public class PackageService
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PackageService"/> class.
-        /// </summary>
-        public PackageService()
-        {
-            ErrorMessages = new List<string>();
-        }
 
         /// <summary>
         /// Gets or sets the error messages.
@@ -35,7 +28,24 @@ namespace Rock.Services.NuGet
         /// <value>
         /// The error messages.
         /// </value>
-        public List<string> ErrorMessages { get; set; }
+        public List<string> ErrorMessages { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the warning messages.
+        /// </summary>
+        /// <value>
+        /// The warning messages.
+        /// </value>
+        public List<string> WarningMessages { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PackageService"/> class.
+        /// </summary>
+        public PackageService()
+        {
+            ErrorMessages = new List<string>();
+            WarningMessages = new List<string>();
+        }
 
         /// <summary>
         /// Exports the page.
@@ -178,7 +188,7 @@ namespace Rock.Services.NuGet
 
                             ValidateImportData( page, newBlockTypes );
                             SavePages( page, newBlockTypes, personId, pageId, siteId );
-                            ExpandFiles( package, packageFiles, path );
+                            ExpandFiles( packageFiles );
                         }
                         catch ( Exception e )
                         {
@@ -442,28 +452,45 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// Expands the files.
         /// </summary>
-        /// <param name="package">The package.</param>
         /// <param name="packageFiles">The package files.</param>
-        /// <param name="path">The path.</param>
-        private void ExpandFiles( IPackage package, IEnumerable<IPackageFile> packageFiles, string path )
+        private void ExpandFiles( IEnumerable<IPackageFile> packageFiles )
         {
-            // Remove any currently installed BlockTypes from the list of files to be unzipped
+            // Remove export.json file from the list of files to be unzipped
             var filesToUnzip = packageFiles.Where( f => !f.Path.Contains( "export.json" ) ).ToList();
             var blockTypeService = new BlockTypeService();
             var installedBlockTypes = blockTypeService.Queryable();
+            var webRoot = HttpContext.Current.Server.MapPath( "~" );
 
+            // Compare the packages files with currently installed block types, removing anything that already exists
             foreach ( var blockType in installedBlockTypes )
             {
                 var blockFileName = blockType.Path.Substring( blockType.Path.LastIndexOf( "/", StringComparison.InvariantCultureIgnoreCase ) );
-                blockFileName = blockFileName.Replace( '/', Path.DirectorySeparatorChar );  // Convert relative URL separator to OS file system path separator
+                blockFileName = blockFileName.Replace( '/', Path.DirectorySeparatorChar );
                 filesToUnzip.RemoveAll( f => f.Path.Contains( blockFileName ) );
             }
 
-            // Unzip files into the correct locations
-            var fileSystem = new PhysicalFileSystem( HttpContext.Current.Server.MapPath( "~" ) );
-            var pathResolver = new DefaultPackagePathResolver( path );
-            var packageDirectory = pathResolver.GetPackageDirectory( package );
-            fileSystem.AddFiles( filesToUnzip, packageDirectory );
+            foreach ( var packageFile in filesToUnzip )
+            {
+                var path = Path.Combine( webRoot, packageFile.EffectivePath );
+                var file = new FileInfo( path );
+
+                // Err on the side of not being destructive for now. Consider refactoring to give user a choice
+                // on whether or not to overwrite these files.
+                if ( file.Exists )
+                {
+                    WarningMessages.Add( string.Format( "Skipping '{0}', found duplicate file at '{1}'.", file.Name, path ) );
+                    continue;
+                }
+                
+                // Write each file out to disk
+                using ( var fileStream = new FileStream( path, FileMode.Create ) )
+                {
+                    var stream = packageFile.GetStream();
+                    var bytes = stream.ReadAllBytes();
+                    fileStream.Write( bytes, 0, bytes.Length );
+                    stream.Close();
+                }
+            }
         }
     }
 }
