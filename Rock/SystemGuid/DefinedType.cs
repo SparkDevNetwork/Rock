@@ -14,6 +14,11 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Guid for Device Type
+        /// </summary>
+        public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
+
+        /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_CURRENCY_TYPE =  "1D1304DE-E83A-44AF-B11D-0C66DD600B81"; 

@@ -22,7 +22,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class WorkflowTriggers : RockBlock, IDetailBlock
+    public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {
 
         #region Control Methods
