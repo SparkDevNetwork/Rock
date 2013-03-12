@@ -130,7 +130,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the selected value.
         /// </summary>
         /// <value>
-        /// The selected value.
+        /// The selected value.  NOTE: If nothing was previously set, it will return <see cref="Rock.Constants.None.IdValue"/>.
         /// </value>
         public string SelectedValue
         {
@@ -517,7 +517,7 @@ namespace Rock.Web.UI.Controls
             requiredValidator.InitialValue = "0";
             requiredValidator.ControlToValidate = hfItemId.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error";
+            requiredValidator.CssClass = "validation-error help-inline";
             requiredValidator.Enabled = false;
 
             Controls.Add( requiredValidator );

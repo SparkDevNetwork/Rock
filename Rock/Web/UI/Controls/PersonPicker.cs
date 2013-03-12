@@ -319,7 +319,7 @@ namespace Rock.Web.UI.Controls
             requiredValidator.InitialValue = "0";
             requiredValidator.ControlToValidate = hfPersonId.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error";
+            requiredValidator.CssClass = "validation-error help-inline";
             requiredValidator.Enabled = false;
 
             Controls.Add( requiredValidator );
