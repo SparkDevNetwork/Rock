@@ -88,7 +88,7 @@ namespace RockWeb
 
 
                 cmsFile.Data = null;
-                context.Response.Write( cmsFile.Id.ToJson() );
+                context.Response.Write( new { Id = cmsFile.Id, FileName = cmsFile.FileName }.ToJson() );
 
             }
             catch ( Exception ex )

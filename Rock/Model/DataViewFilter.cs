@@ -133,7 +133,10 @@ namespace Rock.Model
                 if ( EntityType != null )
                 {
                     var filterComponent = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
-                    authorized = filterComponent.IsAuthorized( action, person );
+                    if ( filterComponent != null )
+                    {
+                        authorized = filterComponent.IsAuthorized( action, person );
+                    }
                 }
 
                 if ( authorized )

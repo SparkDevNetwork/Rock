@@ -73,9 +73,17 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "workflowTypeId" );
+                string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "workflowTypeId", int.Parse( itemId ) );
+                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
+                    {
+                        ShowDetail( "workflowTypeId", int.Parse( itemId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "workflowTypeId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                    }
                 }
                 else
                 {
@@ -185,8 +193,17 @@ namespace RockWeb.Blocks.Administration
         {
             if ( hfWorkflowTypeId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to Grid
+                // Cancelling on Add.  Return to tree view with parent category selected
                 NavigateToParentPage();
+
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
             }
             else
             {
@@ -244,7 +261,7 @@ namespace RockWeb.Blocks.Administration
 
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
-            workflowType.CategoryId = ddlCategory.SelectedValueAsInt();
+            workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = int.Parse( tbOrder.Text );
             workflowType.WorkTerm = tbWorkTerm.Text;
             if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
@@ -394,12 +411,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            CategoryService categoryService = new CategoryService();
-            var catList = categoryService.Queryable().OrderBy( a => a.Name ).ToList();
-            catList.Insert( 0, new Category { Id = None.Id, Name = None.Text } );
-            ddlCategory.DataSource = catList;
-            ddlCategory.DataBind();
-
             ddlLoggingLevel.BindToEnum( typeof( WorkflowLoggingLevel ) );
         }
 
@@ -409,6 +420,17 @@ namespace RockWeb.Blocks.Administration
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
+        {
+            ShowDetail( itemKey, itemKeyValue, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="parentCategoryId">The parent category id.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
         {
             if ( !itemKey.Equals( "workflowTypeId" ) )
             {
@@ -424,7 +446,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                workflowType = new WorkflowType { Id = 0, IsActive = true, IsSystem = false };
+                workflowType = new WorkflowType { Id = 0, IsActive = true, IsSystem = false, CategoryId = parentCategoryId };
             }
 
             if ( workflowType == null )
@@ -494,7 +516,7 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = workflowType.Name;
             tbDescription.Text = workflowType.Description;
             cbIsActive.Checked = workflowType.IsActive ?? false;
-            ddlCategory.SetValue( workflowType.CategoryId );
+            cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
             tbOrder.Text = workflowType.Order.ToString();
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
@@ -613,21 +635,21 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = false;
             vsDetails.Enabled = false;
             pnlWorkflowTypeAttributes.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
             }
             else
             {
                 AttributeService attributeService = new AttributeService();
                 attribute = attributeService.Get( attributeGuid );
-                actionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
+                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
             }
 
-            edtWorkflowTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtWorkflowTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -678,18 +700,19 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
-            Attribute attribute;
+            Attribute attribute = null;
             AttributeService attributeService = new AttributeService();
-            if ( edtWorkflowTypeAttributes.AttributeId.Equals( 0 ) )
+            if ( edtWorkflowTypeAttributes.AttributeId.HasValue )
+            {
+                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId.Value );
+            }
+
+            if (attribute == null)
             {
                 attribute = new Attribute();
             }
-            else
-            {
-                attribute = attributeService.Get( edtWorkflowTypeAttributes.AttributeId );
-            }
 
-            edtWorkflowTypeAttributes.GetAttributeValues( attribute );
+            edtWorkflowTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

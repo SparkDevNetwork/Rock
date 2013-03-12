@@ -18,9 +18,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have attended a group type a specific number of times" )]
+    [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Type Attendance Filter" )]
+    [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         /// <summary>
@@ -111,7 +111,7 @@ namespace Rock.DataFilters.Person
         public override Control[] CreateChildControls()
         {
             DropDownList ddlGroupType = new DropDownList();
-            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
+            foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
@@ -210,7 +210,7 @@ namespace Rock.DataFilters.Person
 
             DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
 
-            ParameterExpression attendanceParameter = Expression.Parameter( typeof( Attendance ), "a" );
+            ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
 
             MemberExpression groupProperty = Expression.Property( attendanceParameter, "Group" );
             MemberExpression groupTypeIdProperty = Expression.Property( groupProperty, "GroupTypeId" );
@@ -229,10 +229,10 @@ namespace Rock.DataFilters.Person
             Expression groupTypeIdAndStartAndDidAttend = Expression.AndAlso( groupTypeIdAndStart, didAttendComparison );
 
             LambdaExpression attendanceLambda = 
-                Expression.Lambda<Func<Attendance, bool>>(groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter });
+                Expression.Lambda<Func<Rock.Model.Attendance, bool>>(groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter });
 
             Expression attendanceCount = Expression.Call(typeof(Enumerable), "Count", 
-                new Type[] { typeof(Attendance) }, Expression.PropertyOrField(parameterExpression, "Attendances"), attendanceLambda);
+                new Type[] { typeof(Rock.Model.Attendance) }, Expression.PropertyOrField(parameterExpression, "Attendances"), attendanceLambda);
 
             Expression timesAttendedConstant = Expression.Constant( attended );
             Expression timesAttendedComparison = Expression.GreaterThanOrEqual(attendanceCount, timesAttendedConstant);

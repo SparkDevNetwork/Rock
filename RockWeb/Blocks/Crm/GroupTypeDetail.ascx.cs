@@ -700,20 +700,20 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupTypeAttribute.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
+                edtGroupTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for group type " + tbName.Text );
             }
             else
             {
                 attribute = GroupTypeAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for group type " + tbName.Text );
+                edtGroupTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for group type " + tbName.Text );
             }
 
-            edtGroupTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtGroupTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -748,7 +748,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnSaveGroupTypeAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtGroupTypeAttributes.GetAttributeValues( attribute );
+            edtGroupTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -818,20 +818,20 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupAttribute.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
+                edtGroupAttributes.ActionTitle = ActionTitle.Add( "attribute for groups of group type " + tbName.Text );
             }
             else
             {
                 attribute = GroupAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
+                edtGroupAttributes.ActionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
             }
 
-            edtGroupAttributes.EditAttribute( attribute, actionTitle );
+            edtGroupAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -866,7 +866,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnSaveGroupAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtGroupAttributes.GetAttributeValues( attribute );
+            edtGroupAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

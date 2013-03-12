@@ -15,9 +15,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have a picture or not" )]
+    [Description( "Filter people on whether they have a picture or not" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Has Picture Filter" )]
+    [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
         /// <summary>
@@ -32,17 +32,6 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public override string Section
-        {
-            get { return "Demographic Info"; }
-        }
-
-        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
@@ -51,6 +40,17 @@ namespace Rock.DataFilters.Person
         public override string FilteredEntityTypeName
         {
             get { return "Rock.Model.Person"; }
+        }
+
+        /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Person Properties"; }
         }
 
         /// <summary>

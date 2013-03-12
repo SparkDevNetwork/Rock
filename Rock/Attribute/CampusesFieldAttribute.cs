@@ -26,7 +26,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public CampusesFieldAttribute( string name = "Campuses", string description = "", bool required = true, string defaultCampusIds = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultCampusIds, category, order, key, typeof( Rock.Field.Types.CampusesField ).FullName )
+            : base( name, description, required, defaultCampusIds, category, order, key, typeof( Rock.Field.Types.CampusesFieldType ).FullName )
         {
         }
     }

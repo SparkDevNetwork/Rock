@@ -117,21 +117,21 @@ namespace RockWeb.Blocks.Administration
         {
             pnlDetails.Visible = false;
             pnlAdTypeAttribute.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for ad type " + tbName.Text );
+                edtAdTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for ad type " + tbName.Text );
 
             }
             else
             {
                 attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
+                edtAdTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
             }
 
-            edtAdTypeAttributes.EditAttribute( attribute, actionTitle );
+            edtAdTypeAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Administration
         protected void btnSaveAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtAdTypeAttributes.GetAttributeValues( attribute );
+            edtAdTypeAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )

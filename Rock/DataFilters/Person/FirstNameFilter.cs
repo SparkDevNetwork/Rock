@@ -14,9 +14,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on First Name" )]
+    [Description( "Filter people on First Name" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "First Name Filter" )]
+    [ExportMetadata( "ComponentName", "Person First Name Filter" )]
     public class FirstNameFilter : DataFilterComponent
     {
         /// <summary>
@@ -31,17 +31,6 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public override string Section
-        {
-            get { return "Demographic Info"; }
-        }
-
-        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
@@ -50,6 +39,17 @@ namespace Rock.DataFilters.Person
         public override string FilteredEntityTypeName
         {
             get { return "Rock.Model.Person"; }
+        }
+
+        /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Person Properties"; }
         }
 
         /// <summary>

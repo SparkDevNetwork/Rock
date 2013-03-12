@@ -167,14 +167,7 @@ namespace RockWeb.Blocks.Prayer
 
             pnlDetails.Visible = true;
 
-            ddlCategory.Items.Clear();
-            CategoryService categoryService = new CategoryService();
-            foreach ( Category category in categoryService.Queryable().OrderBy( a => a.Name ) )
-            {
-                ListItem li = new ListItem( category.Name, category.Id.ToString() );
-                li.Selected = ( prayerRequest != null && category.Id == prayerRequest.CategoryId );
-                ddlCategory.Items.Add( li );
-            }
+            cpCategory.SetValue( prayerRequest.Category );
 
             tbFirstName.Text = prayerRequest.FirstName;
             tbLastName.Text = prayerRequest.LastName;
@@ -277,7 +270,7 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest = prayerRequestService.Get( prayerRequestId );
             }
 
-            // If chaning from NOT approved to approved, record who and when
+            // If changing from NOT approved to approved, record who and when
             if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
@@ -294,17 +287,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.IsUrgent = cbIsUrgent.Checked;
             prayerRequest.AllowComments = cbAllowComments.Checked;
             prayerRequest.IsPublic = cbIsPublic.Checked;
-
-            if ( string.IsNullOrWhiteSpace( ddlCategory.SelectedValue ) )
-            {
-                ddlCategory.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlCategory.LabelText ) );
-                return;
-            }
-            else
-            {
-                prayerRequest.CategoryId = int.Parse( ddlCategory.SelectedValue );
-            }
-
+            prayerRequest.CategoryId = cpCategory.SelectedValueAsInt();
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
             prayerRequest.Text = tbText.Text;

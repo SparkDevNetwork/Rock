@@ -105,6 +105,7 @@ namespace Rock.Web.UI.Controls
             btnAddGroup.ID = this.ID + "_btnAddGroup";
             btnAddGroup.ServerClick += btnAddGroup_ServerClick;
             btnAddGroup.AddCssClass( "btn btn-inverse" );
+            btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
             iAddGroup.AddCssClass( "icon-list-alt" );
@@ -116,6 +117,7 @@ namespace Rock.Web.UI.Controls
             btnAddFilter.ID = this.ID + "_btnAddFilter";
             btnAddFilter.ServerClick += btnAddFilter_ServerClick;
             btnAddFilter.AddCssClass( "btn btn-inverse" );
+            btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
             iAddFilter.AddCssClass( "icon-filter" );
@@ -127,6 +129,7 @@ namespace Rock.Web.UI.Controls
             lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.Click += lbDelete_Click;
             lbDelete.AddCssClass( "btn btn-mini btn-danger" );
+            lbDelete.CausesValidation = false;
 
             var iDeleteGroup = new HtmlGenericControl( "i" );
             iDeleteGroup.AddCssClass( "icon-remove" );

@@ -252,6 +252,7 @@ $('.filter-item-select').click(function (event) {
             lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.CssClass = "btn btn-mini btn-danger ";
             lbDelete.Click += lbDelete_Click;
+            lbDelete.CausesValidation = false;
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDelete.Controls.Add( iDelete );
@@ -269,8 +270,11 @@ $('.filter-item-select').click(function (event) {
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
             {
                 component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
-                clientFormatString = 
-                    string.Format("if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.ClientFormatSelection);
+                if ( component != null )
+                {
+                    clientFormatString =
+                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.ClientFormatSelection );
+                }
             }
 
             if ( component == null )

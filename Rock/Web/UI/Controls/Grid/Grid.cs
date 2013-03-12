@@ -608,8 +608,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
-
             UseAccessibleHeader = true;
 
             if ( HeaderRow != null )
@@ -636,6 +634,26 @@ namespace Rock.Web.UI.Controls
             {
                 ActionRow.TableSection = TableRowSection.TableFooter;
             }
+        }
+
+        /// <summary>
+        /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
+        /// and div element.  The div may be needed for paging when grid is not used in an update panel
+        /// so if wierd errors start happening, this could be the culprit.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            bool renderPanel = !base.DesignMode;
+
+            if ( this.Page != null )
+            {
+                this.Page.VerifyRenderingInServerForm( this );
+            }
+
+            this.PrepareControlHierarchy();
+
+            this.RenderContents( writer );
         }
 
         /// <summary>
