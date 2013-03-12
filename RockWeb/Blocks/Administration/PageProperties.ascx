@@ -25,7 +25,6 @@
                     <div class="span6">
                         <fieldset>
                             <Rock:PagePicker ID="ppParentPage" runat="server" LabelText="Parent Page" Required="false" />
-                            <asp:LinkButton ID="lbSetToRootPage" runat="server" CausesValidation="false" OnClick="lbSetToRootPage_Click" Text="Set as Root Page" CssClass="btn btn-mini"/>
                             <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>

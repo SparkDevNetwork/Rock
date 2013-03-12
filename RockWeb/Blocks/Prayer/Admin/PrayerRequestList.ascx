@@ -6,8 +6,9 @@
                 <Rock:DateTimePicker ID="dtRequestEnteredDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" LabelText="From date" />
                 <Rock:DateTimePicker ID="dtRequestEnteredDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" LabelText="To date" />
 
-                <Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" LabelText="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
-                <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" LabelText="Prayer Category" />
+                <%--<Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" LabelText="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
+                <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" LabelText="Prayer Category" />--%>
+                <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" LabelText="Category" Required="true" CategoryEntityTypeName="Rock.Model.PrayerRequest"/>
 
                 <Rock:LabeledRadioButtonList ID="rblApprovedFilter" runat="server" LabelText="Approval Status">
                     <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
