@@ -608,8 +608,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
-
             UseAccessibleHeader = true;
 
             if ( HeaderRow != null )
