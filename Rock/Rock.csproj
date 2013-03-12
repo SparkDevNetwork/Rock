@@ -105,6 +105,7 @@
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
+    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
@@ -372,6 +373,7 @@
     <Compile Include="Field\SelectFromListFieldType.cs" />
     <Compile Include="Field\Types\CampusesFieldType.cs" />
     <Compile Include="Field\Types\CampusFieldType.cs" />
+    <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
       <SubType>Code</SubType>
@@ -745,6 +747,7 @@
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\CategoryPicker.cs" />
+    <Compile Include="Web\UI\Controls\BinaryFileTypeList.cs" />
     <Compile Include="Web\UI\Controls\GroupPicker.cs" />
     <Compile Include="Web\UI\Controls\ItemPicker.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />

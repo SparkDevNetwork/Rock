@@ -62,7 +62,6 @@ namespace RockWeb
                 }
 
                 BinaryFileService fileService = new BinaryFileService();
-
                 Rock.Model.BinaryFile cmsFile;
 
                 // was an ID given? if so, fetch that file and replace it with the new one
@@ -81,11 +80,10 @@ namespace RockWeb
                 }
 
                 cmsFile.MimeType = uploadedFile.ContentType;
-                cmsFile.FileName = uploadedFile.FileName;
+                cmsFile.FileName = Path.GetFileName( uploadedFile.FileName );
                 SaveData( context, uploadedFile.InputStream, cmsFile );
 
                 fileService.Save( cmsFile, null );
-
 
                 cmsFile.Data = null;
                 context.Response.Write( new { Id = cmsFile.Id, FileName = cmsFile.FileName }.ToJson() );
