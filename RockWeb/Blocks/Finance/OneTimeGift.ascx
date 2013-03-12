@@ -4,37 +4,32 @@
 
 <script type="text/javascript">
 
-    $(document).ready(function () {
+    $('.calc').change(function () {
+        var total = 0;
 
-        $('.calc').change(function () {
-
-            var total = 0;
-
-            $('.calc').each(function () {
-                if ($(this).val() != '') {
-                    total += parseFloat($(this).val());
-                }
-            });
-
-            $('#lblTotal').html(total.toFixed(2));
+        $('.calc').each(function () {
+            if ($(this).val() != '') {
+                total += parseFloat($(this).val());
+            }
         });
 
-        $('#numCreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
+        $('#lblTotal').html(total.toFixed(2));
+    });
 
-        var checkboxChange = function () {
-            $(this).parent().next('div').toggle();
-        }
+    $(document).ready(function () {
+
+        $('#numCreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
 
     });
 
 </script>
 
-<asp:UpdatePanel ID="upOneTimeGift" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upOneTimeGift" runat="server" >
 <ContentTemplate>
 
     <asp:Panel ID="pnlDetails" runat="server">
 
-        <% spanClass = ( UseStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
         
         <div class="container-fluid">     
                                 
@@ -46,7 +41,7 @@
 
                         <h4>Contribution Information</h4>
 
-                        <% if ( ShowCampusSelect ) { %>
+                        <% if ( _ShowCampusSelect ) { %>
                             
                         <div class="row-fluid">
 
@@ -70,15 +65,13 @@
 
                         </div>
 
-                        <asp:PlaceHolder ID="plcNewFunds" runat="server" Visible="false"></asp:PlaceHolder>
-
-                        <!--<div class="row-fluid" runat="server">
+                        <div id="divPrimaryFund" class="row-fluid" runat="server">
 
                             <div class="input-prepend">
 
                                 <div class="btn-group">
                                     
-                                    <input type="button" value="General Fund" readonly="true" tabindex="-1" class="btn dropdown-toggle" />
+                                    <input type="button" ID="btnPrimaryFund" value="" readonly="true" tabindex="-1" class="btn dropdown-toggle" runat="server"/>
                                     <span class="add-on">$</span>
                                     <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
 
@@ -86,14 +79,31 @@
                            
                             </div>
 
-                        </div>-->
+                        </div>
+
+                        <div id="divSecondaryFund" class="row-fluid" runat="server" visible="false">
+
+                            <div class="input-prepend">
+
+                                <div class="btn-group">
+                                    
+                                    <input type="button" ID="btnSecondaryFund" value="" readonly="true" tabindex="-1" class="btn dropdown-toggle" runat="server"/>
+                                    <span class="add-on">$</span>
+                                    <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
+
+                                </div>
+                           
+                            </div>
+
+                        </div>
+
+                        <asp:PlaceHolder ID="plcNewFunds" runat="server" Visible="false"></asp:PlaceHolder>
                         
                         <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
                         
                             <div class="btn-group">
 
-                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnClick="btnAddFund_Click" ></Rock:ButtonDropDownList> 
-                                <!-- <p><input id="btnNewFund" type="submit" value="Add Another Gift" class="btn btn-primary" runat="server" onClick="btnAddFund_Click" ></p> -->
+                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" OnClientClick="return false;"></Rock:ButtonDropDownList> 
                                 
                             </div>
 
@@ -101,13 +111,7 @@
 
                         <div class="row-fluid">
 
-                            <div class="span12 ">
-                                <p>
-                                    <b>Total Amount $ 
-                                    <span id="lblTotal">0.00</span>
-                                    </b>
-                                </p>                                
-                            </div>
+                            <br /><b>Total Amount $ <span id="lblTotal">0.00</span></b>
 
                         </div>
 
@@ -120,13 +124,12 @@
                             </div>
 
                         </div>
-                        
 
                     </fieldset>
                     
                 </div>
             
-                <% if ( UseStackedLayout ) { %>
+                <% if ( _UseStackedLayout ) { %>
                     
                 </div>
 
@@ -220,7 +223,9 @@
                             <div class="tab-content" style="overflow: visible">
 
                                 <div class="tab-pane active" id="tab1">
-                    
+                                    
+                                    <div class="row-fluid"></div>
+
                                     <div class="row-fluid">
                                               
                                         <label for="numCreditCard" >Credit Card #</label>
@@ -237,60 +242,38 @@
                            
                                     <div class="row-fluid">
                         
-                                        <div class="span4">
-                                            
-                                            <div class="input-prepend input-append">
+                                        <div class="span5" >
 
-                                                <label >Expiration Date</label>
+                                            <label>Expiration Date</label>
 
-                                                <div class="btn-group inline">
-
-                                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Month <span class="caret"></span> </button>
+                                            <button class="btn dropdown-toggle" data-toggle="dropdown">Month <span class="caret"></span> </button>
                             
-                                                    <ul class="dropdown-menu">
-                                                        <li><a href="#">January</a></li>
-                                                        <li><a href="#">February</a></li>
-                                                        <li><a href="#">March</a></li> 
-                                                        <li><a href="#">April</a></li>
-                                                        <li><a href="#">May</a></li>
-                                                        <li><a href="#">June</a></li>
-                                                        <li><a href="#">July</a></li>
-                                                        <li><a href="#">August</a></li>
-                                                        <li><a href="#">September</a></li>
-                                                        <li><a href="#">October</a></li>
-                                                        <li><a href="#">November</a></li>
-                                                        <li><a href="#">December</a></li>
-                                                    </ul>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="#">January</a></li>
+                                                <li><a href="#">February</a></li>
+                                                <li><a href="#">March</a></li> 
+                                                <li><a href="#">April</a></li>
+                                                <li><a href="#">May</a></li>
+                                                <li><a href="#">June</a></li>
+                                                <li><a href="#">July</a></li>
+                                                <li><a href="#">August</a></li>
+                                                <li><a href="#">September</a></li>
+                                                <li><a href="#">October</a></li>
+                                                <li><a href="#">November</a></li>
+                                                <li><a href="#">December</a></li>
+                                            </ul>
 
-                                                </div>
 
-                                                <div class="btn-group inline">
+                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" ></Rock:ButtonDropDownList> 
 
-                                                    <button class="btn dropdown-toggle" data-toggle="dropdown">Year <span class="caret"></span> </button>
+                                        </div>
 
-                                                    <ul class="dropdown-menu" >
-
-                                                        <li><a href="#">2012</a></li>
-                                                        <li><a href="#">2013</a></li>
-                                                        <li><a href="#">2014</a></li>
-                                                        <li><a href="#">2015</a></li>
-                                                        <li><a href="#">2016</a></li>
-                                                        <li><a href="#">2017</a></li>                                       
-
-                                                    </ul>                           
-
-                                                </div>  
-
-                                            </div> 
-                                            
-                                        </div>                                           
-
-                                        <div class="span4">
-
+                                        <div class="span7">
+                                                    
                                             <label for="numCVV" >CVV #</label>
                                             <input name="numCVV" class="input-mini" size="3" type="text" >
 
-                                        </div>    
+                                        </div> 
                             
                                     </div>
 
@@ -301,19 +284,19 @@
                                         
                                     </div>
 
-                                    <% if ( ShowSaveDetails ) { %>
+                                    <% if ( _ShowSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
                                         <label class="checkbox">
                                             
-                                            <input id="cbxSaveCard" class="togglePanel" type="checkbox" value="option1"> Save My Card
+                                            <input id="cbxSaveCard" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCardNick').toggle()" value="option1"> Save My Card
 
                                         </label>                                         
                                         
                                         <div id="grpCardNick" style="display: none">
                                             
-                                            <label for="txtCardNick">Enter a Nickname </label>
+                                            <label for="txtCardNick">Enter a card nickname </label>
                                             
                                             <input id="txtCardNick" name="txtCardNick" class="input-medium"  type="text" size="30" />
                                         </div>                                        
@@ -325,7 +308,9 @@
                                 </div>
 
                                 <div class="tab-pane" id="tab2" >
-                                
+                                    
+                                    <div class="row-fluid"></div>
+
                                     <div class="row-fluid">
                                 
                                         <label for="txtBankName" >Bank Name</label>
@@ -364,20 +349,20 @@
 
                                     </div>
 
-                                    <% if ( ShowSaveDetails ) { %>
+                                    <% if ( _ShowSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
                                         <label class="checkbox">
                                             
                                             <br />
-                                            <input id="cbxSaveCheck" class="togglePanel" type="checkbox" value="option1"> Save My Account #
+                                            <input id="cbxSaveCheck" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCheckNick').toggle()" value="option1"> Save My Account #
 
                                         </label>                                         
                                         
                                         <div id="grpCheckNick" style="display: none">
                                             
-                                            <label for="txtCheckNick">Enter a Nickname </label>
+                                            <label for="txtCheckNick">Enter an account nickname </label>
                                             
                                             <input id="txtCheckNick" name="txtCheckNick" class="input-medium"  type="text" size="30" />
                                         </div>                                        
@@ -408,7 +393,7 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <% spanClass = ( UseStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
@@ -458,8 +443,3 @@
 
 </ContentTemplate>
 </asp:UpdatePanel>
-
-<script type="text/javascript">
-
-
-</script>
