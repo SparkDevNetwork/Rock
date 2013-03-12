@@ -416,21 +416,27 @@ span.cke_skin_kama {
 
 .widget header
 {
-    .header-gradient ();
+    .make-gradient(@rockHeaderBackground);
     padding: 6px;
     border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
 }
 
 .widget.widget-dark > header
 {
-    .header-gradient-dark ();
+	.make-gradient(@rockHeaderDarkBackground);
     color: #fff;
 }
+
+.widget.widget-dark > header .btn {
+	.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
+}
+
 
 .widget-content
 {
     padding: 20px 15px 15px;
 }
+
 
 /* page list as blocks */
 

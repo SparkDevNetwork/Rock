@@ -1,6 +1,6 @@
 ﻿
 .table-bordered th, .grid-table tfoot td.grid-footer  {
-	.header-gradient();
+	.make-gradient(@rockHeaderBackground);
 	font-size: 10px;
 	color: #444;
 	text-transform: uppercase;
@@ -79,17 +79,17 @@ td[align=center]
 .grid-filter 
 {
     background-color: #f9f9f9;
-
     border-radius: 4px 4px 4px 4px;
     border-width: 1px;
     border-color: #ddd;
     border-style: solid;
     margin-top: 24px;
     padding: 0 0 12px 6px;
+	margin-bottom: -10px;
 }
 
 .grid-filter header {
-    background: -moz-linear-gradient(center top , #FAFAFA 0%, #E9E9E9 100%) repeat scroll 0 0 transparent;
+    .make-gradient(@rockHeaderBackground);
     margin: 0 0 -4px -6px;
     border-radius: 4px 4px 0 0;
     padding: 4px;
@@ -106,6 +106,8 @@ td[align=center]
     margin: 0 2px 0 2px;
     line-height: 16px;
     display: inline;
+	font-weight: normal;
+	font-family: @rockSansFontFamilyLight;
 }
 
 .grid-filter header i {
