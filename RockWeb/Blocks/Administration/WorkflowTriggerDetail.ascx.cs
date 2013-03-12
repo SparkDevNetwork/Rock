@@ -22,7 +22,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class WorkflowTriggers : RockBlock, IDetailBlock
+    public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {
 
         #region Control Methods
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
             ddlEntityType.DataBind();
 
             ddlWorkflowType.Items.Clear();
-            ddlWorkflowType.Items.Add( new ListItem( "<Select>", string.Empty));
+            ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty));
 
             foreach ( var workflowType in new WorkflowTypeService().Queryable().OrderBy( w => w.Name ) )
             {

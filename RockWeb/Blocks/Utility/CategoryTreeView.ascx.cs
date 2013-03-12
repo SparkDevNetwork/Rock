@@ -41,16 +41,15 @@ namespace RockWeb.Blocks.Utility
             base.OnLoad( e );
 
             // Get EntityTypeName
-            int entityTypeId = 0;
-            if ( !int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
-            {
-                entityTypeId = 0;
-            }
+            string entityTypeName = GetAttributeValue( "EntityType" );
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeName ).Id;
+
             var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
                 EntityTypeName = cachedEntityType.Name;
                 lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
+                lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );

@@ -575,7 +575,7 @@ namespace Rock.Attribute
                     {
                         RequiredFieldValidator rfv = new RequiredFieldValidator();
                         divControls.Controls.Add( rfv );
-                        rfv.CssClass = "validation-error";
+                        rfv.CssClass = "validation-error help-inline";
                         rfv.ControlToValidate = attributeControl.ID;
                         rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
                         rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );

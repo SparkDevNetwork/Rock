@@ -78,8 +78,13 @@
         this.update = function( sScroll )
         {
             oViewport[options.axis] = oViewport.obj[0]['offset' + sSize];
-            oContent[ options.axis ]  = oContent.obj[0][ 'scroll'+ sSize ] + 10;
-            oContent.ratio            = oViewport[ options.axis ] / oContent[ options.axis ];
+
+            // set overflow to 'scroll' temporarily to get crossbrowser safe scrollHieght
+            oContent.obj[0].style.overflow = 'scroll';
+            oContent[options.axis] = oContent.obj[0]['scroll' + sSize] + 10;
+            oContent.obj[0].style.overflow = '';
+
+            oContent.ratio            = oViewport[options.axis] / oContent[options.axis];
                 
             oScrollbar.obj.toggleClass('disable', oContent.ratio >= 1);
 

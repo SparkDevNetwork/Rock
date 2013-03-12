@@ -68,7 +68,8 @@ namespace Rock.Model
         /// <value>
         /// The entity type id.
         /// </value>
-        [DataMember]
+        [Required]
+        [DataMember( IsRequired = true )]
         public int? EntityTypeId { get; set; }
 
         /// <summary>
@@ -171,6 +172,7 @@ namespace Rock.Model
         {
             this.HasOptional( v => v.Category ).WithMany().HasForeignKey( v => v.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( v => v.DataViewFilter ).WithMany().HasForeignKey( v => v.DataViewFilterId ).WillCascadeOnDelete( true );
+            this.HasRequired( v => v.EntityType ).WithMany().HasForeignKey( v => v.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

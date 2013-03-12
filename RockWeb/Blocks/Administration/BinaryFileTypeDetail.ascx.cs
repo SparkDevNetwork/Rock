@@ -18,7 +18,7 @@ using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class BinaryFileTypes : RockBlock, IDetailBlock
+    public partial class BinaryFileTypeDetail : RockBlock, IDetailBlock
     {
         #region Child Grid Dictionarys
 
