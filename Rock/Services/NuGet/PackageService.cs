@@ -196,8 +196,9 @@ namespace Rock.Services.NuGet
                         }
                     });
 
-                // Clean up PackageStaging folder.
-                // Once data is saved, do we want to save the .nuspec file for later?
+                // Clean up PackageStaging folder on successful import.
+                var dir = new DirectoryInfo( path );
+                dir.Delete( recursive: true );
                 return ErrorMessages.Count <= 0;
             }
 
