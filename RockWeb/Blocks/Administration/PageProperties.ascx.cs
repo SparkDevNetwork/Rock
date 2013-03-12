@@ -284,6 +284,7 @@ namespace RockWeb.Blocks.Administration
                 rptImportErrors.DataBind();
                 rptImportErrors.Visible = true;
                 pnlImportSuccess.Visible = false;
+                return;
             }
 
             var packageService = new PackageService();
@@ -304,7 +305,15 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 pnlImportSuccess.Visible = true;
+                rptImportWarnings.Visible = false;
                 rptImportErrors.Visible = false;
+
+                if ( packageService.WarningMessages.Count > 0 )
+                {
+                    rptImportErrors.DataSource = packageService.WarningMessages;
+                    rptImportErrors.DataBind();
+                    rptImportWarnings.Visible = true;
+                }
             }
         }
 

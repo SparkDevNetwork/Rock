@@ -92,7 +92,19 @@
                             <legend>Import Pages</legend>
                             <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
                                 <div class="span12 alert alert-success">
-                                    <p><strong>Sweet!</strong> Your package was imported successfully.</p>
+                                    <p><i class="icon-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
+                                    <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
+                                        <HeaderTemplate>
+                                            <p><i class="icon-warning-sign"></i> Just a quick head's up...</p>
+                                            <ul>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <li><%# Container.DataItem %></li>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </ul>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
                                 </div>
                             </asp:Panel>
                             <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
