@@ -639,6 +639,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
+        /// and div element.  The div may be needed for paging when grid is not used in an update panel
+        /// so if wierd errors start happening, this could be the culprit.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            bool renderPanel = !base.DesignMode;
+
+            if ( this.Page != null )
+            {
+                this.Page.VerifyRenderingInServerForm( this );
+            }
+
+            this.PrepareControlHierarchy();
+
+            this.RenderContents( writer );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
