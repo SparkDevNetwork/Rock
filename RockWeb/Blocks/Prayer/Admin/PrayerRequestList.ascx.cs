@@ -53,7 +53,6 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         public static class FilterSetting
         {
-            public static readonly string GroupCategory = "Group Category";
             public static readonly string PrayerCategory = "Prayer Category";
             public static readonly string FromDate = "From Date";
             public static readonly string ToDate = "To Date";
@@ -75,7 +74,6 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            Int32.TryParse( GetAttributeValue( "GroupCategoryId" ), out _blockInstanceGroupCategoryId );
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
             _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
@@ -153,80 +151,13 @@ namespace RockWeb.Blocks.Prayer
             dtRequestEnteredDateRangeStartDate.Text = rFilter.GetUserPreference( FilterSetting.FromDate );
             dtRequestEnteredDateRangeEndDate.Text = rFilter.GetUserPreference( FilterSetting.ToDate );
 
-            int selectedGroupCategoryId = All.Id;
-
-            // Set the selected prayer group category to the block instance attribute unless defaulted to "All".
-            if ( _blockInstanceGroupCategoryId != All.Id )
+            // Set the category picker's selected value
+            int selectedPrayerCategoryId = -1;
+            if ( int.TryParse( rFilter.GetUserPreference( FilterSetting.PrayerCategory ), out selectedPrayerCategoryId ) )
             {
-                selectedGroupCategoryId = _blockInstanceGroupCategoryId;
+                Category prayerCategory = new CategoryService().Get( selectedPrayerCategoryId );
+                cpPrayerCategoryFilter.SetValue( prayerCategory );
             }
-            else
-            {
-                int.TryParse( rFilter.GetUserPreference( FilterSetting.GroupCategory ), out selectedGroupCategoryId );
-            }
-
-            CategoryService categoryService = new CategoryService();
-
-            var categories = categoryService.GetByEntityTypeId( _prayerRequestEntityTypeId ).AsQueryable();
-            // subcategories are set from the same set.
-            var subCategories = categories;
-
-            ddlGroupCategoryFilter.Items.Clear();
-            ddlGroupCategoryFilter.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
-
-            // Only enable the Prayer Group Category dropdown if the block attribute's "GroupCategoryId" is set to All;
-            // otherwise we don't show this first drop down and instead bind the second prayer category dropdown to
-            // only categories which are sub-categories of this configured block attribute.
-            if ( _blockInstanceGroupCategoryId != All.Id )
-            {
-                ddlGroupCategoryFilter.Enabled = false;
-            }
-
-            // Get only "root" categories (parent is null)
-            var prayerGroupCategories = categories.Where( c => c.ParentCategoryId == null );
-
-            foreach ( Category category in prayerGroupCategories.OrderBy( a => a.Name ) )
-            {
-                ListItem li = new ListItem( category.Name, category.Id.ToString() );
-                li.Selected = category.Id == selectedGroupCategoryId;
-                ddlGroupCategoryFilter.Items.Add( li );
-            }
-
-            // Remove the categories that are root level items.
-            subCategories = subCategories.Except( prayerGroupCategories );
-
-            // If the first dropdownlist is still set to all, then don't enable the sub list yet.
-            if ( selectedGroupCategoryId == All.Id )
-            {
-                ddlPrayerCategoryFilter.Enabled = false;
-            }
-            else
-            {
-                ddlPrayerCategoryFilter.Enabled = true;
-                // Bind the correct prayer sub Categories based on the SELECTED prayer group category
-                subCategories = subCategories.Where( c => c.ParentCategoryId == selectedGroupCategoryId );
-            }
-
-            ddlPrayerCategoryFilter.Items.Clear();
-            ddlPrayerCategoryFilter.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
-
-            foreach ( Category category in subCategories.OrderBy( a => a.Name ) )
-            {
-                ListItem li = new ListItem( category.Name, category.Id.ToString() );
-                li.Selected = category.Id.ToString() == rFilter.GetUserPreference( FilterSetting.PrayerCategory );
-                ddlPrayerCategoryFilter.Items.Add( li );
-            }
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the ddlGroupCategoryFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void ddlGroupCategoryFilter_TextChanged( object sender, EventArgs e )
-        {
-            // Reset the selected category if the prayer GROUP category changes.
-            ddlPrayerCategoryFilter.SelectedIndex = -1;
         }
 
         /// <summary>
@@ -236,8 +167,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.GroupCategory, ddlGroupCategoryFilter.SelectedValue );
-            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, ddlPrayerCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue );
             rFilter.SaveUserPreference( FilterSetting.FromDate, dtRequestEnteredDateRangeStartDate.Text );
             rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
 
@@ -287,8 +217,6 @@ namespace RockWeb.Blocks.Prayer
                 rFilter.SaveUserPreference( FilterSetting.CommentingStatus, rblAllowCommentsFilter.SelectedValue );
             }
 
-            // Rebind the filter because the prayer request group category may have changed...
-            BindFilter();
             BindGrid();
         }
 
@@ -301,7 +229,6 @@ namespace RockWeb.Blocks.Prayer
         {
             switch ( e.Key )
             {
-                case "Group Category":
                 case "Prayer Category":
 
                     int categoryId = All.Id;
@@ -334,28 +261,18 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindGrid()
         {
-            // Get the selected items from the two dropdown lists.
-            int selectedGroupCategoryID = All.Id;
-            int.TryParse( ddlGroupCategoryFilter.SelectedValue, out selectedGroupCategoryID );
-
-            int selectedPrayerCategoryID = All.Id;
-            int.TryParse( ddlPrayerCategoryFilter.SelectedValue, out selectedPrayerCategoryID );
-
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             SortProperty sortProperty = gPrayerRequests.SortProperty;
 
             IQueryable<PrayerRequest> prayerRequests = prayerRequestService.Queryable();
 
-            // Filter by prayer GROUP category...
-            if ( selectedGroupCategoryID != All.Id )
-            {
-                prayerRequests = prayerRequestService.GetByCategoryId( _prayerRequestEntityTypeId, selectedGroupCategoryID ).AsQueryable();
-            }
-
             // Filter by prayer category if one is selected...
-            if ( selectedPrayerCategoryID != All.Id )
+            int selectedPrayerCategoryID = All.Id;
+            int.TryParse( cpPrayerCategoryFilter.SelectedValue, out selectedPrayerCategoryID );
+            if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
-                prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID );
+                prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
+                    || c.Category.ParentCategoryId == selectedPrayerCategoryID);
             }
 
             // Filter by approved/unapproved

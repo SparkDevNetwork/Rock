@@ -107,7 +107,7 @@ namespace Rock.Web.UI.Controls
             dataValidator.ID = this.ID + "_dav";
             dataValidator.ControlToValidate = this.ID;
             dataValidator.Display = ValidatorDisplay.None;
-            dataValidator.CssClass = "validation-error";
+            dataValidator.CssClass = "validation-error help-inline";
             Controls.Add( dataValidator );
         }
 

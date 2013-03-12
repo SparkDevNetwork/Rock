@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void btnFlushCache_Click( object sender, EventArgs e )
+        protected void btnClearCache_Click( object sender, EventArgs e )
         {
             foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
             {
