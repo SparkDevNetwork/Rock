@@ -56,7 +56,7 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is ListControl )
+            if ( control != null && control is CheckBoxList )
             {
                 CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
@@ -76,14 +76,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            List<string> values = new List<string>();
-            values.AddRange( value.Split( ',' ) );
-
-            if ( control != null && control is ListControl )
+            if ( value != null )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                    li.Selected = values.Contains( li.Value );
+                List<string> values = new List<string>();
+                values.AddRange( value.Split( ',' ) );
+
+                if ( control != null && control is CheckBoxList )
+                {
+                    CheckBoxList cbl = (CheckBoxList)control;
+                    foreach ( ListItem li in cbl.Items )
+                        li.Selected = values.Contains( li.Value );
+                }
             }
         }
     }

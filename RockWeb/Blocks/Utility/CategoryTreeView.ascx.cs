@@ -41,16 +41,15 @@ namespace RockWeb.Blocks.Utility
             base.OnLoad( e );
 
             // Get EntityTypeName
-            int entityTypeId = 0;
-            if ( !int.TryParse( GetAttributeValue( "EntityType" ), out entityTypeId ) )
-            {
-                entityTypeId = 0;
-            }
+            string entityTypeName = GetAttributeValue( "EntityType" );
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeName ).Id;
+
             var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
                 EntityTypeName = cachedEntityType.Name;
                 lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
+                lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
@@ -62,6 +61,9 @@ namespace RockWeb.Blocks.Utility
                 selectedEntityType = "category";
             }
 
+            lbAddCategory.Visible = true;
+            lbAddItem.Visible = false;
+
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 hfInitialItemId.Value = itemId;
@@ -72,6 +74,7 @@ namespace RockWeb.Blocks.Utility
                 if ( selectedEntityType.Equals( "category" ) )
                 {
                     category = new CategoryService().Get( int.Parse( itemId ) );
+                    lbAddItem.Visible = true;
                 }
                 else
                 {
@@ -92,6 +95,7 @@ namespace RockWeb.Blocks.Utility
 
                                 if ( entity != null )
                                 {
+                                    lbAddCategory.Visible = false;
                                     category = entity.Category;
                                     if ( category != null )
                                     {
@@ -128,6 +132,10 @@ namespace RockWeb.Blocks.Utility
             if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
                 NavigateToDetailPage( "CategoryId", 0, "parentCategoryId", parentCategoryId );
+            }
+            else
+            {
+                NavigateToDetailPage( "CategoryId", 0 );
             }
         }
 

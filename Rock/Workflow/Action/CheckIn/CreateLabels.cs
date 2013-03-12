@@ -47,26 +47,30 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                
                                 groupType.Labels = new List<CheckInLabel>();
-                                groupType.Labels.Add(new CheckInLabel( @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest1.vpl" ));
-                                groupType.Labels.Add(new CheckInLabel( @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest2.vpl" ));
-                                groupType.Labels.Add(new CheckInLabel( @"\\ccvfs1\30 Day Drop\Jon Edmiston\labeltest3.vpl" ));
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
+                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
 
                                 var mergeObjects = new Dictionary<string, object>();
                                 mergeObjects.Add( "person", person );
                                 mergeObjects.Add( "groupType", groupType );
 
                                 var labelCodes = new Dictionary<string, string>();
-                                labelCodes.Add( "CF0", "{{ person.SecurityCode }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "CF1", "{{ person.Person.FirstName }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "CF2", "{{ person.Person.LastName }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "CF3", "{% for location in groupType.Locations %}{% for group in location.Groups %}{% for schedule in group.Schedules %}{{ schedule.Schedule.Name }} {% endfor %}{% endfor %}{% endfor %}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "1", "{{ person.SecurityCode }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "2", "{{ person.Person.FirstName }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "3", "{{ person.Person.LastName }}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "4", "{% if person.Person.DaysToBirthday < 180 %}R{% endif %}".ResolveMergeFields( mergeObjects ) );
+                                labelCodes.Add( "5", "{% for location in groupType.Locations %}{% for group in location.Groups %}{% for schedule in group.Schedules %}{{ schedule.Schedule.Name }} {% endfor %}{% endfor %}{% endfor %}".ResolveMergeFields( mergeObjects ) );
+
+                                var PrinterIPs = new Dictionary<int, string>();
 
                                 foreach ( var label in groupType.Labels )
                                 {
                                     label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
                                     label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
+                                    label.LabelKey = new Guid( "00000000-0000-0000-0000-000000000003" );
+
                                     if ( label.PrintTo == PrintTo.Default )
                                     {
                                         label.PrintTo = groupType.GroupType.AttendancePrintTo;
@@ -74,22 +78,46 @@ namespace Rock.Workflow.Action.CheckIn
 
                                     if ( label.PrintTo == PrintTo.Kiosk )
                                     {
-                                        label.PrinterDeviceId = checkInState.Kiosk.Device.PrinterDeviceId;
+                                        var device = checkInState.Kiosk.Device;
+                                        if ( device != null )
+                                        {
+                                            label.PrinterDeviceId = device.PrinterDeviceId;
+                                        }
                                     }
+                                    else if ( label.PrintTo == PrintTo.Location )
+                                    {
+                                        // Should only be one
+                                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                        if (location != null)
+                                        {
+                                            var device = location.Location.PrinterDevice;
+                                            if ( device != null )
+                                            {
+                                                label.PrinterDeviceId = device.PrinterDeviceId;
+                                            }
+                                        }
+                                    }
+
+                                    if ( label.PrinterDeviceId.HasValue )
+                                    {
+                                        if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                        {
+                                            label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
+                                        }
+                                        else
+                                        {
+                                            var printerDevice = new DeviceService().Get( label.PrinterDeviceId.Value );
+                                            if ( printerDevice != null )
+                                            {
+                                                PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
+                                                label.PrinterAddress = printerDevice.IPAddress;
+                                            }
+                                        }
+                                    }
+
                                     label.MergeFields = labelCodes;
                                 }
 
-                                // Should only be one
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
-                                {
-                                    foreach ( var label in groupType.Labels )
-                                    {
-                                        if ( label.PrintTo == PrintTo.Location )
-                                        {
-                                            label.PrinterDeviceId = location.Location.PrinterDeviceId;
-                                        }
-                                    }                                     
-                                }
                             }
                         }
                     }

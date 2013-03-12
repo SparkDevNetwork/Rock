@@ -261,7 +261,16 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Web.UI.Control" /> based on the attribute's field type.
+        /// Creates the control.
+        /// </summary>
+        /// <returns></returns>
+        public Control CreateControl()
+        {
+            return CreateControl( string.Empty, false, false );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="setValue">if set to <c>true</c> set the control's value</param>

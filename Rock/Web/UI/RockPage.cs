@@ -1020,7 +1020,7 @@ namespace Rock.Web.UI
             if ( mediaType != string.Empty )
                 htmlLink.Attributes.Add( "media", mediaType );
 
-            AddHtmlLink( page, htmlLink );
+            AddHtmlLink( page, htmlLink, "css" );
         }
 
         /// <summary>
@@ -1095,32 +1095,40 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="htmlLink">The HTML link.</param>
-        public static void AddHtmlLink( Page page, HtmlLink htmlLink )
+        public static void AddHtmlLink( Page page, HtmlLink htmlLink, string contentPlaceHolderId = "" )
         {
             if ( page != null && page.Header != null )
             {
                 var header = page.Header;
                 if ( !HtmlLinkExists( header, htmlLink ) )
                 {
-                    //// Find last Link element
-                    //int index = 0;
-                    //for ( int i = header.Controls.Count - 1; i >= 0; i-- )
-                    //    if ( header.Controls[i] is HtmlLink )
-                    //    {
-                    //        index = i;
-                    //        break;
-                    //    }
+                    bool inserted = false;
 
-                    //if ( index == header.Controls.Count )
-                    //{
-                            header.Controls.Add( new LiteralControl( "\n\t" ) );
-                            header.Controls.Add( htmlLink );
-                    //}
-                    //else
-                    //{
-                    //    header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                    //    header.Controls.AddAt( ++index, htmlLink );
-                    //}
+                    if ( !string.IsNullOrWhiteSpace( contentPlaceHolderId ) )
+                    {
+                        for ( int i = 0; i < header.Controls.Count; i++ )
+                        {
+                            if ( header.Controls[i] is ContentPlaceHolder )
+                            {
+                                var ph = (ContentPlaceHolder)header.Controls[i];
+                                if ( ph.ID == contentPlaceHolderId )
+                                {
+                                    ph.Controls.Add( new LiteralControl( "\n\t" ) );
+                                    ph.Controls.Add( htmlLink );
+
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ( !inserted )
+                    {
+                        header.Controls.Add( new LiteralControl( "\n\t" ) );
+                        header.Controls.Add( htmlLink );
+                    }
+
                 }
             }
         }
@@ -1131,15 +1139,23 @@ namespace Rock.Web.UI
         /// <param name="header">The header.</param>
         /// <param name="newLink">The new link.</param>
         /// <returns></returns>
-        private static bool HtmlLinkExists( HtmlHead header, HtmlLink newLink )
+        private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
         {
             bool existsAlready = false;
 
-            if ( header != null )
+            if ( parentControl != null )
             {
-                foreach ( Control control in header.Controls )
+                foreach ( Control control in parentControl.Controls )
                 {
-                    if ( control is HtmlLink )
+                    if ( control is ContentPlaceHolder )
+                    {
+                        if ( HtmlLinkExists( control, newLink ) )
+                        {
+                            existsAlready = true;
+                            break;
+                        }
+                    }
+                    else if ( control is HtmlLink )
                     {
                         HtmlLink existingLink = (HtmlLink)control;
 

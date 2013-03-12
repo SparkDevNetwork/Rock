@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
-            int? parentGroupId = gpParentGroup.SelectedValueAsInt;
+            int? parentGroupId = gpParentGroup.SelectedValueAsInt();
             if ( (parentGroupId ?? 0) != 0 )
             {
                 Group parentGroup = new GroupService().Get( parentGroupId.Value );
@@ -713,20 +713,20 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupMemberAttribute.Visible = true;
+
             Attribute attribute;
-            string actionTitle;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
-                actionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
+                edtGroupMemberAttributes.ActionTitle = ActionTitle.Add( "attribute for group members of " + tbName.Text );
             }
             else
             {
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
-                actionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
+                edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
 
-            edtGroupMemberAttributes.EditAttribute( attribute, actionTitle );
+            edtGroupMemberAttributes.SetAttributeProperties( attribute );
         }
 
         /// <summary>
@@ -760,7 +760,7 @@ namespace RockWeb.Blocks.Crm
         protected void btnSaveGroupMemberAttribute_Click( object sender, EventArgs e )
         {
             Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtGroupMemberAttributes.GetAttributeValues( attribute );
+            edtGroupMemberAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings
             if ( !attribute.IsValid )
