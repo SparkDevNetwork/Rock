@@ -609,9 +609,9 @@
     <Compile Include="Migrations\201303111750096_EntityTypeAttributeValueByName.Designer.cs">
       <DependentUpon>201303111750096_EntityTypeAttributeValueByName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201303120435244_AddDeviceBlocks.cs" />
-    <Compile Include="Migrations\201303120435244_AddDeviceBlocks.Designer.cs">
-      <DependentUpon>201303120435244_AddDeviceBlocks.cs</DependentUpon>
+    <Compile Include="Migrations\201303120513496_AddDeviceBlocks.cs" />
+    <Compile Include="Migrations\201303120513496_AddDeviceBlocks.Designer.cs">
+      <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
@@ -1449,8 +1449,8 @@
     <EmbeddedResource Include="Migrations\201303111750096_EntityTypeAttributeValueByName.resx">
       <DependentUpon>201303111750096_EntityTypeAttributeValueByName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201303120435244_AddDeviceBlocks.resx">
-      <DependentUpon>201303120435244_AddDeviceBlocks.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201303120513496_AddDeviceBlocks.resx">
+      <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

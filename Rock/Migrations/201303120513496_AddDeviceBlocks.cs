@@ -13,6 +13,7 @@ namespace Rock.Migrations
     /// </summary>
     public partial class AddDeviceBlocks : RockMigration
     {
+
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
@@ -38,15 +39,19 @@ WHERE [Guid] = '7E660A4D-72C5-4CF8-B144-16CFC2ADD4D7'
 DECLARE @DeviceTypeTypeId int
 SET @DeviceTypeTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Name] = 'Device Type')
 IF @DeviceTypeTypeId IS NULL
-	INSERT INTO [DefinedType] (IsSystem, FieldTypeId, [Order], Category, Name, Description, Guid)
+BEGIN
+    INSERT INTO [DefinedType] (IsSystem, FieldTypeId, [Order], Category, Name, Description, Guid)
 	VALUES (1, 1, 0, 'Organization', 'Device Type', 'The types of devices available', '0368B637-327A-4F5E-80C2-832079E482EE')
+    SET @DeviceTypeTypeId = SCOPE_IDENTITY()END
 ELSE
+BEGIN
 	UPDATE [DefinedType] SET 
 		IsSystem = 1,
 		Category = 'Organization',
 		Description = 'The types of devices available',
 		Guid = '0368B637-327A-4F5E-80C2-832079E482EE'
 	WHERE [Id] = @DeviceTypeTypeId
+END
 
 IF NOT EXISTS (SELECT [Id] FROM [DefinedValue] WHERE DefinedTypeId = @DeviceTypeTypeId AND Guid = 'BC809626-1389-4543-B8BB-6FAC79C27AFD')
 	INSERT INTO [DefinedValue] ([IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid])
@@ -67,9 +72,9 @@ IF NOT EXISTS (SELECT [Id] FROM [DefinedValue] WHERE DefinedTypeId = @DeviceType
 		VALUES (1, @DeviceTypeTypeId, 0, 'Digital Signage', 'Device uses to display digital signage', '01B585B1-389D-4C86-A9DA-267A8564699D')
 
 " );
-        
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -83,5 +88,6 @@ IF NOT EXISTS (SELECT [Id] FROM [DefinedValue] WHERE DefinedTypeId = @DeviceType
             DeletePage( "EE0CC3F3-50FD-4161-BA5C-A852D4A10E7B" ); // Device Detail
             DeletePage( "7E660A4D-72C5-4CF8-B144-16CFC2ADD4D7" ); // Devices
         }
+
     }
 }
