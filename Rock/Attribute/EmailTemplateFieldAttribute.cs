@@ -16,7 +16,7 @@ namespace Rock.Attribute
     public class EmailTemplateFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypesFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="EmailTemplateFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
