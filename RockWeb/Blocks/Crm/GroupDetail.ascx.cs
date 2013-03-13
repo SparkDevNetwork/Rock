@@ -236,126 +236,145 @@ namespace RockWeb.Blocks.Crm
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Group group;
-            GroupService groupService = new GroupService();
-            AttributeService attributeService = new AttributeService();
-
-            int groupId = int.Parse( hfGroupId.Value );
             bool wasSecurityRole = false;
 
-            if ( groupId == 0 )
+            using ( new UnitOfWorkScope() )
             {
-                group = new Group();
-                group.IsSystem = false;
-                group.Name = string.Empty;
-            }
-            else
-            {
-                group = groupService.Get( groupId );
-                wasSecurityRole = group.IsSecurityRole;
-            }
+                GroupService groupService = new GroupService();
+                AttributeService attributeService = new AttributeService();
 
-            if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
-            {
-                ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
-                return;
-            }
+                int groupId = int.Parse( hfGroupId.Value );
 
-            group.Name = tbName.Text;
-            group.Description = tbDescription.Text;
-            group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
-            group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
-            group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
-            group.IsSecurityRole = cbIsSecurityRole.Checked;
-            group.IsActive = cbIsActive.Checked;
-
-            if ( group.ParentGroupId == group.Id )
-            {
-                gpParentGroup.ShowErrorMessage( "Group cannot be a Parent Group of itself." );
-                return;
-            }
-
-            // check for duplicates within GroupType
-            if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.FriendlyTypeName ) );
-                return;
-            }
-
-            group.LoadAttributes();
-
-            Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
-            Rock.Attribute.Helper.SetErrorIndicators( phGroupAttributes, group );
-
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            if ( !group.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                if ( group.Id.Equals( 0 ) )
+                if ( groupId == 0 )
                 {
-                    groupService.Add( group, CurrentPersonId );
+                    group = new Group();
+                    group.IsSystem = false;
+                    group.Name = string.Empty;
+                }
+                else
+                {
+                    group = groupService.Get( groupId );
+                    wasSecurityRole = group.IsSecurityRole;
                 }
 
-                groupService.Save( group, CurrentPersonId );
-                Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
-
-                /* Take care of Group Member Attributes */
-
-                // delete GroupMemberAttributes that are no longer configured in the UI
-                var groupMemberAttributesQry = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
-                    .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
-                    && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
-
-                var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
-                                                   where !( from d in GroupMemberAttributesState
-                                                            select d.Guid ).Contains( attr.Guid )
-                                                   select attr;
-
-                deletedGroupMemberAttributes.ToList().ForEach( a =>
+                if ( ( ddlGroupType.SelectedValueAsInt() ?? 0 ) == 0 )
                 {
-                    var attr = attributeService.Get( a.Guid );
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                    attributeService.Delete( attr, CurrentPersonId );
-                    attributeService.Save( attr, CurrentPersonId );
+                    ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
+                    return;
+                }
+
+                group.Name = tbName.Text;
+                group.Description = tbDescription.Text;
+                group.CampusId = ddlCampus.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( ddlCampus.SelectedValue );
+                group.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
+                group.ParentGroupId = gpParentGroup.SelectedValue.Equals( None.IdValue ) ? (int?)null : int.Parse( gpParentGroup.SelectedValue );
+                group.IsSecurityRole = cbIsSecurityRole.Checked;
+                group.IsActive = cbIsActive.Checked;
+
+                if ( group.ParentGroupId == group.Id )
+                {
+                    gpParentGroup.ShowErrorMessage( "Group cannot be a Parent Group of itself." );
+                    return;
+                }
+
+                // check for duplicates within GroupType
+                if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
+                {
+                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.FriendlyTypeName ) );
+                    return;
+                }
+
+                group.LoadAttributes();
+
+                Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
+                Rock.Attribute.Helper.SetErrorIndicators( phGroupAttributes, group );
+
+                if ( !Page.IsValid )
+                {
+                    return;
+                }
+
+                if ( !group.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    if ( group.Id.Equals( 0 ) )
+                    {
+                        groupService.Add( group, CurrentPersonId );
+                    }
+
+                    groupService.Save( group, CurrentPersonId );
+                    Rock.Attribute.Helper.SaveAttributeValues( group, CurrentPersonId );
+
+                    /* Take care of Group Member Attributes */
+
+                    // delete GroupMemberAttributes that are no longer configured in the UI
+                    var groupMemberAttributesQry = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                        .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
+                        && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
+
+                    var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
+                                                       where !( from d in GroupMemberAttributesState
+                                                                select d.Guid ).Contains( attr.Guid )
+                                                       select attr;
+
+                    deletedGroupMemberAttributes.ToList().ForEach( a =>
+                    {
+                        var attr = attributeService.Get( a.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                        attributeService.Delete( attr, CurrentPersonId );
+                        attributeService.Save( attr, CurrentPersonId );
+                    } );
+
+                    // add/update the GroupMemberAttributes that are assigned in the UI
+                    foreach ( var attributeState in GroupMemberAttributesState )
+                    {
+                        // remove old qualifiers in case they changed
+                        var qualifierService = new AttributeQualifierService();
+                        foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
+                        {
+                            qualifierService.Delete( oldQualifier, CurrentPersonId );
+                            qualifierService.Save( oldQualifier, CurrentPersonId );
+                        }
+
+                        Attribute attribute = groupMemberAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                        if ( attribute == null )
+                        {
+                            attribute = attributeState.Clone() as Rock.Model.Attribute;
+                            attributeService.Add( attribute, CurrentPersonId );
+                        }
+                        else
+                        {
+                            attributeState.Id = attribute.Id;
+                            attribute.FromDictionary( attributeState.ToDictionary() );
+
+                            foreach ( var qualifier in attributeState.AttributeQualifiers )
+                            {
+                                attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
+                            }
+
+                        }
+
+                        attribute.EntityTypeQualifierColumn = "GroupId";
+                        attribute.EntityTypeQualifierValue = group.Id.ToString();
+                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupMember().TypeName ).Id;
+                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                        attributeService.Save( attribute, CurrentPersonId );
+                    }
                 } );
 
-                // add/update the GroupMemberAttributes that are assigned in the UI
-                foreach ( var attributeState in GroupMemberAttributesState )
-                {
-                    Attribute attribute = groupMemberAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                    if ( attribute == null )
-                    {
-                        attribute = attributeState.Clone() as Rock.Model.Attribute;
-                        attributeService.Add( attribute, CurrentPersonId );
-                    }
-                    else
-                    {
-                        attributeState.Id = attribute.Id;
-                        attribute.FromDictionary( attributeState.ToDictionary() );
-                    }
+            }
 
-                    attribute.EntityTypeQualifierColumn = "GroupId";
-                    attribute.EntityTypeQualifierValue = group.Id.ToString();
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupMember().TypeName ).Id;
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                    attributeService.Save( attribute, CurrentPersonId );
-                }
-            } );
-
-            if ( wasSecurityRole )
+            if ( group != null && wasSecurityRole )
             {
                 if ( !group.IsSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
-                    Rock.Security.Role.Flush( groupId );
+                    Rock.Security.Role.Flush( group.Id );
                     Rock.Security.Authorization.Flush();
                 }
             }
@@ -370,6 +389,7 @@ namespace RockWeb.Blocks.Crm
 
             var qryParams = new Dictionary<string, string>();
             qryParams["groupId"] = group.Id.ToString();
+
             NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
