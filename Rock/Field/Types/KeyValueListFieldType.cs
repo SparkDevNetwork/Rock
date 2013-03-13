@@ -5,9 +5,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -39,6 +42,71 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( "definedtype" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            DropDownList ddl = new DropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.DataTextField = "Name";
+            ddl.DataValueField = "Id";
+            ddl.DataSource = new Rock.Model.DefinedTypeService().Queryable().OrderBy( d => d.Order ).ToList();
+            ddl.DataBind();
+            ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
+
+            if ( controls != null && controls.Count == 1 &&
+                controls[0] != null && controls[0] is DropDownList )
+            {
+                configurationValues["definedtype"].Value = ( (DropDownList)controls[0] ).SelectedValue;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 1 && configurationValues != null &&
+                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "definedtype" ) )
+            {
+                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
+            }
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues"></param>
@@ -47,7 +115,18 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new Rock.Web.UI.Controls.KeyValueList();
+            var control = new KeyValueList();
+
+            if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
+            {
+                int definedTypeId = 0;
+                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
+                {
+                    control.DefinedTypeId = definedTypeId;
+                }
+            }
+
+            return control;
         }
 
         /// <summary>
@@ -58,9 +137,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            if ( control != null && control is KeyValueList )
             {
-                return ( (Rock.Web.UI.Controls.KeyValueList)control ).Value;
+                return ( (KeyValueList)control ).Value;
             }
             return null;
         }
@@ -73,9 +152,9 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value!= null && control != null && control is Rock.Web.UI.Controls.KeyValueList )
+            if ( value!= null && control != null && control is KeyValueList )
             {
-                ( (Rock.Web.UI.Controls.KeyValueList)control ).Value = value;
+                ( (KeyValueList)control ).Value = value;
             }
         }
     }
