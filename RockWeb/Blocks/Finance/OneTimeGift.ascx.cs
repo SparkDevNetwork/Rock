@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Model;
@@ -46,6 +47,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
+            //rptNewFunds.ItemDataBound += new RepeaterItemEventHandler( rptNewFunds_ItemDataBound );
+
             if ( !IsPostBack )
             {            
                 _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
@@ -64,9 +67,17 @@ namespace RockWeb.Blocks.Finance
                 {
                     BindCampuses();
                 }
-                                
+
+                var DefaultByID = _DefaultFunds.Select( s => int.Parse( s ) ).ToList();
+                var funds = fundService.Queryable().Where( f => DefaultByID.Contains( f.Id ) )
+                    .Where( a => a.IsActive ).Distinct().OrderBy( a => a.Order )
+                    .Select( f => f.PublicName ).ToList();
+
+                rptNewFunds.DataSource = funds;
+                rptNewFunds.DataBind();
+
                 BindCreditOptions();
-                BindFunds();
+                //BindFunds();
             }
         }
 
@@ -119,23 +130,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddFund_SelectionChanged( object sender, EventArgs e )
         {
-            if ( GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Count() < 2 )
-            {
-                btnSecondaryFund.Value = btnAddFund.SelectedValue;
-                btnAddFund.Items.Remove( btnAddFund.SelectedValue );
-                divSecondaryFund.Visible = true;
-            }
-            else
+            var controlCount = GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Count();
+
+            rptNewFunds.Items.Count
+            
+            
             {
                 BindFundOption( btnAddFund.SelectedValue );
                 btnAddFund.Items.Remove( btnAddFund.SelectedValue );
+                btnAddFund.Title = "Add Another Gift";
             }
-            
-            
+                        
             if ( btnAddFund.Items.Count == 0 )
             {
                 divAddFund.Visible = false;
             }
+
+            
 
         }
 
@@ -175,12 +186,8 @@ namespace RockWeb.Blocks.Finance
             {
                 var firstFund = DefaultByID.FirstOrDefault();
                 btnPrimaryFund.Value = fundService.Get( firstFund ).PublicName;
-                
-                var secondFund = DefaultByID.Where( a => a != firstFund ).FirstOrDefault();
-                btnSecondaryFund.Value = fundService.Get( secondFund ).PublicName;
-                divSecondaryFund.Visible = true;
 
-                foreach ( var fund in DefaultByID.Where( a => a != firstFund && a != secondFund ) )
+                foreach ( var fund in DefaultByID.Where( a => a != firstFund ) )
                 {
                     BindFundOption( fundService.Get( fund ).PublicName );
                 }
@@ -225,8 +232,19 @@ namespace RockWeb.Blocks.Finance
 
         }
 
+
+        
+        
+        void rptNewFunds_ItemDataBound( object sender, RepeaterItemEventArgs e) 
+        {
+            //HtmlInputControl inputFund = (HtmlInputControl)e.Item.FindControl("inputNewFund")
+            //inputFund.Value = e.Item.
+            
+            
+        }
+
         /// <summary>
-        /// Binds the fund options to a div.
+        /// Manually binds the fund options to a div. !!OBSOLETE!!
         /// </summary>
         protected void BindFundOption( string fundName )
         {
