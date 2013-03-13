@@ -65,7 +65,29 @@
 
                         </div>
 
-                        <div id="divPrimaryFund" class="row-fluid" runat="server">
+                        <asp:Repeater ID="rptNewFunds" runat="server" >
+                            
+                            <HeaderTemplate>
+                                <div class="row-fluid">
+                                <div class="input-prepend">
+                                <div class="btn-group">
+                            </HeaderTemplate>
+                                                        
+                            <ItemTemplate>    
+                                <input type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>"/>
+                                <span class="add-on">$</span>
+                                <input id="inputNewFund" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*">
+                            </ItemTemplate>
+
+                            <FooterTemplate>
+                                </div>                           
+                                </div>
+                                </div>
+                            </FooterTemplate>
+
+                        </asp:Repeater>
+
+                        <div id="divPrimaryFund" class="row-fluid" runat="server" visible="false">
 
                             <div class="input-prepend">
 
@@ -81,25 +103,9 @@
 
                         </div>
 
-                        <div id="divSecondaryFund" class="row-fluid" runat="server" visible="false">
-
-                            <div class="input-prepend">
-
-                                <div class="btn-group">
-                                    
-                                    <input type="button" ID="btnSecondaryFund" value="" readonly="true" tabindex="-1" class="btn dropdown-toggle" runat="server"/>
-                                    <span class="add-on">$</span>
-                                    <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
-
-                                </div>
-                           
-                            </div>
-
-                        </div>
-
                         <asp:PlaceHolder ID="plcNewFunds" runat="server" Visible="false"></asp:PlaceHolder>
                         
-                        <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
+                        <div ID="divAddFund" class="row-fluid" runat="server" visible="true">
                         
                             <div class="btn-group">
 
