@@ -372,6 +372,9 @@
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\BinaryFileFieldType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Field\Types\CampusesFieldType.cs" />
     <Compile Include="Field\Types\CampusFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
@@ -750,6 +753,7 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\BinaryFileTypeList.cs" />
+    <Compile Include="Web\UI\Controls\BinaryFilePicker.cs" />
     <Compile Include="Web\UI\Controls\WorkflowTypeList.cs" />
     <Compile Include="Web\UI\Controls\GroupPicker.cs" />
     <Compile Include="Web\UI\Controls\ItemPicker.cs" />

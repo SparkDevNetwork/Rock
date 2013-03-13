@@ -16,7 +16,7 @@ namespace Rock.Attribute
     public class CustomDropdownListFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AudiencesPrimarySecondaryFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="CustomDropdownListFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

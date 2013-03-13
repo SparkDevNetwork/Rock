@@ -266,6 +266,10 @@ namespace RockWeb.Blocks.Administration
                 var binaryFile = binaryFileService.Get(fsFile.BinaryFileId);
                 if ( binaryFile != null )
                 {
+                    if ( !String.IsNullOrWhiteSpace( tbName.Text ) )
+                    {
+                        binaryFile.FileName = tbName.Text;
+                    }
                     binaryFile.Description = tbDescription.Text;
                     binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
 

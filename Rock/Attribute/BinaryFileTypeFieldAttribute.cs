@@ -16,7 +16,7 @@ namespace Rock.Attribute
     public class BinaryFileTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CampusFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="BinaryFileTypeFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
