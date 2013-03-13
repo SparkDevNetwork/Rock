@@ -71,43 +71,41 @@ namespace Rock.Web.UI.Controls
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                if ( nameAndValue.Length == 2 )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.WriteLine();
 
-                    // Write Name
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-key" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue[0] );
-                    writer.AddAttribute( "placeholder", "Key" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.RenderEndTag();
-                    writer.WriteLine();
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls controls-row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.WriteLine();
 
-                    // Write Value
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "span4 key-value-value" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                    writer.AddAttribute( "placeholder", "Value" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue[1] );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.RenderEndTag();
-                    writer.WriteLine();
+                // Write Name
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "span3 key-value-key" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
+                writer.AddAttribute( "placeholder", "Key" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Input );
+                writer.RenderEndTag();
+                writer.WriteLine();
 
-                    // Write Remove Button
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-remove" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-minus-sign" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.I );
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
-                    writer.WriteLine();
+                // Write Value
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "span4 key-value-value" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
+                writer.AddAttribute( "placeholder", "Value" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 2 ? nameAndValue[1] : string.Empty );
+                writer.RenderBeginTag( HtmlTextWriterTag.Input );
+                writer.RenderEndTag();
+                writer.WriteLine();
 
-                    writer.RenderEndTag();
-                    writer.WriteLine();
-                }
+                // Write Remove Button
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn key-value-remove" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-minus-sign" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                writer.WriteLine();
+
+                writer.RenderEndTag();
+                writer.WriteLine();
 
             }
 
