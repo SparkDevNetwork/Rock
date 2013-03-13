@@ -26,8 +26,8 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
             gPledges.DataKeyNames = new[] { "id" };
             gPledges.Actions.IsAddEnabled = true;
-            gPledges.Actions.AddClick += gPledges_Add;
-            gPledges.GridRebind += gPledges_GridRebind;
+            //gPledges.Actions.AddClick += gPledges_Add;
+            //gPledges.GridRebind += gPledges_GridRebind;
 
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
             gPledges.Actions.IsAddEnabled = canAddEditDelete;
@@ -36,44 +36,33 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack )
-            {
-                BindGrid();
-            }
+            //if ( !Page.IsPostBack )
+            //{
+            //    BindGrid();
+            //}
             
             base.OnLoad( e );
         }
 
-        private void BindGrid()
+        //private void BindGrid()
+        //{
+        //    var pledgeService = new PledgeService();
+        //    var sortProperty = gPledges.SortProperty;
+        //    var pledges = pledgeService.Queryable();
+
+        //    // TODO: Add filter criteria
+
+        //    gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
+        //    gPledges.DataBind();
+        //}
+
+        public IQueryable<Pledge> GetPledges()
         {
             var pledgeService = new PledgeService();
             var sortProperty = gPledges.SortProperty;
-            var pledges = pledgeService.Queryable();
-
-            // TODO: Add filter criteria
-
-            gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
-            gPledges.DataBind();
-        }
-
-        private void gPledges_GridRebind( object sender, EventArgs e )
-        {
-            throw new NotImplementedException();
-        }
-
-        private void gPledges_Add( object sender, EventArgs e )
-        {
-            throw new NotImplementedException();
-        }
-
-        protected void gPledges_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            throw new NotImplementedException();
-        }
-
-        protected void gPledges_Edit( object sender, RowEventArgs e )
-        {
-            throw new NotImplementedException();
+            return sortProperty != null
+                ? pledgeService.Queryable().Sort( sortProperty )
+                : pledgeService.Queryable().OrderBy( p => p.FundId );
         }
     }
 }
