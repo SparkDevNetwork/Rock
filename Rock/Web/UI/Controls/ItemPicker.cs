@@ -324,11 +324,14 @@ namespace Rock.Web.UI.Controls
     }}
 
     function updateScrollbar{0}(e) {{
-        $('#treeview-scroll-container_{0}').tinyscrollbar_update('relative');
-        var modalDialog = $('#modal-scroll-container');
-        if (modalDialog) {{
-            if (modalDialog.is(':visible')) {{
-                modalDialog.tinyscrollbar_update('bottom');
+        var treeviewContainer = $('#treeview-scroll-container_{0}');
+        if (treeviewContainer.is(':visible')) {{
+            treeviewContainer.tinyscrollbar_update('relative');
+            var modalDialog = $('#modal-scroll-container');
+            if (modalDialog) {{
+                if (modalDialog.is(':visible')) {{
+                    modalDialog.tinyscrollbar_update('bottom');
+                }}
             }}
         }}
     }}
