@@ -13,17 +13,17 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class BinaryFileTypeList : DropDownList
+    public class WorkflowTypeList : DropDownList
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileTypeList" /> class.
+        /// Initializes a new instance of the <see cref="WorkflowTypeList" /> class.
         /// </summary>
-        public BinaryFileTypeList()
+        public WorkflowTypeList()
         {
             this.Items.Clear();
             this.DataTextField = "Name";
             this.DataValueField = "Id";
-            this.DataSource = new BinaryFileTypeService().Queryable().OrderBy( f => f.Name ).ToList();
+            this.DataSource = new WorkflowTypeService().Queryable().OrderBy( w => w.Name).ToList();
             this.DataBind();
         }
 

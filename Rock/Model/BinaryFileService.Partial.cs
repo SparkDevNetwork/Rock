@@ -17,6 +17,32 @@ namespace Rock.Model
     public partial class BinaryFileService 
     {
         /// <summary>
+        /// Gets binary file without the data field
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public BinaryFile GetWithoutData( int id )
+        {
+            return this.Queryable()
+                .Where( f => f.Id == id )
+                .Select( f => new BinaryFile
+                {
+                    Id = f.Id,
+                    Guid = f.Guid,
+                    IsTemporary = f.IsTemporary,
+                    IsSystem = f.IsSystem,
+                    BinaryFileTypeId = f.BinaryFileTypeId,
+                    Data = null,
+                    Url = f.Url,
+                    FileName = f.FileName,
+                    MimeType = f.MimeType,
+                    LastModifiedTime = f.LastModifiedTime,
+                    Description = f.Description
+                } )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Saves the specified item.
         /// </summary>
         /// <param name="item">The item.</param>

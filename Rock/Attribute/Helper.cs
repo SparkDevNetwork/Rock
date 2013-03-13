@@ -74,14 +74,18 @@ namespace Rock.Attribute
 
             // Create any attributes that need to be created
             var attributeService = new Model.AttributeService();
-            var attributeQualifierService = new Model.AttributeQualifierService();
-            var fieldTypeService = new Model.FieldTypeService();
 
-            foreach ( var blockProperty in blockProperties )
+            if ( blockProperties.Count > 0 )
             {
-                attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService,
-                    blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
-                existingKeys.Add( blockProperty.Key );
+                var attributeQualifierService = new Model.AttributeQualifierService();
+                var fieldTypeService = new Model.FieldTypeService();
+
+                foreach ( var blockProperty in blockProperties )
+                {
+                    attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService,
+                        blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
+                    existingKeys.Add( blockProperty.Key );
+                }
             }
 
             // Remove any old attributes

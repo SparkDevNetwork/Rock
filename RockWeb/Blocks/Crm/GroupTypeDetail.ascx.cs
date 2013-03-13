@@ -504,166 +504,197 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            GroupType groupType;
-            GroupTypeService groupTypeService = new GroupTypeService();
-            AttributeService attributeService = new AttributeService();
-
-            int groupTypeId = int.Parse( hfGroupTypeId.Value );
-
-            if ( groupTypeId == 0 )
+            using ( new UnitOfWorkScope() )
             {
-                groupType = new GroupType();
-                groupTypeService.Add( groupType, CurrentPersonId );
-            }
-            else
-            {
-                groupType = groupTypeService.Get( groupTypeId );
-            }
+                GroupType groupType;
+                GroupTypeService groupTypeService = new GroupTypeService();
+                AttributeService attributeService = new AttributeService();
 
-            groupType.Name = tbName.Text;
+                int groupTypeId = int.Parse( hfGroupTypeId.Value );
 
-            groupType.Description = tbDescription.Text;
-            groupType.GroupTerm = tbGroupTerm.Text;
-            groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
-            groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
-            groupType.ShowInGroupList = cbShowInGroupList.Checked;
-            groupType.IconCssClass = tbIconCssClass.Text;
-            groupType.IconSmallFileId = imgIconSmall.ImageId;
-            groupType.IconLargeFileId = imgIconLarge.ImageId;
-            groupType.TakesAttendance = cbTakesAttendance.Checked;
-            groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
-            groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
-            groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
-
-            groupType.ChildGroupTypes = new List<GroupType>();
-            groupType.ChildGroupTypes.Clear();
-            foreach ( var item in ChildGroupTypesDictionary )
-            {
-                var childGroupType = groupTypeService.Get( item.Key );
-                if ( childGroupType != null )
+                if ( groupTypeId == 0 )
                 {
-                    groupType.ChildGroupTypes.Add( childGroupType );
+                    groupType = new GroupType();
+                    groupTypeService.Add( groupType, CurrentPersonId );
                 }
-            }
-
-            DefinedValueService definedValueService = new DefinedValueService();
-
-            groupType.LocationTypes = new List<GroupTypeLocationType>();
-            groupType.LocationTypes.Clear();
-            foreach ( var item in LocationTypesDictionary )
-            {
-                var locationType = definedValueService.Get( item.Key );
-                if ( locationType != null )
+                else
                 {
-                    groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
+                    groupType = groupTypeService.Get( groupTypeId );
                 }
-            }
 
-            // check for duplicates
-            if ( groupTypeService.Queryable().Count( a => a.Name.Equals( groupType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupType.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", GroupType.FriendlyTypeName ) );
-                return;
-            }
+                groupType.Name = tbName.Text;
 
-            if ( !groupType.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
+                groupType.Description = tbDescription.Text;
+                groupType.GroupTerm = tbGroupTerm.Text;
+                groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
+                groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
+                groupType.ShowInGroupList = cbShowInGroupList.Checked;
+                groupType.IconCssClass = tbIconCssClass.Text;
+                groupType.IconSmallFileId = imgIconSmall.ImageId;
+                groupType.IconLargeFileId = imgIconLarge.ImageId;
+                groupType.TakesAttendance = cbTakesAttendance.Checked;
+                groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
+                groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
+                groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
 
-            RockTransactionScope.WrapTransaction( () =>
+                groupType.ChildGroupTypes = new List<GroupType>();
+                groupType.ChildGroupTypes.Clear();
+                foreach ( var item in ChildGroupTypesDictionary )
                 {
-                    groupTypeService.Save( groupType, CurrentPersonId );
-
-                    // get it back to make sure we have a good Id for it for the Attributes
-                    groupType = groupTypeService.Get( groupType.Guid );
-                    
-                    /* Take care of Group Type Attributes */
-
-                    // delete GroupTypeAttributes that are no longer configured in the UI
-                    var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                        && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
-
-                    var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
-                                            where !( from d in GroupTypeAttributesState
-                                                     select d.Guid ).Contains( attr.Guid )
-                                            select attr;
-
-                    deletedGroupTypeAttributes.ToList().ForEach( a =>
+                    var childGroupType = groupTypeService.Get( item.Key );
+                    if ( childGroupType != null )
                     {
-                        var attr = attributeService.Get( a.Guid );
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                        attributeService.Delete( attr, CurrentPersonId );
-                        attributeService.Save( attr, CurrentPersonId );
-                    } );
-
-                    // add/update the GroupTypeAttributes that are assigned in the UI
-                    foreach ( var attributeState in GroupTypeAttributesState )
-                    {
-                        Attribute attribute = groupTypeAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                        if ( attribute == null )
-                        {
-                            attribute = attributeState.Clone() as Rock.Model.Attribute;
-                            attributeService.Add( attribute, CurrentPersonId );
-                        }
-                        else
-                        {
-                            attributeState.Id = attribute.Id;
-                            attribute.FromDictionary( attributeState.ToDictionary() );
-                        }
-
-                        attribute.EntityTypeQualifierColumn = "Id";
-                        attribute.EntityTypeQualifierValue = groupType.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
-                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                        attributeService.Save( attribute, CurrentPersonId );
+                        groupType.ChildGroupTypes.Add( childGroupType );
                     }
+                }
 
-                    /* Take care of Group Attributes */
+                DefinedValueService definedValueService = new DefinedValueService();
 
-                    // delete GroupAttributes that are no longer configured in the UI
-                    var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                        && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                groupType.LocationTypes = new List<GroupTypeLocationType>();
+                groupType.LocationTypes.Clear();
+                foreach ( var item in LocationTypesDictionary )
+                {
+                    var locationType = definedValueService.Get( item.Key );
+                    if ( locationType != null )
+                    {
+                        groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
+                    }
+                }
 
-                    var deletedGroupAttributes = from attr in groupAttributesQry
+                // check for duplicates
+                if ( groupTypeService.Queryable().Count( a => a.Name.Equals( groupType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupType.Id ) ) > 0 )
+                {
+                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", GroupType.FriendlyTypeName ) );
+                    return;
+                }
+
+                if ( !groupType.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                    {
+                        groupTypeService.Save( groupType, CurrentPersonId );
+
+                        // get it back to make sure we have a good Id for it for the Attributes
+                        groupType = groupTypeService.Get( groupType.Guid );
+
+                        /* Take care of Group Type Attributes */
+
+                        // delete GroupTypeAttributes that are no longer configured in the UI
+                        var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                            .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
+                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+                        var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
+                                                         where !( from d in GroupTypeAttributesState
+                                                                  select d.Guid ).Contains( attr.Guid )
+                                                         select attr;
+
+                        deletedGroupTypeAttributes.ToList().ForEach( a =>
+                        {
+                            var attr = attributeService.Get( a.Guid );
+                            Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                            attributeService.Delete( attr, CurrentPersonId );
+                            attributeService.Save( attr, CurrentPersonId );
+                        } );
+
+                        // add/update the GroupTypeAttributes that are assigned in the UI
+                        foreach ( var attributeState in GroupTypeAttributesState )
+                        {
+                            // remove old qualifiers in case they changed
+                            var qualifierService = new AttributeQualifierService();
+                            foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
+                            {
+                                qualifierService.Delete( oldQualifier, CurrentPersonId );
+                                qualifierService.Save( oldQualifier, CurrentPersonId );
+                            }
+
+                            Attribute attribute = groupTypeAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                            if ( attribute == null )
+                            {
+                                attribute = attributeState.Clone() as Rock.Model.Attribute;
+                                attributeService.Add( attribute, CurrentPersonId );
+                            }
+                            else
+                            {
+                                attributeState.Id = attribute.Id;
+                                attribute.FromDictionary( attributeState.ToDictionary() );
+
+                                foreach ( var qualifier in attributeState.AttributeQualifiers )
+                                {
+                                    attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
+                                }
+
+                            }
+
+                            attribute.EntityTypeQualifierColumn = "Id";
+                            attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
+                            Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                            attributeService.Save( attribute, CurrentPersonId );
+                        }
+
+                        /* Take care of Group Attributes */
+
+                        // delete GroupAttributes that are no longer configured in the UI
+                        var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                            .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+
+                        var deletedGroupAttributes = from attr in groupAttributesQry
                                                      where !( from d in GroupAttributesState
                                                               select d.Guid ).Contains( attr.Guid )
                                                      select attr;
 
-                    deletedGroupAttributes.ToList().ForEach( a =>
-                    {
-                        var attr = attributeService.Get( a.Guid );
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                        attributeService.Delete( attr, CurrentPersonId );
-                        attributeService.Save( attr, CurrentPersonId );
+                        deletedGroupAttributes.ToList().ForEach( a =>
+                        {
+                            var attr = attributeService.Get( a.Guid );
+                            Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                            attributeService.Delete( attr, CurrentPersonId );
+                            attributeService.Save( attr, CurrentPersonId );
+                        } );
+
+                        // add/update the GroupAttributes that are assigned in the UI
+                        foreach ( var attributeState in GroupAttributesState )
+                        {
+                            // remove old qualifiers in case they changed
+                            var qualifierService = new AttributeQualifierService();
+                            foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
+                            {
+                                qualifierService.Delete( oldQualifier, CurrentPersonId );
+                                qualifierService.Save( oldQualifier, CurrentPersonId );
+                            }
+
+                            Attribute attribute = groupAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                            if ( attribute == null )
+                            {
+                                attribute = attributeState.Clone() as Rock.Model.Attribute;
+                                attributeService.Add( attribute, CurrentPersonId );
+                            }
+                            else
+                            {
+                                attributeState.Id = attribute.Id;
+                                attribute.FromDictionary( attributeState.ToDictionary() );
+
+                                foreach ( var qualifier in attributeState.AttributeQualifiers )
+                                {
+                                    attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
+                                }
+
+                            }
+
+                            attribute.EntityTypeQualifierColumn = "GroupTypeId";
+                            attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Group().TypeName ).Id;
+                            Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                            attributeService.Save( attribute, CurrentPersonId );
+                        }
                     } );
 
-                    // add/update the GroupAttributes that are assigned in the UI
-                    foreach ( var attributeState in GroupAttributesState )
-                    {
-                        Attribute attribute = groupAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                        if ( attribute == null )
-                        {
-                            attribute = attributeState.Clone() as Rock.Model.Attribute;
-                            attributeService.Add( attribute, CurrentPersonId );
-                        }
-                        else
-                        {
-                            attributeState.Id = attribute.Id;
-                            attribute.FromDictionary( attributeState.ToDictionary() );
-                        }
-
-                        attribute.EntityTypeQualifierColumn = "GroupTypeId";
-                        attribute.EntityTypeQualifierValue = groupType.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Group().TypeName ).Id;
-                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                        attributeService.Save( attribute, CurrentPersonId );
-                    }
-                } );
-
+            }
             NavigateToParentPage();
         }
 
