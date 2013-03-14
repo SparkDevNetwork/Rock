@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Text;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Communication;
@@ -44,12 +46,21 @@ namespace Rock.Workflow.Action
                     return false;
                 }
 
+                StringBuilder sb = new StringBuilder();
+
+                foreach ( Match match in Regex.Matches( 
+                    System.Text.Encoding.Default.GetString( binaryFile.Data ),
+                    @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
+                {
+                    sb.AppendFormat( "{0}^|", match.Value );
+                }
+
                 binaryFile.LoadAttributes();
 
                 var newValues = new List<AttributeValue>();
 
                 var attributeValue = new AttributeValue();
-                attributeValue.Value = "MC1^|MC2^|";
+                attributeValue.Value = sb.ToString();
                 newValues.Add( attributeValue );
 
                 binaryFile.AttributeValues["MergeCodes"] = newValues;
