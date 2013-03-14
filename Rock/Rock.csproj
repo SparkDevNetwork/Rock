@@ -264,6 +264,10 @@
     <Compile Include="Migrations\201303032120222_FinancialBatchNewFields.Designer.cs">
       <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303101827271_BatchTransaction.cs" />
+    <Compile Include="Migrations\201303101827271_BatchTransaction.Designer.cs">
+      <DependentUpon>201303101827271_BatchTransaction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -990,6 +994,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303032120222_FinancialBatchNewFields.resx">
       <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303101827271_BatchTransaction.resx">
+      <DependentUpon>201303101827271_BatchTransaction.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Collections;
 
 using Rock.Data;
 
@@ -17,20 +18,18 @@ namespace Rock.Model
     /// <summary>
     /// Batch POCO class.
     /// </summary>
-    [Table( "FinancialBatch" )]
-    [DataContract]
+    [Table("FinancialBatch")]
+    [DataContract( IsReference = true )]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
-
-        #region Entity Properties
-
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength(50)]
         [DataMember]
         public string Name { get; set; }
 
@@ -53,13 +52,13 @@ namespace Rock.Model
         public DateTime? BatchDateEnd { get; set; }
 
         /// <summary>
-        /// Gets or sets the status.
+        /// Gets or sets a value indicating whether this <see cref="FinancialBatch"/> is closed.
         /// </summary>
         /// <value>
-        /// The status.
+        ///   <c>true</c> if closed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public BatchStatus Status { get; set; }
+        public bool IsClosed { get; set; }
 
         /// <summary>
         /// Gets or sets the campus id.
@@ -71,34 +70,34 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets an optional transaction code from an accounting system that batch is associated with
+        /// Gets or sets the entity.
         /// </summary>
         /// <value>
-        /// The accounting system code.
+        /// The entity.
         /// </value>
-        [MaxLength( 100 )]
+        [MaxLength(50)]
         [DataMember]
-        public string AccountingSystemCode { get; set; }
+        public string Entity { get; set; }
 
         /// <summary>
-        /// Gets or sets the control amount.
+        /// Gets or sets the entity id.
         /// </summary>
         /// <value>
-        /// The control amount.
+        /// The entity id.
         /// </value>
         [DataMember]
-        public decimal ControlAmount { get; set; }
-
-        #endregion
-
-        #region Virtual Properties
+        public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus.
+        /// Gets or sets the foreign reference.
         /// </summary>
         /// <value>
-        /// The campus.
+        /// The foreign reference.
         /// </value>
+        [MaxLength(50)]
+        [DataMember]
+        public string ForeignReference { get; set; }
+
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -110,6 +109,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int BatchTypeValueId { get; set; }
+
+        [DataMember]
+        public virtual DefinedType BatchType { get; set; }
 
         /// <summary>
         /// Gets or sets the Control Amount.
@@ -130,10 +132,6 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<FinancialTransaction> Transactions { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -145,10 +143,18 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
+        //////private List<FinancialTransaction> _TransactionList = null;
+        //////public List<FinancialTransaction> TransactionList
+        //////{
+        //////    get {
+        //////        if ( _TransactionList == null )
+        //////        {
+        //////            _TransactionList = Transactions.ToList();
+        //////        }
+        //////        return _TransactionList;
+        //////    }
+        //////}
     }
-
-    #region EntityConfiguration
 
     /// <summary>
     /// Batch Configuration class.
@@ -160,36 +166,6 @@ namespace Rock.Model
         /// </summary>
         public FinancialBatchConfiguration()
         {
-            this.HasOptional( b => b.Campus ).WithMany().HasForeignKey( b => b.CampusId ).WillCascadeOnDelete( false );
         }
     }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The status of a batch
-    /// </summary>
-    public enum BatchStatus
-    {
-        /// <summary>
-        /// Pending
-        /// </summary>
-        Pending = 0,
-
-        /// <summary>
-        /// Open
-        /// </summary>
-        Open = 1,
-
-        /// <summary>
-        /// Closed
-        /// </summary>
-        Closed = 2
-    }
-
-    #endregion
-
-
 }
