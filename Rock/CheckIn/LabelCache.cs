@@ -30,6 +30,14 @@ namespace Rock.CheckIn
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets or sets the content of the file.
+        /// </summary>
+        /// <value>
+        /// The content of the file.
+        /// </value>
+        public string FileContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the merge fields.
         /// </summary>
         /// <value>

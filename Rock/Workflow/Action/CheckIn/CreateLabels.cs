@@ -148,7 +148,9 @@ namespace Rock.Workflow.Action.CheckIn
                             var labelCache = KioskCache.GetLabel( fileId );
                             if ( labelCache != null )
                             {
-                                labels.Add( new CheckInLabel( labelCache, mergeObjects ) );
+                                var checkInLabel = new CheckInLabel( labelCache, mergeObjects );
+                                checkInLabel.FileId = fileId;
+                                labels.Add( checkInLabel );
                             }
                         }
                     }
