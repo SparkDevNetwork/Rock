@@ -70,7 +70,7 @@ namespace Rock.CheckIn
         /// The label key.
         /// </value>
         [DataMember]
-        public Guid LabelKey { get; set; }
+        public string LabelKey { get; set; }
 
         /// <summary>
         /// Gets or sets the merge fields.
@@ -84,10 +84,24 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
         /// </summary>
-        /// <param name="labelFile">The label file.</param>
-        public CheckInLabel( string labelFile )
+        public CheckInLabel()
         {
-            LabelFile = labelFile;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
+        /// </summary>
+        /// <param name="labelCache">The label cache.</param>
+        public CheckInLabel( LabelCache labelCache, Dictionary<string, object> mergeObjects )
+        {
+            LabelKey = labelCache.Guid.ToString();
+            LabelFile = labelCache.Url;
+
+            MergeFields = new Dictionary<string, string>();
+            foreach ( var item in labelCache.MergeFields )
+            {
+                MergeFields.Add( item.Key, item.Value.ResolveMergeFields( mergeObjects ) );
+            }
         }
 
         /// <summary>

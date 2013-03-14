@@ -48,6 +48,13 @@ namespace Rock.Field
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationValue" /> class.
         /// </summary>
+        public ConfigurationValue()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationValue" /> class.
+        /// </summary>
         /// <param name="value">The value.</param>
         public ConfigurationValue( string value )
         {
