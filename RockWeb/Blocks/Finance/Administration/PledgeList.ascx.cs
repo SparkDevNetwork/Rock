@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.ModelBinding;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -56,13 +57,29 @@ namespace RockWeb.Blocks.Finance.Administration
         //    gPledges.DataBind();
         //}
 
-        public IQueryable<Pledge> GetPledges()
+        public IQueryable<Pledge> GetPledges([QueryString("person")]string personId, [QueryString("fund")]string fundId)
         {
             var pledgeService = new PledgeService();
             var sortProperty = gPledges.SortProperty;
-            return sortProperty != null
-                ? pledgeService.Queryable().Sort( sortProperty )
-                : pledgeService.Queryable().OrderBy( p => p.FundId );
+            var pledges = pledgeService.Queryable();
+            int pid, fid;
+
+            if ( personId != null && int.TryParse( personId, out pid ) )
+            {
+                pledges = pledges.Where( p => p.PersonId == pid );
+            }
+
+            if ( fundId != null && int.TryParse( fundId, out fid ) )
+            {
+                pledges = pledges.Where( p => p.FundId == fid );
+            }
+
+            return sortProperty != null ? pledges.Sort( sortProperty ) : pledges.OrderBy( p => p.FundId );
+        }
+
+        public void DeletePledge( Pledge pledge )
+        {
+            //throw new NotImplementedException();
         }
     }
 }
