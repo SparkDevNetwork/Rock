@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Collections;
 
 using Rock.Data;
 
@@ -21,6 +22,7 @@ namespace Rock.Model
     [DataContract( IsReference = true )]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
+        
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -96,7 +98,7 @@ namespace Rock.Model
         [DataMember]
         public string ForeignReference { get; set; }
 
-        //public virtual Campus Campus { get; set; }
+        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the Batch Type Value Id.
@@ -107,6 +109,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int BatchTypeValueId { get; set; }
+
+        [DataMember]
+        public virtual DefinedType BatchType { get; set; }
 
         /// <summary>
         /// Gets or sets the Control Amount.
@@ -137,6 +142,18 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        //////private List<FinancialTransaction> _TransactionList = null;
+        //////public List<FinancialTransaction> TransactionList
+        //////{
+        //////    get {
+        //////        if ( _TransactionList == null )
+        //////        {
+        //////            _TransactionList = Transactions.ToList();
+        //////        }
+        //////        return _TransactionList;
+        //////    }
+        //////}
     }
 
     /// <summary>
