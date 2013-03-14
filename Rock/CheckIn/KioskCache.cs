@@ -178,6 +178,7 @@ namespace Rock.CheckIn
                 label.Guid = file.Guid;
                 label.Url = string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                 label.MergeFields = new Dictionary<string, string>();
+                label.FileContent = System.Text.Encoding.Default.GetString( file.Data );
 
                 file.LoadAttributes();
                 string attributeValue = file.GetAttributeValue( "MergeCodes" );

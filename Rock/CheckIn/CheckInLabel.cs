@@ -55,6 +55,15 @@ namespace Rock.CheckIn
         public PrintTo PrintTo { get; set; }
 
         /// <summary>
+        /// Gets or sets the file id.
+        /// </summary>
+        /// <value>
+        /// The file id.
+        /// </value>
+        [DataMember]
+        public int FileId { get; set; }
+
+        /// <summary>
         /// Gets or sets the label file.
         /// </summary>
         /// <value>
