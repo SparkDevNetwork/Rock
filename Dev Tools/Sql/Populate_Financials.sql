@@ -1,3 +1,5 @@
+begin transaction
+
 declare @FundEntityTypeId int
 declare @TypeId int
 declare @ValueId int
@@ -18,7 +20,7 @@ set @FundEntityTypeId = (select Id from EntityType where Name = 'Rock.Model.Fund
 
 -- Defined Types
 -- TODO: This DefinedType will probably need to move out of this script and be included in a Migration
-insert into DefinedType ( IsSystem, FieldTypeId [Order], Category, Name, [Description], [Guid] )
+insert into DefinedType ( IsSystem, FieldTypeId, [Order], Category, Name, [Description], [Guid] )
 values ( 1, 1, 0, 'Financial', 'Frequency Type', 'Types of payment frequencies', newid() )
 set @TypeId = scope_identity()
 
@@ -55,12 +57,12 @@ values ( 'missions', 'Missions Fund', 'This is the Missions fund', null, 1, 1, 1
 set @MissionsFundId = scope_identity()
 
 -- Person
-insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
-values (  0, 'Pledgy', 'The Pledgester', 'McPledgerson', null, 1, 1, 1980, 0, null, null, 'pledgy@thepledgester.com', 1, 'Personal Email', null, newid(), 1, 3, null, null, null, null, null, 0 )
+insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
+values (  0, 'Pledgy', 'The Pledgester', 'McPledgerson', null, 1, 1, 1980, 0, null, null, 'pledgy@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @PledgyPersonId = scope_identity()
 
-insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
-values (  0, 'Dora', null, 'Donatesalot', null, 1, 1, 1980, 0, null, null, 'dora@thepledgester.com', 1, 'Personal Email', null, newid(), 1, 3, null, null, null, null, null, 0 )
+insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
+values (  0, 'Dora', null, 'Donatesalot', null, 1, 1, 1980, 0, null, null, 'dora@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @DoraPersonId = scope_identity()
 
 -- Pledges
@@ -75,3 +77,5 @@ values ( @DoraPersonId, @BuildingFundId, 2000.00, dateadd(day, -30, getdate()), 
 
 insert into Pledge ( PersonId, FundId, Amount, StartDate, EndDate, FrequencyAmount, [Guid], FrequencyTypeValueId )
 values ( @DoraPersonId, @MissionsFundId, 5000.00, dateadd(day, -30, getdate()), dateadd(day, 30, getdate()), 50.00, newid(), @ValueId )
+
+commit transaction
