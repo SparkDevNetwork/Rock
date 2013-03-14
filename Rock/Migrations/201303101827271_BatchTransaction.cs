@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class FinancialBatchNewFields : RockMigration
+    public partial class BatchTransaction : RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

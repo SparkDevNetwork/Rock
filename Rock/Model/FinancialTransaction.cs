@@ -23,7 +23,7 @@ namespace Rock.Model
     {
 
         #region Entity Properties
-
+       
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
