@@ -121,12 +121,27 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 BinaryFile = binaryFileService.Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( BinaryFile.FriendlyTypeName );
+            }
+
+            if (BinaryFile != null)
+            {
+                lActionTitle.Text = ActionTitle.Edit( BinaryFile.BinaryFileType.Name );
             }
             else
             {
                 BinaryFile = new BinaryFile { Id = 0, IsSystem = false, BinaryFileTypeId = binaryFileTypeId };
-                lActionTitle.Text = ActionTitle.Add( BinaryFile.FriendlyTypeName );
+                
+                string friendlyName = BinaryFile.FriendlyTypeName;
+                if ( binaryFileTypeId.HasValue )
+                {
+                    var binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId.Value );
+                    if ( binaryFileType != null )
+                    {
+                        friendlyName = binaryFileType.Name;
+                    }
+                }
+
+                lActionTitle.Text = ActionTitle.Add( friendlyName );
             }
 
             ShowDetail( BinaryFile );
@@ -272,7 +287,10 @@ namespace RockWeb.Blocks.Administration
                     }
                     binaryFile.Description = tbDescription.Text;
                     binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
-
+                    if ( binaryFile.BinaryFileTypeId.HasValue )
+                    {
+                        binaryFile.BinaryFileType = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId.Value );
+                    }
                     binaryFile.LoadAttributes();
                     Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
