@@ -150,9 +150,13 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( "Show if " );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "Show if" );
+            writer.RenderEndTag();
             toggleAllAny.RenderControl( writer );
-            writer.Write( " of these are true" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "of these are true" );
+            writer.RenderEndTag();
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group pull-right" );

@@ -328,6 +328,7 @@ $('.filter-item-select').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
             writer.RenderEndTag();
+            writer.Write( " " );
             lbDelete.RenderControl( writer );
             writer.RenderEndTag();
 

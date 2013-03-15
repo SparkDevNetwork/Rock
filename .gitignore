@@ -24,3 +24,4 @@ StyleCop.Cache
 [Dd]ebug*/
 [Rr]elease*/
 RockWeb/Cache/*
+RockWeb/App_Data/PackageStaging

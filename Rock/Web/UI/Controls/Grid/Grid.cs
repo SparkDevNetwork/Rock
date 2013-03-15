@@ -700,9 +700,13 @@ namespace Rock.Web.UI.Controls
                     itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
                 }
             }
-            else
+            else if ( this.DataSource is IList )
             {
                 itemCount = ( (IList)this.DataSource ).Count;
+            }
+            else
+            {
+                itemCount = 0;
             }
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
