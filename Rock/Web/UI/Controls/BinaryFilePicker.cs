@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
                 this.DataValueField = "Id";
                 this.DataSource = new BinaryFileService()
                     .Queryable()
-                    .Where( f => f.BinaryFileTypeId == value )
+                    .Where( f => f.BinaryFileTypeId == value && !f.IsTemporary )
                     .OrderBy( f => f.FileName )
                     .Select( f => new { f.FileName, f.Id } )
                     .ToList();
