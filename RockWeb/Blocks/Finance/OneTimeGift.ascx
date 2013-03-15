@@ -3,18 +3,22 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
+    
+    function pageLoad(sender, args) {
+        
+        $('.calc').change(function () {
+            var total = 0;
 
-    $('.calc').change(function () {
-        var total = 0;
+            $('.calc').each(function () {
+                if ($(this).val() != '') {
+                    total += parseFloat($(this).val());
+                }
+            });
 
-        $('.calc').each(function () {
-            if ($(this).val() != '') {
-                total += parseFloat($(this).val());
-            }
-        });
+            $('#lblTotal').html(total.toFixed(2));
+        });      
 
-        $('#lblTotal').html(total.toFixed(2));
-    });
+    };
 
     $(document).ready(function () {
 
@@ -65,51 +69,25 @@
 
                         </div>
 
-                        <asp:Repeater ID="rptNewFunds" runat="server" >
-                            
-                            <HeaderTemplate>
+                        <asp:Repeater ID="rptFundList" runat="server" ClientIDMode="Predictable">                                                        
+                            <ItemTemplate>  
                                 <div class="row-fluid">
-                                <div class="input-prepend">
-                                <div class="btn-group">
-                            </HeaderTemplate>
-                                                        
-                            <ItemTemplate>    
-                                <input type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>"/>
-                                <span class="add-on">$</span>
-                                <input id="inputNewFund" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*">
+                                    <div class="input-prepend">
+                                        <div class="btn-group">
+                                            <input id="btnNewFund" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>" runat="server"/>
+                                            <span class="add-on">$</span>
+                                            <input id="inputNewFund" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" runat="server">
+                                        </div>                           
+                                    </div>
+                                </div>
                             </ItemTemplate>
-
-                            <FooterTemplate>
-                                </div>                           
-                                </div>
-                                </div>
-                            </FooterTemplate>
-
                         </asp:Repeater>
-
-                        <div id="divPrimaryFund" class="row-fluid" runat="server" visible="false">
-
-                            <div class="input-prepend">
-
-                                <div class="btn-group">
-                                    
-                                    <input type="button" ID="btnPrimaryFund" value="" readonly="true" tabindex="-1" class="btn dropdown-toggle" runat="server"/>
-                                    <span class="add-on">$</span>
-                                    <input class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" >
-
-                                </div>
-                           
-                            </div>
-
-                        </div>
-
-                        <asp:PlaceHolder ID="plcNewFunds" runat="server" Visible="false"></asp:PlaceHolder>
                         
-                        <div ID="divAddFund" class="row-fluid" runat="server" visible="true">
+                        <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
                         
                             <div class="btn-group">
 
-                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" OnClientClick="return false;"></Rock:ButtonDropDownList> 
+                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift"></Rock:ButtonDropDownList> 
                                 
                             </div>
 
@@ -153,12 +131,12 @@
                             
                             <div class="span5">
                                 <label for="txtFirstName">First Name</label>
-                                <input id="txtFirstName" type="text" class="span12" />
+                                <input id="txtFirstName" type="text" class="span12" runat="server"/>
                             </div>             
 
                             <div class="span5">
                                 <label for="txtLastName">Last Name</label>
-                                <input id="txtLastName" type="text" class="span12" />
+                                <input id="txtLastName" type="text" class="span12" runat="server"/>
                             </div>        
                             
                         </div>
@@ -167,7 +145,7 @@
                                 
                             <div class="span10">
                                 <label for="txtAddress">Address</label>
-                                <input id="txtAddress" type="text" class="span12" /> 
+                                <input id="txtAddress" type="text" class="span12" runat="server"/> 
                             </div>
                                 
                         </div>
@@ -176,19 +154,19 @@
 
                             <div class="span5">
                                 <label for="txtCity" >City</label>
-                                <input id="txtCity" type="text" class="span12" />                        
+                                <input id="txtCity" type="text" class="span12" runat="server"/>                        
 
                             </div>
                         
                             <div class="span2">
                                 <label for="txtState" >State</label>
-                                <input id="txtState" type="text" class="span12" />                        
+                                <input id="txtState" type="text" class="span12" runat="server" />                        
                             
                             </div>
 
                             <div class="span3">
                                 <label for="txtZipcode" >Zipcode</label>
-                                <input id="txtZipcode" type="text" class="span12" />                        
+                                <input id="txtZipcode" type="text" class="span12" runat="server" />                        
                             </div>
 
                         </div>                    
@@ -197,7 +175,7 @@
                             
                             <div class="span10">
                                 <label for="txtEmail" >Email</label>
-                                <input id="txtEmail" type="text" class="span12"  />                                                      
+                                <input id="txtEmail" type="text" class="span12" runat="server" />                                                      
                             </div>
                         
                         </div>
@@ -235,7 +213,7 @@
                                     <div class="row-fluid">
                                               
                                         <label for="numCreditCard" >Credit Card #</label>
-                                        <input id="numCreditCard" class="input-large" type="text" title="Credit Card Number" pattern="[0-9]*" size="20" style="float: left">
+                                        <input id="numCreditCard" class="input-large" type="text" title="Credit Card Number" pattern="[0-9]*" size="20" style="float: left" runat="server">
 
                                         <ul class="card_logos">
 	                                        <li class="card_visa"></li>
@@ -252,32 +230,16 @@
 
                                             <label>Expiration Date</label>
 
-                                            <button class="btn dropdown-toggle" data-toggle="dropdown">Month <span class="caret"></span> </button>
-                            
-                                            <ul class="dropdown-menu">
-                                                <li><a href="#">January</a></li>
-                                                <li><a href="#">February</a></li>
-                                                <li><a href="#">March</a></li> 
-                                                <li><a href="#">April</a></li>
-                                                <li><a href="#">May</a></li>
-                                                <li><a href="#">June</a></li>
-                                                <li><a href="#">July</a></li>
-                                                <li><a href="#">August</a></li>
-                                                <li><a href="#">September</a></li>
-                                                <li><a href="#">October</a></li>
-                                                <li><a href="#">November</a></li>
-                                                <li><a href="#">December</a></li>
-                                            </ul>
+                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" ></Rock:ButtonDropDownList> 
 
-
-                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" ></Rock:ButtonDropDownList> 
+                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" ></Rock:ButtonDropDownList> 
 
                                         </div>
 
                                         <div class="span7">
                                                     
                                             <label for="numCVV" >CVV #</label>
-                                            <input name="numCVV" class="input-mini" size="3" type="text" >
+                                            <input name="numCVV" class="input-mini" size="3" type="text" runat="server">
 
                                         </div> 
                             
@@ -286,7 +248,7 @@
                                     <div class="row-fluid">
 
                                         <label for="txtCardName" >Name on Card</label>
-                                        <input name="txtCardName" class="input-medium" type="text" size="30" />
+                                        <input name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
                                         
                                     </div>
 
@@ -296,7 +258,7 @@
 
                                         <label class="checkbox">
                                             
-                                            <input id="cbxSaveCard" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCardNick').toggle()" value="option1"> Save My Card
+                                            <input id="cbxSaveCard" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCardNick').toggle()" value="option1" runat="server"> Save My Card
 
                                         </label>                                         
                                         
@@ -304,7 +266,7 @@
                                             
                                             <label for="txtCardNick">Enter a card nickname </label>
                                             
-                                            <input id="txtCardNick" name="txtCardNick" class="input-medium"  type="text" size="30" />
+                                            <input id="txtCardNick" name="txtCardNick" class="input-medium"  type="text" size="30" runat="server"/>
                                         </div>                                        
                                         
                                     </div>
@@ -320,14 +282,14 @@
                                     <div class="row-fluid">
                                 
                                         <label for="txtBankName" >Bank Name</label>
-                                        <input id="txtBankName" type="text" class="input-medium" />                                        
+                                        <input id="txtBankName" type="text" class="input-medium" runat="server"/>                                        
 
                                     </div>
 
                                     <div class="row-fluid">
 
                                         <label for="numRouting" >Routing #</label>
-                                        <input id="numRouting" type="text" class="input-medium" />
+                                        <input id="numRouting" type="text" class="input-medium" runat="server"/>
 
                                     </div>
 
@@ -335,7 +297,7 @@
                                     <div class="row-fluid">
 
                                         <label for="numAccount" >Account #</label>
-                                        <input id="numAccount" type="text" class="input-medium" />
+                                        <input id="numAccount" type="text" class="input-medium" runat="server"/>
 
                                     </div>
 
@@ -344,7 +306,7 @@
                                         <div class="btn-group">
 
                                             <label class="radio inline">
-                                                <input type="radio" name="optionsRadios" value="option1" checked="checked"> Checking 
+                                                <input type="radio" name="optionsRadios" value="option1" checked="checked" > Checking 
                                             </label>
 
                                             <label class="radio inline">
@@ -406,13 +368,8 @@
             <div class="<%= spanClass %> well">
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
-                <p>
-
-                    <b>John Doe</b>, you're about to give <b>$400.00</b> to the <b>General Fund</b> and <b>$50.00</b> to the <b>Building Fund</b>.
                 
-                    Your total gift of <b>$450.00</b> will be given using a <b>Visa</b> credit card ending in <b>3456</b>.
-
-                </p>
+                <label id="txtConfirmation" runat="server"></label>
 
                 <label class="checkbox">
                                             
