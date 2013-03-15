@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     /// A control to select a file and set any attributes
     /// </summary>
     [ToolboxData( "<{0}:FileSelector runat=server></{0}:FileSelector>" )]
-    public class FileSelector : CompositeControl, ILabeledControl
+    public class FileSelector : CompositeControl, ILabeledControl, IPostBackEventHandler
     {
 
         #region UI Controls
@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
                 multiple: false,
                 showFileList: false,
                 async: {{
-                    saveUrl: '{4}FileUploader.ashx'
+                    saveUrl: '{4}FileUploader.ashx?' + $('#{1}').val()
                 }},
 
                 success: function(e) {{
@@ -187,7 +187,7 @@ namespace Rock.Web.UI.Controls
                             }}
                         }});
                         $('#{3}').show('fast');
-                        //{5};
+                        {5};
                     }}
 
                 }}
@@ -241,5 +241,21 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when a file is uploaded.
+        /// </summary>
+        public event EventHandler FileUploaded;
+
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
+        public void RaisePostBackEvent( string eventArgument )
+        {
+            if ( eventArgument == "FileUploaded" && FileUploaded != null )
+            {
+                FileUploaded( this, new EventArgs() );
+            }
+        }
     }
 }

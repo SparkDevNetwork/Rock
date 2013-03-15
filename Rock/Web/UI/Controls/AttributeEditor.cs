@@ -333,11 +333,19 @@ function populateAttributeKey(nameControlId, keyControlId ) {
                 this.Category = attribute.Category;
                 this.Description = attribute.Description;
                 this.FieldTypeId = attribute.FieldTypeId;
-                this.Qualifiers = AttributeCache.Read( attribute ).QualifierValues;
                 this.DefaultValue = attribute.DefaultValue;
                 this.MultiValue = attribute.IsMultiValue;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+
+                this.Qualifiers = new Dictionary<string, ConfigurationValue>();
+                if ( attribute.AttributeQualifiers != null )
+                {
+                    foreach ( Rock.Model.AttributeQualifier qualifier in attribute.AttributeQualifiers )
+                    {
+                        this.Qualifiers.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+                    }
+                }
             }
         }
 
@@ -356,6 +364,9 @@ function populateAttributeKey(nameControlId, keyControlId ) {
                 attribute.Category = this.Category;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
+                attribute.DefaultValue = this.DefaultValue;
+                attribute.IsMultiValue = this.MultiValue;
+                attribute.IsGridColumn = this.ShowInGrid;
 
                 attribute.AttributeQualifiers.Clear();
                 foreach ( var qualifier in Qualifiers )
@@ -367,9 +378,6 @@ function populateAttributeKey(nameControlId, keyControlId ) {
                     attribute.AttributeQualifiers.Add( attributeQualifier );
                 }
 
-                attribute.DefaultValue = this.DefaultValue;
-                attribute.IsMultiValue = this.MultiValue;
-                attribute.IsGridColumn = this.ShowInGrid;
             }
         }
 

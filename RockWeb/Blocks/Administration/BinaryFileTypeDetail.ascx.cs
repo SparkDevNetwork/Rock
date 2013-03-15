@@ -184,90 +184,108 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            BinaryFileType binaryFileType;
-            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
-            AttributeService attributeService = new AttributeService();
-
-            int binaryFileTypeId = int.Parse( hfBinaryFileTypeId.Value );
-
-            if ( binaryFileTypeId == 0 )
+            using ( new UnitOfWorkScope() )
             {
-                binaryFileType = new BinaryFileType();
-                binaryFileTypeService.Add( binaryFileType, CurrentPersonId );
-            }
-            else
-            {
-                binaryFileType = binaryFileTypeService.Get( binaryFileTypeId );
-            }
+                BinaryFileType binaryFileType;
+                BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
+                AttributeService attributeService = new AttributeService();
 
-            binaryFileType.Name = tbName.Text;
-            binaryFileType.Description = tbDescription.Text;
-            binaryFileType.IconCssClass = tbIconCssClass.Text;
-            binaryFileType.IconSmallFileId = imgIconSmall.ImageId;
-            binaryFileType.IconLargeFileId = imgIconLarge.ImageId;
+                int binaryFileTypeId = int.Parse( hfBinaryFileTypeId.Value );
 
-            // check for duplicates
-            if ( binaryFileTypeService.Queryable().Count( a => a.Name.Equals( binaryFileType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( binaryFileType.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", BinaryFileType.FriendlyTypeName ) );
-                return;
-            }
-
-            if ( !binaryFileType.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            RockTransactionScope.WrapTransaction( () =>
+                if ( binaryFileTypeId == 0 )
                 {
-                    binaryFileTypeService.Save( binaryFileType, CurrentPersonId );
+                    binaryFileType = new BinaryFileType();
+                    binaryFileTypeService.Add( binaryFileType, CurrentPersonId );
+                }
+                else
+                {
+                    binaryFileType = binaryFileTypeService.Get( binaryFileTypeId );
+                }
 
-                    // get it back to make sure we have a good Id for it for the Attributes
-                    binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
-                    
-                    /* Take care of Binary File Attributes */
+                binaryFileType.Name = tbName.Text;
+                binaryFileType.Description = tbDescription.Text;
+                binaryFileType.IconCssClass = tbIconCssClass.Text;
+                binaryFileType.IconSmallFileId = imgIconSmall.ImageId;
+                binaryFileType.IconLargeFileId = imgIconLarge.ImageId;
 
-                    // delete BinaryFileAttributes that are no longer configured in the UI
-                    var BinaryFileAttributesQry = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
-                        && a.EntityTypeQualifierValue.Equals( binaryFileType.Id.ToString() ) );
+                // check for duplicates
+                if ( binaryFileTypeService.Queryable().Count( a => a.Name.Equals( binaryFileType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( binaryFileType.Id ) ) > 0 )
+                {
+                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", BinaryFileType.FriendlyTypeName ) );
+                    return;
+                }
 
-                    var deletedBinaryFileAttributes = from attr in BinaryFileAttributesQry
-                                                     where !( from d in BinaryFileAttributesState
-                                                              select d.Guid ).Contains( attr.Guid )
-                                                     select attr;
+                if ( !binaryFileType.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
 
-                    deletedBinaryFileAttributes.ToList().ForEach( a =>
+                RockTransactionScope.WrapTransaction( () =>
                     {
-                        var attr = attributeService.Get( a.Guid );
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                        attributeService.Delete( attr, CurrentPersonId );
-                        attributeService.Save( attr, CurrentPersonId );
+                        binaryFileTypeService.Save( binaryFileType, CurrentPersonId );
+
+                        // get it back to make sure we have a good Id for it for the Attributes
+                        binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
+
+                        /* Take care of Binary File Attributes */
+
+                        // delete BinaryFileAttributes that are no longer configured in the UI
+                        var BinaryFileAttributesQry = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
+                            .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
+                            && a.EntityTypeQualifierValue.Equals( binaryFileType.Id.ToString() ) );
+
+                        var deletedBinaryFileAttributes = from attr in BinaryFileAttributesQry
+                                                          where !( from d in BinaryFileAttributesState
+                                                                   select d.Guid ).Contains( attr.Guid )
+                                                          select attr;
+
+                        deletedBinaryFileAttributes.ToList().ForEach( a =>
+                        {
+                            var attr = attributeService.Get( a.Guid );
+                            Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                            attributeService.Delete( attr, CurrentPersonId );
+                            attributeService.Save( attr, CurrentPersonId );
+                        } );
+
+                        // add/update the BinaryFileAttributes that are assigned in the UI
+                        foreach ( var attributeState in BinaryFileAttributesState )
+                        {
+                            // remove old qualifiers in case they changed
+                            var qualifierService = new AttributeQualifierService();
+                            foreach ( var oldQualifier in qualifierService.GetByAttributeId( attributeState.Id ).ToList() )
+                            {
+                                qualifierService.Delete( oldQualifier, CurrentPersonId );
+                                qualifierService.Save( oldQualifier, CurrentPersonId );
+                            }
+
+                            Attribute attribute = BinaryFileAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                            if ( attribute == null )
+                            {
+                                attribute = attributeState.Clone() as Rock.Model.Attribute;
+                                attributeService.Add( attribute, CurrentPersonId );
+                            }
+                            else
+                            {
+
+                                attributeState.Id = attribute.Id;
+                                attribute.FromDictionary( attributeState.ToDictionary() );
+
+                                foreach ( var qualifier in attributeState.AttributeQualifiers )
+                                {
+                                    attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
+                                }
+
+                            }
+
+                            attribute.EntityTypeQualifierColumn = "BinaryFileTypeId";
+                            attribute.EntityTypeQualifierValue = binaryFileType.Id.ToString();
+                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( BinaryFile ) ).Id;
+                            Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                            attributeService.Save( attribute, CurrentPersonId );
+                        }
                     } );
-
-                    // add/update the BinaryFileAttributes that are assigned in the UI
-                    foreach ( var attributeState in BinaryFileAttributesState )
-                    {
-                        Attribute attribute = BinaryFileAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
-                        if ( attribute == null )
-                        {
-                            attribute = attributeState.Clone() as Rock.Model.Attribute;
-                            attributeService.Add( attribute, CurrentPersonId );
-                        }
-                        else
-                        {
-                            attributeState.Id = attribute.Id;
-                            attribute.FromDictionary( attributeState.ToDictionary() );
-                        }
-
-                        attribute.EntityTypeQualifierColumn = "BinaryFileTypeId";
-                        attribute.EntityTypeQualifierValue = binaryFileType.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( BinaryFile ) ).Id;
-                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                        attributeService.Save( attribute, CurrentPersonId );
-                    }
-                } );
+            }
 
             NavigateToParentPage();
         }

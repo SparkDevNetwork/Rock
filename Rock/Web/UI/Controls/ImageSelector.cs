@@ -111,10 +111,10 @@ namespace Rock.Web.UI.Controls
                 success: function(e) {{
 
                     if (e.operation == 'upload' && e.response != '0') {{
-                        $('#{1}').val(e.response);
+                        $('#{1}').val(e.response.Id);
                         $('#{2}').attr('src','');
                         $('#{2}').hide();             
-                        $('#{2}').attr('src','{4}Image.ashx?id=' + e.response + '&width=50&height=50');
+                        $('#{2}').attr('src','{4}Image.ashx?id=' + e.response.Id + '&width=50&height=50');
                         $('#{2}').show('fast', function() {{ 
                             if ($('#modal-scroll-container').length) {{
                                 $('#modal-scroll-container').tinyscrollbar_update('relative');

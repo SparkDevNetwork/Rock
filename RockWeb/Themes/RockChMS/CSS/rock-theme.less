@@ -13,7 +13,8 @@
 // 3. Components
 // 4. Header and Nav
 // 5. Footer
-// 6. Layout Specific Styles
+// 6. Responsive Tweaks
+// 7. Layout Specific Styles
 
 //
 // Variables
@@ -49,9 +50,11 @@ h1 {
     font-size: 11px;
 }
 
-.close
+.modal-header .close
 {
     color: @rockLightTextColor;
+	opacity: 1;
+	text-shadow: none;
 }
 
 .nav-pills > .active > a,
@@ -250,6 +253,7 @@ body {
 	width: 100%;
 	text-align: right;
 	padding-right: 12px;
+	margin-bottom: 12px;
 }
 
 #tree-view-content {
@@ -279,6 +283,13 @@ body {
 
 .k-state-hover {
 	background-color: @rockHoverBackgroundColor !important;
+}
+
+// switch 
+.switch span.switch-primary, .switch span.switch-left {
+  color: white;
+  background: #898a8a;
+  background-image: none;
 }
 
 //
@@ -346,7 +357,26 @@ body {
 	}
 }
 
-// // 6. Layout Spefic Styles // // < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+// 
+// 6. Responsive Tweaks
+// 
+// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < >
+@media (max-width: 767px) {
+	.pagetitle .navbar-inner {
+		padding: 0 20px 0 20px;
+	}
+
+	.smart-search {
+		float: left;
+		margin-left: 20px;
+	}
+}
+
+
+// 
+// 7. Layout Spefic Styles 
+//
+// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
 
 .body-content
 {

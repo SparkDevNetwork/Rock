@@ -62,9 +62,9 @@
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NuGet.Core, Version=2.0.30619.9119, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="NuGet.Core, Version=2.2.31210.9045, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NuGet.Core.2.0.1\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="SanitizerProviders, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\AjaxControlToolkit.4.1.60623\lib\40\SanitizerProviders\SanitizerProviders.dll</HintPath>
@@ -105,6 +105,8 @@
     </Compile>
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
+    <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs">
@@ -133,6 +135,7 @@
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
     <Compile Include="CheckIn\CheckInLabel.cs" />
+    <Compile Include="CheckIn\LabelCache.cs" />
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskGroupAttendance.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
@@ -370,8 +373,13 @@
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\BinaryFileFieldType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Field\Types\CampusesFieldType.cs" />
     <Compile Include="Field\Types\CampusFieldType.cs" />
+    <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
       <SubType>Code</SubType>
@@ -613,6 +621,10 @@
     <Compile Include="Migrations\201303120513496_AddDeviceBlocks.Designer.cs">
       <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303141823555_DataForLabels.cs" />
+    <Compile Include="Migrations\201303141823555_DataForLabels.Designer.cs">
+      <DependentUpon>201303141823555_DataForLabels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -736,6 +748,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />
@@ -744,6 +757,9 @@
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\CategoryPicker.cs" />
+    <Compile Include="Web\UI\Controls\BinaryFileTypeList.cs" />
+    <Compile Include="Web\UI\Controls\BinaryFilePicker.cs" />
+    <Compile Include="Web\UI\Controls\WorkflowTypeList.cs" />
     <Compile Include="Web\UI\Controls\GroupPicker.cs" />
     <Compile Include="Web\UI\Controls\ItemPicker.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />
@@ -795,6 +811,7 @@
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
+    <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -1451,6 +1468,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303120513496_AddDeviceBlocks.resx">
       <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303141823555_DataForLabels.resx">
+      <DependentUpon>201303141823555_DataForLabels.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

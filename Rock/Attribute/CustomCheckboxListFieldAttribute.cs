@@ -18,7 +18,7 @@ namespace Rock.Attribute
     {
         [Description("This si a test")]
         /// <summary>
-        /// Initializes a new instance of the <see cref="AudiencesPrimarySecondaryFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>

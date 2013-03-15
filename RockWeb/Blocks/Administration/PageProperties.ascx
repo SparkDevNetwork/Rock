@@ -1,6 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageProperties.ascx.cs" Inherits="RockWeb.Blocks.Administration.PageProperties" %>
 
 <asp:UpdatePanel id="upPanel" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="lbExport" />
+        <asp:PostBackTrigger ControlID="lbImport" />
+    </Triggers>
 <ContentTemplate>
  
     <asp:PlaceHolder ID="phContent" runat="server">
@@ -77,6 +81,65 @@
                                 <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
                             </fieldset>
                         </asp:PlaceHolder>
+                    </div>
+                </div>
+            </asp:Panel>
+            
+            <asp:Panel ID="pnlImportExport" runat="server" Visible="False">
+                <div class="row">
+                    <div class="span6">
+                        <fieldset>
+                            <legend>Import Pages</legend>
+                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
+                                <div class="span12 alert alert-success">
+                                    <p><i class="icon-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
+                                    <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
+                                        <HeaderTemplate>
+                                            <p><i class="icon-warning-sign"></i> Just a quick head's up...</p>
+                                            <ul>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <li><%# Container.DataItem %></li>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </ul>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </asp:Panel>
+                            <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
+                                <HeaderTemplate>
+                                    <div class="row-fluid">
+                                        <div class="span12 alert alert-error">
+                                            <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
+                                            <ul>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <li><%# Container.DataItem %></li>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </FooterTemplate>
+                            </asp:Repeater>
+                            <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
+                            <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-small" OnClick="lbImport_Click">
+                                <i class="icon-arrow-up"></i> Import
+                            </asp:LinkButton>
+                        </fieldset>
+                    </div>
+                    <div class="span6">
+                        <fieldset>
+                            <legend>Export Pages</legend>
+                            <label class="checkbox">
+                                <asp:CheckBox runat="server" ID="cbExportChildren" />
+                                Export child pages?
+                            </label>
+                            <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-small">
+                                <i class="icon-download-alt"></i> Export
+                            </asp:LinkButton>
+                        </fieldset>
                     </div>
                 </div>
             </asp:Panel>
