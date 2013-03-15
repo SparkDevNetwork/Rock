@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -47,37 +48,27 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            //rptNewFunds.ItemDataBound += new RepeaterItemEventHandler( rptNewFunds_ItemDataBound );
+            _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
+            _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
+            _DefaultFunds = ( GetAttributeValue( "DefaultFundstodisplay" ).Any() ) ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList()
+                : new System.Collections.Generic.List<string>();
+
+            fundService = new FundService();
+
+            if ( CurrentPerson != null )
+            {
+                _ShowSaveDetails = true;
+            }
+
+            if ( _ShowCampusSelect )
+            {
+                BindCampuses();
+            }
 
             if ( !IsPostBack )
-            {            
-                _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
-                _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
-                _DefaultFunds = ( GetAttributeValue( "DefaultFundstodisplay" ).Any() ) ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList()
-                    : new System.Collections.Generic.List<string>();
-
-                fundService = new FundService();
-
-                if ( CurrentPerson != null )
-                {
-                    _ShowSaveDetails = true;
-                }
-
-                if ( _ShowCampusSelect )
-                {
-                    BindCampuses();
-                }
-
-                var DefaultByID = _DefaultFunds.Select( s => int.Parse( s ) ).ToList();
-                var funds = fundService.Queryable().Where( f => DefaultByID.Contains( f.Id ) )
-                    .Where( a => a.IsActive ).Distinct().OrderBy( a => a.Order )
-                    .Select( f => f.PublicName ).ToList();
-
-                rptNewFunds.DataSource = funds;
-                rptNewFunds.DataBind();
-
+            {
                 BindCreditOptions();
-                //BindFunds();
+                BindFunds( Funds );
             }
         }
 
@@ -88,6 +79,8 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             nbMessage.Visible = false;
+
+           
 
             base.OnLoad( e );
         }
@@ -105,9 +98,17 @@ namespace RockWeb.Blocks.Finance
         protected void btnNext_Click( object sender, EventArgs e )
         {
             
+            string msgCnfirmation = string.Format(@"<b>{0}</b>, you're about to give <b>${1}</b> to the 
+                <b>{2}</b>. and <b>$50.00</b> to the <b>{3}</b>."
+                , txtFirstName.Value + ' ' + txtLastName.Value); 
+
+            //msgCnfirmation += string.Format(@"<br>Your total gift of <b>${0}</b> will be given using 
+            //    a <b>{1}</b> credit card ending in <b>{2}</b>.", totalAmount.Value, txtCardNick.Value, txtCardNumber.Value);
+
+            txtConfirmation.InnerText = msgCnfirmation;
+            
             pnlDetails.Visible = false;
             pnlConfirm.Visible = true;
-
         }
 
         /// <summary>
@@ -130,26 +131,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddFund_SelectionChanged( object sender, EventArgs e )
         {
-            var controlCount = GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Count();
-
-            rptNewFunds.Items.Count
-            
-            
-            {
-                BindFundOption( btnAddFund.SelectedValue );
-                btnAddFund.Items.Remove( btnAddFund.SelectedValue );
-                btnAddFund.Title = "Add Another Gift";
-            }
-                        
-            if ( btnAddFund.Items.Count == 0 )
-            {
-                divAddFund.Visible = false;
-            }
-
-            
-
+            var existing = Funds;
+            existing.Add( btnAddFund.SelectedValue );
+            btnAddFund.Items.Remove( btnAddFund.SelectedValue );
+            Funds = existing;
+            //BindFunds( existing );            
         }
-
         #endregion
 
         #region Internal Methods
@@ -165,53 +152,40 @@ namespace RockWeb.Blocks.Finance
 
             foreach ( string item in items )
             {
-                ddlCampusList.Items.Add( item + " Campus");
-                
+                ddlCampusList.Items.Add( item + " Campus");                
             }
 
             ddlCampusList.Title = "Select Your Campus";
-
         }
 
         /// <summary>
         /// Binds the funds.
         /// </summary>
-        protected void BindFunds()
+        protected void BindFunds( List<string> funds )
         {
-            var funds = fundService.Queryable().Where( a => a.IsActive ).Distinct().OrderBy( a => a.Order );
-            var DefaultByID = _DefaultFunds.Select( s => int.Parse( s ) ).ToList();
-            var DefaultWhenEmpty = DefaultByID.Any() ? DefaultByID.FirstOrDefault() : funds.Select( a => a.Id ).ToList().FirstOrDefault();
-
-            if ( _DefaultFunds.Count >= 2 )
-            {
-                var firstFund = DefaultByID.FirstOrDefault();
-                btnPrimaryFund.Value = fundService.Get( firstFund ).PublicName;
-
-                foreach ( var fund in DefaultByID.Where( a => a != firstFund ) )
-                {
-                    BindFundOption( fundService.Get( fund ).PublicName );
-                }
-            }
+            var queryable = fundService.Queryable().Where( f => f.IsActive )
+                .Distinct().OrderBy( f => f.Order );
             
-            else
-            {                
-                btnPrimaryFund.Value = fundService.Get( DefaultWhenEmpty ).PublicName; 
-                DefaultByID.Add( DefaultWhenEmpty );
+            if ( _DefaultFunds.Count < 1 )
+            {
+                funds.Add( queryable.Select( f => f.PublicName ).ToList().FirstOrDefault() );
             }
 
-            if ( ( funds.Count() - _DefaultFunds.Count ) > 0 )
+            if ( ( queryable.Count() - funds.Count ) > 0 )
             {
-               btnAddFund.DataSource = funds.Where( a => !DefaultByID.Contains( a.Id ) )
-                   .Where( a => a.IsActive ).Distinct().OrderBy( a => a.Order )
-                   .Select( a => a.PublicName ).ToList();
-                btnAddFund.Title = "Add Another Gift";
+                btnAddFund.DataSource = queryable.Where( f => !funds.Contains( f.PublicName ) )
+                   .Select( f => f.PublicName ).ToList();
                 btnAddFund.DataBind();
-                divAddFund.Visible = true;
+                btnAddFund.Title = "Add Another Gift";
+                divAddFund.Visible = true;                
+            }
+            else
+            {
+                divAddFund.Visible = false;
             }
 
-            plcNewFunds.DataBind();
-            plcNewFunds.Visible = true;
-            
+            rptFundList.DataSource = funds;
+            rptFundList.DataBind();            
         }
 
         /// <summary>
@@ -219,81 +193,24 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindCreditOptions()
         {
-            //other options to add here
-            
-            
             btnYearExpiration.Items.Clear();
-            for (int i = 0; i < 10; i++)
+            btnYearExpiration.Items.Add( DateTime.Now.Year.ToString() );
+
+            for (int i = 1; i <= 12; i++)
             {
+                btnMonthExpiration.Items.Add( CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( i ) );
                 btnYearExpiration.Items.Add(DateTime.Now.AddYears(i).Year.ToString());
             }
 
-            btnYearExpiration.Title = "Year";
-
-        }
-
-
-        
-        
-        void rptNewFunds_ItemDataBound( object sender, RepeaterItemEventArgs e) 
-        {
-            //HtmlInputControl inputFund = (HtmlInputControl)e.Item.FindControl("inputNewFund")
-            //inputFund.Value = e.Item.
-            
-            
-        }
-
-        /// <summary>
-        /// Manually binds the fund options to a div. !!OBSOLETE!!
-        /// </summary>
-        protected void BindFundOption( string fundName )
-        {
-            if ( fundName != "" )
-            {   
-                HtmlGenericControl newFundContainer = new HtmlGenericControl( "div" );
-                newFundContainer.ID = "divContainer" + fundName;
-                newFundContainer.Attributes.Add( "class", "row-fluid" );
-
-                HtmlGenericControl newInputDiv = new HtmlGenericControl( "div" );
-                newInputDiv.ID = "divInput" + fundName;
-                newInputDiv.Attributes.Add( "class", "input-prepend" );
-
-                    HtmlGenericControl newButtonDiv = new HtmlGenericControl( "div" );
-                    newButtonDiv.ID = "divButton" + fundName;
-                    newButtonDiv.Attributes.Add( "class", "btn-group" );
-                
-                        HtmlInputButton newFundButton = new HtmlInputButton();
-                        newFundButton.ID = "btn" + fundName;
-                        newFundButton.Attributes.Add( "class", "btn dropdown-toggle" );
-                        newFundButton.Attributes.Add( "readonly", "true" );
-                        newFundButton.Attributes.Add( "tabindex", "-1" );
-                        newFundButton.Value = fundName;
-                        newButtonDiv.Controls.Add( newFundButton );
-                                
-                        HtmlGenericControl newSpan = new HtmlGenericControl( "span" );
-                        newSpan.ID = "span" + fundName;
-                        newSpan.Attributes.Add( "class", "add-on" );
-                        newSpan.InnerText = "$";
-                        newButtonDiv.Controls.Add( newSpan );
-
-                        HtmlGenericControl newInput = new HtmlGenericControl( "input" );
-                        newInput.ID = "input" + fundName;
-                        newInput.Attributes.Add( "class", "input-small calc" );
-                        newInput.Attributes.Add( "title", "Enter a number" );
-                        newInput.Attributes.Add( "type", "text" );
-                        newInput.Attributes.Add( "placeholder", "0.00" );
-                        newInput.Attributes.Add( "pattern", "[0-9]*" );
-                        newButtonDiv.Controls.Add( newInput );
-
-                    newInputDiv.Controls.Add( newButtonDiv );
-                    newFundContainer.Controls.Add( newInputDiv );
-
-                plcNewFunds.Controls.Add( newFundContainer );
-
-            }
-
+            btnMonthExpiration.DataBind();
+            btnYearExpiration.DataBind();
         }
 
         #endregion
+        
+        public class Gift {
+            public string fundName { get; set; }
+            public float fundAmount { get; set; }            
+        }
     }
 }
