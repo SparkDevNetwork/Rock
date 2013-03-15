@@ -16,96 +16,11 @@ using Rock.Model;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a file 
+    /// Field used to display or upload a new binary file of a specific type
     /// </summary>
     [Serializable]
-    public class FileFieldType : FieldType
+    public class FileFieldType : BinaryFileFieldType
     {
-        public override List<string> ConfigurationKeys()
-        {
-            List<string> configKeys = new List<string>();
-            configKeys.Add( "filetype" );
-            return configKeys;
-        }
-
-        /// <summary>
-        /// Creates the HTML controls required to configure this type of field
-        /// </summary>
-        /// <returns></returns>
-        public override List<Control> ConfigurationControls()
-        {
-            List<Control> controls = new List<Control>();
-
-            DropDownList ddl = new DropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-
-            var service = new BinaryFileTypeService();
-            foreach ( var binaryFileType in new BinaryFileTypeService()
-                .Queryable()
-                .OrderBy( b => b.Name ) )
-            {
-                ddl.Items.Add( new ListItem( binaryFileType.Name, binaryFileType.Id.ToString() ) );
-            }
-
-            return controls;
-        }
-
-        /// <summary>
-        /// Gets the configuration value.
-        /// </summary>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
-        {
-            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "filetype", new ConfigurationValue( "File Type", "The type of file", "" ) );
-
-            if ( controls != null && controls.Count == 1 )
-            {
-                if ( controls[0] != null && controls[0] is DropDownList )
-                    configurationValues["filetype"].Value = ( (DropDownList)controls[0] ).SelectedValue;
-            }
-
-            return configurationValues;
-        }
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
-        {
-            int binaryFileId = int.MinValue;
-            if (Int32.TryParse(value, out binaryFileId))
-            {
-                var binaryFile = new BinaryFileService().Get(binaryFileId);
-                if (binaryFile != null)
-                {
-                    return binaryFile.FileName;
-                }
-            }
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the configuration value.
-        /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="configurationValues"></param>
-        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            if ( controls != null && controls.Count == 1 && configurationValues != null )
-            {
-                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "filetype" ) )
-                    ( (DropDownList)controls[0] ).SelectedValue = configurationValues["filetype"].Value;
-            }
-        }
-
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
