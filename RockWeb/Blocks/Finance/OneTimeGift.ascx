@@ -69,14 +69,14 @@
 
                         </div>
 
-                        <asp:Repeater ID="rptFundList" runat="server" ClientIDMode="Predictable">                                                        
+                        <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Inherit">
                             <ItemTemplate>  
                                 <div class="row-fluid">
                                     <div class="input-prepend">
                                         <div class="btn-group">
-                                            <input id="btnNewFund" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>" runat="server"/>
+                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>" runat="server"/>
                                             <span class="add-on">$</span>
-                                            <input id="inputNewFund" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" runat="server">
+                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" runat="server" />
                                         </div>                           
                                     </div>
                                 </div>
