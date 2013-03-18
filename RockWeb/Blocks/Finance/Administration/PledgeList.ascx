@@ -4,26 +4,20 @@
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server"/>
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:PersonPicker ID="ppPerson" runat="server"/>
+            <Rock:PersonPicker ID="ppFilterPerson" runat="server" LabelText="Filter by person"/>
         </Rock:GridFilter>
-        <Rock:Grid ID="gPledges" ItemType="Rock.Model.Pledge" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" PageSize="2" DataKeyNames="Id" SelectMethod="GetPledges" DeleteMethod="DeletePledge">
+        <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
             <Columns>
                 <asp:BoundField DataField="Person" HeaderText="Person" SortExpression="PersonId"/>
                 <asp:BoundField DataField="Fund" HeaderText="Fund" SortExpression="FundId"/>
                 <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" DataFormatString="{0:C}"/>
                 <asp:TemplateField HeaderText="Payment Schedule">
                     <ItemTemplate>
-                         <%# string.Format("{0:C}", Item.FrequencyAmount) %> <%# Item.FrequencyTypeValue.ToString() %>
+                         <%# string.Format( "{0:C}", Eval( "FrequencyAmount" ) ) %> <%# Eval( "FrequencyTypeValue" ) %>
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
-                <asp:TemplateField>
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lbDeletePledge" runat="server" CssClass="btn btn-danger btn-mini" ToolTip="Delete" CommandName="Delete" CommandArgument="Id">
-                            <i class="icon-remove"></i>
-                        </asp:LinkButton>
-                    </ItemTemplate>
-                </asp:TemplateField>
+                <Rock:DeleteField OnClick="gPledges_Delete"/>
             </Columns>
         </Rock:Grid>
     </ContentTemplate>
