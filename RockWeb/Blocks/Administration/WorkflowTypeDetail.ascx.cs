@@ -446,7 +446,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                workflowType = new WorkflowType { Id = 0, IsActive = true, IsSystem = false, CategoryId = parentCategoryId };
+                workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
             }
 
             if ( workflowType == null )
@@ -540,6 +540,7 @@ namespace RockWeb.Blocks.Administration
             hfWorkflowTypeId.SetValue( workflowType.Id );
             lReadOnlyTitle.Text = workflowType.Name;
             lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
+            lblActivitiesReadonlyHeaderLabel.Text = string.Format( "<strong>Activities</strong> ({0})", workflowType.ActivityTypes.Count() );
 
             string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
             lblMainDetails.Text = @"
@@ -835,6 +836,7 @@ namespace RockWeb.Blocks.Administration
         {
             WorkflowActivityType workflowActivityType = new WorkflowActivityType();
             workflowActivityType.Guid = Guid.NewGuid();
+            workflowActivityType.IsActive = true;
 
             CreateWorkflowActivityTypeEditorControls( workflowActivityType );
         }
