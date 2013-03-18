@@ -270,6 +270,7 @@ namespace Rock.Web.UI.Controls
             hiddenItemName.val(selectedText);
             selectedItemLabel.val(selectedValue);
             selectedItemLabel.text(selectedText);
+            return false;
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
