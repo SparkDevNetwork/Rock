@@ -5,6 +5,7 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server"/>
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:PersonPicker ID="ppFilterPerson" runat="server" LabelText="Filter by person"/>
+            <Rock:FundPicker ID="fpFilterFund" runat="server" LabelText="Filter by fund"/>
         </Rock:GridFilter>
         <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
             <Columns>
