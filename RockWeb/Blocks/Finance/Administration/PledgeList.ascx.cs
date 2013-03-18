@@ -15,9 +15,16 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance.Administration
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [DetailPage]
     public partial class PledgeList : RockBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -32,6 +39,10 @@ namespace RockWeb.Blocks.Finance.Administration
             gPledges.IsDeleteEnabled = canAddEditDelete;
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack )
@@ -42,21 +53,41 @@ namespace RockWeb.Blocks.Finance.Administration
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPledges_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Add event of the gPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPledges_Add( object sender, EventArgs e )
         {
             NavigateToDetailPage( "pledgeId", 0 );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
             NavigateToDetailPage( "pledgeId", (int) e.RowKeyValue );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Delete( object sender, RowEventArgs e )
         {
             RockTransactionScope.WrapTransaction( () =>
@@ -83,28 +114,36 @@ namespace RockWeb.Blocks.Finance.Administration
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             BindGrid();
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var pledgeService = new PledgeService();
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
             int personId;
-            //int fundId;
+            int fundId;
 
             if ( ppFilterPerson.SelectedValue != "0" && int.TryParse( ppFilterPerson.PersonId, out personId ) )
             {
                 pledges = pledges.Where( p => p.PersonId == personId );
             }
 
-            //if ( fundId.HasValue )
-            //{
-            //    pledges = pledges.Where( p => p.FundId == fundId.Value );
-            //}
+            if ( fpFilterFund.SelectedValue != "0" && int.TryParse( fpFilterFund.SelectedValue, out fundId ) )
+            {
+                pledges = pledges.Where( p => p.FundId == fundId );
+            }
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
             gPledges.DataBind();
