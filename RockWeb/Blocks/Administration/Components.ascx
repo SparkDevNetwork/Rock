@@ -8,6 +8,17 @@
     <asp:Panel ID="pnlList" runat="server" Visible="true" >
         
         <h4><asp:Literal ID="lTitle" runat="server" /></h4>
+
+        <Rock:GridFilter ID="rFilter" runat="server">
+            <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="Name" />
+            <Rock:LabeledTextBox ID="tbDescription" runat="server" LabelText="Description" />
+            <Rock:LabeledRadioButtonList ID="rblActive" runat="server" LabelText="Active" RepeatDirection="Horizontal">
+                <asp:ListItem Value="" Text="All" />
+                <asp:ListItem Value="Yes" Text="Yes" />
+                <asp:ListItem Value="No" Text="No" />
+            </Rock:LabeledRadioButtonList>
+        </Rock:GridFilter>
+
         <Rock:Grid ID="rGrid" runat="server" EmptyDataText="No Components Found" OnRowSelected="rGrid_Edit">
             <Columns>
                 <Rock:ReorderField />

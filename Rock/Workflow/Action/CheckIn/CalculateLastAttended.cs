@@ -57,17 +57,26 @@ namespace Rock.Workflow.Action.CheckIn
                                 foreach ( var location in groupType.Locations )
                                 {
                                     var locationCheckIns = groupTypeCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
-                                    location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
+                                    if ( locationCheckIns.Any() )
+                                    {
+                                        location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
+                                    }
 
                                     foreach ( var group in location.Groups )
                                     {
                                         var groupCheckIns = locationCheckIns.Where( a => a.GroupId == group.Group.Id ).ToList();
-                                        location.LastCheckIn = groupCheckIns.Select( a => a.StartDateTime ).Max();
+                                        if ( groupCheckIns.Any() )
+                                        {
+                                            location.LastCheckIn = groupCheckIns.Select( a => a.StartDateTime ).Max();
+                                        }
 
                                         foreach ( var schedule in group.Schedules )
                                         {
                                             var scheduleCheckIns = groupCheckIns.Where( a => a.ScheduleId == schedule.Schedule.Id ).ToList();
-                                            schedule.LastCheckIn = scheduleCheckIns.Select( a => a.StartDateTime ).Max();
+                                            if ( scheduleCheckIns.Any() )
+                                            {
+                                                schedule.LastCheckIn = scheduleCheckIns.Select( a => a.StartDateTime ).Max();
+                                            }
                                         }
                                     }
                                 }

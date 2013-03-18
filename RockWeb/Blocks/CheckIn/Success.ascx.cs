@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
@@ -60,10 +63,64 @@ namespace RockWeb.Blocks.CheckIn
                                 }
                             }
 
-                            var labelsToPrint = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
-                            if ( labelsToPrint.Any() )
+                            var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
+                            if ( printFromClient.Any() )
                             {
-                                AddLabelScript( labelsToPrint.ToJson() );
+                                AddLabelScript( printFromClient.ToJson() );
+                            }
+
+                            var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
+                            if ( printFromServer.Any() )
+                            {
+                                Socket socket = null;
+                                string currentIp = string.Empty;
+
+                                foreach ( var label in printFromServer )
+                                {
+                                    var labelCache = KioskCache.GetLabel( label.FileId );
+                                    if ( labelCache != null )
+                                    {
+                                        if ( label.PrinterAddress != currentIp )
+                                        {
+                                            if ( socket != null && socket.Connected )
+                                            {
+                                                socket.Shutdown( SocketShutdown.Both );
+                                                socket.Close();
+                                            }
+
+                                            currentIp = label.PrinterAddress;
+                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+
+                                            socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                            bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
+                                        }
+
+                                        string printContent = labelCache.FileContent;
+                                        foreach ( var mergeField in label.MergeFields )
+                                        {
+                                            var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
+                                            printContent = rgx.Replace( printContent, mergeField.Value );
+                                        }
+
+                                        if ( socket.Connected )
+                                        {
+                                            var ns = new NetworkStream( socket );
+                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                            ns.Write( toSend, 0, toSend.Length );
+                                        }
+                                        else
+                                        {
+                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                        }
+                                    }
+                                }
+
+                                if ( socket != null && socket.Connected )
+                                {
+                                    socket.Shutdown( SocketShutdown.Both );
+                                    socket.Close();
+                                }
                             }
                         }
                     }
