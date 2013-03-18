@@ -184,6 +184,8 @@ javascript:
             tbActivityTypeDescription = new DataTextBox();
             tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
             tbActivityTypeDescription.LabelText = "Description";
+            tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
+            tbActivityTypeDescription.Rows = 4;
 
             // set label when they exit the edit field
             tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeDescription.ID );
