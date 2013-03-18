@@ -3,26 +3,29 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-    
+
     function pageLoad(sender, args) {
-        
-        $('.calc').change(function () {
+
+        $('.calc').on('change', function () {
+
             var total = 0;
 
             $('.calc').each(function () {
                 if ($(this).val() != '') {
                     total += parseFloat($(this).val());
+                    console.log(total);
                 }
             });
 
             $('#lblTotal').html(total.toFixed(2));
-        });      
+        });
 
+        $('.calc').trigger('change');
+
+        $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
     };
 
     $(document).ready(function () {
-
-        $('#numCreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
 
     });
 
@@ -69,14 +72,14 @@
 
                         </div>
 
-                        <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Inherit">
+                        <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Predictable">
                             <ItemTemplate>  
                                 <div class="row-fluid">
                                     <div class="input-prepend">
                                         <div class="btn-group">
-                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# Container.DataItem %>" runat="server"/>
+                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# ((Gift)Container.DataItem).fundName %>" runat="server"/>
                                             <span class="add-on">$</span>
-                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" placeholder="0.00" pattern="[0-9]*" runat="server" />
+                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((Gift)Container.DataItem).fundAmount %>" step="0.01" min="0.00" runat="server" />
                                         </div>                           
                                     </div>
                                 </div>
@@ -87,7 +90,7 @@
                         
                             <div class="btn-group">
 
-                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift"></Rock:ButtonDropDownList> 
+                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList> 
                                 
                             </div>
 
@@ -213,7 +216,7 @@
                                     <div class="row-fluid">
                                               
                                         <label for="numCreditCard" >Credit Card #</label>
-                                        <input id="numCreditCard" class="input-large" type="text" title="Credit Card Number" pattern="[0-9]*" size="20" style="float: left" runat="server">
+                                        <input id="numCreditCard" class="input-large CreditCard" type="text" title="Credit Card Number" pattern="[0-9]*" size="20" style="float: left" runat="server">
 
                                         <ul class="card_logos">
 	                                        <li class="card_visa"></li>
@@ -369,7 +372,21 @@
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
                 
-                <label id="txtConfirmation" runat="server"></label>
+                <p><b><asp:Literal ID="lName" runat="server" /></b>, thank you for your generosity! You're about to give a total of <b><asp:Literal ID="lTotal" runat="server"/></b> to the following funds:</p>
+                
+                <asp:Repeater ID="rptGiftConfirmation" runat="server">
+                    <HeaderTemplate>
+                        <ul>
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <li></li>
+                    </ItemTemplate>
+                    <FooterTemplate>
+                        </ul>
+                    </FooterTemplate>
+                </asp:Repeater>
+                
+                <p>Your gift will be paid using your <b><asp:Literal ID="lCardType" runat="server"/></b> credit card ending in <b><asp:Literal ID="lLastFour" runat="server"/></b>.</p>
 
                 <label class="checkbox">
                                             
