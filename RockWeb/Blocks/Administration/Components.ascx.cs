@@ -49,6 +49,9 @@ namespace RockWeb.Blocks.Administration
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {
+                        BindFilter();
+                        rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+
                         if ( !Page.IsPostBack )
                             _container.Refresh();
 
@@ -95,6 +98,20 @@ namespace RockWeb.Blocks.Administration
         #endregion
 
         #region Grid Events
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the fDevice control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "Name", tbName.Text );
+            rFilter.SaveUserPreference( "Description", tbDescription.Text );
+            rFilter.SaveUserPreference( "Active", rblActive.SelectedValue );
+
+            BindGrid();
+        }
 
         /// <summary>
         /// Handles the GridReorder event of the rGrid control.
@@ -203,6 +220,19 @@ namespace RockWeb.Blocks.Administration
         #region Internal Methods
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            if ( !Page.IsPostBack )
+            {
+                tbName.Text = rFilter.GetUserPreference( "Name" );
+                tbDescription.Text = rFilter.GetUserPreference( "Description" );
+                rblActive.SelectedValue = rFilter.GetUserPreference( "Active" );
+            }
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
@@ -221,7 +251,34 @@ namespace RockWeb.Blocks.Administration
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );
             }
 
-            rGrid.DataSource = dataSource;
+            var items = dataSource.AsQueryable();
+
+            string name = rFilter.GetUserPreference( "Name" );
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                items = items.Where( c => c.Name.ToLower().Contains( name.ToLower() ) );
+            }
+
+            string description = rFilter.GetUserPreference( "Description" );
+            if ( !string.IsNullOrWhiteSpace( description ) )
+            {
+                items = items.Where( c => c.Name.Contains( description ) );
+            }
+
+            string active = rFilter.GetUserPreference( "Active" );
+            if ( !string.IsNullOrWhiteSpace( active ) )
+            {
+                if ( active == "Yes" )
+                {
+                    items = items.Where( c => c.IsActive );
+                }
+                else
+                {
+                    items = items.Where( c => !c.IsActive );
+                }
+            }
+
+            rGrid.DataSource = items.ToList();
             rGrid.DataBind();
         }
 

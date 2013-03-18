@@ -39,85 +39,84 @@ namespace Rock.Workflow.Action.CheckIn
             
             if ( checkInState != null )
             {
-                using ( var uow = new Rock.Data.UnitOfWorkScope() )
+                int labelFileTypeId = new BinaryFileTypeService()
+                    .Queryable()
+                    .Where( f => f.Guid == new Guid(SystemGuid.BinaryFiletype.CHECKIN_LABEL))
+                    .Select( f => f.Id)
+                    .FirstOrDefault();
+
+                if (labelFileTypeId != 0)
                 {
-                    foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+                    using ( var uow = new Rock.Data.UnitOfWorkScope() )
                     {
-                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                         {
-                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            foreach ( var person in family.People.Where( p => p.Selected ) )
                             {
-                                groupType.Labels = new List<CheckInLabel>();
-                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
-                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
-                                groupType.Labels.Add( new CheckInLabel( @"http://www.sparkdevelopmentnetwork.com/public/labels/label1.zpl" ) );
-
-                                var mergeObjects = new Dictionary<string, object>();
-                                mergeObjects.Add( "person", person );
-                                mergeObjects.Add( "groupType", groupType );
-
-                                var labelCodes = new Dictionary<string, string>();
-                                labelCodes.Add( "1", "{{ person.SecurityCode }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "2", "{{ person.Person.FirstName }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "3", "{{ person.Person.LastName }}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "4", "{% if person.Person.DaysToBirthday < 180 %}R{% endif %}".ResolveMergeFields( mergeObjects ) );
-                                labelCodes.Add( "5", "{% for location in groupType.Locations %}{% for group in location.Groups %}{% for schedule in group.Schedules %}{{ schedule.Schedule.Name }} {% endfor %}{% endfor %}{% endfor %}".ResolveMergeFields( mergeObjects ) );
-
-                                var PrinterIPs = new Dictionary<int, string>();
-
-                                foreach ( var label in groupType.Labels )
+                                foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                                 {
-                                    label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
-                                    label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
-                                    label.LabelKey = new Guid( "00000000-0000-0000-0000-000000000003" );
+                                    var mergeObjects = new Dictionary<string, object>();
+                                    mergeObjects.Add( "person", person );
+                                    mergeObjects.Add( "groupType", groupType );
 
-                                    if ( label.PrintTo == PrintTo.Default )
-                                    {
-                                        label.PrintTo = groupType.GroupType.AttendancePrintTo;
-                                    }
+                                    groupType.Labels = new List<CheckInLabel>();
 
-                                    if ( label.PrintTo == PrintTo.Kiosk )
+                                    GetGroupTypeLabels( groupType.GroupType, groupType.Labels, labelFileTypeId, mergeObjects );
+
+                                    var PrinterIPs = new Dictionary<int, string>();
+
+                                    foreach ( var label in groupType.Labels )
                                     {
-                                        var device = checkInState.Kiosk.Device;
-                                        if ( device != null )
+                                        label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
+                                        label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
+
+                                        if ( label.PrintTo == PrintTo.Default )
                                         {
-                                            label.PrinterDeviceId = device.PrinterDeviceId;
+                                            label.PrintTo = groupType.GroupType.AttendancePrintTo;
                                         }
-                                    }
-                                    else if ( label.PrintTo == PrintTo.Location )
-                                    {
-                                        // Should only be one
-                                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                        if (location != null)
+
+                                        if ( label.PrintTo == PrintTo.Kiosk )
                                         {
-                                            var device = location.Location.PrinterDevice;
+                                            var device = checkInState.Kiosk.Device;
                                             if ( device != null )
                                             {
                                                 label.PrinterDeviceId = device.PrinterDeviceId;
                                             }
                                         }
-                                    }
-
-                                    if ( label.PrinterDeviceId.HasValue )
-                                    {
-                                        if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                        else if ( label.PrintTo == PrintTo.Location )
                                         {
-                                            label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
-                                        }
-                                        else
-                                        {
-                                            var printerDevice = new DeviceService().Get( label.PrinterDeviceId.Value );
-                                            if ( printerDevice != null )
+                                            // Should only be one
+                                            var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                            if ( location != null )
                                             {
-                                                PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
-                                                label.PrinterAddress = printerDevice.IPAddress;
+                                                var device = location.Location.PrinterDevice;
+                                                if ( device != null )
+                                                {
+                                                    label.PrinterDeviceId = device.PrinterDeviceId;
+                                                }
                                             }
                                         }
+
+                                        if ( label.PrinterDeviceId.HasValue )
+                                        {
+                                            if ( PrinterIPs.ContainsKey( label.PrinterDeviceId.Value ) )
+                                            {
+                                                label.PrinterAddress = PrinterIPs[label.PrinterDeviceId.Value];
+                                            }
+                                            else
+                                            {
+                                                var printerDevice = new DeviceService().Get( label.PrinterDeviceId.Value );
+                                                if ( printerDevice != null )
+                                                {
+                                                    PrinterIPs.Add( printerDevice.Id, printerDevice.IPAddress );
+                                                    label.PrinterAddress = printerDevice.IPAddress;
+                                                }
+                                            }
+                                        }
+
                                     }
 
-                                    label.MergeFields = labelCodes;
                                 }
-
                             }
                         }
                     }
@@ -130,5 +129,36 @@ namespace Rock.Workflow.Action.CheckIn
 
             return false;
         }
+
+        private void GetGroupTypeLabels( GroupType groupType, List<CheckInLabel> labels, int labelFileTypeId, Dictionary<string, object> mergeObjects )
+        {
+            //groupType.LoadAttributes();
+            foreach ( var attribute in groupType.Attributes )
+            {
+                if ( attribute.Value.FieldType.Guid == new Guid( SystemGuid.FieldType.BINARY_FILE ) &&
+                    attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
+                    attribute.Value.QualifierValues["binaryFileType"].Value == labelFileTypeId.ToString() )
+                {
+                    string attributeValue = groupType.GetAttributeValue( attribute.Key );
+                    if ( attributeValue != null )
+                    {
+                        int fileId = int.MinValue;
+                        if ( int.TryParse( attributeValue, out fileId ) )
+                        {
+                            var labelCache = KioskCache.GetLabel( fileId );
+                            if ( labelCache != null )
+                            {
+                                var checkInLabel = new CheckInLabel( labelCache, mergeObjects );
+                                checkInLabel.FileId = fileId;
+                                labels.Add( checkInLabel );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
+
+
 }

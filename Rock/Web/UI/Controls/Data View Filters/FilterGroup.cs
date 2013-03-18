@@ -104,7 +104,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddGroup );
             btnAddGroup.ID = this.ID + "_btnAddGroup";
             btnAddGroup.ServerClick += btnAddGroup_ServerClick;
-            btnAddGroup.AddCssClass( "btn btn-inverse" );
+            btnAddGroup.AddCssClass( "btn btn-inverse btn-action" );
             btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
@@ -116,7 +116,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddFilter );
             btnAddFilter.ID = this.ID + "_btnAddFilter";
             btnAddFilter.ServerClick += btnAddFilter_ServerClick;
-            btnAddFilter.AddCssClass( "btn btn-inverse" );
+            btnAddFilter.AddCssClass( "btn btn-inverse btn-action" );
             btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );

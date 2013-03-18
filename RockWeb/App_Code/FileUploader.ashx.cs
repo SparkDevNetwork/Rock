@@ -62,7 +62,7 @@ namespace RockWeb
                 }
 
                 BinaryFileService fileService = new BinaryFileService();
-                Rock.Model.BinaryFile cmsFile;
+                Rock.Model.BinaryFile cmsFile = null;
 
                 // was an ID given? if so, fetch that file and replace it with the new one
                 if ( context.Request.QueryString.Count > 0 )
@@ -71,7 +71,8 @@ namespace RockWeb
                     int id;
                     cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByEncryptedKey( anID );
                 }
-                else
+
+                if (cmsFile == null)
                 {
                     // ...otherwise create a new Cms File
                     cmsFile = new Rock.Model.BinaryFile();
