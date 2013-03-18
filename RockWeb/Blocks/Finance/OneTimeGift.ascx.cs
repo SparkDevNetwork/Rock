@@ -32,9 +32,12 @@ namespace RockWeb.Blocks.Finance
         protected bool _ShowCampusSelect = false;
         protected bool _ShowSaveDetails = false;
         protected string spanClass = "";
-                
-        protected FundService fundService = new FundService();
-        protected List<Gift> giftList = new List<Gift>();
+
+        protected List<FinancialTransaction> _transactionList;        
+        protected FundService _fundService = new FundService();
+        protected FinancialTransactionService _transactionService = new FinancialTransactionService();
+        protected Dictionary<string, decimal> _giftList = new Dictionary<string, decimal>();
+        //protected List<Gift> giftList = new List<Gift>();
 
         #endregion
 
@@ -48,12 +51,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            rptFundList.ItemDataBound += new RepeaterItemEventHandler( rptFundList_ItemDataBound );
-
             _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
             _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
-            List<string> defaultFunds = ( GetAttributeValue( "DefaultFundstodisplay" ).Any() ) ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList()
-                : new System.Collections.Generic.List<string>();
                         
             if ( CurrentPerson != null )
             {
@@ -67,7 +66,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
-                BindFunds( giftList );
+                BindFunds();
                 BindCreditOptions();
             }
         }
@@ -85,23 +84,7 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-
         #region Edit Events
-        
-        protected void rptFundList_ItemDataBound( object sender, RepeaterItemEventArgs e)  
-        {
-            List<Gift> giftList = (List<Gift>)Session["fundList"];
-
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                Gift gift = new Gift();
-                gift.fundName = ( (HtmlInputControl) e.Item.FindControl( "btnFundName" ) ).Value;
-                //gift.fundAmount = Convert.ToDouble( ( (HtmlInputControl) e.Item.FindControl( "inputFundAmount" ) ).Value);
-                giftList.Add( gift );
-            }
-
-            Session["fundList"] = giftList;
-        }
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -110,15 +93,24 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
+            _giftList.Clear();
             
-            string msgCnfirmation = string.Format(@"<b>{0}</b>, you're about to give <b>${1}</b> to the 
-                <b>{2}</b>. and <b>$50.00</b> to the <b>{3}</b>."
-                , txtFirstName.Value + ' ' + txtLastName.Value); 
+            foreach ( RepeaterItem item in rptFundList.Items )
+            {
+                string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
+                decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                _giftList.Add( fundName, fundAmount );
+            }
 
-            //msgCnfirmation += string.Format(@"<br>Your total gift of <b>${0}</b> will be given using 
-            //    a <b>{1}</b> credit card ending in <b>{2}</b>.", totalAmount.Value, txtCardNick.Value, txtCardNumber.Value);
+            Session["giftList"] = _giftList;
 
-            txtConfirmation.InnerText = msgCnfirmation;
+            //var firstTrans = _transactions.First();
+            //lName.Text = person.FullName;
+            //lTotal.Text = giftList.Sum( g => g.fundAmount ).ToString( "C" );
+            //lCardType.Text = 
+            //lLastFour.Text = firstTrans.CardNumber.Substring( firstTrans.CardNumber.length - 4 );
+            //rptGiftConfirmation.DataSource = _transactions;
+            //rptGiftConfirmation.DataBind();            
             
             pnlDetails.Visible = false;
             pnlConfirm.Visible = true;
@@ -130,11 +122,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnBack_Click( object sender, EventArgs e )
-        {
-            
+        {            
             pnlConfirm.Visible = false;
             pnlDetails.Visible = true;            
-
         }
         
         /// <summary>
@@ -144,23 +134,27 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddFund_SelectionChanged( object sender, EventArgs e )
         {
-            giftList = (List<Gift>)Session["fundList"];
-
-            foreach ( Gift gift in giftList )
+            _giftList.Clear();
+            
+            foreach (RepeaterItem item in rptFundList.Items)
             {
-                string giftName = Request.Form[gift.fundName];
-                if ( gift.fundName == giftName )
-                {
-                    gift.fundAmount = Convert.ToDouble( Request.Form["inputFundAmount"] );
-                }                
+                string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
+                decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                _giftList.Add( fundName, fundAmount );
             }
 
-            Gift newGift = new Gift();
-            newGift.fundName = btnAddFund.SelectedValue;
-            giftList.Add( newGift );
+            _giftList.Add( btnAddFund.SelectedValue, 0M );
+            //lblTotal.InnerText = giftList.Select( g => g.fundAmount ).Sum().ToString();
+            
+            btnAddFund.Items.Remove( btnAddFund.SelectedValue );
+            if ( btnAddFund.Items.Count < 1 )            
+            {                
+                divAddFund.Visible = false;
+            }
 
-            //btnAddFund.Items.Remove( btnAddFund.SelectedValue );
-            BindFunds( giftList );
+            rptFundList.DataSource = _giftList;
+            rptFundList.DataBind();
+            Session["giftList"] = _giftList;
         }
         #endregion
 
@@ -186,33 +180,41 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Binds the funds.
         /// </summary>
-        protected void BindFunds( List<Gift> gifts )
+        protected void BindFunds( )
         {
-            var queryable = fundService.Queryable().Where( f => f.IsActive )
+            _transactionList = new List<FinancialTransaction>();
+            
+            var queryable = _fundService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order );
+
+            List<int> defaultFunds = GetAttributeValue( "DefaultFundstodisplay" ).Any()
+                ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
+                : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
+
             
-            // move from fund list to now using gift lists
-            
-            var fundsById = gifts.Any() ? funds.Select( s => int.Parse( s ) ).ToList() : 
-                    new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-            
-            if ( ( queryable.Count() - funds.Count ) > 0 )
+            _giftList = queryable.Where( f => defaultFunds.Contains( f.Id ) )
+                .Select( f => f.PublicName).ToList();
+
+
+                        
+            if ( ( queryable.Count() - defaultFunds.Count ) > 0 )
             {
-                btnAddFund.DataSource = queryable.Where( f => !fundsById.Contains( f.Id ) )
+                btnAddFund.DataSource = queryable.Where( f => !defaultFunds.Contains( f.Id ) )
                    .Select( f => f.PublicName ).ToList();
                 btnAddFund.DataBind();
                 btnAddFund.Title = "Add Another Gift";
-                divAddFund.Visible = true;                
+                divAddFund.Visible = true;             
             }
             else
             {
                 divAddFund.Visible = false;
             }
 
-            rptFundList.DataSource = queryable.Where( f => fundsById.Contains( f.Id ) )
-                   .Select( f => f.PublicName ).ToList();
+            //giftList = queryable.Where( f => defaultFunds.Contains( f.Id ) ).Select( f => new Gift { fundName = f.PublicName } ).ToList();
+            rptFundList.DataSource = _giftList;
             rptFundList.DataBind();
-            Session["fundList"] = giftList;
+
+            Session["giftList"] = _giftList;
         }
 
         /// <summary>
@@ -234,10 +236,23 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-        
+
+        /// <summary>
+        /// Gift class for holding fund names and amounts
+        /// </summary>
         public class Gift {
-            public string fundName { get; set; }
-            public double fundAmount { get; set; }            
+
+            public string fundName = "";
+            public decimal fundAmount = 0M;
+
+            public Gift( ) { }
+            public Gift( string name ) 
+            { 
+                if ( !string.IsNullOrEmpty(name) ) 
+                { 
+                    fundName = name; 
+                } 
+            }             
         }
     }
 }
