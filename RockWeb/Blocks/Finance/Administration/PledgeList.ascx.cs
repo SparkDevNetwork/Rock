@@ -5,14 +5,10 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.ModelBinding;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -27,8 +23,9 @@ namespace RockWeb.Blocks.Finance.Administration
             base.OnInit( e );
             gPledges.DataKeyNames = new[] { "id" };
             gPledges.Actions.IsAddEnabled = true;
-            //gPledges.Actions.AddClick += gPledges_Add;
-            //gPledges.GridRebind += gPledges_GridRebind;
+            gPledges.Actions.AddClick += gPledges_Add;
+            gPledges.GridRebind += gPledges_GridRebind;
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
             gPledges.Actions.IsAddEnabled = canAddEditDelete;
@@ -37,49 +34,80 @@ namespace RockWeb.Blocks.Finance.Administration
 
         protected override void OnLoad( EventArgs e )
         {
-            //if ( !Page.IsPostBack )
-            //{
-            //    BindGrid();
-            //}
-            
+            if ( !Page.IsPostBack )
+            {
+                BindGrid();
+            }
+
             base.OnLoad( e );
         }
 
-        //private void BindGrid()
-        //{
-        //    var pledgeService = new PledgeService();
-        //    var sortProperty = gPledges.SortProperty;
-        //    var pledges = pledgeService.Queryable();
+        private void gPledges_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
-        //    // TODO: Add filter criteria
+        private void gPledges_Add( object sender, EventArgs e )
+        {
+            NavigateToDetailPage( "pledgeId", 0 );
+        }
 
-        //    gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
-        //    gPledges.DataBind();
-        //}
+        protected void gPledges_Edit( object sender, RowEventArgs e )
+        {
+            NavigateToDetailPage( "pledgeId", (int) e.RowKeyValue );
+        }
 
-        public IQueryable<Pledge> GetPledges([QueryString("person")]string personId, [QueryString("fund")]string fundId)
+        protected void gPledges_Delete( object sender, RowEventArgs e )
+        {
+            RockTransactionScope.WrapTransaction( () =>
+                {
+                    var pledgeService = new PledgeService();
+                    var pledge = pledgeService.Get( (int) e.RowKeyValue );
+                    string errorMessage;
+                    
+                    if ( pledge == null )
+                    {
+                        return;
+                    }
+
+                    if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    pledgeService.Delete( pledge, CurrentPersonId );
+                    pledgeService.Save( pledge, CurrentPersonId );
+                });
+
+            BindGrid();
+        }
+
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        private void BindGrid()
         {
             var pledgeService = new PledgeService();
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
-            int pid, fid;
+            int personId;
+            //int fundId;
 
-            if ( personId != null && int.TryParse( personId, out pid ) )
+            if ( ppFilterPerson.SelectedValue != "0" && int.TryParse( ppFilterPerson.PersonId, out personId ) )
             {
-                pledges = pledges.Where( p => p.PersonId == pid );
+                pledges = pledges.Where( p => p.PersonId == personId );
             }
 
-            if ( fundId != null && int.TryParse( fundId, out fid ) )
-            {
-                pledges = pledges.Where( p => p.FundId == fid );
-            }
+            //if ( fundId.HasValue )
+            //{
+            //    pledges = pledges.Where( p => p.FundId == fundId.Value );
+            //}
 
-            return sortProperty != null ? pledges.Sort( sortProperty ) : pledges.OrderBy( p => p.FundId );
-        }
-
-        public void DeletePledge( Pledge pledge )
-        {
-            //throw new NotImplementedException();
+            gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
+            gPledges.DataBind();
         }
     }
 }
