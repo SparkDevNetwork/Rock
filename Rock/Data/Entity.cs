@@ -16,7 +16,7 @@ namespace Rock.Data
     /// Base class that all models need to inherit from
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [DataContract(IsReference=true)]
+    [DataContract]
     public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
         where T : Entity<T>, new()
     {
@@ -167,7 +167,8 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IEntity Clone()
         {
-            return FromJson( this.ToJson() );
+            var json = this.ToJson();
+            return FromJson( json );
         }
 
         /// <summary>

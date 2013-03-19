@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Person POCO Entity.
     /// </summary>
     [Table( "Person" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Person : Model<Person>
     {
 

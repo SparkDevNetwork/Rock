@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Page : Model<Page>, IOrdered
     {
 
@@ -227,7 +227,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [DataMember]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -236,7 +235,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-        [DataMember]
         public virtual Site Site { get; set; }
 
         /// <summary>

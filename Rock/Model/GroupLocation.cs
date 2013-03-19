@@ -18,7 +18,7 @@ namespace Rock.Model
     /// GroupLocation POCO class.
     /// </summary>
     [Table( "GroupLocation" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupLocation : Model<GroupLocation>
     {
         #region Entity Properties

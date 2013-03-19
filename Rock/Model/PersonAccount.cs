@@ -16,7 +16,7 @@ namespace Rock.Model
     /// PersonAccountLookup POCO class.
     /// </summary>
     [Table("PersonAccount")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PersonAccount : Model<PersonAccount>
     {
         /// <summary>

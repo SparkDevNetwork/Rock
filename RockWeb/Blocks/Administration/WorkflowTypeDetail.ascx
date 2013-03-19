@@ -78,9 +78,16 @@
                         </div>
                     </div>
                     <div class="row-fluid">
-                        <h4>Activities</h4>
-                        <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                        <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
+                            <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                            <b class="caret"></b>
+                        </a>
+                        <div class="workflow-activities-readonly-list" style="display: none">
+
+                            <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                        </div>
                     </div>
+                    <hr />
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
                     </div>
@@ -93,6 +100,11 @@
             <Rock:AttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
         </asp:Panel>
         <script>
+
+            function toggleReadOnlyActivitiesList() {
+                $('.workflow-activities-readonly-list').toggle(500);
+            }
+
             Sys.Application.add_load(function () {
                 var fixHelper = function (e, ui) {
                     ui.children().each(function () {

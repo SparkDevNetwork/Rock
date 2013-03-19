@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Category POCO Entity.
     /// </summary>
     [Table( "Category" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Category : Model<Category>
     {
 
@@ -120,7 +120,6 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
-        [DataMember]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>

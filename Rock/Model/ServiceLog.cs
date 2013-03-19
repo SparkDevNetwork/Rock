@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Service Log POCO Entity.
     /// </summary>
     [Table( "ServiceLog" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class ServiceLog : Model<ServiceLog>
     {
         /// <summary>

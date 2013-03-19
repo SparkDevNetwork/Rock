@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Workflow POCO Entity.
     /// </summary>
     [Table( "Workflow" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Workflow : Model<Workflow>
     {
 

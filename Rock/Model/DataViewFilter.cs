@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "DataViewFilter" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class DataViewFilter : Model<DataViewFilter>
     {
 
@@ -75,7 +75,6 @@ namespace Rock.Model
         /// <value>
         /// The parent.
         /// </value>
-        [DataMember]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>

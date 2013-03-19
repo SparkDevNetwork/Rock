@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Fund POCO class.
     /// </summary>
     [Table("Fund")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Fund : Model<Fund>
     {
         /// <summary>
@@ -158,7 +158,6 @@ namespace Rock.Model
         /// <value>
         /// The parent fund.
         /// </value>
-        [DataMember]
         public virtual Fund ParentFund { get; set; }
 
         /// <summary>

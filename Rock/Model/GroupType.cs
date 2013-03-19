@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupType : Model<GroupType>
     {
 
@@ -241,7 +241,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-        [DataMember]
         public virtual GroupRole DefaultGroupRole { get; set; }
 
         /// <summary>

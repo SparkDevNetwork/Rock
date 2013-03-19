@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Group POCO Entity.
     /// </summary>
     [Table( "Group" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Group : Model<Group>
     {
 
@@ -113,7 +113,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
-        [DataMember]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
