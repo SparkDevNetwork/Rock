@@ -33,12 +33,14 @@ namespace RockWeb.Blocks.Finance
         protected bool _ShowSaveDetails = false;
         protected string spanClass = "";
 
-        protected List<FinancialTransaction> _transactionList;        
         protected FundService _fundService = new FundService();
+        protected PersonService _personService = new PersonService();
+        protected List<FinancialTransactionFund> _fundList = new List<FinancialTransactionFund>();
         protected FinancialTransactionService _transactionService = new FinancialTransactionService();
+        protected FinancialTransaction _transaction = new FinancialTransaction();
+        //about to be obsolete
         protected Dictionary<string, decimal> _giftList = new Dictionary<string, decimal>();
-        //protected List<Gift> giftList = new List<Gift>();
-
+        
         #endregion
 
         #region Control Methods
@@ -93,17 +95,63 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            //_giftList.Clear();
             
-            //foreach ( RepeaterItem item in rptFundList.Items )
-            //{
-            //    string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
-            //    decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
-            //    _giftList.Add( fundName, fundAmount );
-            //}
+            var personGroup = _personService.GetByEmail( Request.Form["txtEmail"] );
+            Person person;
 
-            //Session["giftList"] = _giftList;
+            if ( personGroup.Count() > 0 )
+            {
+                person = personGroup.Where( p => p.FirstName == Request.Form["txtFirstName"]
+                    && p.LastName == Request.Form["txtLastName"] ).Distinct().FirstOrDefault();
+                //other duplicate person handling here?  see NewAccount.ascx DisplayDuplicates()
+            }
+            else
+            {
+                person = new Person();
+                person.Email = Request.Form["txtEmail"];
+                person.GivenName = Request.Form["txtFirstName"];
+                person.LastName = Request.Form["txtFirstName"];
 
+                _personService.Add( person, CurrentPersonId );
+            }
+
+            _personService.Save( person, CurrentPersonId );
+
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                //_giftList.Clear();
+                var lookupID = _fundService.Queryable().Where( f => f.IsActive )
+                    .Distinct().OrderBy( f => f.Order ).ToDictionary( f => f.PublicName, f => f.Id );
+                
+                _transactionService = new FinancialTransactionService();
+                _fundList = new List<FinancialTransactionFund>();                              
+                
+                var transaction = _transactionService.Get( _transaction.Id  );
+                if ( transaction == null )
+                {
+                    transaction = new FinancialTransaction();                    
+                    _transactionService.Add( transaction, CurrentPersonId );
+                }
+
+                foreach ( RepeaterItem item in rptFundList.Items )
+                {
+                    //_giftList.Add( ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value
+                    //, Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value ) );
+                    FinancialTransactionFund fund = new FinancialTransactionFund();
+                    fund.FundId = lookupID[( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value];
+                    fund.Amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                    fund.TransactionId = transaction.Id;
+                    _fundList.Add( fund );
+                }
+                
+                transaction.EntityId = person.Id;
+                transaction.EntityTypeId = new Rock.Model.Person().TypeId;
+
+                transaction.Amount = _fundList.Sum( fA => (decimal)fA.Amount );
+                _transactionService.Save( transaction, CurrentPersonId );
+            }
+
+            
             //var firstTrans = _transactions.First();
             //lName.Text = person.FullName;
             //lTotal.Text = giftList.Sum( g => g.fundAmount ).ToString( "C" );
@@ -204,8 +252,9 @@ namespace RockWeb.Blocks.Finance
                 divAddFund.Visible = false;
             }
 
-            rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) ).ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
-            rptFundList.DataBind();
+            rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) )
+                .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
+            rptFundList.DataBind();            
         }
 
         /// <summary>
