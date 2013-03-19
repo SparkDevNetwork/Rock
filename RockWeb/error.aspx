@@ -4,6 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Oops...</title>
 
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>" />
