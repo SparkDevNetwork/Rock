@@ -8,14 +8,8 @@
 
         $('.calc').on('change', function () {
 
-            var total = 0;
-            var alpha = /^[0-9]+\.?[0-9]*$/;
-
-            if (alpha.test(this.value) == false) {
-                alert('numeric');
-                this.value = this.value.substring(0, this.value.length - 1);
-            }
-
+            var total = 0.00;
+            
             $('.calc').each(function () {
                 if ($(this).val() != '') {
                     total += parseFloat($(this).val());
@@ -23,13 +17,11 @@
                 }
             });
             
-            $(this).val() = this.value.toFixed(2);
+            this.value = parseFloat($(this).val()).toFixed(2);
             $('#lblTotal').html(total.toFixed(2));
         });
 
         $('.calc').trigger('change');
-
-
 
         $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
     };
@@ -38,6 +30,8 @@
 
 <asp:UpdatePanel ID="upOneTimeGift" runat="server" >
 <ContentTemplate>
+
+    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
 
     <asp:Panel ID="pnlDetails" runat="server">
 
@@ -48,6 +42,8 @@
             <div class="row-fluid">
                                 
                 <div class="<%= spanClass %> well">
+
+                    <asp:ValidationSummary ID="valSummaryDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
                     <fieldset>
 
@@ -84,7 +80,7 @@
                                         <div class="btn-group">
                                             <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %>" runat="server"/>
                                             <span class="add-on">$</span>
-                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" onkeyup="IsNumeric(this);"/>
+                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
                                         </div>                           
                                     </div>
                                 </div>
@@ -130,6 +126,8 @@
                 <% } %>
 
                 <div class="<%= spanClass %> well">
+
+                    <asp:ValidationSummary ID="valSummaryAddress" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
                     <fieldset>
 
@@ -198,6 +196,8 @@
               
                 <div class="<%= spanClass %> well">
 
+                    <asp:ValidationSummary ID="valSummaryPayment" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
+
                     <fieldset>
 
                         <h4>Payment Information</h4>
@@ -221,7 +221,7 @@
                                     <div class="row-fluid">
                                               
                                         <label for="numCreditCard" >Credit Card #</label>
-                                        <input id="numCreditCard" class="input-large CreditCard" type="text" title="Credit Card Number" pattern="[0-9]*" size="20" style="float: left" runat="server">
+                                        <input id="numCreditCard" class="input-large CreditCard" type="text" title="Credit Card Number" pattern="\d+" size="20" style="float: left" runat="server">
 
                                         <ul class="card_logos">
 	                                        <li class="card_visa"></li>
@@ -247,7 +247,7 @@
                                         <div class="span7">
                                                     
                                             <label for="numCVV" >CVV #</label>
-                                            <input name="numCVV" class="input-mini" size="3" type="text" runat="server">
+                                            <input name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
 
                                         </div> 
                             
