@@ -93,16 +93,16 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            _giftList.Clear();
+            //_giftList.Clear();
             
-            foreach ( RepeaterItem item in rptFundList.Items )
-            {
-                string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
-                decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
-                _giftList.Add( fundName, fundAmount );
-            }
+            //foreach ( RepeaterItem item in rptFundList.Items )
+            //{
+            //    string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
+            //    decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+            //    _giftList.Add( fundName, fundAmount );
+            //}
 
-            Session["giftList"] = _giftList;
+            //Session["giftList"] = _giftList;
 
             //var firstTrans = _transactions.First();
             //lName.Text = person.FullName;
@@ -138,23 +138,25 @@ namespace RockWeb.Blocks.Finance
             
             foreach (RepeaterItem item in rptFundList.Items)
             {
-                string fundName = ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value;
-                decimal fundAmount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
-                _giftList.Add( fundName, fundAmount );
+                _giftList.Add( ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value
+                    , Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value ));
             }
 
+            // initialize new contribution
             _giftList.Add( btnAddFund.SelectedValue, 0M );
-            //lblTotal.InnerText = giftList.Select( g => g.fundAmount ).Sum().ToString();
-            
-            btnAddFund.Items.Remove( btnAddFund.SelectedValue );
-            if ( btnAddFund.Items.Count < 1 )            
-            {                
+
+            if ( btnAddFund.Items.Count > 1 )
+            {
+                btnAddFund.Items.Remove(btnAddFund.SelectedValue);
+                btnAddFund.Title = "Add Another Gift";
+            }
+            else
+            {
                 divAddFund.Visible = false;
             }
 
             rptFundList.DataSource = _giftList;
             rptFundList.DataBind();
-            Session["giftList"] = _giftList;
         }
         #endregion
 
@@ -182,21 +184,13 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindFunds( )
         {
-            _transactionList = new List<FinancialTransaction>();
-            
             var queryable = _fundService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order );
 
             List<int> defaultFunds = GetAttributeValue( "DefaultFundstodisplay" ).Any()
                 ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
                 : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-
             
-            _giftList = queryable.Where( f => defaultFunds.Contains( f.Id ) )
-                .Select( f => f.PublicName).ToList();
-
-
-                        
             if ( ( queryable.Count() - defaultFunds.Count ) > 0 )
             {
                 btnAddFund.DataSource = queryable.Where( f => !defaultFunds.Contains( f.Id ) )
@@ -210,11 +204,8 @@ namespace RockWeb.Blocks.Finance
                 divAddFund.Visible = false;
             }
 
-            //giftList = queryable.Where( f => defaultFunds.Contains( f.Id ) ).Select( f => new Gift { fundName = f.PublicName } ).ToList();
-            rptFundList.DataSource = _giftList;
+            rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) ).ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
             rptFundList.DataBind();
-
-            Session["giftList"] = _giftList;
         }
 
         /// <summary>
@@ -236,23 +227,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-        /// <summary>
-        /// Gift class for holding fund names and amounts
-        /// </summary>
-        public class Gift {
-
-            public string fundName = "";
-            public decimal fundAmount = 0M;
-
-            public Gift( ) { }
-            public Gift( string name ) 
-            { 
-                if ( !string.IsNullOrEmpty(name) ) 
-                { 
-                    fundName = name; 
-                } 
-            }             
-        }
     }
 }
