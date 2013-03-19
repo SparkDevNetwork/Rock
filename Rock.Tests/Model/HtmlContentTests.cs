@@ -32,6 +32,18 @@ namespace Rock.Tests.Model
                 var result = html.ToJson();
                 Assert.IsNotEmpty( result );
             }
+
+            [Test]
+            public void ShouldExportAsJson()
+            {
+                var html = new HtmlContent
+                {
+                    Content = "Foo"
+                };
+                var result = html.ToJson();
+                const string key = "\"Content\": \"Foo\"";
+                Assert.Greater( result.IndexOf( key ), -1, string.Format( "'{0}' was not found in '{1}'.", key, result ) );
+            }
         }
 
         public class TheFromJsonMethod

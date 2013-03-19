@@ -99,8 +99,8 @@ namespace Rock.Tests.Model
                     Title = "FooPage"
                 };
                 var result = page.ToJson();
-                const string key = "\"Title\":\"FooPage\"";
-                Assert.Greater( result.IndexOf( key ), -1 );
+                const string key = "\"Title\": \"FooPage\"";
+                Assert.Greater( result.IndexOf( key ), -1, string.Format( "'{0}' was not found in '{1}'.", key, result ) );
             }
 
             [Test]
@@ -113,7 +113,7 @@ namespace Rock.Tests.Model
                 };
                 var result = page.ToJson();
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
-                const string key = "\"Title\":\"BarPage\"";
+                const string key = "\"Title\": \"BarPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
             }
 
@@ -126,9 +126,9 @@ namespace Rock.Tests.Model
                 parent.Pages = new List<Page> { child };
                 child.Pages = new List<Page> { grandchild };
                 var result = parent.ToJson( );
-                const string parentKey = "\"Title\":\"Parent\"";
-                const string childKey = "\"Title\":\"Child\"";
-                const string grandChildKey = "\"Title\":\"Grandchild\"";
+                const string parentKey = "\"Title\": \"Parent\"";
+                const string childKey = "\"Title\": \"Child\"";
+                const string grandChildKey = "\"Title\": \"Grandchild\"";
                 Assert.Greater( result.IndexOf( parentKey ), -1 );
                 Assert.Greater( result.IndexOf( childKey ), -1 );
                 Assert.Greater( result.IndexOf( grandChildKey ), -1 );
