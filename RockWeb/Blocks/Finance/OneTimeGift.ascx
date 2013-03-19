@@ -9,6 +9,12 @@
         $('.calc').on('change', function () {
 
             var total = 0;
+            var alpha = /^[0-9]+\.?[0-9]*$/;
+
+            if (alpha.test(this.value) == false) {
+                alert('numeric');
+                this.value = this.value.substring(0, this.value.length - 1);
+            }
 
             $('.calc').each(function () {
                 if ($(this).val() != '') {
@@ -16,18 +22,17 @@
                     console.log(total);
                 }
             });
-
+            
+            $(this).val() = this.value.toFixed(2);
             $('#lblTotal').html(total.toFixed(2));
         });
 
         $('.calc').trigger('change');
 
+
+
         $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
     };
-
-    $(document).ready(function () {
-
-    });
 
 </script>
 
@@ -77,9 +82,9 @@
                                 <div class="row-fluid">
                                     <div class="input-prepend">
                                         <div class="btn-group">
-                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# ((Gift)Container.DataItem).fundName %>" runat="server"/>
+                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %>" runat="server"/>
                                             <span class="add-on">$</span>
-                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((Gift)Container.DataItem).fundAmount %>" step="0.01" min="0.00" runat="server" />
+                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" onkeyup="IsNumeric(this);"/>
                                         </div>                           
                                     </div>
                                 </div>
