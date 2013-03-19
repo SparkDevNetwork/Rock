@@ -21,7 +21,7 @@ namespace Rock.Model
     /// User POCO Entity.
     /// </summary>
     [Table( "UserLogin" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>

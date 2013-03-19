@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Payment Gateway POCO class.
     /// </summary>
     [Table( "PaymentGateway" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PaymentGateway : Model<PaymentGateway>
     {
         /// <summary>

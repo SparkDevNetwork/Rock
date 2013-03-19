@@ -17,7 +17,7 @@ namespace Rock.Model
     /// File POCO Entity.
     /// </summary>
     [Table( "BinaryFile" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class BinaryFile : Model<BinaryFile>
     {
 
@@ -121,7 +121,6 @@ namespace Rock.Model
         /// <value>
         /// The binary file type.
         /// </value>
-        [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         #endregion

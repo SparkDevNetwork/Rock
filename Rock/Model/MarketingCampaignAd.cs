@@ -17,7 +17,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "MarketingCampaignAd")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class MarketingCampaignAd : Model<MarketingCampaignAd>
     {
         /// <summary>

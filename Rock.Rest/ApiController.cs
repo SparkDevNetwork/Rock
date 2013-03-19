@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,6 +11,7 @@ using System.ServiceModel.Channels;
 using System.Web.Http;
 
 using Rock.Data;
+using Rock.Model;
 using Rock.Rest.Filters;
 
 namespace Rock.Rest
@@ -106,6 +106,31 @@ namespace Rock.Rest
             }
             else
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
+        }
+
+
+        /// <summary>
+        /// Gets a list of objects represented by the selected data view
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [ActionName("DataView")]
+        public IQueryable<T> GetDataView( int id )
+        {
+            var dataView = new DataViewService().Get( id );
+            if ( dataView != null && dataView.EntityType.Name == typeof(T).FullName )
+            {
+                var paramExpression = _service.ParameterExpression;
+                var whereExpression = dataView.DataViewFilter != null ? dataView.DataViewFilter.GetExpression( paramExpression ) : null;
+
+                if ( paramExpression != null && whereExpression != null )
+                {
+                    return _service.Get( paramExpression, whereExpression );
+                }
+            }
+
+            return null;
         }
 
         protected virtual Rock.Model.UserLogin CurrentUser()

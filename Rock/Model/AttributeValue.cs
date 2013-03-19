@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Attribute Value POCO Entity.
     /// </summary>
     [Table( "AttributeValue" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class AttributeValue : Model<AttributeValue>
     {
         /// <summary>

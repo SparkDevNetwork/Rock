@@ -17,7 +17,7 @@ namespace Rock.Model
     /// MarketingCampaign POCO Entity
     /// </summary>
     [Table( "MarketingCampaign" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class MarketingCampaign : Model<MarketingCampaign>
     {
         /// <summary>

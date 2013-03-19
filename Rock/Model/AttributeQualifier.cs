@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Attribute Qualifier POCO Entity.
     /// </summary>
     [Table( "AttributeQualifier" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
         /// <summary>

@@ -21,7 +21,7 @@ namespace Rock.Model
     /// Location POCO Entity.
     /// </summary>
     [Table( "Location" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Location : Model<Location>
     {
         #region Entity Properties
@@ -256,7 +256,6 @@ namespace Rock.Model
         /// <value>
         /// The parent location.
         /// </value>
-        [DataMember]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>

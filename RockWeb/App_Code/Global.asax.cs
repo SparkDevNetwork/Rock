@@ -568,6 +568,16 @@ namespace RockWeb
                 routes.AddPageRoute( pageRoute );
             }
 
+            // Add API route for dataviews
+            routes.MapHttpRoute(
+                name: "DataViewApi",
+                routeTemplate: "api/{controller}/DataView/{id}",
+                defaults: new
+                {
+                    action = "DataView"
+                }
+            );
+
             // Add any custom api routes
             foreach ( var type in Rock.Reflection.FindTypes(
                 typeof( Rock.Rest.IHasCustomRoutes ),
@@ -578,11 +588,63 @@ namespace RockWeb
                     controller.AddRoutes( routes );
             }
 
-            // Add API Service routes
+            // Add Default API Service routes
+            // Instead of being able to use one default route that gets action from http method, have to 
+            // have a default route for each method so that other actions do not match the default (i.e. DataViews)
             routes.MapHttpRoute(
-                name: "DefaultApi",
+                name: "DefaultApiGet",
                 routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = System.Web.Http.RouteParameter.Optional }
+                defaults: new
+                {
+                    action = "GET",
+                    id = System.Web.Http.RouteParameter.Optional
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "GET" } )
+                }
+            );
+
+            routes.MapHttpRoute(
+               name: "DefaultApiPut",
+               routeTemplate: "api/{controller}/{id}",
+               defaults: new
+               {
+                   action = "PUT",
+                   id = System.Web.Http.RouteParameter.Optional
+               },
+               constraints: new
+               {
+                   httpMethod = new HttpMethodConstraint( new string[] { "PUT" } )
+               }
+           );
+
+            routes.MapHttpRoute(
+                name: "DefaultApiPost",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new
+                {
+                    action = "POST",
+                    id = System.Web.Http.RouteParameter.Optional
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "POST" } )
+                }
+            );
+
+            routes.MapHttpRoute(
+                name: "DefaultApiDelete",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new
+                {
+                    action = "DELETE",
+                    id = System.Web.Http.RouteParameter.Optional
+                },
+                constraints: new
+                {
+                    httpMethod = new HttpMethodConstraint( new string[] { "DELETE" } )
+                }
             );
 
             // Add a default page route

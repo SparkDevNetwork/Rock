@@ -20,7 +20,7 @@ namespace Rock.Model
     /// CheckInSchedule EF Model.
     /// </summary>
     [Table("Schedule")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Schedule : Model<Schedule>
     {
 

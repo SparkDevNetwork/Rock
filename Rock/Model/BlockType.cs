@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Block Type POCO Entity.
     /// </summary>
     [Table( "BlockType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class BlockType : Model<BlockType>
     {
 

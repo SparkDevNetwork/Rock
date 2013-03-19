@@ -23,7 +23,7 @@ namespace Rock.Web.Cache
     /// property of this attribute object.
     /// </summary>
     [Serializable]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public class AttributeCache 
     {
         #region constructors

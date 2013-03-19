@@ -197,8 +197,8 @@ namespace Rock.Services.NuGet
                     });
 
                 // Clean up PackageStaging folder on successful import.
-                var dir = new DirectoryInfo( path );
-                dir.Delete( recursive: true );
+                var file = new FileInfo( path );
+                file.Delete();
                 return ErrorMessages.Count <= 0;
             }
 
@@ -299,9 +299,10 @@ namespace Rock.Services.NuGet
             }
 
             // In our trivial case, the files we're adding need to have a target folder under the "content\"
-            // folder and the source path suffix will be the 
+            // folder and the source path suffix will be the relative path to the file's physical location.
+            // ex: `Blocks\Foo\Foo.ascx` and `App_Data\PackageStaging\{PageName}_{Guid}\export.json`
             var files = from file in Directory.EnumerateFiles( directory, filterPattern, searchOption )
-                        let pathSuffix = file.Substring( webRootPath.Length + 1 )
+                        let pathSuffix = file.Substring( webRootPath.Length )
                         select new ManifestFile()
                         {
                             Source = Path.Combine( "..", "..", "..", pathSuffix ),
@@ -374,10 +375,7 @@ namespace Rock.Services.NuGet
 
             foreach ( var childPage in page.Pages )
             {
-                if ( childPage.Pages.Count > 0 )
-                {
-                    ValidateImportData( childPage, blockTypes );
-                }
+                ValidateImportData( childPage, blockTypes );
             }
         }
 

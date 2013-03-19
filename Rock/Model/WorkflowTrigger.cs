@@ -16,7 +16,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "WorkflowTrigger" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class WorkflowTrigger : Entity<WorkflowTrigger>
     {
         #region Entity Properties
