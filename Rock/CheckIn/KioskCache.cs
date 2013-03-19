@@ -74,8 +74,7 @@ namespace Rock.CheckIn
                 if ( _kiosks.ContainsKey( kioskId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
-                    string json = JsonConvert.SerializeObject( _kiosks[kioskId] );
-                    return JsonConvert.DeserializeObject( json, typeof( KioskStatus ) ) as KioskStatus;
+                    return JsonConvert.DeserializeObject( _kiosks[kioskId].ToJson(), typeof( KioskStatus ) ) as KioskStatus;
                 }
             }
 
@@ -94,8 +93,7 @@ namespace Rock.CheckIn
                 if ( _locations.ContainsKey( locationId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
-                    string json = JsonConvert.SerializeObject( _locations[locationId] );
-                    return JsonConvert.DeserializeObject( json, typeof( KioskLocationAttendance ) ) as KioskLocationAttendance;
+                    return JsonConvert.DeserializeObject( _locations[locationId].ToJson(), typeof( KioskLocationAttendance ) ) as KioskLocationAttendance;
                 }
             }
 
@@ -113,8 +111,7 @@ namespace Rock.CheckIn
             {
                 if ( _labels.ContainsKey( id ) )
                 {
-                    string json = JsonConvert.SerializeObject( _labels[id] );
-                    return JsonConvert.DeserializeObject( json, typeof( LabelCache ) ) as LabelCache;
+                    return JsonConvert.DeserializeObject( _labels[id].ToJson(), typeof( LabelCache ) ) as LabelCache;
                 }
             }
 
