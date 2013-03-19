@@ -21,7 +21,7 @@ namespace Rock.Model
     /// CheckInDevice EF Model.
     /// </summary>
     [Table("Device")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Device : Model<Device>
     {
         #region Entity Properties

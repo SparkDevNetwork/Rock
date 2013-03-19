@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Note Type POCO Entity.
     /// </summary>
     [Table( "NoteType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class NoteType : Model<NoteType>
     {
 

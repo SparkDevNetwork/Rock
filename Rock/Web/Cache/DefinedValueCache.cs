@@ -18,7 +18,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public class DefinedValueCache : CachedModel<DefinedValue>
     {
         #region Constructors

@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Attribute POCO Entity.
     /// </summary>
     [Table( "Attribute" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Attribute : Model<Attribute>, IOrdered
     {
         /// <summary>

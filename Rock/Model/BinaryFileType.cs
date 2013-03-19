@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Binary File Type POCO Entity.
     /// </summary>
     [Table( "BinaryFileType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class BinaryFileType : Model<BinaryFileType>
     {
 

@@ -17,7 +17,7 @@ namespace Rock.Model
     /// File POCO Entity.
     /// </summary>
     [Table( "BinaryFile" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class BinaryFile : Model<BinaryFile>
     {
 

@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Person Trail POCO Entity.
     /// </summary>
     [Table( "PersonMerged" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PersonMerged : Model<PersonMerged>
     {
         /// <summary>

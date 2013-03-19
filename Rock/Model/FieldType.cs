@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Field Type POCO Entity.
     /// </summary>
     [Table( "FieldType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class FieldType : Model<FieldType>
     {
         /// <summary>

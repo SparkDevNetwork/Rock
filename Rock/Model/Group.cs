@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Group POCO Entity.
     /// </summary>
     [Table( "Group" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Group : Model<Group>
     {
 

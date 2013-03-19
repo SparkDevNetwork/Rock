@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Site Domain POCO Entity.
     /// </summary>
     [Table( "SiteDomain" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class SiteDomain : Model<SiteDomain>
     {
         /// <summary>

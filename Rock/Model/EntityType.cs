@@ -16,7 +16,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "EntityType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class EntityType : Entity<EntityType>
     {
 

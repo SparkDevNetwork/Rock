@@ -19,7 +19,7 @@ namespace Rock.Web.Cache
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    [DataContract(IsReference=true)]
+    [DataContract]
     public abstract class CachedModel<T> : ISecured, Rock.Attribute.IHasAttributes
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
