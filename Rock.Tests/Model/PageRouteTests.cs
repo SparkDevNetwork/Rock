@@ -33,6 +33,19 @@ namespace Rock.Tests.Model
                 dynamic result = pageRoute.ToJson();
                 Assert.IsNotEmpty( result );
             }
+
+            [Test]
+            public void ShouldExportAsJson()
+            {
+                var guid = Guid.NewGuid();
+                var pageRoute = new PageRoute
+                {
+                    Guid = guid
+                };
+                var result = pageRoute.ToJson();
+                var key = string.Format( "\"Guid\": \"{0}\"", guid );
+                Assert.Greater( result.IndexOf( key ), -1, string.Format( "'{0}' was not found in '{1}'.", key, result ) );
+            }
         }
 
         public class TheFromJsonMethod

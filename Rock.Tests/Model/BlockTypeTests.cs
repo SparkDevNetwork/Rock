@@ -34,6 +34,18 @@ namespace Rock.Tests.Model
                 var result = blockType.ToJson();
                 Assert.IsNotEmpty( result );
             }
+
+            [Test]
+            public void ShouldExportAsJson()
+            {
+                var blockType = new BlockType
+                {
+                    Name = "Foo"
+                };
+                var result = blockType.ToJson();
+                const string key = "\"Name\": \"Foo\"";
+                Assert.Greater( result.IndexOf( key ), -1, string.Format( "'{0}' was not found in '{1}'.", key, result ) );
+            }
         }
 
         public class TheFromJsonMethod

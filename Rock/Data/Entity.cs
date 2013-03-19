@@ -167,7 +167,8 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IEntity Clone()
         {
-            return FromJson( this.ToJson() );
+            var json = this.ToJson();
+            return FromJson( json );
         }
 
         /// <summary>
