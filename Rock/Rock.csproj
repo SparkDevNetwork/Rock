@@ -629,6 +629,10 @@
     <Compile Include="Migrations\201303152128532_UpdateSomeText.Designer.cs">
       <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303191826126_UpdateLocation.cs" />
+    <Compile Include="Migrations\201303191826126_UpdateLocation.Designer.cs">
+      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -1478,6 +1482,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303152128532_UpdateSomeText.resx">
       <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303191826126_UpdateLocation.resx">
+      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
