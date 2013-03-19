@@ -113,7 +113,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Group"/> object.
         /// </value>
-        [DataMember]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>

@@ -121,7 +121,6 @@ namespace Rock.Model
         /// <value>
         /// The binary file type.
         /// </value>
-        [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         #endregion

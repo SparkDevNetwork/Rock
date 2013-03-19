@@ -135,7 +135,6 @@ namespace Rock.Model
         /// <value>
         /// The printer.
         /// </value>
-        [DataMember]
         public virtual Device PrinterDevice { get; set; }
 
         /// <summary>

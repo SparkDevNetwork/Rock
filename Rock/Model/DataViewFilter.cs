@@ -75,7 +75,6 @@ namespace Rock.Model
         /// <value>
         /// The parent.
         /// </value>
-        [DataMember]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>

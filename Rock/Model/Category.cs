@@ -120,7 +120,6 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
-        [DataMember]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>

@@ -256,7 +256,6 @@ namespace Rock.Model
         /// <value>
         /// The parent location.
         /// </value>
-        [DataMember]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
