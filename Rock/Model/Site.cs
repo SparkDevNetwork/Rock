@@ -163,7 +163,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        //[DataMember]
         public virtual Page DefaultPage { get; set; }
 
         /// <summary>

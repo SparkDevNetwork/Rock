@@ -108,7 +108,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
-        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         #endregion

@@ -227,7 +227,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        //[DataMember]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -236,7 +235,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-        //[DataMember]
         public virtual Site Site { get; set; }
 
         /// <summary>

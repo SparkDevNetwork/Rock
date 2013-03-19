@@ -92,7 +92,6 @@ namespace Rock.Model
         /// <value>
         /// The small icon.
         /// </value>
-        [DataMember]
         public virtual BinaryFile IconSmallFile { get; set; }
 
         /// <summary>
@@ -101,7 +100,6 @@ namespace Rock.Model
         /// <value>
         /// The large icon.
         /// </value>
-        [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>

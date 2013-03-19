@@ -241,7 +241,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-        [DataMember]
         public virtual GroupRole DefaultGroupRole { get; set; }
 
         /// <summary>
