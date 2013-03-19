@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Pledge POCO class.
     /// </summary>
     [Table("Pledge")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Pledge : Model<Pledge>
     {
         /// <summary>

@@ -15,7 +15,7 @@ namespace Rock.Field
     /// The Name, Description and Value of an field type's configuration items
     /// </summary>
     [Serializable]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public class ConfigurationValue
     {
         /// <summary>

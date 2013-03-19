@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Tag POCO Entity.
     /// </summary>
     [Table( "Tag" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Tag : Model<Tag>, IOrdered
     {
         /// <summary>

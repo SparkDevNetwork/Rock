@@ -17,7 +17,7 @@ namespace Rock.Model
     /// DataView POCO Entity.
     /// </summary>
     [Table( "DataView" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class DataView : Model<DataView>, ICategorized
     {
 

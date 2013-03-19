@@ -19,7 +19,7 @@ namespace Rock.Model
     /// CheckInAttendanceCodenEF Model.
     /// </summary>
     [Table( "AttendanceCode" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class AttendanceCode : Entity<AttendanceCode>
     {
         #region Entity Properties

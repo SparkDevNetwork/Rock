@@ -17,7 +17,7 @@ namespace Rock.Model
     /// CheckInAttendance EF Model.
     /// </summary>
     [Table( "Attendance" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Attendance : Model<Attendance>
     {
 

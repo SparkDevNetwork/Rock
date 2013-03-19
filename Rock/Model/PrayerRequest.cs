@@ -19,7 +19,7 @@ namespace Rock.Model
     /// PrayerRequest POCO class.
     /// </summary>
     [Table( "PrayerRequest" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
 

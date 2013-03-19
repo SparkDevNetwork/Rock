@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Page : Model<Page>, IOrdered
     {
 

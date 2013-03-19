@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Auth POCO Entity.
     /// </summary>
     [Table( "Auth" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Auth : Model<Auth>, IOrdered
     {
         /// <summary>

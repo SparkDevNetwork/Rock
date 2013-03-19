@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Defined Value POCO Entity.
     /// </summary>
     [Table( "DefinedValue" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
         /// <summary>

@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupType : Model<GroupType>
     {
 

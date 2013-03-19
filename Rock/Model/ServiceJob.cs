@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Job POCO Entity.
     /// </summary>
     [Table( "ServiceJob" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class ServiceJob : Model<ServiceJob>
     {
         /// <summary>

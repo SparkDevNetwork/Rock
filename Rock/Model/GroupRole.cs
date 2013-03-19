@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "GroupRole" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupRole : Model<GroupRole>
     {
 

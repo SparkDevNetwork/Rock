@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Campus POCO Entity.
     /// </summary>
     [Table( "Report" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Report : Model<Report>, ICategorized
     {
 

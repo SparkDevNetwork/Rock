@@ -18,7 +18,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "ExceptionLog" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class ExceptionLog : Model<ExceptionLog>
     {
         /// <summary>
