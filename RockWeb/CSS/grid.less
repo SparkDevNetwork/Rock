@@ -43,11 +43,6 @@ td[align=center]
 	font-family: FontAwesome; 
 }
 
-/* grid footer classes */
-.grid-table tfoot td 
-{
-    text-align: right;
-}
 
 .grid-table tfoot td .btn
 {
@@ -66,7 +61,7 @@ td[align=center]
 
 .grid-table .page-navigation
 {
-    float: left;
+    float: right;
 }
 
 .grid-table .pagination ul > li > a, .pagination ul > li > span
@@ -196,10 +191,14 @@ td[align=center]
     color: #CCCCCC;
 }
 
+.grid-table .page-size {
+	float: left
+}
+
 /* grid count item */
 .grid-table .item-count
 {
-    float: right;
+    float: left;
     font-size: 11px;
     margin-left: 10px;
     margin-top: 6px;
