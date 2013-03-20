@@ -11,30 +11,27 @@ declare @DoraPersonId int
 declare @PledgeId int
 
 -- Fund Attributes
-if not exists(select Id from EntityType where Name = 'Rock.Model.Fund')
+if not exists( select Id from EntityType where Name = 'Rock.Model.Fund' )
 begin
-	insert into EntityType (Name, [Guid], IsEntity, IsSecured)
-	values ('Rock.Model.Fund', newid(), 0, 0)
+	insert into EntityType ( Name, [Guid], IsEntity, IsSecured )
+	values ( 'Rock.Model.Fund', newid(), 0, 0 )
 end
-set @FundEntityTypeId = (select Id from EntityType where Name = 'Rock.Model.Fund')
+set @FundEntityTypeId = ( select Id from EntityType where Name = 'Rock.Model.Fund' )
 
--- Defined Types
--- TODO: This DefinedType will probably need to move out of this script and be included in a Migration
-insert into DefinedType ( IsSystem, FieldTypeId, [Order], Category, Name, [Description], [Guid] )
-values ( 1, 1, 0, 'Financial', 'Frequency Type', 'Types of payment frequencies', newid() )
-set @TypeId = scope_identity()
+-- Defined Types & Defined Values
+if not exists ( select Id from DefinedType where [Guid] = '059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F' )
+begin
+	insert into DefinedType ( IsSystem, FieldTypeId, [Order], Category, Name, [Description], [Guid] )
+	values ( 1, 1, 0, 'Financial', 'Frequency Type', 'Types of payment frequencies', '059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F' )
+end
+set @TypeId = ( select Id from DefinedType where [Guid] = '059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F' )
 
--- Defined Values
--- TODO: These DefinedValues will probably need to move out of this script and be included in a Migration
-insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
-values ( 1, @TypeId, 0, 'Weekly', 'Weekly', newid() )
-
-insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
-values ( 1, @TypeId, 0, 'Bi-Weekly', 'Bi-Weekly', newid() )
-
-insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
-values ( 1, @TypeId, 0, 'Monthly', 'Monthly', newid() )
-set @ValueId = scope_identity()
+if not exists ( select Id from DefinedValue where [Guid] = 'C53509B1-FC2B-46C8-A00E-58392FBE9408' )
+begin
+	insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
+	values ( 1, @TypeId, 0, 'Monthly', 'Every Monthly', 'C53509B1-FC2B-46C8-A00E-58392FBE9408' )
+end
+set @ValueId = ( select Id from DefinedValue where [Guid] = 'C53509B1-FC2B-46C8-A00E-58392FBE9408' )
 
 -- Funds
 -- Create "General Fund" that doesn't take pledges
@@ -56,7 +53,7 @@ insert into Fund ( Name, PublicName, [Description], ParentFundId, IsTaxDeductibl
 values ( 'missions', 'Missions Fund', 'This is the Missions fund', null, 1, 1, 1, dateadd(day, -90, getdate()), dateadd(day, 90, getdate()), 1, '13141516', 'Rock.Model.Fund', @FundEntityTypeId, newid(), null )
 set @MissionsFundId = scope_identity()
 
--- Person
+-- Create a couple of people to attach pledges to
 insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay, BirthMonth, BirthYear, Gender, AnniversaryDate, GraduationDate, Email, IsEmailActive, EmailNote, DoNotEmail, SystemNote, ViewedCount, [Guid], RecordTypeValueId, RecordStatusValueId, RecordStatusReasonValueId, PersonStatusValueId, SuffixValueId, TitleValueId, MaritalStatusValueId, IsDeceased )
 values (  0, 'Pledgy', 'The Pledgester', 'McPledgerson', null, 1, 1, 1980, 0, null, null, 'pledgy@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @PledgyPersonId = scope_identity()
@@ -65,7 +62,7 @@ insert into Person ( IsSystem, GivenName, NickName, LastName, PhotoId, BirthDay,
 values (  0, 'Dora', null, 'Donatesalot', null, 1, 1, 1980, 0, null, null, 'dora@thepledgester.com', 1, 'Personal Email', 0, null, null, newid(), 1, 3, null, null, null, null, null, 0 )
 set @DoraPersonId = scope_identity()
 
--- Pledges
+-- Add a couple pledges to each person
 insert into Pledge ( PersonId, FundId, Amount, StartDate, EndDate, FrequencyAmount, [Guid], FrequencyTypeValueId )
 values ( @PledgyPersonId, @BuildingFundId, 2000.00, dateadd(day, -30, getdate()), dateadd(day, 30, getdate()), 100.00, newid(), @ValueId )
 
