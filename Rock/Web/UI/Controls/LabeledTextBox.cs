@@ -31,6 +31,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected RequiredFieldValidator requiredValidator;
 
+        protected Label prependLabel;
+        protected Label appendLabel;
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
         /// </summary>
@@ -135,6 +138,46 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        [
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue(""),
+        Description("Text that appears prepended to the front of the text box.")
+        ]
+        public string PrependText
+        {
+            get
+            {
+                EnsureChildControls();
+                return prependLabel.Text;
+            } 
+            set
+            {
+                EnsureChildControls();
+                prependLabel.Text = value;
+            }
+        }
+
+        [
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Text that appears appended to the end of the text box." )
+        ]
+        public string AppendText
+        {
+            get
+            {
+                EnsureChildControls();
+                return appendLabel.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                appendLabel.Text = value;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
@@ -171,6 +214,22 @@ namespace Rock.Web.UI.Controls
 
             helpBlock = new HelpBlock();
             Controls.Add( helpBlock );
+
+            prependLabel = new Label
+            {
+                ID = this.ID + "_prepend",
+                CssClass = "add-on"
+            };
+
+            Controls.Add( prependLabel );
+
+            appendLabel = new Label
+            {
+                ID = this.ID + "_append",
+                CssClass = "add-on"
+            };
+                
+            Controls.Add( appendLabel );
         }
 
         /// <summary>
@@ -191,10 +250,34 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "controls" );
+            var wrapperClassName = "controls";
+
+            if ( !string.IsNullOrWhiteSpace( PrependText ) )
+            {
+                wrapperClassName += " input-prepend";
+            }
+
+            if ( !string.IsNullOrWhiteSpace( AppendText ) )
+            {
+                wrapperClassName += " input-append";
+            }
+
+            writer.AddAttribute( "class", wrapperClassName );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            if ( !string.IsNullOrWhiteSpace( PrependText ) )
+            {
+                prependLabel.Text = PrependText;
+                prependLabel.RenderControl( writer );
+            }
+
             base.RenderControl( writer );
+
+            if ( !string.IsNullOrWhiteSpace( AppendText ) )
+            {
+                appendLabel.Text = AppendText;
+                appendLabel.RenderControl( writer );
+            }
 
             if ( Required )
             {
@@ -241,9 +324,9 @@ namespace Rock.Web.UI.Controls
                 {
                     return null;
                 }
-                else   
+                else
                 {
-                    return base.Text.Trim(); 
+                    return base.Text.Trim();
                 }
             }
             set
