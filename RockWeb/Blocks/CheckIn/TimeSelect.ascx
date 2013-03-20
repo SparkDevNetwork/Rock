@@ -13,9 +13,9 @@
     <div class="row-fluid checkin-body">
         <div class="span12">
 
-            <div class="control-group" style="margin: 0 auto">
+            <div class="control-group checkin-time-select" style="margin: 0 auto">
                 <label class="control-label">Select Time(s)</label>
-                <div class="controls btn-group time-select" data-toggle="buttons-checkbox">
+                <div class="controls checkin-timelist btn-group" data-toggle="buttons-checkbox">
                     <asp:Repeater ID="rSelection" runat="server">
                         <ItemTemplate>
                             <button type="button" schedule-id='<%# Eval("Schedule.Id") %>' class="btn btn-large btn-checkbox">
@@ -26,6 +26,11 @@
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
+
+                <div class="checkin-actions">
+                    <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" Text="Check-in" />
+                </div>
+
             </div>
             <asp:HiddenField ID="hfTimes" runat="server"></asp:HiddenField>
         </div>
@@ -35,7 +40,7 @@
 
     <div class="row-fluid checkin-footer">   
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" Text="Check-in" />
+            
             <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
             <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>

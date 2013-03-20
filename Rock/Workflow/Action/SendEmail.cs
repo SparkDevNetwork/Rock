@@ -15,11 +15,11 @@ using Rock.Web.UI;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets a workflow status
+    /// Sends email
     /// </summary>
-    [Description( "Set the workflow status" )]
+    [Description( "Email the configured recipient the name of the thing being operated against." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Set Status")]
+    [ExportMetadata("ComponentName", "Send Email")]
     [EmailTemplateField( "EmailTemplate", "The email template to send" )]
     [TextField( "Recipient", "The email address to send to" )]
     public class SendEmail : ActionComponent
