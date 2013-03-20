@@ -23,7 +23,7 @@
 
         $('.calc').trigger('change');
 
-        $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card_logos' });
+        $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
     };
 
 </script>
@@ -137,12 +137,12 @@
                             
                             <div class="span5">
                                 <label for="txtFirstName">First Name</label>
-                                <input id="txtFirstName" type="text" class="span12" runat="server"/>
+                                <input id="txtFirstName" type="text" class="span12" runat="server" required />
                             </div>             
 
                             <div class="span5">
                                 <label for="txtLastName">Last Name</label>
-                                <input id="txtLastName" type="text" class="span12" runat="server"/>
+                                <input id="txtLastName" type="text" class="span12" runat="server" required />
                             </div>        
                             
                         </div>
@@ -151,7 +151,7 @@
                                 
                             <div class="span10">
                                 <label for="txtAddress">Address</label>
-                                <input id="txtAddress" type="text" class="span12" runat="server"/> 
+                                <input id="txtAddress" type="text" class="span12" runat="server" required /> 
                             </div>
                                 
                         </div>
@@ -160,19 +160,19 @@
 
                             <div class="span5">
                                 <label for="txtCity" >City</label>
-                                <input id="txtCity" type="text" class="span12" runat="server"/>                        
+                                <input id="txtCity" type="text" class="span12" runat="server" required />                        
 
                             </div>
                         
                             <div class="span2">
                                 <label for="txtState" >State</label>
-                                <input id="txtState" type="text" class="span12" runat="server" />                        
+                                <input id="txtState" type="text" class="span12" runat="server" required />                        
                             
                             </div>
 
                             <div class="span3">
                                 <label for="txtZipcode" >Zipcode</label>
-                                <input id="txtZipcode" type="text" class="span12" runat="server" />                        
+                                <input id="txtZipcode" type="text" class="span12" runat="server" required />                        
                             </div>
 
                         </div>                    
@@ -181,7 +181,7 @@
                             
                             <div class="span10">
                                 <label for="txtEmail" >Email</label>
-                                <input id="txtEmail" type="text" class="span12" runat="server" />                                                      
+                                <input id="txtEmail" type="text" class="span12" runat="server" required />                                                      
                             </div>
                         
                         </div>
@@ -223,18 +223,18 @@
                                         <label for="numCreditCard" >Credit Card #</label>
                                         <input id="numCreditCard" class="input-large CreditCard" type="text" title="Credit Card Number" pattern="\d+" size="20" style="float: left" runat="server">
 
-                                        <ul class="card_logos">
-	                                        <li class="card_visa"></li>
-	                                        <li class="card_mastercard"></li>
-	                                        <li class="card_amex"></li>
-	                                        <li class="card_discover"></li>
+                                        <ul id="listCardTypes" class="card-logos" runat="server">
+	                                        <li class="card-visa"></li>
+	                                        <li class="card-mastercard"></li>
+	                                        <li class="card-amex"></li>
+	                                        <li class="card-discover"></li>
                                         </ul>
                                     
                                     </div>
                            
                                     <div class="row-fluid">
                         
-                                        <div class="span5" >
+                                        <div class="span6" >
 
                                             <label>Expiration Date</label>
 
@@ -244,7 +244,7 @@
 
                                         </div>
 
-                                        <div class="span7">
+                                        <div class="span4">
                                                     
                                             <label for="numCVV" >CVV #</label>
                                             <input name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
@@ -313,13 +313,18 @@
 
                                         <div class="btn-group">
 
-                                            <label class="radio inline">
+                                            <!-- <label class="radio inline">
                                                 <input type="radio" name="optionsRadios" value="option1" checked="checked" > Checking 
                                             </label>
 
                                             <label class="radio inline">
                                                 <input type="radio" name="optionsRadios" value="option2"> Savings 
-                                            </label>
+                                            </label> -->
+
+                                            <asp:RadioButtonList ID="radioAccountType" RepeatDirection="Horizontal" runat="server">
+                                                <asp:ListItem text="Checking" Selected="true"></asp:ListItem>
+                                                <asp:ListItem text="Savings"></asp:ListItem>
+                                            </asp:RadioButtonList>
 
                                         </div>
 
@@ -377,21 +382,24 @@
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
                 
-                <p><b><asp:Literal ID="lName" runat="server" /></b>, thank you for your generosity! You're about to give a total of <b><asp:Literal ID="lTotal" runat="server"/></b> to the following funds:</p>
+                <p>
+                    <b><asp:Literal ID="cfrmName" runat="server" /></b>, thank you for your generosity! 
+                    You're about to give a total of <b><asp:Literal ID="cfrmTotal" runat="server"/></b>
+                     to the following funds: 
+                    <asp:Repeater ID="rptGiftConfirmation" runat="server">
+                        <ItemTemplate>
+                            <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b> 
+                            to the <%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>,
+                        </ItemTemplate>
+                        <FooterTemplate>
+                            .
+                        </FooterTemplate>
+                    </asp:Repeater>
+                </p>                                
                 
-                <asp:Repeater ID="rptGiftConfirmation" runat="server">
-                    <HeaderTemplate>
-                        <ul>
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <li></li>
-                    </ItemTemplate>
-                    <FooterTemplate>
-                        </ul>
-                    </FooterTemplate>
-                </asp:Repeater>
-                
-                <p>Your gift will be paid using your <b><asp:Literal ID="lCardType" runat="server"/></b> credit card ending in <b><asp:Literal ID="lLastFour" runat="server"/></b>.</p>
+                <p>Your gift will be paid using your <b><asp:Literal ID="lblPaymentType" runat="server"/></b> 
+                    credit card ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
+                </p>
 
                 <label class="checkbox">
                                             
