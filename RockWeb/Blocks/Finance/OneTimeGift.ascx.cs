@@ -34,11 +34,10 @@ namespace RockWeb.Blocks.Finance
         protected string spanClass = "";
 
         protected FundService _fundService = new FundService();
-        protected PersonService _personService = new PersonService();
+        
         protected List<FinancialTransactionFund> _fundList = new List<FinancialTransactionFund>();
         protected FinancialTransactionService _transactionService = new FinancialTransactionService();
         protected FinancialTransaction _transaction = new FinancialTransaction();
-        //about to be obsolete
         protected Dictionary<string, decimal> _giftList = new Dictionary<string, decimal>();
         
         #endregion
@@ -95,8 +94,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            
-            var personGroup = _personService.GetByEmail( Request.Form["txtEmail"] );
+            PersonService personService = new PersonService();
+            var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
             Person person;
 
             if ( personGroup.Count() > 0 )
@@ -108,14 +107,14 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 person = new Person();
-                person.Email = Request.Form["txtEmail"];
-                person.GivenName = Request.Form["txtFirstName"];
-                person.LastName = Request.Form["txtFirstName"];
-
-                _personService.Add( person, CurrentPersonId );
+                personService.Add( person, CurrentPersonId );
             }
 
-            _personService.Save( person, CurrentPersonId );
+            person.Email = Request.Form["txtEmail"];
+            person.GivenName = Request.Form["txtFirstName"];
+            person.LastName = Request.Form["txtFirstName"];
+
+            personService.Save( person, CurrentPersonId );
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -148,15 +147,33 @@ namespace RockWeb.Blocks.Finance
                 transaction.EntityTypeId = new Rock.Model.Person().TypeId;
 
                 transaction.Amount = _fundList.Sum( fA => (decimal)fA.Amount );
-                _transactionService.Save( transaction, CurrentPersonId );
+            }
+            
+            cfrmName.Text = person.FullName;
+            cfrmTotal.Text = _fundList.Sum( g => g.Amount ).ToString();
+            var paymentMethod = listCardTypes.Attributes["class"].Split(' ');
+
+            if ( paymentMethod.Count() > 1 )
+            {
+                // using credit card 
+                lblPaymentType.Text = paymentMethod.ElementAtOrDefault( 2 );
+
+            }
+            else
+            {
+                // using ACH
+                lblPaymentType.Text = radioAccountType.SelectedValue;
             }
 
-            
-            //var firstTrans = _transactions.First();
-            //lName.Text = person.FullName;
-            //lTotal.Text = giftList.Sum( g => g.fundAmount ).ToString( "C" );
-            //lCardType.Text = 
-            //lLastFour.Text = firstTrans.CardNumber.Substring( firstTrans.CardNumber.length - 4 );
+
+            string lastFour = Request.Form["numCreditCard"];
+            if ( lastFour != null ) 
+            {
+                lblPaymentLastFour.Text = Request.Form["numCreditCard"].Substring( 16, 4 );
+            }
+
+            rptGiftConfirmation.DataSource = _fundList.ToDictionary( f => f.Amount, f => f.Fund );
+
             //rptGiftConfirmation.DataSource = _transactions;
             //rptGiftConfirmation.DataBind();            
             
@@ -206,6 +223,14 @@ namespace RockWeb.Blocks.Finance
             rptFundList.DataSource = _giftList;
             rptFundList.DataBind();
         }
+
+        protected void btnGive_Click( object sender, EventArgs e )
+        {
+            FinancialTransaction gift = _transactionService.Get( _transaction.Id );
+
+            _transactionService.Save( gift, CurrentPersonId );
+        }
+
         #endregion
 
         #region Internal Methods
