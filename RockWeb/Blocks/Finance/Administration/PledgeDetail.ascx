@@ -1,4 +1,31 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PledgeDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.Administration.PledgeDetail" %>
-<asp:LinkButton ID="lbBackToList" runat="server" CssClass="btn" OnClick="btnBackToList_Click">
-    <i class="icon-backward"></i> Back to Pledge List
-</asp:LinkButton>
+
+<asp:UpdatePanel ID="upPledgeDetails" runat="server">
+    <ContentTemplate>
+        <asp:Panel ID="pnlDetails" runat="server" Visible="False">
+            <asp:HiddenField ID="hfPledgeId" runat="server" />
+
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+            <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+        
+            <fieldset>
+                <legend><asp:Literal ID="lActionTitle" runat="server"/></legend>
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            
+                <Rock:PersonPicker ID="ppPerson" runat="server" LabelText="Person"/>
+                <Rock:FundPicker ID="fpFund" runat="server" LabelText="Fund"/>
+            
+                <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="Amount" LabelText="Amount" PrependText="$" Required="True" />
+                <Rock:DateTimePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" LabelText="Start Date"/>
+                <Rock:DateTimePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" LabelText="End Date"/>
+                <Rock:DataTextBox ID="tbFrequencyAmount" runat="server" SourceTypeName="Rock.Model.Pledge" PropertyName="FrequencyAmount" LabelText="Frequency Amount" PrependText="$"/>
+                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyTypeValue" LabelText="Frequency Type"/>
+            </fieldset>
+
+            <div class="actions">
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+</asp:UpdatePanel>

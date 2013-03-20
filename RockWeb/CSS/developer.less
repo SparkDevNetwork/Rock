@@ -9,6 +9,7 @@
 
 
 /* A definition for these classes exist in the default bootstrap, however their "disabled" color does not look disabled with our theme. */
+
 .btn-primary.disabled, .btn-primary[disabled] {
     color: #fff;
     background-color: #CCC;
@@ -244,4 +245,18 @@ div.aspNetDisabled {
 .workflow-activities-readonly-header .caret {
     border-top: 4px solid #515151;
     margin-top: 8px;
+}
+
+/* 
+    JO - Border radius correction for Rock Bootstrap theme. This is needed
+        because the `.add-on` span or `.btn` may not be the last child as specified
+        by Bootstrap's default CSS rule (the parent div might also contain tooltips, 
+        validation elements, etc).
+*/
+
+.input-append > input[type="text"] + .add-on,
+.input-append > input[type="text"] + .btn {
+  -webkit-border-radius: 0 4px 4px 0;
+  -moz-border-radius: 0 4px 4px 0;
+  border-radius: 0 4px 4px 0;
 }
