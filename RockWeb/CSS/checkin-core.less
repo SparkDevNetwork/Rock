@@ -162,12 +162,27 @@ body {
     margin-top: 24px;
 }
 
+.checkin-body .btn-primary {
+	float: right;
+	clear: both;
+}
+
 .checkin-search-actions a
 {
     padding: 20px 48px;
     font-size: 48px;
     line-height: 48px;
     font-family: @checkinButtonFontFamily;
+}
+
+.checkin-body .checkin-actions {
+	text-align: right;
+}
+
+.checkin-body .checkin-actions .btn {
+	font-size: 48px;
+    height: 43px;
+    padding: 28px 26px 10px;
 }
 
 // checkin footer 
@@ -277,7 +292,13 @@ button.btn-checkbox.btn i
 // --------------------------------------
 
 // search page
-// on landscape the keypad should be on the right, portrait it should be below
+
+.checkin-search-body
+    {
+        margin-right: auto !important;
+        margin-left: auto !important;
+        width: 320px;
+    }
 
 input.checkin-phone-entry
 {
@@ -293,24 +314,16 @@ input.checkin-phone-entry
 .checkin-phone-keypad
 {
     float: left;
+	margin-bottom: 12px;
 }
 
-@media screen and (orientation:portrait) {
-	 /* Portrait styles */
-    .checkin-search-body
-    {
-        margin-right: auto !important;
-        margin-left: auto !important;
-        width: 320px;
-    }
-     
-     input.checkin-phone-entry
-    {
-        float: none;
-        margin-bottom: 12px;
-    }
-    .checkin-phone-keypad
-    {
-        float: none;
-    }
+// time select
+.checkin-time-select {
+	margin: 0 auto;
+	display: table;
 }
+
+.checkin-timelist {
+	margin-bottom: 12px;
+}
+

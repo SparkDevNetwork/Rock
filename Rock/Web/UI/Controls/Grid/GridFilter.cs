@@ -102,10 +102,6 @@ Sys.Application.add_load(function () {
             writer.Write( "<header>" );
             
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( "class", "icon-filter" );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            
-            writer.RenderEndTag();
 
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             writer.Write( "Filter Options" );
