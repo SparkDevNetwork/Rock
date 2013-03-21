@@ -1266,35 +1266,6 @@ namespace Rock.Web.UI.Controls
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
 
-            // Pagination
-            NavigationPanel = new HtmlGenericControl( "div" );
-            NavigationPanel.Attributes.Add( "class", "page-navigation" );
-            divPagination.Controls.Add( NavigationPanel );
-
-            HtmlGenericControl ulNavigation = new HtmlGenericControl( "ul" );
-            NavigationPanel.Controls.Add( ulNavigation );
-
-            for ( var i = 0; i < PageLinkListItem.Length; i++ )
-            {
-                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
-                ulNavigation.Controls.Add( PageLinkListItem[i] );
-
-                PageLink[i] = new LinkButton();
-                PageLinkListItem[i].Controls.Add( PageLink[i] );
-                PageLink[i].Click += new EventHandler( lbPage_Click );
-            }
-            
-            PageLink[0].Text = "&larr; Previous";
-            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
-
-            // itemCount
-            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
-            divItemCount.Attributes.Add( "class", "item-count" );
-            divPagination.Controls.Add( divItemCount );
-
-            itemCountDisplay = new Literal();
-            divItemCount.Controls.Add( itemCountDisplay );
-
             // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
@@ -1321,6 +1292,35 @@ namespace Rock.Web.UI.Controls
             ItemLink[1].Text = "100";
             ItemLink[2].Text = "1,000";
             ItemLink[3].Text = "All";
+
+            // itemCount
+            HtmlGenericControl divItemCount = new HtmlGenericControl("div");
+            divItemCount.Attributes.Add("class", "item-count");
+            divPagination.Controls.Add(divItemCount);
+
+            itemCountDisplay = new Literal();
+            divItemCount.Controls.Add(itemCountDisplay);
+
+            // Pagination
+            NavigationPanel = new HtmlGenericControl("div");
+            NavigationPanel.Attributes.Add("class", "page-navigation");
+            divPagination.Controls.Add(NavigationPanel);
+
+            HtmlGenericControl ulNavigation = new HtmlGenericControl("ul");
+            NavigationPanel.Controls.Add(ulNavigation);
+
+            for (var i = 0; i < PageLinkListItem.Length; i++)
+            {
+                PageLinkListItem[i] = new HtmlGenericContainer("li");
+                ulNavigation.Controls.Add(PageLinkListItem[i]);
+
+                PageLink[i] = new LinkButton();
+                PageLinkListItem[i].Controls.Add(PageLink[i]);
+                PageLink[i].Click += new EventHandler(lbPage_Click);
+            }
+
+            PageLink[0].Text = "&larr; Previous";
+            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
         }
 
         /// <summary>

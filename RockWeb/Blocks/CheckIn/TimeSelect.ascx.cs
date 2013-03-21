@@ -60,11 +60,11 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                         else
                                         {
-                                            string script = string.Format( @"
+                                            string script = string.Format(@"
     <script>
         function GetTimeSelection() {{
             var ids = '';
-            $('div.time-select button.active').each( function() {{
+            $('div.checkin-timelist button.active').each( function() {{
                 ids += $(this).attr('schedule-id') + ',';
             }});
             if (ids == '') {{
