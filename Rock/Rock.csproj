@@ -799,6 +799,7 @@
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
+    <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -1115,9 +1116,7 @@
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />
-    <Compile Include="Web\UI\PageReference.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Web\PageReference.cs" />
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
