@@ -4,12 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Rock.Constants;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -35,7 +31,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 // Using TryParse guarantees a valid int if it passes, while a 
                 // `string.IsNullOrWhitespace` check doesn't. The param could be any
                 // non-null value
-                if ( int.TryParse( PageParameter( "pledgeId"), out itemId ) )
+                if ( int.TryParse( PageParameter( "pledgeId" ), out itemId ) )
                 {
                     BindFrequencyTypes();
                     ShowDetail( "pledgeId", itemId );
@@ -83,11 +79,6 @@ namespace RockWeb.Blocks.Finance.Administration
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-                {
-                    pledgeService.Save( pledge, CurrentPersonId );
-                });
-
             NavigateToParentPage();
         }
 
@@ -108,12 +99,9 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             var guid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE );
             var definedType = new DefinedTypeService().Get( guid );
-            var definedValues = definedType.DefinedValues
-                .Select( dv => new KeyValuePair<int, string>( dv.Id, dv.Description ) )
-                .ToDictionary( item => item.Key, item => item.Value );
-            ddlFrequencyType.DataTextField = "Value";
-            ddlFrequencyType.DataValueField = "Key";
-            ddlFrequencyType.DataSource = definedValues;
+            ddlFrequencyType.DataTextField = "Description";
+            ddlFrequencyType.DataValueField = "Id";
+            ddlFrequencyType.DataSource = definedType.DefinedValues;
             ddlFrequencyType.DataBind();
         }
 
@@ -166,5 +154,5 @@ namespace RockWeb.Blocks.Finance.Administration
 
             btnSave.Visible = !isReadOnly;
         }
-    }   
+    }
 }

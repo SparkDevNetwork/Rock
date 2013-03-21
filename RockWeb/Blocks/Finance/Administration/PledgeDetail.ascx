@@ -12,14 +12,14 @@
                 <legend><asp:Literal ID="lActionTitle" runat="server"/></legend>
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
-                <Rock:PersonPicker ID="ppPerson" runat="server" LabelText="Person"/>
-                <Rock:FundPicker ID="fpFund" runat="server" LabelText="Fund"/>
+                <Rock:PersonPicker ID="ppPerson" runat="server" LabelText="Person" Required="True"/>
+                <Rock:FundPicker ID="fpFund" runat="server" LabelText="Fund" Required="True"/>
             
                 <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="Amount" LabelText="Amount" PrependText="$" Required="True" />
-                <Rock:DateTimePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" LabelText="Start Date"/>
-                <Rock:DateTimePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" LabelText="End Date"/>
-                <Rock:DataTextBox ID="tbFrequencyAmount" runat="server" SourceTypeName="Rock.Model.Pledge" PropertyName="FrequencyAmount" LabelText="Frequency Amount" PrependText="$"/>
-                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyTypeValue" LabelText="Frequency Type"/>
+                <Rock:DateTimePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" LabelText="Start Date" Required="True"/>
+                <Rock:DateTimePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" LabelText="End Date" Required="True"/>
+                <Rock:DataTextBox ID="tbFrequencyAmount" runat="server" SourceTypeName="Rock.Model.Pledge" PropertyName="FrequencyAmount" LabelText="Frequency Amount" PrependText="$" Required="True"/>
+                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyTypeValue" LabelText="Frequency Type" Required="True"/>
             </fieldset>
 
             <div class="actions">
