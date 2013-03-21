@@ -55,7 +55,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new BinaryFileTypeList();
+            return new BinaryFileTypePicker();
         }
 
         /// <summary>
@@ -66,10 +66,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is BinaryFileTypeList )
+            if ( control != null && control is BinaryFileTypePicker )
             {
                 int id = int.MinValue;
-                if ( Int32.TryParse( ( (BinaryFileTypeList)control ).SelectedValue, out id ) )
+                if ( Int32.TryParse( ( (BinaryFileTypePicker)control ).SelectedValue, out id ) )
                 {
                     var binaryFiletype = new BinaryFileTypeService().Get( id );
                     if ( binaryFiletype != null )
@@ -92,12 +92,12 @@ namespace Rock.Field.Types
             Guid binaryFileTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out binaryFileTypeGuid ))
             {
-                if ( control != null && control is BinaryFileTypeList )
+                if ( control != null && control is BinaryFileTypePicker )
                 {
                     var binaryFiletype = new BinaryFileTypeService().Get( binaryFileTypeGuid );
                     if ( binaryFiletype != null )
                     {
-                        ( (BinaryFileTypeList)control ).SetValue( binaryFiletype.Id.ToString() );
+                        ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );
                     }
                 }
             }

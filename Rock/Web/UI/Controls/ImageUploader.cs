@@ -11,10 +11,10 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
+    /// 
     /// </summary>
-    [ToolboxData( "<{0}:ImageSelector runat=server></{0}:ImageSelector>" )]
-    public class ImageSelector : CompositeControl, ILabeledControl
+    [ToolboxData( "<{0}:ImageUploader runat=server></{0}:ImageUploader>" )]
+    public class ImageUploader : CompositeControl, ILabeledControl
     {
         private Label label;
         private Image image;

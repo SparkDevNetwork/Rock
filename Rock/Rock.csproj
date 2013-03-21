@@ -760,17 +760,17 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
-    <Compile Include="Web\UI\Controls\CategoryPicker.cs" />
-    <Compile Include="Web\UI\Controls\BinaryFileTypeList.cs" />
-    <Compile Include="Web\UI\Controls\BinaryFilePicker.cs" />
-    <Compile Include="Web\UI\Controls\WorkflowTypeList.cs" />
-    <Compile Include="Web\UI\Controls\GroupPicker.cs" />
-    <Compile Include="Web\UI\Controls\ItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\WorkflowTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ItemPicker.cs" />
     <Compile Include="Web\UI\Controls\HiddenFieldValidator.cs" />
-    <Compile Include="Web\UI\Controls\FileSelector.cs">
+    <Compile Include="Web\UI\Controls\FileUploader.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\PagePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
@@ -784,7 +784,7 @@
     <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
-    <Compile Include="Web\UI\Controls\PersonPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="DataFilters\DataFilterComponent.cs" />
     <Compile Include="DataFilters\DataFilterContainer.cs" />
     <Compile Include="DataFilters\Person\GroupTypeAttendanceFilter.cs" />
@@ -1046,11 +1046,11 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\CampusPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
-    <Compile Include="Web\UI\Controls\DateTimePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
@@ -1058,7 +1058,7 @@
     <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
     <Compile Include="Web\UI\Controls\LabeledText.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
-    <Compile Include="Web\UI\Controls\ImageSelector.cs" />
+    <Compile Include="Web\UI\Controls\ImageUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
     <Compile Include="Web\UI\Controls\LabeledCheckBoxList.cs" />
