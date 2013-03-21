@@ -1,0 +1,72 @@
+﻿<Application x:Class="CheckScannerUtilityWPF.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- Title text style -->
+        <Style x:Key="titleTextStyle" TargetType="{x:Type Label}">
+            <Setter Property="Label.Margin" Value="20,0,0,10"></Setter>
+            <Setter Property="Label.VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Label.HorizontalAlignment" Value="Right"></Setter>
+            <Setter Property="Label.FontWeight" Value="Bold"></Setter>
+            <Setter Property="Label.FontSize" Value="30"></Setter>
+            <Setter Property="Label.Foreground" Value="#d6d6d6"></Setter>
+        </Style>
+
+        <!-- Legend text style -->
+        <Style x:Key="legendTextStyle" TargetType="{x:Type Label}">
+            <Setter Property="Label.Margin" Value="0,0,0,0"></Setter>
+            <Setter Property="Label.VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Label.HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="Label.FontWeight" Value="SemiBold"></Setter>
+            <Setter Property="Label.FontSize" Value="21"></Setter>
+            <Setter Property="Label.Foreground" Value="#515151"></Setter>
+        </Style>
+
+        <!-- Label text style -->
+        <Style x:Key="labelTextStyle" TargetType="{x:Type Label}">
+            <Setter Property="Padding" Value="4,4,0,0" />
+            <Setter Property="Label.HorizontalAlignment" Value="Left"></Setter>
+            <Setter Property="Label.FontWeight" Value="Normal"></Setter>
+            <Setter Property="Label.FontSize" Value="14"></Setter>
+            <Setter Property="Label.Foreground" Value="#515151"></Setter>
+        </Style>
+        
+        <!-- Textbox style -->
+        <Style x:Key="textboxStyle" TargetType="{x:Type Control}">
+            <Setter Property="Margin" Value="4,1,0,4" />
+            <Setter Property="Width" Value="210" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Left"></Setter>
+        </Style>
+
+        <Style x:Key="textboxUrlStyle" BasedOn="{StaticResource ResourceKey=textboxStyle}" TargetType="{x:Type Control}">
+            <Setter Property="Width" Value="420" />
+        </Style>
+
+        <!-- Button style -->
+        <Style x:Key="buttonStylePrimary" TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="Auto" />
+            <Setter Property="Background" Value="#515151" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Name="ButtonBorder" CornerRadius="4,4,4,4" BorderThickness="1" BorderBrush="Black" Padding="8,2,8,2" Background="#515151">
+                            <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Cursor" Value="Hand" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="LimeGreen" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Application.Resources>
+</Application>
