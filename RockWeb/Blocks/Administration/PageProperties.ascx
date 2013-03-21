@@ -51,7 +51,7 @@
                     <div class="control-group">
                         <label class="control-label">Icon Image</label>
                         <div class="controls">
-                            <Rock:ImageSelector ID="imgIcon" runat="server" />
+                            <Rock:ImageUploader ID="imgIcon" runat="server" />
                         </div>
                     </div>
                     <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass"/>

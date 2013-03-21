@@ -19,8 +19,8 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Description" />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
-                        <Rock:ImageSelector ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
-                        <Rock:ImageSelector ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
+                        <Rock:ImageUploader ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
+                        <Rock:ImageUploader ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
                     </div>
                     <div class="span6">
 

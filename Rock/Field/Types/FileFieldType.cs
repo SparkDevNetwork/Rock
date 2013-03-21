@@ -30,7 +30,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new Rock.Web.UI.Controls.FileSelector();
+            return new Rock.Web.UI.Controls.FileUploader();
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.FileSelector )
+            if ( control != null && control is Rock.Web.UI.Controls.FileUploader )
             {
-                var fileSelector = (Rock.Web.UI.Controls.FileSelector)control;
+                var fileSelector = (Rock.Web.UI.Controls.FileUploader)control;
 
                 return fileSelector.BinaryFileId != 0 ? fileSelector.BinaryFileId.ToString() : string.Empty;
             }
@@ -58,9 +58,9 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null && control != null && control is Rock.Web.UI.Controls.FileSelector )
+            if ( value != null && control != null && control is Rock.Web.UI.Controls.FileUploader )
             {
-                var fileSelector = (Rock.Web.UI.Controls.FileSelector)control;
+                var fileSelector = (Rock.Web.UI.Controls.FileUploader)control;
 
                 int binaryFileId = 0;
                 if ( Int32.TryParse( value, out binaryFileId ) )
