@@ -764,6 +764,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\BreadCrumbs.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
