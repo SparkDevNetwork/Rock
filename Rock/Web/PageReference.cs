@@ -308,11 +308,11 @@ namespace Rock.Web
 
                                 parentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
-                                // TODO: This should eventually use new BreadCrumbDisplayTitle field
-                                //if (  )
-                                //{
-                                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( page.Name, parentPageReference.BuildUrl() ) );
-                                //}
+                                string bcName = page.BreadCrumbText;
+                                if ( bcName != string.Empty )
+                                {
+                                    parentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, parentPageReference.BuildUrl() ) );
+                                }
 
                                 foreach ( var block in page.Blocks.Where( b=> b.BlockLocation == Model.BlockLocation.Page) )
                                 {
@@ -330,6 +330,7 @@ namespace Rock.Web
 
                             }
 
+                            parentPageReference.BreadCrumbs.ForEach( c => c.Active = false );
                             pageReferences.Add( parentPageReference );
                         }
                     }

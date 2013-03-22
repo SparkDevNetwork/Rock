@@ -62,8 +62,7 @@ namespace Rock.Model
         /// <value>
         /// IsSystem.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -91,8 +90,7 @@ namespace Rock.Model
         /// <value>
         /// Requires Encryption.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -101,14 +99,84 @@ namespace Rock.Model
         /// <value>
         /// Enable View State.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool EnableViewState
         {
             get { return _enableViewState; }
             set { _enableViewState = value; }
         }
         private bool _enableViewState = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether title is displayed on page
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display title]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayTitle
+        {
+            get { return _pageDisplayTitle; }
+            set { _pageDisplayTitle = value; }
+        }
+        private bool _pageDisplayTitle = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether breadcrumbs are displayed on page
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display breadcrumb]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayBreadCrumb
+        {
+            get { return _pageDisplayBreadCrumb; }
+            set { _pageDisplayBreadCrumb = value; }
+        }
+        private bool _pageDisplayBreadCrumb = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether icon is displayed on page
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayIcon
+        {
+            get { return _pageDisplayIcon; }
+            set { _pageDisplayIcon = value; }
+        }
+        private bool _pageDisplayIcon = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether description is displayed on page
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display description]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayDescription
+        {
+            get { return _pageDisplayDescription; }
+            set { _pageDisplayDescription = value; }
+        }
+        private bool _pageDisplayDescription = true;
+
+        /// <summary>
+        /// Gets or sets the Display In Nav When.
+        /// </summary>
+        /// <value>
+        /// Determines when to display in a navigation 
+        /// 0 = When Security Allows
+        /// 1 = Always
+        /// 3 = Never   
+        /// 
+        /// Enum[DisplayInNavWhen].
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
         /// Gets or sets the Menu Display Description.
@@ -141,28 +209,27 @@ namespace Rock.Model
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
-        /// Gets or sets the Display In Nav When.
+        /// Gets or sets a value indicating whether name is displayed in breadcrumb.
         /// </summary>
         /// <value>
-        /// Determines when to display in a navigation 
-        /// 0 = When Security Allows
-        /// 1 = Always
-        /// 3 = Never   
-        /// 
-        /// Enum[DisplayInNavWhen].
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DisplayInNavWhen DisplayInNavWhen { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
+        /// <c>true</c> if [breadcrumb display name]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public bool BreadCrumbDisplayName
+        {
+            get { return _breadCrumbDisplayName; }
+            set { _breadCrumbDisplayName = value; }
+        }
+        private bool _breadCrumbDisplayName = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether icon is displayed in breadcrumb.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [breadcrumb display icon]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -201,6 +268,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? IconFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the Include Admin Footer.

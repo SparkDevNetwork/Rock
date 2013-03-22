@@ -688,9 +688,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns any breadcrumbs that should be added to navigation.  If none of the blocks on a page
-        /// return any breadcrumbs, then the default page breadcrumb will be used
-        /// any breadcrum
+        /// Returns breadcrumbs specific to the block that should be added to navigation
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>

@@ -106,6 +106,46 @@ namespace Rock.Web.Cache
         public bool EnableViewState { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [page display title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display title]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PageDisplayTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [page display breadcrumb].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display breadcrumb]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PageDisplayBreadCrumb { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [page display icon].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PageDisplayIcon { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether [page display description].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display description]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PageDisplayDescription { get; set; }
+
+        /// <summary>
+        /// Gets or sets the display in nav when.
+        /// </summary>
+        /// <value>
+        /// The display in nav when.
+        /// </value>
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [menu display description].
         /// </summary>
         /// <value>
@@ -130,12 +170,20 @@ namespace Rock.Web.Cache
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
-        /// Gets or sets the display in nav when.
+        /// Gets or sets a value indicating whether [breadcrumb display name].
         /// </summary>
         /// <value>
-        /// The display in nav when.
+        /// <c>true</c> if [breadcrumb display name]; otherwise, <c>false</c>.
         /// </value>
-        public DisplayInNavWhen DisplayInNavWhen { get; set; }
+        public bool BreadCrumbDisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [breadcrumb display icon].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [breadcrumb display icon]; otherwise, <c>false</c>.
+        /// </value>
+        public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.
@@ -344,6 +392,31 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the bread crumb text.
+        /// </summary>
+        /// <value>
+        /// The bread crumb text.
+        /// </value>
+        public string BreadCrumbText
+        {
+            get
+            {
+                string bcName = string.Empty;
+                
+                if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
+                {
+                    bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
+                }
+                if ( BreadCrumbDisplayName )
+                {
+                    bcName += Name;
+                }
+
+                return bcName;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -367,10 +440,16 @@ namespace Rock.Web.Cache
                 this.Layout = page.Layout;
                 this.RequiresEncryption = page.RequiresEncryption;
                 this.EnableViewState = page.EnableViewState;
+                this.PageDisplayTitle = page.PageDisplayTitle;
+                this.PageDisplayBreadCrumb = page.PageDisplayBreadCrumb;
+                this.PageDisplayIcon = page.PageDisplayIcon;
+                this.PageDisplayDescription = page.PageDisplayDescription;
+                this.DisplayInNavWhen = page.DisplayInNavWhen;
                 this.MenuDisplayDescription = page.MenuDisplayDescription;
                 this.MenuDisplayIcon = page.MenuDisplayIcon;
                 this.MenuDisplayChildPages = page.MenuDisplayChildPages;
-                this.DisplayInNavWhen = page.DisplayInNavWhen;
+                this.BreadCrumbDisplayName = page.BreadCrumbDisplayName;
+                this.BreadCrumbDisplayIcon = page.BreadCrumbDisplayIcon;
                 this.IconCssClass = page.IconCssClass;
                 this.Order = page.Order;
                 this.OutputCacheDuration = page.OutputCacheDuration;

@@ -8,9 +8,9 @@ using System.Web.UI;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Renders the title of a page
+    /// Renders the description of a page
     /// </summary>
-    public class PageTitle : Control
+    public class PageDescription : Control
     {
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
@@ -20,11 +20,14 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Page is RockPage )
             {
-                var rockPage = ( (RockPage)this.Page );
+                var pageCache = ( (RockPage)this.Page ).CurrentPage;
 
-                if ( rockPage.CurrentPage.PageDisplayTitle && !string.IsNullOrWhiteSpace( rockPage.Title ) )
+                if ( pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description ) )
                 {
-                    writer.Write( rockPage.Title );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "page-description" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( pageCache.Description );
+                    writer.RenderEndTag();
                 }
             }
         }

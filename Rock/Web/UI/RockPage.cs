@@ -98,11 +98,6 @@ namespace Rock.Web.UI
         public PageReference _currentPageReference = null;
 
         /// <summary>
-        /// The RockPage Title controls on the page.
-        /// </summary>
-        public List<PageTitle> PageTitles { get; private set; }
-
-        /// <summary>
         /// The content areas on a layout page that blocks can be added to 
         /// </summary>
         /// <remarks>
@@ -267,13 +262,6 @@ namespace Rock.Web.UI
                             Zones.Add( zone.ID, new KeyValuePair<string, Zone>( zone.Name, zone ) );
                     }
 
-                    if ( control is PageTitle )
-                    {
-                        PageTitle pageTitle = control as PageTitle;
-                        if ( pageTitle != null )
-                            PageTitles.Add( pageTitle );
-                    }
-
                     FindRockControls( control.Controls );
                 }
             }
@@ -328,7 +316,6 @@ namespace Rock.Web.UI
             }
 
             // Recurse the page controls to find the rock page title and zone controls
-            PageTitles = new List<PageTitle>();
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
             FindRockControls( this.Controls );
 
@@ -445,11 +432,11 @@ namespace Rock.Web.UI
                     // set page title
                     if ( CurrentPage.Title != null && CurrentPage.Title != "" )
                     {
-                        SetTitle( CurrentPage.Title );
+                        this.Title = CurrentPage.Title;
                     }
                     else
                     {
-                        SetTitle( CurrentPage.Name );
+                        this.Title = CurrentPage.Name;
                     }
 
                     // set viewstate on/off
@@ -487,12 +474,11 @@ namespace Rock.Web.UI
                     CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
                     // If the page is configured to display in the breadcrumbs...
-                    // TODO: This should eventually use new BreadCrumbDisplayTitle field
-                    //if (  )
-                    //{
-                        // Add a crumb for the page
-                        CurrentPageReference.BreadCrumbs.Add( new BreadCrumb( CurrentPage.Name, CurrentPageReference.BuildUrl() ) );
-                    //}
+                    string bcName = CurrentPage.BreadCrumbText;
+                    if (bcName != string.Empty)
+                    {
+                        CurrentPageReference.BreadCrumbs.Add( new BreadCrumb( bcName, CurrentPageReference.BuildUrl() ) );
+                    }
 
                     // Load the blocks and insert them into page zones
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
@@ -593,6 +579,12 @@ namespace Rock.Web.UI
                                 blockContent.Controls.Add( control );
                             }
                         }
+                    }
+
+                    // Make the last crumb for this page the active one
+                    if ( CurrentPageReference.BreadCrumbs.Any() )
+                    {
+                        CurrentPageReference.BreadCrumbs.Last().Active = true;
                     }
 
                     var pageReferences = PageReference.GetParentPageReferences( this, CurrentPage, CurrentPageReference );
@@ -775,18 +767,6 @@ namespace Rock.Web.UI
         #endregion
 
         #region Public Methods
-
-        /// <summary>
-        /// Sets the page's title.
-        /// </summary>
-        /// <param name="title">The title.</param>
-        public virtual void SetTitle( string title )
-        {
-            foreach ( PageTitle pageTitle in PageTitles )
-                pageTitle.Text = title;
-
-            this.Title = title;
-        }
 
         /// <summary>
         /// Returns the current page's first value for the selected attribute

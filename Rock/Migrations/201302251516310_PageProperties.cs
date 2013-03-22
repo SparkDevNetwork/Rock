@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class PageProperties : RockMigration
+    public partial class PageProperties : RockMigration_4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
