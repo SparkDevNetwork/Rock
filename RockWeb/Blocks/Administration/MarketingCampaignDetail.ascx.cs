@@ -14,6 +14,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -92,6 +93,31 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns any breadcrumbs that should be added to navigation.  If none of the blocks on a page
+        /// return any breadcrumbs, then the default page breadcrumb will be used
+        /// any breadcrum
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs(PageReference pageReference)
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int id = int.MinValue;
+            if (int.TryParse(PageParameter( pageReference, "marketingCampaignId" ), out id))
+            {
+                MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
+                var marketingCampaign = marketingCampaignService.Get( id );
+                if (marketingCampaign != null)
+                {
+                    breadCrumbs.Add(new BreadCrumb(marketingCampaign.Title, pageReference));
+                }
+            }
+
+            return breadCrumbs;
         }
 
         #endregion
@@ -432,7 +458,7 @@ namespace RockWeb.Blocks.Administration
 
                     Dictionary<string, string> queryString = new Dictionary<string, string>();
                     queryString.Add( "groupId", marketingCampaign.EventGroupId.ToString() );
-                    string eventGroupUrl = CurrentPage.BuildUrl( page.Id, queryString );
+                    string eventGroupUrl = new PageReference( page.Id, 0, queryString ).BuildUrl();
                     eventGroupHtml = string.Format( "<a href='{0}'>{1}</a>", eventGroupUrl, marketingCampaign.EventGroup.Name );
                 }
 

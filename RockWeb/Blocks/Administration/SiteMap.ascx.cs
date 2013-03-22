@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 public partial class SiteMap : RockBlock
@@ -25,7 +26,7 @@ public partial class SiteMap : RockBlock
         string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
         foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
-            treeHtml += string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, RockPage.BuildUrl( page.Id, new Dictionary<string, string>() ) );
+            treeHtml += string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, new PageReference(page.Id).BuildUrl() );
             AddChildNodes( ref treeHtml, page, pageList, false );
             treeHtml += "</li>" + Environment.NewLine;
         }
@@ -54,7 +55,7 @@ public partial class SiteMap : RockBlock
 
             foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                string childNodeHtml = string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' class='btn'>" + childPage.Name + "</a>" + Environment.NewLine, RockPage.BuildUrl( childPage.Id, new Dictionary<string, string>() ) );
+                string childNodeHtml = string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, new PageReference(childPage.Id).BuildUrl() );
                 if ( childPage.Blocks.Count > 0 )
                 {
                     childNodeHtml += "<ul>";

@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
@@ -183,47 +184,6 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [include admin footer]; otherwise, <c>false</c>.
         /// </value>
         public bool IncludeAdminFooter { get; set; }
-
-        /// <summary>
-        /// Gets or sets the route id.
-        /// </summary>
-        /// <value>
-        /// The route id.
-        /// </value>
-        public int RouteId 
-        {
-            get
-            {
-                return _routeId;
-            }
-            set
-            {
-                _routeId = value;
-            }
-        }
-        private int _routeId = -1;
-
-        /// <summary>
-        /// Gets a <see cref="Rock.Web.UI.PageReference"/> for the current page
-        /// </summary>
-        public Rock.Web.UI.PageReference PageReference 
-        {
-            get
-            {
-                return new Rock.Web.UI.PageReference( Id, RouteId );
-            }
-        }
-
-        /// <summary>
-        /// Gets the URL to the current page using the page/{id} route.
-        /// </summary>
-        public string Url
-        {
-            get
-            {
-                return Rock.Web.UI.RockPage.BuildUrl( new Rock.Web.UI.PageReference( Id, -1 ), null, null );
-            }
-        }
 
         /// <summary>
         /// Gets the parent page.
@@ -490,6 +450,22 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets all the pages in the current hierarchy
+        /// </summary>
+        /// <returns></returns>
+        public List<PageCache> GetPageHierarchy()
+        {
+            var pages = new List<PageCache> { this };
+
+            if ( ParentPage != null )
+            {
+                ParentPage.GetPageHierarchy().ForEach( p => pages.Add( p ) );
+            }
+
+            return pages;
+        }
+
+        /// <summary>
         /// Flushes the cached block instances.
         /// </summary>
         public void FlushBlocks()
@@ -617,48 +593,6 @@ namespace Rock.Web.Cache
             RockPage.AddScriptLink( page, path );
         }
 
-        /// <summary>
-        /// Builds a URL from a page and parameters with support for routes
-        /// </summary>
-        /// <param name="pageId">Page to link to</param>
-        /// <param name="parms">Dictionary of parameters</param>
-        public string BuildUrl( int pageId, Dictionary<string, string> parms )
-        {
-            return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, null );
-        }
-
-        /// <summary>
-        /// Builds a URL from a page and parameters with support for routes
-        /// </summary>
-        /// <param name="pageId">Page to link to</param>
-        /// <param name="parms">Dictionary of parameters</param>
-        /// <param name="queryString">Querystring to include paramters from</param>
-        public string BuildUrl( int pageId, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
-        {
-            return RockPage.BuildUrl( new Rock.Web.UI.PageReference( pageId, -1 ), parms, queryString );
-        }
-
-        /// <summary>
-        /// Builds a URL from a page and parameters with support for routes
-        /// </summary>
-        /// <param name="pageRef">PageReference to use for the link</param>
-        /// <param name="parms">Dictionary of parameters</param>
-        public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms )
-        {
-            return RockPage.BuildUrl( pageRef, parms, null );
-        }
-
-        /// <summary>
-        /// Builds a URL from a page and parameters with support for routes
-        /// </summary>
-        /// <param name="pageRef">PageReference to use for the link</param>
-        /// <param name="parms">Dictionary of parameters</param>
-        /// <param name="queryString">Querystring to include paramters from</param>
-        public string BuildUrl( Rock.Web.UI.PageReference pageRef, Dictionary<string, string> parms, System.Collections.Specialized.NameValueCollection queryString )
-        {
-            return RockPage.BuildUrl( pageRef, parms, queryString );
-        }
-
         #endregion
 
         #region Menu XML Methods
@@ -700,7 +634,7 @@ namespace Rock.Web.Cache
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
-                    new XAttribute( "url", this.Url ),
+                    new XAttribute( "url", new PageReference(this.Id).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),

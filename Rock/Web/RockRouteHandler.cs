@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +29,9 @@ namespace Rock.Web
                 throw new ArgumentNullException( "requestContext" );
 
             string pageId = "";
-            int routeId = -1;
+            int routeId = 0;
+            
+            var parms = new Dictionary<string,string>();
 
             // Pages using the default routing URL will have the page id in the RouteData.Values collection
             if ( requestContext.RouteData.Values["PageId"] != null )
@@ -42,6 +43,11 @@ namespace Rock.Web
             {
                 pageId = (string)requestContext.RouteData.DataTokens["PageId"];
                 routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+
+                foreach ( var routeParm in requestContext.RouteData.Values )
+                {
+                    parms.Add( routeParm.Key, (string)routeParm.Value );
+                }
             }
             // If page has not been specified get the site by the domain and use the site's default page
             else
@@ -113,9 +119,6 @@ namespace Rock.Web
 
             if ( page != null )
             {
-                // load the route id
-                page.RouteId = routeId;
-
                 theme = page.Site.Theme;
                 layout = page.Layout;
                 layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
@@ -125,11 +128,13 @@ namespace Rock.Web
                 page = Cache.PageCache.Read( new Model.Page() );
             }
 
+
             try
             {
                 // Return the page for the selected theme and layout
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                 cmsPage.CurrentPage = page;
+                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
             catch ( System.Web.HttpException )
@@ -151,6 +156,7 @@ namespace Rock.Web
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                 cmsPage.CurrentPage = page;
+                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
         }
