@@ -68,6 +68,7 @@
 		<div class="container-fluid body-content">
 			<div class="row-fluid">
 				<div class="span12">
+                    <Rock:BreadCrumbs ID="bc" runat="server" />
 					<Rock:Zone ID="Content" runat="server" />
 				</div>
 			</div>

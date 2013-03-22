@@ -629,6 +629,10 @@
     <Compile Include="Migrations\201303152128532_UpdateSomeText.Designer.cs">
       <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303191826126_UpdateLocation.cs" />
+    <Compile Include="Migrations\201303191826126_UpdateLocation.Designer.cs">
+      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -760,6 +764,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\BreadCrumbs.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
@@ -795,6 +800,7 @@
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
+    <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -1111,9 +1117,7 @@
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />
-    <Compile Include="Web\UI\PageReference.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Web\PageReference.cs" />
     <Compile Include="Reflection.cs" />
     <Compile Include="Jobs\JobPulse.cs" />
     <Compile Include="Jobs\RockJobListener.cs" />
@@ -1478,6 +1482,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303152128532_UpdateSomeText.resx">
       <DependentUpon>201303152128532_UpdateSomeText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303191826126_UpdateLocation.resx">
+      <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

@@ -12,6 +12,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -77,6 +78,31 @@ namespace RockWeb.Blocks.Administration
                     Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, false );
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns any breadcrumbs that should be added to navigation.  If none of the blocks on a page
+        /// return any breadcrumbs, then the default page breadcrumb will be used
+        /// any breadcrum
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int id = int.MinValue;
+            if ( int.TryParse( PageParameter( pageReference, "definedTypeId" ), out id ) )
+            {
+                var service = new DefinedTypeService();
+                var item = service.Get( id );
+                if ( item != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( item.Name, pageReference ) );
+                }
+            }
+
+            return breadCrumbs;
         }
 
         /// <summary>

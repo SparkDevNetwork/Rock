@@ -12,10 +12,10 @@ using System.Web;
 using System.Web.UI;
 using System.Xml.Linq;
 using System.Xml.Xsl;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
                         queryString.Add( "marketingCampaignAd", marketingCampaignAd.Id.ToString() );
-                        detailPageUrl = CurrentPage.BuildUrl( detailPage.Id, queryString );
+                        detailPageUrl = new PageReference( detailPage.Id, 0, queryString ).BuildUrl();
                     }
                 }
 

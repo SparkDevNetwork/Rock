@@ -119,8 +119,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         var locationElement = new XElement( "location",
                             new XAttribute( "id", groupLocation.LocationId.ToString() ),
-                            new XAttribute( "type", groupLocation.LocationTypeValueId.HasValue ?
-                                Rock.Web.Cache.DefinedValueCache.Read( groupLocation.LocationTypeValueId.Value ).Name : "Unknown" ) );
+                            new XAttribute( "type", groupLocation.GroupLocationTypeValueId.HasValue ?
+                                Rock.Web.Cache.DefinedValueCache.Read( groupLocation.GroupLocationTypeValueId.Value ).Name : "Unknown" ) );
                         if ( groupLocation.Location != null )
                         {
                             var addressElement = new XElement( "address" );
