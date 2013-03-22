@@ -164,10 +164,10 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns(int? groupTypeId)
         {
             GroupRoleService groupRoleService = new GroupRoleService();
-            List<GroupRole> groupRoles = groupRoleService.Queryable().OrderBy( a => a.Name ).ToList();
+            List<GroupRole> groupRoles = groupRoleService.Queryable().Where(a => a.GroupTypeId == groupTypeId).OrderBy( a => a.Name ).ToList();
             groupRoles.Insert( 0, new GroupRole { Id = None.Id, Name = None.Text } );
             ddlDefaultGroupRole.DataSource = groupRoles;
             ddlDefaultGroupRole.DataBind();
@@ -204,7 +204,7 @@ namespace RockWeb.Blocks.Crm
                 lActionTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName );
             }
 
-            LoadDropDowns();
+            LoadDropDowns(groupType.Id);
 
             ChildGroupTypesDictionary = new Dictionary<int, string>();
             LocationTypesDictionary = new Dictionary<int, string>();
