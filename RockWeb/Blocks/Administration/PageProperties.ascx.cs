@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private PageCache _page;
-        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Menu Display", "Advanced Settings", "Import/Export"} ;
+        private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
 
         /// <summary>
         /// Gets or sets the current property.
@@ -153,18 +153,28 @@ namespace RockWeb.Blocks.Administration
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
                 ddlLayout.Text = _page.Layout;
+                imgIcon.ImageId = page.IconFileId;
+                tbIconCssClass.Text = _page.IconCssClass;
+
+                cbPageTitle.Checked = _page.PageDisplayTitle;
+                cbPageBreadCrumb.Checked = _page.PageDisplayBreadCrumb;
+                cbPageIcon.Checked = _page.PageDisplayIcon;
+                cbPageDescription.Checked = _page.PageDisplayDescription;
+
                 ddlMenuWhen.SelectedValue = ( (int)_page.DisplayInNavWhen ).ToString();
                 cbMenuDescription.Checked = _page.MenuDisplayDescription;
                 cbMenuIcon.Checked = _page.MenuDisplayIcon;
                 cbMenuChildPages.Checked = _page.MenuDisplayChildPages;
-                tbIconCssClass.Text = _page.IconCssClass;
+
+                cbBreadCrumbIcon.Checked = _page.BreadCrumbDisplayIcon;
+                cbBreadCrumbName.Checked = _page.BreadCrumbDisplayName;
+
                 cbRequiresEncryption.Checked = _page.RequiresEncryption;
                 cbEnableViewState.Checked = _page.EnableViewState;
                 cbIncludeAdminFooter.Checked = _page.IncludeAdminFooter;
                 tbCacheDuration.Text = _page.OutputCacheDuration.ToString();
                 tbDescription.Text = _page.Description;
                 tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
-                imgIcon.ImageId = page.IconFileId;
 
                 // Add enctype attribute to page's <form> tag to allow file upload control to function
                 Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
@@ -244,12 +254,22 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     page.Layout = ddlLayout.Text;
+                    page.IconFileId = imgIcon.ImageId;
+                    page.IconCssClass = tbIconCssClass.Text;
+
+                    page.PageDisplayTitle = cbPageTitle.Checked;
+                    page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
+                    page.PageDisplayIcon = cbPageIcon.Checked;
+                    page.PageDisplayDescription = cbPageDescription.Checked;
+
                     page.DisplayInNavWhen = (DisplayInNavWhen)Enum.Parse( typeof( DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
                     page.MenuDisplayDescription = cbMenuDescription.Checked;
                     page.MenuDisplayIcon = cbMenuIcon.Checked;
-                    page.IconFileId = imgIcon.ImageId;
                     page.MenuDisplayChildPages = cbMenuChildPages.Checked;
-                    page.IconCssClass = tbIconCssClass.Text;
+
+                    page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
+                    page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
+
                     page.RequiresEncryption = cbRequiresEncryption.Checked;
                     page.EnableViewState = cbEnableViewState.Checked;
                     page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
@@ -436,28 +456,28 @@ namespace RockWeb.Blocks.Administration
             if ( CurrentProperty.Equals( "Basic Settings" ) )
             {
                 pnlBasicProperty.Visible = true;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
                 pnlBasicProperty.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Menu Display" ) )
+            else if ( CurrentProperty.Equals( "Display Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = true;
+                pnlDisplaySettings.Visible = true;
                 pnlAdvancedSettings.Visible = false;
-                pnlMenuDisplay.DataBind();
+                pnlDisplaySettings.DataBind();
             }
             else if ( CurrentProperty.Equals( "Advanced Settings" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = true;
                 pnlAdvancedSettings.DataBind();
             }
             else if ( CurrentProperty.Equals( "Import/Export" ) )
             {
                 pnlBasicProperty.Visible = false;
-                pnlMenuDisplay.Visible = false;
+                pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
                 pnlImportExport.Visible = true;
                 pnlImportExport.DataBind();

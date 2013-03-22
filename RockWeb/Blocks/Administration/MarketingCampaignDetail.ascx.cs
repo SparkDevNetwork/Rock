@@ -96,24 +96,26 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Returns any breadcrumbs that should be added to navigation.  If none of the blocks on a page
-        /// return any breadcrumbs, then the default page breadcrumb will be used
-        /// any breadcrum
+        /// Returns breadcrumbs specific to the block that should be added to navigation
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>
-        public override List<BreadCrumb> GetBreadCrumbs(PageReference pageReference)
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
 
             int id = int.MinValue;
-            if (int.TryParse(PageParameter( pageReference, "marketingCampaignId" ), out id))
+            if ( int.TryParse( PageParameter( pageReference, "marketingCampaignId" ), out id ) )
             {
-                MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
-                var marketingCampaign = marketingCampaignService.Get( id );
-                if (marketingCampaign != null)
+                var service = new MarketingCampaignService();
+                var item = service.Get( id );
+                if ( item != null )
                 {
-                    breadCrumbs.Add(new BreadCrumb(marketingCampaign.Title, pageReference));
+                    breadCrumbs.Add( new BreadCrumb( item.Title, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Marketing Campaign", pageReference ) );
                 }
             }
 

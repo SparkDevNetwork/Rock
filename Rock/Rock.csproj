@@ -633,7 +633,14 @@
     <Compile Include="Migrations\201303191826126_UpdateLocation.Designer.cs">
       <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\RockMigration.cs" />
+    <Compile Include="Migrations\201303221324315_AddPageDisplayProperties.cs" />
+    <Compile Include="Migrations\201303221324315_AddPageDisplayProperties.Designer.cs">
+      <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\RockMigration_4.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
       <SubType>Code</SubType>
@@ -764,7 +771,9 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
-    <Compile Include="Web\UI\Controls\BreadCrumbs.cs" />
+    <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
+    <Compile Include="Web\UI\Controls\PageDescription.cs" />
+    <Compile Include="Web\UI\Controls\PageIcon.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
@@ -1485,6 +1494,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303191826126_UpdateLocation.resx">
       <DependentUpon>201303191826126_UpdateLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303221324315_AddPageDisplayProperties.resx">
+      <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
