@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+﻿<%@ Page ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <!DOCTYPE html> 
 <html>
 <head id="Head1" runat="server">

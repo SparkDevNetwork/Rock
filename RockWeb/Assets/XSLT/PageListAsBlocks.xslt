@@ -11,7 +11,7 @@
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
       <div class="widget page-list-as-blocks clearfix">
-        <header>
+        <!--<header>
           <xsl:if test="@icon-css-class != ''">
             <i>
               <xsl:attribute name="class">
@@ -27,7 +27,7 @@
               <xsl:value-of disable-output-escaping="yes" select="page/description"/>
             </p>
           </xsl:if>
-        </header>
+        </header>-->
 
         <div class="widget-content">
           <ul>
