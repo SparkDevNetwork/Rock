@@ -69,7 +69,14 @@
 			<div class="row-fluid">
 				<div class="span12">
                     <Rock:BreadCrumbs ID="bc" runat="server" />
-					<Rock:Zone ID="Content" runat="server" />
+                    
+                    <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
+                    <div class="alert alert-error ajax-error" style="display:none">
+                        <strong>Ooops!</strong>
+                        <span class="ajax-error-message" / ></span>
+                    </div>
+					
+                    <Rock:Zone ID="Content" runat="server" />
 				</div>
 			</div>
 		</div>
