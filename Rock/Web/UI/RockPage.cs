@@ -539,6 +539,12 @@ namespace Rock.Web.UI
                                     div.Attributes.Add( "class", "alert-message block-message error" );
                                     div.InnerHtml = string.Format( "Error Loading Block:<br/><br/><strong>{0}</strong>", ex.Message );
                                     control = div;
+
+                                    if ( this.IsPostBack )
+                                    {
+                                        // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
+                                        throw ex;
+                                    }
                                 }
 
                                 RockBlock blockControl = null;
