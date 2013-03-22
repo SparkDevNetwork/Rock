@@ -561,7 +561,7 @@ namespace RockWeb.Blocks.Crm
 
             GroupMemberAttributesState = new ViewStateList<Attribute>();
 
-            gpParentGroup.SetValue( group.ParentGroup );
+            gpParentGroup.SetValue( group.ParentGroup ?? new GroupService().Get(group.ParentGroupId ?? 0) );
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
