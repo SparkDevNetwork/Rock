@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class UpdateReport : RockMigration
+    public partial class UpdateReport : RockMigration_4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

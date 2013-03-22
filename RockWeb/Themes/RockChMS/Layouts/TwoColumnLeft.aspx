@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -75,6 +75,9 @@
     <div class="container-fluid body-content">
         <div class="row-fluid">
             <div class="span12">
+                <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                <Rock:PageIcon ID="PageIcon" runat="server" />
+                <Rock:PageDescription ID="PageDescription" runat="server" />
 
                 <%-- Content Area --%>
                     

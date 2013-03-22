@@ -81,31 +81,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Returns any breadcrumbs that should be added to navigation.  If none of the blocks on a page
-        /// return any breadcrumbs, then the default page breadcrumb will be used
-        /// any breadcrum
-        /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <returns></returns>
-        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
-        {
-            var breadCrumbs = new List<BreadCrumb>();
-
-            int id = int.MinValue;
-            if ( int.TryParse( PageParameter( pageReference, "definedTypeId" ), out id ) )
-            {
-                var service = new DefinedTypeService();
-                var item = service.Get( id );
-                if ( item != null )
-                {
-                    breadCrumbs.Add( new BreadCrumb( item.Name, pageReference ) );
-                }
-            }
-
-            return breadCrumbs;
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnSaveType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -524,6 +499,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
         #region Edit Values
 
         /// <summary>
