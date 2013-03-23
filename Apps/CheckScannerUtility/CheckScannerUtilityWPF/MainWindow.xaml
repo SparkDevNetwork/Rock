@@ -1,6 +1,13 @@
 ﻿<NavigationWindow x:Class="CheckScannerUtilityWPF.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="CheckScanner" Height="520" Width="780" Source="LoginPage.xaml" Icon="./resources/favicon.ico" MinWidth="600" 
-                  FontFamily="./resources/#Open Sans" FontSize="14">
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  Name="mainWindow"
+                  Title="CheckScanner"
+                  Height="520"
+                  Width="780"
+                  Source="LoginPage.xaml"
+                  Icon="./resources/favicon.ico"
+                  MinWidth="600"
+                  FontFamily="./resources/#Open Sans"
+                  FontSize="14">
 </NavigationWindow>
