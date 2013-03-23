@@ -228,13 +228,11 @@ namespace CheckScannerUtilityWPF
 
             BitmapImage bitImageFront = new BitmapImage();
 
-            //Create an image stream and a bitmap object to hold the image 
-            using ( System.IO.MemoryStream streamBitmap = new MemoryStream( imageBytes ) )
-            {
-                streamBitmap.Seek( 0, SeekOrigin.Begin );
-                bitImageFront.CacheOption = BitmapCacheOption.OnLoad;
-                bitImageFront.StreamSource = streamBitmap;
-            }
+            bitImageFront.BeginInit();
+            //bitImageFront.CacheOption = BitmapCacheOption.OnLoad;
+            bitImageFront.StreamSource = new MemoryStream( imageBytes );
+            bitImageFront.EndInit();
+
             return bitImageFront;
         }
 
