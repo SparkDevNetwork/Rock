@@ -16,39 +16,14 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
+using Rock.Attribute;
 
 
 namespace RockWeb.Blocks.Administration
 {
+    [DetailPage]
     public partial class FinancialBatch : Rock.Web.UI.RockBlock
     {
-        #region workingnotes
-        /*
-         * filters
-         * 
-         * From Date
-    Through Date
-    IsClosed
-    Title
-    Batch Type
-         * 
-         grid columns
-                    ID
-    Title 
-    Date Range (Start Date – End Date) (sortable)
-    Is Closed (sortable)
-    Control Amount
-    Batch Total
-    Variance (Control Amt – Batch Total) if not zero would be nice if the table cell (td) was marked with class="warning" so we could style it red.
-    Batch Count
-    Batch Type
-    Funds listed w/ Batch totals
-    Edit Button
-    Delete Button (should warn though)
-         * 
-         * 
-         */
-        #endregion
 
         private bool _canConfigure = false;
 
@@ -76,11 +51,6 @@ namespace RockWeb.Blocks.Administration
                 grdFinancialBatch.GridRebind += grdFinancialBatch_GridRebind;
                 grdFinancialBatch.GridReorder += grdFinancialBatch_GridReorder;
 
-                modalValue.SaveClick += btnSaveFinancialBatch_Click;
-                modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
-
-                modalTransactions.SaveClick += btnSaveFinancialTransaction_Click;
-                modalTransactions.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdTransValue.ClientID );
             }
             else
             {
@@ -173,10 +143,9 @@ namespace RockWeb.Blocks.Administration
             dtFromDate.Text = fromDate.ToShortDateString();
             dtThroughDate.Text = rFBFilter.GetUserPreference( "Through Date" );
             txtTitle.Text = rFBFilter.GetUserPreference( "Title" );
-            cbIsClosed.Checked = rFBFilter.GetUserPreference( "Is Closed" ) == "checked" ? true : false;
+            cbIsClosedFilter.Checked = rFBFilter.GetUserPreference( "Is Closed" ) == "checked" ? true : false;
 
-            BindDefinedTypeDropdown( ddlBatchType, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE, "Batch Type" );
-           
+            BindDefinedTypeDropdown( ddlBatchType, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE, "Batch Type" );           
 
         }
 
@@ -200,6 +169,7 @@ namespace RockWeb.Blocks.Administration
             batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
             BindGrid();
         }
+        
         void grdFinancialBatch_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
@@ -245,6 +215,7 @@ namespace RockWeb.Blocks.Administration
 
             BindGrid();
         }
+        
         /// <summary>
         /// Handles the EditValue event of the rGrid control.
         /// </summary>
@@ -252,104 +223,18 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_EditValue( object sender, RowEventArgs e )
         {
-            BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE, "Batch Type" );
-            
-            ShowEditValue( (int)grdFinancialBatch.DataKeys[e.RowIndex]["id"], true );
-
-        }
-        /// <summary>
-        /// Shows the edit value.
-        /// </summary>
-        /// <param name="attributeId">The attribute id.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowEditValue( int batchId, bool setValues )
-        {
-
-            hfIdValue.Value = batchId.ToString();           
-           
-            var batchValue = new Rock.Model.FinancialBatchService().Get( batchId );
-
-            if ( batchValue != null )
-            {
-                lValue.Text = "Edit";
-                tbName.Text = batchValue.Name;
-                dtBatchDateStart.SelectedDate = batchValue.BatchDateStart;
-                dtBatchDateEnd.SelectedDate = batchValue.BatchDateEnd;
-                ddlCampus.SetValue( batchValue.CampusId);
-                ddlEntity.SetValue(batchValue.EntityId);
-                cbIsClosed.Checked = batchValue.IsClosed;
-                ddlBatchType2.SetValue( batchValue.EntityId );
-                tbControlAmount.Text = batchValue.ControlAmount.ToString();
-            }
-            else
-            {
-                lValue.Text = "Add";
-                emptyInputs();
-            }
-
-            modalValue.Show();
-            
-        }
-
-        protected void btnSaveFinancialBatch_Click( object sender, EventArgs e )
-        {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var financialBatchService = new Rock.Model.FinancialBatchService();
-                Rock.Model.FinancialBatch financialBatch = null;
-                int financialBatchId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
-
-                if ( financialBatchId == 0 )
-                {
-                    financialBatch = new Rock.Model.FinancialBatch();
-                    financialBatchService.Add( financialBatch, CurrentPersonId );
-                }
-                else
-                {
-                    financialBatch = financialBatchService.Get( financialBatchId );
-                }
-
-                financialBatch.Name = tbName.Text;
-                financialBatch.BatchDateStart = dtBatchDateStart.SelectedDate;
-                financialBatch.BatchDateEnd = dtBatchDateEnd.SelectedDate;
-                financialBatch.CampusId = ddlCampus.SelectedValueAsInt();
-                financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
-                financialBatch.IsClosed = cbIsClosed.Checked;
-                financialBatch.BatchTypeValueId = ddlBatchType2.SelectedValueAsInt().HasValue?(int)ddlBatchType2.SelectedValueAsInt(): -1;
-                float fcontrolamt = 0f;
-                float.TryParse( tbControlAmount.Text, out fcontrolamt);
-                financialBatch.ControlAmount = fcontrolamt ;
-
-                financialBatchService.Save( financialBatch, CurrentPersonId );
-            }
-
-            BindFilter();
-            BindGrid();
-
-        }
-
-        protected void emptyInputs()
-        {
-            tbName.Text = string.Empty;
-            dtBatchDateStart.SelectedDate = null;
-            dtBatchDateEnd.SelectedDate = null;
-            ddlCampus.SetValue( -1 );
-            ddlEntity.SetValue( -1 );
-            cbIsClosed.Checked = false;
-            ddlBatchType2.SetValue( -1 );
-            tbControlAmount.Text = string.Empty;
-        }
-
-        protected void btnCancelFinancialBatch_Click( object sender, EventArgs e )
-        {
-            emptyInputs();
-            modalValue.Hide();
+            ShowDetailForm( (int)grdFinancialBatch.DataKeys[e.RowIndex]["id"] );
         }
 
         protected void gridFinancialBatch_Add( object sender, EventArgs e )
         {
             BindFilter();
-            ShowEditValue( 0, false );
+            ShowDetailForm( 0 );
+        }
+
+        protected void ShowDetailForm( int id )
+        {
+            NavigateToDetailPage( "financialBatchId", id );
         }
         #endregion
 
@@ -358,9 +243,7 @@ namespace RockWeb.Blocks.Administration
             pnlMessage.Controls.Clear();
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;
-
         }
-
            
         protected void grdFinancialBatch_RowDataBound( object sender, GridViewRowEventArgs e )
         {
@@ -373,8 +256,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     var data = batch.Transactions.Where(d => d.Amount > 0);
                     var totalSum = data.Sum(d => d.Amount);
-                    TransactionTotal.Text = totalSum.ToString("{0:C}");
-
+                    TransactionTotal.Text = String.Format("{0:C}", totalSum); 
 
                     Literal Variance = e.Row.FindControl( "Variance" ) as Literal;
                     if ( Variance != null )
@@ -382,7 +264,7 @@ namespace RockWeb.Blocks.Administration
                         if ( batch.ControlAmount > 0 )
                         {
                             var variance = Convert.ToDecimal(batch.ControlAmount) - totalSum;
-                            Variance.Text = variance.ToString( "{0:C}" );
+                            Variance.Text = String.Format( "{0:C}", variance ); 
                         }
                     }
 
@@ -393,193 +275,10 @@ namespace RockWeb.Blocks.Administration
                     TransactionCount.Text = batch.Transactions.Count.ToString();
                 }
 
-                Grid transactions = e.Row.FindControl( "transactionGrid" ) as Grid;
-                if ( transactions != null )
-                {
-                    transactions.DataSource = batch.Transactions.ToList();
-                    transactions.DataBind();
-                    transactions.DataKeyNames = new string[] { "id" };
-                    transactions.Actions.IsAddEnabled = true;
-                    transactions.Actions.AddClick += gridFinancialTransaction_Add;
-                }
                
             }
         }
 
-        #region add, edit and delete blocks Financial Transaction
-
-        protected void grdFinancialTransactions_Delete( object sender, RowEventArgs e )
-        {
-            var financialTransactionService = new Rock.Model.FinancialTransactionService();
-            Grid grdTransactions = sender as Grid;
-            Rock.Model.FinancialTransaction financialTransaction = financialTransactionService.Get( (int)grdTransactions.DataKeys[e.RowIndex]["id"] );
-            if ( financialTransaction != null )
-            {
-                financialTransactionService.Delete( financialTransaction, CurrentPersonId );
-                financialTransactionService.Save( financialTransaction, CurrentPersonId );
-            }
-
-            BindGrid();
-        }
-        /// <summary>
-        /// Handles the EditValue event of the rGrid control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void rTransactionsGrid_EditValue( object sender, RowEventArgs e )
-        {
-            Grid transactionGrid = sender as Grid;
-            ShowTransactionEditValue( (int)transactionGrid.DataKeys[e.RowIndex]["Id"], (int)transactionGrid.DataKeys[e.RowIndex]["BatchId"], true );
-
-        }
-        /// <summary>
-        /// Shows the edit value.
-        /// </summary>
-        /// <param name="transactionId">The transactionId id.</param>
-        /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowTransactionEditValue( int transactionId, int batchid, bool setValues )
-        {
-
-            hfIdTransValue.Value = transactionId.ToString();
-            hfBatchId.Value = batchid.ToString();
-
-            var transactionValue = new Rock.Model.FinancialTransactionService().Get( transactionId );
-
-            if ( transactionValue != null )
-            {
-                lValue.Text = "Edit";
-                
-                hfIdTransValue.Value = transactionValue.Id.ToString();
-                tbAmount.Text = transactionValue.Amount.ToString();
-                hfBatchId.Value = transactionValue.BatchId.ToString();
-                ddlCreditCartType.SetValue( transactionValue.CreditCardTypeValueId);
-                ddlCurrencyType.SetValue(  transactionValue.CurrencyTypeValueId);
-                tbDescription.Text = transactionValue.Description;
-                TranEntity.Text = transactionValue.EntityId.ToString();
-                ddlEntityType.SetValue(  transactionValue.EntityTypeId);
-                ddlPaymentGateway.SetValue(  transactionValue.PaymentGatewayId);
-                tbRefundTransactionId.Text = transactionValue.RefundTransactionId.ToString();
-                ddlSourceType.SetValue(  transactionValue.SourceTypeValueId);
-                tbSummary.Text = transactionValue.Summary;
-                tbTransactionCode.Text = transactionValue.TransactionCode;
-                dtTransactionDateTime.Text = transactionValue.TransactionDateTime.ToString();
-                tbTransactionImageId.Text = transactionValue.TransactionImageId.ToString();
-
-
-            }
-            else
-            {
-                lValue.Text = "Add";
-                emptyInputs();
-            }
-
-            modalTransactions.Show();
-
-        }
-
-        protected void btnSaveFinancialTransaction_Click( object sender, EventArgs e )
-        {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var financialTransactionService = new Rock.Model.FinancialTransactionService();
-                Rock.Model.FinancialTransaction financialTransaction = null;
-                int financialTransactionId = ( hfIdTransValue.Value ) != null ? Int32.Parse( hfIdTransValue.Value ) : 0;
-                int batchid = ( hfBatchId.Value ) != null ? Int32.Parse( hfBatchId.Value ) : 0;
-
-                if ( financialTransactionId == 0 )
-                {
-                    financialTransaction = new Rock.Model.FinancialTransaction();
-                    financialTransactionService.Add( financialTransaction, CurrentPersonId );
-                    financialTransaction.BatchId = batchid;
-                }
-                else
-                {
-                    financialTransaction = financialTransactionService.Get( financialTransactionId );
-                }
-
-//financialTransaction.Id	=	hfIdTransValue.Value;
-//financialTransaction.Amount	=	tbAmount.Text;
-//financialTransaction.BatchId	=	hfBatchId.Value;
-if ( ddlCreditCartType.SelectedValue != "-1" )
-{
-    financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCartType.SelectedValue );
-}
-if ( ddlCurrencyType.SelectedValue != "-1" )
-{
-    financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
-}
-financialTransaction.Description	=	tbDescription.Text;
-if ( TranEntity.SelectedValue != "-1" )
-{
-    financialTransaction.EntityId = int.Parse( TranEntity.SelectedValue );
-}
-if ( ddlEntityType.SelectedValue != "-1" )
-{
-    financialTransaction.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
-}
-if ( ddlPaymentGateway.SelectedValue != "-1" )
-{
-    financialTransaction.PaymentGatewayId = int.Parse( ddlPaymentGateway.SelectedValue );
-}
-//financialTransaction.RefundTransactionId	=	tbRefundTransactionId.Text
-//financialTransaction.SourceTypeValueId	=	ddlSourceType
-//financialTransaction.Summary	=	tbSummary.Text;
-//financialTransaction.TransactionCode	=	tbTransactionCode.Text;
-//financialTransaction.TransactionDateTime	=	dtTransactionDateTime
-//financialTransaction.TransactionImageId	=	tbTransactionImageId.Text;
-
-
-                financialTransactionService.Save( financialTransaction, CurrentPersonId );
-            }
-
-            BindFilter();
-            BindGrid();
-
-        }
-
-        protected void emptyTransactionInputs()
-        {
-            //qtbName.Text = string.Empty;
-            //qdtTransactionDateStart.SelectedDate = null;
-            //qdtTransactionDateEnd.SelectedDate = null;
-            //qddlCampus.SetValue( -1 );
-            //qddlEntity.SetValue( -1 );
-            //qcbIsClosed.Checked = false;
-
-//            hfIdTransValue
-//tbAmount.Text = string.Empty;
-//hfBatchId
-//ddlCreditCartType.SetValue( -1 );
-//ddlCurrencyType.SetValue( -1 );
-//tbDescription.Text = string.Empty;
-//TranEntity
-//ddlEntityType.SetValue( -1 );
-//ddlPaymentGateway.SetValue( -1 );
-//tbRefundTransactionId
-//ddlSourceType.SetValue( -1 );
-//tbSummary.Text = string.Empty;
-//tbTransactionCode.Text = string.Empty;
-//dtTransactionDateTime
-//tbTransactionImageId.Text = string.Empty;
-//TranCampus
-
-
-        }
-
-        protected void btnCancelFinancialTransaction_Click( object sender, EventArgs e )
-        {
-            emptyTransactionInputs();
-            modalValue.Hide();
-        }
-
-        protected void gridFinancialTransaction_Add( object sender, EventArgs e )
-        {
-            BindFilter();
-            ShowTransactionEditValue( 0,0, false );
-        }
-        #endregion
-
-       
 
 }
 }
