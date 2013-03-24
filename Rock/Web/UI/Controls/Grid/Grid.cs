@@ -537,6 +537,8 @@ namespace Rock.Web.UI.Controls
             {
                 // get access to the List<> and its properties
                 IList data = (IList)this.DataSource;
+                if ( data == null )
+                    return;
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
                 IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
 
