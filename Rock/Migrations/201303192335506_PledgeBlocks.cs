@@ -32,6 +32,7 @@ namespace Rock.Migrations
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Weekly", "Every Week", "53957842-DE28-498C-AC61-65B32E8034CB" );
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Bi-Weekly", "Every Two Weeks", "FBD9315C-5E0B-49D8-9D28-27EBF268E67B" );
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Monthly", "Once a Month", "C53509B1-FC2B-46C8-A00E-58392FBE9408" );
+            AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Twice a Month", "Twice a Month", "CA25B6D3-9BA4-4E88-9A5A-BF44B2898383" );
         }
         
         /// <summary>
