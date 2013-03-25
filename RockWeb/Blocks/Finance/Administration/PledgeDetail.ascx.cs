@@ -5,8 +5,11 @@
 //
 
 using System;
+using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance.Administration
@@ -33,7 +36,6 @@ namespace RockWeb.Blocks.Finance.Administration
                 // non-null value
                 if ( int.TryParse( PageParameter( "pledgeId" ), out itemId ) )
                 {
-                    BindFrequencyTypes();
                     ShowDetail( "pledgeId", itemId );
                 }
                 else
@@ -79,6 +81,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 return;
             }
 
+            RockTransactionScope.WrapTransaction( () => pledgeService.Save( pledge, CurrentPersonId ) );
             NavigateToParentPage();
         }
 
@@ -93,19 +96,6 @@ namespace RockWeb.Blocks.Finance.Administration
         }
 
         /// <summary>
-        /// Binds the frequency types.
-        /// </summary>
-        private void BindFrequencyTypes()
-        {
-            var guid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE );
-            var definedType = new DefinedTypeService().Get( guid );
-            ddlFrequencyType.DataTextField = "Description";
-            ddlFrequencyType.DataValueField = "Id";
-            ddlFrequencyType.DataSource = definedType.DefinedValues;
-            ddlFrequencyType.DataBind();
-        }
-
-        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -113,6 +103,8 @@ namespace RockWeb.Blocks.Finance.Administration
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = true;
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE );
+            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
             Pledge pledge;
 
             if ( itemKeyValue > 0 )
