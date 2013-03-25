@@ -199,12 +199,17 @@ namespace Rock.Migrations
 
                 INSERT INTO [Page] (
                     [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [RequiresEncryption],[EnableViewState],
+                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[Guid])
                 VALUES(
                     '{1}','{1}',1,@ParentPageId,1,'{3}',
+                    1,1,1,1,
                     0,1,1,0,1,0,
+                    1,0,
                     @Order,0,'{2}',1,
                     null,'{4}')
 ",
@@ -246,12 +251,19 @@ namespace Rock.Migrations
 
                 INSERT INTO [Page] (
                     [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [RequiresEncryption],[EnableViewState],
+                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[Guid])
                 VALUES(
                     '{1}','{2}',{3},@ParentPageId,{4},'{5}',
-                    {6},{7},{8},{9},{10},{11},
+                    {6},{7},
+                    {17},{18},{19},{20}.
+                    {8},{9},{10},{11},
+                    {21},{22},
                     @Order,{12},'{13}',{14},
                     {15},'{16}')
 ",
@@ -271,7 +283,14 @@ namespace Rock.Migrations
                     page.Description.Replace( "'", "''" ),
                     page.IncludeAdminFooter.Bit(),
                     page.IconFileId.HasValue ? page.IconFileId.Value.ToString() : "NULL",
-                    page.Guid ) );
+                    page.Guid,
+                    page.PageDisplayTitle.Bit(),
+                    page.PageDisplayBreadCrumb.Bit(),
+                    page.PageDisplayIcon.Bit(),
+                    page.PageDisplayDescription.Bit(),
+                    page.BreadCrumbDisplayName.Bit(),
+                    page.BreadCrumbDisplayIcon.Bit()
+                    ) );
         }
 
         /// <summary>
@@ -339,9 +358,15 @@ namespace Rock.Migrations
             page.SiteId = 1;
             page.Layout = "Default";
             page.EnableViewState = true; ;
+            page.PageDisplayTitle = true;
+            page.PageDisplayBreadCrumb = true;
+            page.PageDisplayIcon = true;
+            page.PageDisplayDescription = true;
             page.MenuDisplayDescription = true;
             page.MenuDisplayChildPages = true;
             page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
+            page.BreadCrumbDisplayName = true;
+            page.BreadCrumbDisplayIcon = false;
             page.Description = description;
             page.IncludeAdminFooter = true;
             page.Guid = guid;
@@ -989,5 +1014,6 @@ INSERT INTO [dbo].[Auth]
         }
 
         #endregion
+
     }
 }

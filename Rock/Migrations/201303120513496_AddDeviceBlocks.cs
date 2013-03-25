@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddDeviceBlocks : RockMigration
+    public partial class AddDeviceBlocks : RockMigration_4
     {
 
         /// <summary>

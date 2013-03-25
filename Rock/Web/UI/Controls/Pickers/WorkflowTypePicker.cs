@@ -13,12 +13,12 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class WorkflowTypeList : DropDownList
+    public class WorkflowTypePicker : DropDownList
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowTypeList" /> class.
+        /// Initializes a new instance of the <see cref="WorkflowTypePicker" /> class.
         /// </summary>
-        public WorkflowTypeList()
+        public WorkflowTypePicker()
         {
             this.Items.Clear();
             this.DataTextField = "Name";

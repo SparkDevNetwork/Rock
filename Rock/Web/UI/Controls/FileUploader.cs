@@ -18,8 +18,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A control to select a file and set any attributes
     /// </summary>
-    [ToolboxData( "<{0}:FileSelector runat=server></{0}:FileSelector>" )]
-    public class FileSelector : CompositeControl, ILabeledControl, IPostBackEventHandler
+    [ToolboxData( "<{0}:FileUploader runat=server></{0}:FileUploader>" )]
+    public class FileUploader : CompositeControl, ILabeledControl, IPostBackEventHandler
     {
 
         #region UI Controls
@@ -35,9 +35,9 @@ namespace Rock.Web.UI.Controls
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileSelector" /> class.
+        /// Initializes a new instance of the <see cref="FileUploader" /> class.
         /// </summary>
-        public FileSelector()
+        public FileUploader()
         {
             lblTitle = new Label();
             hfBinaryFileId = new HiddenField();

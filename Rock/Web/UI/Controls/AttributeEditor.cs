@@ -564,6 +564,7 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             btnSave.RenderControl( writer );
+            writer.Write( Environment.NewLine );
             btnCancel.RenderControl( writer );
             writer.RenderEndTag();
         }

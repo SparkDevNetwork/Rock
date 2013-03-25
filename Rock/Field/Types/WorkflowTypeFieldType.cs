@@ -55,7 +55,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new WorkflowTypeList();
+            return new WorkflowTypePicker();
         }
 
         /// <summary>
@@ -66,10 +66,10 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is WorkflowTypeList )
+            if ( control != null && control is WorkflowTypePicker )
             {
                 int id = int.MinValue;
-                if ( Int32.TryParse( ( (WorkflowTypeList)control ).SelectedValue, out id ) )
+                if ( Int32.TryParse( ( (WorkflowTypePicker)control ).SelectedValue, out id ) )
                 {
                     var workflowtype = new WorkflowTypeService().Get( id );
                     if ( workflowtype != null )
@@ -92,12 +92,12 @@ namespace Rock.Field.Types
             Guid workflowTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out workflowTypeGuid ))
             {
-                if ( control != null && control is WorkflowTypeList )
+                if ( control != null && control is WorkflowTypePicker )
                 {
                     var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
                     if ( workflowtype != null )
                     {
-                        ( (WorkflowTypeList)control ).SetValue( workflowtype.Id.ToString() );
+                        ( (WorkflowTypePicker)control ).SetValue( workflowtype.Id.ToString() );
                     }
                 }
             }

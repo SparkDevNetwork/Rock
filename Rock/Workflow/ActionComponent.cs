@@ -52,7 +52,10 @@ namespace Rock.Workflow
             var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ) );
             this.EntityType = EntityTypeCache.Read( type );
 
-            Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
+            using ( new UnitOfWorkScope() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
+            }
 
             this.LoadAttributes();
         }

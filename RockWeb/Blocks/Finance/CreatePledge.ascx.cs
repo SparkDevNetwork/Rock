@@ -161,8 +161,8 @@ namespace RockWeb.Blocks.Finance
                 Amount = decimal.Parse( tbAmount.Text ),
                 StartDate = DateTime.Parse( GetAttributeValue( "DefaultStartDate" ) ),
                 EndDate = DateTime.Parse( GetAttributeValue( "DefaultEndDate" ) ),
-                FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue )
-                // Where are we going to get FrequencyAmount from? No corresponding UI controls on wireframes?
+                FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue ),
+                FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text )
             };
 
             return pledge;

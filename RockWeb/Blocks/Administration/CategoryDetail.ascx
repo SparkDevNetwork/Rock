@@ -21,8 +21,8 @@
                     <Rock:LabeledText ID="lblEntityTypeQualifierColumn" runat="server" LabelText="Entity Type Qualifier Column" />
                     <Rock:LabeledText ID="lblEntityTypeQualifierValue" runat="server" LabelText="Entity Type Qualifier Value" />
                     <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
-                    <Rock:ImageSelector ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
-                    <Rock:ImageSelector ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
+                    <Rock:ImageUploader ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
+                    <Rock:ImageUploader ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
 
                 </fieldset>
 

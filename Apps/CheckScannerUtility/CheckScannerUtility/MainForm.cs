@@ -21,6 +21,7 @@ namespace Rock.CheckScannerUtility
         public MainForm()
         {
             InitializeComponent();
+            frmScanChecks = new ScanChecksForm();
         }
 
         /// <summary>
@@ -29,38 +30,49 @@ namespace Rock.CheckScannerUtility
         private static List<BinaryFileType> binaryFileTypes = null;
 
         /// <summary>
+        /// Gets or sets the rock URL.
+        /// </summary>
+        /// <value>
+        /// The rock URL.
+        /// </value>
+        public string RockUrl { get; set; }
+
+        /// <summary>
+        /// The scan checks form
+        /// </summary>
+        public ScanChecksForm frmScanChecks;
+
+        /// <summary>
         /// Rangers the new state of the scanner_ transport.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
-            btnScanAction.Visible = true;
+            btnConnect.Visible = true;
             string status = RangerScanner.GetTransportStateString().Replace( "Transport", "" ).SplitCase();
-
-            txtStatus.Text = status;
 
             switch ( (XportStates)e.currentState )
             {
                 case XportStates.TransportReadyToFeed:
                     shapeStatus.BackColor = Color.Lime;
-                    btnScanAction.Text = "Start";
+                    btnConnect.Text = "Start";
                     break;
                 case XportStates.TransportShutDown:
                     shapeStatus.BackColor = Color.Red;
-                    btnScanAction.Text = "Connect";
+                    btnConnect.Text = "Connect";
                     break;
                 case XportStates.TransportFeeding:
                     shapeStatus.BackColor = Color.Blue;
-                    btnScanAction.Text = "Stop";
+                    btnConnect.Text = "Stop";
                     break;
                 case XportStates.TransportStartingUp:
                     shapeStatus.BackColor = Color.Yellow;
-                    btnScanAction.Visible = false;
+                    btnConnect.Visible = false;
                     break;
                 default:
                     shapeStatus.BackColor = Color.White;
-                    btnScanAction.Visible = false;
+                    btnConnect.Visible = false;
                     break;
             }
         }
@@ -123,8 +135,7 @@ namespace Rock.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportSetItemOutput( object sender, AxRANGERLib._DRangerEvents_TransportSetItemOutputEvent e )
         {
-            string itemInfo = string.Format( "item_id: {0}, micr: {1}", e.itemId, RangerScanner.GetMicrText( 1 ) );
-            lstLog.Items.Add( itemInfo );
+            //
         }
 
         /// <summary>
@@ -134,17 +145,18 @@ namespace Rock.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnScanAction_Click( object sender, EventArgs e )
         {
-            if ( btnScanAction.Text.Equals( "Start" ) )
+            if ( btnConnect.Text.Equals( "Start" ) )
             {
                 const int FeedSourceMainHopper = 0;
                 const int FeedContinuously = 0;
+                frmScanChecks.Visible = true;
                 RangerScanner.StartFeeding( FeedSourceMainHopper, FeedContinuously );
             }
-            else if ( btnScanAction.Text.Equals( "Stop" ) )
+            else if ( btnConnect.Text.Equals( "Stop" ) )
             {
                 RangerScanner.StopFeeding();
             }
-            else if ( btnScanAction.Text.Equals( "Connect" ) )
+            else if ( btnConnect.Text.Equals( "Connect" ) )
             {
                 RangerScanner.StartUp();
             }
@@ -175,14 +187,18 @@ namespace Rock.CheckScannerUtility
                 Directory.CreateDirectory( fileDirectory );
             }
 
+            
+
             Bitmap bitImageFront = GetCheckImage( Sides.TransportFront );
-            pbxFront.Image = bitImageFront;
+            Bitmap bitImageBack = GetCheckImage( Sides.TransportRear );
+            
+            frmScanChecks.ShowCheckAccountMicr( checkMicr );
+            frmScanChecks.ShowCheckImages( bitImageFront, bitImageBack );
+            
             string frontFilePath = Path.Combine( fileDirectory, fileName + "_front.jpg" );
             File.Delete( frontFilePath );
             bitImageFront.Save( frontFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
-
-            Bitmap bitImageBack = GetCheckImage( Sides.TransportRear );
-            pbxBack.Image = bitImageBack;
+            
             string backFilePath = Path.Combine( fileDirectory, fileName + "_back.jpg" );
             File.Delete( backFilePath );
             bitImageBack.Save( backFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
@@ -242,7 +258,7 @@ namespace Rock.CheckScannerUtility
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportFeedingStopped( object sender, AxRANGERLib._DRangerEvents_TransportFeedingStoppedEvent e )
         {
-            lstLog.Items.Add( ( (FeedingStoppedReasons)e.reason ).ToString() );
+            //
         }
 
         /// <summary>
@@ -255,9 +271,8 @@ namespace Rock.CheckScannerUtility
             // startup the RangerScanner in a timer so that form display gets a chance to draw
             timer1.Enabled = false;
             RangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
+            RangerScanner.EnableOptions();
             RangerScanner.StartUp();
-            lstLog.Items.Add( "ImagesAvailableDuringOutputEvent: " + RangerScanner.GetTransportInfo( "General", "ImagesAvailableDuringOutputEvent" ) );
-            lstLog.Items.Add( "ImagesAvailableDuringPocketEvent: " + RangerScanner.GetTransportInfo( "General", "ImagesAvailableDuringPocketEvent" ) );
             cboImageOption.SelectedItem = "Grayscale";
         }
 
@@ -295,10 +310,10 @@ namespace Rock.CheckScannerUtility
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnUpload_Click( object sender, EventArgs e )
         {
-            getBinaryFileTypes( txtRockURL.Text ).ContinueWith( a =>
+            getBinaryFileTypes( RockUrl ).ContinueWith( a =>
             {
                 binaryFileTypes = a.Result;
-                UploadScannedChecks( txtRockURL.Text, ShowProgress );
+                UploadScannedChecks( RockUrl, ShowProgress );
             } );
         }
 
@@ -310,14 +325,15 @@ namespace Rock.CheckScannerUtility
         /// <param name="name">The name.</param>
         private void ShowProgress( int current, int max, string name )
         {
-            if ( this.lstLog.InvokeRequired )
+            if ( this.progressBar1.InvokeRequired )
             {
                 ProgressUpdate d = new ProgressUpdate( ShowProgress );
                 this.Invoke( d, new object[] { current, max, name } );
             }
             else
             {
-                lstLog.Items.Add( string.Format( "{0} {1} {2}", current, max, name ) );
+                progressBar1.Maximum = max;
+                progressBar1.Value = current;
             }
         }
 
@@ -414,6 +430,39 @@ namespace Rock.CheckScannerUtility
             }
 
             progressFeedback( 0, 0, "Done" );
+        }
+
+        /// <summary>
+        /// Handles the DrawItem event of the dataRepeater1 control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Microsoft.VisualBasic.PowerPacks.DataRepeaterItemEventArgs"/> instance containing the event data.</param>
+        private void dataRepeater1_DrawItem( object sender, Microsoft.VisualBasic.PowerPacks.DataRepeaterItemEventArgs e )
+        {
+            var a = e;
+            //
+            //dataRepeater1.DataBindings[
+            //e.DataRepeaterItem
+        }
+
+        public delegate void AssignDataSource();
+
+        private void button1_Click( object sender, EventArgs e )
+        {
+            if ( binaryFileTypes == null )
+            {
+
+                getBinaryFileTypes( RockUrl ).ContinueWith( a =>
+                {
+                    binaryFileTypes = a.Result;
+                } );
+
+                dataRepeater1.DataSource = binaryFileTypes;
+            }
+            else
+            {
+                dataRepeater1.DataSource = binaryFileTypes;
+            }
         }
     }
 }

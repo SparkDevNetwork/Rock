@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -68,7 +68,17 @@
 		<div class="container-fluid body-content">
 			<div class="row-fluid">
 				<div class="span12">
-					<Rock:Zone ID="Content" runat="server" />
+                    <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                    <Rock:PageIcon ID="PageIcon" runat="server" />
+                    <Rock:PageDescription ID="PageDescription" runat="server" />
+
+                    <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
+                    <div class="alert alert-error ajax-error" style="display:none">
+                        <strong>Ooops!</strong>
+                        <span class="ajax-error-message" / ></span>
+                    </div>
+
+                    <Rock:Zone ID="Content" runat="server" />
 				</div>
 			</div>
 		</div>

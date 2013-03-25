@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class AddBinaryFileType : RockMigration
+    public partial class AddBinaryFileType : RockMigration_4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
