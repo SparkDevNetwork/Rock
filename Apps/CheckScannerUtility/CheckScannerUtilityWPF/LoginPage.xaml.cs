@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace CheckScannerUtilityWPF
@@ -31,7 +32,7 @@ namespace CheckScannerUtilityWPF
             rockConfig.Save();
             
             BatchPage batchPage = new BatchPage();
-            this.NavigationService.Navigate( batchPage );
+            this.NavigationService.Navigate( batchPage);
         }
 
         /// <summary>

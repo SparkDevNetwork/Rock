@@ -8,6 +8,9 @@
                   Source="LoginPage.xaml"
                   Icon="./resources/favicon.ico"
                   MinWidth="600"
+                  MinHeight="520"
                   FontFamily="./resources/#Open Sans"
-                  FontSize="14">
+                  ShowsNavigationUI="False"
+                  FontSize="14"
+                  Closing="mainWindow_Closing">
 </NavigationWindow>

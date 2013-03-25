@@ -20,5 +20,36 @@ namespace CheckScannerUtilityWPF
     /// </summary>
     public partial class MainWindow : NavigationWindow
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Handles the Closing event of the mainWindow control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.ComponentModel.CancelEventArgs"/> instance containing the event data.</param>
+        private void mainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            BatchPage batchPage = null;
+            if ( mainWindow.Content is BatchPage )
+            {
+                batchPage = ( mainWindow.Content as BatchPage );
+            } else if ( mainWindow.Content is ScanningPage )
+            {
+                batchPage = ( mainWindow.Content as ScanningPage ).batchPage;
+            }
+
+            if ( batchPage != null )
+            {
+                batchPage.RangerScanner.ShutDown();
+            }
+            
+            Application.Current.Shutdown();
+        }
     }
 }
