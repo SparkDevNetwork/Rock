@@ -88,7 +88,7 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" /> 
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
@@ -98,7 +98,7 @@
             <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
 
             <div class="actions">
-                <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton> 
                 <asp:LinkButton ID="btnCancelAddChildGroupType" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddChildGroupType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
@@ -107,7 +107,7 @@
             <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
 
             <div class="actions">
-                <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton>
+                <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton> 
                 <asp:LinkButton ID="btnCancelAddLocationType" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddLocationType_Click"></asp:LinkButton>
             </div>
         </asp:Panel>
