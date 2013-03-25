@@ -30,10 +30,12 @@ namespace CheckScannerUtilityWPF
         public BatchPage()
         {
             InitializeComponent();
+            scanningPage = new ScanningPage( this );
         }
 
         public string RockUrl { get; set; }
         private static List<BinaryFileType> binaryFileTypes = null;
+        public ScanningPage scanningPage = null;
 
         #region Scanner Events
 
@@ -44,30 +46,34 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
-            btnConnect.Visibility = Visibility.Visible;
-            //string status = RangerScanner.GetTransportStateString().Replace( "Transport", "" ).SplitCase();
+            btnConnect.Visibility = Visibility.Hidden;
+            btnScan.Visibility = Visibility.Hidden;
+            scanningPage.btnDone.Visibility = Visibility.Visible;
 
             switch ( (XportStates)e.currentState )
             {
                 case XportStates.TransportReadyToFeed:
                     shapeStatus.Fill = new SolidColorBrush( Colors.LimeGreen );
-                    btnConnect.Content = "Start";
+                    btnScan.Content = "Scan";
+                    scanningPage.btnStartStop.Content = "Start";
+                    btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportShutDown:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Red );
-                    btnConnect.Content = "Connect";
+                    btnConnect.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportFeeding:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Blue );
-                    btnConnect.Content = "Stop";
+                    btnScan.Content = "Stop";
+                    scanningPage.btnStartStop.Content = "Stop";
+                    scanningPage.btnDone.Visibility = Visibility.Hidden;
+                    btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportStartingUp:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Yellow );
-                    btnConnect.Visibility = Visibility.Hidden;
                     break;
                 default:
                     shapeStatus.Fill = new SolidColorBrush( Colors.White );
-                    btnConnect.Visibility = Visibility.Hidden;
                     break;
             }
         }
@@ -152,25 +158,36 @@ namespace CheckScannerUtilityWPF
             BitmapImage bitImageFront = GetCheckImage( Sides.TransportFront );
             BitmapImage bitImageBack = GetCheckImage( Sides.TransportRear );
 
-            imgFront.Source = bitImageFront;
-            imgBack.Source = bitImageBack;
+            scanningPage.imgFront.Source = bitImageFront;
+            scanningPage.imgBack.Source = bitImageBack;
 
-            string[] micrParts = checkMicr.Split( new char[] { ' ' } );
-            lblAccountNumber.Content = string.Format( "Account Number: {0}", checkMicr );
+            string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
 
-            //todo
-            //frmScanChecks.ShowCheckAccountMicr( checkMicr );
-            //frmScanChecks.ShowCheckImages( bitImageFront, bitImageBack );
+            if ( micrParts.Length > 0 )
+            {
+                scanningPage.lblAccountNumber.Content = string.Format( "Account Number: {0}", micrParts[0] );
+            }
+            
+            if ( micrParts.Length > 1 )
+            {
+                scanningPage.lblRoutingNumber.Content = string.Format( "Routing Number: {0}", micrParts[1] );
+            }
+            
+            if ( micrParts.Length > 2 )
+            {
+                scanningPage.lblCheckNumber.Content = string.Format( "Check Number: {0}", micrParts[2] );
+            }
 
-            /*
             string frontFilePath = System.IO.Path.Combine( fileDirectory, fileName + "_front.jpg" );
             File.Delete( frontFilePath );
-            bitImageFront. Save( frontFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
+
+            Bitmap bmpFront = new Bitmap( bitImageFront.StreamSource );
+            bmpFront.Save( frontFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
 
             string backFilePath = System.IO.Path.Combine( fileDirectory, fileName + "_back.jpg" );
             File.Delete( backFilePath );
-            bitImageBack.Save( backFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
-             */ 
+            Bitmap bmpBack = new Bitmap( bitImageBack.StreamSource );
+            bmpBack.Save( backFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
         }
 
         /// <summary>
@@ -229,7 +246,6 @@ namespace CheckScannerUtilityWPF
             BitmapImage bitImageFront = new BitmapImage();
 
             bitImageFront.BeginInit();
-            //bitImageFront.CacheOption = BitmapCacheOption.OnLoad;
             bitImageFront.StreamSource = new MemoryStream( imageBytes );
             bitImageFront.EndInit();
 
@@ -258,8 +274,8 @@ namespace CheckScannerUtilityWPF
         /// <param name="name">The name.</param>
         private void ShowProgress( int current, int max, string name )
         {
-            progressBar.Maximum = max;
-            progressBar.Value = current;
+            //progressBar.Maximum = max;
+            //progressBar.Value = current;
         }
 
         /// <summary>
@@ -371,17 +387,17 @@ namespace CheckScannerUtilityWPF
             cboImageOption.Items.Add( "Grayscale" );
             cboImageOption.Items.Add( "Color" );
             cboImageOption.SelectedIndex = 0;
-        }
 
-        /// <summary>
-        /// Handles the 1 event of the Page_Unloaded control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void Page_Unloaded( object sender, RoutedEventArgs e )
-        {
-            RangerScanner.ShutDown();
-            Application.Current.Shutdown();
+            List<FinancialBatch> sampleData = new List<FinancialBatch>();
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", IsClosed = false, BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", IsClosed = false, BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", IsClosed = false, BatchDate = DateTime.Now } );
+
+            grdBatches.DataContext = sampleData;
+            if ( sampleData.Count > 0 )
+            {
+                grdBatches.SelectedIndex = 0;
+            }
         }
 
         /// <summary>
@@ -391,21 +407,7 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnConnect_Click( object sender, RoutedEventArgs e )
         {
-            if ( btnConnect.Content.Equals( "Start" ) )
-            {
-                const int FeedSourceMainHopper = 0;
-                const int FeedContinuously = 0;
-                //frmScanChecks.Visible = true;
-                RangerScanner.StartFeeding( FeedSourceMainHopper, FeedContinuously );
-            }
-            else if ( btnConnect.Content.Equals( "Stop" ) )
-            {
-                RangerScanner.StopFeeding();
-            }
-            else if ( btnConnect.Content.Equals( "Connect" ) )
-            {
-                RangerScanner.StartUp();
-            }
+            RangerScanner.StartUp();
         }
 
         /// <summary>
@@ -418,6 +420,28 @@ namespace CheckScannerUtilityWPF
             // restart to get Options to load
             RangerScanner.ShutDown();
             RangerScanner.StartUp();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnScan control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnScan_Click( object sender, RoutedEventArgs e )
+        {
+            if ( btnScan.Content.Equals( "Scan" ) )
+            {
+                const int FeedSourceMainHopper = 0;
+                const int FeedContinuously = 0;
+                RangerScanner.StartFeeding( FeedSourceMainHopper, FeedContinuously );
+
+                this.NavigationService.Navigate( scanningPage );
+            }
+            else
+            {
+                RangerScanner.StopFeeding();
+                this.NavigationService.Navigate( this );
+            }
         }
     }
 }
