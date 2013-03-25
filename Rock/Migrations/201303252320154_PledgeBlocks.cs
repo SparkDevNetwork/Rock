@@ -5,9 +5,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
     /// 
     /// </summary>
@@ -26,7 +23,7 @@ namespace Rock.Migrations
             AddBlock( "EF7AA296-CA69-49BC-A28B-901A8AAA9466", "E08504ED-B84C-4115-A058-03AAB8E8A307", "Pledge Detail", "", "Content", 0, "1FA87E65-1731-483C-A5DC-7DB8336CEED8" );
             AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page Guid", "DetailPageGuid", "", "", 0, "", "3E26B7DF-7A7F-4829-987F-47304C0F845E" );
             // Attrib Value for Pledge List:Detail Page Guid
-            AddBlockAttributeValue("ABEE9BA4-55E4-435E-8CA2-7D1626C57847","3E26B7DF-7A7F-4829-987F-47304C0F845E","ef7aa296-ca69-49bc-a28b-901a8aaa9466");
+            AddBlockAttributeValue( "ABEE9BA4-55E4-435E-8CA2-7D1626C57847", "3E26B7DF-7A7F-4829-987F-47304C0F845E", "ef7aa296-ca69-49bc-a28b-901a8aaa9466" );
 
             AddDefinedType( "Financial", "Frequency Type", "Types of payment frequencies", "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F" );
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Weekly", "Every Week", "53957842-DE28-498C-AC61-65B32E8034CB" );
@@ -34,7 +31,7 @@ namespace Rock.Migrations
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Monthly", "Once a Month", "C53509B1-FC2B-46C8-A00E-58392FBE9408" );
             AddDefinedValue( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F", "Twice a Month", "Twice a Month", "CA25B6D3-9BA4-4E88-9A5A-BF44B2898383" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

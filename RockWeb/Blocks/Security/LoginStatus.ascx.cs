@@ -52,8 +52,7 @@ namespace RockWeb.Blocks.Security
             {
                 FormsAuthentication.SignOut();
 
-                Rock.Web.UI.PageReference pageRef = new Rock.Web.UI.PageReference( CurrentPage.Id, CurrentPage.RouteId );
-                Response.Redirect( CurrentPage.BuildUrl( pageRef, null ), false );
+                Response.Redirect( CurrentPageReference.BuildUrl() );
                 Context.ApplicationInstance.CompleteRequest();
             }
 

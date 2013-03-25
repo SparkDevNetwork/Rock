@@ -25,9 +25,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             // Name
-            var page = Page as RockPage;
-            if ( page != null )
-                page.SetTitle( Person.FullName );
+            Page.Title = Person.FullName;
 
             if ( Person.PhotoId.HasValue )
             {

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 public partial class SiteMap : RockBlock
@@ -25,8 +26,8 @@ public partial class SiteMap : RockBlock
         string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
         foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
-            treeHtml += string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, RockPage.BuildUrl( page.Id, new Dictionary<string, string>() ) );
-            AddChildNodes( ref treeHtml, page, pageList );
+            treeHtml += string.Format( "<li data-expanded='true'><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, new PageReference(page.Id).BuildUrl() );
+            AddChildNodes( ref treeHtml, page, pageList);
             treeHtml += "</li>" + Environment.NewLine;
         }
 
@@ -40,7 +41,7 @@ public partial class SiteMap : RockBlock
     /// <param name="nodeHtml">The node HTML.</param>
     /// <param name="parentPage">The parent page.</param>
     /// <param name="pageList">The page list.</param>
-    protected void AddChildNodes( ref string nodeHtml, Rock.Model.Page parentPage, List<Rock.Model.Page> pageList )
+    protected void AddChildNodes( ref string nodeHtml, Rock.Model.Page parentPage, List<Rock.Model.Page> pageList)
     {
         var childPages = pageList.Where( a => a.ParentPageId.Equals( parentPage.Id ) );
         if ( childPages.Count() > 0 )
@@ -49,18 +50,27 @@ public partial class SiteMap : RockBlock
 
             foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                string childNodeHtml = string.Format( "<li><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, RockPage.BuildUrl( childPage.Id, new Dictionary<string, string>() ) );
+                string childNodeHtml = string.Format( "<li data-expanded='true'><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, new PageReference( childPage.Id ).BuildUrl() );
                 if ( childPage.Blocks.Count > 0 )
                 {
-                    childNodeHtml += "<ul>";
+                    childNodeHtml += "<ul><li data-expanded='true'>";
+                    var lastBlock = childPage.Blocks.OrderBy( b => b.Order ).Last();
                     foreach ( var block in childPage.Blocks.OrderBy( b => b.Order ) )
                     {
-                        childNodeHtml += string.Format( "<li><i class=\"icon-th-large\"></i>{1}:{0}</li>", block.Name, block.BlockType.Name );
+                        childNodeHtml += string.Format( "<i class=\"icon-th-large\"></i>{1}:{0}", block.Name, block.BlockType.Name );
+                        if ( !block.Equals( lastBlock ) )
+                        {
+                            childNodeHtml += "</li>" + Environment.NewLine + "<li data-expanded='true'>";
+                        }
                     }
-                    childNodeHtml += "</ul>";
+                    AddChildNodes( ref childNodeHtml, childPage, pageList);
+                    childNodeHtml += "</li></ul>";
                 }
-
-                AddChildNodes( ref childNodeHtml, childPage, pageList );
+                else
+                {
+                    AddChildNodes( ref childNodeHtml, childPage, pageList);
+                }
+                
                 childNodeHtml += "</li>" + Environment.NewLine;
                 nodeHtml += childNodeHtml;
             }

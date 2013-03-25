@@ -32,6 +32,14 @@
                             <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
+                            <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
+                            <div class="control-group">
+                                <label class="control-label">Icon Image</label>
+                                <div class="controls">
+                                    <Rock:ImageUploader ID="imgIcon" runat="server" />
+                                </div>
+                            </div>
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" LabelText="Icon CSS Class"/>
                         </fieldset>
                     </div>
                     <div class="span6">
@@ -42,19 +50,24 @@
                 </div>
             </asp:Panel>
 
-             <asp:Panel ID="pnlMenuDisplay" runat="server" Visible="false" >
+             <asp:Panel ID="pnlDisplaySettings" runat="server" Visible="false" >
                 <fieldset>
+                    <legend>Page</legend>
+                    <Rock:LabeledCheckBox ID="cbPageTitle" runat="server" Text="Show Title on Page" Help="Should the title be displayed when viewing this page?"/>
+                    <Rock:LabeledCheckBox ID="cbPageBreadCrumb" runat="server" Text="Show Bread Crumbs on Page" Help="Should bread crumbs (the navigation history) be displayed when viewing this page?"/>
+                    <Rock:LabeledCheckBox ID="cbPageIcon" runat="server" Text="Show Icon on Page" Help="Should the page icon be displayed when viewing this page?"/>
+                    <Rock:LabeledCheckBox ID="cbPageDescription" runat="server" Text="Show Description on Page" Help="Should the page description be displayed when viewing this page?"/>
+                </fieldset>
+                <fieldset>
+                    <legend>Menu</legend>
                     <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
-                    <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" Text="Show Description"/>
-                    <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" Text="Show Child Pages" Help="Should child pages be displayed in a menu"/>
-                    <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
-                    <div class="control-group">
-                        <label class="control-label">Icon Image</label>
-                        <div class="controls">
-                            <Rock:ImageSelector ID="imgIcon" runat="server" />
-                        </div>
-                    </div>
-                    <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass"/>
+                    <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" Text="Show Description" Help="If a menu support it, should this page's description be included with it's title in the menu?"/>
+                    <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" Text="Show Child Pages" Help="Should child pages be displayed in a menu?"/>
+                </fieldset>
+                <fieldset>
+                    <legend>Bread Crumbs</legend>
+                    <Rock:LabeledCheckBox ID="cbBreadCrumbName" runat="server" Text="Show Name in Bread Crumb" Help="Should this page's name be displayed in the bread crumb trail when viewing this page or a child page?"/>
+                    <Rock:LabeledCheckBox ID="cbBreadCrumbIcon" runat="server" Text="Show Icon in Bread Crumb" Help="Should this page's icon be displayed in the bread crumb trail when viewing this page or a child page?"/>
                 </fieldset>
             </asp:Panel>
 

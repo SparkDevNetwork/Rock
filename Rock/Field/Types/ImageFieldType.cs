@@ -54,7 +54,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return new Web.UI.Controls.ImageSelector();
+            return new Web.UI.Controls.ImageUploader();
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is Rock.Web.UI.Controls.ImageSelector )
+            if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
             {
-                int? imageId = ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId;
+                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId;
                 return imageId.HasValue ? imageId.Value.ToString() : string.Empty;
             }
             return null;
@@ -81,16 +81,16 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null && control != null && control is Rock.Web.UI.Controls.ImageSelector )
+            if ( value != null && control != null && control is Rock.Web.UI.Controls.ImageUploader )
             {
                 int imageId = 0;
                 if ( Int32.TryParse( value, out imageId ) )
                 {
-                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = imageId;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = imageId;
                 }
                 else
                 {
-                    ( (Rock.Web.UI.Controls.ImageSelector)control ).ImageId = null;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = null;
                 }
             }
         }

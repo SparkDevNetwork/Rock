@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Reporting
 
                 lDesc.Text = page.Description;
 
-                ( (RockPage)Page ).SetTitle( page.Title );
+                Page.Title = page.Title;
             }
 
             SetAttributeValue( "Query", tbQuery.Text );

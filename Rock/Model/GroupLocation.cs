@@ -42,13 +42,29 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location type.
+        /// Gets or sets the location type. (i.e. Home, Work, P.O. Box)
         /// </summary>
         /// <value>
         /// The location type.
         /// </value>
         [DataMember]
-        public int? LocationTypeValueId { get; set; }
+        public int? GroupLocationTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is for mailings.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is mailing; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMailing { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is for determing location.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is location; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLocation { get; set; }
 
         #endregion
 
@@ -127,7 +143,7 @@ namespace Rock.Model
         {
             this.HasRequired( t => t.Group ).WithMany( t => t.GroupLocations ).HasForeignKey( t => t.GroupId );
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
-            this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }
