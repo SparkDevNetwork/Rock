@@ -58,14 +58,16 @@ namespace RockWeb.Blocks.Finance
                     {
                         var pledgeService = new PledgeService();
                         var person = FindPerson();
-                        var pledge = FindPledge( pledgeService, person );
+                        var pledge = FindAndUpdatePledge( person );
 
                         // Does this person already have a pledge for this fund?
-                        // If so, give them the option to create a new one?
+                        // If so, give them the option to create a new one?s
                         if ( pledge.Id != 0 )
                         {
                             // Show UI control for creating a pledge...
-                            // Consider caching newly created pledge?
+                            // Consider caching newly created pledge and/or person?
+                            pnlConfirm.Visible = true;
+                            AddCacheItem( "CachedPledge", pledge );
                             return;
                         }
 
@@ -77,6 +79,7 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             pledgeService.Save( pledge, person.Id );
+                            FlushCacheItem( "CachedPledge" );
                         }
                     });
             }
@@ -97,6 +100,13 @@ namespace RockWeb.Blocks.Finance
                 tbFirstName.Text = !string.IsNullOrWhiteSpace( CurrentPerson.NickName ) ? CurrentPerson.NickName : CurrentPerson.FirstName;
                 tbLastName.Text = CurrentPerson.LastName;
                 tbEmail.Text = CurrentPerson.Email;
+            }
+
+            var pledge = GetCacheItem( "CachedPledge" );
+
+            if ( pledge == null )
+            {
+                pnlConfirm.Visible = false;
             }
         }
 
@@ -141,30 +151,26 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Finds the pledge.
         /// </summary>
-        /// <param name="pledgeService">The pledge service.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        private Pledge FindPledge( PledgeService pledgeService, Person person )
+        private Pledge FindAndUpdatePledge( Person person )
         {
             var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
-            var pledge = person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId );
 
-            if ( pledge != null )
-            {
-                return pledge;
-            }
-            
-            pledge = new Pledge
-            {
-                PersonId = person.Id,
-                FundId = defaultFundId,
-                Amount = decimal.Parse( tbAmount.Text ),
-                StartDate = DateTime.Parse( GetAttributeValue( "DefaultStartDate" ) ),
-                EndDate = DateTime.Parse( GetAttributeValue( "DefaultEndDate" ) ),
-                FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue ),
-                FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text )
-            };
+            // First check cache to see if this is coming back from confirmation step...
+            var pledge = ( GetCacheItem( "CachedPledge" ) as Pledge 
+            // If not, check database for an existing pledge...
+                ?? person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId ) ) 
+            // Else, create a new pledge.
+                ?? new Pledge();
 
+            pledge.PersonId = person.Id;
+            pledge.FundId = defaultFundId;
+            pledge.Amount = decimal.Parse( tbAmount.Text );
+            pledge.StartDate = DateTime.Parse( GetAttributeValue( "DefaultStartDate" ) );
+            pledge.EndDate = DateTime.Parse( GetAttributeValue( "DefaultEndDate" ) );
+            pledge.FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text );
             return pledge;
         }
     }

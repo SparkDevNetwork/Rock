@@ -12,6 +12,13 @@
             <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date"/>
             <Rock:DataTextBox ID="tbFrequencyAmount" runat="server" PrependText="$" LabelText="Amount"/>
             <Rock:DataDropDownList ID="ddlFrequencyType" runat="server"/>
+            <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
+                <p><strong>Hey!</strong> You currently have a pledge in the system. Do you want to replace it with this one?</p>
+                <div class="actions">
+                    <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn">Yes</asp:LinkButton>
+                    <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn">No</asp:LinkButton>
+                </div>
+            </asp:Panel>
         </fieldset>
         <div class="actions">
             <asp:Button ID="btnSave" runat="server" Text="Save Pledge" OnClick="btnSave_Click"/>
