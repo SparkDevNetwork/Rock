@@ -694,7 +694,7 @@ namespace Rock.Web.UI
                         aPageSecurity.Attributes.Add( "class", "btn page-security" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
                         aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
-                            Security.Authorization.EncodeEntityTypeName( typeof(Rock.Model.Page) ), CurrentPage.Id ) ) + "')" );
+                            EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id, CurrentPage.Id ) ) + "')" );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                         aPageSecurity.Controls.Add( iPageSecurity );

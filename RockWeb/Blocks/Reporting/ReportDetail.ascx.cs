@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting
 
             gReport.GridRebind += gReport_GridRebind;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Report.FriendlyTypeName );
-            btnSecurity.EntityType = typeof( Rock.Model.Report );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
         }
 
         /// <summary>
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Reporting
 
             btnSecurity.Visible = report.IsAuthorized( "Administrate", CurrentPerson );
             btnSecurity.Title = "Secure " + report.Name;
-            btnSecurity.EntityTypeId = report.Id;
+            btnSecurity.EntityId = report.Id;
 
             if ( readOnly )
             {

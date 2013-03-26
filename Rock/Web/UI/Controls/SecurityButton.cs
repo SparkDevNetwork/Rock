@@ -20,47 +20,41 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:SecurityButton runat=server></{0}:SecurityButton>" )]
     public class SecurityButton : HtmlAnchor
     {
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
         [
         Bindable( true ),
         Description( "The type of entity to secure." )
         ]
-        public Type EntityType
+        public int EntityTypeId
         {
-            get
-            {
-                string s = ViewState["EntityType"] as string;
-                if ( s != null )
-                {
-                    return Type.GetType( s );
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                ViewState["EntityType"] = value.AssemblyQualifiedName;
-            }
+            get { return ViewState["EntityTypeId"] as int? ?? 0; }
+            set { ViewState["EntityTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity id.
+        /// </summary>
+        /// <value>
+        /// The entity id.
+        /// </value>
         [
         Bindable( true ),
         Description( "The id of the entity to secure." )
         ]
-        public int EntityTypeId
+        public int EntityId
         {
-            get
-            {
-                int? i = ViewState["EntityTypeId"] as int?;
-                return i.HasValue ? i.Value : 0;
-            }
-            set
-            {
-                ViewState["EntityTypeId"] = value;
-            }
+            get { return ViewState["EntityId"] as int? ?? 0; }
+            set { ViewState["EntityId"] = value; }
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
@@ -78,8 +72,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
-                Security.Authorization.EncodeEntityTypeName( EntityType.AssemblyQualifiedName ), EntityTypeId.ToString(), Title ) );
+            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, Title ) );
             this.HRef = "javascript: showModalPopup($(this), '" + url + "')";
 
             base.RenderControl( writer );

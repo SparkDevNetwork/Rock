@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -40,9 +41,22 @@ namespace RockWeb.Blocks.Administration
 
         protected override void OnInit( EventArgs e )
         {
-            // Read parameter values
-            string entityName = Authorization.DecodeEntityTypeName( PageParameter( "EntityType" ) );
+            string entityParam = PageParameter( "EntityTypeId" );
+            Type type = null;
 
+            // Get Entity Type
+            int entityTypeId = 0;
+            if ( Int32.TryParse( entityParam, out entityTypeId ) )
+            {
+                var entityType = EntityTypeCache.Read( entityTypeId );
+                if ( entityType != null )
+                {
+                    entityParam = entityType.FriendlyName;
+                    type = entityType.GetEntityType();
+                }
+            }
+
+            // Get Entity Id
             int entityId = 0;
             if ( !Int32.TryParse( PageParameter( "EntityId" ), out entityId ) )
             {
@@ -50,7 +64,6 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Get object type
-            Type type = Type.GetType( entityName );
             if ( type != null )
             {
                 if ( entityId == 0 )
@@ -109,7 +122,7 @@ namespace RockWeb.Blocks.Administration
             {
                 rGrid.Visible = false;
                 rGridParentRules.Visible = false;
-                nbMessage.Text = string.Format( "Could not load the requested entity type ('{0}') to determine security attributes", entityName );
+                nbMessage.Text = string.Format( "Could not load the requested entity type ('{0}') to determine security attributes", entityParam );
                 nbMessage.Visible = true;
             }
             base.OnInit( e );

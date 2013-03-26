@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class PledgeBlocks : IMigrationMetadata
+    public sealed partial class Communication : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PledgeBlocks));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Communication));
         
         string IMigrationMetadata.Id
         {
-            get { return "201303252320154_PledgeBlocks"; }
+            get { return "201303262220512_Communication"; }
         }
         
         string IMigrationMetadata.Source

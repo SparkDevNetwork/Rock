@@ -29,6 +29,7 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditValueField OnClick="rGrid_EditValue" />
+                    <Rock:SecurityField TitleField="Name" />
                     <Rock:DeleteField OnClick="rGrid_Delete" />
                 </Columns>
             </Rock:Grid>

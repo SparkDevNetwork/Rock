@@ -10,9 +10,11 @@ using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -176,8 +178,9 @@ namespace RockWeb.Blocks.Administration
                 if ( aSecure != null )
                 {
                     aSecure.Visible = true;
-                    string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
-                        Rock.Security.Authorization.EncodeEntityTypeName( componentDescription.Type.AssemblyQualifiedName ), 0, componentDescription.Name + " Security" ) );
+
+                    var entityType = EntityTypeCache.Read( componentDescription.Type );
+                    string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name + " Security" ) );
                     aSecure.HRef = "javascript: showModalPopup($(this), '" + url + "')";
                 }
             }
