@@ -641,6 +641,10 @@
     <Compile Include="Migrations\201303261236459_UpdateSecureRoute.Designer.cs">
       <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303262220512_Communication.cs" />
+    <Compile Include="Migrations\201303262220512_Communication.Designer.cs">
+      <DependentUpon>201303262220512_Communication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -693,6 +697,8 @@
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\BinaryFileType.cs" />
+    <Compile Include="Model\Communication.cs" />
+    <Compile Include="Model\CommunicationRecipient.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
@@ -1504,6 +1510,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303261236459_UpdateSecureRoute.resx">
       <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303262220512_Communication.resx">
+      <DependentUpon>201303262220512_Communication.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
