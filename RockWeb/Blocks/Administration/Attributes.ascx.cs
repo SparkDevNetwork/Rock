@@ -13,6 +13,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -103,6 +104,9 @@ namespace RockWeb.Blocks.Administration
                 rGrid.Columns[7].Visible = !_displayValueEdit;
                 rGrid.Columns[8].Visible = _displayValueEdit;
                 rGrid.Columns[9].Visible = _displayValueEdit;
+
+                SecurityField securityField = rGrid.Columns[10] as SecurityField;
+                securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
                 modalDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValues.ClientID );

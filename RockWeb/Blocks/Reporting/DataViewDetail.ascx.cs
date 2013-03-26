@@ -51,7 +51,7 @@ $(document).ready(function() {
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "toggle-switch-init", script, true );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
-            btnSecurity.EntityType = typeof( Rock.Model.DataView );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
         }
 
         /// <summary>
@@ -400,7 +400,7 @@ $(document).ready(function() {
 
             btnSecurity.Visible = dataView.IsAuthorized( "Administrate", CurrentPerson );
             btnSecurity.Title = "Secure " + dataView.Name;
-            btnSecurity.EntityTypeId = dataView.Id;
+            btnSecurity.EntityId = dataView.Id;
 
             if ( readOnly )
             {

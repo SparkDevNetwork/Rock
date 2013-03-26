@@ -8,7 +8,7 @@
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
                 <asp:BoundField HeaderText="Theme" DataField="Theme" SortExpression="Theme" />
-                <Rock:SecurityField />
+                <Rock:SecurityField TitleField="Name" />
                 <Rock:DeleteField OnClick="gSites_Delete" />
             </Columns>
         </Rock:Grid>
