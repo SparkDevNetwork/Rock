@@ -637,6 +637,10 @@
     <Compile Include="Migrations\201303221324315_AddPageDisplayProperties.Designer.cs">
       <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303261236459_UpdateSecureRoute.cs" />
+    <Compile Include="Migrations\201303261236459_UpdateSecureRoute.Designer.cs">
+      <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1497,6 +1501,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303221324315_AddPageDisplayProperties.resx">
       <DependentUpon>201303221324315_AddPageDisplayProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303261236459_UpdateSecureRoute.resx">
+      <DependentUpon>201303261236459_UpdateSecureRoute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

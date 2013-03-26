@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Administration
             entityTypeId = EntityTypeCache.Read(entityTypeName).Id;
             
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
-            btnSecurity.EntityType = typeof( Rock.Model.Category );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Administration
 
             btnSecurity.Visible = category.IsAuthorized( "Administrate", CurrentPerson );
             btnSecurity.Title = "Secure " + category.Name;
-            btnSecurity.EntityTypeId = category.Id;
+            btnSecurity.EntityId = category.Id;
 
             if ( readOnly )
             {
