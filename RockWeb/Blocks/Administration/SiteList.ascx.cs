@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Administration
             gSites.IsDeleteEnabled = canAddEditDelete;
 
             SecurityField securityField = gSites.Columns[3] as SecurityField;
-            securityField.EntityType = typeof( Rock.Model.Site );
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Site ) ).Id;
         }
 
         /// <summary>
