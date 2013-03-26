@@ -17,6 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 using Rock.Attribute;
+using System.Text;
 
 
 namespace RockWeb.Blocks.Administration
@@ -56,6 +57,10 @@ namespace RockWeb.Blocks.Administration
             {
                 DisplayError( "You are not authorized to configure this page" );
             }
+
+            //Rock.Migrations.FinancialBatchNewFields nf = new Rock.Migrations.FinancialBatchNewFields();
+            //nf.Down();
+            //nf.Up();
         }
 
         /// <summary>
