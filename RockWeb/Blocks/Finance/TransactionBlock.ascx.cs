@@ -58,9 +58,17 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
     {
         try
         {
-            int id = int.Parse( Request.QueryString["id"].ToString() );
-            int batch = int.Parse( Request.QueryString["batch"].ToString() );
+            var vid = Request.QueryString["id"];
+            var vbatch = Request.QueryString["batch"];
+            if ( vid == null && vbatch == null )
+                return;
+
+            int id = 0;
+            int.TryParse( vid.ToString() , out id);
+            int batch = 0;
+            int.TryParse( vbatch.ToString(), out batch );
             ShowTransactionEditValue( id, batch );
+
         }
         catch ( Exception exp )
         {

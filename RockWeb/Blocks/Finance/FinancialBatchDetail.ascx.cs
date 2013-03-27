@@ -91,7 +91,14 @@ namespace RockWeb.Blocks.Administration
 
         private void BindGrid()
         {
-             int itemId = int.Parse(PageParameter( "financialBatchId" ));
+            int itemId = 0;
+            var parm = PageParameter( "financialBatchId" );
+            if ( parm == null )
+                return;
+
+            int.TryParse( parm.ToString(), out itemId);
+            if ( itemId == 0 )
+                return;
 
             var batchService = new FinancialTransactionService();
             var batch = batchService.Get( itemId );

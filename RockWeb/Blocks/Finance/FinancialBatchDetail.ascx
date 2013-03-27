@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
+       <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
 
         <asp:HiddenField ID="hfIdValue" runat="server" />
         <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
