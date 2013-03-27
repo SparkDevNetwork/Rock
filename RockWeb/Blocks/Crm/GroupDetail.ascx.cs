@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroupMemberAttributes.DataKeyNames = new string[] { "Guid" };
-            gGroupMemberAttributes.Actions.IsAddEnabled = true;
+            gGroupMemberAttributes.Actions.ShowAdd = true;
             gGroupMemberAttributes.Actions.AddClick += gGroupMemberAttributes_Add;
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );

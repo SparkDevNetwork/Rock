@@ -35,13 +35,13 @@ namespace RockWeb.Blocks.Administration
 
             gBlockTypes.RowItemText = "Block Type";
             gBlockTypes.DataKeyNames = new string[] { "id" };
-            gBlockTypes.Actions.IsAddEnabled = true;
+            gBlockTypes.Actions.ShowAdd = true;
             gBlockTypes.Actions.AddClick += gBlockTypes_Add;
             gBlockTypes.GridRebind += gBlockTypes_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gBlockTypes.Actions.IsAddEnabled = canAddEditDelete;
+            gBlockTypes.Actions.ShowAdd = canAddEditDelete;
             gBlockTypes.IsDeleteEnabled = canAddEditDelete;
         }
 

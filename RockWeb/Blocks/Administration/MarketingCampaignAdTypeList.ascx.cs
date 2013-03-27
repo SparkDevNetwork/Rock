@@ -32,13 +32,12 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gMarketingCampaignAdType.DataKeyNames = new string[] { "id" };
-            gMarketingCampaignAdType.Actions.IsAddEnabled = true;
             gMarketingCampaignAdType.Actions.AddClick += gMarketingCampaignAdType_Add;
             gMarketingCampaignAdType.GridRebind += gMarketingCampaignAdType_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gMarketingCampaignAdType.Actions.IsAddEnabled = canAddEditDelete;
+            gMarketingCampaignAdType.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaignAdType.IsDeleteEnabled = canAddEditDelete;
         }
 

@@ -33,13 +33,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gBinaryFileType.DataKeyNames = new string[] { "id" };
-            gBinaryFileType.Actions.IsAddEnabled = true;
+            gBinaryFileType.Actions.ShowAdd = true;
             gBinaryFileType.Actions.AddClick += gBinaryFileType_Add;
             gBinaryFileType.GridRebind += gBinaryFileType_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gBinaryFileType.Actions.IsAddEnabled = canAddEditDelete;
+            gBinaryFileType.Actions.ShowAdd = canAddEditDelete;
             gBinaryFileType.IsDeleteEnabled = canAddEditDelete;
         }
 

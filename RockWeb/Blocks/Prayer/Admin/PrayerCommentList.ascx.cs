@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Prayer
             canApprove = IsUserAuthorized( "Approve" );
 
             // grid stuff...
-            gPrayerComments.Actions.IsAddEnabled = false;
+            gPrayerComments.Actions.ShowAdd = false;
             gPrayerComments.IsDeleteEnabled = canAddEditDelete;
 
             gPrayerComments.DataKeyNames = new string[] { "id" };

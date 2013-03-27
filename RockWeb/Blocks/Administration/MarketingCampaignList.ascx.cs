@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gMarketingCampaigns.Actions.IsAddEnabled = canAddEditDelete;
+            gMarketingCampaigns.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaigns.IsDeleteEnabled = canAddEditDelete;
         }
 

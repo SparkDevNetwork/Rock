@@ -73,7 +73,7 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring GroupLocation,LocationTypeValueId 
+            // ignoring GroupLocation,GroupLocationTypeValueId 
  
             if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {

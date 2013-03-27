@@ -32,13 +32,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gCampuses.DataKeyNames = new string[] { "id" };
-            gCampuses.Actions.IsAddEnabled = true;
+            gCampuses.Actions.ShowAdd = true;
             gCampuses.Actions.AddClick += gCampuses_Add;
             gCampuses.GridRebind += gCampuses_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gCampuses.Actions.IsAddEnabled = canAddEditDelete;
+            gCampuses.Actions.ShowAdd = canAddEditDelete;
             gCampuses.IsDeleteEnabled = canAddEditDelete;
         }
 

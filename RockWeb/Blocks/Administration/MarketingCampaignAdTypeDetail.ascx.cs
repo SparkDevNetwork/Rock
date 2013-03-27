@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gMarketingCampaignAdAttributeTypes.DataKeyNames = new string[] { "Guid" };
-            gMarketingCampaignAdAttributeTypes.Actions.IsAddEnabled = true;
+            gMarketingCampaignAdAttributeTypes.Actions.ShowAdd = true;
             gMarketingCampaignAdAttributeTypes.Actions.AddClick += gMarketingCampaignAdAttributeType_Add;
             gMarketingCampaignAdAttributeTypes.GridRebind += gMarketingCampaignAdAttributeType_GridRebind;
             gMarketingCampaignAdAttributeTypes.EmptyDataText = Server.HtmlEncode( None.Text );

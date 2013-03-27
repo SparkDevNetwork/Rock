@@ -111,25 +111,25 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gChildGroupTypes.DataKeyNames = new string[] { "key" };
-            gChildGroupTypes.Actions.IsAddEnabled = true;
+            gChildGroupTypes.Actions.ShowAdd = true;
             gChildGroupTypes.Actions.AddClick += gChildGroupTypes_Add;
             gChildGroupTypes.GridRebind += gChildGroupTypes_GridRebind;
             gChildGroupTypes.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gLocationTypes.DataKeyNames = new string[] { "key" };
-            gLocationTypes.Actions.IsAddEnabled = true;
+            gLocationTypes.Actions.ShowAdd = true;
             gLocationTypes.Actions.AddClick += gLocationTypes_Add;
             gLocationTypes.GridRebind += gLocationTypes_GridRebind;
             gLocationTypes.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gGroupTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gGroupTypeAttributes.Actions.IsAddEnabled = true;
+            gGroupTypeAttributes.Actions.ShowAdd = true;
             gGroupTypeAttributes.Actions.AddClick += gGroupTypeAttributes_Add;
             gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
             gGroupTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gGroupAttributes.DataKeyNames = new string[] { "Guid" };
-            gGroupAttributes.Actions.IsAddEnabled = true;
+            gGroupAttributes.Actions.ShowAdd = true;
             gGroupAttributes.Actions.AddClick += gGroupAttributes_Add;
             gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
             gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );

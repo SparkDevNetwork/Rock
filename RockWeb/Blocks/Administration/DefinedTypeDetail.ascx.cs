@@ -36,13 +36,13 @@ namespace RockWeb.Blocks.Administration
 
             // assign type values grid actions
             gDefinedValues.DataKeyNames = new string[] { "id" };
-            gDefinedValues.Actions.IsAddEnabled = true;
+            gDefinedValues.Actions.ShowAdd = true;
             gDefinedValues.Actions.AddClick += gDefinedValues_Add;
             gDefinedValues.GridRebind += gDefinedValues_GridRebind;
 
             // assign attributes grid actions
             gDefinedTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gDefinedTypeAttributes.Actions.IsAddEnabled = true;
+            gDefinedTypeAttributes.Actions.ShowAdd = true;
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
         }

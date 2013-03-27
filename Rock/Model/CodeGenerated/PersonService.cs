@@ -49,6 +49,18 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Communication>().Queryable().Any( a => a.SenderPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Communication.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationRecipient>().Queryable().Any( a => a.PersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );

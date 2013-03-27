@@ -33,13 +33,13 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroupRoles.DataKeyNames = new string[] { "id" };
-            gGroupRoles.Actions.IsAddEnabled = true;
+            gGroupRoles.Actions.ShowAdd = true;
             gGroupRoles.Actions.AddClick += gGroupRoles_Add;
             gGroupRoles.GridRebind += gGroupRoles_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gGroupRoles.Actions.IsAddEnabled = canAddEditDelete;
+            gGroupRoles.Actions.ShowAdd = canAddEditDelete;
             gGroupRoles.IsDeleteEnabled = canAddEditDelete;
         }
 
