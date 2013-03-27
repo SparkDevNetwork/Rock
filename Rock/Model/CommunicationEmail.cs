@@ -141,7 +141,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="json">The json.</param>
         /// <returns></returns>
-        public static CommunicationEmail FromJson(string json)
+        public static new CommunicationEmail FromJson(string json)
         {
             return JsonConvert.DeserializeObject<CommunicationEmail>(json);
         }

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Rock;
 using Rock.Attribute;
@@ -32,6 +33,7 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroupMembers.DataKeyNames = new string[] { "Id" };
+            gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
             gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
             gGroupMembers.Actions.ShowAdd = true;
             gGroupMembers.IsDeleteEnabled = true;

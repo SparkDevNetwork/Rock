@@ -10,13 +10,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using DotLiquid;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
@@ -213,7 +213,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a list of datasource field/properties that should be included as additional merge fields when creating a new communication
+        /// Gets or sets a list of datasource field/properties that can optionally be included as additional 
+        /// merge fields when a new communication is created from the grid.  NOTE: A side affect of using 
+        /// additional merge fields is that user will not be able to add additional recipients to the 
+        /// communication after it is created from the grid
         /// </summary>
         /// <value>
         /// The communicate merge fields.
@@ -346,22 +349,22 @@ namespace Rock.Web.UI.Controls
 
             if ( IsPersonList )
             {
-
                 // Set Sender
                 var rockPage = Page as RockPage;
                 if ( rockPage != null )
                 {
                     var communication = new Rock.Model.Communication();
+                    communication.IsTemporary = true;
 
                     if ( rockPage.CurrentPersonId.HasValue )
                     {
                         communication.SenderPersonId = rockPage.CurrentPersonId.Value;
-                        communication.Subject = "New Email";
-
                     }
 
                     if ( this.DataSource is DataTable || this.DataSource is DataView )
                     {
+                        communication.AdditionalMergeFields = CommunicateMergeFields;
+
                         DataTable data = null;
 
                         if ( this.DataSource is DataTable )
@@ -394,49 +397,38 @@ namespace Rock.Web.UI.Controls
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
                                 recipient.PersonId = personId.Value;
-                                recipient.MergeData = mergeValues.ToJson();
+                                recipient.AdditionalMergeValues = mergeValues;
                                 communication.Recipients.Add( recipient );
                             }
                         }
                     }
                     else
                     {
+                        CommunicateMergeFields.ForEach( f => communication.AdditionalMergeFields.Add( f.Replace( '.', '_' ) ) );
+
                         // get access to the List<> and its properties
                         IList data = (IList)this.DataSource;
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
-                        IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
 
-                        foreach ( var item in data )
+                        PropertyInfo idProp = oType.GetProperty( "Id" );
+                        if (idProp != null)
                         {
-                            int? personId = null;
-                            var mergeValues = new Dictionary<string, string>();
-                            foreach ( PropertyInfo prop in props )
-                            {
-                                if ( prop.Name == "Id" )
-                                {
-                                    personId = (int)prop.GetValue( item, null );
-                                }
-
-                                if ( CommunicateMergeFields.Contains( prop.Name ) )
-                                {
-                                    object propValue = prop.GetValue( item, null );
-                                    string value = "";
-                                    if ( propValue != null )
-                                    {
-                                        value = propValue.ToString();
-                                    }
-                                    mergeValues.Add( prop.Name, value );
-                                }
-                            }
-
-                            if ( personId.HasValue )
+                            foreach ( var item in data )
                             {
                                 var recipient = new Rock.Model.CommunicationRecipient();
-                                recipient.PersonId = personId.Value;
-                                recipient.MergeData = mergeValues.ToJson();
+                                recipient.PersonId =  (int)idProp.GetValue( item, null );
+
+                                foreach ( string mergeField in CommunicateMergeFields )
+                                {
+                                    object obj = item.GetPropertyValue( mergeField );
+                                    if ( obj != null )
+                                    {
+                                        recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                    }
+                                }
+
                                 communication.Recipients.Add( recipient );
                             }
-
                         }
                     }
 

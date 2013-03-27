@@ -74,7 +74,6 @@ namespace Rock.Model
                 var target = new Communication();
                 target.SenderPersonId = source.SenderPersonId;
                 target.Subject = source.Subject;
-                target.Content = source.Content;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

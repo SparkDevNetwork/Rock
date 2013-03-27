@@ -648,6 +648,10 @@
     <Compile Include="Migrations\201303262220512_Communication.Designer.cs">
       <DependentUpon>201303262220512_Communication.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303271713457_CommunicationEmail.cs" />
+    <Compile Include="Migrations\201303271713457_CommunicationEmail.Designer.cs">
+      <DependentUpon>201303271713457_CommunicationEmail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -704,7 +708,7 @@
     <Compile Include="Model\BinaryFileType.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
-    <Compile Include="Model\Copy of Communication.cs" />
+    <Compile Include="Model\CommunicationEmail.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
@@ -1519,6 +1523,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303262220512_Communication.resx">
       <DependentUpon>201303262220512_Communication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303271713457_CommunicationEmail.resx">
+      <DependentUpon>201303271713457_CommunicationEmail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
