@@ -20,10 +20,16 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>    
+    [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [PaymentGateway]", true, "", "Payments", 1 )]
+    [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [PaymentGateway]", true, "", "Payments", 2 )]
     [CustomCheckboxListField( "Default Funds to display", "Which funds should be displayed by default?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [Fund] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Filter", 1 )]
-    [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", false, "UI Options", 2 )]
-    [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]    
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [Fund] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 3 )]
+    [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", true, "UI Options", 2 )]
+    [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]
+    [BooleanField( "Show Credit Card giving", "Allow users to give using a credit card?", true, "UI Options", 4 )]
+    [BooleanField( "Show Checking/ACH giving", "Allow users to give using a checking account?", true, "UI Options", 5 )]
     public partial class OneTimeGift : RockBlock
     {
         #region Fields
@@ -31,6 +37,8 @@ namespace RockWeb.Blocks.Finance
         protected bool _UseStackedLayout = false;
         protected bool _ShowCampusSelect = false;
         protected bool _ShowSaveDetails = false;
+        protected bool _ShowCreditCard = false;
+        protected bool _ShowChecking = false;
         protected string spanClass = "";
 
         protected FundService _fundService = new FundService();
@@ -54,6 +62,8 @@ namespace RockWeb.Blocks.Finance
 
             _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
             _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
+            _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCardgiving" ) );
+            _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACHgiving" ) );
                         
             if ( CurrentPerson != null )
             {
@@ -94,6 +104,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
+            _transactionService = new FinancialTransactionService();
+            _fundList = new List<FinancialTransactionFund>();
+            
+            // process person details
             PersonService personService = new PersonService();
             var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
             Person person;
@@ -110,72 +124,77 @@ namespace RockWeb.Blocks.Finance
                 personService.Add( person, CurrentPersonId );
             }
 
-            person.Email = Request.Form["txtEmail"];
-            person.GivenName = Request.Form["txtFirstName"];
-            person.LastName = Request.Form["txtFirstName"];
-
-            personService.Save( person, CurrentPersonId );
-
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                //_giftList.Clear();
-                var lookupID = _fundService.Queryable().Where( f => f.IsActive )
-                    .Distinct().OrderBy( f => f.Order ).ToDictionary( f => f.PublicName, f => f.Id );
-                
-                _transactionService = new FinancialTransactionService();
-                _fundList = new List<FinancialTransactionFund>();                              
-                
-                var transaction = _transactionService.Get( _transaction.Id  );
-                if ( transaction == null )
-                {
-                    transaction = new FinancialTransaction();                    
-                    _transactionService.Add( transaction, CurrentPersonId );
-                }
-
-                foreach ( RepeaterItem item in rptFundList.Items )
-                {
-                    //_giftList.Add( ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value
-                    //, Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value ) );
-                    FinancialTransactionFund fund = new FinancialTransactionFund();
-                    fund.FundId = lookupID[( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value];
-                    fund.Amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
-                    fund.TransactionId = transaction.Id;
-                    _fundList.Add( fund );
-                }
-                
-                transaction.EntityId = person.Id;
-                transaction.EntityTypeId = new Rock.Model.Person().TypeId;
-
-                transaction.Amount = _fundList.Sum( fA => (decimal)fA.Amount );
-            }
+            person.Email = txtEmail.Value;
+            person.GivenName = txtFirstName.Value;
+            person.LastName = txtLastName.Value;
             
+            personService.Save( person, CurrentPersonId );
             cfrmName.Text = person.FullName;
-            cfrmTotal.Text = _fundList.Sum( g => g.Amount ).ToString();
-            var paymentMethod = listCardTypes.Attributes["class"].Split(' ');
 
-            if ( paymentMethod.Count() > 1 )
+            // process gift details
+            var lookupFunds = _fundService.Queryable().Where( f => f.IsActive )
+                .Distinct().OrderBy( f => f.Order ).ToList();
+
+            _transaction = (FinancialTransaction)Session["transaction"];
+            if ( _transaction == null )
             {
-                // using credit card 
-                lblPaymentType.Text = paymentMethod.ElementAtOrDefault( 2 );
+                _transaction = new FinancialTransaction();                    
+                _transactionService.Add( _transaction, person.Id );
+            }
 
+            foreach ( RepeaterItem item in rptFundList.Items )
+            {
+                FinancialTransactionFund fund = new FinancialTransactionFund();
+                string fundName = ( (HtmlGenericControl)item.FindControl( "lblFundName" ) ).InnerText;
+                fund.Fund = lookupFunds.Where( f => f.PublicName == fundName ).FirstOrDefault();
+                fund.Amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                fund.TransactionId = _transaction.Id;                
+                _fundList.Add( fund );
+            }
+                
+            _transaction.EntityId = person.Id;
+            _transaction.EntityTypeId = new Rock.Model.Person().TypeId;
+            _transaction.Amount = _fundList.Sum( g => (decimal)g.Amount );
+            Session["transaction"] = _transaction;
+            _transactionService.Save( _transaction, CurrentPersonId );
+
+            // process payment type
+            if ( !string.IsNullOrEmpty( hfCardType.Value ) )
+            {
+                litPaymentType.Text = hfCardType.Value.Split(' ').Reverse().FirstOrDefault().Substring(3);
+                litPaymentType.Text = char.ToUpper(litPaymentType.Text[0]) + litPaymentType.Text.Substring(1);
+                litAccountType.Text = " credit card ";
             }
             else
             {
-                // using ACH
-                lblPaymentType.Text = radioAccountType.SelectedValue;
+                litPaymentType.Text = radioAccountType.SelectedValue;
+                litAccountType.Text = " account ";
             }
+            
+            string lastFour = !string.IsNullOrEmpty( numCreditCard.Value) 
+                ? numCreditCard.Value
+                : numAccount.Value;
 
-
-            string lastFour = Request.Form["numCreditCard"];
-            if ( lastFour != null ) 
+            if ( !string.IsNullOrEmpty( lastFour ) )
             {
-                lblPaymentLastFour.Text = Request.Form["numCreditCard"].Substring( 16, 4 );
+                lblPaymentLastFour.Text = lastFour.Substring( lastFour.Length - 4, 4 );
+            }
+            else
+            {
+                // no payment type, display validation error
             }
 
-            rptGiftConfirmation.DataSource = _fundList.ToDictionary( f => f.Amount, f => f.Fund );
+            litGiftTotal.Text = _transaction.Amount.ToString();
 
-            //rptGiftConfirmation.DataSource = _transactions;
-            //rptGiftConfirmation.DataBind();            
+            if ( _fundList.Count == 1 )
+            {
+                litMultiGift.Visible = false;
+                litGiftTotal.Visible = false;                
+            }
+            
+            
+            rptGiftConfirmation.DataSource = _fundList.ToDictionary( f => (string)f.Fund.PublicName, f => (decimal)f.Amount );
+            rptGiftConfirmation.DataBind();
             
             pnlDetails.Visible = false;
             pnlConfirm.Visible = true;
@@ -203,7 +222,7 @@ namespace RockWeb.Blocks.Finance
             
             foreach (RepeaterItem item in rptFundList.Items)
             {
-                _giftList.Add( ( (HtmlInputControl)item.FindControl( "btnFundName" ) ).Value
+                _giftList.Add( ( (HtmlGenericControl)item.FindControl( "lblFundName" ) ).InnerText
                     , Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value ));
             }
 
@@ -226,9 +245,19 @@ namespace RockWeb.Blocks.Finance
 
         protected void btnGive_Click( object sender, EventArgs e )
         {
-            FinancialTransaction gift = _transactionService.Get( _transaction.Id );
+            // give through payment gateway
 
-            _transactionService.Save( gift, CurrentPersonId );
+            _transaction = (FinancialTransaction)Session["transaction"];
+            _transactionService = new FinancialTransactionService();
+            _transactionService.Save( _transaction, CurrentPersonId );
+
+            litDateGift.Text = DateTime.Now.ToString( "f" );
+            litGiftTotal2.Text = litGiftTotal.Text;
+            litPaymentType2.Text = litPaymentType.Text;
+            
+
+            pnlConfirm.Visible = false;
+            pnlComplete.Visible = true;
         }
 
         #endregion
@@ -257,13 +286,17 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindFunds( )
         {
+            _transaction = new FinancialTransaction();
+            Session["transaction"] = _transaction;
+            _transactionService.Save( _transaction, CurrentPersonId );
+            
             var queryable = _fundService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order );
 
             List<int> defaultFunds = GetAttributeValue( "DefaultFundstodisplay" ).Any()
                 ? GetAttributeValue( "DefaultFundstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
                 : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-            
+                                    
             if ( ( queryable.Count() - defaultFunds.Count ) > 0 )
             {
                 btnAddFund.DataSource = queryable.Where( f => !defaultFunds.Contains( f.Id ) )
@@ -279,7 +312,7 @@ namespace RockWeb.Blocks.Finance
 
             rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
-            rptFundList.DataBind();            
+            rptFundList.DataBind();
         }
 
         /// <summary>
@@ -293,7 +326,10 @@ namespace RockWeb.Blocks.Finance
             for (int i = 1; i <= 12; i++)
             {
                 btnMonthExpiration.Items.Add( CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName( i ) );
-                btnYearExpiration.Items.Add(DateTime.Now.AddYears(i).Year.ToString());
+                if ((i % 2) == 0 )
+                {
+                    btnYearExpiration.Items.Add( DateTime.Now.AddYears( (i / 2) ).Year.ToString() );
+                }
             }
 
             btnMonthExpiration.DataBind();
