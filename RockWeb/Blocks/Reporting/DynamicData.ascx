@@ -49,7 +49,11 @@ form, or page route) will have it's value replaced with the page's current value
 
                             <Rock:LabeledTextBox ID="tbXslt" runat="server" LabelText="Xslt File" CssClass="input-large" 
                                 Help="The Xslt file to use for transformation when outputing Xml.  The filename is relative to the current theme's Assets/Xslt folder.  If left blank, the escaped Xml will be displayed." />
-                            
+                            <Rock:LabeledCheckBox ID="cbPersonReport" runat="server" LabelText="Person Report" Text="Yes"
+                                Help="Does this query return a list of people? If it does, then additional options will be available from the result grid.  (i.e. Communicate, etc).  Note: A column named 'Id' that contains the person's Id is required for a person report." />
+                            <Rock:LabeledTextBox ID="tbMergeFields" runat="server" LabelText="Communication Merge Fields" TextMode="MultiLine" Rows="2" CssClass="input-xlarge" 
+                                Help="When creating a new communication from a person report, additional fields from the report can be used as merge fields on the communication.  Enter any column names that you'd like to be available for the communication."/>
+
                         </fieldset>
                     </div>
 
