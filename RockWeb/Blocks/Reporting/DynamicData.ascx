@@ -6,7 +6,6 @@
         <div class="dynamic-report">
             
             <div class="dynamic-report-details" >
-                <asp:Literal ID="lDesc" runat="server"></asp:Literal>
                 <asp:PlaceHolder ID="phEdit" runat="server">
                     <p><a id="edit-report" class="report-add btn" onclick="return toggleDetails();" ><i class="icon-edit"></i></a></p>
                 </asp:PlaceHolder>
