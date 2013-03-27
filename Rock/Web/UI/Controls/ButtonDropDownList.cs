@@ -72,17 +72,18 @@ namespace Rock.Web.UI.Controls
             }
 
             string scriptFormat = @"
-$('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
-    {{
-        var text =  $(this).html();
-        var textHtml = $(this).html() + "" <span class='caret'></span>"";
-        var idvalue = $(this).attr('idvalue');
-        $('#ButtonDropDown_btn_{0}').html(textHtml);
-        $('#hfSelectedItemId_{0}').val(idvalue);
-        $('#hfSelectedItemText_{0}').val(text);
-        {1}
-    }}
-}});";
+            $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
+                {{
+                    var text =  $(this).html();
+                    var textHtml = $(this).html() + "" <span class='caret'></span>"";
+                    var idvalue = $(this).attr('idvalue');
+                    $('#ButtonDropDown_btn_{0}').html(textHtml);
+                    $('#hfSelectedItemId_{0}').val(idvalue);
+                    $('#hfSelectedItemText_{0}').val(text);
+                    {1}
+                    return false;
+                }}
+            }});";
 
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )

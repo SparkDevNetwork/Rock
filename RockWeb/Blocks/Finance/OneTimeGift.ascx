@@ -6,24 +6,32 @@
 
     function pageLoad(sender, args) {
 
+        // payment totals script
         $('.calc').on('change', function () {
-
             var total = 0.00;
             
             $('.calc').each(function () {
                 if ($(this).val() != '') {
                     total += parseFloat($(this).val());
                     console.log(total);
-                }
+                }                
             });
             
             this.value = parseFloat($(this).val()).toFixed(2);
-            $('#lblTotal').html(total.toFixed(2));
+            $('#spnTotal').html(total.toFixed(2));
+            $('.total-label').css('width', $(this).parent().width());
+            return false;
         });
+                
+        $('.calc').trigger('change');        
 
-        $('.calc').trigger('change');
+        // payment types script
+        $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
 
-        $('.CreditCard').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
+        $('.credit-card').on('change', function () {
+            $('#hfCardType').val(ulCardType.className);
+        });
+                
     };
 
 </script>
@@ -43,78 +51,98 @@
                                 
                 <div class="<%= spanClass %> well">
 
-                    <asp:ValidationSummary ID="valSummaryDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
-
                     <fieldset>
-
-                        <h4>Contribution Information</h4>
-
-                        <% if ( _ShowCampusSelect ) { %>
                             
-                        <div class="row-fluid">
+                        <legend>Contribution Information</legend>
 
-                            <div class="input-prepend btn-group">
+                        <div class="form-horizontal">
+
+                            <% if ( _ShowCampusSelect ) { %>
                                 
-                                <Rock:ButtonDropDownList ID="ddlCampusList" runat="server" CssClass="btn btn-mini" ></Rock:ButtonDropDownList>
-                            
-                            </div>
-                        
-                        </div>
-
-                        <% } %>
-                        
-                        <div class="row-fluid">
-            
-                            <div id="alertFunds" class="alert alert-error" style="display: none;">
-
-                                No funds are currently active.  Please add or activate a fund.
-
-                            </div>
-
-                        </div>
-
-                        <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Predictable">
-                            <ItemTemplate>  
                                 <div class="row-fluid">
-                                    <div class="input-prepend">
-                                        <div class="btn-group">
-                                            <input id="btnFundName" name="btnFundName" type="button" tabindex="-1" class="btn dropdown-toggle" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %>" runat="server"/>
-                                            <span class="add-on">$</span>
-                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
-                                        </div>                           
+                                    <div class="control-group controls">
+                                        <Rock:ButtonDropDownList ID="ddlCampusList" runat="server" CssClass="btn btn-mini" ></Rock:ButtonDropDownList>
                                     </div>
                                 </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        
-                        <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
-                        
-                            <div class="btn-group">
 
-                                <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList> 
-                                
+                            <% } %>
+                        
+                            <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Predictable">
+                                <ItemTemplate>                                          
+                                    <div class="row-fluid">                                    
+                                        <div class="control-group">                                        
+                                            <label id="lblFundName" class="control-label" name="lblFundName" tabindex="-1" runat="server"><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></label> 
+                                            <div class="controls">
+                                                <div class="input-prepend">
+                                                <span class="add-on">$</span>
+                                                <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                                        
+                                </ItemTemplate>                           
+                            </asp:Repeater>                        
+
+                            <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
+                                <div class="control-group controls">
+                                    <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList>                                 
+                                </div>
                             </div>
 
-                        </div>                  
-
-                        <div class="row-fluid">
-
-                            <br /><b>Total Amount $ <span id="lblTotal">0.00</span></b>
-
-                        </div>
-
-                        <div class="row-fluid">
-            
-                            <div id="alertContribution" class="alert alert-error" style="display: none;">
-
-                                Please enter a contribution amount in at least one fund.
-
+                            <div class="row-fluid">
+                                <div class="control-group">     
+                                    <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
+                                    <div class="controls amount-right">
+                                        <b>$ <span id="spnTotal">0.00</span></b>
+                                    </div>                                                        
+                                </div>
                             </div>
-
+                                                    
                         </div>
 
                     </fieldset>
+
+                    <asp:ValidationSummary ID="valSummaryDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
+
+                    <%--<h4>Contribution Information</h4>--%>
+
+                    <% if ( _ShowCampusSelect ) { %>
+                            
+<%--                    <div class="row-fluid">
+                                
+                        <Rock:ButtonDropDownList ID="ddlCampusList" runat="server" CssClass="btn btn-mini" ></Rock:ButtonDropDownList>
+
+                    </div>--%>
+
+                    <% } %>
+                        
+                    <%--<asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Predictable">
+                        <ItemTemplate>  
+                            <div class="row-fluid">
+                                <div class="control-group">
+                                    <label id="lblFundName" name="lblFundName" class="control-label" for="inputFundAmount" tabindex="-1" runat="server"><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></label> 
+                                    <div class="controls input-prepend">
+                                            
+                                            <span class="add-on">$</span>
+                                            <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
+                                            
+                                    </div>
+                                </div>
+                            </div>
+                        </ItemTemplate>                           
+                    </asp:Repeater>--%>
                     
+                        
+                    <div class="row-fluid">
+            
+                        <div id="alertContribution" class="alert alert-error" style="display: none;">
+
+                            Please enter a contribution amount in at least one fund.
+
+                        </div>
+
+                    </div>
+                                        
                 </div>
             
                 <% if ( _UseStackedLayout ) { %>
@@ -131,16 +159,16 @@
 
                     <fieldset>
 
-                        <h4>Address Information</h4>
-
+                        <legend>Address Information</legend>
+                        
                         <div class="row-fluid">
                             
-                            <div class="span5">
+                            <div class="span6">
                                 <label for="txtFirstName">First Name</label>
                                 <input id="txtFirstName" type="text" class="span12" runat="server" required />
                             </div>             
 
-                            <div class="span5">
+                            <div class="span6">
                                 <label for="txtLastName">Last Name</label>
                                 <input id="txtLastName" type="text" class="span12" runat="server" required />
                             </div>        
@@ -149,7 +177,7 @@
 
                         <div class="row-fluid">
                                 
-                            <div class="span10">
+                            <div class="span12">
                                 <label for="txtAddress">Address</label>
                                 <input id="txtAddress" type="text" class="span12" runat="server" required /> 
                             </div>
@@ -163,10 +191,65 @@
                                 <input id="txtCity" type="text" class="span12" runat="server" required />                        
 
                             </div>
-                        
-                            <div class="span2">
-                                <label for="txtState" >State</label>
-                                <input id="txtState" type="text" class="span12" runat="server" required />                        
+  
+                            <div class="span4">
+                                <label for="ddlState">State</label>
+
+                                <select class="state-select" id="ddlState" name="ddlState">
+	                                <option value="AL">Alabama</option>
+	                                <option value="AK">Alaska</option>
+	                                <option value="AZ">Arizona</option>
+	                                <option value="AR">Arkansas</option>
+	                                <option value="CA">California</option>
+	                                <option value="CO">Colorado</option>
+	                                <option value="CT">Connecticut</option>
+	                                <option value="DE">Delaware</option>
+	                                <option value="DC">District of Columbia</option>
+	                                <option value="FL">Florida</option>
+	                                <option value="GA">Georgia</option>
+	                                <option value="HI">Hawaii</option>
+	                                <option value="ID">Idaho</option>
+	                                <option value="IL">Illinois</option>
+	                                <option value="IN">Indiana</option>
+	                                <option value="IA">Iowa</option>
+	                                <option value="KS">Kansas</option>
+	                                <option value="KY">Kentucky</option>
+	                                <option value="LA">Louisiana</option>
+	                                <option value="ME">Maine</option>
+	                                <option value="MD">Maryland</option>
+	                                <option value="MA">Massachusetts</option>
+	                                <option value="MI">Michigan</option>
+	                                <option value="MN">Minnesota</option>
+	                                <option value="MS">Mississippi</option>
+	                                <option value="MO">Missouri</option>
+	                                <option value="MT">Montana</option>
+	                                <option value="NE">Nebraska</option>
+	                                <option value="NV">Nevada</option>
+	                                <option value="NH">New Hampshire</option>
+	                                <option value="NJ">New Jersey</option>
+	                                <option value="NM">New Mexico</option>
+	                                <option value="NY">New York</option>
+	                                <option value="NC">North Carolina</option>
+	                                <option value="ND">North Dakota</option>
+	                                <option value="OH">Ohio</option>
+	                                <option value="OK">Oklahoma</option>
+	                                <option value="OR">Oregon</option>
+	                                <option value="PA">Pennsylvania</option>
+	                                <option value="RI">Rhode Island</option>
+	                                <option value="SC">South Carolina</option>
+	                                <option value="SD">South Dakota</option>
+	                                <option value="TN">Tennessee</option>
+	                                <option value="TX">Texas</option>
+	                                <option value="UT">Utah</option>
+	                                <option value="VT">Vermont</option>
+	                                <option value="VA">Virginia</option>
+	                                <option value="WA">Washington</option>
+	                                <option value="WV">West Virginia</option>
+	                                <option value="WI">Wisconsin</option>
+	                                <option value="WY">Wyoming</option>
+                                </select>
+                                
+                                <%--<input id="txtState" type="text" class="span12" runat="server" size="2" required />--%>                        
                             
                             </div>
 
@@ -179,7 +262,7 @@
 
                         <div class="row-fluid">
                             
-                            <div class="span10">
+                            <div class="span12">
                                 <label for="txtEmail" >Email</label>
                                 <input id="txtEmail" type="text" class="span12" runat="server" required />                                                      
                             </div>
@@ -200,57 +283,58 @@
 
                     <fieldset>
 
-                        <h4>Payment Information</h4>
+                        <legend>Payment Information</legend>
 
                         <div class="tabbable">
 
                             <ul class="nav nav-tabs">
 
-                                <li class="active"><a href="#tab1" data-toggle="tab">Credit Card</a></li>
+                                <li <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> class="active">
+                                    <a href="#tab1" data-toggle="tab">Credit Card</a></li>
 
-                                <li><a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
+                                <li <% if ( !_ShowChecking ) { %> style="display:none" <% } %>>
+                                    <a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
 
                             </ul>
 
-                            <div class="tab-content" style="overflow: visible">
+                            <div class="tab-content payment-details">
 
-                                <div class="tab-pane active" id="tab1">
+                                <div class="tab-pane active" id="tab1" <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid"></div>
 
                                     <div class="row-fluid">
                                               
                                         <label for="numCreditCard" >Credit Card #</label>
-                                        <input id="numCreditCard" class="input-large CreditCard" type="text" title="Credit Card Number" pattern="\d+" size="20" style="float: left" runat="server">
+                                        <input id="numCreditCard" class="input-large credit-card" type="text" title="Credit Card Number" pattern="\d+" size="20" style="float: left" runat="server">
 
-                                        <ul id="listCardTypes" class="card-logos" runat="server">
+                                        <ul id="ulCardType" class="card-logos">
 	                                        <li class="card-visa"></li>
 	                                        <li class="card-mastercard"></li>
 	                                        <li class="card-amex"></li>
 	                                        <li class="card-discover"></li>
                                         </ul>
+
+                                        <asp:HiddenField id="hfCardType" runat="server" ClientIDMode="Static" />
                                     
                                     </div>
                            
                                     <div class="row-fluid">
                         
-                                        <div class="span6" >
+                                        <div class="expiration-group">
 
                                             <label>Expiration Date</label>
-
-                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" ></Rock:ButtonDropDownList> 
-
+                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" ></Rock:ButtonDropDownList>                                             
                                             <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" ></Rock:ButtonDropDownList> 
-
+                                        
                                         </div>
 
-                                        <div class="span4">
-                                                    
-                                            <label for="numCVV" >CVV #</label>
+                                        <div>
+                                            <label class="control-label" for="numCVV" >CVV #</label>
                                             <input name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
 
                                         </div> 
-                            
+
                                     </div>
 
                                     <div class="row-fluid">
@@ -283,7 +367,7 @@
                             
                                 </div>
 
-                                <div class="tab-pane" id="tab2" >
+                                <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid"></div>
 
@@ -382,50 +466,77 @@
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
                 
-                <p>
-                    <b><asp:Literal ID="cfrmName" runat="server" /></b>, thank you for your generosity! 
-                    You're about to give a total of <b><asp:Literal ID="cfrmTotal" runat="server"/></b>
-                     to the following funds: 
+                <p><b><asp:Literal ID="cfrmName" runat="server" /></b>, you're about to give a total of <b><asp:Literal ID="litGiftTotal" Visible="true" runat="server"/></b>
+                    <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following funds: </asp:Literal>
                     <asp:Repeater ID="rptGiftConfirmation" runat="server">
                         <ItemTemplate>
-                            <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b> 
-                            to the <%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>,
+                            <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %></b> 
+                            to the <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b>
+                            <asp:Literal ID="litSpacer" Visible=<%# (litMultiGift.Visible) %> runat="server" >, </asp:Literal>
                         </ItemTemplate>
-                        <FooterTemplate>
-                            .
-                        </FooterTemplate>
+                        <FooterTemplate>.</FooterTemplate>
                     </asp:Repeater>
                 </p>                                
                 
-                <p>Your gift will be paid using your <b><asp:Literal ID="lblPaymentType" runat="server"/></b> 
-                    credit card ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
+                <p>Your gift will be paid using your <b><asp:Literal ID="litPaymentType" runat="server"/></b>
+                    <asp:Literal ID="litAccountType" runat="server"/> ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
                 </p>
-
-                <label class="checkbox">
-                                            
-	                <p><input type="checkbox" id="cbxCreateAcct" onclick="javascript: $('#grpCreateAcct').toggle()" /> Save My Information</p> 
-
-                </label>
-
-                <div id="grpCreateAcct" style="display: none" >
-							
-	                <label for="txtUserName">Enter a Username</label>
-							
-	                <input id="txtUserName" name="txtUserName" class="input-medium"  type="text" size="30" />
-
-	                <label for="txtPassword">Enter a Password</label>
-							
-	                <input id="txtPassword" name="txtPassword" class="input-medium"  type="password" size="30" />
-
-                </div>
 
             </div>
 
         </div>
         
         <div class="actions">
-            <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" />
+            <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" OnClick="btnGive_Click" />
             <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-cancel"  OnClick="btnBack_Click" />
+        </div>
+
+    </asp:Panel>
+
+    <asp:Panel ID="pnlComplete" runat="server" Visible="false">
+        
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+
+        <div class="row-fluid">     
+                                
+            <div class="<%= spanClass %> well">
+
+                <h3 class="header-text" >Contribution Complete! </h3>
+                
+                <p>
+                    <b><asp:Literal ID="litDateGift" runat="server"/></b>
+                </p>
+                
+                <p> Thank you for your generosity! 
+                    You just gave a total of <asp:Literal ID="litGiftTotal2" Visible="true" runat="server"/>
+                    to NewSpring Church using your <asp:Literal ID="litPaymentType2" runat="server"/>.
+                                       
+                </p>                                
+                
+            </div>
+
+            <label class="checkbox">
+                                            
+	            <p><input type="checkbox" id="cbxCreateAcct" onclick="javascript: $('#grpCreateAcct').toggle()" /> Save My Information</p> 
+
+            </label>
+
+            <div id="grpCreateAcct" style="display: none" >
+							
+	            <label for="txtUserName">Enter a Username</label>
+							
+	            <input id="txtUserName" name="txtUserName" class="input-medium"  type="text" size="30" />
+
+	            <label for="txtPassword">Enter a Password</label>
+							
+	            <input id="txtPassword" name="txtPassword" class="input-medium"  type="password" size="30" />
+
+            </div>
+
+        </div>
+        
+        <div class="actions">
+            <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript:window.print();" />
         </div>
 
     </asp:Panel>
