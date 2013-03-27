@@ -81,12 +81,6 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                lDesc.Visible = updatePage;
-                if ( updatePage )
-                {
-                    lDesc.Text = CurrentPage.Description;
-                }
-
                 if ( allowEdit )
                 {
                     tbName.Visible = updatePage;
@@ -144,8 +138,6 @@ namespace RockWeb.Blocks.Reporting
 
                 CurrentPage.Title = page.Title;
                 CurrentPage.Description = page.Description;
-
-                lDesc.Text = page.Description;
 
                 Page.Title = page.Title;
             }
