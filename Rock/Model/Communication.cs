@@ -36,16 +36,27 @@ namespace Rock.Model
         public int? SenderPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is temporary.
+        /// A communication is considered temporary when it has been created by
+        /// the system (i.e. Data Grid), but not yet edited by a user.  Temporary
+        /// communications more than a few hours old will potentially get 
+        /// deleted by a cleanup job
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsTemporary { get; set; }
+
+        /// <summary>
         /// Gets or sets the subject.
         /// </summary>
         /// <value>
         /// The subject.
         /// </value>
-        [Required]
         [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
         public string Subject { get; set; }
-
+         
         /// <summary>
         /// Gets or sets the content.
         /// </summary>

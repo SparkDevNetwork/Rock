@@ -181,6 +181,9 @@
     <Compile Include="DataFilters\CodeGenerated\Category\EntityTypeQualifierValueFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Category\IconCssClassFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Category\NameFilter.cs" />
+    <Compile Include="DataFilters\CodeGenerated\CommunicationRecipient\MergeDataFilter.cs" />
+    <Compile Include="DataFilters\CodeGenerated\Communication\ContentFilter.cs" />
+    <Compile Include="DataFilters\CodeGenerated\Communication\SubjectFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\DataViewFilter\ExpressionTypeFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\DataViewFilter\SelectionFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\DataView\DescriptionFilter.cs" />
@@ -668,6 +671,8 @@
     <Compile Include="Model\CodeGenerated\BinaryFileTypeService.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationRecipientService.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
@@ -699,6 +704,7 @@
     <Compile Include="Model\BinaryFileType.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
+    <Compile Include="Model\Copy of Communication.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />

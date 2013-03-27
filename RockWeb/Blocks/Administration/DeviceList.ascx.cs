@@ -39,13 +39,13 @@ namespace RockWeb.Blocks.Administration
             fDevice.DisplayFilterValue += fDevice_DisplayFilterValue;
             
             gDevice.DataKeyNames = new string[] { "id" };
-            gDevice.Actions.IsAddEnabled = true;
+            gDevice.Actions.ShowAdd = true;
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gDevice.Actions.IsAddEnabled = canAddEditDelete;
+            gDevice.Actions.ShowAdd = canAddEditDelete;
             gDevice.IsDeleteEnabled = canAddEditDelete;
         }
 

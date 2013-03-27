@@ -38,7 +38,7 @@ public partial class EntityTypes : RockBlock
         if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
         {
             gEntityTypes.DataKeyNames = new string[] { "id" };
-            gEntityTypes.Actions.IsAddEnabled = true;
+            gEntityTypes.Actions.ShowAdd = true;
             gEntityTypes.Actions.AddClick += Actions_AddClick;
             gEntityTypes.RowSelected += gEntityTypes_EditRow;
             gEntityTypes.GridRebind += gEntityTypes_GridRebind;

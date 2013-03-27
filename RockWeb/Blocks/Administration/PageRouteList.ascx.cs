@@ -34,13 +34,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gPageRoutes.DataKeyNames = new string[] { "id" };
-            gPageRoutes.Actions.IsAddEnabled = true;
+            gPageRoutes.Actions.ShowAdd = true;
             gPageRoutes.Actions.AddClick += gPageRoutes_Add;
             gPageRoutes.GridRebind += gPageRoutes_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gPageRoutes.Actions.IsAddEnabled = canAddEditDelete;
+            gPageRoutes.Actions.ShowAdd = canAddEditDelete;
             gPageRoutes.IsDeleteEnabled = canAddEditDelete;
         }
 

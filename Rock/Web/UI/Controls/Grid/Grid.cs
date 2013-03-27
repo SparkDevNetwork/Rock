@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -37,58 +38,16 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets the action row.
-        /// </summary>
-        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
-        public virtual GridViewRow ActionRow
-        {
-            get
-            {
-                if ( this._actionRow == null )
-                {
-                    this.EnsureChildControls();
-                }
-
-                return this._actionRow;
-            }
-        }
-
-        /// <summary>
-        /// Gets the actions control
-        /// </summary>
-        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
-        public virtual GridActions Actions
-        {
-            get { return this._gridActions; }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the action row should be displayed.
+        /// Gets or sets a value indicating whether this instance is person list.  If so, 
+        /// the data source should have an Id field/property that is a person Id
         /// </summary>
         /// <value>
-        ///   <c>true</c> if action row should be displayed; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance is person list; otherwise, <c>false</c>.
         /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( true ),
-        Description( "Show Action Row" )
-        ]
-        public virtual bool ShowActionRow
+        public virtual bool IsPersonList
         {
-            get
-            {
-                object showActionRow = this.ViewState["ShowActionRow"];
-                return ( ( showActionRow == null ) || ( (bool)showActionRow ) );
-            }
-
-            set
-            {
-                bool showActionRow = this.ShowActionRow;
-                if ( value != showActionRow )
-                {
-                    this.ViewState["ShowActionRow"] = value;
-                }
-            }
+            get { return this.ViewState["IsPersonList"] as bool? ?? false; }
+            set { ViewState["IsPersonList"] = value; }
         }
 
         /// <summary>
@@ -104,24 +63,8 @@ namespace Rock.Web.UI.Controls
         ]
         public virtual bool IsDeleteEnabled
         {
-            get
-            {
-                object deleteEnabled = this.ViewState["IsDeleteEnabled"];
-                if ( deleteEnabled == null )
-                {
-                    return true;
-                }
-                else
-                {
-                    return (bool)deleteEnabled;
-                }
-
-            }
-
-            set
-            {
-                this.ViewState["IsDeleteEnabled"] = value;
-            }
+            get { return this.ViewState["IsDeleteEnabled"] as bool? ?? true; }
+            set { ViewState["IsDeleteEnabled"] = value; }
         }
 
         /// <summary>
@@ -131,31 +74,14 @@ namespace Rock.Web.UI.Controls
         /// <c>true</c> if [show confirm delete dialog]; otherwise, <c>false</c>.
         /// </value>
         [
-       Category( "Appearance" ),
-       DefaultValue( true ),
-       Description( "Show Confirm Delete Dialog" )
-       ]
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show Confirm Delete Dialog" )
+        ]
         public virtual bool ShowConfirmDeleteDialog
         {
-            get
-            {
-                object showConfirmDeleteDialog = this.ViewState["ShowConfirmDeleteDialog"];
-                if ( showConfirmDeleteDialog == null )
-                {
-                    return true;
-                }
-                else
-                {
-                    return (bool)showConfirmDeleteDialog;
-                }
-
-            }
-
-            set
-            {
-                this.ViewState["ShowConfirmDeleteDialog"] = value;
-            }
-
+            get { return this.ViewState["ShowConfirmDeleteDialog"] as bool? ?? true; }
+            set { ViewState["ShowConfirmDeleteDialog"] = value; }
         }
 
         /// <summary>
@@ -236,24 +162,8 @@ namespace Rock.Web.UI.Controls
         ]
         public virtual bool HideDeleteButtonForIsSystem
         {
-            get
-            {
-                object hideDeleteButtonForIsSystem = this.ViewState["HideDeleteButtonForIsSystem"];
-                if ( hideDeleteButtonForIsSystem != null )
-                {
-                    return (bool)hideDeleteButtonForIsSystem;
-                }
-                else
-                {
-                    // default to true
-                    return true;
-                }
-            }
-
-            set
-            {
-                this.ViewState["HideDeleteButtonForIsSystem"] = value;
-            }
+            get { return this.ViewState["HideDeleteButtonForIsSystem"] as bool? ?? true; }
+            set { ViewState["HideDeleteButtonForIsSystem"] = value; }
         }
 
         /// <summary>
@@ -264,53 +174,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public virtual bool RowClickEnabled
         {
-            get
-            {
-                object rowClickEnabled = this.ViewState["RowClickEnabled"];
-                if ( rowClickEnabled != null )
-                {
-                    return (bool)rowClickEnabled;
-                }
-                else
-                {
-                    // default to true
-                    return true;
-                }
-            }
-
-            set
-            {
-                this.ViewState["RowClickEnabled"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the export to excel action should be displayed.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the eport to excel action should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( true ),
-        Description( "Show Action Export to Excel" )
-        ]
-        public virtual bool ShowActionExcelExport
-        {
-            get
-            {
-                object showActionExcelExport = this.ViewState["ShowActionExcelExport"];
-                return ( ( showActionExcelExport == null ) || ( (bool)showActionExcelExport ) );
-            }
-
-            set
-            {
-                bool showActionExcelExport = this.ShowActionExcelExport;
-                if ( value != showActionExcelExport )
-                {
-                    this.ViewState["ShowActionExcelExport"] = value;
-                }
-            }
+            get { return this.ViewState["RowClickEnabled"] as bool? ?? true; }
+            set { ViewState["RowClickEnabled"] = value; }
         }
 
         /// <summary>
@@ -346,6 +211,77 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["SortProperty"] as SortProperty; }
             private set { ViewState["SortProperty"] = value; }
         }
+
+        /// <summary>
+        /// Gets or sets a list of datasource field/properties that should be included as additional merge fields when creating a new communication
+        /// </summary>
+        /// <value>
+        /// The communicate merge fields.
+        /// </value>
+        public List<string> CommunicateMergeFields
+        {
+            get { return ViewState["CommunicateMergeFields"] as List<string> ?? new List<string>(); }
+            set { ViewState["CommunicateMergeFields"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the new communication page route.
+        /// </summary>
+        /// <value>
+        /// The new communication page route.
+        /// </value>
+        public virtual string CommunicationPageRoute
+        {
+            get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
+            set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        #region Action Row Properties
+
+        /// <summary>
+        /// Gets the action row.
+        /// </summary>
+        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
+        public virtual GridViewRow ActionRow
+        {
+            get
+            {
+                if ( this._actionRow == null )
+                {
+                    this.EnsureChildControls();
+                }
+
+                return this._actionRow;
+            }
+        }
+
+        /// <summary>
+        /// Gets the actions control
+        /// </summary>
+        [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden ), Browsable( false )]
+        public virtual GridActions Actions
+        {
+            get { return this._gridActions; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the action row should be displayed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if action row should be displayed; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show Action Row" )
+        ]
+        public virtual bool ShowActionRow
+        {
+            get { return this.ViewState["ShowActionRow"] as bool? ?? true; }
+            set { ViewState["ShowActionRow"] = value; }
+        }
+
+        #endregion
 
         #endregion
 
@@ -391,12 +327,127 @@ namespace Rock.Web.UI.Controls
             pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
             this.PagerTemplate = pagerTemplate;
 
-            this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
-            this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
+            this.Sorting += Grid_Sorting;
 
-            this.Actions.IsExcelExportEnabled = this.ShowActionExcelExport;
+            this.Actions.CommunicateClick += Actions_CommunicateClick;
+            this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
             base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Handles the CommunicateClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Actions_CommunicateClick( object sender, EventArgs e )
+        {
+            OnGridRebind( e );
+
+            if ( IsPersonList )
+            {
+
+                // Set Sender
+                var rockPage = Page as RockPage;
+                if ( rockPage != null )
+                {
+                    var communication = new Rock.Model.Communication();
+
+                    if ( rockPage.CurrentPersonId.HasValue )
+                    {
+                        communication.SenderPersonId = rockPage.CurrentPersonId.Value;
+                        communication.Subject = "New Email";
+
+                    }
+
+                    if ( this.DataSource is DataTable || this.DataSource is DataView )
+                    {
+                        DataTable data = null;
+
+                        if ( this.DataSource is DataTable )
+                        {
+                            data = (DataTable)this.DataSource;
+                        }
+                        else if ( this.DataSource is DataView )
+                        {
+                            data = ( (DataView)this.DataSource ).Table;
+                        }
+
+                        foreach ( DataRow row in data.Rows )
+                        {
+                            int? personId = null;
+                            var mergeValues = new Dictionary<string, string>();
+                            for ( int i = 0; i < data.Columns.Count; i++ )
+                            {
+                                if ( data.Columns[i].ColumnName == "Id" )
+                                {
+                                    personId = (int)row[i];
+                                }
+
+                                if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
+                                {
+                                    mergeValues.Add( data.Columns[i].ColumnName, row[i].ToString() );
+                                }
+                            }
+
+                            if ( personId.HasValue )
+                            {
+                                var recipient = new Rock.Model.CommunicationRecipient();
+                                recipient.PersonId = personId.Value;
+                                recipient.MergeData = mergeValues.ToJson();
+                                communication.Recipients.Add( recipient );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // get access to the List<> and its properties
+                        IList data = (IList)this.DataSource;
+                        Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+                        IList<PropertyInfo> props = new List<PropertyInfo>( oType.GetProperties() );
+
+                        foreach ( var item in data )
+                        {
+                            int? personId = null;
+                            var mergeValues = new Dictionary<string, string>();
+                            foreach ( PropertyInfo prop in props )
+                            {
+                                if ( prop.Name == "Id" )
+                                {
+                                    personId = (int)prop.GetValue( item, null );
+                                }
+
+                                if ( CommunicateMergeFields.Contains( prop.Name ) )
+                                {
+                                    object propValue = prop.GetValue( item, null );
+                                    string value = "";
+                                    if ( propValue != null )
+                                    {
+                                        value = propValue.ToString();
+                                    }
+                                    mergeValues.Add( prop.Name, value );
+                                }
+                            }
+
+                            if ( personId.HasValue )
+                            {
+                                var recipient = new Rock.Model.CommunicationRecipient();
+                                recipient.PersonId = personId.Value;
+                                recipient.MergeData = mergeValues.ToJson();
+                                communication.Recipients.Add( recipient );
+                            }
+
+                        }
+                    }
+
+                    var service = new Rock.Model.CommunicationService();
+                    service.Add( communication, rockPage.CurrentPersonId );
+                    service.Save( communication, rockPage.CurrentPersonId );
+
+                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
         }
 
         /// <summary>
@@ -404,7 +455,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void Actions_ExcelExportClick( object sender, EventArgs e )
+        protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
             OnGridRebind( e );
 
@@ -666,7 +717,7 @@ namespace Rock.Web.UI.Controls
             {
                 this.AllowPaging = false;
                 this.AllowSorting = false;
-                this.Actions.IsExcelExportEnabled = false;
+                this.Actions.ShowExcelExport = false;
 
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );

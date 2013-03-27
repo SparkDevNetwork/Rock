@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Crm
 
             gGroupMembers.DataKeyNames = new string[] { "Id" };
             gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-            gGroupMembers.Actions.IsAddEnabled = true;
+            gGroupMembers.Actions.ShowAdd = true;
             gGroupMembers.IsDeleteEnabled = true;
             gGroupMembers.GridRebind += gGroupMembers_GridRebind;
         }

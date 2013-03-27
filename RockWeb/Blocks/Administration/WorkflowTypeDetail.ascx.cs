@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
 
             // assign attributes grid actions
             gWorkflowTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gWorkflowTypeAttributes.Actions.IsAddEnabled = true;
+            gWorkflowTypeAttributes.Actions.ShowAdd = true;
             gWorkflowTypeAttributes.Actions.AddClick += gWorkflowTypeAttributes_Add;
             gWorkflowTypeAttributes.GridRebind += gWorkflowTypeAttributes_GridRebind;
         }

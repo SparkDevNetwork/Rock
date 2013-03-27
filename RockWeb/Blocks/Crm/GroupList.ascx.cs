@@ -39,13 +39,13 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroups.DataKeyNames = new string[] { "id" };
-            gGroups.Actions.IsAddEnabled = true;
+            gGroups.Actions.ShowAdd = true;
             gGroups.Actions.AddClick += gGroups_Add;
             gGroups.GridRebind += gGroups_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" ) && GetAttributeValue( "ShowEdit" ).FromTrueFalse();
-            gGroups.Actions.IsAddEnabled = canAddEditDelete;
+            gGroups.Actions.ShowAdd = canAddEditDelete;
             gGroups.IsDeleteEnabled = canAddEditDelete;
 
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );

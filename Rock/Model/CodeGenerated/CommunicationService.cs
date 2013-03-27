@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupLocation Service class
+    /// Communication Service class
     /// </summary>
-    public partial class GroupLocationService : Service<GroupLocation>
+    public partial class CommunicationService : Service<Communication>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupLocationService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationService"/> class
         /// </summary>
-        public GroupLocationService()
+        public CommunicationService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupLocationService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationService"/> class
         /// </summary>
-        public GroupLocationService(IRepository<GroupLocation> repository) : base(repository)
+        public CommunicationService(IRepository<Communication> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( GroupLocation item, out string errorMessage )
+        public bool CanDelete( Communication item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,28 +55,26 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class GroupLocationExtensionMethods
+    public static class CommunicationExtensionMethods
     {
         /// <summary>
-        /// Clones this GroupLocation object to a new GroupLocation object
+        /// Clones this Communication object to a new Communication object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static GroupLocation Clone( this GroupLocation source, bool deepCopy )
+        public static Communication Clone( this Communication source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as GroupLocation;
+                return source.Clone() as Communication;
             }
             else
             {
-                var target = new GroupLocation();
-                target.GroupId = source.GroupId;
-                target.LocationId = source.LocationId;
-                target.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
-                target.IsMailing = source.IsMailing;
-                target.IsLocation = source.IsLocation;
+                var target = new Communication();
+                target.SenderPersonId = source.SenderPersonId;
+                target.Subject = source.Subject;
+                target.Content = source.Content;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

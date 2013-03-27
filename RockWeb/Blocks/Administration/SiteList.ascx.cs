@@ -32,13 +32,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gSites.DataKeyNames = new string[] { "id" };
-            gSites.Actions.IsAddEnabled = true;
+            gSites.Actions.ShowAdd = true;
             gSites.Actions.AddClick += gSites_Add;
             gSites.GridRebind += gSites_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gSites.Actions.IsAddEnabled = canAddEditDelete;
+            gSites.Actions.ShowAdd = canAddEditDelete;
             gSites.IsDeleteEnabled = canAddEditDelete;
 
             SecurityField securityField = gSites.Columns[3] as SecurityField;
