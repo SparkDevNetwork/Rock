@@ -108,6 +108,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [ForeignKey( "BatchType" )]
         public int BatchTypeValueId { get; set; }
 
         [DataMember]
