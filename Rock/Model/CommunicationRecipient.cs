@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -45,13 +45,31 @@ namespace Rock.Model
         public int CommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the merge data.
+        /// Gets or sets the additional merge values json.
         /// </summary>
         /// <value>
-        /// The merge data.
+        /// The additional merge values json.
         /// </value>
         [DataMember]
-        public string MergeData { get; set; }
+        public string AdditionalMergeValuesJson
+        {
+            get
+            {
+                return AdditionalMergeValues.ToJson();
+            }
+
+            set
+            {
+                if ( string.IsNullOrWhiteSpace( value ) )
+                {
+                    AdditionalMergeValues = new Dictionary<string, string>();
+                }
+                else
+                {
+                    AdditionalMergeValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( value );
+                }
+            }
+        }
 
         #endregion
 
@@ -74,6 +92,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Communication Communication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional merge values.
+        /// </summary>
+        /// <value>
+        /// The additional merge values.
+        /// </value>
+        [DataMember]
+        public virtual Dictionary<string, string> AdditionalMergeValues
+        {
+            get { return _additionalMergeValues; }
+            set { _additionalMergeValues = value; }
+        }
+        private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
+
 
         #endregion
 
