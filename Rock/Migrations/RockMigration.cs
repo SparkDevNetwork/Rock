@@ -207,7 +207,7 @@ namespace Rock.Migrations
                     [IconFileId],[Guid])
                 VALUES(
                     '{1}','{1}',1,@ParentPageId,1,'{3}',
-                    1,1,1,1,
+                    0,1,1,1,
                     0,1,1,0,1,0,
                     1,0,
                     @Order,0,'{2}',1,
