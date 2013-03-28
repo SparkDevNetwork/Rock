@@ -1,4 +1,4 @@
-﻿$(document).ready(function (e) {
+﻿Sys.Application.add_load(function () {
 
     // Monitors validation controls to watch for them becoming invalid.  Once
     // They are invalid, the validated control's parent <dl> tag will have the 'error'

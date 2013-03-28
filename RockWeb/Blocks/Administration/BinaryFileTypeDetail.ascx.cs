@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Administration
                 edtBinaryFileAttributes.ActionTitle = ActionTitle.Edit( "attribute for binary files of type " + tbName.Text );
             }
 
-            edtBinaryFileAttributes.SetAttributeProperties( attribute);
+            edtBinaryFileAttributes.SetAttributeProperties( attribute, typeof( BinaryFile ) );
         }
 
         /// <summary>

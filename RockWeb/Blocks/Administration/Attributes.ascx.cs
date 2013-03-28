@@ -453,7 +453,12 @@ namespace RockWeb.Blocks.Administration
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
 
-            edtAttribute.SetAttributeProperties( attributeModel );
+            Type type = null;
+            if ( _entityTypeId.HasValue )
+            {
+                type = EntityTypeCache.Read( _entityTypeId.Value ).GetEntityType();
+            }
+            edtAttribute.SetAttributeProperties( attributeModel, type  );
 
             pnlList.Visible = false;
             pnlDetails.Visible = true;

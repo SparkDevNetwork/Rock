@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Administration
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
-            edtDefinedTypeAttributes.SetAttributeProperties( attribute );
+            edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
         }
 
         /// <summary>
@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( attribute.Id.Equals( 0 ) )
                 {
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new DefinedValue().TypeName ).Id;
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
                     attribute.EntityTypeQualifierColumn = "DefinedTypeId";
                     attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
                     attributeService.Add( attribute, CurrentPersonId );
