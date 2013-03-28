@@ -18,11 +18,11 @@ namespace CheckScannerUtilityWPF
         }
 
         /// <summary>
-        /// Handles the Click event of the Button control.
+        /// Handles the Click event of the btnLogin control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void Button_Click( object sender, RoutedEventArgs e )
+        private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
             // todo: auth 
             RockConfig rockConfig = RockConfig.Load();

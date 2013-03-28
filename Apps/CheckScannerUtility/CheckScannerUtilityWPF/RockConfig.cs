@@ -51,6 +51,10 @@ namespace CheckScannerUtilityWPF
         [DataMember]
         public string Password { get; set; }
 
+        [XmlElement]
+        [DataMember]
+        public int ImageColorType { get; set; }
+
         /// <summary>
         /// Saves this instance.
         /// </summary>
