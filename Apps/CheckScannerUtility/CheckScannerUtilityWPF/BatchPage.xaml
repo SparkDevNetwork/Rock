@@ -7,8 +7,8 @@
       x:Class="CheckScannerUtilityWPF.BatchPage"
       Name="batchPage"
       mc:Ignorable="d"
-      d:DesignHeight="520"
-      d:DesignWidth="780"
+      d:DesignHeight="680"
+      d:DesignWidth="700"
       Title="CheckScanner - Edit Batch"
       Loaded="Page_Loaded">
     <Grid>
@@ -34,7 +34,6 @@
             <ax:AxRanger x:Name="RangerScanner"
                          TransportNewState="RangerScanner_TransportNewState"
                          TransportChangeOptionsState="RangerScanner_TransportChangeOptionsState"
-                         TransportSetItemOutput="RangerScanner_TransportSetItemOutput"
                          TransportItemInPocket="RangerScanner_TransportItemInPocket" />
         </WindowsFormsHost>
 
@@ -86,7 +85,6 @@
                             <ColumnDefinition Width="3*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <!--Text="{Binding BatchDate}" -->
                         <TextBlock Grid.Row="0"
                                    Grid.Column="0"
                                    Style="{StaticResource textblockTextStyle}"
@@ -137,18 +135,34 @@
             <StackPanel Grid.Column="1"
                         Grid.Row="0"
                         Margin="16">
-                <Label Style="{StaticResource labelTextStyle}">Batch Name</Label>
-                <TextBox Name="txtBatchName"
-                         Style="{StaticResource textboxStyle}"
-                         Text="Sample Batch Name" />
-                <Label Style="{StaticResource labelTextStyle}">Created by</Label>
-                <TextBox Name="txtCreatedBy"
-                         Style="{StaticResource textboxStyle}"
-                         Text="Admin Admin" />
-                <Label Style="{StaticResource labelTextStyle}">Verify Amount</Label>
-                <TextBox Name="txtVerifyAmount"
-                         Style="{StaticResource textboxStyle}"
-                         Text="$123.45" />
+                <Border Style="{StaticResource borderStyleWell}" >
+                    <StackPanel>
+                        <Label Style="{StaticResource labelTextStyle}">Batch Name</Label>
+                        <TextBox Name="txtBatchName"
+                                 Style="{StaticResource textboxStyle}"
+                                 Text="Sample Batch Name" />
+                        <Label Style="{StaticResource labelTextStyle}">Created by</Label>
+                        <TextBox Name="txtCreatedBy"
+                                 Style="{StaticResource textboxStyle}"
+                                 Text="Admin Admin" />
+                        <Label Style="{StaticResource labelTextStyle}">Verify Amount</Label>
+                        <TextBox Name="txtVerifyAmount"
+                                 Style="{StaticResource textboxStyle}"
+                                 Text="$123.45" />
+                        <Button Grid.Column="3"
+                                Style="{StaticResource buttonStylePrimaryMini}"
+                                Name="btnEdit"
+                                Margin="4,4,0,0"
+                                Content="Edit"
+                                HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+                <Label Name="lblMakeModel"
+                       Style="{StaticResource labelTextStyle}">Scanner Type:</Label>
+                <Label Name="lblInterfaceVersion"
+                       Style="{StaticResource labelTextStyle}">Interface Version:</Label>
+                <Label Name="lblFeederType"
+                       Style="{StaticResource labelTextStyle}">FeederType:</Label>
                 <Label Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
                 <ComboBox Name="cboImageOption"
                           Style="{StaticResource textboxStyle}"
@@ -164,14 +178,11 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <Button Grid.Column="1"
-                            Style="{StaticResource buttonStylePrimary}"
+                            Margin="0,4,4,0"
+                            Style="{StaticResource buttonStylePrimaryMini}"
                             Name="btnScan"
                             Content="Scan"
                             Click="btnScan_Click" />
-                    <Button Grid.Column="3"
-                            Style="{StaticResource buttonStyle}"
-                            Name="btnEdit"
-                            Content="Edit" />
 
                 </Grid>
             </StackPanel>
