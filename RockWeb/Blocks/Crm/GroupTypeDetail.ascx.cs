@@ -632,7 +632,7 @@ namespace RockWeb.Blocks.Crm
 
                             attribute.EntityTypeQualifierColumn = "Id";
                             attribute.EntityTypeQualifierValue = groupType.Id.ToString();
-                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupType().TypeName ).Id;
+                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupType ) ).Id;
                             Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                             attributeService.Save( attribute, CurrentPersonId );
                         }
@@ -688,7 +688,7 @@ namespace RockWeb.Blocks.Crm
 
                             attribute.EntityTypeQualifierColumn = "GroupTypeId";
                             attribute.EntityTypeQualifierValue = groupType.Id.ToString();
-                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Group().TypeName ).Id;
+                            attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Group ) ).Id;
                             Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                             attributeService.Save( attribute, CurrentPersonId );
                         }
@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Crm
                 edtGroupTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for group type " + tbName.Text );
             }
 
-            edtGroupTypeAttributes.SetAttributeProperties( attribute );
+            edtGroupTypeAttributes.SetAttributeProperties( attribute, typeof( GroupType ) );
         }
 
         /// <summary>
@@ -862,7 +862,7 @@ namespace RockWeb.Blocks.Crm
                 edtGroupAttributes.ActionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
             }
 
-            edtGroupAttributes.SetAttributeProperties( attribute );
+            edtGroupAttributes.SetAttributeProperties( attribute, typeof( Group ) );
         }
 
         /// <summary>

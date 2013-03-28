@@ -326,7 +326,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             btnSecurity.Visible = report.IsAuthorized( "Administrate", CurrentPerson );
-            btnSecurity.Title = "Secure " + report.Name;
+            btnSecurity.Title = report.Name;
             btnSecurity.EntityId = report.Id;
 
             if ( readOnly )

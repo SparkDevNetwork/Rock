@@ -30,7 +30,6 @@
     <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>" ></script>

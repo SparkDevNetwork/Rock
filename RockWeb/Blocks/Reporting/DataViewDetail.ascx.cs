@@ -365,7 +365,7 @@ $(document).ready(function() {
             }
 
             btnSecurity.Visible = dataView.IsAuthorized( "Administrate", CurrentPerson );
-            btnSecurity.Title = "Secure " + dataView.Name;
+            btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
             if ( readOnly )
