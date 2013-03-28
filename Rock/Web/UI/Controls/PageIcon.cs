@@ -24,8 +24,8 @@ namespace Rock.Web.UI.Controls
 
                 if ( pageCache.PageDisplayIcon && !string.IsNullOrWhiteSpace(pageCache.IconCssClass) )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "page-icon" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, "pageoverview-icon");
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, pageCache.IconCssClass + " icon-4x" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
