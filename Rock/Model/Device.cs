@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Spatial;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
 

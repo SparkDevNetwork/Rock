@@ -19,3 +19,6 @@
 /System.Spatial.xml
 /System.Web.Http.OData.dll
 /Rock.DataTransferObjects.pdb
+/EntityFramework.SqlServer.dll
+/EntityFramework.SqlServer.xml
+/EntityFramework.dll
