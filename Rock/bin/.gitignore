@@ -21,3 +21,6 @@
 /Rock.dll
 /Rock.pdb
 /SanitizerProviders.dll
+/EntityFramework.SqlServer.dll
+/EntityFramework.SqlServer.xml
+/Rock.dll.config

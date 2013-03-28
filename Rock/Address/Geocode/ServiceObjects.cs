@@ -6,7 +6,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Spatial;
+//using System.Data.Spatial;
 
 using Rock;
 using Rock.Attribute;

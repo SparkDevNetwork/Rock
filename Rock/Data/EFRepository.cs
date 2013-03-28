@@ -9,13 +9,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-using System.Data.Objects;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Rock;
 using Rock.Model;
 
 namespace Rock.Data
@@ -360,24 +359,24 @@ namespace Rock.Data
             var contextAdapter = ( (IObjectContextAdapter)Context );
 
             foreach ( ObjectStateEntry entry in contextAdapter.ObjectContext.ObjectStateManager.GetObjectStateEntries(
-                System.Data.EntityState.Added | System.Data.EntityState.Deleted | System.Data.EntityState.Modified | System.Data.EntityState.Unchanged ) )
+                EntityState.Added | EntityState.Deleted | EntityState.Modified | EntityState.Unchanged ) )
             {
                 var rockEntity = entry.Entity as Entity<T>;
                 var audit = new Rock.Model.Audit();
 
                 switch ( entry.State )
                 {
-                    case System.Data.EntityState.Added:
+                    case EntityState.Added:
                         addedEntities.Add( entry.Entity );
                         audit.AuditType = AuditType.Add;
                         break;
 
-                    case System.Data.EntityState.Deleted:
+                    case EntityState.Deleted:
                         deletedEntities.Add( entry.Entity );
                         audit.AuditType = AuditType.Delete;
                         break;
 
-                    case System.Data.EntityState.Modified:
+                    case EntityState.Modified:
 
                         if ( rockEntity != null )
                         {
