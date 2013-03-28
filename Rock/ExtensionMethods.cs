@@ -52,17 +52,18 @@ namespace Rock
         /// <returns></returns>
         public static object GetPropertyValue( this object rootObj, string propertyPathName )
         {
-            var propPath = propertyPathName.Split( '.' ).ToList<string>();
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
-            Type objType = rootObj.GetType();
             object obj = rootObj;
+            Type objType = rootObj.GetType();
+
             while ( propPath.Any() && obj != null )
             {
                 PropertyInfo property = objType.GetProperty( propPath.First() );
                 if ( property != null )
                 {
-                    objType = property.PropertyType;
                     obj = property.GetValue( obj );
+                    objType = property.PropertyType;
                     propPath = propPath.Skip( 1 ).ToList();
                 }
                 else

@@ -17,7 +17,7 @@
                     <div class="row-fluid">
                         <div class="span6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.DataView" LabelText="Category" Required="true" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId" 
+                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId"
                                 LabelText="Applies To" DataTextField="FriendlyName" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                         </div>
                         <div class="span6">
@@ -37,26 +37,31 @@
 
             </div>
 
-            <fieldset id="fieldsetViewDetails" runat="server">
-                <legend>
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </legend>
-                <div class="well">
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <div id="pnlViewDetails" runat="server">
+
+                <fieldset>
+                    <legend>
+                        <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                    </legend>
+                    <div class="well">
+                        <div class="row-fluid">
+                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                        </div>
+                        <div class="row-fluid">
+                            <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
+                            <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        </div>
                     </div>
-                    <div class="row-fluid">
-                         <asp:Literal ID="lblMainDetails" runat="server" />
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit"   runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
-                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
-                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
-                        <asp:LinkButton ID="btnPreview2" runat="server" Text="Preview" CssClass="btn btn-mini pull-right" OnClick="btnPreview2_Click" />
-                    </div>
-                </div>
-            </fieldset>
+                </fieldset>
+
+                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+
+            </div>
 
             <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview">
                 <Content>

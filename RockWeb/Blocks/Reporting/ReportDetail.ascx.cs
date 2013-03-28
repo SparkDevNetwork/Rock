@@ -417,7 +417,7 @@ namespace RockWeb.Blocks.Reporting
 
                         if ( serviceInstance != null )
                         {
-                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
 
                             if ( getMethod != null )
                             {
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Reporting
                                 }
                                 var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
                                 var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
-                                gReport.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
+                                gReport.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, gReport.SortProperty } );
                                 gReport.DataBind();
                             }
                         }
