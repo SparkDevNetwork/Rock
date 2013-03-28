@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CommunicationRecipient Service class
+    /// CommunicationEmail Service class
     /// </summary>
-    public partial class CommunicationRecipientService : Service<CommunicationRecipient>
+    public partial class CommunicationEmailService : Service<CommunicationEmail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationEmailService"/> class
         /// </summary>
-        public CommunicationRecipientService()
+        public CommunicationEmailService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationEmailService"/> class
         /// </summary>
-        public CommunicationRecipientService(IRepository<CommunicationRecipient> repository) : base(repository)
+        public CommunicationEmailService(IRepository<CommunicationEmail> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( CommunicationRecipient item, out string errorMessage )
+        public bool CanDelete( CommunicationEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,26 +55,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CommunicationRecipientExtensionMethods
+    public static class CommunicationEmailExtensionMethods
     {
         /// <summary>
-        /// Clones this CommunicationRecipient object to a new CommunicationRecipient object
+        /// Clones this CommunicationEmail object to a new CommunicationEmail object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static CommunicationRecipient Clone( this CommunicationRecipient source, bool deepCopy )
+        public static CommunicationEmail Clone( this CommunicationEmail source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as CommunicationRecipient;
+                return source.Clone() as CommunicationEmail;
             }
             else
             {
-                var target = new CommunicationRecipient();
-                target.PersonId = source.PersonId;
-                target.CommunicationId = source.CommunicationId;
-                target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+                var target = new CommunicationEmail();
+                target.SenderName = source.SenderName;
+                target.SenderEmail = source.SenderEmail;
+                target.ReplyToEmail = source.ReplyToEmail;
+                target.Cc = source.Cc;
+                target.Bcc = source.Bcc;
+                target.HtmlContent = source.HtmlContent;
+                target.TextContent = source.TextContent;
+                target.SenderPersonId = source.SenderPersonId;
+                target.IsTemporary = source.IsTemporary;
+                target.Subject = source.Subject;
+                target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
