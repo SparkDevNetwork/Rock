@@ -76,8 +76,11 @@
         <div class="row-fluid">
             <div class="span12">
                 <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                <Rock:PageIcon ID="PageIcon" runat="server" />
-                <Rock:PageDescription ID="PageDescription" runat="server" />
+                
+                <section class="pageoverview clearfix">
+                    <Rock:PageIcon ID="PageIcon" runat="server" />
+                    <Rock:PageDescription ID="PageDescription" runat="server" />
+                </section>
 
                 <%-- Content Area --%>
                     
