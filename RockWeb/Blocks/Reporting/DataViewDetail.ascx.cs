@@ -52,6 +52,8 @@ $(document).ready(function() {
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DataView ) ).Id;
+
+            gReport.GridRebind += gReport_GridRebind;
         }
 
         /// <summary>
@@ -112,34 +114,6 @@ $(document).ready(function() {
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            if ( hfDataViewId.Value.Equals( "0" ) )
-            {
-                // Cancelling on Add.  Return to tree view with parent category selected
-                var qryParams = new Dictionary<string, string>();
-
-                string parentCategoryId = PageParameter( "parentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
-                {
-                    qryParams["CategoryId"] = parentCategoryId;
-                }
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
-            }
-            else
-            {
-                // Cancelling on Edit.  Return to Details
-                DataViewService service = new DataViewService();
-                DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
-                ShowReadonlyDetails( item );
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -149,55 +123,6 @@ $(document).ready(function() {
             var service = new DataViewService();
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowEditDetails( item );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnDelete_Click( object sender, EventArgs e )
-        {
-            int? categoryId = null;
-
-            var dataViewService = new DataViewService();
-            var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
-
-            if ( dataView != null )
-            {
-                string errorMessage;
-                if ( !dataViewService.CanDelete( dataView, out errorMessage ) )
-                {
-                    ShowReadonlyDetails( dataView );
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                }
-                else
-                {
-                    categoryId = dataView.CategoryId;
-
-                    dataViewService.Delete( dataView, CurrentPersonId );
-                    dataViewService.Save( dataView, CurrentPersonId );
-
-                    // reload page, selecting the deleted data view's parent
-                    var qryParams = new Dictionary<string, string>();
-                    if ( categoryId != null )
-                    {
-                        qryParams["CategoryId"] = categoryId.ToString();
-                    }
-
-                    NavigateToPage( this.CurrentPage.Guid, qryParams );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets the edit mode.
-        /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
-        {
-            pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
         }
 
         /// <summary>
@@ -281,25 +206,69 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPreview control.
+        /// Handles the Click event of the btnCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnPreview_Click( object sender, EventArgs e )
+        protected void btnCancel_Click( object sender, EventArgs e )
         {
-            ShowPreview( int.Parse(ddlEntityType.SelectedValue), GetFilterControl());
+            if ( hfDataViewId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  Return to tree view with parent category selected
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                DataViewService service = new DataViewService();
+                DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
+                ShowReadonlyDetails( item );
+            }
         }
 
-        protected void btnPreview2_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
         {
-            int dataViewId = int.Parse( hfDataViewId.Value );
+            int? categoryId = null;
 
-            var service = new DataViewService();
-            var dataView = service.Get( dataViewId);
+            var dataViewService = new DataViewService();
+            var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
 
-            if ( dataView != null && dataView.EntityTypeId.HasValue)
+            if ( dataView != null )
             {
-                ShowPreview( dataView.EntityTypeId.Value, dataView.DataViewFilter );
+                string errorMessage;
+                if ( !dataViewService.CanDelete( dataView, out errorMessage ) )
+                {
+                    ShowReadonlyDetails( dataView );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                }
+                else
+                {
+                    categoryId = dataView.CategoryId;
+
+                    dataViewService.Delete( dataView, CurrentPersonId );
+                    dataViewService.Save( dataView, CurrentPersonId );
+
+                    // reload page, selecting the deleted data view's parent
+                    var qryParams = new Dictionary<string, string>();
+                    if ( categoryId != null )
+                    {
+                        qryParams["CategoryId"] = categoryId.ToString();
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
             }
         }
 
@@ -376,8 +345,6 @@ $(document).ready(function() {
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
-            btnPreview2.Visible = true;
-
             nbEditModeMessage.Text = string.Empty;
             if ( !dataView.IsAuthorized( "Edit", CurrentPerson ) )
             {
@@ -388,10 +355,9 @@ $(document).ready(function() {
             if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
             {
                 readOnly = true;
-                btnPreview2.Visible = false;
                 nbEditModeMessage.Text = "INFO: This Data View contains a filter that you do not have access to view.";
             }
-
+            
             if ( dataView.IsSystem )
             {
                 readOnly = true;
@@ -491,6 +457,23 @@ $(document).ready(function() {
             lblMainDetails.Text += @"
     </dl>
 </div>";
+
+            ShowReport( dataView );
+
+        }
+
+        private void ShowReport( DataView dataView )
+        {
+            if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            {
+                gReport.IsPersonList = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+                gReport.Visible = true;
+                BindGrid( gReport, dataView.EntityTypeId.Value, dataView.DataViewFilter );
+            }
+            else
+            {
+                gReport.Visible = false;
+            }
         }
 
         /// <summary>
@@ -500,13 +483,31 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         private void ShowPreview( int entityTypeId, DataViewFilter filter )
         {
+            if (BindGrid(gPreview, entityTypeId, filter))
+            {
+                modalPreview.Show();
+            }
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
+        }
+
+        private bool BindGrid( Grid grid, int entityTypeId, DataViewFilter filter )
+        {
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
             {
                 Type entityType = cachedEntityType.GetEntityType();
                 if ( entityType != null )
                 {
-                    BuildGridColumns( entityType );
+                    BuildGridColumns( grid, entityType );
 
                     Type[] modelType = { entityType };
                     Type genericServiceType = typeof( Rock.Data.Service<> );
@@ -516,54 +517,64 @@ $(document).ready(function() {
 
                     if ( serviceInstance != null )
                     {
-                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
 
                         if ( getMethod != null )
                         {
                             var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
                             var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
-                            gPreview.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
-                            gPreview.DataBind();
+                            grid.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
+                            grid.DataBind();
 
-                            modalPreview.Show();
-                        }
+                            return true;
+                         }
                     }
                 }
             }
+
+            return false;
         }
 
         /// <summary>
         /// Builds the grid columns.
         /// </summary>
         /// <param name="modelType">Type of the model.</param>
-        private void BuildGridColumns( Type modelType )
+        private void BuildGridColumns( Grid grid, Type modelType )
         {
-            gPreview.Columns.Clear();
+            grid.Columns.Clear();
 
-            var previewColumns = new Dictionary<string, BoundField>();
+            var displayColumns = new Dictionary<string, BoundField>();
             var allColumns = new Dictionary<string, BoundField>();
 
             foreach ( var property in modelType.GetProperties() )
             {
-                if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                if ( property.Name != "Id" )
                 {
-                    previewColumns.Add( property.Name, GetGridField( property ) );
-                }
-                else if ( previewColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                {
-                    allColumns.Add( property.Name, GetGridField( property ) );
+                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                    {
+                        displayColumns.Add( property.Name, GetGridField( property ) );
+                    }
+                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                    {
+                        allColumns.Add( property.Name, GetGridField( property ) );
+                    }
                 }
             }
 
-            Dictionary<string, BoundField> columns = previewColumns.Count > 0 ? previewColumns : allColumns;
+            // Always add hidden id column
+            var idCol = new BoundField();
+            idCol.DataField = "Id";
+            idCol.Visible = false;
+            grid.Columns.Add( idCol );
 
+            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
             foreach ( var column in columns )
             {
                 var bf = column.Value;
                 bf.DataField = column.Key;
                 bf.SortExpression = column.Key;
                 bf.HeaderText = column.Key.SplitCase();
-                gPreview.Columns.Add( bf );
+                grid.Columns.Add( bf );
             }
         }
 
@@ -595,6 +606,28 @@ $(document).ready(function() {
         #endregion
 
         #region Activities and Actions
+
+        /// <summary>
+        /// Handles the GridRebind event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gReport_GridRebind( object sender, EventArgs e )
+        {
+            var service = new DataViewService();
+            var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            ShowReport( item );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnPreview_Click( object sender, EventArgs e )
+        {
+            ShowPreview( int.Parse( ddlEntityType.SelectedValue ), GetFilterControl() );
+        }
 
         void groupControl_AddFilterClick( object sender, EventArgs e )
         {
