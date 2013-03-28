@@ -4,21 +4,21 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
+using Rock.Web.Cache;
 
-namespace Rock.DataFilters.Person
+namespace Rock.DataFilters
 {
     /// <summary>
-    /// 
+    /// A filter for selecting another data filter as a filter
     /// </summary>
-    [Description( "Filter people on whether they have a picture or not" )]
-    [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
-    public class HasPictureFilter : DataFilterComponent
+    public abstract class OtherDataViewFilter<T> : DataFilterComponent
     {
         /// <summary>
         /// Gets the title.
@@ -28,18 +28,7 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Title
         {
-            get { return "Has Picture"; }
-        }
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Person"; }
+            get { return "Another Data View"; }
         }
 
         /// <summary>
@@ -50,7 +39,7 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Section
         {
-            get { return "Person Properties"; }
+            get { return "Advanced"; }
         }
 
         /// <summary>
@@ -66,10 +55,12 @@ namespace Rock.DataFilters.Person
         {
             get
             {
-                return "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
+                return "'Included in ' + " +
+                    "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
+                    "Data View'";
             }
         }
-
+        
         /// <summary>
         /// Formats the selection.
         /// </summary>
@@ -77,29 +68,41 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override string FormatSelection( string selection )
         {
-            bool hasPicture = true;
-            if (!Boolean.TryParse(selection, out hasPicture))
-                hasPicture = true;
+            string s = "Another Data View";
 
-            if (hasPicture)
+            int dvId = int.MinValue;
+            if ( int.TryParse( selection, out dvId ) )
             {
-                return "Has Picture";
+                var dataView = new DataViewService().Get( dvId );
+                if ( dataView != null )
+                {
+                    return string.Format( "Included in '{0}' Data View", dataView.Name );
+                }
             }
-            else
-            {
-                return "Doesn't Have Picture";
-            }
+
+            return s;
         }
 
         /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
+        public override Control[] CreateChildControls(Rock.Web.UI.RockPage page)
         {
-            CheckBox cb = new CheckBox();
-            cb.Checked = true;
-            return new Control[1] { cb };
+            int entityTypeId = EntityTypeCache.Read( typeof( T ) ).Id;
+
+            DropDownList ddlDataViews = new DropDownList();
+
+            foreach ( var dataView in new DataViewService().GetByEntityTypeId(entityTypeId))
+            {
+                if ( dataView.IsAuthorized( "View", page.CurrentPerson ) &&
+                    dataView.DataViewFilter.IsAuthorized( "View", page.CurrentPerson ) )
+                {
+                    ddlDataViews.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
+                }
+            }
+
+            return new Control[1] { ddlDataViews };
         }
 
         /// <summary>
@@ -109,8 +112,22 @@ namespace Rock.DataFilters.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.Title + " " );
+            writer.AddAttribute( "class", "control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Label
+            writer.AddAttribute( "class", "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "Data View" );
+            writer.RenderEndTag();
+
+            // Controls
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -120,7 +137,7 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override string GetSelection( Control[] controls )
         {
-            return ( (CheckBox)controls[0] ).Checked.ToString();
+            return ( (DropDownList)controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -130,11 +147,7 @@ namespace Rock.DataFilters.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Control[] controls, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
-
-            ( (CheckBox)controls[0] ).Checked = hasPicture;
+            ( (DropDownList)controls[0] ).SelectedValue = selection;
         }
 
         /// <summary>
@@ -145,13 +158,16 @@ namespace Rock.DataFilters.Person
         /// <returns></returns>
         public override Expression GetExpression( Expression parameterExpression, string selection )
         {
-            bool hasPicture = true;
-            if ( Boolean.TryParse( selection, out hasPicture ) )
+            int dvId = int.MinValue;
+            if ( int.TryParse( selection, out dvId ) )
             {
-                MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-                Expression hasValue = Expression.Property( property, "HasValue");
-                Expression value = Expression.Constant( hasPicture );
-                return Expression.Equal( hasValue, value);
+                var dataView = new DataViewService().Get( dvId );
+                if ( dataView != null && dataView.DataViewFilter != null )
+                {
+                    // TODO: Should probably verify security again on the selected dataview and it's filters,
+                    // as that could be a moving target.
+                    return dataView.DataViewFilter.GetExpression( (ParameterExpression)parameterExpression );
+                }
             }
             return null;
         }

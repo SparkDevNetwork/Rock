@@ -108,7 +108,7 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls()
+        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
         {
             DropDownList ddlGroupType = new DropDownList();
             foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
