@@ -106,7 +106,7 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls()
+        public virtual Control[] CreateChildControls(Rock.Web.UI.RockPage page)
         {
             var controls = new Control[2] {
                 ComparisonControl( StringFilterComparisonTypes ),

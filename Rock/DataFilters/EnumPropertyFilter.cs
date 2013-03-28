@@ -84,16 +84,16 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls()
+        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
         {
             RadioButtonList rbl = new RadioButtonList();
             rbl.RepeatDirection = RepeatDirection.Horizontal;
 
-            foreach ( var value in Enum.GetValues( typeof(T) ) )
+            foreach ( var value in Enum.GetValues( typeof( T ) ) )
             {
-                rbl.Items.Add( new ListItem( Enum.GetName( typeof(T), value ).SplitCase() ) );
+                rbl.Items.Add( new ListItem( Enum.GetName( typeof( T ), value ).SplitCase() ) );
             }
-            
+
             if ( rbl.Items.Count > 0 )
             {
                 rbl.Items[0].Selected = true;
