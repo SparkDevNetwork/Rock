@@ -20,10 +20,10 @@ namespace RockWeb.Blocks.Finance
     /// 
     /// </summary>
     [CustomDropdownListField( "Fund", "The fund that new pledges will be allocated toward.",
-        listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [Fund] WHERE [IsPledgable] = 1 ORDER BY [SortOrder]",
+        listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [Fund] WHERE [IsPledgable] = 1 ORDER BY [Order]",
         key: "DefaultFund", required: true )]
     [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge" )]
-    [LinkedPage( "Giving Page", "The page used to set up a person's giving profile." )]
+    [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage" )]
     [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate" )]
     [DateField( "End Date", "Date all pledges will end.", key: "DefaultEndDate" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_STATUS, "New User Status", "Person status to assign to a new user.", key: "DefaultPersonStatus" )]
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Finance
                             // Show UI control for creating a pledge...
                             // Consider caching newly created pledge and/or person?
                             pnlConfirm.Visible = true;
-                            AddCacheItem( "CachedPledge", pledge );
+                            //AddCacheItem( "CachedPledge", pledge );
                             return;
                         }
 
@@ -79,12 +79,13 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             pledgeService.Save( pledge, person.Id );
-                            FlushCacheItem( "CachedPledge" );
+                            //FlushCacheItem( "CachedPledge" );
                         }
                     });
             }
 
             // Redirect to linked page?
+            NavigateToPage( new Guid( GetAttributeValue( "GivingPage" ) ), null );
         }
 
         /// <summary>
@@ -158,11 +159,23 @@ namespace RockWeb.Blocks.Finance
             var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
 
             // First check cache to see if this is coming back from confirmation step...
-            var pledge = ( GetCacheItem( "CachedPledge" ) as Pledge 
+            //var pledge = ( GetCacheItem( "CachedPledge" ) as Pledge 
             // If not, check database for an existing pledge...
-                ?? person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId ) ) 
+            //    ?? person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId ) ) 
             // Else, create a new pledge.
-                ?? new Pledge();
+            //    ?? new Pledge();
+
+            var pledge = GetCacheItem( "CachedPledge" ) as Pledge;
+
+            if ( pledge == null )
+            {
+                pledge = person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId );
+            }
+
+            if ( pledge == null )
+            {
+                pledge = new Pledge();
+            }
 
             pledge.PersonId = person.Id;
             pledge.FundId = defaultFundId;
