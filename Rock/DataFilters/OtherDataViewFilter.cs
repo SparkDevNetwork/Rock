@@ -57,7 +57,7 @@ namespace Rock.DataFilters
             {
                 return "'Included in ' + " +
                     "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
-                    "Data View'";
+                    "'Data View'";
             }
         }
         
