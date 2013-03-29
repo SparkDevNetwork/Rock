@@ -73,7 +73,9 @@ namespace Rock.Model
             {
                 var target = new Communication();
                 target.SenderPersonId = source.SenderPersonId;
+                target.IsTemporary = source.IsTemporary;
                 target.Subject = source.Subject;
+                target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

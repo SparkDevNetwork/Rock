@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -24,6 +25,7 @@ namespace Rock.Web.UI.Controls
         // column 1
         private DataTextBox tbName;
         private DataTextBox tbKey;
+        private CustomValidator cvKey;
         private DataTextBox tbCategory;
         private DataTextBox tbDescription;
 
@@ -53,6 +55,7 @@ namespace Rock.Web.UI.Controls
             lAttributeActionTitle = new Literal();
             tbName = new DataTextBox();
             tbKey = new DataTextBox();
+            cvKey = new CustomValidator();
             tbCategory = new DataTextBox();
             tbDescription = new DataTextBox();
 
@@ -197,12 +200,21 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public Dictionary<string, ConfigurationValue> Qualifiers
         {
-            get
-            {
-                var qualifiers = ViewState["Qualifiers"] as Dictionary<string, ConfigurationValue>;
-                return qualifiers ?? new Dictionary<string, ConfigurationValue>();
-            }
+            get { return ViewState["Qualifiers"] as Dictionary<string, ConfigurationValue> ?? 
+                new Dictionary<string, ConfigurationValue>(); }
             set { ViewState["Qualifiers"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets any key values that should not be allowed to be used
+        /// </summary>
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames
+        {
+            get { return ViewState["ReservedKeyNames"] as List<string> ?? new List<string>(); }
+            set { ViewState["ReservedKeyNames"] = value; }
         }
 
         /// <summary>
@@ -257,25 +269,6 @@ namespace Rock.Web.UI.Controls
 
         #region Control Methods
 
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            string populateAttributeKeyScript = @"
-function populateAttributeKey(nameControlId, keyControlId ) {
-    // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
-    var keyControl = $('#' + keyControlId);
-    var keyValue = keyControl.val();
-    if (keyValue == '') {
-        var nameValue = $('#' + nameControlId).val();
-        nameValue = nameValue.replace(/\s+/g, '');
-        keyControl.val(nameValue);
-    }
-}
-";
-            ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "PopulateAttributeKeyScript", populateAttributeKeyScript, true );
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -318,11 +311,17 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             return base.SaveViewState();
         }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Sets the controls properties from the attribute
         /// </summary>
         /// <param name="attribute">The attribute.</param>
-        public void SetAttributeProperties( Rock.Model.Attribute attribute )
+        /// <param name="objectType">Type of the object that attribute is being created for.  If specified, the UI 
+        /// will prevent user from creating an attribute with the same key as an existing property name of the object.</param>
+        public void SetAttributeProperties( Rock.Model.Attribute attribute, Type objectType = null )
         {
             if ( attribute != null )
             {
@@ -347,6 +346,16 @@ function populateAttributeKey(nameControlId, keyControlId ) {
                     }
                 }
             }
+
+            if ( objectType != null )
+            {
+                ReservedKeyNames = new List<string>();
+                foreach ( var propInfo in objectType.GetProperties() )
+                {
+                    ReservedKeyNames.Add( propInfo.Name );
+                }
+            }
+
         }
 
         /// <summary>
@@ -399,12 +408,23 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             tbName.ID = string.Format( "tbName_{0}", this.ID );
             tbName.SourceTypeName = "Rock.Model.Attribute, Rock";
             tbName.PropertyName = "Name";
+            tbName.Required = true;
             Controls.Add( tbName );
 
             tbKey.ID = string.Format( "tbKey_{0}", this.ID );
             tbKey.SourceTypeName = "Rock.Model.Attribute, Rock";
             tbKey.PropertyName = "Key";
+            tbKey.Required = true;
             Controls.Add( tbKey );
+
+            cvKey.ID = string.Format("cvKey_{0}", this.ID);
+            cvKey.ControlToValidate = tbKey.ID;
+            cvKey.ClientValidationFunction = "validateKey";
+            cvKey.ServerValidate += cvKey_ServerValidate;
+            cvKey.Display = ValidatorDisplay.Dynamic;
+            cvKey.CssClass = "validation-error help-inline";
+            cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
+            Controls.Add( cvKey );
 
             tbCategory .ID = string.Format( "tbCategory_{0}", this.ID );
             tbCategory.SourceTypeName = "Rock.Model.Attribute, Rock";
@@ -491,6 +511,8 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbName.ClientID, tbKey.ClientID );
             tbName.RenderControl( writer );
             tbKey.RenderControl( writer );
+            cvKey.RenderControl( writer );
+
             tbCategory.RenderControl( writer );
             tbDescription.RenderControl( writer );
             writer.RenderEndTag();
@@ -567,6 +589,49 @@ function populateAttributeKey(nameControlId, keyControlId ) {
             writer.Write( Environment.NewLine );
             btnCancel.RenderControl( writer );
             writer.RenderEndTag();
+
+            RegisterClientScript();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Registers the client script.
+        /// </summary>
+        private void RegisterClientScript()
+        {
+            string script = string.Format( @"
+
+var reservedKeyNames = {0};
+
+function populateAttributeKey(nameControlId, keyControlId ) {{
+    // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+    var keyControl = $('#' + keyControlId);
+    var keyValue = keyControl.val();
+    if (keyValue == '') {{
+
+        keyValue = $('#' + nameControlId).val().replace(/\s+/g, '');
+        var newKeyValue = keyValue;
+        
+        var i = 1;
+        while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {{
+            newKeyValue = keyValue + i++;
+        }}
+            
+        keyControl.val(newKeyValue);
+    }}
+}}
+
+function validateKey(sender, args) {{
+    alert('Validating: ' + $('#{1}').val());
+    args.IsValid = ( $.inArray( $('#{1}').val(), reservedKeyNames ) < 0 );
+}}
+",
+                ReservedKeyNames.ToJson(), tbKey.ClientID);
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "AttributeEditor", script, true );
         }
 
         #endregion
@@ -586,6 +651,16 @@ function populateAttributeKey(nameControlId, keyControlId ) {
         #endregion
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the ServerValidate event of the cvKey control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs" /> instance containing the event data.</param>
+        void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            args.IsValid = !ReservedKeyNames.Contains( tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
+        }
 
         /// <summary>
         /// Handles the Click event of the btnSaveAttribute control.

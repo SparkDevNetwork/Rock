@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( attribute.Id.Equals( 0 ) )
                 {
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Workflow().TypeName ).Id;
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Workflow ) ).Id;
                     attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
                     attribute.EntityTypeQualifierValue = hfWorkflowTypeId.Value;
                     attributeService.Add( attribute, CurrentPersonId );

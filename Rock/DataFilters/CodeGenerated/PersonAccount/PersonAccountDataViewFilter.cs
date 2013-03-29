@@ -13,15 +13,15 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-namespace Rock.DataFilters.CommunicationRecipient
+namespace Rock.DataFilters.PersonAccount
 {
     /// <summary>
-    /// CommunicationRecipient Merge Data Filter
+    /// Other PersonAccount Data View Filter
     /// </summary>
-    [Description( "Filter Communication Recipients on Merge Data" )]
+    [Description( "Filter Person Accounts using other data view" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "CommunicationRecipient Merge Data Filter" )]
-    public partial class MergeDataFilter : TextPropertyFilter
+    [ExportMetadata( "ComponentName", "Other PersonAccount Data View Filter" )]
+    public partial class PersonAccountDataViewFilter : OtherDataViewFilter<Rock.Model.PersonAccount>
     {
 
         /// <summary>
@@ -32,18 +32,7 @@ namespace Rock.DataFilters.CommunicationRecipient
         /// </value>
         public override string FilteredEntityTypeName
         {
-            get { return "Rock.Model.CommunicationRecipient"; }
-        }
-
-        /// <summary>
-        /// Gets the name of the column.
-        /// </summary>
-        /// <value>
-        /// The name of the column.
-        /// </value>
-        public override string PropertyName
-        {
-            get { return "MergeData"; }
+            get { return "Rock.Model.PersonAccount"; }
         }
 
     }

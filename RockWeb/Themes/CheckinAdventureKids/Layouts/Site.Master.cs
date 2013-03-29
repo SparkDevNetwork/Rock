@@ -9,8 +9,16 @@ namespace RockWeb.Themes.CheckinGeneric.Layouts
 {
     public partial class Site : System.Web.UI.MasterPage
     {
-        protected void Page_Load( object sender, EventArgs e )
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
+            string validationScript = string.Format( "<script src=\"{0}\"></script>", ResolveUrl( "~/Scripts/Rock/validation.js" ) );
+            System.Web.UI.ScriptManager.RegisterStartupScript( Page, Page.GetType(), "validationScript", validationScript, false );
         }
     }
 }

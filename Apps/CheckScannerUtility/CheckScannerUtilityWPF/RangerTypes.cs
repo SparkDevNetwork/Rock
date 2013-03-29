@@ -1,4 +1,9 @@
-﻿namespace Rock.CheckScannerUtility
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+namespace Rock.CheckScannerUtility
 {
     /// <summary>
     /// 
@@ -30,7 +35,7 @@
         EndOfLogicalMicrofilmRoll = 7,
         ExceptionDetected = 8
     };
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -210,11 +215,61 @@
     /// <summary>
     /// 
     /// </summary>
-    public enum ImageColorTypes
+    public enum ImageColorType
     {
         ImageColorTypeUnknown = -1,
         ImageColorTypeBitonal = 0,
         ImageColorTypeGrayscale = 1,
         ImageColorTypeColor = 2
     };
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum FeederType
+    {
+        SingleItem,
+        MultipleItems
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FeedSource
+    {
+        public const int FeedSourceMainHopper = 0;
+        public const int FeedSourceManualDrop = 2;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class FeedItemCount
+    {
+        public const int FeedContinuously = 0;
+        public const int FeedOne = 1;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class ScanButtonText
+    {
+        public const string Scan = "Scan";
+        public const string ScanCheck = "Scan Check";
+        public const string Stop = "Stop";
+
+        /// <summary>
+        /// Determines whether [is start scan] [the specified value].
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if [is start scan] [the specified value]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsStartScan(string value)
+        {
+            return ( value.Equals( ScanButtonText.Scan ) || value.Equals( ScanButtonText.ScanCheck ) );
+        }
+    }
+
 }
