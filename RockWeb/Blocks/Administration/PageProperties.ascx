@@ -22,6 +22,8 @@
 
         <div class="tabContent" >
 
+            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
+                HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
             <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
@@ -29,7 +31,7 @@
                     <div class="span6">
                         <fieldset>
                             <Rock:PagePicker ID="ppParentPage" runat="server" LabelText="Parent Page" Required="false" />
-                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
                             <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
                             <Rock:LabeledCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>

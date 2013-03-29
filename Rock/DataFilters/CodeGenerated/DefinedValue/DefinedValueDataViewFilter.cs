@@ -13,15 +13,15 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-namespace Rock.DataFilters.Communication
+namespace Rock.DataFilters.DefinedValue
 {
     /// <summary>
-    /// Communication Content Filter
+    /// Other DefinedValue Data View Filter
     /// </summary>
-    [Description( "Filter Communications on Content" )]
+    [Description( "Filter Defined Values using other data view" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Communication Content Filter" )]
-    public partial class ContentFilter : TextPropertyFilter
+    [ExportMetadata( "ComponentName", "Other DefinedValue Data View Filter" )]
+    public partial class DefinedValueDataViewFilter : OtherDataViewFilter<Rock.Model.DefinedValue>
     {
 
         /// <summary>
@@ -32,18 +32,7 @@ namespace Rock.DataFilters.Communication
         /// </value>
         public override string FilteredEntityTypeName
         {
-            get { return "Rock.Model.Communication"; }
-        }
-
-        /// <summary>
-        /// Gets the name of the column.
-        /// </summary>
-        /// <value>
-        /// The name of the column.
-        /// </value>
-        public override string PropertyName
-        {
-            get { return "Content"; }
+            get { return "Rock.Model.DefinedValue"; }
         }
 
     }

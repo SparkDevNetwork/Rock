@@ -1,4 +1,9 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,6 +55,10 @@ namespace CheckScannerUtilityWPF
         [XmlElement]
         [DataMember]
         public string Password { get; set; }
+
+        [XmlElement]
+        [DataMember]
+        public int ImageColorType { get; set; }
 
         /// <summary>
         /// Saves this instance.

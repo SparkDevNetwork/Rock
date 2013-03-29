@@ -98,7 +98,8 @@
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
                         BorderBrush="#e5e5e5">
-                    <Button Click="Button_Click"
+                    <Button Name="btnLogin"
+                            Click="btnLogin_Click"
                             HorizontalAlignment="Right"
                             Style="{StaticResource buttonStylePrimary}">Login</Button>
                 </Border>

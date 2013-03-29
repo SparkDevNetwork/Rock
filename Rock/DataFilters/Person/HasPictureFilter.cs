@@ -95,7 +95,7 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls()
+        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
         {
             CheckBox cb = new CheckBox();
             cb.Checked = true;

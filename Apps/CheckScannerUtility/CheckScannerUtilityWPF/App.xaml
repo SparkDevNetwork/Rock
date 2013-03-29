@@ -161,16 +161,24 @@
             <Setter Property="Height"
                     Value="28" />
             <Setter Property="Foreground"
-                    Value="Black" />
+                    Value="#333333" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border Name="ButtonBorder"
                                 CornerRadius="4,4,4,4"
                                 BorderThickness="1"
-                                BorderBrush="Black"
-                                Padding="8,2,8,2"
-                                Background="White">
+                                BorderBrush="#26000000"
+                                Padding="8,2,8,2">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0.5,0"
+                                                     EndPoint="0.5,1">
+                                    <GradientStop Color="#FFFFFF"
+                                                  Offset="0.0"></GradientStop>
+                                    <GradientStop Color="#e6e6e6"
+                                                  Offset="0.5"></GradientStop>
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <ContentPresenter Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center" />
@@ -181,8 +189,29 @@
                                 <Setter Property="Cursor"
                                         Value="Hand" />
                             </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#000000"
+                                                          BlurRadius="0"
+                                                          Direction="0"
+                                                          ShadowDepth="0"
+                                                          Opacity="0.5" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000"
+                                      BlurRadius="4"
+                                      Direction="320"
+                                      ShadowDepth="2"
+                                      Opacity="0.5" />
                 </Setter.Value>
             </Setter>
         </Style>
@@ -209,13 +238,14 @@
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border Name="ButtonBorder"
                                 CornerRadius="4,4,4,4"
-                                BorderThickness="1"
-                                BorderBrush="Black"
+                                BorderThickness="0"
+                                BorderBrush="#515151"
                                 Padding="8,2,8,2"
                                 Background="#515151">
                             <ContentPresenter Content="{TemplateBinding Content}"
                                               HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center">
+                            </ContentPresenter>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver"
@@ -227,6 +257,44 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="buttonStylePrimaryMini"
+               BasedOn="{StaticResource buttonStylePrimary}"
+               TargetType="{x:Type Button}">
+            <Setter Property="Height"
+                    Value="24" />
+            <Setter Property="FontSize"
+                    Value="12" />
+        </Style>
+
+        <!-- Border Styles -->
+        <Style x:Key='borderStyleWell'
+               TargetType="{x:Type Border}">
+            <Setter Property="Background"
+                    Value="WhiteSmoke" />
+            <Setter Property="CornerRadius"
+                    Value="4" />
+            <Setter Property="MinHeight"
+                    Value="20" />
+            <Setter Property="Padding"
+                    Value="19" />
+            <Setter Property="BorderBrush"
+                    Value="#e3e3e3" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="Margin"
+                    Value="0,0,0,20" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000"
+                                      BlurRadius="3"
+                                      Direction="320"
+                                      ShadowDepth="2"
+                                      Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+
         </Style>
 
     </Application.Resources>
