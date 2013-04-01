@@ -11,6 +11,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters
 {
@@ -61,6 +62,10 @@ namespace Rock.DataFilters
             {
                 return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", Title );
             }
+            protected set
+            {
+
+            }
         }
 
         /// <summary>
@@ -106,7 +111,7 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls(Rock.Web.UI.RockPage page)
+        public virtual Control[] CreateChildControls( FilterField filterControl )
         {
             var controls = new Control[2] {
                 ComparisonControl( StringFilterComparisonTypes ),
@@ -120,7 +125,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public virtual void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.Write( this.Title + " " );
             controls[0].RenderControl( writer );

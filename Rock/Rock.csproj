@@ -353,6 +353,7 @@
     <Compile Include="DataFilters\CodeGenerated\PersonViewed\IpAddressFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\PersonViewed\PersonViewedDataViewFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\PersonViewed\SourceFilter.cs" />
+    <Compile Include="DataFilters\CodeGenerated\Person\PersonPropertyFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Person\EmailFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Person\EmailNoteFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Person\GenderFilter.cs" />
@@ -441,6 +442,7 @@
     <Compile Include="DataFilters\CodeGenerated\Workflow\NameFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\StatusFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\WorkflowDataViewFilter.cs" />
+    <Compile Include="DataFilters\PropertyFilter.cs" />
     <Compile Include="DataFilters\OtherDataViewFilter.cs" />
     <Compile Include="DataFilters\EnumPropertyFilter.cs" />
     <Compile Include="DataFilters\TextPropertyFilter.cs" />

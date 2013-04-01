@@ -11,6 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters
 {
@@ -84,7 +85,7 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
+        public override Control[] CreateChildControls( FilterField filterControl )
         {
             RadioButtonList rbl = new RadioButtonList();
             rbl.RepeatDirection = RepeatDirection.Horizontal;
@@ -107,7 +108,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
