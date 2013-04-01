@@ -1,4 +1,4 @@
-﻿<NavigationWindow x:Class="CheckScannerUtilityWPF.MainWindow"
+﻿<NavigationWindow x:Class="CheckScannerUtility.MainWindow"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                   Name="mainWindow"

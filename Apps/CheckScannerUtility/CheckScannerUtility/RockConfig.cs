@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CheckScannerUtilityWPF
+namespace CheckScannerUtility
 {
     /// <summary>
     /// 
@@ -56,9 +56,38 @@ namespace CheckScannerUtilityWPF
         [DataMember]
         public string Password { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the image color.
+        /// </summary>
+        /// <value>
+        /// The type of the image color.
+        /// </value>
         [XmlElement]
         [DataMember]
         public int ImageColorType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MICR image COM port.
+        /// </summary>
+        /// <value>
+        /// The MICR image COM port.
+        /// </value>
+        [XmlElement]
+        [DataMember]
+        public short MICRImageComPort { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum InterfaceType
+        {
+            RangerApi = 0,
+            MICRImageRS232 = 1
+        }
+
+        [XmlElement]
+        [DataMember]
+        public InterfaceType ScannerInterfaceType { get; set; }
 
         /// <summary>
         /// Saves this instance.
@@ -81,11 +110,18 @@ namespace CheckScannerUtilityWPF
             {
                 if ( File.Exists( fileName ) )
                 {
-                    DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
                     FileStream fs = new FileStream( fileName, FileMode.OpenOrCreate );
-                    var result = s.ReadObject( fs ) as RockConfig;
-                    fs.Close();
-                    return result;
+                    try
+                    {
+
+                        DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
+                        var result = s.ReadObject( fs ) as RockConfig;
+                        return result;
+                    }
+                    finally
+                    {
+                        fs.Close();
+                    }
                 }
 
                 return new RockConfig();

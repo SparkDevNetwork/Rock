@@ -20,7 +20,7 @@ using Rock;
 using Rock.CheckScannerUtility;
 using Rock.Model;
 
-namespace CheckScannerUtilityWPF
+namespace CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for BatchPage.xaml
@@ -161,8 +161,6 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
         {
-            string checkMicr = RangerScanner.GetMicrText( 1 ).Trim();
-            string fileName = checkMicr.Replace( " ", "_" );
             string fileDirectory = GetScannerOutputDirectory();
 
             BitmapImage bitImageFront = GetCheckImage( Sides.TransportFront );
@@ -171,116 +169,8 @@ namespace CheckScannerUtilityWPF
             ScanningPage.imgFront.Source = bitImageFront;
             ScanningPage.imgBack.Source = bitImageBack;
 
-            string accountNumber = string.Empty;
-            string routingNumber = string.Empty;
-            string checkNumber  = string.Empty;
-            string micrText = RangerScanner.GetMicrText(1).Replace("-", string.Empty).Replace("!", string.Empty).Trim();
-            string[] parts= micrText.Split(new char[] { 'd' });
-                
-                if (micrText != string.Empty)
-                {
-                    // remove extra spaces
-                    micrText = micrText.Replace("-", "").Trim();
-                    int micrStart = micrText.IndexOfAny(new char[] { 'c', 'd' });
-                    if (micrStart >= 0)
-                    {
-                        micrText = micrText.Substring(micrStart);
-                    }
-
-
-                    try
-                    {
-                        // ignore everything until it finds a c or d.
-                        switch (micrText.Substring(0, 1))
-                        {
-                            case "c":
-                                break;
-                            case "d":
-                                break;
-                            default:
-                                for (int i = 1; i < micrText.Length; i++)
-                                {
-                                    switch (micrText.Substring(i, 1))
-                                    {
-                                        case "c":
-                                            micrText = micrText.Substring(i);
-                                            break;
-                                        case "d":
-                                            micrText = micrText.Substring(i);
-                                            break;
-                                    }
-                                }
-                                break;
-                        }
-                        // remove bad data
-                        micrText = micrText.Replace("!", "").Trim();
-
-                        // split the current micr line into parts
-                        string[] parts = micrText.Split('d');
-                        if (parts.Length < 1)
-                            throw new Exception("Error parsing Micr");
-
-                        // apparently the transit is always the second part
-                        transit = parts[1];
-
-                        // take the rest of the string and split it into managable parts
-                        parts = micrText.Split('c');
-                        switch (parts.GetUpperBound(0))
-                        {
-                            case 1:
-                                // personal check
-                                if (parts[1] == string.Empty)
-                                {
-                                    chkNu = parts[0].Split('d')[2];
-                                    acct = chkNu.Substring(chkNu.IndexOf(' '));
-                                    chkNu = chkNu.Substring(0, chkNu.IndexOf(' '));
-                                }
-                                else
-                                {
-                                    chkNu = parts[1];
-                                    acct = parts[0].Split('d')[2];
-                                }
-                                break;
-                            case 2:
-                                // personal check
-                                chkNu = parts[2];
-                                acct = parts[1];
-                                if (chkNu == string.Empty)
-                                {
-                                    chkNu = parts[0].Split('d')[2];
-                                    if (chkNu.Trim().Contains(" "))
-                                    {
-                                        chkNu = chkNu.Substring(0, chkNu.IndexOf(' '));
-                                    }
-                                }
-                                break;
-                            case 3:
-                                // business
-                                chkNu = parts[1];
-                                acct = parts[2].Split('d')[2];
-                                break;
-                            case 4:
-                                //business
-                                chkNu = parts[1];
-                                acct = parts[3];
-                                break;
-                            default:
-                                break;
-                        }
-                        // remove spaces
-                        transit = transit.Trim().Replace(" ", "");
-                        acct = acct.Trim().Replace(" ", "");
-                        chkNu = chkNu.Trim().Replace(" ", "");
-                    }
-                    catch
-                    {
-                        //ignore the error, continue processing
-                        chkNu = string.Empty;
-                        acct = string.Empty;
-                        transit = string.Empty;
-                    }
-
-
+            string checkMicr = RangerScanner.GetMicrText( 1 ).Replace( "-", string.Empty ).Replace( "!", string.Empty ).Trim();
+            string fileName = checkMicr.Replace( " ", "_" );
 
             string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
             string accountNumber = micrParts.Length > 0 ? micrParts[0] : "<not found>";
@@ -542,14 +432,14 @@ namespace CheckScannerUtilityWPF
         /// </summary>
         private void ConnectToScanner()
         {
-            int magTekPort = RockConfig.Load().MICRCommPort;
+            int magTekPort = RockConfig.Load().MICRImageComPort;
 
             if ( magTekPort > 0 )
             {
                 lblImageOption.Visibility = Visibility.Hidden;
                 cboImageOption.Visibility = Visibility.Hidden;
                 
-                micrImage.CommPort = RockConfig.Load().MICRCommPort;
+                micrImage.CommPort = RockConfig.Load().MICRImageComPort;
 
                 Object dummy = null;
 
@@ -729,9 +619,9 @@ namespace CheckScannerUtilityWPF
             
             string imagePath = string.Empty;
             string imageIndex = string.Empty;
-            int status = 0;
             string statusMsg = string.Empty;
             
+            // from MagTek Sample Code
             string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
             string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
             string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );

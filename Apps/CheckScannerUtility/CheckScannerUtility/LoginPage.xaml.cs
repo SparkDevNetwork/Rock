@@ -7,7 +7,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CheckScannerUtilityWPF
+namespace CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for LoginPage.xaml
@@ -51,11 +51,6 @@ namespace CheckScannerUtilityWPF
             txtRockUrl.Text = rockConfig.RockURL;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
-        }
-
-        private void Button_Click_1( object sender, RoutedEventArgs e )
-        {
-
         }
     }
 }

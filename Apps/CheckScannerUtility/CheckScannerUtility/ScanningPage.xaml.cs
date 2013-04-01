@@ -6,7 +6,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CheckScannerUtilityWPF
+namespace CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for ScanningPage.xaml
