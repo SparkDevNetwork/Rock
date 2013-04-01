@@ -93,11 +93,13 @@
                     <Label Style="{StaticResource labelTextStyle}">Password</Label>
                     <PasswordBox Name="txtPassword"
                                  Style="{StaticResource textboxStyle}" />
+                    <Button Click="Button_Click_1">Click Me</Button>
                 </StackPanel>
                 <Border Grid.Row="2"
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
                         BorderBrush="#e5e5e5">
+                    
                     <Button Name="btnLogin"
                             Click="btnLogin_Click"
                             HorizontalAlignment="Right"

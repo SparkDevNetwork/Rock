@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -53,7 +54,7 @@ namespace CheckScannerUtilityWPF
         /// </summary>
         public ScanningPage ScanningPage = null;
 
-        #region Scanner Events
+        #region Ranger (Canon CR50/80) Scanner Events
 
         /// <summary>
         /// Rangers the new state of the scanner_ transport.
@@ -81,7 +82,7 @@ namespace CheckScannerUtilityWPF
                     {
                         ScanningPage.btnStartStop.Content = "Scan Check";
                     }
-                    
+
                     btnScan.Visibility = Visibility.Visible;
                     break;
                 case XportStates.TransportShutDown:
@@ -421,7 +422,7 @@ namespace CheckScannerUtilityWPF
 
             RockConfig config = RockConfig.Load();
             ImageColorType colorType = (ImageColorType)config.ImageColorType;
-            
+
             cboImageOption.Items.Clear();
             cboImageOption.Items.Add( "Bitonal" );
             cboImageOption.Items.Add( "Grayscale" );
@@ -472,7 +473,7 @@ namespace CheckScannerUtilityWPF
         {
             RockConfig config = RockConfig.Load();
             string imageOption = cboImageOption.SelectedValue as String;
-            
+
             switch ( imageOption )
             {
                 case "Grayscale":
@@ -500,7 +501,7 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnScan_Click( object sender, RoutedEventArgs e )
         {
-            HandleScanButtonClick(sender, e, true);
+            HandleScanButtonClick( sender, e, true );
         }
 
         /// <summary>
@@ -538,5 +539,123 @@ namespace CheckScannerUtilityWPF
                 }
             }
         }
+
+        private void Button_Click_1( object sender, RoutedEventArgs e )
+        {
+            micrImage.CommPort = 1;
+            Object iFalseObj = null;
+
+            if ( !micrImage.PortOpen )
+            {
+                micrImage.PortOpen = true;
+                if ( micrImage.DSRHolding )
+                {
+                    micrImage.MicrTimeOut = 1;
+                    micrImage.MicrCommand( "SWA 00100010", ref iFalseObj );
+                    micrImage.MicrCommand( "SWB 00100010", ref iFalseObj );
+                    micrImage.MicrCommand( "SWC 00100000", ref iFalseObj );
+                    micrImage.MicrCommand( "HW 00111100", ref iFalseObj );
+                    micrImage.MicrCommand( "SWE 00000010", ref iFalseObj );
+                    micrImage.MicrCommand( "SWI 00000000", ref iFalseObj );
+                    micrImage.FormatChange( "6200" );
+                    micrImage.MicrTimeOut = 5;
+                    MessageBox.Show( "Check Scanner Device ready.", "Missing Scanner" );
+                }
+                else
+                    MessageBox.Show( "A Check Scanner Device is not attached.", "Missing Scanner" );
+
+            }
+        }
+
+        #region Scanner (MagTek MICRImage RS232) Events
+
+        /// <summary>
+        /// Determines whether the specified value is integer.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is integer; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsInteger( string value )
+        {
+            int temp;
+            return int.TryParse( value, out temp );
+        }
+
+        /// <summary>
+        /// Handles the MicrDataReceived event of the micrImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
+        {
+            Object iFalseObj = null;
+            
+            string imagePath = string.Empty;
+            string imageFileName = string.Empty;
+            string imageIndex = string.Empty;
+            int status = 0;
+            string statusMsg = string.Empty;
+
+            string transit = micrImage.FindElement( 0, "T", 0, "TT", ref iFalseObj );
+            string account = micrImage.FindElement( 0, "TT", 0, "A", ref iFalseObj );
+            string checkNum = micrImage.FindElement( 0, "A", 0, "12", ref iFalseObj );
+
+            if ( !IsInteger( transit ) ) transit = string.Empty;
+            if ( !IsInteger( account ) ) account = string.Empty;
+            if ( !IsInteger( checkNum ) ) checkNum = string.Empty;
+
+            //string _ScannedImagePath = @"C:\Users\mpeterson\Pictures";//GetScannerOutputDirectory();
+            string _ScannedImagePath = GetScannerOutputDirectory();
+
+            object sDefaultObj = Convert.ChangeType( _ScannedImagePath, typeof( string ) );
+            imagePath = micrImage.GetDefSetting( "ImagePath", ref sDefaultObj );
+
+            string sDefault = "0";
+            sDefaultObj = Convert.ChangeType( sDefault, typeof( string ) );
+            imageIndex = micrImage.GetDefSetting( "ImageIndex", ref sDefaultObj );
+            int newIndex = Int32.Parse( imageIndex );
+            newIndex++;
+            micrImage.SaveDefSetting( "ImageIndex", newIndex.ToString() );
+
+            imageFileName = Path.Combine( imagePath, "MI" + transit + account + checkNum + newIndex.ToString() + ".TIF" );
+            //ArenaImage checkImage = null
+
+            object missing = Type.Missing;
+            status = micrImage.TransmitCurrentImage( imageFileName, ref statusMsg );
+            status = micrImage.TransmitCurrentImage( imageFileName, ref statusMsg, ref missing );
+
+            /*
+            FileInfo fi = null;
+            if ( status == 0 )
+            {
+                fi = new FileInfo( imageFileName );
+                if ( fi.Exists )
+                {
+                    checkImage = new ArenaImage();
+                    checkImage.ByteArray = new byte[fi.Length];
+
+                    using ( var fs = fi.OpenRead() )
+                    {
+                        fs.Read( checkImage.ByteArray, 0, (int)fi.Length );
+                    }
+
+                    checkImage.DocumentTypeGUID = SystemDocumentType.Contributions;
+                    checkImage.SetFileInfo( imageFileName );
+                    CheckScanned( transit, account, checkNum, checkImage );
+
+                    fi.Delete();
+                }
+            }
+            else
+            {
+                ShowMessage( statusMsg, "Scan Error" );
+            }
+             */ 
+
+            micrImage.ClearBuffer();
+        }
+
+        #endregion
     }
 }
