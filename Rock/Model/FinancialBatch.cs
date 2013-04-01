@@ -98,6 +98,12 @@ namespace Rock.Model
         [DataMember]
         public string ForeignReference { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Campus object.
+        /// </summary>
+        /// <value>
+        /// The campus object
+        /// </value>
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -111,6 +117,12 @@ namespace Rock.Model
         [ForeignKey( "BatchType" )]
         public int BatchTypeValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Batch Type object.
+        /// </summary>
+        /// <value>
+        /// Batch Type object.
+        /// </value>
         [DataMember]
         public virtual DefinedType BatchType { get; set; }
 
