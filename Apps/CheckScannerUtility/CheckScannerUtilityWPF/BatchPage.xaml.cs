@@ -164,10 +164,6 @@ namespace CheckScannerUtilityWPF
             string checkMicr = RangerScanner.GetMicrText( 1 ).Trim();
             string fileName = checkMicr.Replace( " ", "_" );
             string fileDirectory = GetScannerOutputDirectory();
-            if ( !Directory.Exists( fileDirectory ) )
-            {
-                Directory.CreateDirectory( fileDirectory );
-            }
 
             BitmapImage bitImageFront = GetCheckImage( Sides.TransportFront );
             BitmapImage bitImageBack = GetCheckImage( Sides.TransportRear );
@@ -175,34 +171,125 @@ namespace CheckScannerUtilityWPF
             ScanningPage.imgFront.Source = bitImageFront;
             ScanningPage.imgBack.Source = bitImageBack;
 
+            string accountNumber = string.Empty;
+            string routingNumber = string.Empty;
+            string checkNumber  = string.Empty;
+            string micrText = RangerScanner.GetMicrText(1).Replace("-", string.Empty).Replace("!", string.Empty).Trim();
+            string[] parts= micrText.Split(new char[] { 'd' });
+                
+                if (micrText != string.Empty)
+                {
+                    // remove extra spaces
+                    micrText = micrText.Replace("-", "").Trim();
+                    int micrStart = micrText.IndexOfAny(new char[] { 'c', 'd' });
+                    if (micrStart >= 0)
+                    {
+                        micrText = micrText.Substring(micrStart);
+                    }
+
+
+                    try
+                    {
+                        // ignore everything until it finds a c or d.
+                        switch (micrText.Substring(0, 1))
+                        {
+                            case "c":
+                                break;
+                            case "d":
+                                break;
+                            default:
+                                for (int i = 1; i < micrText.Length; i++)
+                                {
+                                    switch (micrText.Substring(i, 1))
+                                    {
+                                        case "c":
+                                            micrText = micrText.Substring(i);
+                                            break;
+                                        case "d":
+                                            micrText = micrText.Substring(i);
+                                            break;
+                                    }
+                                }
+                                break;
+                        }
+                        // remove bad data
+                        micrText = micrText.Replace("!", "").Trim();
+
+                        // split the current micr line into parts
+                        string[] parts = micrText.Split('d');
+                        if (parts.Length < 1)
+                            throw new Exception("Error parsing Micr");
+
+                        // apparently the transit is always the second part
+                        transit = parts[1];
+
+                        // take the rest of the string and split it into managable parts
+                        parts = micrText.Split('c');
+                        switch (parts.GetUpperBound(0))
+                        {
+                            case 1:
+                                // personal check
+                                if (parts[1] == string.Empty)
+                                {
+                                    chkNu = parts[0].Split('d')[2];
+                                    acct = chkNu.Substring(chkNu.IndexOf(' '));
+                                    chkNu = chkNu.Substring(0, chkNu.IndexOf(' '));
+                                }
+                                else
+                                {
+                                    chkNu = parts[1];
+                                    acct = parts[0].Split('d')[2];
+                                }
+                                break;
+                            case 2:
+                                // personal check
+                                chkNu = parts[2];
+                                acct = parts[1];
+                                if (chkNu == string.Empty)
+                                {
+                                    chkNu = parts[0].Split('d')[2];
+                                    if (chkNu.Trim().Contains(" "))
+                                    {
+                                        chkNu = chkNu.Substring(0, chkNu.IndexOf(' '));
+                                    }
+                                }
+                                break;
+                            case 3:
+                                // business
+                                chkNu = parts[1];
+                                acct = parts[2].Split('d')[2];
+                                break;
+                            case 4:
+                                //business
+                                chkNu = parts[1];
+                                acct = parts[3];
+                                break;
+                            default:
+                                break;
+                        }
+                        // remove spaces
+                        transit = transit.Trim().Replace(" ", "");
+                        acct = acct.Trim().Replace(" ", "");
+                        chkNu = chkNu.Trim().Replace(" ", "");
+                    }
+                    catch
+                    {
+                        //ignore the error, continue processing
+                        chkNu = string.Empty;
+                        acct = string.Empty;
+                        transit = string.Empty;
+                    }
+
+
+
             string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
+            string accountNumber = micrParts.Length > 0 ? micrParts[0] : "<not found>";
+            string routingNumber = micrParts.Length > 1 ? micrParts[1] : "<not found>";
+            string checkNumber = micrParts.Length > 2 ? micrParts[2] : "<not found>";
 
-            if ( micrParts.Length > 0 )
-            {
-                ScanningPage.lblAccountNumber.Content = string.Format( "Account Number: {0}", micrParts[0] );
-            }
-            else
-            {
-                ScanningPage.lblAccountNumber.Content = "<not found>";
-            }
-
-            if ( micrParts.Length > 1 )
-            {
-                ScanningPage.lblRoutingNumber.Content = string.Format( "Routing Number: {0}", micrParts[1] );
-            }
-            else
-            {
-                ScanningPage.lblRoutingNumber.Content = "<not found>";
-            }
-
-            if ( micrParts.Length > 2 )
-            {
-                ScanningPage.lblCheckNumber.Content = string.Format( "Check Number: {0}", micrParts[2] );
-            }
-            else
-            {
-                ScanningPage.lblCheckNumber.Content = "<not found>";
-            }
+            ScanningPage.lblAccountNumber.Content = string.Format( "Account Number: {0}", accountNumber );
+            ScanningPage.lblRoutingNumber.Content = string.Format( "Routing Number: {0}", routingNumber );
+            ScanningPage.lblCheckNumber.Content = string.Format( "Check Number: {0}", checkNumber );
 
             string frontFilePath = System.IO.Path.Combine( fileDirectory, fileName + "_front.jpg" );
             File.Delete( frontFilePath );
@@ -227,6 +314,12 @@ namespace CheckScannerUtilityWPF
         private static string GetScannerOutputDirectory()
         {
             string fileDirectory = System.IO.Path.Combine( new FileInfo( System.Reflection.Assembly.GetExecutingAssembly().Location ).DirectoryName, "ScannerOutput" );
+
+            if ( !Directory.Exists( fileDirectory ) )
+            {
+                Directory.CreateDirectory( fileDirectory );
+            }
+
             return fileDirectory;
         }
 
@@ -402,24 +495,25 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            RangerScanner.StartUp();
-            lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", RangerScanner.GetTransportInfo( "General", "Make" ), RangerScanner.GetTransportInfo( "General", "Model" ) );
-            lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", RangerScanner.GetVersion() );
-            string feederTypeName = RangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
-            string feederFriendlyNameType;
-            if ( feederTypeName.Equals( "MultipleItems" ) )
-            {
-                feederFriendlyNameType = "Multiple Items";
-                ScannerFeederType = FeederType.MultipleItems;
-            }
-            else
-            {
-                feederFriendlyNameType = "Single";
-                ScannerFeederType = FeederType.MultipleItems;
-            }
+            ConnectToScanner();
 
-            lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
+            List<FinancialBatch> sampleData = new List<FinancialBatch>();
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", IsClosed = false, BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", IsClosed = false, BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", IsClosed = false, BatchDate = DateTime.Now } );
 
+            grdBatches.DataContext = sampleData;
+            if ( sampleData.Count > 0 )
+            {
+                grdBatches.SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
+        /// Loads the image options.
+        /// </summary>
+        private void LoadImageOptions()
+        {
             RockConfig config = RockConfig.Load();
             ImageColorType colorType = (ImageColorType)config.ImageColorType;
 
@@ -441,16 +535,85 @@ namespace CheckScannerUtilityWPF
                     cboImageOption.SelectedIndex = 0;
                     break;
             }
+        }
 
-            List<FinancialBatch> sampleData = new List<FinancialBatch>();
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", IsClosed = false, BatchDate = DateTime.Now } );
+        /// <summary>
+        /// Connects to scanner.
+        /// </summary>
+        private void ConnectToScanner()
+        {
+            int magTekPort = RockConfig.Load().MICRCommPort;
 
-            grdBatches.DataContext = sampleData;
-            if ( sampleData.Count > 0 )
+            if ( magTekPort > 0 )
             {
-                grdBatches.SelectedIndex = 0;
+                lblImageOption.Visibility = Visibility.Hidden;
+                cboImageOption.Visibility = Visibility.Hidden;
+                
+                micrImage.CommPort = RockConfig.Load().MICRCommPort;
+
+                Object dummy = null;
+
+                // converted from VB6 from MagTek's sample app
+
+                if ( !micrImage.PortOpen )
+                {
+                    micrImage.PortOpen = true;
+                    if ( micrImage.DSRHolding )
+                    {
+                        // Sets Switch Settings
+                        // If you use the MicrImage1.Save command then these do not need to be sent
+                        // every time you open the device
+                        micrImage.MicrTimeOut = 1;
+                        micrImage.MicrCommand( "SWA 00100010", ref dummy );
+                        micrImage.MicrCommand( "SWB 00100010", ref dummy );
+                        micrImage.MicrCommand( "SWC 00100000", ref dummy );
+                        micrImage.MicrCommand( "HW 00111100", ref dummy );
+                        micrImage.MicrCommand( "SWE 00000010", ref dummy );
+                        micrImage.MicrCommand( "SWI 00000000", ref dummy );
+
+                        // The OCX will work with any Micr Format.  You just need to know which
+                        // format is being used to parse it using the FindElement Method
+                        micrImage.FormatChange( "6200" );
+                        micrImage.MicrTimeOut = 5;
+
+                    }
+                    else
+                    {
+                        MessageBox.Show( "A Check Scanner Device is not attached.", "Missing Scanner" );
+                        return;
+                    }
+                }
+
+                lblMakeModel.Content = "MagTek";
+                lblInterfaceVersion.Content = micrImage.Version();
+
+                ScannerFeederType = FeederType.SingleItem;
+                string feederFriendlyNameType = "Single";
+                lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
+            }
+            else
+            {
+                RangerScanner.StartUp();
+                lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", RangerScanner.GetTransportInfo( "General", "Make" ), RangerScanner.GetTransportInfo( "General", "Model" ) );
+                lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", RangerScanner.GetVersion() );
+                string feederTypeName = RangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
+                string feederFriendlyNameType;
+                if ( feederTypeName.Equals( "MultipleItems" ) )
+                {
+                    feederFriendlyNameType = "Multiple Items";
+                    ScannerFeederType = FeederType.MultipleItems;
+                }
+                else
+                {
+                    feederFriendlyNameType = "Single";
+                    ScannerFeederType = FeederType.SingleItem;
+                }
+
+                lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
+
+                lblImageOption.Visibility = Visibility.Visible;
+                cboImageOption.Visibility = Visibility.Visible;
+                LoadImageOptions();
             }
         }
 
@@ -461,7 +624,7 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnConnect_Click( object sender, RoutedEventArgs e )
         {
-            RangerScanner.StartUp();
+            ConnectToScanner();
         }
 
         /// <summary>
@@ -540,33 +703,6 @@ namespace CheckScannerUtilityWPF
             }
         }
 
-        private void Button_Click_1( object sender, RoutedEventArgs e )
-        {
-            micrImage.CommPort = 1;
-            Object iFalseObj = null;
-
-            if ( !micrImage.PortOpen )
-            {
-                micrImage.PortOpen = true;
-                if ( micrImage.DSRHolding )
-                {
-                    micrImage.MicrTimeOut = 1;
-                    micrImage.MicrCommand( "SWA 00100010", ref iFalseObj );
-                    micrImage.MicrCommand( "SWB 00100010", ref iFalseObj );
-                    micrImage.MicrCommand( "SWC 00100000", ref iFalseObj );
-                    micrImage.MicrCommand( "HW 00111100", ref iFalseObj );
-                    micrImage.MicrCommand( "SWE 00000010", ref iFalseObj );
-                    micrImage.MicrCommand( "SWI 00000000", ref iFalseObj );
-                    micrImage.FormatChange( "6200" );
-                    micrImage.MicrTimeOut = 5;
-                    MessageBox.Show( "Check Scanner Device ready.", "Missing Scanner" );
-                }
-                else
-                    MessageBox.Show( "A Check Scanner Device is not attached.", "Missing Scanner" );
-
-            }
-        }
-
         #region Scanner (MagTek MICRImage RS232) Events
 
         /// <summary>
@@ -589,69 +725,26 @@ namespace CheckScannerUtilityWPF
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
         {
-            Object iFalseObj = null;
+            Object dummy = null;
             
             string imagePath = string.Empty;
-            string imageFileName = string.Empty;
             string imageIndex = string.Empty;
             int status = 0;
             string statusMsg = string.Empty;
+            
+            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
 
-            string transit = micrImage.FindElement( 0, "T", 0, "TT", ref iFalseObj );
-            string account = micrImage.FindElement( 0, "TT", 0, "A", ref iFalseObj );
-            string checkNum = micrImage.FindElement( 0, "A", 0, "12", ref iFalseObj );
-
-            if ( !IsInteger( transit ) ) transit = string.Empty;
-            if ( !IsInteger( account ) ) account = string.Empty;
-            if ( !IsInteger( checkNum ) ) checkNum = string.Empty;
-
-            //string _ScannedImagePath = @"C:\Users\mpeterson\Pictures";//GetScannerOutputDirectory();
-            string _ScannedImagePath = GetScannerOutputDirectory();
-
-            object sDefaultObj = Convert.ChangeType( _ScannedImagePath, typeof( string ) );
-            imagePath = micrImage.GetDefSetting( "ImagePath", ref sDefaultObj );
-
-            string sDefault = "0";
-            sDefaultObj = Convert.ChangeType( sDefault, typeof( string ) );
-            imageIndex = micrImage.GetDefSetting( "ImageIndex", ref sDefaultObj );
-            int newIndex = Int32.Parse( imageIndex );
-            newIndex++;
-            micrImage.SaveDefSetting( "ImageIndex", newIndex.ToString() );
-
-            imageFileName = Path.Combine( imagePath, "MI" + transit + account + checkNum + newIndex.ToString() + ".TIF" );
-            //ArenaImage checkImage = null
-
-            object missing = Type.Missing;
-            status = micrImage.TransmitCurrentImage( imageFileName, ref statusMsg );
-            status = micrImage.TransmitCurrentImage( imageFileName, ref statusMsg, ref missing );
-
-            /*
-            FileInfo fi = null;
-            if ( status == 0 )
+            // MagTek OCX only likes short paths
+            imagePath = Path.GetTempPath();
+            string checkImageFileName = Path.Combine( imagePath, string.Format("check_front_{0}_{1}_{2}.tif", accountNumber, routingNumber, checkNumber));
+            
+            micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg);
+            if (!File.Exists(checkImageFileName))
             {
-                fi = new FileInfo( imageFileName );
-                if ( fi.Exists )
-                {
-                    checkImage = new ArenaImage();
-                    checkImage.ByteArray = new byte[fi.Length];
-
-                    using ( var fs = fi.OpenRead() )
-                    {
-                        fs.Read( checkImage.ByteArray, 0, (int)fi.Length );
-                    }
-
-                    checkImage.DocumentTypeGUID = SystemDocumentType.Contributions;
-                    checkImage.SetFileInfo( imageFileName );
-                    CheckScanned( transit, account, checkNum, checkImage );
-
-                    fi.Delete();
-                }
+                throw new Exception("Unable to retrieve image");
             }
-            else
-            {
-                ShowMessage( statusMsg, "Scan Error" );
-            }
-             */ 
 
             micrImage.ClearBuffer();
         }
