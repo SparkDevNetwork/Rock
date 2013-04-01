@@ -3,13 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -31,6 +28,17 @@ namespace Rock.DataFilters
         public override string Title
         {
             get { return "Another Data View"; }
+        }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public override string FilteredEntityTypeName
+        {
+            get { return typeof( T ).FullName; }
         }
 
         /// <summary>
@@ -62,7 +70,7 @@ namespace Rock.DataFilters
                     "'Data View'";
             }
         }
-        
+
         /// <summary>
         /// Formats the selection.
         /// </summary>

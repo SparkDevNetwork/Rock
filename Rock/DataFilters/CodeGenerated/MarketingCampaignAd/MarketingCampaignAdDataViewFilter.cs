@@ -23,17 +23,5 @@ namespace Rock.DataFilters.MarketingCampaignAd
     [ExportMetadata( "ComponentName", "Other MarketingCampaignAd Data View Filter" )]
     public partial class MarketingCampaignAdDataViewFilter : OtherDataViewFilter<Rock.Model.MarketingCampaignAd>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.MarketingCampaignAd"; }
-        }
-
     }
 }

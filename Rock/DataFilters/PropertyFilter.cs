@@ -5,14 +5,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.DataFilters
 {
     /// <summary>
-    /// 
+    /// Abstract class for filtering a model based on any of it's property or attribute values
     /// </summary>
     public abstract class PropertyFilter<T> : DataFilterComponent
     {
@@ -32,7 +32,18 @@ namespace Rock.DataFilters
         /// </value>
         public override string Title
         {
-            get { return EntityTypeCache.Read(typeof(T)).FriendlyName +  " Property"; }
+            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Property"; }
+        }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public override string FilteredEntityTypeName
+        {
+            get { return typeof( T ).FullName; }
         }
 
         /// <summary>
@@ -111,10 +122,11 @@ namespace Rock.DataFilters
                             if ( values.Count == 3 )
                             {
                                 ComparisonType comparisonType = ComparisonType.StartsWith;
-                                try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); } catch { }
+                                try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
+                                catch { }
                                 return string.Format( "{0} {1} '{2}'", selectedProperty.SplitCase(), comparisonType.ConvertToString(), values[2] );
                             }
-                            
+
                             break;
 
                         case SystemGuid.FieldType.SINGLE_SELECT:
@@ -187,7 +199,7 @@ namespace Rock.DataFilters
                 }
             }
 
-            ClientFormatSelection = string.Format( "{0}PropertySelection( $content )", typeof(T).Name );
+            ClientFormatSelection = string.Format( "{0}PropertySelection( $content )", typeof( T ).Name );
             return controls;
         }
 
@@ -268,8 +280,8 @@ namespace Rock.DataFilters
         }}
         return result;
     }}
-", typeof(T).Name, sb.ToString() );
-            ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), typeof(T).Name + "-property-selection", script, true );
+", typeof( T ).Name, sb.ToString() );
+            ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), typeof( T ).Name + "-property-selection", script, true );
 
             script = @"
     $('select.entity-property-selection').change(function(){
@@ -327,7 +339,7 @@ namespace Rock.DataFilters
             {
                 var values = JsonConvert.DeserializeObject<List<string>>( selection );
 
-                if (values.Count > 0)
+                if ( values.Count > 0 )
                 {
                     string selectedProperty = values[0];
 
@@ -450,7 +462,7 @@ namespace Rock.DataFilters
                         entityProperty.SystemFieldType = SystemGuid.FieldType.TEXT;
                     }
 
-                    if (entityProperty != null)
+                    if ( entityProperty != null )
                     {
                         properties.Add( entityProperty );
                     }
@@ -482,7 +494,7 @@ namespace Rock.DataFilters
                         break;
                 }
 
-                if (entityProperty != null)
+                if ( entityProperty != null )
                 {
                     entityProperty.SystemFieldType = attribute.FieldType.Guid.ToString();
                     properties.Add( entityProperty );

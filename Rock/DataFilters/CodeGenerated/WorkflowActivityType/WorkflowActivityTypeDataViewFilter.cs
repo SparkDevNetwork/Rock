@@ -23,17 +23,5 @@ namespace Rock.DataFilters.WorkflowActivityType
     [ExportMetadata( "ComponentName", "Other WorkflowActivityType Data View Filter" )]
     public partial class WorkflowActivityTypeDataViewFilter : OtherDataViewFilter<Rock.Model.WorkflowActivityType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.WorkflowActivityType"; }
-        }
-
     }
 }

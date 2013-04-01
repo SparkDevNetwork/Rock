@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Page
     [ExportMetadata( "ComponentName", "Other Page Data View Filter" )]
     public partial class PageDataViewFilter : OtherDataViewFilter<Rock.Model.Page>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Page"; }
-        }
-
     }
 }

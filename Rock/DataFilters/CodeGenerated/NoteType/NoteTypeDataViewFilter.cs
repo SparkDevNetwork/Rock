@@ -23,17 +23,5 @@ namespace Rock.DataFilters.NoteType
     [ExportMetadata( "ComponentName", "Other NoteType Data View Filter" )]
     public partial class NoteTypeDataViewFilter : OtherDataViewFilter<Rock.Model.NoteType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.NoteType"; }
-        }
-
     }
 }

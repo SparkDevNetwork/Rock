@@ -23,17 +23,5 @@ namespace Rock.DataFilters.PersonMerged
     [ExportMetadata( "ComponentName", "Other PersonMerged Data View Filter" )]
     public partial class PersonMergedDataViewFilter : OtherDataViewFilter<Rock.Model.PersonMerged>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.PersonMerged"; }
-        }
-
     }
 }

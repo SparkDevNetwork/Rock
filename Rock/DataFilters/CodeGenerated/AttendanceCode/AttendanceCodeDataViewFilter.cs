@@ -23,17 +23,5 @@ namespace Rock.DataFilters.AttendanceCode
     [ExportMetadata( "ComponentName", "Other AttendanceCode Data View Filter" )]
     public partial class AttendanceCodeDataViewFilter : OtherDataViewFilter<Rock.Model.AttendanceCode>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.AttendanceCode"; }
-        }
-
     }
 }
