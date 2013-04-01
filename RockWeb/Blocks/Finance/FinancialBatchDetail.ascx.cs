@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
+                BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE );  
                 BindGrid();
             }
         }
@@ -86,6 +87,7 @@ namespace RockWeb.Blocks.Administration
 
         void transactionGrid_GridRebind( object sender, EventArgs e )
         {
+            BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE );            
             BindGrid();
         }
 
@@ -99,12 +101,11 @@ namespace RockWeb.Blocks.Administration
             int.TryParse( parm.ToString(), out itemId);
             if ( itemId == 0 )
                 return;
-
-            var batchService = new FinancialTransactionService();
+            var batchService = new FinancialBatchService();
             var batch = batchService.Get( itemId );
-            transactionGrid.DataSource = batch.TransactionDetails;
-                
-            transactionGrid.DataBind();
+
+            ShowEditValue( batch );
+
         }
 
         #region load forms
@@ -112,7 +113,6 @@ namespace RockWeb.Blocks.Administration
         private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid )
         {
             ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
 
         }
 
@@ -121,35 +121,24 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowEditValue( int batchId )
+        protected void ShowEditValue( Rock.Model.FinancialBatch batchValue )
+            //int batchId )
         {
-            BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE );            
+            
+            hfIdValue.Value = batchValue.Id.ToString();
+            
+            lValue.Text = "Edit";
+            tbName.Text = batchValue.Name;
+            dtBatchDateStart.SelectedDate = batchValue.BatchDateStart;
+            dtBatchDateEnd.SelectedDate = batchValue.BatchDateEnd;
+            if (batchValue.CampusId.HasValue)
+                CampusPicker1.SelectedCampusIds.Add( (int)batchValue.CampusId );
+            //ddlEntity.SetValue( batchValue.EntityId );
+            cbIsClosed.Checked = batchValue.IsClosed;
+            ddlBatchType2.SetValue( batchValue.EntityId );
+            tbControlAmount.Text = batchValue.ControlAmount.ToString();
 
-            hfIdValue.Value = batchId.ToString();
-
-            var batchValue = new Rock.Model.FinancialBatchService().Get( batchId );
-
-            if ( batchValue != null )
-            {
-                lValue.Text = "Edit";
-                tbName.Text = batchValue.Name;
-                dtBatchDateStart.SelectedDate = batchValue.BatchDateStart;
-                dtBatchDateEnd.SelectedDate = batchValue.BatchDateEnd;
-                ddlCampus.SetValue( batchValue.CampusId );
-                ddlEntity.SetValue( batchValue.EntityId );
-                cbIsClosed.Checked = batchValue.IsClosed;
-                ddlBatchType2.SetValue( batchValue.EntityId );
-                tbControlAmount.Text = batchValue.ControlAmount.ToString();
-
-                setTransactionDataSource( batchValue.Transactions.ToList() );
-
-
-            }
-            else
-            {
-                lValue.Text = "Add";
-                emptyInputs();
-            }
+            setTransactionDataSource( batchValue.Transactions.ToList() );
 
 
         }
@@ -160,7 +149,10 @@ namespace RockWeb.Blocks.Administration
             {
                 var financialBatchService = new Rock.Model.FinancialBatchService();
                 Rock.Model.FinancialBatch financialBatch = null;
-                int financialBatchId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
+
+                int financialBatchId = 0;
+                if (! string.IsNullOrEmpty(hfIdValue.Value))
+                    financialBatchId = Int32.Parse( hfIdValue.Value ) ;
 
                 if ( financialBatchId == 0 )
                 {
@@ -175,8 +167,10 @@ namespace RockWeb.Blocks.Administration
                 financialBatch.Name = tbName.Text;
                 financialBatch.BatchDateStart = dtBatchDateStart.SelectedDate;
                 financialBatch.BatchDateEnd = dtBatchDateEnd.SelectedDate;
-                financialBatch.CampusId = ddlCampus.SelectedValueAsInt();
-                financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
+                if (CampusPicker1.SelectedCampusIds.Count > 0)
+                    financialBatch.CampusId =  CampusPicker1.SelectedCampusIds[0];
+
+            //    financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
                 financialBatch.IsClosed = cbIsClosed.Checked;
                 financialBatch.BatchTypeValueId = ddlBatchType2.SelectedValueAsInt().HasValue ? (int)ddlBatchType2.SelectedValueAsInt() : -1;
                 float fcontrolamt = 0f;
@@ -196,8 +190,8 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = string.Empty;
             dtBatchDateStart.SelectedDate = null;
             dtBatchDateEnd.SelectedDate = null;
-            ddlCampus.SetValue( -1 );
-            ddlEntity.SetValue( -1 );
+            CampusPicker1.SelectedCampusIds.Clear();
+            //ddlEntity.SetValue( -1 );
             cbIsClosed.Checked = false;
             ddlBatchType2.SetValue( -1 );
             tbControlAmount.Text = string.Empty;
@@ -235,7 +229,12 @@ namespace RockWeb.Blocks.Administration
         }
         protected void ShowTransactionEditValue( int id )
         {
-            NavigateToDetailPage( "transactionId", id );
+            if ( id == 0 )
+            {
+                NavigateToDetailPage( "batchId", Int32.Parse( hfIdValue.Value ) );
+            }
+            else
+                NavigateToDetailPage( "transactionId", id );
         }
 
         protected void gridFinancialTransaction_Add( object sender, EventArgs e )
