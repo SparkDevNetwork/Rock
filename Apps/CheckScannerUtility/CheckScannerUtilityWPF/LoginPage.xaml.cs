@@ -52,5 +52,10 @@ namespace CheckScannerUtilityWPF
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
         }
+
+        private void Button_Click_1( object sender, RoutedEventArgs e )
+        {
+
+        }
     }
 }
