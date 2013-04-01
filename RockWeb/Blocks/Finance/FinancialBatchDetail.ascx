@@ -2,46 +2,49 @@
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
+   <div>
        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
 
         <asp:HiddenField ID="hfIdValue" runat="server" />
         <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-        <div class="row">
-            <div class="span12">
+ 
                 <fieldset>
                     <legend>
                         <asp:Literal ID="lValue" runat="server">Financial Batch</asp:Literal></legend>
-
-                    <div class="span6">
-                        <Rock:DataTextBox ID="tbName" runat="server" LabelText="Title"
+            <div class="row" style="margin-left:0">
+            <div class="span12">
+                    <div class="span4">
+                        <Rock:DataTextBox ID="tbName" runat="server" LabelText="Title" TabIndex="1" 
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
-                        <Rock:CampusPicker ID="CampusPicker1" runat="server">
+                        <Rock:CampusPicker ID="CampusPicker1" runat="server" TabIndex="2" >
                         </Rock:CampusPicker>
-                        <Rock:DateTimePicker ID="dtBatchDateStart" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="Batch Date Start" />
-                        <Rock:DateTimePicker ID="dtBatchDateEnd" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Batch Date End" />
-
-                        <Rock:LabeledCheckBox ID="cbIsClosed" runat="server" LabelText="Is Closed" />
+                       
                     </div>
-                    <div class="span6">
-                        <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
-                        <Rock:LabeledDropDownList ID="ddlEntity" runat="server" LabelText="Entity" />
+                    <div class="span3">
+                         <Rock:DateTimePicker ID="dtBatchDateStart" TabIndex="3"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="Batch Date Start" />
+                        <Rock:DateTimePicker ID="dtBatchDateEnd" TabIndex="4"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Batch Date End" />
 
-                        <Rock:LabeledDropDownList ID="ddlBatchType2" runat="server" LabelText="Batch Type" />
-                        <Rock:DataTextBox ID="tbControlAmount" runat="server" LabelText="Control Amount"
+                        <Rock:LabeledCheckBox TextAlign="Right" ID="cbIsClosed" TabIndex="5"  runat="server" LabelText="Is Closed" />
+                        <%--<Rock:LabeledDropDownList ID="ddlEntity" runat="server" LabelText="Entity" />--%>
+                        </div>
+                    <div class="span4">
+                        <Rock:LabeledDropDownList ID="ddlBatchType2" runat="server" LabelText="Batch Type" TabIndex="6"  />
+                        <Rock:DataTextBox ID="tbControlAmount" runat="server" LabelText="Control Amount" TabIndex="7" 
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
-
+                        </div>
+                </div>
+                <div class="row"></div>
+                    <div class="span12" style="margin:auto;text-align:center; padding-bottom:20px">
                         <asp:Button ID="Button1" CssClass="btn btn-primary" Text="Save" runat="server" OnClick="btnSaveFinancialBatch_Click" />
                         &nbsp;<asp:Button ID="Button2" CssClass="btn" Text="Cancel" runat="server" OnClick="btnCancelFinancialBatch_Click" />
                     </div>
+                </div>
                 </fieldset>
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
+  
                 <Rock:Grid ID="transactionGrid" runat="server" EmptyDataText="No Transactions Found" ShowConfirmDeleteDialog="true">
                     <Columns>
                         <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                        <asp:BoundField DataField="BatchId" HeaderText="Id" SortExpression="Id" />
+                        <asp:BoundField DataField="BatchId" HeaderText="BatchId" SortExpression="BatchId" />
                         <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" />
                         <asp:BoundField DataField="TransactionDate" HeaderText="Transaction Date" SortExpression="TransactionDate" />
                         <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Description" />
@@ -58,7 +61,7 @@
                         <Rock:DeleteField OnClick="grdFinancialTransactions_Delete" />
                     </Columns>
                 </Rock:Grid>
-            </div>
+      
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
