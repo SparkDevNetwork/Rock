@@ -5,7 +5,7 @@
       xmlns:Forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
       xmlns:ax="clr-namespace:AxRANGERLib;assembly=AxInterop.RANGERLib"
       xmlns:ax2="clr-namespace:AxMTMicrImage;assembly=AxMTMicrImage"
-      x:Class="CheckScannerUtilityWPF.BatchPage"
+      x:Class="CheckScannerUtility.BatchPage"
       Name="batchPage"
       mc:Ignorable="d"
       d:DesignHeight="680"
@@ -66,13 +66,7 @@
                 Grid.ColumnSpan="3"
                 Margin="0"
                 Grid.Row="1"
-                Grid.RowSpan="1">
-            <Button Content="Button"
-                    Canvas.Left="356"
-                    Canvas.Top="438"
-                    Width="75"
-                    Click="Button_Click_1" />
-        </Canvas>
+                Grid.RowSpan="1" />
         <!-- Batch List/Detail -->
         <Grid Name="grdBatchListDetail"
               Grid.Row="1"
@@ -176,7 +170,7 @@
                        Style="{StaticResource labelTextStyle}">Interface Version:</Label>
                 <Label Name="lblFeederType"
                        Style="{StaticResource labelTextStyle}">FeederType:</Label>
-                <Label Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
+                <Label Name="lblImageOption" Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
                 <ComboBox Name="cboImageOption"
                           Style="{StaticResource textboxStyle}"
                           SelectionChanged="cboImageOption_SelectionChanged" />

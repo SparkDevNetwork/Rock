@@ -1251,9 +1251,11 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041249372_EntityTypesAdmin.resx">
       <DependentUpon>201212041249372_EntityTypesAdmin.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212041823461_RockModel.resx">
       <DependentUpon>201212041823461_RockModel.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212042327447_ToolsMenuAdCampaigns.resx">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
