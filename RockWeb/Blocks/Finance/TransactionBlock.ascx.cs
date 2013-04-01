@@ -22,6 +22,8 @@ using Rock.Attribute;
 public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetailBlock
 {
     #region Control Methods
+    private string contextTypeName = string.Empty;
+    private IEntity contextEntity = null;
 
     /// <summary>
     /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -29,6 +31,14 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
     /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
     protected override void OnInit( EventArgs e )
     {
+        //foreach ( KeyValuePair<string, Rock.Data.IEntity> entry in ContextEntities )
+        //{
+        //    contextTypeName = entry.Key;
+        //    contextEntity = entry.Value;
+        //    // Should only be one.
+        //    break;
+        //}
+
         base.OnInit( e );
     }
 
@@ -40,6 +50,7 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
     {
         if ( !Page.IsPostBack )
         {
+            BindDrops();
             BindForm();
         }
     }
@@ -53,14 +64,28 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
         pnlMessage.Visible = true;
     }
 
+    protected void BindDrops()
+    {
+        BindDefinedTypeDropdown( ddlCurrencyType, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Currency Type" );
+        BindDefinedTypeDropdown( ddlCreditCardType, Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE, "Credit Card Type" );
+        BindDefinedTypeDropdown( ddlSourceType, Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source" );
+    }
+
+    private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
+    {
+        ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+        ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
+
+    }
+
     #region add, edit and delete blocks Financial Transaction
     protected void BindForm()
     {
         try
         {
-            var vid = Request.QueryString["id"];
-            var vbatch = Request.QueryString["batch"];
-            if ( vid == null && vbatch == null )
+            var vid = PageParameter( "transactionId" );
+            var vbatch = PageParameter( "batchId" );
+            if (  vbatch == null )
                 return;
 
             int id = 0;
@@ -96,11 +121,11 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
             hfIdTransValue.Value = transactionValue.Id.ToString();
             tbAmount.Text = transactionValue.Amount.ToString();
             hfBatchId.Value = transactionValue.BatchId.ToString();
-            ddlCreditCartType.SetValue( transactionValue.CreditCardTypeValueId );
+            ddlCreditCardType.SetValue( transactionValue.CreditCardTypeValueId );
             ddlCurrencyType.SetValue( transactionValue.CurrencyTypeValueId );
             tbDescription.Text = transactionValue.Description;
-            TranEntity.Text = transactionValue.EntityId.ToString();
-            ddlEntityType.SetValue( transactionValue.EntityTypeId );
+           // TranEntity.Text = transactionValue.EntityId.ToString();
+            //ddlEntityType.SetValue( transactionValue.EntityTypeId );
             ddlPaymentGateway.SetValue( transactionValue.PaymentGatewayId );
             tbRefundTransactionId.Text = transactionValue.RefundTransactionId.ToString();
             ddlSourceType.SetValue( transactionValue.SourceTypeValueId );
@@ -126,8 +151,9 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
         {
             var financialTransactionService = new Rock.Model.FinancialTransactionService();
             Rock.Model.FinancialTransaction financialTransaction = null;
-            int financialTransactionId = ( hfIdTransValue.Value ) != null ? Int32.Parse( hfIdTransValue.Value ) : 0;
-            int batchid = ( hfBatchId.Value ) != null ? Int32.Parse( hfBatchId.Value ) : 0;
+            int financialTransactionId = string.IsNullOrEmpty( hfIdTransValue.Value ) ? 0: Int32.Parse( hfIdTransValue.Value ) ;
+            
+            int batchid = string.IsNullOrEmpty( hfBatchId.Value ) ? 0 : Int32.Parse( hfBatchId.Value ) ;
 
             if ( financialTransactionId == 0 )
             {
@@ -143,24 +169,20 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
             decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out Amount );
             financialTransaction.Amount = Amount;
 
-            if ( ddlCreditCartType.SelectedValue != "-1" )
+            if ( ddlCreditCardType.SelectedValue != "-1" )
             {
-                financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCartType.SelectedValue );
+                financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
             }
             if ( ddlCurrencyType.SelectedValue != "-1" )
             {
                 financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
             }
             financialTransaction.Description = tbDescription.Text;
-            if ( TranEntity.SelectedValue != "-1" )
-            {
-                financialTransaction.EntityId = int.Parse( TranEntity.SelectedValue );
-            }
-            if ( ddlEntityType.SelectedValue != "-1" )
-            {
-                financialTransaction.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
-            }
-            if ( ddlPaymentGateway.SelectedValue != "-1" )
+ 
+            financialTransaction.EntityId = contextEntity.Id; ;
+            financialTransaction.EntityTypeId = -1;
+
+            if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue) && ddlPaymentGateway.SelectedValue != "-1" )
             {
                 financialTransaction.PaymentGatewayId = int.Parse( ddlPaymentGateway.SelectedValue );
             }
@@ -181,6 +203,8 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
             financialTransaction.TransactionImageId = imageId;
 
             financialTransactionService.Save( financialTransaction, CurrentPersonId );
+
+            NavigateToParentPage();
         }
 
     }
@@ -192,11 +216,11 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
         hfIdTransValue.Value = string.Empty;
         tbAmount.Text = string.Empty;
         hfBatchId.Value = string.Empty;
-        ddlCreditCartType.SetValue( -1 );
+        ddlCreditCardType.SetValue( -1 );
         ddlCurrencyType.SetValue( -1 );
         tbDescription.Text = string.Empty;
-        TranEntity.SetValue( -1 );
-        ddlEntityType.SetValue( -1 );
+        //TranEntity.SetValue( -1 );
+        //ddlEntityType.SetValue( -1 );
         ddlPaymentGateway.SetValue( -1 );
         tbRefundTransactionId.Text = string.Empty;
         ddlSourceType.SetValue( -1 );
@@ -204,7 +228,6 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
         tbTransactionCode.Text = string.Empty;
         dtTransactionDateTime.SelectedDate = DateTime.MinValue;
         tbTransactionImageId.Text = string.Empty;
-        TranCampus.SetValue( -1 );
 
     }
 
