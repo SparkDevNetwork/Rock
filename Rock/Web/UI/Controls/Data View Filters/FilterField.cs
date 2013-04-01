@@ -208,7 +208,7 @@ $('.filter-item-select').click(function (event) {
             if ( component != null )
             {
                 RockPage page = this.Page as RockPage;
-                filterControls = component.CreateChildControls( page );
+                filterControls = component.CreateChildControls( this );
                 if ( filterControls != null )
                 {
                     foreach ( var filterControl in filterControls )
@@ -343,7 +343,7 @@ $('.filter-item-select').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             if ( component != null )
             {
-                component.RenderControls( writer, filterControls );
+                component.RenderControls( this, writer, filterControls );
             }
             writer.RenderEndTag();
 
