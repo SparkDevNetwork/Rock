@@ -18,22 +18,10 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// Person Property Filter
     /// </summary>
-    [Description( "Filter People based on a Person property" )]
+    [Description( "Filter People based on any Person property or attribute value" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Property Filter" )]
     public partial class PersonPropertyFilter : PropertyFilter<Rock.Model.Person>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Person"; }
-        }
-
     }
 }

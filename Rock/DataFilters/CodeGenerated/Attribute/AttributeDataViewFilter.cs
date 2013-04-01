@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Attribute
     [ExportMetadata( "ComponentName", "Other Attribute Data View Filter" )]
     public partial class AttributeDataViewFilter : OtherDataViewFilter<Rock.Model.Attribute>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Attribute"; }
-        }
-
     }
 }

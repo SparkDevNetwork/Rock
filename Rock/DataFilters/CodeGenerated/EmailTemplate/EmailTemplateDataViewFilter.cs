@@ -23,17 +23,5 @@ namespace Rock.DataFilters.EmailTemplate
     [ExportMetadata( "ComponentName", "Other EmailTemplate Data View Filter" )]
     public partial class EmailTemplateDataViewFilter : OtherDataViewFilter<Rock.Model.EmailTemplate>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.EmailTemplate"; }
-        }
-
     }
 }

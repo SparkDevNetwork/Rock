@@ -23,17 +23,5 @@ namespace Rock.DataFilters.GroupLocation
     [ExportMetadata( "ComponentName", "Other GroupLocation Data View Filter" )]
     public partial class GroupLocationDataViewFilter : OtherDataViewFilter<Rock.Model.GroupLocation>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.GroupLocation"; }
-        }
-
     }
 }

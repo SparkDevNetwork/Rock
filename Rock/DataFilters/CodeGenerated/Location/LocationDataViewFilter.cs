@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Location
     [ExportMetadata( "ComponentName", "Other Location Data View Filter" )]
     public partial class LocationDataViewFilter : OtherDataViewFilter<Rock.Model.Location>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Location"; }
-        }
-
     }
 }

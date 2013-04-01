@@ -23,17 +23,5 @@ namespace Rock.DataFilters.PrayerRequest
     [ExportMetadata( "ComponentName", "Other PrayerRequest Data View Filter" )]
     public partial class PrayerRequestDataViewFilter : OtherDataViewFilter<Rock.Model.PrayerRequest>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.PrayerRequest"; }
-        }
-
     }
 }

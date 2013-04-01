@@ -23,17 +23,5 @@ namespace Rock.DataFilters.DefinedValue
     [ExportMetadata( "ComponentName", "Other DefinedValue Data View Filter" )]
     public partial class DefinedValueDataViewFilter : OtherDataViewFilter<Rock.Model.DefinedValue>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.DefinedValue"; }
-        }
-
     }
 }

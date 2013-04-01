@@ -23,17 +23,5 @@ namespace Rock.DataFilters.DefinedType
     [ExportMetadata( "ComponentName", "Other DefinedType Data View Filter" )]
     public partial class DefinedTypeDataViewFilter : OtherDataViewFilter<Rock.Model.DefinedType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.DefinedType"; }
-        }
-
     }
 }

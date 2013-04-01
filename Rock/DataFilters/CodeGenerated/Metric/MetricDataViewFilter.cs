@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Metric
     [ExportMetadata( "ComponentName", "Other Metric Data View Filter" )]
     public partial class MetricDataViewFilter : OtherDataViewFilter<Rock.Model.Metric>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Metric"; }
-        }
-
     }
 }

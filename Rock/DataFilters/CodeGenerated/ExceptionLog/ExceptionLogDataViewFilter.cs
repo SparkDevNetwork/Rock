@@ -23,17 +23,5 @@ namespace Rock.DataFilters.ExceptionLog
     [ExportMetadata( "ComponentName", "Other ExceptionLog Data View Filter" )]
     public partial class ExceptionLogDataViewFilter : OtherDataViewFilter<Rock.Model.ExceptionLog>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.ExceptionLog"; }
-        }
-
     }
 }

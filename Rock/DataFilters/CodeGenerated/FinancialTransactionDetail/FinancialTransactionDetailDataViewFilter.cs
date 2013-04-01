@@ -23,17 +23,5 @@ namespace Rock.DataFilters.FinancialTransactionDetail
     [ExportMetadata( "ComponentName", "Other FinancialTransactionDetail Data View Filter" )]
     public partial class FinancialTransactionDetailDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialTransactionDetail>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.FinancialTransactionDetail"; }
-        }
-
     }
 }
