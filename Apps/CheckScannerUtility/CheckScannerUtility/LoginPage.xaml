@@ -1,4 +1,4 @@
-﻿<Page x:Class="CheckScannerUtility.LoginPage"
+﻿<Page x:Class="Rock.Apps.CheckScannerUtility.LoginPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -93,7 +93,6 @@
                     <Label Style="{StaticResource labelTextStyle}">Password</Label>
                     <PasswordBox Name="txtPassword"
                                  Style="{StaticResource textboxStyle}" />
-                    <Button Click="Button_Click_1">Click Me</Button>
                 </StackPanel>
                 <Border Grid.Row="2"
                         Grid.Column="0"

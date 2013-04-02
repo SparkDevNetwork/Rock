@@ -3,11 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CheckScannerUtility
+namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for LoginPage.xaml

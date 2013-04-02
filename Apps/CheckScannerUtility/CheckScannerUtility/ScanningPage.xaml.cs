@@ -6,7 +6,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace CheckScannerUtility
+namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for ScanningPage.xaml

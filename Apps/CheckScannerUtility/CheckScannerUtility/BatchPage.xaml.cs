@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -16,11 +15,9 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Rock;
-using Rock.CheckScannerUtility;
 using Rock.Model;
 
-namespace CheckScannerUtility
+namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for BatchPage.xaml
@@ -39,7 +36,7 @@ namespace CheckScannerUtility
         /// <summary>
         /// The binary file types
         /// </summary>
-        public static List<BinaryFileType> BinaryFileTypes = null;
+        public static List<BinaryFileType> BinaryFileTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the feeder.
@@ -52,7 +49,7 @@ namespace CheckScannerUtility
         /// <summary>
         /// The scanning page
         /// </summary>
-        public ScanningPage ScanningPage = null;
+        public ScanningPage ScanningPage { get; set; }
 
         #region Ranger (Canon CR50/80) Scanner Events
 
@@ -63,10 +60,10 @@ namespace CheckScannerUtility
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
-            btnConnect.Visibility = Visibility.Hidden;
+            mnuConnect.IsEnabled = false;
             btnScan.Visibility = Visibility.Hidden;
             ScanningPage.btnDone.Visibility = Visibility.Visible;
-            string status = RangerScanner.GetTransportStateString().Replace( "Transport", "" ).SplitCase();
+            string status = RangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             shapeStatus.ToolTip = status;
 
             switch ( (XportStates)e.currentState )
@@ -87,7 +84,7 @@ namespace CheckScannerUtility
                     break;
                 case XportStates.TransportShutDown:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Red );
-                    btnConnect.Visibility = Visibility.Visible;
+                    mnuConnect.IsEnabled = true;
                     break;
                 case XportStates.TransportFeeding:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Blue );
@@ -115,16 +112,15 @@ namespace CheckScannerUtility
         /// <param name="e">The e.</param>
         private void RangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
         {
-
             if ( e.previousState == (int)XportStates.TransportStartingUp )
             {
-                //enable imaging
+                // enable imaging
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
 
-                //limit splash screen
+                // limit splash screen
                 RangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
 
-                //turn on either color, grayscale, or bitonal options depending on selected option
+                // turn on either color, grayscale, or bitonal options depending on selected option
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "False" );
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "False" );
@@ -134,13 +130,13 @@ namespace CheckScannerUtility
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage4", "False" );
                 RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage4", "False" );
 
-                switch ( cboImageOption.SelectedItem.ToString() )
+                switch ( RockConfig.Load().ImageColorType )
                 {
-                    case "Color":
+                    case ImageColorType.ImageColorTypeColor:
                         RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
                         RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "True" );
                         break;
-                    case "Grayscale":
+                    case ImageColorType.ImageColorTypeGrayscale:
                         RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
                         RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "True" );
                         break;
@@ -195,6 +191,54 @@ namespace CheckScannerUtility
 
         #endregion
 
+        #region Scanner (MagTek MICRImage RS232) Events
+
+        /// <summary>
+        /// Determines whether the specified value is integer.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified value is integer; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsInteger( string value )
+        {
+            int temp;
+            return int.TryParse( value, out temp );
+        }
+
+        /// <summary>
+        /// Handles the MicrDataReceived event of the micrImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
+        {
+            object dummy = null;
+
+            string imagePath = string.Empty;
+            string imageIndex = string.Empty;
+            string statusMsg = string.Empty;
+
+            // from MagTek Sample Code
+            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+
+            // MagTek OCX only likes short paths
+            imagePath = Path.GetTempPath();
+            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_front_{0}_{1}_{2}.tif", accountNumber, routingNumber, checkNumber ) );
+
+            micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg );
+            if ( !File.Exists( checkImageFileName ) )
+            {
+                throw new Exception( "Unable to retrieve image" );
+            }
+
+            micrImage.ClearBuffer();
+        }
+
+        #endregion
+
         #region Image Upload related
 
         /// <summary>
@@ -220,28 +264,16 @@ namespace CheckScannerUtility
         /// <returns></returns>
         private BitmapImage GetCheckImage( Sides side )
         {
-            ImageColorType colorType = ImageColorType.ImageColorTypeColor;
-            switch ( cboImageOption.SelectedItem.ToString() )
-            {
-                case "Color":
-                    colorType = ImageColorType.ImageColorTypeColor;
-                    break;
-                case "Grayscale":
-                    colorType = ImageColorType.ImageColorTypeGrayscale;
-                    break;
-                default:
-                    colorType = ImageColorType.ImageColorTypeBitonal;
-                    break;
-            }
+            ImageColorType colorType = RockConfig.Load().ImageColorType;
 
             int imageByteCount;
             imageByteCount = RangerScanner.GetImageByteCount( (int)side, (int)colorType );
             byte[] imageBytes = new byte[imageByteCount];
 
-            //create the pointer and assign the Ranger image address to it
+            // create the pointer and assign the Ranger image address to it
             IntPtr imgAddress = new IntPtr( RangerScanner.GetImageAddress( (int)side, (int)colorType ) );
 
-            //Copy the bytes from unmanaged memory to managed memory
+            // Copy the bytes from unmanaged memory to managed memory
             Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
 
             BitmapImage bitImageFront = new BitmapImage();
@@ -290,9 +322,7 @@ namespace CheckScannerUtility
             HttpClient client = new HttpClient();
             HttpContent resultContent;
             string restURL = rockBaseUrl.TrimEnd( new char[] { '/' } ) + "/api/BinaryFileTypes/";
-            //bool gotResponse = false;
-            await client.GetAsync( restURL ).ContinueWith(
-                ( postTask ) =>
+            await client.GetAsync( restURL ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
                     resultContent.ReadAsAsync<List<BinaryFileType>>().ContinueWith(
@@ -300,8 +330,7 @@ namespace CheckScannerUtility
                         {
                             BinaryFileTypes = readResult.Result;
                         } ).Wait();
-                }
-                );
+                } );
 
             return BinaryFileTypes;
         }
@@ -341,7 +370,6 @@ namespace CheckScannerUtility
                 if ( scannedFile.Name.EndsWith( "_front.jpg" ) )
                 {
                     binaryFile.BinaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( fileTypeCheckFront ) ).Id;
-
                 }
                 else if ( scannedFile.Name.EndsWith( "_back.jpg" ) )
                 {
@@ -400,51 +428,19 @@ namespace CheckScannerUtility
         }
 
         /// <summary>
-        /// Loads the image options.
-        /// </summary>
-        private void LoadImageOptions()
-        {
-            RockConfig config = RockConfig.Load();
-            ImageColorType colorType = (ImageColorType)config.ImageColorType;
-
-            cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Bitonal" );
-            cboImageOption.Items.Add( "Grayscale" );
-            cboImageOption.Items.Add( "Color" );
-            cboImageOption.SelectedIndex = 0;
-
-            switch ( colorType )
-            {
-                case ImageColorType.ImageColorTypeGrayscale:
-                    cboImageOption.SelectedValue = "Grayscale";
-                    break;
-                case ImageColorType.ImageColorTypeColor:
-                    cboImageOption.SelectedValue = "Color";
-                    break;
-                default:
-                    cboImageOption.SelectedIndex = 0;
-                    break;
-            }
-        }
-
-        /// <summary>
         /// Connects to scanner.
         /// </summary>
         private void ConnectToScanner()
         {
-            int magTekPort = RockConfig.Load().MICRImageComPort;
+            var rockConfig = RockConfig.Load();
 
-            if ( magTekPort > 0 )
+            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
-                lblImageOption.Visibility = Visibility.Hidden;
-                cboImageOption.Visibility = Visibility.Hidden;
-                
-                micrImage.CommPort = RockConfig.Load().MICRImageComPort;
+                micrImage.CommPort = rockConfig.MICRImageComPort;
 
-                Object dummy = null;
+                object dummy = null;
 
                 // converted from VB6 from MagTek's sample app
-
                 if ( !micrImage.PortOpen )
                 {
                     micrImage.PortOpen = true;
@@ -465,7 +461,6 @@ namespace CheckScannerUtility
                         // format is being used to parse it using the FindElement Method
                         micrImage.FormatChange( "6200" );
                         micrImage.MicrTimeOut = 5;
-
                     }
                     else
                     {
@@ -474,36 +469,20 @@ namespace CheckScannerUtility
                     }
                 }
 
-                lblMakeModel.Content = "MagTek";
-                lblInterfaceVersion.Content = micrImage.Version();
-
                 ScannerFeederType = FeederType.SingleItem;
-                string feederFriendlyNameType = "Single";
-                lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
             }
             else
             {
                 RangerScanner.StartUp();
-                lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", RangerScanner.GetTransportInfo( "General", "Make" ), RangerScanner.GetTransportInfo( "General", "Model" ) );
-                lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", RangerScanner.GetVersion() );
                 string feederTypeName = RangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
-                string feederFriendlyNameType;
                 if ( feederTypeName.Equals( "MultipleItems" ) )
                 {
-                    feederFriendlyNameType = "Multiple Items";
                     ScannerFeederType = FeederType.MultipleItems;
                 }
                 else
                 {
-                    feederFriendlyNameType = "Single";
                     ScannerFeederType = FeederType.SingleItem;
                 }
-
-                lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
-
-                lblImageOption.Visibility = Visibility.Visible;
-                cboImageOption.Visibility = Visibility.Visible;
-                LoadImageOptions();
             }
         }
 
@@ -515,36 +494,6 @@ namespace CheckScannerUtility
         private void btnConnect_Click( object sender, RoutedEventArgs e )
         {
             ConnectToScanner();
-        }
-
-        /// <summary>
-        /// Handles the SelectionChanged event of the cboImageOption control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
-        private void cboImageOption_SelectionChanged( object sender, SelectionChangedEventArgs e )
-        {
-            RockConfig config = RockConfig.Load();
-            string imageOption = cboImageOption.SelectedValue as String;
-
-            switch ( imageOption )
-            {
-                case "Grayscale":
-                    config.ImageColorType = (int)ImageColorType.ImageColorTypeGrayscale;
-                    break;
-                case "Color":
-                    config.ImageColorType = (int)ImageColorType.ImageColorTypeColor;
-                    break;
-                default:
-                    config.ImageColorType = (int)ImageColorType.ImageColorTypeBitonal;
-                    break;
-            }
-
-            config.Save();
-
-            // restart to get Options to load
-            RangerScanner.ShutDown();
-            RangerScanner.StartUp();
         }
 
         /// <summary>
@@ -593,52 +542,27 @@ namespace CheckScannerUtility
             }
         }
 
-        #region Scanner (MagTek MICRImage RS232) Events
-
         /// <summary>
-        /// Determines whether the specified value is integer.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is integer; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsInteger( string value )
-        {
-            int temp;
-            return int.TryParse( value, out temp );
-        }
-
-        /// <summary>
-        /// Handles the MicrDataReceived event of the micrImage control.
+        /// Handles the Click event of the btnOptions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void micrImage_MicrDataReceived( object sender, System.EventArgs e )
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnOptions_Click( object sender, RoutedEventArgs e )
         {
-            Object dummy = null;
-            
-            string imagePath = string.Empty;
-            string imageIndex = string.Empty;
-            string statusMsg = string.Empty;
-            
-            // from MagTek Sample Code
-            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+            var optionsPage = new OptionsPage();
+            this.NavigationService.Navigate( optionsPage );
 
-            // MagTek OCX only likes short paths
-            imagePath = Path.GetTempPath();
-            string checkImageFileName = Path.Combine( imagePath, string.Format("check_front_{0}_{1}_{2}.tif", accountNumber, routingNumber, checkNumber));
             
-            micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg);
-            if (!File.Exists(checkImageFileName))
-            {
-                throw new Exception("Unable to retrieve image");
-            }
-
-            micrImage.ClearBuffer();
         }
 
-        #endregion
+        private void MenuItem_Click_1( object sender, RoutedEventArgs e )
+        {
+
+        }
+
+        private void mnuConnect_Click_1( object sender, RoutedEventArgs e )
+        {
+
+        }
     }
 }
