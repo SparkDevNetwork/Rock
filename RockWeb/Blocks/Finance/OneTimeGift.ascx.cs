@@ -10,6 +10,8 @@ using System.Linq;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Collections.Generic;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
@@ -68,6 +70,7 @@ namespace RockWeb.Blocks.Finance
             if ( CurrentPerson != null )
             {
                 _ShowSaveDetails = true;
+                BindPersonDetails();
             }
 
             if ( _ShowCampusSelect )
@@ -313,6 +316,34 @@ namespace RockWeb.Blocks.Finance
             rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
             rptFundList.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the person details if they're logged in.
+        /// </summary>
+        protected void BindPersonDetails()
+        {
+            GroupMemberService groupService = new GroupMemberService();
+            LocationService locationService = new LocationService();
+            GroupLocationService groupLocationService = new GroupLocationService();
+
+            List<int> personGroups = groupService.Queryable()
+                .Where( g => g.PersonId == CurrentPersonId )
+                .Select( g => g.GroupId ).ToList();
+
+            Location personLocation = groupLocationService.Queryable()
+                .Where( g => personGroups.Contains( g.GroupId ) )
+                .Select( g => g.Location )
+                .ToList().FirstOrDefault();           
+
+            txtFirstName.Value = CurrentPerson.FirstName;
+            txtLastName.Value = CurrentPerson.LastName;
+            txtAddress.Value = personLocation.Street1;
+            txtCity.Value = personLocation.City;
+            ddlState.Value = personLocation.State;
+            txtZipcode.Value = personLocation.Zip;
+            txtEmail.Value = CurrentPerson.Email;
+            
         }
 
         /// <summary>
