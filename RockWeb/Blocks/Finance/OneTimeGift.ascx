@@ -195,7 +195,7 @@
                             <div class="span4">
                                 <label for="ddlState">State</label>
 
-                                <select class="state-select" id="ddlState" name="ddlState">
+                                <select class="state-select" id="ddlState" name="ddlState" runat="server">
 	                                <option value="AL">Alabama</option>
 	                                <option value="AK">Alaska</option>
 	                                <option value="AZ">Arizona</option>
