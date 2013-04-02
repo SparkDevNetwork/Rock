@@ -5,7 +5,7 @@
       xmlns:Forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
       xmlns:ax="clr-namespace:AxRANGERLib;assembly=AxInterop.RANGERLib"
       xmlns:ax2="clr-namespace:AxMTMicrImage;assembly=AxMTMicrImage"
-      x:Class="CheckScannerUtility.BatchPage"
+      x:Class="Rock.Apps.CheckScannerUtility.BatchPage"
       Name="batchPage"
       mc:Ignorable="d"
       d:DesignHeight="680"
@@ -25,7 +25,7 @@
             <ColumnDefinition Width="30" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
@@ -43,14 +43,17 @@
             <ax2:AxMicrImage x:Name="micrImage"
                              MicrDataReceived="micrImage_MicrDataReceived"    />
         </WindowsFormsHost>
-
-        <Button Name="btnConnect"
-                Click="btnConnect_Click"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Grid.Row="0"
-                HorizontalAlignment="Left"
-                Style="{StaticResource buttonStyle}">Connect</Button>
+        
+        <Menu Name="mainMenu" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+            <MenuItem Header="_File">
+                <MenuItem Name="mnuConnect" Header="_Connect" ToolTip="Connect to Scanner" Click="mnuConnect_Click_1"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Name="mnuOptions"
+                          Header="_Options" Click="btnOptions_Click" />
+            </MenuItem>
+        </Menu>
+        
         <Ellipse Name="shapeStatus"
                  Grid.Column="2"
                  Grid.Row="0"
@@ -164,16 +167,6 @@
                                 HorizontalAlignment="Left" />
                     </StackPanel>
                 </Border>
-                <Label Name="lblMakeModel"
-                       Style="{StaticResource labelTextStyle}">Scanner Type:</Label>
-                <Label Name="lblInterfaceVersion"
-                       Style="{StaticResource labelTextStyle}">Interface Version:</Label>
-                <Label Name="lblFeederType"
-                       Style="{StaticResource labelTextStyle}">FeederType:</Label>
-                <Label Name="lblImageOption" Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
-                <ComboBox Name="cboImageOption"
-                          Style="{StaticResource textboxStyle}"
-                          SelectionChanged="cboImageOption_SelectionChanged" />
                 <Grid Height="30">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -192,6 +185,7 @@
                             Click="btnScan_Click" />
 
                 </Grid>
+
             </StackPanel>
 
         </Grid>

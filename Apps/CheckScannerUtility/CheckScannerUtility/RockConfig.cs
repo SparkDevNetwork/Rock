@@ -4,15 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CheckScannerUtility
+namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// 
@@ -64,7 +60,7 @@ namespace CheckScannerUtility
         /// </value>
         [XmlElement]
         [DataMember]
-        public int ImageColorType { get; set; }
+        public ImageColorType ImageColorType { get; set; }
 
         /// <summary>
         /// Gets or sets the MICR image COM port.
@@ -113,7 +109,6 @@ namespace CheckScannerUtility
                     FileStream fs = new FileStream( fileName, FileMode.OpenOrCreate );
                     try
                     {
-
                         DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
                         var result = s.ReadObject( fs ) as RockConfig;
                         return result;
