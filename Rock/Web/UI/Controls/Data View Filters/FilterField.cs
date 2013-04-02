@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -21,7 +22,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:FilterField runat=server></{0}:FilterField>" )]
     public class FilterField : CompositeControl
     {
-        SortedDictionary<string, Dictionary<string, string>> AuthorizedComponents;
+        Dictionary<string, Dictionary<string, string>> AuthorizedComponents;
 
         protected DropDownList ddlFilterType;
         protected LinkButton lbDelete;
@@ -82,16 +83,15 @@ $('.filter-item-select').click(function (event) {
                     string itemKey = "FilterFieldComponents:" + value;
                     if ( HttpContext.Current.Items.Contains( itemKey ) )
                     {
-                        AuthorizedComponents = HttpContext.Current.Items[itemKey] as SortedDictionary<string, Dictionary<string, string>>;
+                        AuthorizedComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
                     }
                     else
                     {
-                        AuthorizedComponents = new SortedDictionary<string, Dictionary<string, string>>();
+                        AuthorizedComponents = new Dictionary<string, Dictionary<string, string>>();
                         RockPage rockPage = this.Page as RockPage;
                         if ( rockPage != null )
                         {
-
-                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ) )
+                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ) )
                             {
                                 if ( component.IsAuthorized( "View", rockPage.CurrentPerson ) )
                                 {
