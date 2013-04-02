@@ -44,7 +44,7 @@ namespace Rock.DataFilters
         /// </value>
         public virtual string Section 
         {
-            get { return string.Empty; }
+            get { return "Additional Filters"; }
         }
 
         /// <summary>

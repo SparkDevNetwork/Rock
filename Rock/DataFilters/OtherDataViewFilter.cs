@@ -27,7 +27,7 @@ namespace Rock.DataFilters
         /// </value>
         public override string Title
         {
-            get { return "Another Data View"; }
+            get { return "Existing Data View"; }
         }
 
         /// <summary>
@@ -49,7 +49,21 @@ namespace Rock.DataFilters
         /// </value>
         public override string Section
         {
-            get { return "Advanced"; }
+            get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return int.MaxValue;
+            }
         }
 
         /// <summary>

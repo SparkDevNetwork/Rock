@@ -51,7 +51,7 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Section
         {
-            get { return "Person Properties"; }
+            get { return "Additional Filters"; }
         }
 
         /// <summary>

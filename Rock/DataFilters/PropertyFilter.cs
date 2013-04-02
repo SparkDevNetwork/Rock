@@ -32,7 +32,7 @@ namespace Rock.DataFilters
         /// </value>
         public override string Title
         {
-            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Property"; }
+            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Fields"; }
         }
 
         /// <summary>
@@ -55,6 +55,20 @@ namespace Rock.DataFilters
         public override string Section
         {
             get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return int.MinValue;
+            }
         }
 
         /// <summary>
@@ -248,12 +262,6 @@ namespace Rock.DataFilters
                 }
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                // Label
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( property.Name.SplitCase() );
-                writer.RenderEndTag();
 
                 // Controls
                 writer.AddAttribute( "class", "controls" );
