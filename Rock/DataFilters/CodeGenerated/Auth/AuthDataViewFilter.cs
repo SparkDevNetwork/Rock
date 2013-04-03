@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Auth
     [ExportMetadata( "ComponentName", "Other Auth Data View Filter" )]
     public partial class AuthDataViewFilter : OtherDataViewFilter<Rock.Model.Auth>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Auth"; }
-        }
-
     }
 }

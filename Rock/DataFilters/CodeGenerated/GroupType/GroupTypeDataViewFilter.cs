@@ -23,17 +23,5 @@ namespace Rock.DataFilters.GroupType
     [ExportMetadata( "ComponentName", "Other GroupType Data View Filter" )]
     public partial class GroupTypeDataViewFilter : OtherDataViewFilter<Rock.Model.GroupType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.GroupType"; }
-        }
-
     }
 }

@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Schedule
     [ExportMetadata( "ComponentName", "Other Schedule Data View Filter" )]
     public partial class ScheduleDataViewFilter : OtherDataViewFilter<Rock.Model.Schedule>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Schedule"; }
-        }
-
     }
 }

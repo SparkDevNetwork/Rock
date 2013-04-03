@@ -23,17 +23,5 @@ namespace Rock.DataFilters.SiteDomain
     [ExportMetadata( "ComponentName", "Other SiteDomain Data View Filter" )]
     public partial class SiteDomainDataViewFilter : OtherDataViewFilter<Rock.Model.SiteDomain>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.SiteDomain"; }
-        }
-
     }
 }

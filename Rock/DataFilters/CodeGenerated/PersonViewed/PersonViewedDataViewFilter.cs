@@ -23,17 +23,5 @@ namespace Rock.DataFilters.PersonViewed
     [ExportMetadata( "ComponentName", "Other PersonViewed Data View Filter" )]
     public partial class PersonViewedDataViewFilter : OtherDataViewFilter<Rock.Model.PersonViewed>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.PersonViewed"; }
-        }
-
     }
 }
