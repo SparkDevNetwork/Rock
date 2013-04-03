@@ -23,17 +23,5 @@ namespace Rock.DataFilters.FieldType
     [ExportMetadata( "ComponentName", "Other FieldType Data View Filter" )]
     public partial class FieldTypeDataViewFilter : OtherDataViewFilter<Rock.Model.FieldType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.FieldType"; }
-        }
-
     }
 }

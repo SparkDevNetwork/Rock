@@ -9,6 +9,7 @@ using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters.Person
 {
@@ -95,7 +96,7 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( Rock.Web.UI.RockPage page )
+        public override Control[] CreateChildControls( FilterField filterControl )
         {
             CheckBox cb = new CheckBox();
             cb.Checked = true;
@@ -107,7 +108,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.Write( this.Title + " " );
             controls[0].RenderControl( writer );

@@ -1,0 +1,26 @@
+﻿<Page x:Class="Rock.Apps.CheckScannerUtility.OptionsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d"
+      d:DesignHeight="680"
+      d:DesignWidth="700"
+      Title="OptionsPage">
+
+    <StackPanel>
+        <Label Name="lblMakeModel"
+               Style="{StaticResource labelTextStyle}">Scanner Type:</Label>
+        <Label Name="lblInterfaceVersion"
+               Style="{StaticResource labelTextStyle}">Interface Version:</Label>
+        <Label Name="lblFeederType"
+               Style="{StaticResource labelTextStyle}">FeederType:</Label>
+        <Label Name="lblImageOption"
+               Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
+        <ComboBox Name="cboImageOption"
+                  Style="{StaticResource textboxStyle}"
+                  SelectionChanged="cboImageOption_SelectionChanged" />
+        <Button Name="btnBack"
+                Click="btnBack_Click_1" Style="{StaticResource buttonStyle}" HorizontalAlignment="Left">Back</Button>
+    </StackPanel>
+</Page>

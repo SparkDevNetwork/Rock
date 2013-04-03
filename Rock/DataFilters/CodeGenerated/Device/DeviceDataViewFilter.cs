@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Device
     [ExportMetadata( "ComponentName", "Other Device Data View Filter" )]
     public partial class DeviceDataViewFilter : OtherDataViewFilter<Rock.Model.Device>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Device"; }
-        }
-
     }
 }

@@ -23,17 +23,5 @@ namespace Rock.DataFilters.BlockType
     [ExportMetadata( "ComponentName", "Other BlockType Data View Filter" )]
     public partial class BlockTypeDataViewFilter : OtherDataViewFilter<Rock.Model.BlockType>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.BlockType"; }
-        }
-
     }
 }

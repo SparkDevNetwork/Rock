@@ -23,17 +23,5 @@ namespace Rock.DataFilters.BinaryFile
     [ExportMetadata( "ComponentName", "Other BinaryFile Data View Filter" )]
     public partial class BinaryFileDataViewFilter : OtherDataViewFilter<Rock.Model.BinaryFile>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.BinaryFile"; }
-        }
-
     }
 }

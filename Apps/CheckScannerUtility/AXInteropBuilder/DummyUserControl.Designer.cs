@@ -34,19 +34,10 @@ namespace RangerOCXWrapper
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DummyUserControl));
-            this.axRanger1 = new AxRANGERLib.AxRanger();
             this.label1 = new System.Windows.Forms.Label();
+            this.axRanger1 = new AxRANGERLib.AxRanger();
             ((System.ComponentModel.ISupportInitialize)(this.axRanger1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // axRanger1
-            // 
-            this.axRanger1.Enabled = true;
-            this.axRanger1.Location = new System.Drawing.Point(8, 48);
-            this.axRanger1.Name = "axRanger1";
-            this.axRanger1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axRanger1.OcxState")));
-            this.axRanger1.Size = new System.Drawing.Size(96, 93);
-            this.axRanger1.TabIndex = 0;
             // 
             // label1
             // 
@@ -58,6 +49,15 @@ namespace RangerOCXWrapper
             this.label1.Text = "The only purpose of the RangerAXInteropBuilder project is so the AxInterop.Ranger" +
     "Lib.Dll will get a clean build";
             this.label1.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // axRanger1
+            // 
+            this.axRanger1.Enabled = true;
+            this.axRanger1.Location = new System.Drawing.Point(8, 48);
+            this.axRanger1.Name = "axRanger1";
+            this.axRanger1.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("axRanger1.OcxState")));
+            this.axRanger1.Size = new System.Drawing.Size(96, 93);
+            this.axRanger1.TabIndex = 0;
             // 
             // DummyUserControl
             // 

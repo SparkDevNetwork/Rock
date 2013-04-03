@@ -23,17 +23,5 @@ namespace Rock.DataFilters.UserLogin
     [ExportMetadata( "ComponentName", "Other UserLogin Data View Filter" )]
     public partial class UserLoginDataViewFilter : OtherDataViewFilter<Rock.Model.UserLogin>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.UserLogin"; }
-        }
-
     }
 }

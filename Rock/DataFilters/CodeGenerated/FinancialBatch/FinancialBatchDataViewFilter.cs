@@ -23,17 +23,5 @@ namespace Rock.DataFilters.FinancialBatch
     [ExportMetadata( "ComponentName", "Other FinancialBatch Data View Filter" )]
     public partial class FinancialBatchDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialBatch>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.FinancialBatch"; }
-        }
-
     }
 }

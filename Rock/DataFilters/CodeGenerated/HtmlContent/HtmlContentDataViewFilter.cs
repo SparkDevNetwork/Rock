@@ -23,17 +23,5 @@ namespace Rock.DataFilters.HtmlContent
     [ExportMetadata( "ComponentName", "Other HtmlContent Data View Filter" )]
     public partial class HtmlContentDataViewFilter : OtherDataViewFilter<Rock.Model.HtmlContent>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.HtmlContent"; }
-        }
-
     }
 }

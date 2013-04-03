@@ -23,17 +23,5 @@ namespace Rock.DataFilters.WorkflowLog
     [ExportMetadata( "ComponentName", "Other WorkflowLog Data View Filter" )]
     public partial class WorkflowLogDataViewFilter : OtherDataViewFilter<Rock.Model.WorkflowLog>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.WorkflowLog"; }
-        }
-
     }
 }

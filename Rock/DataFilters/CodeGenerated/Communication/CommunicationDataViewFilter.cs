@@ -23,17 +23,5 @@ namespace Rock.DataFilters.Communication
     [ExportMetadata( "ComponentName", "Other Communication Data View Filter" )]
     public partial class CommunicationDataViewFilter : OtherDataViewFilter<Rock.Model.Communication>
     {
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return "Rock.Model.Communication"; }
-        }
-
     }
 }
