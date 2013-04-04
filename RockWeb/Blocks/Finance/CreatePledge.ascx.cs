@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowView()
         {
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY_TYPE );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
 
             if ( CurrentPerson != null )
