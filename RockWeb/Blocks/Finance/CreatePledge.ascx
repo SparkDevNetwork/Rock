@@ -15,8 +15,8 @@
             <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
                 <p><strong>Hey!</strong> You currently have a pledge in the system. Do you want to replace it with this one?</p>
                 <div class="actions">
-                    <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn">Yes</asp:LinkButton>
-                    <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn">No</asp:LinkButton>
+                    <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success"><i class="icon-ok"></i> Yes</asp:LinkButton>
+                    <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn"><i class="icon-remove"></i> No</asp:LinkButton>
                 </div>
             </asp:Panel>
         </fieldset>
