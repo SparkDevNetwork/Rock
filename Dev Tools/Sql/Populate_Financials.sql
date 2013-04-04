@@ -19,6 +19,25 @@ end
 set @FundEntityTypeId = ( select Id from EntityType where Name = 'Rock.Model.Fund' )
 
 -- Defined Types & Defined Values
+if not exists ( select Id from DefinedType where [Guid] = '2E6540EA-63F0-40FE-BE50-F2A84735E600' )
+	insert into DefinedType ( IsSystem, FieldTypeId, [Order], Category, Name, [Description], [Guid] )
+	values ( 1, 1, 0, 'Person', 'Status', 'Status', '2E6540EA-63F0-40FE-BE50-F2A84735E600' )
+begin
+end
+set @TypeId = ( select Id from DefinedType were [Guid] = '2E6540EA-63F0-40FE-BE50-F2A84735E600'
+
+insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
+values ( 1, @TypeId, 0, 'Active', '', newid() )
+
+insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
+values ( 1, @TypeId, 0, 'Inactive', '', newid() )
+
+insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
+values ( 1, @TypeId, 0, 'Web Prospect', '', newid() )
+
+insert into DefinedValue ( IsSystem, DefinedTypeid, [Order], Name, [Description], [Guid] )
+values ( 1, @TypeId, 0, 'Unknown', '', newid() )
+
 if not exists ( select Id from DefinedType where [Guid] = '059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F' )
 begin
 	insert into DefinedType ( IsSystem, FieldTypeId, [Order], Category, Name, [Description], [Guid] )

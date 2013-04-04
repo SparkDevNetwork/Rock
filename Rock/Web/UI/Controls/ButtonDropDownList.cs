@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -18,11 +17,11 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl
     {
-        private HtmlGenericControl divControl;
-        private HtmlGenericControl btnSelect;
-        private HiddenField hfSelectedItemId;
-        private HiddenField hfSelectedItemText;
-        private HtmlGenericControl listControl;
+        private HtmlGenericControl _divControl;
+        private HtmlGenericControl _btnSelect;
+        private HiddenField _hfSelectedItemId;
+        private HiddenField _hfSelectedItemText;
+        private HtmlGenericControl _listControl;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -34,7 +33,7 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new string[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+                string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
 
                 if ( eventArgs.Length == 2 )
                 {
@@ -70,17 +69,20 @@ namespace Rock.Web.UI.Controls
                 postbackControlId = this.ID;
             }
 
-            string scriptFormat = @"
-$('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
-    {{
-        var text =  $(this).html();
-        var textHtml = $(this).html() + "" <span class='caret'></span>"";
-        var idvalue = $(this).attr('idvalue');
-        $('#ButtonDropDown_btn_{0}').html(textHtml);
-        $('#hfSelectedItemId_{0}').val(idvalue);
-        $('#hfSelectedItemText_{0}').val(text);
-        {1}
-    }}
+            // Caching $(this) into $el for efficiency purposes, and supressing the default
+            // <a> click event to prevent the browser from appending '#' to the URL and 
+            // causing the window to jump to the top of the.
+            const string scriptFormat = @"
+$('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
+    e.preventDefault();
+    var $el = $(this);
+    var text =  $el.html();
+    var textHtml = $el.html() + "" <span class='caret'></span>"";
+    var idvalue = $el.attr('data-id');
+    $('#ButtonDropDown_btn_{0}').html(textHtml);
+    $('#hfSelectedItemId_{0}').val(idvalue);
+    $('#hfSelectedItemText_{0}').val(text);
+    {1}
 }});";
 
             string postbackScript = string.Empty;
@@ -91,7 +93,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
 
             string script = string.Format( scriptFormat, this.ID, postbackScript );
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "buttondropdownlist-script-" + this.ID.ToString(), script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "buttondropdownlist-script-" + this.ID, script, true );
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         {
             get
             {
-                ListItem result = Items.FindByValue( hfSelectedItemId.Value );
+                ListItem result = Items.FindByValue( _hfSelectedItemId.Value );
                 return result;
             }
         }
@@ -115,12 +117,12 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         {
             get
             {
-                return hfSelectedItemId.Value;
+                return _hfSelectedItemId.Value;
             }
 
             set
             {
-                hfSelectedItemId.Value = value;
+                _hfSelectedItemId.Value = value;
                 base.SelectedValue = value;
             }
         }
@@ -146,33 +148,33 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
 
             Controls.Clear();
 
-            divControl = new HtmlGenericControl( "div" );
-            divControl.Attributes["class"] = "btn-group";
-            divControl.ClientIDMode = ClientIDMode.Static;
-            divControl.ID = string.Format( "ButtonDropDown_{0}", this.ID );
+            _divControl = new HtmlGenericControl( "div" );
+            _divControl.Attributes["class"] = "btn-group";
+            _divControl.ClientIDMode = ClientIDMode.Static;
+            _divControl.ID = string.Format( "ButtonDropDown_{0}", this.ID );
 
-            hfSelectedItemId = new HiddenField();
-            hfSelectedItemId.ClientIDMode = ClientIDMode.Static;
-            hfSelectedItemId.ID = string.Format( "hfSelectedItemId_{0}", this.ID );
+            _hfSelectedItemId = new HiddenField();
+            _hfSelectedItemId.ClientIDMode = ClientIDMode.Static;
+            _hfSelectedItemId.ID = string.Format( "hfSelectedItemId_{0}", this.ID );
 
-            hfSelectedItemText = new HiddenField();
-            hfSelectedItemText.ClientIDMode = ClientIDMode.Static;
-            hfSelectedItemText.ID = string.Format( "hfSelectedItemText_{0}", this.ID );
+            _hfSelectedItemText = new HiddenField();
+            _hfSelectedItemText.ClientIDMode = ClientIDMode.Static;
+            _hfSelectedItemText.ID = string.Format( "hfSelectedItemText_{0}", this.ID );
 
-            btnSelect = new HtmlGenericControl( "button" );
-            btnSelect.ClientIDMode = ClientIDMode.Static;
-            btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
-            btnSelect.Attributes["class"] = "btn dropdown-toggle";
-            btnSelect.Attributes["data-toggle"] = "dropdown";
+            _btnSelect = new HtmlGenericControl( "button" );
+            _btnSelect.ClientIDMode = ClientIDMode.Static;
+            _btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
+            _btnSelect.Attributes["class"] = "btn dropdown-toggle";
+            _btnSelect.Attributes["data-toggle"] = "dropdown";
 
-            divControl.Controls.Add( btnSelect );
+            _divControl.Controls.Add( _btnSelect );
 
-            listControl = new HtmlGenericControl( "ul" );
-            listControl.Attributes["class"] = "dropdown-menu";
+            _listControl = new HtmlGenericControl( "ul" );
+            _listControl.Attributes["class"] = "dropdown-menu";
 
-            Controls.Add( divControl );
-            Controls.Add( hfSelectedItemId );
-            Controls.Add( hfSelectedItemText );
+            Controls.Add( _divControl );
+            Controls.Add( _hfSelectedItemId );
+            Controls.Add( _hfSelectedItemText );
         }
 
         /// <summary>
@@ -183,20 +185,20 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function () {{
         {
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
-                string controlHtmlFormat = "<li><a href='#' idvalue='{0}'>{1}</a></li>";
-                listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
+                string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
+                _listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
             }
 
-            divControl.Controls.Add( listControl );
+            _divControl.Controls.Add( _listControl );
 
             string selectedText = SelectedItem != null ? SelectedItem.Text : string.Empty;
-            btnSelect.Controls.Clear();
-            btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
+            _btnSelect.Controls.Clear();
+            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
-            divControl.RenderControl( writer );
+            _divControl.RenderControl( writer );
 
-            hfSelectedItemId.RenderControl( writer );
-            hfSelectedItemText.RenderControl( writer );
+            _hfSelectedItemId.RenderControl( writer );
+            _hfSelectedItemText.RenderControl( writer );
         }
 
         /// <summary>
