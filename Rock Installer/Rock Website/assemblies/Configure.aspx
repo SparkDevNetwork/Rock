@@ -24,7 +24,7 @@
     void AdminNext_Click(Object sender, EventArgs e)
     {
     	// update the admin password
-    	var service = new Rock.Cms.UserService();
+    	var service = new Rock.Model.UserLoginService();
 		var user = service.GetByUserName( "Admin" );
 		if ( user != null )
 		{
@@ -89,7 +89,7 @@
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>
-		<scripts 
+
 		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
 		<link href="http://www.rockchms.com/installer/css/bootstrap.min.css" rel="stylesheet">
 		<link href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css" rel="stylesheet">
