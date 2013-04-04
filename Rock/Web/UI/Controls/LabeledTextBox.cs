@@ -245,6 +245,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            label.Visible = this.Visible;
             label.RenderControl( writer );
             helpBlock.RenderControl( writer );
 

@@ -19,16 +19,15 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    /// 
-    /// TODO: Create a fund list field attribute
+    // TODO: Create a fund list field attribute
     [CustomDropdownListField( "Fund", "The fund that new pledges will be allocated toward.",
         listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [Fund] WHERE [IsPledgable] = 1 ORDER BY [Order]",
-        key: "DefaultFund", required: true )]
-    [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge" )]
-    [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage" )]
-    [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate" )]
-    [DateField( "End Date", "Date all pledges will end.", key: "DefaultEndDate" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_STATUS, "New User Status", "Person status to assign to a new user.", key: "DefaultPersonStatus" )]
+        key: "DefaultFund", required: true, order: 0 )]
+    [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge", order: 1 )]
+    [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage", order: 2 )]
+    [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate", order: 3 )]
+    [DateField( "End Date", "Date all pledges will end.", key: "DefaultEndDate", order: 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_STATUS, "New User Status", "Person status to assign to a new user.", key: "DefaultPersonStatus", order: 5 )]
     public partial class CreatePledge : RockBlock
     {
         /// <summary>
@@ -41,8 +40,9 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
+                Session.Remove( "CachedPledge" );
                 lLegendText.Text = GetAttributeValue( "LegendText" );
-                ShowView();
+                ShowForm();
             }
         }
 
@@ -59,41 +59,53 @@ namespace RockWeb.Blocks.Finance
                 RockTransactionScope.WrapTransaction( () =>
                     {
                         var pledgeService = new PledgeService();
+                        var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
                         var person = FindPerson();
-                        var pledge = FindAndUpdatePledge( person );
+                        var pledge = FindAndUpdatePledge( person, defaultFundId );
 
                         // Does this person already have a pledge for this fund?
-                        // If so, give them the option to create a new one?s
-                        if ( pledge.Id != 0 )
+                        // If so, give them the option to create a new one?
+                        if ( person.Pledges.Any( p => p.FundId == defaultFundId ) )
                         {
-                            // Show UI control for creating a pledge...
-                            // Consider caching newly created pledge and/or person?
                             pnlConfirm.Visible = true;
-                            //AddCacheItem( "CachedPledge", pledge );
+                            Session.Add( "CachedPledge", pledge );
                             return;
                         }
 
                         if ( pledge.IsValid )
                         {
-                            if ( pledge.Id == 0 )
-                            {
-                                pledgeService.Add( pledge, person.Id );
-                            }
-
+                            pledgeService.Add( pledge, person.Id );
                             pledgeService.Save( pledge, person.Id );
-                            //FlushCacheItem( "CachedPledge" );
+                            // TODO: Queue up email copy of receipt to send to user
+                            ShowReceipt();
                         }
                     });
             }
+        }
 
-            // Redirect to linked page?
-            NavigateToPage( new Guid( GetAttributeValue( "GivingPage" ) ), null );
+        protected void btnConfirmYes_Click( object sender, EventArgs e )
+        {
+            var pledge = Session["CachedPledge"] as Pledge;
+            
+            if ( pledge != null && pledge.IsValid )
+            {
+                var pledgeService = new PledgeService();
+                pledgeService.Add( pledge, CurrentPersonId );
+                pledgeService.Save( pledge, CurrentPersonId );
+                Session.Remove( "CachedPledge" );
+                ShowReceipt();
+            }
+        }
+
+        protected void btnConfirmNo_Click( object sender, EventArgs e )
+        {
+            pnlConfirm.Visible = false;
         }
 
         /// <summary>
         /// Shows the view.
         /// </summary>
-        private void ShowView()
+        private void ShowForm()
         {
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY_TYPE );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
@@ -105,12 +117,32 @@ namespace RockWeb.Blocks.Finance
                 tbEmail.Text = CurrentPerson.Email;
             }
 
-            var pledge = GetCacheItem( "CachedPledge" );
+            var start = GetAttributeValue( "DefaultStartDate" );
+            var end = GetAttributeValue( "DefaultEndDate" );
 
-            if ( pledge == null )
+            if ( string.IsNullOrWhiteSpace( start ) )
             {
-                pnlConfirm.Visible = false;
+                dtpStartDate.Visible = true;
             }
+
+            if ( string.IsNullOrWhiteSpace( end ) )
+            {
+                dtpEndDate.Visible = true;
+            }
+
+            var pledge = Session["CachedPledge"] as Pledge;
+
+            if ( pledge != null )
+            {
+                pnlConfirm.Visible = true;
+            }
+        }
+
+        private void ShowReceipt()
+        {
+            pnlForm.Visible = false;
+            pnlReceipt.Visible = true;
+            btnGivingProfile.NavigateUrl = string.Format( "~/Page/{0}", GetAttributeValue( "GivingPage" ) );
         }
 
         /// <summary>
@@ -154,25 +186,12 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Finds the pledge.
         /// </summary>
-        /// <param name="person">The person.</param>
+        /// <param name="person">The Person.</param>
+        /// <param name="fundId">The Fund Id</param>
         /// <returns></returns>
-        private Pledge FindAndUpdatePledge( Person person )
+        private Pledge FindAndUpdatePledge( Person person, int fundId )
         {
-            var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
-
-            // First check cache to see if this is coming back from confirmation step...
-            //var pledge = ( GetCacheItem( "CachedPledge" ) as Pledge 
-            // If not, check database for an existing pledge...
-            //    ?? person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId ) ) 
-            // Else, create a new pledge.
-            //    ?? new Pledge();
-
-            var pledge = GetCacheItem( "CachedPledge" ) as Pledge;
-
-            if ( pledge == null )
-            {
-                pledge = person.Pledges.FirstOrDefault( p => p.FundId == defaultFundId );
-            }
+            var pledge = Session["CachedPledge"] as Pledge;
 
             if ( pledge == null )
             {
@@ -180,10 +199,16 @@ namespace RockWeb.Blocks.Finance
             }
 
             pledge.PersonId = person.Id;
-            pledge.FundId = defaultFundId;
+            pledge.FundId = fundId;
             pledge.Amount = decimal.Parse( tbAmount.Text );
-            pledge.StartDate = DateTime.Parse( GetAttributeValue( "DefaultStartDate" ) );
-            pledge.EndDate = DateTime.Parse( GetAttributeValue( "DefaultEndDate" ) );
+
+            var startSetting = GetAttributeValue( "DefaultStartDate" );
+            var startDate = !string.IsNullOrWhiteSpace( startSetting ) ? DateTime.Parse( startSetting ) : DateTime.Parse( dtpStartDate.Text );
+            var endSetting = GetAttributeValue( "DefaultEndDate" );
+            var endDate = !string.IsNullOrWhiteSpace( endSetting ) ? DateTime.Parse( endSetting ) : DateTime.Parse( dtpEndDate.Text );
+            pledge.StartDate = startDate;
+            pledge.EndDate = endDate;
+
             pledge.FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue );
             pledge.FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text );
             return pledge;
