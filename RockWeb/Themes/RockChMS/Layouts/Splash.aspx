@@ -1,7 +1,7 @@
 ﻿<%@ Page ValidateRequest="false" Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <!DOCTYPE html> 
 <html>
-<head id="Head1" runat="server">
+<head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8">
     <title></title>
@@ -16,7 +16,6 @@
     <!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Css/rock-core.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
