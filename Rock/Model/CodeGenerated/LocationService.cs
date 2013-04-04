@@ -84,6 +84,7 @@ namespace Rock.Model
                 target.LocationPoint = source.LocationPoint;
                 target.Perimeter = source.Perimeter;
                 target.LocationTypeValueId = source.LocationTypeValueId;
+                target.IsLocation = source.IsLocation;
                 target.Street1 = source.Street1;
                 target.Street2 = source.Street2;
                 target.City = source.City;

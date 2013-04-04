@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Prayer
             // Block Security and special attributes (RockPage takes care of "View")
             canApprove = IsUserAuthorized( "Approve" );
             canAddEditDelete = IsUserAuthorized( "Edit" );
-            gPrayerRequests.Actions.IsAddEnabled = canAddEditDelete;
+            gPrayerRequests.Actions.ShowAdd = canAddEditDelete;
             gPrayerRequests.IsDeleteEnabled = canAddEditDelete;
         }
 

@@ -23,6 +23,8 @@
 @import "./rock-bootstrap-variables.less";
 @import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
 @import "../../../Css/rock-core.less";
+@import "../../../Css/grid.less";
+
 
 //
 // 1. Bootstrap Overides
@@ -241,9 +243,7 @@ body {
 	color: #fff;
 }
 
-/* Treeviews 
-   
-*/
+/* Treeviews */
 
 .tree-view {
 	margin-bottom: 20px;
@@ -290,6 +290,36 @@ body {
   color: white;
   background: #898a8a;
   background-image: none;
+}
+
+/* breadcrumbs */
+.breadcrumb {
+	background-color: transparent;
+	margin: 20px 0 20px;
+	padding: 0;
+}
+
+.breadcrumb a:hover {
+	text-decoration: none;
+}
+
+.breadcrumb i[class^="icon-"] {
+	margin-right: 6px;
+}
+
+.pageoverview {
+	margin-bottom: 24px;
+}
+
+.pageoverview-icon {
+	float: left;
+}
+
+.pageoverview-description {
+	vertical-align: top;
+	margin-left: 18px;
+	margin-top: 6px;
+	float: left;
 }
 
 //

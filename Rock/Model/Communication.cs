@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -36,24 +36,52 @@ namespace Rock.Model
         public int? SenderPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is temporary.
+        /// A communication is considered temporary when it has been created by
+        /// the system (i.e. Data Grid), but not yet edited by a user.  Temporary
+        /// communications more than a few hours old will potentially get 
+        /// deleted by a cleanup job
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is temporary; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsTemporary { get; set; }
+
+        /// <summary>
         /// Gets or sets the subject.
         /// </summary>
         /// <value>
         /// The subject.
         /// </value>
-        [Required]
         [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the content.
+        /// Gets or sets any additional merge fields.  
         /// </summary>
         /// <value>
-        /// The content.
+        /// The additional merge fields.
         /// </value>
-        [DataMember]
-        public string Content { get; set; }
+        public string AdditionalMergeFieldsJson 
+        {
+            get
+            {
+                return AdditionalMergeFields.ToJson();
+            }
+
+            set
+            {
+                if ( string.IsNullOrWhiteSpace( value ) )
+                {
+                    AdditionalMergeFields = new List<string>();
+                }
+                else
+                {
+                    AdditionalMergeFields = JsonConvert.DeserializeObject<List<string>>( value );
+                }
+            }
+        }
 
         #endregion
 
@@ -81,6 +109,22 @@ namespace Rock.Model
             set { _recipients = value; }
         }
         private ICollection<CommunicationRecipient> _recipients;
+
+        /// <summary>
+        /// Gets or sets the additional merge field list. When a communication is created
+        /// from a grid, the grid may add additional merge fields that will be available
+        /// for the communication.
+        /// </summary>
+        /// <value>
+        /// The additional merge field list.
+        /// </value>
+        [DataMember]
+        public virtual List<string> AdditionalMergeFields
+        {
+            get { return _additionalMergeFields; }
+            set { _additionalMergeFields = value; }
+        }
+        private List<string> _additionalMergeFields = new List<string>();
 
         #endregion
 

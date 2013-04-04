@@ -13,7 +13,7 @@
 
             </Rock:GridFilter>
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" OnRowSelected="gPrayerComments_Edit" ShowActionExcelExport="false">
+            <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" OnRowSelected="gPrayerComments_Edit" ExcelExportEnabled="false">
                 <Columns>
                     <Rock:DateField DataField="Date" HeaderText="Date" SortExpression="Date"/>
                     <asp:BoundField DataField="Caption" HeaderText="From" SortExpression="Text" />

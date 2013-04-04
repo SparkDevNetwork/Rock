@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gBinaryFileAttributes.DataKeyNames = new string[] { "Guid" };
-            gBinaryFileAttributes.Actions.IsAddEnabled = true;
+            gBinaryFileAttributes.Actions.ShowAdd = true;
             gBinaryFileAttributes.Actions.AddClick += gBinaryFileAttributes_Add;
             gBinaryFileAttributes.GridRebind += gBinaryFileAttributes_GridRebind;
             gBinaryFileAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Administration
                 edtBinaryFileAttributes.ActionTitle = ActionTitle.Edit( "attribute for binary files of type " + tbName.Text );
             }
 
-            edtBinaryFileAttributes.SetAttributeProperties( attribute);
+            edtBinaryFileAttributes.SetAttributeProperties( attribute, typeof( BinaryFile ) );
         }
 
         /// <summary>

@@ -43,64 +43,41 @@ namespace Rock
                 } );
         }
 
-        ///// <summary>
-        ///// Converts object to JSON string
-        ///// </summary>
-        ///// <param name="obj">Object.</param>
-        ///// <param name="recursionDepth">constrains the number of object levels to process.</param>
-        ///// <returns></returns>
-        //public static string ToJSON( this object obj, int recursionDepth )
-        //{
-        //    return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
-        //}
 
-        ///// <summary>
-        ///// Creates a copy of the object's property as a DynamicObject.
-        ///// </summary>
-        ///// <param name="obj">The object to copy.</param>
-        ///// <returns></returns>
-        //public static ExpandoObject ToDynamic( this object obj )
-        //{
-        //    dynamic expando = new ExpandoObject();
-        //    var dict = expando as IDictionary<string, object>;
-        //    var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+        /// <summary>
+        /// Gets the property value.
+        /// </summary>
+        /// <param name="rootObj">The root obj.</param>
+        /// <param name="propertyNamePath">The property path name (i.e. FirstName, Owner.FirstName, etc).</param>
+        /// <returns></returns>
+        public static object GetPropertyValue( this object rootObj, string propertyPathName )
+        {
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
-        //    foreach ( var prop in properties )
-        //    {
-        //        dict[prop.Name] = prop.GetValue( obj, null );
-        //    }
+            object obj = rootObj;
+            Type objType = rootObj.GetType();
 
-        //    return expando;
-        //}
+            while ( propPath.Any() && obj != null )
+            {
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
+                {
+                    obj = property.GetValue( obj );
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
+                }
+                else
+                {
+                    obj = null;
+                }
+            }
 
-        ///// <summary>
-        ///// Creates an instance of a model and populates it based on the dynamic object's properties.
-        ///// </summary>
-        ///// <typeparam name="T">The destination model type</typeparam>
-        ///// <param name="obj">The dynamic object to convert</param>
-        ///// <returns>A populated instance of the model defined in the type arg</returns>
-        //public static T ToModel<T>( this object obj )
-        //{
-        //    var o = obj as ExpandoObject;
-        //    var instance = Activator.CreateInstance<T>();
+            return obj;
+        }
 
-        //    if ( o == null )
-        //    {
-        //        return instance;
-        //    }
+        #endregion
 
-        //    var dict = o as IDictionary<string, object>;
-        //    var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
-        //        .Where( prop => dict.ContainsKey( prop.Name ) );
-
-        //    foreach ( var prop in properties )
-        //    {
-        //        try { prop.SetValue( instance, dict[ prop.Name ] ); }
-        //        catch ( Exception ) { }
-        //    }
-
-        //    return instance;
-        //}
+        #region Type Extensions
 
         /// <summary>
         /// Gets the name of the friendly type.

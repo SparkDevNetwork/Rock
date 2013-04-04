@@ -85,12 +85,12 @@ namespace Rock.Data
         /// The context key.
         /// </value>
         [NotMapped]
-        public string ContextKey
+        public virtual string ContextKey
         {
             get
             {
                 string identifier =
-                    typeof( T ).FullName + "|" +
+                    TypeName + "|" +
                     this.Id.ToString() + ">" +
                     this.Guid.ToString();
                 return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );

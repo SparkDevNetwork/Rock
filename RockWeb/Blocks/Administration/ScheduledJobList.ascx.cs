@@ -30,13 +30,13 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             gScheduledJobs.DataKeyNames = new string[] { "id" };
-            gScheduledJobs.Actions.IsAddEnabled = true;
+            gScheduledJobs.Actions.ShowAdd = true;
             gScheduledJobs.Actions.AddClick += gScheduledJobs_Add;
             gScheduledJobs.GridRebind += gScheduledJobs_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gScheduledJobs.Actions.IsAddEnabled = canAddEditDelete;
+            gScheduledJobs.Actions.ShowAdd = canAddEditDelete;
             gScheduledJobs.IsDeleteEnabled = canAddEditDelete;
 
             base.OnInit( e );

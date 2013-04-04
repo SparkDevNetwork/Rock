@@ -19,6 +19,8 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
+    /// 
+    /// TODO: Create a fund list field attribute
     [CustomDropdownListField( "Fund", "The fund that new pledges will be allocated toward.",
         listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [Fund] WHERE [IsPledgable] = 1 ORDER BY [Order]",
         key: "DefaultFund", required: true )]

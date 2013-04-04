@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             btnSecurity.Visible = category.IsAuthorized( "Administrate", CurrentPerson );
-            btnSecurity.Title = "Secure " + category.Name;
+            btnSecurity.Title = category.Name;
             btnSecurity.EntityId = category.Id;
 
             if ( readOnly )

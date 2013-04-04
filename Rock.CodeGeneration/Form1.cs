@@ -465,24 +465,11 @@ order by [parentTable]
         /// <param name="type"></param>
         private void WriteDataViewFiles( string rootFolder, Type type )
         {
-            foreach ( var property in type.GetProperties())
-            {
-                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
-                {
-                    if ( property.PropertyType == typeof( string ) )
-                    {
-                        WriteDataViewTextProperty( rootFolder, type, property );
-                    }
-
-                    if ( property.PropertyType.IsEnum )
-                    {
-                        WriteDataViewEnumProperty( rootFolder, type, property );
-                    }
-                }
-            }
+            WritePropertyFilter( rootFolder, type );
+            WriteOtherDataViewFilter( rootFolder, type );
         }
 
-        private void WriteDataViewTextProperty( string rootFolder, Type type, PropertyInfo property )
+        private void WritePropertyFilter( string rootFolder, Type type )
         {
             {
                 StringBuilder sb = new StringBuilder();
@@ -504,46 +491,23 @@ using System.ComponentModel.Composition;
 namespace Rock.DataFilters.{0}
 {{
     /// <summary>
-    /// {0} {4} Filter
+    /// {0} Property Filter
     /// </summary>
-    [Description( ""Filter {2} on {4}"" )]
+    [Description( ""Filter {2} based on any {0} property or attribute value"" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( ""ComponentName"", ""{0} {4} Filter"" )]
-    public partial class {3}Filter : TextPropertyFilter
+    [ExportMetadata( ""ComponentName"", ""{0} Property Filter"" )]
+    public partial class {0}PropertyFilter : PropertyFilter<{1}>
     {{
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {{
-            get {{ return ""{1}""; }}
-        }}
-
-        /// <summary>
-        /// Gets the name of the column.
-        /// </summary>
-        /// <value>
-        /// The name of the column.
-        /// </value>
-        public override string PropertyName
-        {{
-            get {{ return ""{3}""; }}
-        }}
-
     }}
 }}
-", type.Name, type.FullName, type.Name.SplitCase().Pluralize(), property.Name, property.Name.SplitCase() );
+", type.Name, type.FullName, type.Name.SplitCase().Pluralize() );
 
-                var file = new FileInfo( Path.Combine( rootFolder, "DataFilters\\CodeGenerated", type.Name, property.Name + "Filter.cs" ) );
+                var file = new FileInfo( Path.Combine( rootFolder, "DataFilters\\CodeGenerated", type.Name, type.Name + "PropertyFilter.cs" ) );
                 WriteFile( file, sb );
             }
         }
 
-        private void WriteDataViewEnumProperty( string rootFolder, Type type, PropertyInfo property )
+        private void WriteOtherDataViewFilter( string rootFolder, Type type )
         {
             {
                 StringBuilder sb = new StringBuilder();
@@ -562,45 +526,21 @@ namespace Rock.DataFilters.{0}
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-using Rock.Model;
-
 namespace Rock.DataFilters.{0}
 {{
     /// <summary>
-    /// {0} {4} Filter
+    /// Other {0} Data View Filter
     /// </summary>
-    [Description(""Filter {2} on {4}"")]
+    [Description( ""Filter {2} using other data view"" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( ""ComponentName"", ""{0} {4} Filter"" )]
-    public partial class {3}Filter : EnumPropertyFilter<{5}>
+    [ExportMetadata( ""ComponentName"", ""Other {0} Data View Filter"" )]
+    public partial class {0}DataViewFilter : OtherDataViewFilter<{1}>
     {{
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {{
-            get {{ return ""{1}""; }}
-        }}
-
-        /// <summary>
-        /// Gets the name of the property.
-        /// </summary>
-        /// <value>
-        /// The name of the property.
-        /// </value>
-        public override string PropertyName
-        {{
-            get {{ return ""{3}""; }}
-        }}
-         
     }}
-}}", type.Name, type.FullName, type.Name.SplitCase().Pluralize(), property.Name, property.Name.SplitCase(), property.PropertyType.Name );
+}}
+", type.Name, type.FullName, type.Name.SplitCase().Pluralize() );
 
-                var file = new FileInfo( Path.Combine( rootFolder, "DataFilters\\CodeGenerated", type.Name, property.Name + "Filter.cs" ) );
+                var file = new FileInfo( Path.Combine( rootFolder, "DataFilters\\CodeGenerated", type.Name, type.Name + "DataViewFilter.cs" ) );
                 WriteFile( file, sb );
             }
         }

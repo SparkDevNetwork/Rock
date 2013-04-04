@@ -45,13 +45,13 @@ namespace RockWeb.Blocks.Administration
                 if ( _canConfigure )
                 {
                     rGridMetric.DataKeyNames = new string[] { "id" };
-                    rGridMetric.Actions.IsAddEnabled = true;
+                    rGridMetric.Actions.ShowAdd = true;
 
                     rGridMetric.Actions.AddClick += rGridMetric_Add;
                     rGridMetric.GridRebind += rGridMetric_GridRebind;
 
                     rGridValue.DataKeyNames = new string[] { "id" };
-                    rGridValue.Actions.IsAddEnabled = true;
+                    rGridValue.Actions.ShowAdd = true;
 
                     rGridValue.Actions.AddClick += rGridValue_Add;
                     rGridValue.GridRebind += rGridValue_GridRebind;
