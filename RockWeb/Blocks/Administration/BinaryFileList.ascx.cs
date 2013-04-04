@@ -46,14 +46,14 @@ namespace RockWeb.Blocks.Administration
             fBinaryFile.ApplyFilterClick += fBinaryFile_ApplyFilterClick;
             
             gBinaryFile.DataKeyNames = new string[] { "id" };
-            gBinaryFile.Actions.IsAddEnabled = true;
+            gBinaryFile.Actions.ShowAdd = true;
             gBinaryFile.Actions.AddClick += gBinaryFile_Add;
             gBinaryFile.GridRebind += gBinaryFile_GridRebind;
             gBinaryFile.RowItemText = binaryFileType != null ? binaryFileType.Name : "Binary File";
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gBinaryFile.Actions.IsAddEnabled = canAddEditDelete;
+            gBinaryFile.Actions.ShowAdd = canAddEditDelete;
             gBinaryFile.IsDeleteEnabled = canAddEditDelete;
         }
 

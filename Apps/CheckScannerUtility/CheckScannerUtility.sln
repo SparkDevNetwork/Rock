@@ -5,7 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\..\Rock\Rock.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "..\..\Quartz\Quartz.csproj", "{AEF8823B-E45B-4B35-A4D0-C08C1196D017}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckScannerUtilityWPF", "CheckScannerUtilityWPF\CheckScannerUtilityWPF.csproj", "{41D111D0-0579-45FF-9EC5-BEE6736C81D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckScannerUtility", "CheckScannerUtility\CheckScannerUtility.csproj", "{41D111D0-0579-45FF-9EC5-BEE6736C81D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AXInteropBuilder", "AXInteropBuilder\AXInteropBuilder.csproj", "{ECCFB547-327B-42DC-9891-745DE7A52923}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

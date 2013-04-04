@@ -24,8 +24,8 @@ namespace Rock.Web.UI.Controls
 
                 if ( pageCache.PageDisplayDescription && !string.IsNullOrWhiteSpace( pageCache.Description ) )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "page-description" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "pageoverview-description" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.Write( pageCache.Description );
                     writer.RenderEndTag();
                 }

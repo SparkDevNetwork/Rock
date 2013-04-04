@@ -41,9 +41,7 @@ namespace RockWeb.Blocks.Administration
 
             // Block Security on Ads grid (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gMarketingCampaignAds.Actions.IsAddEnabled = canAddEditDelete;
-            gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
-            gMarketingCampaignAds.Actions.IsAddEnabled = canAddEditDelete;
+            gMarketingCampaignAds.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
         }
 

@@ -26,8 +26,17 @@ if ( window.parent.closeModal != null)
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
+            string validationScript = string.Format( "<script src=\"{0}\"></script>", ResolveUrl( "~/Scripts/Rock/validation.js" ) );
+            System.Web.UI.ScriptManager.RegisterStartupScript( Page, Page.GetType(), "validationScript", validationScript, false );
+
             lTitle.Text = Request.QueryString["t"] ?? "Title";
 
             btnSave.Text = Request.QueryString["pb"] ?? "Save";

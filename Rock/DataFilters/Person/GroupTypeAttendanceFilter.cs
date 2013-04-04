@@ -12,6 +12,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters.Person
 {
@@ -108,7 +109,7 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls()
+        public override Control[] CreateChildControls( FilterField filterControl )
         {
             DropDownList ddlGroupType = new DropDownList();
             foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
@@ -132,7 +133,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             controls[0].RenderControl( writer );
             writer.WriteBreak();

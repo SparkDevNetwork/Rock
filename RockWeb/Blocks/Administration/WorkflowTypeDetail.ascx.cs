@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Administration
 
             // assign attributes grid actions
             gWorkflowTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gWorkflowTypeAttributes.Actions.IsAddEnabled = true;
+            gWorkflowTypeAttributes.Actions.ShowAdd = true;
             gWorkflowTypeAttributes.Actions.AddClick += gWorkflowTypeAttributes_Add;
             gWorkflowTypeAttributes.GridRebind += gWorkflowTypeAttributes_GridRebind;
         }
@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( attribute.Id.Equals( 0 ) )
                 {
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new Workflow().TypeName ).Id;
+                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Workflow ) ).Id;
                     attribute.EntityTypeQualifierColumn = "WorkflowTypeId";
                     attribute.EntityTypeQualifierValue = hfWorkflowTypeId.Value;
                     attributeService.Add( attribute, CurrentPersonId );

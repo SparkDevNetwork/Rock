@@ -33,13 +33,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gWorkflowTrigger.DataKeyNames = new string[] { "id" };
-            gWorkflowTrigger.Actions.IsAddEnabled = true;
+            gWorkflowTrigger.Actions.ShowAdd = true;
             gWorkflowTrigger.Actions.AddClick += gWorkflowTrigger_Add;
             gWorkflowTrigger.GridRebind += gWorkflowTrigger_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gWorkflowTrigger.Actions.IsAddEnabled = canAddEditDelete;
+            gWorkflowTrigger.Actions.ShowAdd = canAddEditDelete;
             gWorkflowTrigger.IsDeleteEnabled = canAddEditDelete;
         }
 

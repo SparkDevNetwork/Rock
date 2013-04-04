@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             gMarketingCampaignAdAttributeTypes.DataKeyNames = new string[] { "Guid" };
-            gMarketingCampaignAdAttributeTypes.Actions.IsAddEnabled = true;
+            gMarketingCampaignAdAttributeTypes.Actions.ShowAdd = true;
             gMarketingCampaignAdAttributeTypes.Actions.AddClick += gMarketingCampaignAdAttributeType_Add;
             gMarketingCampaignAdAttributeTypes.GridRebind += gMarketingCampaignAdAttributeType_GridRebind;
             gMarketingCampaignAdAttributeTypes.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Administration
                 edtAdTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
             }
 
-            edtAdTypeAttributes.SetAttributeProperties( attribute );
+            edtAdTypeAttributes.SetAttributeProperties( attribute, typeof( MarketingCampaignAd ) );
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace RockWeb.Blocks.Administration
 
                         attribute.EntityTypeQualifierColumn = "MarketingCampaignAdTypeId";
                         attribute.EntityTypeQualifierValue = marketingCampaignAdType.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new MarketingCampaignAd().TypeName ).Id;
+                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof(MarketingCampaignAd) ).Id;
                         Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Save( attribute, CurrentPersonId );
                     }

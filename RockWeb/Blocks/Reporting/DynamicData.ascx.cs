@@ -35,6 +35,8 @@ namespace RockWeb.Blocks.Reporting
     [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)")]
     [TextField( "Columns", "The columns to hide or show", false )]
     [TextField( "Xslt File Path", "The Xslt file path relative to the current theme's Assets/Xslt folder (if query returns xml that should be transformed)", false)]
+    [BooleanField( "Person Report", "Is this report a list of people.?" )]
+    [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false )]
     public partial class DynamicData : RockBlock
     { 
         #region Control Methods
@@ -79,12 +81,6 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                lDesc.Visible = updatePage;
-                if ( updatePage )
-                {
-                    lDesc.Text = CurrentPage.Description;
-                }
-
                 if ( allowEdit )
                 {
                     tbName.Visible = updatePage;
@@ -101,6 +97,8 @@ namespace RockWeb.Blocks.Reporting
                     ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns");
                     tbColumns.Text = GetAttributeValue( "Columns" );
                     tbXslt.Text = GetAttributeValue( "XsltFilePath" );
+                    cbPersonReport.Checked = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
+                    tbMergeFields.Text = GetAttributeValue( "MergeFields" );
                 }
 
                 BindGrid();
@@ -141,8 +139,6 @@ namespace RockWeb.Blocks.Reporting
                 CurrentPage.Title = page.Title;
                 CurrentPage.Description = page.Description;
 
-                lDesc.Text = page.Description;
-
                 Page.Title = page.Title;
             }
 
@@ -152,6 +148,8 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "Columns", tbColumns.Text );
             SetAttributeValue( "ShowColumns", ddlHideShow.SelectedValue );
             SetAttributeValue( "XsltFilePath", tbXslt.Text );
+            SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString());
+            SetAttributeValue( "MergeFields", tbMergeFields.Text );
             SaveAttributeValues( CurrentPersonId );
 
             BindGrid();
@@ -166,6 +164,8 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
+            gReport.IsPersonList = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
+            gReport.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
             gReport.Visible = true;
             nbError.Visible = false;
 

@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gGroupMemberAttributes.DataKeyNames = new string[] { "Guid" };
-            gGroupMemberAttributes.Actions.IsAddEnabled = true;
+            gGroupMemberAttributes.Actions.ShowAdd = true;
             gGroupMemberAttributes.Actions.AddClick += gGroupMemberAttributes_Add;
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
@@ -361,7 +361,7 @@ namespace RockWeb.Blocks.Crm
 
                         attribute.EntityTypeQualifierColumn = "GroupId";
                         attribute.EntityTypeQualifierValue = group.Id.ToString();
-                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new GroupMember().TypeName ).Id;
+                        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupMember ) ).Id;
                         Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                         attributeService.Save( attribute, CurrentPersonId );
                     }
@@ -746,7 +746,7 @@ namespace RockWeb.Blocks.Crm
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
 
-            edtGroupMemberAttributes.SetAttributeProperties( attribute );
+            edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
         }
 
         /// <summary>

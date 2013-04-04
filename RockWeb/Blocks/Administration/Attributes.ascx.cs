@@ -1,9 +1,8 @@
-﻿ //
+﻿//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Linq;
 using System.Web.UI;
@@ -95,7 +94,7 @@ namespace RockWeb.Blocks.Administration
             if ( _canConfigure )
             {
                 rGrid.DataKeyNames = new string[] { "id" };
-                rGrid.Actions.IsAddEnabled = true;
+                rGrid.Actions.ShowAdd = true;
 
                 rGrid.Actions.AddClick += rGrid_Add;
                 rGrid.GridRebind += rGrid_GridRebind;
@@ -454,7 +453,12 @@ namespace RockWeb.Blocks.Administration
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
             }
 
-            edtAttribute.SetAttributeProperties( attributeModel );
+            Type type = null;
+            if ( _entityTypeId.HasValue )
+            {
+                type = EntityTypeCache.Read( _entityTypeId.Value ).GetEntityType();
+            }
+            edtAttribute.SetAttributeProperties( attributeModel, type  );
 
             pnlList.Visible = false;
             pnlDetails.Visible = true;

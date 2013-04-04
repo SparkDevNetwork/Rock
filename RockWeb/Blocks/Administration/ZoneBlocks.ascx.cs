@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Administration
             if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
-                gLayoutBlocks.Actions.IsAddEnabled = true;
+                gLayoutBlocks.Actions.ShowAdd = true;
                 gLayoutBlocks.Actions.AddClick += LayoutBlocks_Add;
                 gLayoutBlocks.GridReorder += gLayoutBlocks_GridReorder;
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
             if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
-                gPageBlocks.Actions.IsAddEnabled = true;
+                gPageBlocks.Actions.ShowAdd = true;
                 gPageBlocks.Actions.AddClick += gPageBlocks_GridAdd;
                 gPageBlocks.GridReorder += gPageBlocks_GridReorder;
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;

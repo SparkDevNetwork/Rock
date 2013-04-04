@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Administration
             if ( CurrentPage.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
-                gEmailTemplates.Actions.IsAddEnabled = true;
+                gEmailTemplates.Actions.ShowAdd = true;
                 gEmailTemplates.Actions.AddClick += gEmailTemplates_AddClick;
                 gEmailTemplates.GridRebind += gEmailTemplates_GridRebind;
             }

@@ -36,13 +36,13 @@ namespace RockWeb.Blocks.Administration
             tFilter.ApplyFilterClick += tFilter_ApplyFilterClick;
 
             gDefinedType.DataKeyNames = new string[] { "id" };
-            gDefinedType.Actions.IsAddEnabled = true;
+            gDefinedType.Actions.ShowAdd = true;
             gDefinedType.Actions.AddClick += gDefinedType_Add;
             gDefinedType.GridRebind += gDefinedType_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gDefinedType.Actions.IsAddEnabled = canAddEditDelete;
+            gDefinedType.Actions.ShowAdd = canAddEditDelete;
             gDefinedType.IsDeleteEnabled = canAddEditDelete;
         }
 

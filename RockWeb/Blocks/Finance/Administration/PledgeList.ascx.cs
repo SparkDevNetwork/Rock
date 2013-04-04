@@ -29,13 +29,12 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             base.OnInit( e );
             gPledges.DataKeyNames = new[] { "id" };
-            gPledges.Actions.IsAddEnabled = true;
             gPledges.Actions.AddClick += gPledges_Add;
             gPledges.GridRebind += gPledges_GridRebind;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            gPledges.Actions.IsAddEnabled = canAddEditDelete;
+            gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
         }
 

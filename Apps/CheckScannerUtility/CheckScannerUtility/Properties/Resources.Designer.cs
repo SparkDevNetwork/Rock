@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.CheckScannerUtility.Properties {
+namespace Rock.Apps.CheckScannerUtility.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Rock.CheckScannerUtility.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Rock.CheckScannerUtility.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Rock.Apps.CheckScannerUtility.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,26 +57,6 @@ namespace Rock.CheckScannerUtility.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap header_texture {
-            get {
-                object obj = ResourceManager.GetObject("header-texture", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap rock_logo {
-            get {
-                object obj = ResourceManager.GetObject("rock-logo", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }
