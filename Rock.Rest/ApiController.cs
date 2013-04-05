@@ -122,7 +122,7 @@ namespace Rock.Rest
             if ( dataView != null && dataView.EntityType.Name == typeof(T).FullName )
             {
                 var paramExpression = _service.ParameterExpression;
-                var whereExpression = dataView.DataViewFilter != null ? dataView.DataViewFilter.GetExpression( paramExpression ) : null;
+                var whereExpression = dataView.GetExpression( _service, paramExpression );
 
                 if ( paramExpression != null && whereExpression != null )
                 {

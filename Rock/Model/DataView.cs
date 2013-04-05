@@ -153,20 +153,11 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the expression.
+        /// Binds the grid.
         /// </summary>
-        /// <param name="parameter">The parameter.</param>
+        /// <param name="grid">The grid.</param>
+        /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
         /// <returns></returns>
-        public Expression GetExpression( ParameterExpression parameter )
-        {
-            if ( DataViewFilter != null )
-            {
-                return DataViewFilter.GetExpression( parameter );
-            }
-
-            return null;
-        }
-
         public object BindGrid(Grid grid, bool createColumns = false)
         {
             if ( EntityTypeId.HasValue )
@@ -192,16 +183,9 @@ namespace Rock.Model
                         if ( serviceInstance != null )
                         {
                             ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                            Expression whereExpression = DataViewFilter != null ? DataViewFilter.GetExpression( paramExpression ) : null;
-
-                            Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, whereExpression );
-                            if ( transformedExpression != null )
-                            {
-                                whereExpression = transformedExpression;
-                            }
+                            Expression whereExpression = GetExpression( serviceInstance, paramExpression );
 
                             MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-
                             if ( getListMethod != null )
                             {
                                 return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
@@ -225,6 +209,32 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="paramExpression">The param expression.</param>
+        /// <returns></returns>
+        public Expression GetExpression( object serviceInstance, ParameterExpression paramExpression )
+        {
+            Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( serviceInstance, paramExpression ) : null;
+
+            Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression );
+            if ( transformedExpression != null )
+            {
+                return transformedExpression;
+            }
+
+            return filterExpression;
+        }
+
+        /// <summary>
+        /// Gets the transform expression.
+        /// </summary>
+        /// <param name="service">The service.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
         private Expression GetTransformExpression( object service, Expression parameterExpression, Expression whereExpression )
         {
             if ( this.TransformEntityTypeId.HasValue )

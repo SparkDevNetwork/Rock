@@ -181,10 +181,11 @@ namespace Rock.DataFilters
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             int dvId = int.MinValue;
             if ( int.TryParse( selection, out dvId ) )
@@ -192,12 +193,41 @@ namespace Rock.DataFilters
                 var dataView = new DataViewService().Get( dvId );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
-                    // TODO: Should probably verify security again on the selected dataview and it's filters,
-                    // as that could be a moving target.
-                    return dataView.DataViewFilter.GetExpression( (ParameterExpression)parameterExpression );
+                    // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
+                    if ( !ThisViewInFilter( dataView.Id, dataView.DataViewFilter ) )
+                    {
+                        // TODO: Should probably verify security again on the selected dataview and it's filters,
+                        // as that could be a moving target.
+                        return dataView.GetExpression( serviceInstance, (ParameterExpression)parameterExpression );
+                    }
                 }
             }
             return null;
+        }
+
+        public bool ThisViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
+        {
+            if ( filter.EntityTypeId == EntityTypeCache.Read( this.GetType() ).Id )
+            {
+                int filterDataViewId = int.MinValue;
+                if (int.TryParse(filter.Selection, out filterDataViewId))
+                {
+                    if (filterDataViewId == dataViewId)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            foreach ( var childFilter in filter.ChildFilters )
+            {
+                if ( ThisViewInFilter( dataViewId, childFilter ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -46,15 +46,16 @@ namespace Rock.DataFilters.Person
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="selection">The selection.</param>
+        /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
-        public override Expression GetExpression( object service, Expression parameterExpression, Expression whereExpression )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, Expression whereExpression )
         {
-            MethodInfo getIdsMethod = service.GetType().GetMethod( "GetIds", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+            MethodInfo getIdsMethod = serviceInstance.GetType().GetMethod( "GetIds", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
             if ( getIdsMethod != null )
             {
-                IQueryable<int> idQuery = (IQueryable<int>)getIdsMethod.Invoke( service, new object[] { parameterExpression, whereExpression } );
+                IQueryable<int> idQuery = (IQueryable<int>)getIdsMethod.Invoke( serviceInstance, new object[] { parameterExpression, whereExpression } );
 
                 MethodInfo whereMethod = (MethodInfo)GetGenericMethod( "Where" );
                 MethodInfo anyMethod = (MethodInfo)GetGenericMethod( "Any" );
