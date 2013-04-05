@@ -211,7 +211,7 @@
                             </div>
                             <div class="span4 group-addresses clearfix">
                                <ul>
-                                    <li class="clearfix">
+                                    <li class="group-address clearfix">
                                         <h4>Home Address</h4>
                                         <a href="" class="map"><i class="icon-map-marker"></i></a>
                                         <div class="address">
@@ -224,7 +224,7 @@
                                         </div>
                                     </li>
 
-                                   <li class="clearfix">
+                                   <li class="group-address clearfix">
                                         <h4>Previous Address</h4>
                                         <a href="" class="map"><i class="icon-map-marker"></i></a>
                                         <div class="address">
@@ -244,15 +244,144 @@
             </div>
 
 
-		    <div class="container-fluid body-content">
-			    <div class="row-fluid badgebar">
-				    <div class="span12">
 
+			<div class="container-fluid pagetabs">
+                <div class="row-fluid">
+                    <div class="span12">
 
+							<ul class="nav nav-pills">
+                                <li class="active">
+                                    <a href="#">Person Details</a>
+                                </li>
+                                <li>
+                                    <a href="#">Extended Attributes</a>
+                                </li>
+                       
+                                <li>
+                                    <a href="#">Groups</a>
+                                </li>
+                                <li>
+                                    <a href="#">Staff Details</a>
+                                </li>
+                                <li>
+                                    <a href="#">Contributions</a>
+                                </li>
+                                <li>
+                                    <a href="#">History</a>
+                                </li>
+                            </ul>
+									
+                    </div>
+                </div> 
+			</div>
 
-				    </div>
-			    </div>
-		    </div>
+            <div class="container-fluid pagetabs">
+                <div class="row-fluid">
+                    <div class="span8">
+                        <section class="widget">
+                            <header><h4><i class="icon-calendar"></i> Timeline</h4></header>
+                            <div class="widget-content">
+                                <div class="note-container">
+                                    <article class="clearfix highlight">
+                                        <i class="icon-comment"></i>
+                                        <div class="details">
+                                            <h5>Bob Johnson <span class="date">4/1/2013</span></h5>
+                                            Talk to security before allowing to serve in any ministry area. Appears to drive a white cargo van.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-calendar"></i>
+                                        <div class="details">
+                                            <h5>Event Registration  <span class="date">1/1/2013</span></h5>
+                                            Register for Feed My Staving Puppies (Jon, Heidi, Alex and Adam)
+                                        </div>
+                                    </article>
+                                    <article class="clearfix personal">
+                                        <i class="icon-comment"></i>
+                                        <div class="details">
+                                            <h5>You - Personal Note <span class="date">10/11/2012</span></h5>
+                                            Had Lunch with Jon today to talk about using new neighborhood map.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-envelope"></i>
+                                        <div class="details">
+                                            <h5>Email from: Dustin Tappan <span class="date">10/1/2012</span></h5>
+                                            An email was sent to Jon from Dustin Tappan on 10/31 @9:35am.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-phone"></i>
+                                        <div class="details">
+                                            <h5>Call To Scott Merlin <span class="date">7/11/2012</span></h5>
+                                            Jon called Scott Merlin's phone, 2999, on Monday October 12th at 10:51am and talked for 10mins.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-comment"></i>
+                                        <div class="details">
+                                            <h5>Bob Johnson <span class="date">3/11/2012</span></h5>
+                                            Talked to Jon about joining the Security Team and gave him the forms needed to apply.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-calendar"></i>
+                                        <div class="details">
+                                            <h5>8/1/2012 - Event Registration</h5>
+                                            Register for Feed My Staving Puppies (Jon, Heidi, Alex and Adam)
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-comment"></i>
+                                        <div class="details">
+                                            <h5>Mike McClain <span class="date">2/1/2012</span></h5>
+                                            Had Lunch with Jon today to talk about using new neighborhood map.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-envelope"></i>
+                                        <div class="details">
+                                            <h5>Email from: Dustin Tappan  <span class="date">1/11/2012</span></h5>
+                                            An email was sent to Jon from Dustin Tappan on 10/31 @9:35am.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-phone"></i>
+                                        <div class="details">
+                                            <h5>Call To Scott Merlin  <span class="date">1/1/2012</span></h5>
+                                            Jon called Scott Merlin's phone, 2999, on Monday October 12th at 10:51am and talked for 10mins.
+                                        </div>
+                                    </article>
+                                    <article class="clearfix">
+                                        <i class="icon-comment"></i>
+                                        <div class="details">
+                                            <h5>7/1/2012 - Bob Johnson</h5>
+                                            Talked to Jon about joining the Security Team and gave him the forms needed to apply.
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                            
+                        </section>
+                    </div>
+                    <div class="span4">
+                        <section class="widget keyattributes">
+                            <header><h4><i class="icon-star"></i> Key Attributes</h4></header>
+                            <div class="widget-content">
+                                <ul>
+                                    <li><strong>Baptism Date</strong> 12/16/2010</li>
+                                    <li><strong>How Joined</strong> Baptism</li>
+                                    <li><strong>Last Gave</strong> 3/1/2013</li>
+                                    <li><strong>T-shirt Size</strong> Size L</li>
+                                    <li><strong>Favorite Movie</strong> We Were Soliders</li>
+                                </ul>
+                            </div>
+                            
+                        </section>
+                    </div>
+                </div>
+            </div>
+		    
         </div>
 
 <%-- Changes End Here --%>
@@ -466,13 +595,125 @@
             margin-right: 4px;
         }
 
+        .personfamilybar .group-address .actions
+        {
+            display: none;
+            
+        }
+
+        .keyattributes ul
+        {
+            list-style-type: none;
+            margin-left: 0;
+        }
+
+
+        .pagetabs
+        {
+            margin-top: 12px;
+        }
+
+        .note-container article
+        {
+            background-color: red;
+            border-radius: 4px; /*@baseBorderRadius*/
+            border: 1px solid #d3d3d3;
+            padding: 12px;
+            margin-bottom: 12px;
+            background-color: #f3f3f3; /* variable? */
+        }
+
+        .note-container article .date
+        {
+            font-size: 13px;
+            font-family: 'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+            margin-left: 8px;
+        }
+
+        .note-container article i
+        {
+            float: left;
+            color: #a8a8a8;
+            margin: 8px 0 0 0;
+            width: 8%;
+        }
+
+        .note-container article h5
+        {
+            margin-top: 0;
+            margin-bottom: 4px;
+        }
+
+        .note-container article .details
+        {
+            float: left;
+            width: 90%;
+        }
+
+        .note-container article:last-child
+        {
+            margin-bottom: 0;
+        }
+
+        .note-container article.highlight
+        {
+            background-color: #f2dede;
+            border: 1px solid #eed3d7;
+            color: #b94a48;
+
+            /*
+                @errorText:               #b94a48;
+                @errorBackground:         #f2dede;
+                @errorBorder:             darken(spin(@errorBackground, -10), 3%);
+                */
+        }
+
+        .note-container article.highlight i
+        {
+            color: #b94a48;
+        }
+
+        .note-container article.personal
+        {
+            background-color: #D9EDF7;
+            border: 1px solid #bce8f1;
+            color: #3a87ad;
+
+            /*
+                @errorText:               #b94a48;
+                @errorBackground:         #f2dede;
+                @errorBorder:             darken(spin(@errorBackground, -10), 3%);
+                */
+        }
+
+        .note-container article.personal i
+        {
+            color: #3a87ad;
+        }
+
+        
 
 
     </style>
         
     <script>
 
-       
+        $('.group-addresses ul li').live({
+            mouseenter:
+                function () {
+                    var actionsDiv = $('div.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                },
+            mouseleave:
+                function () {
+                    var actionsDiv = $('div.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                }
+        });
 
     </script>
             
