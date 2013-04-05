@@ -10,10 +10,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
+using Rock.DataFilters;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -152,10 +152,12 @@ $(document).ready(function() {
                     dataViewFilterId = dataView.DataViewFilterId;
                 }
 
-                dataView.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 dataView.Name = tbName.Text;
                 dataView.Description = tbDescription.Text;
+                dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
+                dataView.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 dataView.CategoryId = cpCategory.SelectedValueAsInt();
+
                 dataView.DataViewFilter = GetFilterControl();
 
                 // check for duplicates within Category
@@ -279,12 +281,26 @@ $(document).ready(function() {
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns(DataView dataView)
         {
+            var entityTypeService = new EntityTypeService();
+
+            ddlTransform.Items.Clear();
+            if ( dataView.EntityTypeId.HasValue )
+            {
+                var filteredEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
+                {
+                    var transformEntityType = EntityTypeCache.Read( component.TypeName );
+                    ListItem li = new ListItem( component.Title, transformEntityType.Id.ToString() );
+                    ddlTransform.Items.Add( li );
+                }
+            }
+            ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+
             // Only entity types that are entities, have a friendly name, and actually have existing
             // DataFilter componenets will be displayed in the drop down list
             var entityTypeNames = Rock.DataFilters.DataFilterContainer.GetAvailableFilteredEntityTypeNames();
-            var entityTypeService = new EntityTypeService();
             ddlEntityType.DataSource = entityTypeService
                 .Queryable()
                 .Where( e =>
@@ -406,7 +422,7 @@ $(document).ready(function() {
             }
 
             SetEditMode( true );
-            LoadDropDowns();
+            LoadDropDowns( dataView );
 
             if ( dataView.DataViewFilter == null || dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
             {
@@ -416,8 +432,9 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            cpCategory.SetValue( dataView.CategoryId );
+            ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
             ddlEntityType.SetValue( dataView.EntityTypeId );
+            cpCategory.SetValue( dataView.CategoryId );
 
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true );
         }
@@ -454,6 +471,10 @@ $(document).ready(function() {
                 lblMainDetails.Text += string.Format( descriptionFormat, "Filter", dataView.DataViewFilter.ToString() );
             }
 
+            if ( dataView.TransformEntityType != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+            }
             lblMainDetails.Text += @"
     </dl>
 </div>";
@@ -584,7 +605,7 @@ $(document).ready(function() {
             }
         }
 
-        private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection )
+        private void CreateFilterControl( int? filteredEntityTypeId,  DataViewFilter filter, bool setSelection )
         {
             phFilters.Controls.Clear();
             if ( filter != null && filteredEntityTypeId.HasValue )
