@@ -291,6 +291,7 @@ namespace Rock.Model
         public DataViewFilterConfiguration()
         {
             this.HasOptional( r => r.Parent ).WithMany( r => r.ChildFilters).HasForeignKey( r => r.ParentId ).WillCascadeOnDelete( false );
+            this.HasOptional( e => e.EntityType ).WithMany().HasForeignKey( e => e.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -290,6 +290,9 @@
     <Compile Include="DataFilters\CodeGenerated\WorkflowType\WorkflowTypePropertyFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\WorkflowDataViewFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\WorkflowPropertyFilter.cs" />
+    <Compile Include="DataFilters\DataTransformComponent.cs" />
+    <Compile Include="DataFilters\DataTransformContainer.cs" />
+    <Compile Include="DataFilters\Person\ParentTransform.cs" />
     <Compile Include="DataFilters\PropertyFilter.cs" />
     <Compile Include="DataFilters\OtherDataViewFilter.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />

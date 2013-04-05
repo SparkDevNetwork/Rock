@@ -211,6 +211,19 @@ namespace Rock.DataFilters.Person
 
             DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
 
+            // Build expressions for this type of linq statement:
+            //var result = new PersonService().Queryable()
+            //    .Where( p =>
+            //        ( p.Attendances.Count( a =>
+            //            (
+            //                (
+            //                    ( a.Group.GroupTypeId == groupTypeId ) &&
+            //                    ( a.StartDateTime >= startDate )
+            //                ) &&
+            //                ( a.DidAttend == true )
+            //            )
+            //        ) >= attended ) );
+
             ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
 
             MemberExpression groupProperty = Expression.Property( attendanceParameter, "Group" );
