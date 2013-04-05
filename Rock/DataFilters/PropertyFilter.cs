@@ -237,24 +237,7 @@ namespace Rock.DataFilters
 
             foreach ( var property in Properties )
             {
-                string clientFormatSelection = string.Empty;
-                switch ( property.SystemFieldType )
-                {
-                    case SystemGuid.FieldType.TEXT:
-                        clientFormatSelection = string.Format( "'{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", property.Name.SplitCase() );
-                        break;
-                    case SystemGuid.FieldType.SINGLE_SELECT:
-                        clientFormatSelection = string.Format( "'{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", property.Name.SplitCase() );
-                        break;
-                }
-
-                if ( clientFormatSelection != string.Empty )
-                {
-                    sb.AppendFormat( @"
-            case {0}: result = {1}; break;
-", i, clientFormatSelection );
-                }
-                i++;
+                var propertyControls = groupedControls[property.Name];
 
                 if ( property.Name != selectedProperty )
                 {
@@ -267,11 +250,30 @@ namespace Rock.DataFilters
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                foreach ( Control control in groupedControls[property.Name] )
+                string clientFormatSelection = string.Empty;
+                switch ( property.SystemFieldType )
                 {
-                    control.RenderControl( writer );
-                    writer.Write( " " );
+                    case SystemGuid.FieldType.TEXT:
+                        propertyControls[0].RenderControl( writer );
+                        writer.Write( " " );
+                        propertyControls[1].RenderControl( writer );
+                        clientFormatSelection = string.Format( "'{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", property.Name.SplitCase() );
+                        break;
+
+                    case SystemGuid.FieldType.SINGLE_SELECT:
+                        writer.Write( "is " );
+                        propertyControls[0].RenderControl( writer );
+                        clientFormatSelection = string.Format( "'{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", property.Name.SplitCase() );
+                        break;
                 }
+
+                if ( clientFormatSelection != string.Empty )
+                {
+                    sb.AppendFormat( @"
+            case {0}: result = {1}; break;
+", i, clientFormatSelection );
+                }
+                i++;
 
                 writer.RenderEndTag();
 
@@ -385,10 +387,11 @@ namespace Rock.DataFilters
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {

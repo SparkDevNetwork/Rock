@@ -556,7 +556,8 @@ $(document).ready(function() {
         protected void btnPreview_Click( object sender, EventArgs e )
         {
             DataView dv = new DataView();
-            dv.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
+            dv.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
+            dv.EntityTypeId = ddlEntityType.SelectedValueAsInt();
             dv.DataViewFilter = GetFilterControl();
             ShowPreview( dv );
         }

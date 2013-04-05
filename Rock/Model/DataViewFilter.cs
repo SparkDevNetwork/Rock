@@ -162,7 +162,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( ParameterExpression parameter )
+        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter )
         {
             switch ( ExpressionType )
             {
@@ -176,7 +176,7 @@ namespace Rock.Model
                             var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
-                                return component.GetExpression( parameter, this.Selection );
+                                return component.GetExpression( serviceInstance, parameter, this.Selection );
                             }
                         }
                     }
@@ -187,7 +187,7 @@ namespace Rock.Model
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter );
                         if ( exp != null )
                         {
                             if ( andExp == null )
@@ -209,7 +209,7 @@ namespace Rock.Model
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter );
                         if ( exp != null )
                         {
                             if ( orExp == null )
