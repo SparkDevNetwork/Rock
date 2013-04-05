@@ -468,7 +468,7 @@ $(document).ready(function() {
             {
                 gReport.IsPersonList = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
                 gReport.Visible = true;
-                BindGrid( gReport, dataView.EntityTypeId.Value, dataView.DataViewFilter );
+                BindGrid( gReport, dataView );
             }
             else
             {
@@ -481,9 +481,9 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="filter">The filter.</param>
-        private void ShowPreview( int entityTypeId, DataViewFilter filter )
+        private void ShowPreview( DataView dataView )
         {
-            if (BindGrid(gPreview, entityTypeId, filter))
+            if (BindGrid(gPreview, dataView))
             {
                 modalPreview.Show();
             }
@@ -499,108 +499,16 @@ $(document).ready(function() {
             pnlViewDetails.Visible = !editable;
         }
 
-        private bool BindGrid( Grid grid, int entityTypeId, DataViewFilter filter )
+        private bool BindGrid( Grid grid, DataView dataView)
         {
-            var cachedEntityType = EntityTypeCache.Read( entityTypeId );
-            if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+            grid.DataSource = dataView.BindGrid(grid, true);
+            if (grid.DataSource != null)
             {
-                Type entityType = cachedEntityType.GetEntityType();
-                if ( entityType != null )
-                {
-                    BuildGridColumns( grid, entityType );
-
-                    Type[] modelType = { entityType };
-                    Type genericServiceType = typeof( Rock.Data.Service<> );
-                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                    object serviceInstance = Activator.CreateInstance( modelServiceType );
-
-                    if ( serviceInstance != null )
-                    {
-                        MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-
-                        if ( getMethod != null )
-                        {
-                            var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                            var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
-                            grid.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
-                            grid.DataBind();
-
-                            return true;
-                         }
-                    }
-                }
+                grid.DataBind();
+                return true;
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Builds the grid columns.
-        /// </summary>
-        /// <param name="modelType">Type of the model.</param>
-        private void BuildGridColumns( Grid grid, Type modelType )
-        {
-            grid.Columns.Clear();
-
-            var displayColumns = new Dictionary<string, BoundField>();
-            var allColumns = new Dictionary<string, BoundField>();
-
-            foreach ( var property in modelType.GetProperties() )
-            {
-                if ( property.Name != "Id" )
-                {
-                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
-                    {
-                        displayColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                    {
-                        allColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                }
-            }
-
-            // Always add hidden id column
-            var idCol = new BoundField();
-            idCol.DataField = "Id";
-            idCol.Visible = false;
-            grid.Columns.Add( idCol );
-
-            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
-            foreach ( var column in columns )
-            {
-                var bf = column.Value;
-                bf.DataField = column.Key;
-                bf.SortExpression = column.Key;
-                bf.HeaderText = column.Key.SplitCase();
-                grid.Columns.Add( bf );
-            }
-        }
-
-        /// <summary>
-        /// Gets the grid field.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns></returns>
-        private BoundField GetGridField( PropertyInfo property )
-        {
-            BoundField bf = new BoundField();
-
-            if ( property.PropertyType == typeof( Boolean ) )
-            {
-                bf = new BoolField();
-            }
-            else if ( property.PropertyType == typeof( DateTime ) )
-            {
-                bf = new DateField();
-            }
-            else if ( property.PropertyType.IsEnum )
-            {
-                bf = new EnumField();
-            }
-
-            return bf;
         }
 
         #endregion
@@ -626,7 +534,10 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnPreview_Click( object sender, EventArgs e )
         {
-            ShowPreview( int.Parse( ddlEntityType.SelectedValue ), GetFilterControl() );
+            DataView dv = new DataView();
+            dv.EntityTypeId = int.Parse( ddlEntityType.SelectedValue );
+            dv.DataViewFilter = GetFilterControl();
+            ShowPreview( dv );
         }
 
         void groupControl_AddFilterClick( object sender, EventArgs e )

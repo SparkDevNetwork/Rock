@@ -59,52 +59,19 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         private void RunCommand()
         {
-            BuildGridColumns( gReport, typeof( Person ) );
+            gReport.CreatePreviewColumns( typeof( Person ) );
 
             var service = new PersonService();
-            var qry = service.Queryable().Where( p => p.LastName == "Turner" );
 
-            gReport.DataSource = qry;
+            IQueryable<int> Ids = service.Queryable().Where( p => p.LastName == "Turner" ).Select( p => p.Id );
+
+            var txfrm = service.Queryable()
+                .Where( p => p.Members.Where( a => a.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                    .Any( a => a.Group.Members.Any( c => c.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ) &&
+                         Ids.Contains( c.Person.Id ) ) ) );
+                    
+            gReport.DataSource = txfrm.ToList();
             gReport.DataBind();
-        }
-
-        private void BuildGridColumns( Grid grid, Type modelType )
-        {
-            grid.Columns.Clear();
-
-            var displayColumns = new Dictionary<string, BoundField>();
-            var allColumns = new Dictionary<string, BoundField>();
-
-            foreach ( var property in modelType.GetProperties() )
-            {
-                if ( property.Name != "Id" )
-                {
-                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
-                    {
-                        displayColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                    {
-                        allColumns.Add( property.Name, GetGridField( property ) );
-                    }
-                }
-            }
-
-            // Always add hidden id column
-            var idCol = new BoundField();
-            idCol.DataField = "Id";
-            idCol.Visible = false;
-            grid.Columns.Add( idCol );
-
-            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
-            foreach ( var column in columns )
-            {
-                var bf = column.Value;
-                bf.DataField = column.Key;
-                bf.SortExpression = column.Key;
-                bf.HeaderText = column.Key.SplitCase();
-                grid.Columns.Add( bf );
-            }
         }
 
         #endregion

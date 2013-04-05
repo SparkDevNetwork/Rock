@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -399,102 +397,11 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="filter">The filter.</param>
         private void BindGrid( Report report )
         {
-            if (report != null && report.EntityTypeId.HasValue)
+            if (report != null && report.DataView != null)
             {
-                var cachedEntityType = EntityTypeCache.Read( report.EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
-                    if ( entityType != null )
-                    {
-                        BuildGridColumns( entityType );
-
-                        Type[] modelType = { entityType };
-                        Type genericServiceType = typeof( Rock.Data.Service<> );
-                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                        object serviceInstance = Activator.CreateInstance( modelServiceType );
-
-                        if ( serviceInstance != null )
-                        {
-                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-
-                            if ( getMethod != null )
-                            {
-                                DataViewFilter filter = null;
-                                if (report.DataView != null && report.DataView.DataViewFilter != null)
-                                {
-                                    filter = report.DataView.DataViewFilter;
-                                }
-                                var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                                var whereExpression = filter != null ? filter.GetExpression( paramExpression ) : null;
-                                gReport.DataSource = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, gReport.SortProperty } );
-                                gReport.DataBind();
-                            }
-                        }
-                    }
-                }
+                gReport.DataSource = report.DataView.BindGrid(gReport, true);
+                gReport.DataBind();
             }
-        }
-
-        /// <summary>
-        /// Builds the grid columns.
-        /// </summary>
-        /// <param name="modelType">Type of the model.</param>
-        private void BuildGridColumns( Type modelType )
-        {
-            gReport.Columns.Clear();
-
-            var previewColumns = new Dictionary<string, BoundField>();
-            var allColumns = new Dictionary<string, BoundField>();
-
-            foreach ( var property in modelType.GetProperties() )
-            {
-                if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
-                {
-                    previewColumns.Add( property.Name, GetGridField( property ) );
-                }
-                else if ( previewColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                {
-                    allColumns.Add( property.Name, GetGridField( property ) );
-                }
-            }
-
-            Dictionary<string, BoundField> columns = previewColumns.Count > 0 ? previewColumns : allColumns;
-
-            foreach ( var column in columns )
-            {
-                var bf = column.Value;
-                bf.DataField = column.Key;
-                bf.SortExpression = column.Key;
-                bf.HeaderText = column.Key.SplitCase();
-                gReport.Columns.Add( bf );
-            }
-        }
-
-        /// <summary>
-        /// Gets the grid field.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns></returns>
-        private BoundField GetGridField( PropertyInfo property )
-        {
-            BoundField bf = new BoundField();
-
-            if ( property.PropertyType == typeof( Boolean ) )
-            {
-                bf = new BoolField();
-            }
-            else if ( property.PropertyType == typeof( DateTime ) )
-            {
-                bf = new DateField();
-            }
-            else if ( property.PropertyType.IsEnum )
-            {
-                bf = new EnumField();
-            }
-
-            return bf;
         }
 
         #endregion

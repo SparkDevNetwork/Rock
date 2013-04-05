@@ -151,6 +151,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the ids.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public IQueryable<int> GetIds( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression, null ).Select( t => t.Id );
+        }
+
+        /// <summary>
         /// Anies the specified parameter expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
