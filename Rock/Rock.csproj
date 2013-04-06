@@ -295,6 +295,7 @@
     <Compile Include="DataFilters\Person\ParentTransform.cs" />
     <Compile Include="DataFilters\PropertyFilter.cs" />
     <Compile Include="DataFilters\OtherDataViewFilter.cs" />
+    <Compile Include="Data\DefinedValueAttribute.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
