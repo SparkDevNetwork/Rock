@@ -240,10 +240,13 @@ namespace Rock.Model
         {
             if ( this.ExpressionType == FilterExpressionType.Filter )
             {
-                var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
-                if ( component != null )
+                if ( EntityType != null )
                 {
-                    return component.FormatSelection( this.Selection );
+                    var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    if ( component != null )
+                    {
+                        return component.FormatSelection( this.Selection );
+                    }
                 }
             }
             else

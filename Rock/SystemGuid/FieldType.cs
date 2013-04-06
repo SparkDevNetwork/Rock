@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "59D5A94C-94A0-4630-B80A-BB25697D74C7";
 
         /// <summary>
+        /// Multi Select field type
+        /// </summary>
+        public const string MULTI_SELECT = "BD0D9B57-2A41-4490-89FF-F01DAB7D4904";
+
+        /// <summary>
         /// Integer field type
         /// </summary>
         public const string INTEGER = "A75DFC58-7A1B-4799-BF31-451B2BBE38FF";
