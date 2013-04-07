@@ -70,7 +70,6 @@ namespace RockWeb.Blocks.Finance
             if ( CurrentPerson != null )
             {
                 _ShowSaveDetails = true;
-                BindPersonDetails();
             }
 
             if ( _ShowCampusSelect )
@@ -82,6 +81,7 @@ namespace RockWeb.Blocks.Finance
             {
                 BindFunds();
                 BindCreditOptions();
+                BindPersonDetails();
             }
         }
 
@@ -213,7 +213,17 @@ namespace RockWeb.Blocks.Finance
             pnlConfirm.Visible = false;
             pnlDetails.Visible = true;            
         }
-        
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the btnCampusList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCampusList_SelectionChanged( object sender, EventArgs e )
+        {
+            lblCampus.Visible = true;
+        }
+
         /// <summary>
         /// Handles the Click event of the btnAddFund control.
         /// </summary>
@@ -272,16 +282,16 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindCampuses()
         {
-            ddlCampusList.Items.Clear();
+            btnCampusList.Items.Clear();
             CampusService campusService = new CampusService();
             var items = campusService.Queryable().OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
 
             foreach ( string item in items )
             {
-                ddlCampusList.Items.Add( item + " Campus");                
+                btnCampusList.Items.Add( item );                
             }
 
-            ddlCampusList.Title = "Select Your Campus";
+            btnCampusList.Title = "Select Campus";
         }
 
         /// <summary>
@@ -334,15 +344,19 @@ namespace RockWeb.Blocks.Finance
             Location personLocation = groupLocationService.Queryable()
                 .Where( g => personGroups.Contains( g.GroupId ) )
                 .Select( g => g.Location )
-                .ToList().FirstOrDefault();           
+                .ToList().FirstOrDefault();
 
-            txtFirstName.Value = CurrentPerson.FirstName;
-            txtLastName.Value = CurrentPerson.LastName;
-            txtAddress.Value = personLocation.Street1;
-            txtCity.Value = personLocation.City;
-            ddlState.Value = personLocation.State;
-            txtZipcode.Value = personLocation.Zip;
-            txtEmail.Value = CurrentPerson.Email;
+            if ( personLocation != null )
+            {
+                txtFirstName.Value = CurrentPerson.FirstName.ToString();
+                txtLastName.Value = CurrentPerson.LastName.ToString();
+                txtAddress.Value = personLocation.Street1.ToString();
+                txtCity.Value = personLocation.City.ToString();
+                ddlState.Value = personLocation.State.ToString();
+                txtZipcode.Value = personLocation.Zip.ToString();
+                txtEmail.Value = CurrentPerson.Email.ToString();
+            }
+
             
         }
 
