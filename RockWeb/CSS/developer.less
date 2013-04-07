@@ -215,52 +215,7 @@ div.aspNetDisabled {
     height: 190px;
 }
 
-/* DS - CSS for credit card stripe */
-
-ul.card-logos {
-	display: inline-block;
-	margin: 0;
-	padding: 0;
-	margin-left: 12px;
-}
-
-.card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb {
-	display: inline-block;
-	width: 50px;
-	height: 30px;
-	overflow: hidden;
-	text-align: left;
-	text-indent: -999px;
-	background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
-}
-
-.card-mastercard {
-	background-position: -55px 0;
-}
-
-.card-amex {
-	background-position: -110px 0;
-}
-
-.card-discover {
-	background-position: -165px 0;
-}
-
-.card-diners {
-	background-position: -220px 0;
-}
-
-.card-jcb {
-	background-position: -660px 0;
-}
-
-.is-visa li, .is-mastercard li, .is-amex li, .is-discover li, .is-diners li, .is-jcb li, .is-nothing li {
-	opacity: .2;
-}
-
-.is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb {
-	opacity: 1;
-}/* General and standard Note/comment styling for the icon that sits to the left of the comment */
+/* General and standard Note/comment styling for the icon that sits to the left of the comment */
 .note-container article i
 {
     font-size: 28px;
@@ -305,3 +260,88 @@ ul.card-logos {
   -moz-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
 }
+
+/* DS - CSS for credit card stripe */
+
+ul.card-logos 
+{
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+	margin-left: 12px;
+}
+
+.card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb 
+{
+	display: inline-block;
+	width: 50px;
+	height: 30px;
+	overflow: hidden;
+	text-align: left;
+	text-indent: -999px;
+	background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+}
+
+.card-mastercard 
+{
+	background-position: -55px 0;
+}
+
+.card-amex 
+{
+	background-position: -110px 0;
+}
+
+.card-discover 
+{
+	background-position: -165px 0;
+}
+
+.card-diners 
+{
+	background-position: -220px 0;
+}
+
+.card-jcb 
+{
+	background-position: -660px 0;
+}
+
+.is-visa li, .is-mastercard li, .is-amex li, .is-discover li, .is-diners li, .is-jcb li, .is-nothing li 
+{
+	opacity: .2;
+}
+
+.is-visa li.card-visa, .is-mastercard li.card-mastercard, .is-amex li.card-amex, .is-discover li.card-discover, .is-diners li.card-diners, .is-jcb li.card-jcb 
+{
+	opacity: 1;
+}
+
+/* DS - CSS for finance styling */
+
+.payment-details 
+{
+	overflow: visible;
+}
+
+.amount-right 
+{
+	padding-top: 5px;		
+}
+
+.form-horizontal .control-group 
+{
+	margin-bottom: 10px;
+}
+
+.expiration-group 
+{
+	float: left;
+	margin-right: 20px;
+}
+
+.state-select 
+{
+	width: 160px;
+}
+
