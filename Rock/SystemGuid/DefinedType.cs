@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
 
         /// <summary>
+        /// Guid for Financial Frequency Type
+        /// </summary>
+        public const string FINANCIAL_FREQUENCY_TYPE = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
+
+        /// <summary>
         /// Guid for the types of Locations (such as Home, Main Office, etc)
         /// </summary>
         public const string LOCATION_LOCATION_TYPE =  "2e68d37c-fb7b-4aa5-9e09-3785d52156cb";
