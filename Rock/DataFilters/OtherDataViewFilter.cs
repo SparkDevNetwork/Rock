@@ -116,6 +116,8 @@ namespace Rock.DataFilters
             int entityTypeId = EntityTypeCache.Read( typeof( T ) ).Id;
 
             DropDownList ddlDataViews = new DropDownList();
+            ddlDataViews.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( ddlDataViews );
 
             RockPage page = filterControl.Page as RockPage;
             if ( page != null )
