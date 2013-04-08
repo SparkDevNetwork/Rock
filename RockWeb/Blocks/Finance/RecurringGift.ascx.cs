@@ -107,19 +107,19 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
+            PersonService personService = new PersonService();
             _transactionService = new FinancialTransactionService();
             _fundList = new List<FinancialTransactionFund>();
-
-            // process person details
-            PersonService personService = new PersonService();
-            var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
             Person person;
 
+            // process person details            
+            var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
+            
             if ( personGroup.Count() > 0 )
             {
                 person = personGroup.Where( p => p.FirstName == Request.Form["txtFirstName"]
                     && p.LastName == Request.Form["txtLastName"] ).Distinct().FirstOrDefault();
-                //other duplicate person handling here?  see NewAccount.ascx DisplayDuplicates()
+                // TODO duplicate person handling?  see NewAccount.ascx DisplayDuplicates()
             }
             else
             {
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // no payment type, display validation error
+                // TODO no payment type, display validation error
             }
 
             litGiftTotal.Text = _transaction.Amount.ToString();
@@ -229,7 +229,6 @@ namespace RockWeb.Blocks.Finance
                     , Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value ) );
             }
 
-            // initialize new contribution
             _giftList.Add( btnAddFund.SelectedValue, 0M );
 
             if ( btnAddFund.Items.Count > 1 )
@@ -269,7 +268,7 @@ namespace RockWeb.Blocks.Finance
 
         protected void btnGive_Click( object sender, EventArgs e )
         {
-            // give through payment gateway
+            // TODO give through payment gateway
 
             _transaction = (FinancialTransaction)ViewState["transaction"];
             _transactionService = new FinancialTransactionService();
@@ -353,12 +352,11 @@ namespace RockWeb.Blocks.Finance
                 .Select( g => g.GroupId ).ToList();
 
             Location personLocation = groupLocationService.Queryable()
-                .Where( g => personGroups.Contains( g.GroupId ) )
+                .Where( g => g.Guid == new Guid( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE )
+                    && personGroups.Contains( g.GroupId ) )
                 .Select( g => g.Location )
                 .ToList().FirstOrDefault();
-
-            && Guid == new Guid( Rock.SystemGuid.LOCATION_LOCATION_TYPE );
-
+            
             if ( personLocation != null )
             {
                 txtFirstName.Value = CurrentPerson.FirstName.ToString();
