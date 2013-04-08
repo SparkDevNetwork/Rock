@@ -355,9 +355,7 @@ namespace RockWeb.Blocks.Finance
                 ddlState.Value = personLocation.State.ToString();
                 txtZipcode.Value = personLocation.Zip.ToString();
                 txtEmail.Value = CurrentPerson.Email.ToString();
-            }
-
-            
+            }           
         }
 
         /// <summary>
