@@ -181,10 +181,11 @@ namespace Rock.DataFilters.Person
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length != 4 )
@@ -210,6 +211,19 @@ namespace Rock.DataFilters.Person
                 weeks = 0;
 
             DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
+
+            // Build expressions for this type of linq statement:
+            //var result = new PersonService().Queryable()
+            //    .Where( p =>
+            //        ( p.Attendances.Count( a =>
+            //            (
+            //                (
+            //                    ( a.Group.GroupTypeId == groupTypeId ) &&
+            //                    ( a.StartDateTime >= startDate )
+            //                ) &&
+            //                ( a.DidAttend == true )
+            //            )
+            //        ) >= attended ) );
 
             ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
 

@@ -49,16 +49,17 @@ namespace Rock.DataFilters.Person
         /// </value>
         public override string Section
         {
-            get { return "Person Properties"; }
+            get { return "Additional Filters"; }
         }
 
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             ComparisonType comparisonType = ComparisonType.StartsWith;
             string value = string.Empty;

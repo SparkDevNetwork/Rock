@@ -108,6 +108,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
@@ -291,8 +292,12 @@
     <Compile Include="DataFilters\CodeGenerated\WorkflowType\WorkflowTypePropertyFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\WorkflowDataViewFilter.cs" />
     <Compile Include="DataFilters\CodeGenerated\Workflow\WorkflowPropertyFilter.cs" />
+    <Compile Include="DataFilters\DataTransformComponent.cs" />
+    <Compile Include="DataFilters\DataTransformContainer.cs" />
+    <Compile Include="DataFilters\Person\ParentTransform.cs" />
     <Compile Include="DataFilters\PropertyFilter.cs" />
     <Compile Include="DataFilters\OtherDataViewFilter.cs" />
+    <Compile Include="Data\DefinedValueAttribute.cs" />
     <Compile Include="Data\PreviewableAttribute.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\NotExportable.cs" />
@@ -578,6 +583,14 @@
     <Compile Include="Migrations\201303282315545_RemoveCommEmail.Designer.cs">
       <DependentUpon>201303282315545_RemoveCommEmail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304041745182_PledgeBlocks.cs" />
+    <Compile Include="Migrations\201304041745182_PledgeBlocks.Designer.cs">
+      <DependentUpon>201304041745182_PledgeBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304051218073_DataViewTransform.cs" />
+    <Compile Include="Migrations\201304051218073_DataViewTransform.Designer.cs">
+      <DependentUpon>201304051218073_DataViewTransform.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -722,6 +735,7 @@
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\FundPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\WorkflowTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ItemPicker.cs" />
@@ -1456,6 +1470,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303282315545_RemoveCommEmail.resx">
       <DependentUpon>201303282315545_RemoveCommEmail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304041745182_PledgeBlocks.resx">
+      <DependentUpon>201304041745182_PledgeBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304051218073_DataViewTransform.resx">
+      <DependentUpon>201304051218073_DataViewTransform.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
