@@ -209,14 +209,6 @@ $('.filter-item-select').click(function (event) {
             {
                 RockPage page = this.Page as RockPage;
                 filterControls = component.CreateChildControls( this );
-                if ( filterControls != null )
-                {
-                    foreach ( var filterControl in filterControls )
-                    {
-                        Controls.Add( filterControl );
-                        filterControl.ID = string.Format( "{0}_fc_{1}", this.ID, i++ );
-                    }
-                }
             }
             else
             {
