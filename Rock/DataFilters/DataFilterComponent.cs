@@ -44,7 +44,7 @@ namespace Rock.DataFilters
         /// </value>
         public virtual string Section 
         {
-            get { return string.Empty; }
+            get { return "Additional Filters"; }
         }
 
         /// <summary>
@@ -163,10 +163,11 @@ namespace Rock.DataFilters
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( Expression parameterExpression, string selection );
+        public abstract Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection );
 
         /// <summary>
         /// Gets the comparison expression.

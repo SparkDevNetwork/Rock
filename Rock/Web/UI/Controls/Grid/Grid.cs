@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.UI;
@@ -941,7 +942,80 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Creates grid columns by reflecting on the properties of a type.  If any of the properties
+        /// have the [Previewable] attribute, columns will only be created for those properties
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        public void CreatePreviewColumns( Type modelType )
+        {
+            this.Columns.Clear();
+
+            var displayColumns = new Dictionary<string, BoundField>();
+            var allColumns = new Dictionary<string, BoundField>();
+
+            foreach ( var property in modelType.GetProperties() )
+            {
+                if ( property.Name != "Id" )
+                {
+                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                    {
+                        displayColumns.Add( property.Name, GetGridField( property ) );
+                    }
+                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                    {
+                        allColumns.Add( property.Name, GetGridField( property ) );
+                    }
+                }
+            }
+
+            // Always add hidden id column
+            var idCol = new BoundField();
+            idCol.DataField = "Id";
+            idCol.Visible = false;
+            this.Columns.Add( idCol );
+
+            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
+            foreach ( var column in columns )
+            {
+                var bf = column.Value;
+                bf.DataField = column.Key;
+                bf.SortExpression = column.Key;
+                bf.HeaderText = column.Key.SplitCase();
+                this.Columns.Add( bf );
+            }
+        }
+
+        #endregion
+
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        private BoundField GetGridField( PropertyInfo property )
+        {
+            BoundField bf = new BoundField();
+
+            if ( property.PropertyType == typeof( Boolean ) )
+            {
+                bf = new BoolField();
+            }
+            else if ( property.PropertyType == typeof( DateTime ) )
+            {
+                bf = new DateField();
+            }
+            else if ( property.PropertyType.IsEnum )
+            {
+                bf = new EnumField();
+            }
+
+            return bf;
+        }
 
         /// <summary>
         /// Handles the ItemsPerPageClick event of the pagerTemplate control.

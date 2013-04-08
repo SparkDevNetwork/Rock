@@ -52,6 +52,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_TYPE )]
         public int? RecordTypeValueId { get; set; }
         
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS )]
         public int? RecordStatusValueId { get; set; }
         
         /// <summary>
@@ -70,6 +72,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON )]
         public int? RecordStatusReasonValueId { get; set; }
         
         /// <summary>
@@ -79,6 +82,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_STATUS )]
         public int? PersonStatusValueId { get; set; }
 
         /// <summary>
@@ -115,6 +119,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_TITLE )]
         public int? TitleValueId { get; set; }
         
         /// <summary>
@@ -156,6 +161,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_SUFFIX )]
         public int? SuffixValueId { get; set; }
         
         /// <summary>
@@ -212,6 +218,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
         public int? MaritalStatusValueId { get; set; }
         
         /// <summary>

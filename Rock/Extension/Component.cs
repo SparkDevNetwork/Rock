@@ -121,7 +121,7 @@ namespace Rock.Extension
         /// <value>
         /// The order.
         /// </value>
-        public int Order
+        public virtual int Order
         {
             get
             {
@@ -150,7 +150,7 @@ namespace Rock.Extension
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
-        public bool IsActive
+        public virtual bool IsActive
         {
             get
             {

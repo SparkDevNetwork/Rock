@@ -13,6 +13,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
+using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -32,7 +33,7 @@ namespace Rock.DataFilters
         /// </value>
         public override string Title
         {
-            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Property"; }
+            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Fields"; }
         }
 
         /// <summary>
@@ -55,6 +56,20 @@ namespace Rock.DataFilters
         public override string Section
         {
             get { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return int.MinValue;
+            }
         }
 
         /// <summary>
@@ -112,7 +127,7 @@ namespace Rock.DataFilters
             {
                 string selectedProperty = values[0];
 
-                var property = Properties.Where( p => p.Name == selectedProperty ).FirstOrDefault();
+                var property = Properties.Where( p => p.PropertyName == selectedProperty ).FirstOrDefault();
                 if ( property != null )
                 {
                     switch ( property.SystemFieldType )
@@ -124,7 +139,7 @@ namespace Rock.DataFilters
                                 ComparisonType comparisonType = ComparisonType.StartsWith;
                                 try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
                                 catch { }
-                                return string.Format( "{0} {1} '{2}'", selectedProperty.SplitCase(), comparisonType.ConvertToString(), values[2] );
+                                return string.Format( "{0} {1} '{2}'", property.Title, comparisonType.ConvertToString(), values[2] );
                             }
 
                             break;
@@ -133,7 +148,33 @@ namespace Rock.DataFilters
 
                             if ( values.Count == 2 )
                             {
-                                return string.Format( "{0} is '{1}'", selectedProperty.SplitCase(), values[1] );
+                                return string.Format( "{0} is '{1}'", property.Title, values[1] );
+                            }
+
+                            break;
+
+                        case SystemGuid.FieldType.MULTI_SELECT:
+
+                            if ( values.Count == 2 )
+                            {
+                                List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
+                                List<string> selectedTexts = new List<string>();
+
+                                foreach(string selectedValue in selectedValues)
+                                {
+                                    int valueId = int.MinValue;
+                                    if (int.TryParse(selectedValue, out valueId))
+                                    {
+                                        var definedValue = DefinedValueCache.Read(valueId);
+                                        if (definedValue != null)
+                                        {
+                                            selectedTexts.Add(definedValue.Name);
+                                        }
+                                    }
+                                }
+
+                                return string.Format( "{0} is {1}", property.Title,
+                                    selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
                             }
 
                             break;
@@ -161,11 +202,11 @@ namespace Rock.DataFilters
             int i = 1;
             foreach ( var entityProperty in Properties )
             {
-                ddlProperty.Items.Add( new ListItem( entityProperty.Name.SplitCase(), entityProperty.Name ) );
+                ddlProperty.Items.Add( new ListItem( entityProperty.Title, entityProperty.PropertyName ) );
 
                 if ( entityProperty.PropertyOrAttribute == PropOrAttribute.Property )
                 {
-                    var propInfo = type.GetProperty( entityProperty.Name );
+                    var propInfo = type.GetProperty( entityProperty.PropertyName );
                     if ( propInfo != null && propInfo.PropertyType.IsEnum )
                     {
                         DropDownList ddl = new DropDownList();
@@ -175,10 +216,29 @@ namespace Rock.DataFilters
                         }
                         controls[i++] = ddl;
                     }
-                    else
+                    else if ( propInfo.PropertyType == typeof( string ) )
                     {
                         controls[i++] = ComparisonControl( StringFilterComparisonTypes );
                         controls[i++] = new TextBox();
+                    }
+                    else
+                    {
+                        // Defined Value Properties
+                        var definedValueAttribute = propInfo.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).Single() as Rock.Data.DefinedValueAttribute;
+                        if ( definedValueAttribute != null )
+                        {
+                            CheckBoxList cbl = new CheckBoxList();
+                            cbl.RepeatDirection = RepeatDirection.Horizontal;
+
+                            var definedType = DefinedTypeCache.Read( definedValueAttribute.DefinedTypeGuid );
+                            if ( definedType != null )
+                            {
+                                foreach ( var definedValue in definedType.DefinedValues )
+                                    cbl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                            }
+
+                            controls[i++] = cbl;
+                        }
                     }
                 }
 
@@ -192,6 +252,7 @@ namespace Rock.DataFilters
                             controls[i++] = ComparisonControl( StringFilterComparisonTypes );
                             controls[i++] = attribute.CreateControl();
                             break;
+                        case SystemGuid.FieldType.MULTI_SELECT:
                         case SystemGuid.FieldType.SINGLE_SELECT:
                             controls[i++] = attribute.CreateControl();
                             break;
@@ -223,47 +284,50 @@ namespace Rock.DataFilters
 
             foreach ( var property in Properties )
             {
-                string clientFormatSelection = string.Empty;
-                switch ( property.SystemFieldType )
-                {
-                    case SystemGuid.FieldType.TEXT:
-                        clientFormatSelection = string.Format( "'{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", property.Name.SplitCase() );
-                        break;
-                    case SystemGuid.FieldType.SINGLE_SELECT:
-                        clientFormatSelection = string.Format( "'{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", property.Name.SplitCase() );
-                        break;
-                }
+                var propertyControls = groupedControls[property.PropertyName];
 
-                if ( clientFormatSelection != string.Empty )
-                {
-                    sb.AppendFormat( @"
-            case {0}: result = {1}; break;
-", i, clientFormatSelection );
-                }
-                i++;
-
-                if ( property.Name != selectedProperty )
+                if ( property.PropertyName != selectedProperty )
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Label
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( property.Name.SplitCase() );
-                writer.RenderEndTag();
-
                 // Controls
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                foreach ( Control control in groupedControls[property.Name] )
+                string clientFormatSelection = string.Empty;
+                switch ( property.SystemFieldType )
                 {
-                    control.RenderControl( writer );
-                    writer.Write( " " );
+                    case SystemGuid.FieldType.TEXT:
+                        propertyControls[0].RenderControl( writer );
+                        writer.Write( " " );
+                        propertyControls[1].RenderControl( writer );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", property.Title );
+                        break;
+
+                    case SystemGuid.FieldType.SINGLE_SELECT:
+                        writer.Write( "is " );
+                        propertyControls[0].RenderControl( writer );
+                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", property.Title );
+                        break;
+
+                    case SystemGuid.FieldType.MULTI_SELECT:
+                        writer.Write( "is " );
+                        propertyControls[0].RenderControl( writer );
+                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", property.Title );
+                        break;
+
                 }
+
+                if ( clientFormatSelection != string.Empty )
+                {
+                    sb.AppendFormat( @"
+            case {0}: {1}; break;
+", i, clientFormatSelection );
+                }
+                i++;
 
                 writer.RenderEndTag();
 
@@ -321,6 +385,19 @@ namespace Rock.DataFilters
                         {
                             values.Add( ( (DropDownList)control ).SelectedValue );
                         }
+                        else if ( control is CheckBoxList )
+                        {
+                            var selectedValues = new List<string>();
+                            foreach ( ListItem item in ( (CheckBoxList)control ).Items )
+                            {
+                                if ( item.Selected )
+                                {
+                                    selectedValues.Add( item.Value );
+                                }
+                            }
+
+                            values.Add( selectedValues.ToJson() );
+                        }
                     }
                 }
             }
@@ -367,6 +444,21 @@ namespace Rock.DataFilters
                                 {
                                     ( (DropDownList)control ).SelectedValue = values[i + 1];
                                 }
+
+                                else if ( control is CheckBoxList )
+                                {
+                                    CheckBoxList cbl = (CheckBoxList)control;
+                                    List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[i + 1] );
+                                    foreach ( string selectedValue in selectedValues )
+                                    {
+                                        ListItem li = cbl.Items.FindByValue( selectedValue );
+                                        if ( li != null )
+                                        {
+                                            li.Selected = true;
+                                        }
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -377,10 +469,11 @@ namespace Rock.DataFilters
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -390,12 +483,12 @@ namespace Rock.DataFilters
                 {
                     string selectedProperty = values[0];
 
-                    var property = Properties.Where( p => p.Name == selectedProperty ).FirstOrDefault();
+                    var property = Properties.Where( p => p.PropertyName == selectedProperty ).FirstOrDefault();
                     if ( property != null )
                     {
-                        MemberExpression expr = Expression.Property( parameterExpression, selectedProperty );
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, selectedProperty );
+                        Expression constantExpression = null;
                         ComparisonType comparisonType = ComparisonType.EqualTo;
-                        Expression constant = null;
 
                         switch ( property.SystemFieldType )
                         {
@@ -405,7 +498,9 @@ namespace Rock.DataFilters
                                 {
                                     try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
                                     catch { }
-                                    constant = Expression.Constant( values[2] );
+                                    constantExpression = Expression.Constant( values[2] );
+
+                                    return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                                 }
 
                                 break;
@@ -416,20 +511,41 @@ namespace Rock.DataFilters
                                 {
                                     if ( property.PropertyType.IsEnum )
                                     {
-                                        constant = Expression.Constant( Enum.Parse( property.PropertyType, values[1].Replace( " ", "" ) ) );
+                                        constantExpression = Expression.Constant( Enum.Parse( property.PropertyType, values[1].Replace( " ", "" ) ) );
                                     }
                                     else
                                     {
-                                        constant = Expression.Constant( values[1] );
+                                        constantExpression = Expression.Constant( values[1] );
+                                    }
+
+                                    return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                                }
+
+                                break;
+
+                            case SystemGuid.FieldType.MULTI_SELECT:
+
+                                if ( values.Count == 2 )
+                                {
+                                    if ( property.PropertyType == typeof( int? ) )
+                                    {
+                                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
+                                        List<int> selectedIds = selectedValues.Select( v => int.Parse( v ) ).ToList();
+
+                                        Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                        Expression value = Expression.Constant( true );
+                                        Expression equalExpression = Expression.Equal( hasValue, value );
+
+                                        Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+
+                                        constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
+                                        MethodCallExpression containsExpression = Expression.Call( constantExpression, "Contains", new Type[] { }, ValueExpression );
+
+                                        return Expression.AndAlso( equalExpression, containsExpression );
                                     }
                                 }
 
                                 break;
-                        }
-
-                        if ( constant != null )
-                        {
-                            return ComparisonExpression( comparisonType, expr, constant );
                         }
 
                     }
@@ -450,16 +566,31 @@ namespace Rock.DataFilters
                 {
                     EntityProperty entityProperty = null;
 
-                    // For now, only do enums and string properties
+                    // Enum Properties
                     if ( property.PropertyType.IsEnum )
                     {
                         entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 1 );
                         entityProperty.SystemFieldType = SystemGuid.FieldType.SINGLE_SELECT;
                     }
+
+                    // Text Properties
                     else if ( property.PropertyType == typeof( string ) )
                     {
                         entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 2 );
                         entityProperty.SystemFieldType = SystemGuid.FieldType.TEXT;
+                    }
+
+                    else
+                    {
+                        // Defined Value Properties
+                        var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+                        if ( definedValueAttribute != null)
+                        {
+                            entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 1 );
+                            var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
+                            entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
+                            entityProperty.SystemFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                        }
                     }
 
                     if ( entityProperty != null )
@@ -476,7 +607,7 @@ namespace Rock.DataFilters
                 // Ensure prop name is unique
                 string propName = attribute.Name;
                 int i = 1;
-                while ( properties.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
+                while ( properties.Any( p => p.PropertyName.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
                 {
                     propName = attribute.Name + i++.ToString();
                 }
@@ -511,10 +642,10 @@ namespace Rock.DataFilters
 
             foreach ( var property in Properties )
             {
-                groupedControls.Add( property.Name, new List<Control>() );
+                groupedControls.Add( property.PropertyName, new List<Control>() );
                 for ( int i = property.Index; i < property.Index + property.ControlCount; i++ )
                 {
-                    groupedControls[property.Name].Add( controls[i] );
+                    groupedControls[property.PropertyName].Add( controls[i] );
                 }
             }
 
@@ -523,7 +654,8 @@ namespace Rock.DataFilters
 
         class EntityProperty
         {
-            public string Name { get; set; }
+            public string PropertyName { get; set; }
+            public string Title { get; set; }
             public PropOrAttribute PropertyOrAttribute { get; set; }
             public Type PropertyType { get; set; }
             public int Index { get; set; }
@@ -533,7 +665,8 @@ namespace Rock.DataFilters
 
             public EntityProperty( string name, PropOrAttribute propertyOrAttribute, Type propertyType, int index, int controlCount, int? attributeId = null )
             {
-                Name = name;
+                PropertyName = name;
+                Title = name.SplitCase();
                 PropertyOrAttribute = propertyOrAttribute;
                 PropertyType = propertyType;
                 Index = index;
