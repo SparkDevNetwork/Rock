@@ -383,12 +383,11 @@ namespace RockWeb.Blocks.Finance
                 .Where( d => d.Guid == new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE ) )
                 .Select( dv => dv.DefinedValues.Select( d => d.Name ) ).ToList();
             
-            if ( definedType != null )
+            if ( definedType.Count > 0 )
             {
                 btnRecurrence.DataSource = definedType[0];
                 btnRecurrence.DataBind();
-            }
-            
+            }            
 
             // bind credit card options
             btnYearExpiration.Items.Clear();
