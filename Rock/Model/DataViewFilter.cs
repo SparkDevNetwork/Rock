@@ -162,7 +162,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter )
+        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
             switch ( ExpressionType )
             {
@@ -180,9 +180,9 @@ namespace Rock.Model
                                 {
                                     return component.GetExpression( serviceInstance, parameter, this.Selection );
                                 }
-                                catch
+                                catch (SystemException ex)
                                 {
-                                    //TODO: Somehow need to notify user that filter did not work
+                                    errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( this.Selection ), ex.Message ) );
                                 }
                             }
                         }
@@ -194,7 +194,7 @@ namespace Rock.Model
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( andExp == null )
@@ -216,7 +216,7 @@ namespace Rock.Model
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( orExp == null )

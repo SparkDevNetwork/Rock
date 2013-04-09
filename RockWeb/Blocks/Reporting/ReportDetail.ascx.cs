@@ -399,7 +399,14 @@ namespace RockWeb.Blocks.Reporting
         {
             if (report != null && report.DataView != null)
             {
-                gReport.DataSource = report.DataView.BindGrid(gReport, true);
+                var errors = new List<string>();
+                gReport.DataSource = report.DataView.BindGrid( gReport, out errors, true );
+
+                if ( errors.Any() )
+                {
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                }
+
                 gReport.DataBind();
             }
         }
