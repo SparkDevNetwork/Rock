@@ -46,7 +46,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Image field type
         /// </summary>
-        public const string IMAGE = "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d";
+        public const string IMAGE = "97F8157D-A8C8-4AB3-96A2-9CB2A9049E6D";
 
         /// <summary>
         /// Single Select field type

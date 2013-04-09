@@ -176,7 +176,14 @@ namespace Rock.Model
                             var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
-                                return component.GetExpression( serviceInstance, parameter, this.Selection );
+                                try
+                                {
+                                    return component.GetExpression( serviceInstance, parameter, this.Selection );
+                                }
+                                catch
+                                {
+                                    //TODO: Somehow need to notify user that filter did not work
+                                }
                             }
                         }
                     }

@@ -131,6 +131,7 @@ namespace Rock.DataFilters
                 {
                     switch ( property.SystemFieldType )
                     {
+                        case SystemGuid.FieldType.DATE:
                         case SystemGuid.FieldType.INTEGER:
                         case SystemGuid.FieldType.TEXT:
 
@@ -254,6 +255,22 @@ namespace Rock.DataFilters
                         ddl.Items.Add( new ListItem( "False", "0" ) );
                     }
 
+                    else if ( propInfo.PropertyType == typeof( DateTime ) || propInfo.PropertyType == typeof( DateTime? ) )
+                    {
+                        // Numerical
+                        var ddl = ComparisonControl( DateFilterComparisonTypes );
+                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddl );
+                        controls.Add( ddl );
+
+                        var dtPicker = new DateTimePicker();
+                        dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( dtPicker );
+                        controls.Add( dtPicker );
+
+                        dtPicker.DatePickerType = DateTimePickerType.Date;
+                    }
+
                     else if ( propInfo.PropertyType == typeof( int ) || propInfo.PropertyType == typeof( int? ) )
                     {
                         var definedValueAttribute = propInfo.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
@@ -297,7 +314,7 @@ namespace Rock.DataFilters
                 {
                     var attribute = AttributeCache.Read( entityProperty.AttributeId.Value );
 
-                    switch ( attribute.FieldType.Guid.ToString() )
+                    switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                     {
                         case SystemGuid.FieldType.BOOLEAN:
                             
@@ -308,6 +325,20 @@ namespace Rock.DataFilters
 
                             ddlBool.Items.Add( new ListItem( "True", "1" ) );
                             ddlBool.Items.Add( new ListItem( "False", "0" ) );
+
+                            break;
+
+                        case SystemGuid.FieldType.DATE:
+
+                            var ddlDate = ComparisonControl( DateFilterComparisonTypes );
+                            ddlDate.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddlDate );
+                            controls.Add( ddlDate );
+
+                            var dtPicker = attribute.CreateControl();
+                            dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( dtPicker );
+                            controls.Add( dtPicker );
 
                             break;
 
@@ -396,6 +427,13 @@ namespace Rock.DataFilters
                 string clientFormatSelection = string.Empty;
                 switch ( property.SystemFieldType )
                 {
+                    case SystemGuid.FieldType.DATE:
+                        propertyControls[0].RenderControl( writer );
+                        writer.Write( " " );
+                        propertyControls[1].RenderControl( writer );
+                        clientFormatSelection = string.Format( "result = '... a date value ...'" );
+                        break;
+
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
                         propertyControls[0].RenderControl( writer );
@@ -475,7 +513,19 @@ namespace Rock.DataFilters
                 {
                     foreach ( Control control in groupedControls[selectedProperty] )
                     {
-                        if ( control is TextBox )
+                        if ( control is DateTimePicker )
+                        {
+                            var dtp = control as DateTimePicker;
+                            if ( dtp != null && dtp.SelectedDate.HasValue )
+                            {
+                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
+                        }
+                        else if ( control is TextBox )
                         {
                             values.Add( ( (TextBox)control ).Text );
                         }
@@ -534,7 +584,15 @@ namespace Rock.DataFilters
                             {
                                 Control control = groupedControls[selectedProperty][i];
 
-                                if ( control is TextBox )
+                                if ( control is DateTimePicker )
+                                {
+                                    var dt = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[i + 1], out dt ) )
+                                    {
+                                        ( (DateTimePicker)control ).SelectedDate = dt;
+                                    }
+                                }
+                                else if ( control is TextBox )
                                 {
                                     ( (TextBox)control ).Text = values[i + 1];
                                 }
@@ -608,6 +666,35 @@ namespace Rock.DataFilters
                                         Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
                                         Expression comparisonExpression = Expression.Equal( ValueExpression, constantExpression );
                                         return Expression.AndAlso( equalExpression, comparisonExpression );
+                                    }
+                                }
+
+                                break;
+
+                            case SystemGuid.FieldType.DATE:
+
+                                if ( values.Count == 3 )
+                                {
+                                    DateTime dateValue = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[2], out dateValue ) )
+                                    {
+                                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
+                                        catch { }
+                                        constantExpression = Expression.Constant( dateValue );
+
+                                        if ( property.PropertyType == typeof( DateTime ) )
+                                        {
+                                            return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                                        }
+                                        else  // DateTime?
+                                        {
+                                            Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                            Expression equalExpression = Expression.Equal( hasValue, trueValue );
+                                            Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                            Expression comparisonExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
+                                            return Expression.AndAlso( equalExpression, comparisonExpression );
+                                        }
+
                                     }
                                 }
 
@@ -731,6 +818,13 @@ namespace Rock.DataFilters
                         entityProperty.SystemFieldType = SystemGuid.FieldType.BOOLEAN;
                     }
 
+                    // Date properties
+                    if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+                    {
+                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 2 );
+                        entityProperty.SystemFieldType = SystemGuid.FieldType.DATE;
+                    }
+
                     // Text Properties
                     else if ( property.PropertyType == typeof( string ) )
                     {
@@ -780,8 +874,9 @@ namespace Rock.DataFilters
                 EntityProperty entityProperty = null;
 
                 // For now only do text and single-select attributes
-                switch ( attribute.FieldType.Guid.ToString() )
+                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                 {
+                    case SystemGuid.FieldType.DATE:
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
                         entityProperty = new EntityProperty( attribute.Name, PropOrAttribute.Attribute, null, 2, attribute.Id );
@@ -795,7 +890,7 @@ namespace Rock.DataFilters
 
                 if ( entityProperty != null )
                 {
-                    entityProperty.SystemFieldType = attribute.FieldType.Guid.ToString();
+                    entityProperty.SystemFieldType = attribute.FieldType.Guid.ToString().ToUpper();
                     properties.Add( entityProperty );
                 }
 
