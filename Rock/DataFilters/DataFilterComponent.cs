@@ -303,6 +303,19 @@ namespace Rock.DataFilters
             }
         }
 
+        public static ComparisonType DateFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    ComparisonType.EqualTo |
+                    ComparisonType.GreaterThan |
+                    ComparisonType.GreaterThanOrEqualTo |
+                    ComparisonType.LessThan |
+                    ComparisonType.LessThanOrEqualTo;
+            }
+        }
+
     }
 
 }

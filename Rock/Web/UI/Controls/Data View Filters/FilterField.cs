@@ -203,7 +203,6 @@ $('.filter-item-select').click(function (event) {
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
-            int i = 0;
             var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {

@@ -178,17 +178,20 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        object serviceInstance = Activator.CreateInstance( modelServiceType );
-
-                        if ( serviceInstance != null )
+                        using ( new Rock.Data.UnitOfWorkScope() )
                         {
-                            ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                            Expression whereExpression = GetExpression( serviceInstance, paramExpression );
+                            object serviceInstance = Activator.CreateInstance( modelServiceType );
 
-                            MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-                            if ( getListMethod != null )
+                            if ( serviceInstance != null )
                             {
-                                return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
+                                ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                                Expression whereExpression = GetExpression( serviceInstance, paramExpression );
+
+                                MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
+                                if ( getListMethod != null )
+                                {
+                                    return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
+                                }
                             }
                         }
                     }
