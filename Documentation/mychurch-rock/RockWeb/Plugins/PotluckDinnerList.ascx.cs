@@ -3,9 +3,9 @@ using System.Linq;
 using System.Web.UI;
 using Rock.Web.UI;
 
+using System.Collections.Generic;
 using com.mychurch.MyFirstRockLibrary.Data;
 using com.mychurch.MyFirstRockLibrary.Model;
-using System.Collections.Generic;
 
 namespace com.mychurch.Blocks
 {

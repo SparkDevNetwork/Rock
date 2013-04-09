@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyFirstRockLibrary", "MyFirstRockLibrary\MyFirstRockLibrary.csproj", "{2E05EF88-1898-499C-ABAF-AD91185E2F5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.mychurch.MyFirstRockLibrary", "MyFirstRockLibrary\com.mychurch.MyFirstRockLibrary.csproj", "{2E05EF88-1898-499C-ABAF-AD91185E2F5F}"
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "http://localhost:64710", "{07154BD5-EB27-490D-ABB6-A35058DA0D5C}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{2e05ef88-1898-499c-abaf-ad91185e2f5f}|MyFirstRockLibrary.dll;"
+		ProjectReferences = ""
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "..\RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
