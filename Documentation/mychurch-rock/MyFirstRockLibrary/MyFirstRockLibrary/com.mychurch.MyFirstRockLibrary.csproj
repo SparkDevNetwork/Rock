@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>com.mychurch.MyFirstRockLibrary</RootNamespace>
-    <AssemblyName>MyFirstRockLibrary</AssemblyName>
+    <AssemblyName>com.mychurch.MyFirstRockLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -54,7 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Data\MyFirstRockLibraryContext.cs" />
     <Compile Include="Migrations\201304082133580_CreatePotluckTables.cs" />
     <Compile Include="Migrations\201304082133580_CreatePotluckTables.Designer.cs">
