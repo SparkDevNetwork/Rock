@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Finance
 
         protected List<FinancialTransactionFund> _fundList = new List<FinancialTransactionFund>();
         protected FinancialTransactionService _transactionService = new FinancialTransactionService();
+        protected FinancialTransactionDetailService _detailService = new FinancialTransactionDetailService();
         protected FinancialTransaction _transaction = new FinancialTransaction();
         protected Dictionary<string, decimal> _giftList = new Dictionary<string, decimal>();
 
@@ -107,8 +108,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            PersonService personService = new PersonService();
+            PersonService personService = new PersonService();            
             _transactionService = new FinancialTransactionService();
+            _detailService = new FinancialTransactionDetailService();
             _fundList = new List<FinancialTransactionFund>();
             Person person;
 
@@ -148,10 +150,19 @@ namespace RockWeb.Blocks.Finance
             foreach ( RepeaterItem item in rptFundList.Items )
             {
                 FinancialTransactionFund fund = new FinancialTransactionFund();
+                FinancialTransactionDetail detail = new FinancialTransactionDetail();
+
+                // TODO rewrite fund lookup to use ID instead of name
                 string fundName = ( (HtmlGenericControl)item.FindControl( "lblFundName" ) ).InnerText;
                 fund.Fund = lookupFunds.Where( f => f.PublicName == fundName ).FirstOrDefault();
-                fund.Amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                decimal amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                detail.Amount = amount;
+                fund.Amount = amount;
+                detail.TransactionId = _transaction.Id;
                 fund.TransactionId = _transaction.Id;
+                detail.Summary = "$" + amount + " contribution to " + fund.Fund + " by " + person.FullName;
+
+                _detailService.Add( detail, person.Id );
                 _fundList.Add( fund );
             }
 
@@ -184,7 +195,10 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // TODO no payment type, display validation error
+                litError.Text = "The " + litAccountType.Text + "number was blank or non-numeric.";
+
+                divPaymentConfirmation.Visible = false;
+                divPaymentIncomplete.Visible = true;
             }
 
             litGiftTotal.Text = _transaction.Amount.ToString();
@@ -253,17 +267,6 @@ namespace RockWeb.Blocks.Finance
         protected void btnRecurrence_SelectionChanged( object sender, EventArgs e )
         {
             divRecurrence.Visible = true;
-            lblRecurrence.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the SelectionChanged event of the btnCampusList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCampusList_SelectionChanged( object sender, EventArgs e )
-        {
-            lblCampus.Visible = true;
         }
 
         protected void btnGive_Click( object sender, EventArgs e )
@@ -309,8 +312,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindFunds()
         {
-            _transaction = new FinancialTransaction();
-            ViewState["transaction"] = _transaction;
+            _transaction = new FinancialTransaction();            
             _transactionService.Save( _transaction, CurrentPersonId );
 
             var queryable = _fundService.Queryable().Where( f => f.IsActive )
@@ -333,6 +335,8 @@ namespace RockWeb.Blocks.Finance
                 divAddFund.Visible = false;
             }
 
+            ViewState["transaction"] = _transaction;
+
             rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
             rptFundList.DataBind();
@@ -352,8 +356,7 @@ namespace RockWeb.Blocks.Finance
                 .Select( g => g.GroupId ).ToList();
 
             Location personLocation = groupLocationService.Queryable()
-                .Where( g => g.Guid == new Guid( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE )
-                    && personGroups.Contains( g.GroupId ) )
+                .Where( g => personGroups.Contains( g.GroupId ) )
                 .Select( g => g.Location )
                 .ToList().FirstOrDefault();
             
@@ -367,8 +370,6 @@ namespace RockWeb.Blocks.Finance
                 txtZipcode.Value = personLocation.Zip.ToString();
                 txtEmail.Value = CurrentPerson.Email.ToString();
             }
-
-
         }
 
         /// <summary>
@@ -376,17 +377,20 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindOptions()
         {
-            // frequency options
+            // bind frequency options
             DefinedTypeService dtService = new DefinedTypeService();
             var definedType = dtService.Queryable()
                 .Where( d => d.Guid == new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY_TYPE ) )
                 .Select( dv => dv.DefinedValues.Select( d => d.Name ) ).ToList();
             
-            // set order by
-            btnRecurrence.DataSource = definedType[0];
-            btnRecurrence.DataBind();
+            if ( definedType != null )
+            {
+                btnRecurrence.DataSource = definedType[0];
+                btnRecurrence.DataBind();
+            }
+            
 
-            // credit options
+            // bind credit card options
             btnYearExpiration.Items.Clear();
             btnYearExpiration.Items.Add( DateTime.Now.Year.ToString() );
 

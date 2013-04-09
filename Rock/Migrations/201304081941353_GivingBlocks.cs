@@ -60,6 +60,11 @@ namespace Rock.Migrations
             // Attrib Value for One Time Gift:Show Checking/ACH giving
             AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "87E78EF4-761E-43B8-AD61-A7CABBF38708", "True" );
 
+            // Move Financial Transactions page to Finance section
+            DeleteBlock( "B447AB11-3A19-4527-921A-2266A6B4E181" );
+            DeleteBlockType( "18EE7010-E8CF-4B61-BFDA-E014CCFC9E6D" );
+            AddBlockType( "Finance - Transactions", "View and search financial transactions", "~/Blocks/Finance/Transactions.ascx", "E04320BC-67C3-452D-9EF6-D74D8C177154" );
+            AddBlock( "7CA317B5-5C47-465D-B407-7D614F2A568F", "E04320BC-67C3-452D-9EF6-D74D8C177154", "Financial Transaction", "", "Content", 0, "B447AB11-3A19-4527-921A-2266A6B4E181" );
         }
         
         /// <summary>
@@ -67,6 +72,12 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // Move Financial Transactions page back to Administration section
+            DeleteBlock( "B447AB11-3A19-4527-921A-2266A6B4E181" );
+            DeleteBlockType( "E04320BC-67C3-452D-9EF6-D74D8C177154" );
+            AddBlockType( "Financial Transactions", "View and search financial transactions", "~/Blocks/Administration/Financials.ascx", "18ee7010-e8cf-4b61-bfda-e014ccfc9e6d" );
+            AddBlock( "7CA317B5-5C47-465D-B407-7D614F2A568F", "18ee7010-e8cf-4b61-bfda-e014ccfc9e6d", "Financial Transactions", "", "Content", 0, "B447AB11-3A19-4527-921A-2266A6B4E181" );
+
             DeleteAttribute( "73DA7706-40D8-4427-B666-CC2220848BBE" ); // Show Credit Card giving
             DeleteAttribute( "4D88D9C9-C3EB-4E1B-8894-DB4D41815580" ); // Checking/ACH Provider
             DeleteAttribute( "3D4D15BA-A258-428A-990C-6AE5668BCF17" ); // Default Funds to display
