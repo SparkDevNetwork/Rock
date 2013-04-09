@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( errors.Any() )
                 {
-                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data view filters...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
 
                 gReport.DataBind();
