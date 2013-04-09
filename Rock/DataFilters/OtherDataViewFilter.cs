@@ -3,10 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -200,7 +201,13 @@ namespace Rock.DataFilters
                     {
                         // TODO: Should probably verify security again on the selected dataview and it's filters,
                         // as that could be a moving target.
-                        return dataView.GetExpression( serviceInstance, (ParameterExpression)parameterExpression );
+                        var errorMessages = new List<string>();
+                        Expression expression = dataView.GetExpression( serviceInstance, (ParameterExpression)parameterExpression, out errorMessages );
+                        if ( errorMessages.Any() )
+                        {
+                            throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
+                        }
+                        return expression;
                     }
                 }
             }
