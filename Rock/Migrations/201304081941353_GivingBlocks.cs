@@ -24,41 +24,54 @@ namespace Rock.Migrations
             AddBlockType( "Finance - Recurring Gift", "", "~/Blocks/Finance/RecurringGift.ascx", "F679692F-133E-4F57-9072-D87C675C3283" );            
             AddBlock( "9800CE96-C99B-4C70-ADD9-DF22E89378D4", "4A2AA794-A968-4CCD-973A-C90FD589996F", "One Time Gift", "", "Content", 0, "3BFFEDFD-2198-4A13-827A-4FD1A774949E" );
             AddBlock( "FF73E611-2674-4BA1-A75F-E9291FAC0E19", "F679692F-133E-4F57-9072-D87C675C3283", "Recurring Gift", "", "Content", 0, "0F17BF49-A6D5-47C3-935A-B050127EA939" );
+            
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card giving", "ShowCreditCardgiving", "UI Options", "Allow users to give using a credit card?", 4, "True", "73DA7706-40D8-4427-B666-CC2220848BBE" );
+            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH giving", "ShowChecking/ACHgiving", "UI Options", "Allow users to give using a checking account?", 5, "True", "87E78EF4-761E-43B8-AD61-A7CABBF38708" );
+            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payments", "Which payment processor should be used for credit cards?", 1, "", "6BB568E5-5505-4072-B5D7-D47C5DFD7499" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Checking/ACH Provider", "Checking/ACHProvider", "Payments", "Which payment processor should be used for checking/ACH?", 2, "", "4D88D9C9-C3EB-4E1B-8894-DB4D41815580" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Default Funds to display", "DefaultFundstodisplay", "Payments", "Which funds should be displayed by default?", 3, "", "3D4D15BA-A258-428A-990C-6AE5668BCF17" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Stack layout vertically", "Stacklayoutvertically", "UI Options", "Should giving UI be stacked vertically or horizontally?", 2, "True", "487CA28D-E768-4CE7-8B1D-1C418C3650D2" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campus selection", "ShowCampusselection", "UI Options", "Should giving be associated with a specific campus?", 3, "False", "09F53EC0-0A6D-4834-91F5-E27BC13B3AA2" );
-            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payments", "Which payment processor should be used for credit cards?", 1, "", "6BB568E5-5505-4072-B5D7-D47C5DFD7499" );
-            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH giving", "ShowChecking/ACHgiving", "UI Options", "Allow users to give using a checking account?", 5, "True", "87E78EF4-761E-43B8-AD61-A7CABBF38708" );
-            AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Checking/ACH Provider", "Checking/ACHProvider", "Payments", "Which payment processor should be used for checking/ACH?", 2, "", "6B484886-04BA-4AE8-AD19-355CC149BCAE" );
+                        
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card giving", "ShowCreditCardgiving", "UI Options", "Allow users to give using a credit card?", 4, "True", "FB8CB110-C599-4A49-A1E5-6D23EDB05A64" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH giving", "ShowChecking/ACHgiving", "UI Options", "Allow users to give using a checking account?", 5, "True", "A050195C-F832-4528-9753-ECB1993D7133" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payments", "Which payment processor should be used for credit cards?", 1, "", "2BA3EF55-D44F-405C-AF50-F070CA16B781" );
+            AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Checking/ACH Provider", "Checking/ACHProvider", "Payments", "Which payment processor should be used for checking/ACH?", 2, "", "6B484886-04BA-4AE8-AD19-355CC149BCAE" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Default Funds to display", "DefaultFundstodisplay", "Payments", "Which funds should be displayed by default?", 3, "", "739EF6E1-288D-4751-AFE8-3C32DF111AE4" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Stack layout vertically", "Stacklayoutvertically", "UI Options", "Should giving UI be stacked vertically or horizontally?", 2, "True", "1B68CD07-883C-4FC8-BC51-06DF0C0BB1EB" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campus selection", "ShowCampusselection", "UI Options", "Should giving be associated with a specific campus?", 3, "False", "C77F965A-B537-4966-9203-C12F447C8054" );
 
+            // One Time Gift Block Attributes
             // Attrib Value for One Time Gift:Show Credit Card giving
             AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "73DA7706-40D8-4427-B666-CC2220848BBE", "True" );
-
-            // Attrib Value for One Time Gift:Checking/ACH Provider
-            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "4D88D9C9-C3EB-4E1B-8894-DB4D41815580", "" );
-
-            // Attrib Value for One Time Gift:Default Funds to display
-            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "3D4D15BA-A258-428A-990C-6AE5668BCF17", "" );
-
-            // Attrib Value for One Time Gift:Stack layout vertically
-            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "487CA28D-E768-4CE7-8B1D-1C418C3650D2", "False" );
-
-            // Attrib Value for One Time Gift:Show Campus selection
-            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "09F53EC0-0A6D-4834-91F5-E27BC13B3AA2", "True" );
-
-            // Attrib Value for One Time Gift:Credit Card Provider
-            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "6BB568E5-5505-4072-B5D7-D47C5DFD7499", "" );
-
             // Attrib Value for One Time Gift:Show Checking/ACH giving
             AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "87E78EF4-761E-43B8-AD61-A7CABBF38708", "True" );
+            // Attrib Value for One Time Gift:Credit Card Provider
+            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "6BB568E5-5505-4072-B5D7-D47C5DFD7499", "" );
+            // Attrib Value for One Time Gift:Checking/ACH Provider
+            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "4D88D9C9-C3EB-4E1B-8894-DB4D41815580", "" );
+            // Attrib Value for One Time Gift:Default Funds to display
+            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "3D4D15BA-A258-428A-990C-6AE5668BCF17", "" );
+            // Attrib Value for One Time Gift:Stack layout vertically
+            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "487CA28D-E768-4CE7-8B1D-1C418C3650D2", "False" );
+            // Attrib Value for One Time Gift:Show Campus selection
+            AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "09F53EC0-0A6D-4834-91F5-E27BC13B3AA2", "False" );
+            
+            // Recurring Gift Block Attributes
+            // Attrib Value for One Time Gift:Show Credit Card giving
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "FB8CB110-C599-4A49-A1E5-6D23EDB05A64", "True" );
+            // Attrib Value for One Time Gift:Show Checking/ACH giving
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "A050195C-F832-4528-9753-ECB1993D7133", "True" );
+            // Attrib Value for One Time Gift:Credit Card Provider
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "2BA3EF55-D44F-405C-AF50-F070CA16B781", "" );
+            // Attrib Value for One Time Gift:Checking/ACH Provider
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "6B484886-04BA-4AE8-AD19-355CC149BCAE", "" );
+            // Attrib Value for One Time Gift:Default Funds to display
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "739EF6E1-288D-4751-AFE8-3C32DF111AE4", "" );
+            // Attrib Value for One Time Gift:Stack layout vertically
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "1B68CD07-883C-4FC8-BC51-06DF0C0BB1EB", "False" );
+            // Attrib Value for One Time Gift:Show Campus selection
+            AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "C77F965A-B537-4966-9203-C12F447C8054", "False" );            
 
             // Move Financial Transactions page to Finance section
             DeleteBlock( "B447AB11-3A19-4527-921A-2266A6B4E181" );
