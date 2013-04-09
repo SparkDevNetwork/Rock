@@ -63,7 +63,7 @@
                                     <div class="control-group">
                                         <label id="lblCampus" class="control-label" for="btnCampusList" visible="true" runat="server">Campus </label>
                                         <div class="controls">
-                                            <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" OnSelectionChanged="btnCampusList_SelectionChanged"></Rock:ButtonDropDownList>
+                                            <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus"></Rock:ButtonDropDownList>
                                         </div>
                                     </div>
                                 </div>
@@ -83,7 +83,10 @@
                                             </div>
                                         </div>
                                     </div>                                        
-                                </ItemTemplate>                           
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptFundList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default funds enabled.  Please enable a fund in the block settings.</label>
+                                </FooterTemplate>                                                     
                             </asp:Repeater>                        
 
                             <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
@@ -92,52 +95,52 @@
                                 </div>
                             </div>
 
-                            <div class="row-fluid">
-                                <div class="control-group">     
-                                    <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
-                                    <div class="controls amount-right">
-                                        <b>$ <span id="spnTotal">0.00</span></b>
-                                    </div>                                                        
+                            <% if ( bool.Parse((rptFundList.Items.Count!=0).ToString()) ) { %>
+
+                                <div class="row-fluid" >
+                                    <div class="control-group">     
+                                        <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
+                                        <div class="controls amount-right">
+                                            <b>$ <span id="spnTotal">0.00</span></b>
+                                        </div>                                                        
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="row-fluid">
+                                <div class="row-fluid">
 
-			                    <div class="control-group">
+			                        <div class="control-group">
 
-                                    <label id="lblRecurrence" class="control-label" for="btnRecurrence" visible="true" runat="server">Recurs </label>
-                                    <div class="controls">
-                                        <Rock:ButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged"></Rock:ButtonDropDownList>
-                                    </div>
-				                    
-			                    </div>
+                                        <label id="lblRecurrence" class="control-label" for="btnRecurrence">Recurs </label>
+                                        <div class="controls">
+                                            <Rock:ButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged"></Rock:ButtonDropDownList>
+                                        </div>				                    
 
-                                <div id="divRecurrence" visible="false" runat="server">
+			                        </div>
+
+                                    <div id="divRecurrence" visible="false" runat="server">
                                     
-                                    <div class="row-fluid">
-                                        
-                                        <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
-                                        
-                                    </div>
-
-                                    <div class="row-fluid">
-
-                                        <div class="control-group controls">
-                                            <label class="checkbox">                                            
-                                                <input id="cboxLimitGifts" class="togglePanel" type="checkbox" onclick="javascript: $('#grpLimitGifts').toggle()"> Limit number of gifts
-                                            </label>                                      
-
-                                            <div id="grpLimitGifts" style="display: none">                                                                                                                                        
-                                                <input class="input-mini" size="4" type="text" placeholder="0">
-                                            </div>
-
+                                        <div class="row-fluid">                                        
+                                            <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
                                         </div>
 
-		                            </div>
-                                            
-                                </div>    
+                                        <div class="row-fluid">
+                                            <div class="control-group controls">
+                                                <label class="checkbox">                                            
+                                                    <input id="cboxLimitGifts" class="togglePanel" type="checkbox" onclick="javascript: $('#grpLimitGifts').toggle()"> Limit number of gifts
+                                                </label>                                      
 
-                            </div>
+                                                <div id="grpLimitGifts" style="display: none">                                                                                                                                        
+                                                    <input class="input-mini" size="4" type="text" placeholder="0">
+                                                </div>
+
+                                            </div>
+		                                </div>                                            
+
+                                    </div>    
+
+                                </div>
+
+                            <% } %>
                         
                         </div>
 
@@ -378,42 +381,31 @@
 
                                 <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
                                     
-                                    <div class="row-fluid"></div>
-
-                                    <div class="row-fluid">
+                                    <div class="row-fluid span6">
                                 
                                         <label for="txtBankName" >Bank Name</label>
                                         <input id="txtBankName" type="text" class="input-medium" runat="server"/>                                        
 
-                                    </div>
-
-                                    <div class="row-fluid">
-
                                         <label for="numRouting" >Routing #</label>
                                         <input id="numRouting" type="text" class="input-medium" runat="server"/>
-
-                                    </div>
-
-
-                                    <div class="row-fluid">
 
                                         <label for="numAccount" >Account #</label>
                                         <input id="numAccount" type="text" class="input-medium" runat="server"/>
 
                                     </div>
 
-                                    <div class="row-fluid">
-
-                                        <div class="btn-group">
-
-                                            <asp:RadioButtonList ID="radioAccountType" RepeatDirection="Horizontal" runat="server">
-                                                <asp:ListItem text="Checking" Selected="true"></asp:ListItem>
-                                                <asp:ListItem text="Savings"></asp:ListItem>
-                                            </asp:RadioButtonList>
-
-                                        </div>
-
+                                    <div class="row-fluid span6">                                        
+                                        <img class="check-image" src="../../Assets/Images/check-image.png" data-at2x="../../Assets/Images/check-image@2x.png" />
                                     </div>
+                                        
+                                    <div class="row-fluid btn-group">
+
+                                        <asp:RadioButtonList ID="radioAccountType" RepeatDirection="Horizontal" runat="server">
+                                            <asp:ListItem text="Checking" Selected="true"></asp:ListItem>
+                                            <asp:ListItem text="Savings"></asp:ListItem>
+                                        </asp:RadioButtonList>                                       
+
+                                    </div>  
 
                                     <% if ( _ShowSaveDetails ) { %>
 
@@ -467,21 +459,31 @@
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
                 
-                <p><b><asp:Literal ID="cfrmName" runat="server" /></b>, you're about to give a total of <b><asp:Literal ID="litGiftTotal" Visible="true" runat="server"/></b>
-                    <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following funds: </asp:Literal>
-                    <asp:Repeater ID="rptGiftConfirmation" runat="server">
-                        <ItemTemplate>
-                            <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %></b> 
-                            to the <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b>
-                            <asp:Literal ID="litSpacer" Visible=<%# (litMultiGift.Visible) %> runat="server" >, </asp:Literal>
-                        </ItemTemplate>
-                        <FooterTemplate>.</FooterTemplate>
-                    </asp:Repeater>
-                </p>                                
+                <div id="divPaymentConfirmation" runat="server">
+
+                    <p><b><asp:Literal ID="cfrmName" runat="server" /></b>, you're about to give a total of 
+                        <b><asp:Literal ID="litGiftTotal" Visible="true" runat="server"/></b>
+                        <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following funds: </asp:Literal>
+                        <asp:Repeater ID="rptGiftConfirmation" runat="server">
+                            <ItemTemplate>
+                                <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %></b> 
+                                to the <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b>
+                                <asp:Literal ID="litSpacer" Visible=<%# (litMultiGift.Visible) %> runat="server" >, </asp:Literal>
+                            </ItemTemplate>
+                            <FooterTemplate>.</FooterTemplate>
+                        </asp:Repeater>
+                    </p>                                
                 
-                <p>Your gift will be paid using your <b><asp:Literal ID="litPaymentType" runat="server"/></b>
-                    <asp:Literal ID="litAccountType" runat="server"/> ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
-                </p>
+                    <p>Your gift will be paid using your <b><asp:Literal ID="litPaymentType" runat="server"/></b>
+                        <asp:Literal ID="litAccountType" runat="server"/> ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
+                    </p>
+
+                </div>
+
+                <div id="divPaymentIncomplete" runat="server" visible="false" CssClass="alert alert-error block-message error" >
+                    <p><b><asp:Literal ID="payeeName" runat="server" /></b>, your payment details were not complete. 
+                        <b><asp:Literal ID="litError" runat="server"/></b></p>                    
+                </div>
 
             </div>
 

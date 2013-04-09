@@ -47,7 +47,8 @@ namespace RockWeb.Blocks.Finance
         
         protected List<FinancialTransactionFund> _fundList = new List<FinancialTransactionFund>();
         protected FinancialTransactionService _transactionService = new FinancialTransactionService();
-        protected FinancialTransaction _transaction = new FinancialTransaction();
+        protected FinancialTransactionDetailService _detailService = new FinancialTransactionDetailService();
+        protected FinancialTransaction _transaction = new FinancialTransaction();        
         protected Dictionary<string, decimal> _giftList = new Dictionary<string, decimal>();
         
         #endregion
@@ -108,6 +109,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnNext_Click( object sender, EventArgs e )
         {
             _transactionService = new FinancialTransactionService();
+            _detailService = new FinancialTransactionDetailService();
             _fundList = new List<FinancialTransactionFund>();
             
             // process person details
@@ -138,7 +140,7 @@ namespace RockWeb.Blocks.Finance
             var lookupFunds = _fundService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order ).ToList();
 
-            _transaction = (FinancialTransaction)Session["transaction"];
+            _transaction = (FinancialTransaction)ViewState["transaction"];
             if ( _transaction == null )
             {
                 _transaction = new FinancialTransaction();                    
@@ -148,17 +150,26 @@ namespace RockWeb.Blocks.Finance
             foreach ( RepeaterItem item in rptFundList.Items )
             {
                 FinancialTransactionFund fund = new FinancialTransactionFund();
+                FinancialTransactionDetail detail = new FinancialTransactionDetail();
+                
+                // TODO rewrite fund lookup to use ID instead of name
                 string fundName = ( (HtmlGenericControl)item.FindControl( "lblFundName" ) ).InnerText;
                 fund.Fund = lookupFunds.Where( f => f.PublicName == fundName ).FirstOrDefault();
-                fund.Amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
-                fund.TransactionId = _transaction.Id;                
-                _fundList.Add( fund );
+                decimal amount = Convert.ToDecimal( ( (HtmlInputControl)item.FindControl( "inputFundAmount" ) ).Value );
+                detail.Amount = amount;
+                fund.Amount = amount;
+                detail.TransactionId = _transaction.Id;
+                fund.TransactionId = _transaction.Id;
+                detail.Summary = "$" + amount + " contribution to " + fund.Fund + " by " + person.FullName;
+
+                _detailService.Add( detail, person.Id );
+                _fundList.Add( fund );                
             }
                 
             _transaction.EntityId = person.Id;
             _transaction.EntityTypeId = new Rock.Model.Person().TypeId;
             _transaction.Amount = _fundList.Sum( g => (decimal)g.Amount );
-            Session["transaction"] = _transaction;
+            ViewState["transaction"] = _transaction;
             _transactionService.Save( _transaction, CurrentPersonId );
 
             // process payment type
@@ -184,7 +195,10 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // no payment type, display validation error
+                litError.Text = "The " + litAccountType.Text + "number was blank or non-numeric.";
+                
+                divPaymentConfirmation.Visible = false;
+                divPaymentIncomplete.Visible = true;
             }
 
             litGiftTotal.Text = _transaction.Amount.ToString();
@@ -193,8 +207,7 @@ namespace RockWeb.Blocks.Finance
             {
                 litMultiGift.Visible = false;
                 litGiftTotal.Visible = false;                
-            }
-            
+            }            
             
             rptGiftConfirmation.DataSource = _fundList.ToDictionary( f => (string)f.Fund.PublicName, f => (decimal)f.Amount );
             rptGiftConfirmation.DataBind();
@@ -212,16 +225,6 @@ namespace RockWeb.Blocks.Finance
         {            
             pnlConfirm.Visible = false;
             pnlDetails.Visible = true;            
-        }
-
-        /// <summary>
-        /// Handles the SelectionChanged event of the btnCampusList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCampusList_SelectionChanged( object sender, EventArgs e )
-        {
-            lblCampus.Visible = true;
         }
 
         /// <summary>
@@ -260,7 +263,7 @@ namespace RockWeb.Blocks.Finance
         {
             // give through payment gateway
 
-            _transaction = (FinancialTransaction)Session["transaction"];
+            _transaction = (FinancialTransaction)ViewState["transaction"];
             _transactionService = new FinancialTransactionService();
             _transactionService.Save( _transaction, CurrentPersonId );
 
@@ -300,9 +303,8 @@ namespace RockWeb.Blocks.Finance
         protected void BindFunds( )
         {
             _transaction = new FinancialTransaction();
-            Session["transaction"] = _transaction;
             _transactionService.Save( _transaction, CurrentPersonId );
-            
+                        
             var queryable = _fundService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order );
 
@@ -322,6 +324,8 @@ namespace RockWeb.Blocks.Finance
             {
                 divAddFund.Visible = false;
             }
+
+            ViewState["transaction"] = _transaction;
 
             rptFundList.DataSource = queryable.Where( f => defaultFunds.Contains( f.Id ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
