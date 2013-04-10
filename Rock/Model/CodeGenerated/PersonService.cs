@@ -144,9 +144,6 @@ namespace Rock.Model
                 target.GivenName = source.GivenName;
                 target.NickName = source.NickName;
                 target.LastName = source.LastName;
-                target.FullName = source.FullName;
-                target.FirstName = source.FirstName;
-                target.FullNameLastFirst = source.FullNameLastFirst;
                 target.SuffixValueId = source.SuffixValueId;
                 target.PhotoId = source.PhotoId;
                 target.BirthDay = source.BirthDay;
