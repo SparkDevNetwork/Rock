@@ -164,7 +164,7 @@ namespace Rock.Migrations
             DropTable("dbo.PaymentGateway");
 
             AddDefinedType( "Financial", "Account Type", "Types of Accounts", "752DA126-471F-4221-8503-5297593C99FF" );
-            AddDefinedType( "Financial", "Transaction Type", "The type of financial transaction (i.e. Contribution, Event Registration, etc.)", "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5");
+            AddDefinedType( "Financial", "Transaction Type", "The type of financial transaction (i.e. Contribution, Event Registration, etc.)", "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5" );
             AddDefinedValue( "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5", "Contribution", "A Contribution Transaction", "2D607262-52D6-4724-910D-5C6E8FB89ACC" );
             AddDefinedValue( "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5", "Event Registration", "An Event Registration Transaction", "33CB96DD-8752-4BEE-A142-88DB7DE538F0" );
             AddDefinedType( "Financial", "Transaction Image Type", "The type of image associated with a transaction", "0745D5DE-2D09-44B3-9017-40C1DA83CB39" );
@@ -173,6 +173,14 @@ namespace Rock.Migrations
             AddDefinedValue( "0745D5DE-2D09-44B3-9017-40C1DA83CB39", "Front of Envelope", "Front of envelope", "654ABEC4-7414-402F-BEA4-0AA833683AD6" );
             AddDefinedValue( "0745D5DE-2D09-44B3-9017-40C1DA83CB39", "Back of Envelope", "Back of envelope", "746FBD46-AA4C-4A84-A7DA-080763CED187" );
 
+            Sql( @"
+                INSERT INTO [FinancialAccount] ([Name], [PublicName], [Description], [IsTaxDeductible], [Order], [IsActive], [Guid]) 
+                    VALUES ('General Fund', 'General Fund', 'General giving fund', 1, 0, 1,	'4410306F-3FB5-4A57-9A80-09A3F9D40D0C')
+                INSERT INTO [FinancialAccount] ([Name], [PublicName], [Description], [IsTaxDeductible], [Order], [IsActive], [Guid]) 
+                    VALUES ('Building Fund', 'Building Fund', 'Building giving fund', 1, 0, 1, '67C6181C-1D8C-44D7-B262-B81E746F06D8')
+                INSERT INTO [FinancialAccount] ([Name], [PublicName], [Description], [IsTaxDeductible], [Order], [IsActive], [Guid]) 
+                    VALUES ('Mission Fund', 'Mission Fund', 'Missions giving fund', 1, 0, 1, 'BAB250EE-CAE6-4A41-9756-AD9327408BE0')
+            " );
         }
         
         /// <summary>
@@ -180,6 +188,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            Sql( @" DELETE FROM [dbo].[FinancialAccount] 
+                WHERE [Guid] = '4410306F-3FB5-4A57-9A80-09A3F9D40D0C'
+                OR [Guid] = '67C6181C-1D8C-44D7-B262-B81E746F06D8'
+                OR [Guid] = 'BAB250EE-CAE6-4A41-9756-AD9327408BE0' " );
+
             DeleteDefinedType( "752DA126-471F-4221-8503-5297593C99FF" );
             DeleteDefinedType( "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5" );
             DeleteDefinedType( "0745D5DE-2D09-44B3-9017-40C1DA83CB39" );
