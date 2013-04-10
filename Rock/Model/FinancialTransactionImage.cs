@@ -92,8 +92,8 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionImageConfiguration()
         {
-            this.HasOptional( i => i.Transaction ).WithMany( t => t.Images ).HasForeignKey( i => i.TransactionId ).WillCascadeOnDelete( false );
-            this.HasOptional( i => i.BinaryFile ).WithMany().HasForeignKey( i => i.BinaryFileId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.Transaction ).WithMany( t => t.Images ).HasForeignKey( i => i.TransactionId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.BinaryFile ).WithMany().HasForeignKey( i => i.BinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( i => i.TransactionImageTypeValue ).WithMany().HasForeignKey( i => i.TransactionImageTypeValueId ).WillCascadeOnDelete( false );
         }
     }
