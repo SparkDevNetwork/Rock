@@ -422,8 +422,6 @@ order by [parentTable]
 
             restNamespace = restNamespace.Replace( ".Model", ".Controllers" );
 
-            var properties = GetEntityProperties( type );
-
             var sb = new StringBuilder();
 
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -671,7 +669,10 @@ namespace Rock.DataFilters.{0}
             {
                 if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
                 {
-                    properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                    if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
+                    {
+                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                    }
                 }
             }
 
