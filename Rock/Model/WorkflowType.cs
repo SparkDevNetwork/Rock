@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "WorkflowType" )]
     [DataContract( IsReference = true )]
-    public partial class WorkflowType : Model<WorkflowType>, IOrdered
+    public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized
     {
 
         #region Entity Properties

@@ -357,6 +357,15 @@
       </Rules>
       <AnalyzerSettings />
     </Analyzer>
+	<Analyzer AnalyzerId="StyleCop.CSharp.NamingRules">
+      <AnalyzerSettings>
+        <CollectionProperty Name="Hungarian">
+          <Value>cb</Value>
+          <Value>lb</Value>
+          <Value>tb</Value>
+        </CollectionProperty>
+      </AnalyzerSettings>
+    </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.SpacingRules">
       <Rules>
         <Rule Name="OpeningParenthesisMustBeSpacedCorrectly">

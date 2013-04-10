@@ -20,7 +20,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "PrayerRequest" )]
     [DataContract( IsReference = true )]
-    public partial class PrayerRequest : Model<PrayerRequest>
+    public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
 
         /// <summary>
@@ -201,6 +201,7 @@ namespace Rock.Model
         public DateTime? ApprovedOnDate { get; set; }
 
         #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the requested by person.
         /// </summary>
@@ -260,6 +261,17 @@ namespace Rock.Model
             get
             {
                 return string.Format( "{0}, {1}", LastName, FirstName );
+            }
+        }
+
+        /// <summary>
+        /// Name of the prayer request (required for ICategorized)
+        /// </summary>
+        public virtual string Name
+        {
+            get
+            {
+                return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDate );
             }
         }
 

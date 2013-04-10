@@ -638,6 +638,25 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets a data adapter.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="commandType">Type of the command.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        public IDataAdapter GetDataAdapter( string query, CommandType commandType, Dictionary<string, object> parameters )
+        {
+            SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
+            if ( sqlCommand != null )
+            {
+                return new SqlDataAdapter( sqlCommand );
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
         /// Gets the data set.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -647,12 +666,11 @@ namespace Rock.Data
         public DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters )
         {
             SqlCommand sqlCommand = GetCommand( query, commandType, parameters );
-            if (sqlCommand != null)
+            if ( sqlCommand != null )
             {
+                SqlDataAdapter adapter =new SqlDataAdapter( sqlCommand );
                 DataSet dataSet = new DataSet( "rockDs" );
-                SqlDataAdapter sqlDataAdapter = new SqlDataAdapter( sqlCommand );
-                sqlDataAdapter.Fill( dataSet );
-
+                adapter.Fill( dataSet );
                 return dataSet;
             }
 
