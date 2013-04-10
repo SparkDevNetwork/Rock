@@ -625,6 +625,13 @@
     <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionImageService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
     <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
@@ -653,8 +660,15 @@
     <Compile Include="Model\BinaryFileType.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
+    <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
+    <Compile Include="Model\FinancialTransactionService.Partial.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\DataView.cs" />
     <Compile Include="Model\DataViewFilter.cs" />
@@ -663,7 +677,6 @@
     <Compile Include="Model\MarketingCampaign.cs" />
     <Compile Include="Model\MarketingCampaignAd.cs" />
     <Compile Include="Model\MarketingCampaignAdType.cs" />
-    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs" />
     <Compile Include="Model\MarketingCampaignAudience.cs" />
     <Compile Include="Model\MarketingCampaignCampus.cs" />
     <Compile Include="Model\Note.cs" />
@@ -697,10 +710,6 @@
     <Compile Include="Model\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Field\Types\HtmlFieldType.cs" />
     <Compile Include="Field\Types\MemoFieldType.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
-    <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
@@ -742,7 +751,9 @@
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFileTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BinaryFilePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\FundPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AccountPicker.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\Controls\Pickers\WorkflowTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ItemPicker.cs" />
@@ -906,31 +917,25 @@
     <Compile Include="Model\FinancialBatch.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Fund.cs">
+    <Compile Include="Model\FinancialAccount.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\FundService.cs" />
-    <Compile Include="Model\PaymentGateway.cs">
+    <Compile Include="Model\FinancialGateway.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\PersonAccount.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Pledge.cs">
+    <Compile Include="Model\FinancialPledge.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\CodeGenerated\PledgeService.cs" />
     <Compile Include="Model\FinancialTransaction.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\FinancialTransactionFund.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\TransactionSearchValue.cs" />
-    <Compile Include="Model\FinancialTransactionService.Partial.cs" />
     <Compile Include="Model\Group.cs" />
     <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />

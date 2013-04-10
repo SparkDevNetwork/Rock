@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Fund Service class
+    /// FinancialAccount Service class
     /// </summary>
-    public partial class FundService : Service<Fund>
+    public partial class FinancialAccountService : Service<FinancialAccount>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FundService"/> class
+        /// Initializes a new instance of the <see cref="FinancialAccountService"/> class
         /// </summary>
-        public FundService()
+        public FinancialAccountService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FundService"/> class
+        /// Initializes a new instance of the <see cref="FinancialAccountService"/> class
         /// </summary>
-        public FundService(IRepository<Fund> repository) : base(repository)
+        public FinancialAccountService(IRepository<FinancialAccount> repository) : base(repository)
         {
         }
 
@@ -45,21 +45,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Fund item, out string errorMessage )
+        public bool CanDelete( FinancialAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Fund>().Queryable().Any( a => a.ParentFundId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Fund.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Pledge>().Queryable().Any( a => a.FundId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Fund.FriendlyTypeName, Pledge.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -67,37 +55,35 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FundExtensionMethods
+    public static class FinancialAccountExtensionMethods
     {
         /// <summary>
-        /// Clones this Fund object to a new Fund object
+        /// Clones this FinancialAccount object to a new FinancialAccount object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Fund Clone( this Fund source, bool deepCopy )
+        public static FinancialAccount Clone( this FinancialAccount source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Fund;
+                return source.Clone() as FinancialAccount;
             }
             else
             {
-                var target = new Fund();
+                var target = new FinancialAccount();
+                target.ParentAccountId = source.ParentAccountId;
+                target.CampusId = source.CampusId;
                 target.Name = source.Name;
                 target.PublicName = source.PublicName;
                 target.Description = source.Description;
-                target.ParentFundId = source.ParentFundId;
                 target.IsTaxDeductible = source.IsTaxDeductible;
+                target.GlCode = source.GlCode;
                 target.Order = source.Order;
                 target.IsActive = source.IsActive;
                 target.StartDate = source.StartDate;
                 target.EndDate = source.EndDate;
-                target.IsPledgable = source.IsPledgable;
-                target.GlCode = source.GlCode;
-                target.FundTypeValueId = source.FundTypeValueId;
-                target.Entity = source.Entity;
-                target.EntityId = source.EntityId;
+                target.AccountTypeValueId = source.AccountTypeValueId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

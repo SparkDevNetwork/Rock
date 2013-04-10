@@ -9,7 +9,8 @@
             <Rock:LabeledTextBox ID="txtFromAmount" runat="server" LabelText="From Amount"></Rock:LabeledTextBox>
             <Rock:LabeledTextBox ID="txtToAmount" runat="server" LabelText="To Amount"></Rock:LabeledTextBox>
             <Rock:LabeledTextBox ID="txtTransactionCode" runat="server" LabelText="Transaction Code"></Rock:LabeledTextBox>
-            <Rock:LabeledDropDownList ID="ddlFundType" runat="server" LabelText="Fund Type" />
+            <Rock:LabeledDropDownList ID="ddlAccount" runat="server" LabelText="Account" />
+            <Rock:LabeledDropDownList ID="ddlTransactionType" runat="server" LabelText="Transaction Type" />
             <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" LabelText="Currency Type" />
             <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" LabelText="Credit Card Type" />
             <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" LabelText="Source Type" />

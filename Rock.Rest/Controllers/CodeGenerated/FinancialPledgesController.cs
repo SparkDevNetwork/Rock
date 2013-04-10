@@ -15,10 +15,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// Funds REST API
+    /// FinancialPledges REST API
     /// </summary>
-    public partial class FundsController : Rock.Rest.ApiController<Rock.Model.Fund>
+    public partial class FinancialPledgesController : Rock.Rest.ApiController<Rock.Model.FinancialPledge>
     {
-        public FundsController() : base( new Rock.Model.FundService() ) { } 
+        public FinancialPledgesController() : base( new Rock.Model.FinancialPledgeService() ) { } 
     }
 }

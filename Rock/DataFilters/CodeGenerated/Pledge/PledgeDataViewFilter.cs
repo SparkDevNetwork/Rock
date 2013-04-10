@@ -21,7 +21,7 @@ namespace Rock.DataFilters.Pledge
     [Description( "Filter Pledges using other data view" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Pledge Data View Filter" )]
-    public partial class PledgeDataViewFilter : OtherDataViewFilter<Rock.Model.Pledge>
+    public partial class PledgeDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialPledge>
     {
     }
 }

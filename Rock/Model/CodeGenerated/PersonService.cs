@@ -89,11 +89,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Pledge>().Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Pledge.FriendlyTypeName );
-                return false;
-            }  
             
             // ignoring PrayerRequest,RequestedByPersonId 
             

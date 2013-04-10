@@ -4,7 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -15,12 +14,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Pledge POCO class.
+    /// Financial Pledge POCO class.
     /// </summary>
-    [Table("Pledge")]
+    [Table( "FinancialPledge" )]
     [DataContract]
-    public partial class Pledge : Model<Pledge>, IValidatableObject
+    public partial class FinancialPledge : Model<FinancialPledge>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the person id.
         /// </summary>
@@ -37,7 +39,7 @@ namespace Rock.Model
         /// The fund id.
         /// </value>
         [DataMember]
-        public int? FundId { get; set; }
+        public int? AccountId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -46,7 +48,17 @@ namespace Rock.Model
         /// The amount.
         /// </value>
         [DataMember]
-        public decimal Amount { get; set; }
+        public decimal TotalAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the frequency type id.
+        /// </summary>
+        /// <value>
+        /// The frequency type id.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY )]
+        public int? PledgeFrequencyValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the start date.
@@ -66,23 +78,9 @@ namespace Rock.Model
         [DataMember]
         public DateTime EndDate { get; set; }
 
-        /// <summary>
-        /// Gets or sets the frequency type id.
-        /// </summary>
-        /// <value>
-        /// The frequency type id.
-        /// </value>
-        [DataMember]
-        public int? FrequencyTypeValueId { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the frequency amount.
-        /// </summary>
-        /// <value>
-        /// The frequency amount.
-        /// </value>
-        [DataMember]
-        public decimal? FrequencyAmount { get; set; }
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the person.
@@ -94,22 +92,26 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the fund.
+        /// Gets or sets the account.
         /// </summary>
         /// <value>
         /// The fund.
         /// </value>
         [DataMember]
-        public virtual Fund Fund { get; set; }
+        public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the frequency.
+        /// Gets or sets the frequency of the pledge
         /// </summary>
         /// <value>
-        /// The type of the frequency.
+        /// The frequency of the pledge
         /// </value>
         [DataMember]
-        public virtual DefinedValue FrequencyTypeValue { get; set; }
+        public virtual DefinedValue PledgeFrequencyValue { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -119,36 +121,32 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Amount.ToString();
+            return this.TotalAmount.ToString();
         }
 
-        /// <summary>
-        /// Performs custom validation rules
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <returns></returns>
-        public IEnumerable<ValidationResult> Validate( ValidationContext validationContext )
-        {
-            if ( Fund != null && !Fund.IsPledgable )
-            {
-                yield return new ValidationResult( "Fund must allow pledges.", new[] { "Fund" } );
-            }
-        }
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Pledge Configuration class.
     /// </summary>
-    public partial class PledgeConfiguration : EntityTypeConfiguration<Pledge>
+    public partial class FinancialPledgeConfiguration : EntityTypeConfiguration<FinancialPledge>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PledgeConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialPledgeConfiguration"/> class.
         /// </summary>
-        public PledgeConfiguration()
+        public FinancialPledgeConfiguration()
         {
-            this.HasOptional(p => p.Person).WithMany(p => p.Pledges).HasForeignKey(p => p.PersonId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.Fund).WithMany(f => f.Pledges).HasForeignKey(p => p.FundId).WillCascadeOnDelete(false);
-            this.HasOptional(p => p.FrequencyTypeValue).WithMany().HasForeignKey(p => p.FrequencyTypeValueId).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.Person ).WithMany().HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Account ).WithMany().HasForeignKey( p => p.AccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PledgeFrequencyValue ).WithMany().HasForeignKey( p => p.PledgeFrequencyValueId ).WillCascadeOnDelete( false );
         }
+
     }
+
+    #endregion
+
 }

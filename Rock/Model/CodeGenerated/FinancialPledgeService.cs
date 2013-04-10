@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// DataView Service class
+    /// FinancialPledge Service class
     /// </summary>
-    public partial class DataViewService : Service<DataView>
+    public partial class FinancialPledgeService : Service<FinancialPledge>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
+        /// Initializes a new instance of the <see cref="FinancialPledgeService"/> class
         /// </summary>
-        public DataViewService()
+        public FinancialPledgeService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
+        /// Initializes a new instance of the <see cref="FinancialPledgeService"/> class
         /// </summary>
-        public DataViewService(IRepository<DataView> repository) : base(repository)
+        public FinancialPledgeService(IRepository<FinancialPledge> repository) : base(repository)
         {
         }
 
@@ -45,15 +45,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( DataView item, out string errorMessage )
+        public bool CanDelete( FinancialPledge item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Report>().Queryable().Any( a => a.DataViewId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -61,28 +55,29 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DataViewExtensionMethods
+    public static class FinancialPledgeExtensionMethods
     {
         /// <summary>
-        /// Clones this DataView object to a new DataView object
+        /// Clones this FinancialPledge object to a new FinancialPledge object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static DataView Clone( this DataView source, bool deepCopy )
+        public static FinancialPledge Clone( this FinancialPledge source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as DataView;
+                return source.Clone() as FinancialPledge;
             }
             else
             {
-                var target = new DataView();
-                target.IsSystem = source.IsSystem;
-                target.Description = source.Description;
-                target.EntityTypeId = source.EntityTypeId;
-                target.DataViewFilterId = source.DataViewFilterId;
-                target.TransformEntityTypeId = source.TransformEntityTypeId;
+                var target = new FinancialPledge();
+                target.PersonId = source.PersonId;
+                target.AccountId = source.AccountId;
+                target.TotalAmount = source.TotalAmount;
+                target.PledgeFrequencyValueId = source.PledgeFrequencyValueId;
+                target.StartDate = source.StartDate;
+                target.EndDate = source.EndDate;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

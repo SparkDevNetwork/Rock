@@ -25,41 +25,45 @@ namespace Rock.Model
         {
             var transactions = Repository.AsQueryable();
 
-            if (searchValue.AmountRange.From.HasValue)
+            if ( searchValue.AmountRange.From.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.Amount >= searchValue.AmountRange.From); 
+                transactions = transactions.Where(t => t.Amount >= searchValue.AmountRange.From); 
             }
             if (searchValue.AmountRange.To.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.Amount <= searchValue.AmountRange.To); 
+                transactions = transactions.Where(t => t.Amount <= searchValue.AmountRange.To); 
             }
-            if (searchValue.CreditCardTypeValueId.HasValue)
+            if ( searchValue.DateRange.From.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.CreditCardTypeValue.Id == searchValue.CreditCardTypeValueId.Value);
+                transactions = transactions.Where( t => t.TransactionDateTime >= searchValue.DateRange.From.Value );
             }
-            if (searchValue.CurrencyTypeValueId.HasValue)
+            if ( searchValue.DateRange.To.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.CurrencyTypeValue.Id == searchValue.CurrencyTypeValueId.Value);
+                transactions = transactions.Where( t => t.TransactionDateTime <= searchValue.DateRange.To.Value );
             }
-            if (searchValue.DateRange.From.HasValue)
+            if ( searchValue.TransactionTypeValueId.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.TransactionDateTime >= searchValue.DateRange.From.Value);
+                transactions = transactions.Where( t => t.TransactionTypeValueId == searchValue.TransactionTypeValueId.Value );
             }
-            if (searchValue.DateRange.To.HasValue)
+            if ( searchValue.CurrencyTypeValueId.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.TransactionDateTime <= searchValue.DateRange.To.Value);
+                transactions = transactions.Where( t => t.CurrencyTypeValueId.HasValue && t.CurrencyTypeValueId == searchValue.CurrencyTypeValueId.Value );
             }
-            if (searchValue.FundId.HasValue)
+            if ( searchValue.CreditCardTypeValueId.HasValue )
             {
-                transactions = transactions.Where(transaction => transaction.TransactionFunds.Any(transactionFund => transactionFund.Fund.Id == searchValue.FundId.Value));
+                transactions = transactions.Where(t => t.CreditCardTypeValueId.HasValue && t.CurrencyTypeValueId == searchValue.CreditCardTypeValueId.Value);
             }
             if (searchValue.SourceTypeValueId.HasValue)
             {
-                transactions = transactions.Where(transaction => transaction.SourceTypeValueId == searchValue.SourceTypeValueId.Value);
+                transactions = transactions.Where(t => t.SourceTypeValueId.HasValue && t.SourceTypeValueId == searchValue.SourceTypeValueId.Value);
             }
             if (!String.IsNullOrEmpty(searchValue.TransactionCode))
             {
-                transactions = transactions.Where(transaction => transaction.TransactionCode == searchValue.TransactionCode);
+                transactions = transactions.Where(t => t.TransactionCode == searchValue.TransactionCode);
+            }
+            if ( searchValue.AccountId.HasValue )
+            {
+                transactions = transactions.Where( t => t.TransactionDetails.Any( d => d.AccountId == searchValue.AccountId.Value ) );
             }
             return transactions;
         }

@@ -21,7 +21,7 @@ namespace Rock.DataFilters.Fund
     [Description( "Filter Funds based on any Fund property or attribute value" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Fund Property Filter" )]
-    public partial class FundPropertyFilter : PropertyFilter<Rock.Model.Fund>
+    public partial class FundPropertyFilter : PropertyFilter<Rock.Model.FinancialAccount>
     {
     }
 }

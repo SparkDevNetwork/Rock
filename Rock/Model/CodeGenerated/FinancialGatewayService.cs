@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PaymentGateway Service class
+    /// FinancialGateway Service class
     /// </summary>
-    public partial class PaymentGatewayService : Service<PaymentGateway>
+    public partial class FinancialGatewayService : Service<FinancialGateway>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaymentGatewayService"/> class
+        /// Initializes a new instance of the <see cref="FinancialGatewayService"/> class
         /// </summary>
-        public PaymentGatewayService()
+        public FinancialGatewayService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaymentGatewayService"/> class
+        /// Initializes a new instance of the <see cref="FinancialGatewayService"/> class
         /// </summary>
-        public PaymentGatewayService(IRepository<PaymentGateway> repository) : base(repository)
+        public FinancialGatewayService(IRepository<FinancialGateway> repository) : base(repository)
         {
         }
 
@@ -45,15 +45,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PaymentGateway item, out string errorMessage )
+        public bool CanDelete( FinancialGateway item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.PaymentGatewayId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PaymentGateway.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -61,23 +55,23 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PaymentGatewayExtensionMethods
+    public static class FinancialGatewayExtensionMethods
     {
         /// <summary>
-        /// Clones this PaymentGateway object to a new PaymentGateway object
+        /// Clones this FinancialGateway object to a new FinancialGateway object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PaymentGateway Clone( this PaymentGateway source, bool deepCopy )
+        public static FinancialGateway Clone( this FinancialGateway source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PaymentGateway;
+                return source.Clone() as FinancialGateway;
             }
             else
             {
-                var target = new PaymentGateway();
+                var target = new FinancialGateway();
                 target.Name = source.Name;
                 target.Description = source.Description;
                 target.ApiUrl = source.ApiUrl;

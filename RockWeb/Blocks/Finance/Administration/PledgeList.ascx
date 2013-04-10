@@ -5,12 +5,12 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server"/>
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:PersonPicker ID="ppFilterPerson" runat="server" LabelText="Filter by person"/>
-            <Rock:FundPicker ID="fpFilterFund" runat="server" LabelText="Filter by fund"/>
+            <Rock:AccountPicker ID="fpFilterAccount" runat="server" LabelText="Filter by account"/>
         </Rock:GridFilter>
         <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
             <Columns>
                 <asp:BoundField DataField="Person" HeaderText="Person" SortExpression="PersonId"/>
-                <asp:BoundField DataField="Fund" HeaderText="Fund" SortExpression="FundId"/>
+                <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="AccountId"/>
                 <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" DataFormatString="{0:C}"/>
                 <asp:TemplateField HeaderText="Payment Schedule">
                     <ItemTemplate>

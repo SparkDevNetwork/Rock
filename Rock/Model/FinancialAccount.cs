@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -15,19 +16,40 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Fund POCO class.
+    /// Financial Account POCO class.
     /// </summary>
-    [Table("Fund")]
+    [Table( "FinancialAccount" )]
     [DataContract]
-    public partial class Fund : Model<Fund>
+    public partial class FinancialAccount : Model<FinancialAccount>
     {
+
+        #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the parent account id.
+        /// </summary>
+        /// <value>
+        /// The parent fund id.
+        /// </value>
+        [DataMember]
+        public int? ParentAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus id.
+        /// </summary>
+        /// <value>
+        /// The campus id.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength(50)]
+        [MaxLength( 50 )]
         [DataMember]
         public string Name { get; set; }
 
@@ -37,7 +59,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the public.
         /// </value>
-        [MaxLength(50)]
+        [MaxLength( 50 )]
         [DataMember]
         public string PublicName { get; set; }
 
@@ -47,18 +69,8 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
-        [MaxLength(250)]
         [DataMember]
         public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parent fund id.
-        /// </summary>
-        /// <value>
-        /// The parent fund id.
-        /// </value>
-        [DataMember]
-        public int? ParentFundId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [tax deductible].
@@ -70,6 +82,16 @@ namespace Rock.Model
         public bool IsTaxDeductible { get; set; }
 
         /// <summary>
+        /// Gets or sets the general ledger code.
+        /// </summary>
+        /// <value>
+        /// The gl code.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string GlCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -79,7 +101,7 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="Fund"/> is active.
+        /// Gets or sets a value indicating whether this <see cref="FinancialAccount"/> is active.
         /// </summary>
         /// <value>
         ///   <c>true</c> if active; otherwise, <c>false</c>.
@@ -106,96 +128,61 @@ namespace Rock.Model
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="Fund"/> is pledgable.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if pledgable; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsPledgable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the gl code.
-        /// </summary>
-        /// <value>
-        /// The gl code.
-        /// </value>
-        [MaxLength(50)]
-        [DataMember]
-        public string GlCode { get; set; }
-
-        /// <summary>
         /// Gets or sets the fund type id.
         /// </summary>
         /// <value>
         /// The fund type id.
         /// </value>
         [DataMember]
-        public int? FundTypeValueId { get; set; }
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE )]
+        public int? AccountTypeValueId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the entity.
-        /// </summary>
-        /// <value>
-        /// The entity.
-        /// </value>
-        [MaxLength(50)]
-        [DataMember]
-        public string Entity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity id.
-        /// </summary>
-        /// <value>
-        /// The entity id.
-        /// </value>
-        [DataMember]
-        public int? EntityId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the parent fund.
+        /// Gets or sets the parent account.
         /// </summary>
         /// <value>
         /// The parent fund.
         /// </value>
-        public virtual Fund ParentFund { get; set; }
+        public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the fund.
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
+        public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the account.
         /// </summary>
         /// <value>
         /// The type of the fund.
         /// </value>
         [DataMember]
-        public virtual DefinedValue FundTypeValue { get; set; }
+        public virtual DefinedValue AccountTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the child funds.
+        /// Gets or sets the child accounts.
         /// </summary>
         /// <value>
         /// The child funds.
         /// </value>
         [DataMember]
-        public virtual ICollection<Fund> ChildFunds { get; set; }
+        public virtual ICollection<FinancialAccount> ChildAccounts 
+        {
+            get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
+            set { _childAccounts = value; }
+        }
+        private ICollection<FinancialAccount> _childAccounts;
 
-        /// <summary>
-        /// Gets or sets the pledges.
-        /// </summary>
-        /// <value>
-        /// The pledges.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<Pledge> Pledges { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the transaction funds.
-        /// </summary>
-        /// <value>
-        /// The transaction funds.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<FinancialTransactionFund> TransactionFunds { get; set; }
-        //public virtual ICollection<Transaction> Transactions { get; set; }
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -207,20 +194,29 @@ namespace Rock.Model
         {
             return this.PublicName;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Fund Configuration class.
     /// </summary>
-    public partial class FundConfiguration : EntityTypeConfiguration<Fund>
+    public partial class FinancialAccountConfiguration : EntityTypeConfiguration<FinancialAccount>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FundConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialAccountConfiguration"/> class.
         /// </summary>
-        public FundConfiguration()
+        public FinancialAccountConfiguration()
         {
-            this.HasOptional(f => f.ParentFund).WithMany(f => f.ChildFunds).HasForeignKey(f => f.ParentFundId).WillCascadeOnDelete(false);
-            this.HasOptional(f => f.FundTypeValue).WithMany().HasForeignKey(f => f.FundTypeValueId).WillCascadeOnDelete(false);
+            this.HasOptional( a => a.ParentAccount ).WithMany( a => a.ChildAccounts ).HasForeignKey( a => a.ParentAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( a => a.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AccountTypeValue ).WithMany().HasForeignKey( a => a.AccountTypeValueId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }
