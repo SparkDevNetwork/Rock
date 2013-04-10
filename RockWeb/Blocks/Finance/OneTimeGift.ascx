@@ -447,7 +447,8 @@
                 </div>
 
                 <div id="divPaymentIncomplete" runat="server" visible="false" CssClass="alert alert-error block-message error" >
-                    <p><b><asp:Literal ID="payeeName" runat="server" /></b>, your payment details were not complete. 
+                    <p><b><asp:Literal ID="payeeName" runat="server" /></b>, your payment details were not complete.
+                        The <% Eval(litPaymentType.Text); %> number was blank or non-numeric.
                         <b><asp:Literal ID="litError" runat="server"/></b></p>                    
                 </div>
 
