@@ -10,7 +10,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
 
 using Rock;
@@ -132,6 +131,8 @@ namespace Rock.DataFilters
                 {
                     switch ( property.SystemFieldType )
                     {
+                        case SystemGuid.FieldType.DATE:
+                        case SystemGuid.FieldType.INTEGER:
                         case SystemGuid.FieldType.TEXT:
 
                             if ( values.Count == 3 )
@@ -140,6 +141,15 @@ namespace Rock.DataFilters
                                 try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
                                 catch { }
                                 return string.Format( "{0} {1} '{2}'", property.Title, comparisonType.ConvertToString(), values[2] );
+                            }
+
+                            break;
+
+                        case SystemGuid.FieldType.BOOLEAN:
+
+                            if ( values.Count == 2 )
+                            {
+                                return string.Format( "{0} is '{1}'", property.Title, values[1] == "1" ? "True" : "False" );
                             }
 
                             break;
@@ -160,15 +170,15 @@ namespace Rock.DataFilters
                                 List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
                                 List<string> selectedTexts = new List<string>();
 
-                                foreach(string selectedValue in selectedValues)
+                                foreach ( string selectedValue in selectedValues )
                                 {
                                     int valueId = int.MinValue;
-                                    if (int.TryParse(selectedValue, out valueId))
+                                    if ( int.TryParse( selectedValue, out valueId ) )
                                     {
-                                        var definedValue = DefinedValueCache.Read(valueId);
-                                        if (definedValue != null)
+                                        var definedValue = DefinedValueCache.Read( valueId );
+                                        if ( definedValue != null )
                                         {
-                                            selectedTexts.Add(definedValue.Name);
+                                            selectedTexts.Add( definedValue.Name );
                                         }
                                     }
                                 }
@@ -192,14 +202,15 @@ namespace Rock.DataFilters
         /// <returns></returns>
         public override Control[] CreateChildControls( FilterField filterControl )
         {
-            var controls = new Control[Properties.Sum( p => p.ControlCount ) + 1];
+            var controls = new List<Control>();
 
             DropDownList ddlProperty = new DropDownList();
-            controls[0] = ddlProperty;
+            ddlProperty.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            filterControl.Controls.Add( ddlProperty );
+            controls.Add( ddlProperty );
 
             Type type = typeof( T );
 
-            int i = 1;
             foreach ( var entityProperty in Properties )
             {
                 ddlProperty.Items.Add( new ListItem( entityProperty.Title, entityProperty.PropertyName ) );
@@ -210,34 +221,91 @@ namespace Rock.DataFilters
                     if ( propInfo != null && propInfo.PropertyType.IsEnum )
                     {
                         DropDownList ddl = new DropDownList();
+                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddl );
+                        controls.Add( ddl );
+
                         foreach ( var value in Enum.GetValues( propInfo.PropertyType ) )
                         {
                             ddl.Items.Add( new ListItem( Enum.GetName( propInfo.PropertyType, value ).SplitCase() ) );
                         }
-                        controls[i++] = ddl;
                     }
+
                     else if ( propInfo.PropertyType == typeof( string ) )
                     {
-                        controls[i++] = ComparisonControl( StringFilterComparisonTypes );
-                        controls[i++] = new TextBox();
+                        var ddl =  ComparisonControl( StringFilterComparisonTypes );
+                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddl );
+                        controls.Add( ddl );
+
+                        var tb = new TextBox();
+                        tb.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( tb );
+                        controls.Add( tb );
                     }
-                    else
+
+                    else if ( propInfo.PropertyType == typeof( bool ) || propInfo.PropertyType == typeof( bool? ) )
                     {
-                        // Defined Value Properties
-                        var definedValueAttribute = propInfo.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).Single() as Rock.Data.DefinedValueAttribute;
+                        DropDownList ddl = new DropDownList();
+                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddl );
+                        controls.Add( ddl );
+
+                        ddl.Items.Add( new ListItem( "True", "1" ) );
+                        ddl.Items.Add( new ListItem( "False", "0" ) );
+                    }
+
+                    else if ( propInfo.PropertyType == typeof( DateTime ) || propInfo.PropertyType == typeof( DateTime? ) )
+                    {
+                        // Numerical
+                        var ddl = ComparisonControl( DateFilterComparisonTypes );
+                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddl );
+                        controls.Add( ddl );
+
+                        var dtPicker = new DateTimePicker();
+                        dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( dtPicker );
+                        controls.Add( dtPicker );
+
+                        dtPicker.DatePickerType = DateTimePickerType.Date;
+                    }
+
+                    else if ( propInfo.PropertyType == typeof( int ) || propInfo.PropertyType == typeof( int? ) )
+                    {
+                        var definedValueAttribute = propInfo.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
                         if ( definedValueAttribute != null )
                         {
+                            // Defined Value Properties
                             CheckBoxList cbl = new CheckBoxList();
+                            cbl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( cbl );
+                            controls.Add( cbl );
+
                             cbl.RepeatDirection = RepeatDirection.Horizontal;
 
-                            var definedType = DefinedTypeCache.Read( definedValueAttribute.DefinedTypeGuid );
+                            var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
                             if ( definedType != null )
                             {
                                 foreach ( var definedValue in definedType.DefinedValues )
                                     cbl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
                             }
 
-                            controls[i++] = cbl;
+                        }
+                        else
+                        {
+                            // Numerical
+                            var ddl = ComparisonControl( NumericFilterComparisonTypes );
+                            ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddl );
+                            controls.Add( ddl );
+
+                            var numberBox = new NumberBox();
+                            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( numberBox );
+                            controls.Add( numberBox );
+
+                            numberBox.FieldName = entityProperty.Title;
                         }
                     }
                 }
@@ -246,23 +314,82 @@ namespace Rock.DataFilters
                 {
                     var attribute = AttributeCache.Read( entityProperty.AttributeId.Value );
 
-                    switch ( attribute.FieldType.Guid.ToString() )
+                    switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                     {
-                        case SystemGuid.FieldType.TEXT:
-                            controls[i++] = ComparisonControl( StringFilterComparisonTypes );
-                            controls[i++] = attribute.CreateControl();
+                        case SystemGuid.FieldType.BOOLEAN:
+                            
+                            var ddlBool = new DropDownList();
+                            ddlBool.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddlBool );
+                            controls.Add( ddlBool );
+
+                            ddlBool.Items.Add( new ListItem( "True", "1" ) );
+                            ddlBool.Items.Add( new ListItem( "False", "0" ) );
+
                             break;
+
+                        case SystemGuid.FieldType.DATE:
+
+                            var ddlDate = ComparisonControl( DateFilterComparisonTypes );
+                            ddlDate.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddlDate );
+                            controls.Add( ddlDate );
+
+                            var dtPicker = attribute.CreateControl();
+                            dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( dtPicker );
+                            controls.Add( dtPicker );
+
+                            break;
+
+                        case SystemGuid.FieldType.INTEGER:
+                            
+                            var ddlInt = ComparisonControl( NumericFilterComparisonTypes );
+                            ddlInt.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddlInt );
+                            controls.Add( ddlInt );
+
+                            var numberBox = attribute.CreateControl() as NumberBox;
+                            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( numberBox );
+                            controls.Add( numberBox );
+
+                            numberBox.FieldName = attribute.Name;
+                            
+                            break;
+                        
+                        case SystemGuid.FieldType.TEXT:
+
+                            var ddlText =  ComparisonControl( StringFilterComparisonTypes );
+                            ddlText.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( ddlText );
+                            controls.Add( ddlText );
+
+                            var textControl = attribute.CreateControl();
+                            textControl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( textControl );
+                            controls.Add( textControl );
+
+                            break;
+                        
                         case SystemGuid.FieldType.MULTI_SELECT:
                         case SystemGuid.FieldType.SINGLE_SELECT:
-                            controls[i++] = attribute.CreateControl();
+                        
+                            var selectControl = attribute.CreateControl();
+                            selectControl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                            filterControl.Controls.Add( selectControl );
+                            controls.Add( selectControl );
+
                             break;
                     }
                 }
             }
 
             ClientFormatSelection = string.Format( "{0}PropertySelection( $content )", typeof( T ).Name );
-            return controls;
+            
+            return controls.ToArray();        
         }
+
 
         /// <summary>
         /// Renders the controls.
@@ -300,6 +427,14 @@ namespace Rock.DataFilters
                 string clientFormatSelection = string.Empty;
                 switch ( property.SystemFieldType )
                 {
+                    case SystemGuid.FieldType.DATE:
+                        propertyControls[0].RenderControl( writer );
+                        writer.Write( " " );
+                        propertyControls[1].RenderControl( writer );
+                        clientFormatSelection = string.Format( "result = '... a date value ...'" );
+                        break;
+
+                    case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
                         propertyControls[0].RenderControl( writer );
                         writer.Write( " " );
@@ -307,6 +442,7 @@ namespace Rock.DataFilters
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", property.Title );
                         break;
 
+                    case SystemGuid.FieldType.BOOLEAN:
                     case SystemGuid.FieldType.SINGLE_SELECT:
                         writer.Write( "is " );
                         propertyControls[0].RenderControl( writer );
@@ -377,7 +513,19 @@ namespace Rock.DataFilters
                 {
                     foreach ( Control control in groupedControls[selectedProperty] )
                     {
-                        if ( control is TextBox )
+                        if ( control is DateTimePicker )
+                        {
+                            var dtp = control as DateTimePicker;
+                            if ( dtp != null && dtp.SelectedDate.HasValue )
+                            {
+                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
+                        }
+                        else if ( control is TextBox )
                         {
                             values.Add( ( (TextBox)control ).Text );
                         }
@@ -436,7 +584,15 @@ namespace Rock.DataFilters
                             {
                                 Control control = groupedControls[selectedProperty][i];
 
-                                if ( control is TextBox )
+                                if ( control is DateTimePicker )
+                                {
+                                    var dt = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[i + 1], out dt ) )
+                                    {
+                                        ( (DateTimePicker)control ).SelectedDate = dt;
+                                    }
+                                }
+                                else if ( control is TextBox )
                                 {
                                     ( (TextBox)control ).Text = values[i + 1];
                                 }
@@ -486,12 +642,93 @@ namespace Rock.DataFilters
                     var property = Properties.Where( p => p.PropertyName == selectedProperty ).FirstOrDefault();
                     if ( property != null )
                     {
+                        Expression trueValue = Expression.Constant( true );
                         MemberExpression propertyExpression = Expression.Property( parameterExpression, selectedProperty );
                         Expression constantExpression = null;
                         ComparisonType comparisonType = ComparisonType.EqualTo;
 
                         switch ( property.SystemFieldType )
                         {
+                            case SystemGuid.FieldType.BOOLEAN:
+
+                                if ( values.Count == 2 )
+                                {
+                                    constantExpression = Expression.Constant( values[1] == "1" );
+
+                                    if ( property.PropertyType == typeof( bool ) )
+                                    {
+                                        return Expression.Equal( propertyExpression, constantExpression );
+                                    }
+                                    else // bool?
+                                    {
+                                        Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                        Expression equalExpression = Expression.Equal( hasValue, trueValue );
+                                        Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                        Expression comparisonExpression = Expression.Equal( ValueExpression, constantExpression );
+                                        return Expression.AndAlso( equalExpression, comparisonExpression );
+                                    }
+                                }
+
+                                break;
+
+                            case SystemGuid.FieldType.DATE:
+
+                                if ( values.Count == 3 )
+                                {
+                                    DateTime dateValue = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[2], out dateValue ) )
+                                    {
+                                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
+                                        catch { }
+                                        constantExpression = Expression.Constant( dateValue );
+
+                                        if ( property.PropertyType == typeof( DateTime ) )
+                                        {
+                                            return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                                        }
+                                        else  // DateTime?
+                                        {
+                                            Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                            Expression equalExpression = Expression.Equal( hasValue, trueValue );
+                                            Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                            Expression comparisonExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
+                                            return Expression.AndAlso( equalExpression, comparisonExpression );
+                                        }
+
+                                    }
+                                }
+
+                                break;
+
+                            case SystemGuid.FieldType.INTEGER:
+
+                                if ( values.Count == 3 )
+                                {
+                                    int intValue = int.MinValue;
+                                    if ( int.TryParse( values[2], out intValue ) )
+                                    {
+                                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
+                                        catch { }
+                                        constantExpression = Expression.Constant( intValue );
+
+                                        if ( property.PropertyType == typeof( int ) )
+                                        {
+                                            return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                                        }
+                                        else  // int?
+                                        {
+                                            Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                            Expression equalExpression = Expression.Equal( hasValue, trueValue );
+                                            Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                            Expression comparisonExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
+                                            return Expression.AndAlso( equalExpression, comparisonExpression );
+                                        }
+
+                                    }
+                                }
+
+                                break;
+
                             case SystemGuid.FieldType.TEXT:
 
                                 if ( values.Count == 3 )
@@ -566,30 +803,52 @@ namespace Rock.DataFilters
                 {
                     EntityProperty entityProperty = null;
 
+
                     // Enum Properties
                     if ( property.PropertyType.IsEnum )
                     {
-                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 1 );
+                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 1 );
                         entityProperty.SystemFieldType = SystemGuid.FieldType.SINGLE_SELECT;
+                    }
+
+                    // Boolean properties
+                    if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+                    {
+                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 1 );
+                        entityProperty.SystemFieldType = SystemGuid.FieldType.BOOLEAN;
+                    }
+
+                    // Date properties
+                    if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+                    {
+                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 2 );
+                        entityProperty.SystemFieldType = SystemGuid.FieldType.DATE;
                     }
 
                     // Text Properties
                     else if ( property.PropertyType == typeof( string ) )
                     {
-                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 2 );
+                        entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 2 );
                         entityProperty.SystemFieldType = SystemGuid.FieldType.TEXT;
                     }
 
-                    else
+                    // Integer Properties
+                    else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
                     {
-                        // Defined Value Properties
                         var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-                        if ( definedValueAttribute != null)
+
+                        if ( definedValueAttribute != null )
                         {
-                            entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, properties.Sum( p => p.ControlCount ) + 1, 1 );
+                            // Defined Value Properties
+                            entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 1 );
                             var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
                             entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
                             entityProperty.SystemFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                        }
+                        else
+                        {
+                            entityProperty = new EntityProperty( property.Name, PropOrAttribute.Property, property.PropertyType, 2 );
+                            entityProperty.SystemFieldType = SystemGuid.FieldType.INTEGER;
                         }
                     }
 
@@ -615,25 +874,38 @@ namespace Rock.DataFilters
                 EntityProperty entityProperty = null;
 
                 // For now only do text and single-select attributes
-                switch ( attribute.FieldType.Guid.ToString() )
+                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                 {
+                    case SystemGuid.FieldType.DATE:
+                    case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
-                        entityProperty = new EntityProperty( attribute.Name, PropOrAttribute.Attribute, null, properties.Sum( p => p.ControlCount ) + 1, 2, attribute.Id );
+                        entityProperty = new EntityProperty( attribute.Name, PropOrAttribute.Attribute, null, 2, attribute.Id );
                         break;
+                    case SystemGuid.FieldType.BOOLEAN:
+                    case SystemGuid.FieldType.MULTI_SELECT:
                     case SystemGuid.FieldType.SINGLE_SELECT:
-                        entityProperty = new EntityProperty( attribute.Name, PropOrAttribute.Attribute, null, properties.Sum( p => p.ControlCount ) + 1, 1, attribute.Id );
+                        entityProperty = new EntityProperty( attribute.Name, PropOrAttribute.Attribute, null, 1, attribute.Id );
                         break;
                 }
 
                 if ( entityProperty != null )
                 {
-                    entityProperty.SystemFieldType = attribute.FieldType.Guid.ToString();
+                    entityProperty.SystemFieldType = attribute.FieldType.Guid.ToString().ToUpper();
                     properties.Add( entityProperty );
                 }
 
             }
 
-            return properties;
+            int index = 1;
+            var orderedProperties = new List<EntityProperty>();
+            foreach( var entityProperty in properties.OrderBy( p => p.Title ).ThenBy( p => p.PropertyName ))
+            {
+                entityProperty.Index = index;
+                index += entityProperty.ControlCount;
+                orderedProperties.Add(entityProperty);
+            }
+
+            return orderedProperties;
         }
 
         private Dictionary<string, List<Control>> GroupControls( Control[] controls )
@@ -663,13 +935,12 @@ namespace Rock.DataFilters
             public int? AttributeId { get; set; }
             public string SystemFieldType { get; set; }
 
-            public EntityProperty( string name, PropOrAttribute propertyOrAttribute, Type propertyType, int index, int controlCount, int? attributeId = null )
+            public EntityProperty( string name, PropOrAttribute propertyOrAttribute, Type propertyType, int controlCount, int? attributeId = null )
             {
                 PropertyName = name;
                 Title = name.SplitCase();
                 PropertyOrAttribute = propertyOrAttribute;
                 PropertyType = propertyType;
-                Index = index;
                 ControlCount = controlCount;
                 AttributeId = attributeId;
             }

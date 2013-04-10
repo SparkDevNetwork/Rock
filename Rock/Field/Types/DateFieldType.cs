@@ -11,6 +11,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -152,5 +153,63 @@ namespace Rock.Field.Types
 
             return values;
         }
+
+        /// <summary>
+        /// Creates the control(s) neccessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var dp = new DateTimePicker();
+            dp.DatePickerType = DateTimePickerType.Date;
+            return dp;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if (control != null && control is DateTimePicker);
+            {
+                var dtp = control as DateTimePicker;
+                if (dtp != null && dtp.SelectedDate.HasValue)
+                {
+                    return dtp.SelectedDate.Value.ToShortDateString();
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            var dt = DateTime.MinValue;
+            if ( DateTime.TryParse( value, out dt ) )
+            {
+
+                if ( control != null && control is DateTimePicker ) ;
+                {
+                    var dtp = control as DateTimePicker;
+                    if ( dtp != null )
+                    {
+                        dtp.SelectedDate = dt;
+                    }
+                }
+            }
+        }
+
     }
 }

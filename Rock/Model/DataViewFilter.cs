@@ -162,7 +162,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter )
+        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
             switch ( ExpressionType )
             {
@@ -176,7 +176,14 @@ namespace Rock.Model
                             var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
-                                return component.GetExpression( serviceInstance, parameter, this.Selection );
+                                try
+                                {
+                                    return component.GetExpression( serviceInstance, parameter, this.Selection );
+                                }
+                                catch (SystemException ex)
+                                {
+                                    errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( this.Selection ), ex.Message ) );
+                                }
                             }
                         }
                     }
@@ -187,7 +194,7 @@ namespace Rock.Model
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( andExp == null )
@@ -209,7 +216,7 @@ namespace Rock.Model
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter );
+                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( orExp == null )
