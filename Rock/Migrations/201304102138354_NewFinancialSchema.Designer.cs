@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201304101953596_NewFinancialSchema"; }
+            get { return "201304102138354_NewFinancialSchema"; }
         }
         
         string IMigrationMetadata.Source

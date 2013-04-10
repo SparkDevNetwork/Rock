@@ -605,9 +605,9 @@
     <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.Designer.cs">
       <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201304101953596_NewFinancialSchema.cs" />
-    <Compile Include="Migrations\201304101953596_NewFinancialSchema.Designer.cs">
-      <DependentUpon>201304101953596_NewFinancialSchema.cs</DependentUpon>
+    <Compile Include="Migrations\201304102138354_NewFinancialSchema.cs" />
+    <Compile Include="Migrations\201304102138354_NewFinancialSchema.Designer.cs">
+      <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -1513,8 +1513,8 @@
     <EmbeddedResource Include="Migrations\201304102107326_DbCalculatedPersonNameFields.resx">
       <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304101953596_NewFinancialSchema.resx">
-      <DependentUpon>201304101953596_NewFinancialSchema.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201304102138354_NewFinancialSchema.resx">
+      <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
