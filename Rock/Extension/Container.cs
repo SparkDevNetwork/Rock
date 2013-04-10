@@ -79,7 +79,7 @@ namespace Rock.Extension
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
             if ( Directory.Exists( pluginsFolder ) )
             {
-                catalog.Catalogs.Add( new DirectoryCatalog( pluginsFolder ) );
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( pluginsFolder ) );
             }
 
             // Create the container from the catalog

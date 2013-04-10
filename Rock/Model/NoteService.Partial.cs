@@ -29,5 +29,19 @@ namespace Rock.Model
                 .OrderByDescending( n => n.IsAlert )
                 .ThenByDescending( n => n.Date );
         }
+
+        /// <summary>
+        /// Gets the all notes for the specified note type.
+        /// </summary>
+        /// <param name="noteTypeId">The note type id.</param>
+        /// <returns></returns>
+        public IQueryable<Note> GetByNoteTypeId( int noteTypeId )
+        {
+            return Repository.AsQueryable()
+                .Where( n =>
+                    n.NoteTypeId == noteTypeId )
+                .OrderByDescending( n => n.IsAlert )
+                .ThenByDescending( n => n.Date );
+        }
     }
 }

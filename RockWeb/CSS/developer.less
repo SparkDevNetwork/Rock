@@ -1,12 +1,12 @@
 ﻿/* 
     Please add developer CSS changes here.  These will be merged into the appropriate CSS file
     and optimized for our styling strategy.
+
+    !!!! PLEASE ADD YOUR INITIALS NEXT TO YOUR CHANGES SO I CAN GET CLARIFICATION IF NEEDED !!!!
+
     */
 
-.grid-icon-cell.delete a.aspNetDisabled {
-    cursor:default;
-    color:#CCCCCC;
-}
+
 
 /* A definition for these classes exist in the default bootstrap, however their "disabled" color does not look disabled with our theme. */
 .btn-primary.disabled, .btn-primary[disabled] {
@@ -15,11 +15,6 @@
     cursor: not-allowed;
 }
 
-/* This is for the theme... if you want the bg color below the footer to be the same color */
-html
-{
- background-color: #3a3a3a;   
-}
 
 /* Rock Person Picker classes */
 .rock-picker-person {
@@ -108,3 +103,41 @@ ul.rock-picker-select input[type="radio"],
 ul.rock-picker-select input[type="checkbox"] {
     margin: 0 6px 0 0;
 }
+
+/* Ad Display */
+.ad-content {
+	padding: 10px;
+	border-top: 1px solid #515151;
+	border-bottom: 1px solid #515151;
+}
+
+
+/* DRT - Added to make asp.net panels look disabled when enabled is false */
+div.aspNetDisabled {
+    opacity: 0.5;
+}
+
+
+
+/* Ten Key Keypad */
+.tenkey
+{
+    width: 320px;
+}
+
+.tenkey a.btn {
+    margin: 2px;
+    font-size: 20px;
+    width: 60px;
+    height: 38px;
+    padding-top: 33px;
+}
+
+.tenkey a.digit {
+    font-size: 48px;
+    height: 43px;
+    padding-top: 28px;
+    font-family: 'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; //  @rockSansFontFamilyBold;
+}
+
+

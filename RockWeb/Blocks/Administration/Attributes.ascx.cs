@@ -332,7 +332,11 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 edtAttribute.GetAttributeValues( attribute );
-                
+
+                attribute.EntityTypeId = _entityTypeId;
+                attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
+                attribute.EntityTypeQualifierValue = _entityQualifierValue;
+
                 // Controls will show warnings
                 if ( !attribute.IsValid )
                 {

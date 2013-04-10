@@ -30,6 +30,7 @@
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Themes/CheckinAdventureKids/Scripts/fastclick.js") %>" ></script>
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
@@ -41,6 +42,10 @@
             
     </form>
 
-    
+    <script>
+        window.addEventListener('load', function () {
+            new FastClick(document.body);
+        }, false);
+    </script>
 </body>
 </html>

@@ -54,6 +54,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the entities that have the IsEntity flag set to true
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<EntityType> GetEntities()
+        {
+            return Repository.AsQueryable()
+                .Where( e => e.IsEntity );
+        }
+
+        /// <summary>
         /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
         /// as an entity type.
         /// </summary>
@@ -68,12 +78,12 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
                 var entityType = new EntityType();
-                entityType.Name = type.Value.FullName;
+                entityType.Name = type.Key;
                 entityType.FriendlyName = type.Value.Name.SplitCase();
                 entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                 entityType.IsEntity = true;
                 entityType.IsSecured = false;
-                entityTypes.Add( type.Value.FullName, entityType );
+                entityTypes.Add( type.Key, entityType );
             }
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
@@ -81,19 +91,19 @@ namespace Rock.Model
                     new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
                     new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
             {
-                if ( entityTypes.ContainsKey( type.Value.FullName ) )
+                if ( entityTypes.ContainsKey( type.Key ) )
                 {
-                    entityTypes[type.Value.FullName].IsSecured = true;
+                    entityTypes[type.Key].IsSecured = true;
                 }
                 else
                 {
                     var entityType = new EntityType();
-                    entityType.Name = type.Value.FullName;
+                    entityType.Name = type.Key;
                     entityType.FriendlyName = type.Value.Name.SplitCase();
                     entityType.AssemblyName = type.Value.AssemblyQualifiedName;
                     entityType.IsEntity = false;
                     entityType.IsSecured = true;
-                    entityTypes.Add( type.Value.FullName, entityType);
+                    entityTypes.Add( type.Key, entityType);
                 }
             }
 
@@ -126,8 +136,13 @@ namespace Rock.Model
             // Add the newly discovered entities
             foreach ( var entityTypeInfo in entityTypes )
             {
-                this.Add( entityTypeInfo.Value, null );
-                this.Save( entityTypeInfo.Value, null );
+                // Don't add the EntityType entity as it will probably have been automatically 
+                // added by the audit on a previous save in this method.
+                if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
+                {
+                    this.Add( entityTypeInfo.Value, null );
+                    this.Save( entityTypeInfo.Value, null );
+                }
             }
         }
 

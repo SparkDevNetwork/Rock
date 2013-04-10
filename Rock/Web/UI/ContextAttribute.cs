@@ -23,6 +23,14 @@ namespace Rock.Web.UI
         /// The type of the entity.
         /// </value>
         public string EntityType { get; set; }
+        
+        /// <summary>
+        /// Gets the default name of the parameter.
+        /// </summary>
+        /// <value>
+        /// The default name of the parameter.
+        /// </value>
+        public string DefaultParameterName { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
@@ -35,9 +43,10 @@ namespace Rock.Web.UI
         /// Initializes a new instance of the <see cref="ContextAwareAttribute" /> class.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        public ContextAwareAttribute( string entityType )
+        public ContextAwareAttribute( Type entityType )
         {
-            EntityType = entityType;
+            EntityType = entityType.FullName;
+            DefaultParameterName = entityType.Name + "Id";
         }
     }
 }

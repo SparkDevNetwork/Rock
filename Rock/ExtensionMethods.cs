@@ -109,6 +109,12 @@ namespace Rock
             }
             else
             {
+                if ( type.Namespace == null )
+                {
+                    // Anonymous types will not have a namespace
+                    return "Item";
+                }
+
                 if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
                 {
                     type = type.BaseType;
@@ -250,6 +256,24 @@ namespace Rock
         public static string AsNumeric( this string str )
         {
             return Regex.Replace( str, @"[^0-9]", "" );
+        }
+
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static int? AsInteger( this string str )
+        {
+            int value;
+            if ( int.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -510,6 +534,25 @@ namespace Rock
                 if ( parentControl is Rock.Web.UI.RockPage )
                 {
                     return (Rock.Web.UI.RockPage)parentControl;
+                }
+                parentControl = parentControl.Parent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Parents the update panel.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static System.Web.UI.UpdatePanel ParentUpdatePanel( this System.Web.UI.Control control )
+        {
+            System.Web.UI.Control parentControl = control.Parent;
+            while ( parentControl != null )
+            {
+                if ( parentControl is System.Web.UI.UpdatePanel )
+                {
+                    return (System.Web.UI.UpdatePanel)parentControl;
                 }
                 parentControl = parentControl.Parent;
             }

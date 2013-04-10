@@ -28,15 +28,16 @@
             </p>
           </xsl:if>
         </header>
-        
-        
-        <ul>
-          <xsl:for-each select="page/pages/page">
-            <xsl:call-template name="otherLevels">
-              <xsl:with-param name="page" select="."/>
-            </xsl:call-template>
-          </xsl:for-each>
-        </ul>
+
+        <div class="widget-content">
+          <ul>
+            <xsl:for-each select="page/pages/page">
+              <xsl:call-template name="otherLevels">
+                <xsl:with-param name="page" select="."/>
+              </xsl:call-template>
+            </xsl:for-each>
+          </ul>
+        </div>
       </div>
 		</xsl:if>
 	</xsl:template>

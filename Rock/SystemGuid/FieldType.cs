@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public static Guid INTEGER { get { return new Guid( "A75DFC58-7A1B-4799-BF31-451B2BBE38FF" ); } }
 
         /// <summary>
+        /// Image field type
+        /// </summary>
+        public static Guid IMAGE { get { return new Guid( "97f8157d-a8c8-4ab3-96a2-9cb2a9049e6d" ); } }
+
+        /// <summary>
         /// Single Select field type
         /// </summary>
         public static Guid SINGLE_SELECT { get { return new Guid( "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0" ); } }
