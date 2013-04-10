@@ -80,11 +80,10 @@ namespace Rock.Model
                 var target = new FinancialBatch();
                 target.Name = source.Name;
                 target.BatchDate = source.BatchDate;
-                target.IsClosed = source.IsClosed;
+                target.Status = source.Status;
                 target.CampusId = source.CampusId;
-                target.Entity = source.Entity;
-                target.EntityId = source.EntityId;
-                target.ForeignReference = source.ForeignReference;
+                target.AccountingSystemCode = source.AccountingSystemCode;
+                target.ControlAmount = source.ControlAmount;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

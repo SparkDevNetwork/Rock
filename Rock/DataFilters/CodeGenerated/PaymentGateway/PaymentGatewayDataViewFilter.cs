@@ -21,7 +21,7 @@ namespace Rock.DataFilters.PaymentGateway
     [Description( "Filter Payment Gateways using other data view" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other PaymentGateway Data View Filter" )]
-    public partial class PaymentGatewayDataViewFilter : OtherDataViewFilter<Rock.Model.PaymentGateway>
+    public partial class PaymentGatewayDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialGateway>
     {
     }
 }

@@ -13,15 +13,15 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-namespace Rock.DataFilters.Fund
+namespace Rock.DataFilters.FinancialPledge
 {
     /// <summary>
-    /// Other Fund Data View Filter
+    /// FinancialPledge Property Filter
     /// </summary>
-    [Description( "Filter Funds using other data view" )]
+    [Description( "Filter Financial Pledges based on any FinancialPledge property or attribute value" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Other Fund Data View Filter" )]
-    public partial class FundDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialAccount>
+    [ExportMetadata( "ComponentName", "FinancialPledge Property Filter" )]
+    public partial class FinancialPledgePropertyFilter : PropertyFilter<Rock.Model.FinancialPledge>
     {
     }
 }

@@ -13,15 +13,15 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-namespace Rock.DataFilters.Fund
+namespace Rock.DataFilters.FinancialTransactionImage
 {
     /// <summary>
-    /// Other Fund Data View Filter
+    /// Other FinancialTransactionImage Data View Filter
     /// </summary>
-    [Description( "Filter Funds using other data view" )]
+    [Description( "Filter Financial Transaction Images using other data view" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Other Fund Data View Filter" )]
-    public partial class FundDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialAccount>
+    [ExportMetadata( "ComponentName", "Other FinancialTransactionImage Data View Filter" )]
+    public partial class FinancialTransactionImageDataViewFilter : OtherDataViewFilter<Rock.Model.FinancialTransactionImage>
     {
     }
 }

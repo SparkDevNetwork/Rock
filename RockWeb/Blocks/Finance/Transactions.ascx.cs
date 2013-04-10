@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
                     int fundId = 0;
                     if ( int.TryParse( e.Value, out fundId ) )
                     {
-                        var service = new FundService();
+                        var service = new FinancialAccountService();
                         var fund = service.Get( fundId );
                         if ( fund != null )
                         {
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Administration
             rFilter.SaveUserPreference( "From Amount", txtFromAmount.Text );
             rFilter.SaveUserPreference( "To Amount", txtToAmount.Text );
             rFilter.SaveUserPreference( "Transaction Code", txtTransactionCode.Text );
-            rFilter.SaveUserPreference( "Fund", ddlFundType.SelectedValue != All.Id.ToString() ? ddlFundType.SelectedValue : string.Empty);
+            rFilter.SaveUserPreference( "Account", ddlAccount.SelectedValue != All.Id.ToString() ? ddlAccount.SelectedValue : string.Empty);
             rFilter.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "Source", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
@@ -129,16 +129,17 @@ namespace RockWeb.Blocks.Administration
             txtToAmount.Text = rFilter.GetUserPreference( "To Amount" );
             txtTransactionCode.Text = rFilter.GetUserPreference( "Transaction Code" );
 
-            ddlFundType.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
+            ddlAccount.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
 
-            var fundService = new FundService();
-            foreach ( Fund fund in fundService.Queryable() )
+            var accountService = new FinancialAccountService();
+            foreach ( FinancialAccount account in accountService.Queryable() )
             {
-                ListItem li = new ListItem( fund.Name, fund.Id.ToString() );
-                li.Selected = fund.Id.ToString() == rFilter.GetUserPreference( "Fund" );
-                ddlFundType.Items.Add( li );
+                ListItem li = new ListItem( account.Name, account.Id.ToString() );
+                li.Selected = account.Id.ToString() == rFilter.GetUserPreference( "Account" );
+                ddlAccount.Items.Add( li );
             }
 
+            BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
             BindDefinedTypeDropdown( ddlCreditCardType,new Guid(  Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
             BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source" );
@@ -179,23 +180,17 @@ namespace RockWeb.Blocks.Administration
                 toAmountRange = Decimal.Parse( txtToAmount.Text );
             }
             searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
-            if ( ddlCreditCardType.SelectedValue != All.Id.ToString() )
-            {
-                searchValue.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
-            }
-            if ( ddlCurrencyType.SelectedValue != All.Id.ToString() )
-            {
-                searchValue.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
-            }
+
             DateTime? fromTransactionDate = dtStartDate.SelectedDate;
             DateTime? toTransactionDate = dtEndDate.SelectedDate;
             searchValue.DateRange = new RangeValue<DateTime?>( fromTransactionDate, toTransactionDate );
-            if ( ddlFundType.SelectedValue != "-1" )
-            {
-                searchValue.FundId = int.Parse( ddlFundType.SelectedValue );
-            }
+
             searchValue.TransactionCode = txtTransactionCode.Text;
-            searchValue.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
+            searchValue.AccountId = ddlAccount.SelectedValueAsInt();
+            searchValue.TransactionTypeValueId = ddlTransactionType.SelectedValueAsInt();
+            searchValue.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+            searchValue.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+            searchValue.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
 
             return searchValue;
         }

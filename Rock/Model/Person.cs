@@ -353,15 +353,6 @@ namespace Rock.Model
         private ICollection<Attendance> _attendances;
 
         /// <summary>
-        /// Gets or sets the Pledges.
-        /// </summary>
-        /// <value>
-        /// Collection of Pledges.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<Pledge> Pledges { get; set; }
-
-        /// <summary>
         /// Gets or sets the PersonAccountLookups.
         /// </summary>
         /// <value>

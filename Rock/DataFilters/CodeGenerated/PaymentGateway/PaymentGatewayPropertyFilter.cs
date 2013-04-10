@@ -21,7 +21,7 @@ namespace Rock.DataFilters.PaymentGateway
     [Description( "Filter Payment Gateways based on any PaymentGateway property or attribute value" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "PaymentGateway Property Filter" )]
-    public partial class PaymentGatewayPropertyFilter : PropertyFilter<Rock.Model.PaymentGateway>
+    public partial class PaymentGatewayPropertyFilter : PropertyFilter<Rock.Model.FinancialGateway>
     {
     }
 }

@@ -58,14 +58,14 @@ namespace RockWeb.Blocks.Finance
             {
                 RockTransactionScope.WrapTransaction( () =>
                     {
-                        var pledgeService = new PledgeService();
+                        var pledgeService = new FinancialPledgeService();
                         var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
                         var person = FindPerson();
                         var pledge = FindAndUpdatePledge( person, defaultFundId );
 
                         // Does this person already have a pledge for this fund?
                         // If so, give them the option to create a new one?
-                        if ( person.Pledges.Any( p => p.FundId == defaultFundId ) )
+                        if ( person.Pledges.Any( p => p.AccountId == defaultFundId ) )
                         {
                             pnlConfirm.Visible = true;
                             Session.Add( "CachedPledge", pledge );
@@ -85,11 +85,11 @@ namespace RockWeb.Blocks.Finance
 
         protected void btnConfirmYes_Click( object sender, EventArgs e )
         {
-            var pledge = Session["CachedPledge"] as Pledge;
+            var pledge = Session["CachedPledge"] as FinancialPledge;
             
             if ( pledge != null && pledge.IsValid )
             {
-                var pledgeService = new PledgeService();
+                var pledgeService = new FinancialPledgeService();
                 pledgeService.Add( pledge, CurrentPersonId );
                 pledgeService.Save( pledge, CurrentPersonId );
                 Session.Remove( "CachedPledge" );
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowForm()
         {
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY_TYPE );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
 
             if ( CurrentPerson != null )
@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                 dtpEndDate.Visible = true;
             }
 
-            var pledge = Session["CachedPledge"] as Pledge;
+            var pledge = Session["CachedPledge"] as FinancialPledge;
 
             if ( pledge != null )
             {
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Finance
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
                     PersonStatusValueId = definedValue.Id,
-                    Pledges = new List<Pledge>()
+                    Pledges = new List<FinancialPledge>()
                 };
 
                 personService.Add( person, CurrentPersonId );
@@ -189,18 +189,18 @@ namespace RockWeb.Blocks.Finance
         /// <param name="person">The Person.</param>
         /// <param name="fundId">The Fund Id</param>
         /// <returns></returns>
-        private Pledge FindAndUpdatePledge( Person person, int fundId )
+        private FinancialPledge FindAndUpdatePledge( Person person, int fundId )
         {
-            var pledge = Session["CachedPledge"] as Pledge;
+            var pledge = Session["CachedPledge"] as FinancialPledge;
 
             if ( pledge == null )
             {
-                pledge = new Pledge();
+                pledge = new FinancialPledge();
             }
 
             pledge.PersonId = person.Id;
-            pledge.FundId = fundId;
-            pledge.Amount = decimal.Parse( tbAmount.Text );
+            pledge.AccountId = fundId;
+            pledge.TotalAmount = decimal.Parse( tbAmount.Text );
 
             var startSetting = GetAttributeValue( "DefaultStartDate" );
             var startDate = !string.IsNullOrWhiteSpace( startSetting ) ? DateTime.Parse( startSetting ) : DateTime.Parse( dtpStartDate.Text );
@@ -209,7 +209,7 @@ namespace RockWeb.Blocks.Finance
             pledge.StartDate = startDate;
             pledge.EndDate = endDate;
 
-            pledge.FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
             pledge.FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text );
             return pledge;
         }

@@ -4,11 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
+
 using Rock.Model;
 using Rock.Rest.Filters;
 
@@ -17,7 +17,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public partial class FundsController : IHasCustomRoutes
+    public partial class FinancialAccountsController : IHasCustomRoutes
     {
         /// <summary>
         /// Adds the routes.
@@ -26,55 +26,55 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "FundsGetChildren",
-                routeTemplate: "api/Funds/GetChildren/{id}",
+                name: "FinancialAccountsGetChildren",
+                routeTemplate: "api/FinancialAccounts/GetChildren/{id}",
                 defaults: new
                 {
-                    controller = "Funds",
+                    controller = "FinancialAccounts",
                     action = "GetChildren"
                 } );
         }
 
         [Authenticate]
-        public IQueryable<FundItem> GetChildren( int id )
+        public IQueryable<AccountItem> GetChildren( int id )
         {
-            IQueryable<Fund> qry;
+            IQueryable<FinancialAccount> qry;
 
             if ( id == 0 )
             {
-                qry = Get().Where( f => f.ParentFund == null );
+                qry = Get().Where( f => f.ParentAccount == null );
             }
             else
             {
-                qry = Get().Where( f => f.ParentFundId == id );
+                qry = Get().Where( f => f.ParentAccountId == id );
             }
 
-            var fundList = qry.OrderBy( f => f.Order ).ThenBy( f => f.Name ).ToList();
-            var fundItemList = fundList.Select( fund => new FundItem
+            var accountList = qry.OrderBy( f => f.Order ).ThenBy( f => f.Name ).ToList();
+            var accountItemList = accountList.Select( fund => new AccountItem
                 {
                     Id = fund.Id,
                     Name = HttpUtility.HtmlEncode( fund.PublicName )
                 } ).ToList();
 
-            var resultIds = fundItemList.Select( f => f.Id );
-            var qryHasChildren = from f in Get().Select( f => f.ParentFundId )
+            var resultIds = accountItemList.Select( f => f.Id );
+            var qryHasChildren = from f in Get().Select( f => f.ParentAccountId )
                                  where resultIds.Contains( f.Value )
                                  select f.Value;
 
-            foreach ( var fundItem in fundItemList )
+            foreach ( var accountItem in accountItemList )
             {
-                fundItem.HasChildren = qryHasChildren.Any( f => f == fundItem.Id );
-                fundItem.IconCssClass = "icon-file-alt";
+                accountItem.HasChildren = qryHasChildren.Any( f => f == accountItem.Id );
+                accountItem.IconCssClass = "icon-file-alt";
             }
 
-            return fundItemList.AsQueryable();
+            return accountItemList.AsQueryable();
         }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public class FundItem
+    public class AccountItem
     {
         /// <summary>
         /// Gets or sets the id.

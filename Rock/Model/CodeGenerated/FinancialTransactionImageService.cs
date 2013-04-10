@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Pledge Service class
+    /// FinancialTransactionImage Service class
     /// </summary>
-    public partial class PledgeService : Service<Pledge>
+    public partial class FinancialTransactionImageService : Service<FinancialTransactionImage>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PledgeService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionImageService"/> class
         /// </summary>
-        public PledgeService()
+        public FinancialTransactionImageService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PledgeService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionImageService"/> class
         /// </summary>
-        public PledgeService(IRepository<Pledge> repository) : base(repository)
+        public FinancialTransactionImageService(IRepository<FinancialTransactionImage> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Pledge item, out string errorMessage )
+        public bool CanDelete( FinancialTransactionImage item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,30 +55,26 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PledgeExtensionMethods
+    public static class FinancialTransactionImageExtensionMethods
     {
         /// <summary>
-        /// Clones this Pledge object to a new Pledge object
+        /// Clones this FinancialTransactionImage object to a new FinancialTransactionImage object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Pledge Clone( this Pledge source, bool deepCopy )
+        public static FinancialTransactionImage Clone( this FinancialTransactionImage source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Pledge;
+                return source.Clone() as FinancialTransactionImage;
             }
             else
             {
-                var target = new Pledge();
-                target.PersonId = source.PersonId;
-                target.FundId = source.FundId;
-                target.Amount = source.Amount;
-                target.StartDate = source.StartDate;
-                target.EndDate = source.EndDate;
-                target.FrequencyTypeValueId = source.FrequencyTypeValueId;
-                target.FrequencyAmount = source.FrequencyAmount;
+                var target = new FinancialTransactionImage();
+                target.TransactionId = source.TransactionId;
+                target.BinaryFileId = source.BinaryFileId;
+                target.TransactionImageTypeValueId = source.TransactionImageTypeValueId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

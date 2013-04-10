@@ -29,13 +29,21 @@ namespace Rock.Model
         public RangeValue<decimal?> AmountRange { get; set; }
         
         /// <summary>
-        /// Gets or sets the fund.
+        /// Gets or sets the account.
         /// </summary>
         /// <value>
         /// The fund.
         /// </value>
-        public int? FundId { get; set; }
-        
+        public int? AccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the currency.
+        /// </summary>
+        /// <value>
+        /// The type of the currency.
+        /// </value>
+        public int? TransactionTypeValueId { get; set; }
+
         /// <summary>
         /// Gets or sets the type of the currency.
         /// </summary>

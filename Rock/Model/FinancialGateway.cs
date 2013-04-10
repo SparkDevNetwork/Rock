@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -16,17 +15,20 @@ namespace Rock.Model
     /// <summary>
     /// Payment Gateway POCO class.
     /// </summary>
-    [Table( "PaymentGateway" )]
+    [Table( "FinancialGateway" )]
     [DataContract]
-    public partial class PaymentGateway : Model<PaymentGateway>
+    public partial class FinancialGateway : Model<FinancialGateway>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength(50)]
+        [MaxLength( 50 )]
         [DataMember]
         public string Name { get; set; }
 
@@ -36,7 +38,6 @@ namespace Rock.Model
         /// <value>
         /// The description.
         /// </value>
-        [MaxLength(500)]
         [DataMember]
         public string Description { get; set; }
 
@@ -46,7 +47,7 @@ namespace Rock.Model
         /// <value>
         /// The API URL.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string ApiUrl { get; set; }
 
@@ -56,7 +57,7 @@ namespace Rock.Model
         /// <value>
         /// The API key.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string ApiKey { get; set; }
 
@@ -66,18 +67,13 @@ namespace Rock.Model
         /// <value>
         /// The API secret.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string ApiSecret { get; set; }
 
-        /// <summary>
-        /// Gets or sets the transactions.
-        /// </summary>
-        /// <value>
-        /// The transactions.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<FinancialTransaction> Transactions { get; set; }
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -89,18 +85,26 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Payment Gateway Configuration class.
     /// </summary>
-    public partial class PaymentGatewayConfiguration : EntityTypeConfiguration<PaymentGateway>
+    public partial class FinancialGatewayConfiguration : EntityTypeConfiguration<FinancialGateway>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PaymentGatewayConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialGatewayConfiguration"/> class.
         /// </summary>
-        public PaymentGatewayConfiguration()
+        public FinancialGatewayConfiguration()
         {
         }
     }
+
+    #endregion
+
 }

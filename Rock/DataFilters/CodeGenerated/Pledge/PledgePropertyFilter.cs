@@ -21,7 +21,7 @@ namespace Rock.DataFilters.Pledge
     [Description( "Filter Pledges based on any Pledge property or attribute value" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Pledge Property Filter" )]
-    public partial class PledgePropertyFilter : PropertyFilter<Rock.Model.Pledge>
+    public partial class PledgePropertyFilter : PropertyFilter<Rock.Model.FinancialPledge>
     {
     }
 }

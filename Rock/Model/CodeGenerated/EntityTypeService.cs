@@ -72,22 +72,14 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<DataView>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring DataView,TransformEntityTypeId 
+            
+            // ignoring DataView,EntityTypeId 
  
             if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
