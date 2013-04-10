@@ -19,10 +19,10 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    // TODO: Create a fund list field attribute
-    [CustomDropdownListField( "Fund", "The fund that new pledges will be allocated toward.",
-        listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [Fund] WHERE [IsPledgable] = 1 ORDER BY [Order]",
-        key: "DefaultFund", required: true, order: 0 )]
+    // TODO: Create an account list field attribute
+    [CustomDropdownListField( "Account", "The account that new pledges will be allocated toward.",
+        listSource: "SELECT [Id] AS 'Value', [PublicName] AS 'Text' FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]",
+        key: "DefaultAccount", required: true, order: 0 )]
     [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge", order: 1 )]
     [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage", order: 2 )]
     [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate", order: 3 )]
@@ -59,13 +59,13 @@ namespace RockWeb.Blocks.Finance
                 RockTransactionScope.WrapTransaction( () =>
                     {
                         var pledgeService = new FinancialPledgeService();
-                        var defaultFundId = int.Parse( GetAttributeValue( "DefaultFund" ) );
+                        var defaultAccountId = int.Parse( GetAttributeValue( "DefaultAccount" ) );
                         var person = FindPerson();
-                        var pledge = FindAndUpdatePledge( person, defaultFundId );
+                        var pledge = FindAndUpdatePledge( person, defaultAccountId );
 
-                        // Does this person already have a pledge for this fund?
+                        // Does this person already have a pledge for this account?
                         // If so, give them the option to create a new one?
-                        if ( person.Pledges.Any( p => p.AccountId == defaultFundId ) )
+                        if ( pledgeService.Queryable().Any( p => p.PersonId == person.Id && p.AccountId == defaultAccountId ) )
                         {
                             pnlConfirm.Visible = true;
                             Session.Add( "CachedPledge", pledge );
@@ -173,7 +173,6 @@ namespace RockWeb.Blocks.Finance
                     LastName = tbLastName.Text,
                     Email = tbEmail.Text,
                     PersonStatusValueId = definedValue.Id,
-                    Pledges = new List<FinancialPledge>()
                 };
 
                 personService.Add( person, CurrentPersonId );
@@ -187,9 +186,9 @@ namespace RockWeb.Blocks.Finance
         /// Finds the pledge.
         /// </summary>
         /// <param name="person">The Person.</param>
-        /// <param name="fundId">The Fund Id</param>
+        /// <param name="accountId">The Account Id</param>
         /// <returns></returns>
-        private FinancialPledge FindAndUpdatePledge( Person person, int fundId )
+        private FinancialPledge FindAndUpdatePledge( Person person, int accountId )
         {
             var pledge = Session["CachedPledge"] as FinancialPledge;
 
@@ -199,7 +198,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             pledge.PersonId = person.Id;
-            pledge.AccountId = fundId;
+            pledge.AccountId = accountId;
             pledge.TotalAmount = decimal.Parse( tbAmount.Text );
 
             var startSetting = GetAttributeValue( "DefaultStartDate" );
@@ -210,7 +209,6 @@ namespace RockWeb.Blocks.Finance
             pledge.EndDate = endDate;
 
             pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
-            pledge.FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text );
             return pledge;
         }
     }

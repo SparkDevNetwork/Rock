@@ -11,12 +11,8 @@
             <Columns>
                 <asp:BoundField DataField="Person" HeaderText="Person" SortExpression="PersonId"/>
                 <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="AccountId"/>
-                <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" DataFormatString="{0:C}"/>
-                <asp:TemplateField HeaderText="Payment Schedule">
-                    <ItemTemplate>
-                         <%# string.Format( "{0:C}", Eval( "FrequencyAmount" ) ) %> <%# Eval( "FrequencyTypeValue" ) %>
-                    </ItemTemplate>
-                </asp:TemplateField>
+                <asp:BoundField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" DataFormatString="{0:C}"/>
+                <asp:BoundField DataField="PledgeFrequencyValue" HeaderText="Payment Schedule" SortExpression="PledgeFrequencyValue" />
                 <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
                 <Rock:DeleteField OnClick="gPledges_Delete"/>
             </Columns>
