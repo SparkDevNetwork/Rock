@@ -47,16 +47,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PageId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Exception Date.
+        /// Gets or sets the exception date time.
         /// </summary>
         /// <value>
-        /// Date / time that the exception occurred..
+        /// The exception date time.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public DateTime ExceptionDate { get; set; }
+        public DateTime ExceptionDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Created By Person Id.

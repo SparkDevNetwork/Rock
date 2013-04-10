@@ -109,7 +109,7 @@ namespace Rock.Model
                 target.Url = source.Url;
                 target.FileName = source.FileName;
                 target.MimeType = source.MimeType;
-                target.LastModifiedTime = source.LastModifiedTime;
+                target.LastModifiedDateTime = source.LastModifiedDateTime;
                 target.Description = source.Description;
                 target.Id = source.Id;
                 target.Guid = source.Guid;

@@ -609,6 +609,10 @@
     <Compile Include="Migrations\201304102138354_NewFinancialSchema.Designer.cs">
       <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304102332542_DateTimeNamingSweep.cs" />
+    <Compile Include="Migrations\201304102332542_DateTimeNamingSweep.Designer.cs">
+      <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1515,6 +1519,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304102138354_NewFinancialSchema.resx">
       <DependentUpon>201304102138354_NewFinancialSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304102332542_DateTimeNamingSweep.resx">
+      <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
