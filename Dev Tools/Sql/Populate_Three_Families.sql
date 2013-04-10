@@ -120,7 +120,7 @@ INSERT INTO [Location] (Street1, Street2, City, [State], Zip, LocationTypeValueI
 VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', @LocationTypeValueHome, 1, NEWID())
 SET @LocationId = SCOPE_IDENTITY()
 
-INSERT INTO [GroupLocation] (GroupId, LocationId, LocationTypeValueId, Guid)
+INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid)
 VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID())
 
 INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])

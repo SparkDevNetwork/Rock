@@ -203,20 +203,11 @@ $('.filter-item-select').click(function (event) {
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
-            int i = 0;
             var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
                 RockPage page = this.Page as RockPage;
                 filterControls = component.CreateChildControls( this );
-                if ( filterControls != null )
-                {
-                    foreach ( var filterControl in filterControls )
-                    {
-                        Controls.Add( filterControl );
-                        filterControl.ID = string.Format( "{0}_fc_{1}", this.ID, i++ );
-                    }
-                }
             }
             else
             {

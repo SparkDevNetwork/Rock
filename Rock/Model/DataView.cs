@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -11,7 +12,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
-
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -158,8 +158,10 @@ namespace Rock.Model
         /// <param name="grid">The grid.</param>
         /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
         /// <returns></returns>
-        public object BindGrid(Grid grid, bool createColumns = false)
+        public object BindGrid(Grid grid, out List<string> errorMessages, bool createColumns = false)
         {
+            errorMessages = new List<string>();
+
             if ( EntityTypeId.HasValue )
             {
                 var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
@@ -178,17 +180,20 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        object serviceInstance = Activator.CreateInstance( modelServiceType );
-
-                        if ( serviceInstance != null )
+                        using ( new Rock.Data.UnitOfWorkScope() )
                         {
-                            ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                            Expression whereExpression = GetExpression( serviceInstance, paramExpression );
+                            object serviceInstance = Activator.CreateInstance( modelServiceType );
 
-                            MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-                            if ( getListMethod != null )
+                            if ( serviceInstance != null )
                             {
-                                return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
+                                ParameterExpression paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                                Expression whereExpression = GetExpression( serviceInstance, paramExpression, out errorMessages );
+
+                                MethodInfo getListMethod = serviceInstance.GetType().GetMethod( "GetList", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
+                                if ( getListMethod != null )
+                                {
+                                    return getListMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, grid.SortProperty } );
+                                }
                             }
                         }
                     }
@@ -215,11 +220,13 @@ namespace Rock.Model
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="paramExpression">The param expression.</param>
         /// <returns></returns>
-        public Expression GetExpression( object serviceInstance, ParameterExpression paramExpression )
+        public Expression GetExpression( object serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
         {
-            Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( serviceInstance, paramExpression ) : null;
+            errorMessages = new List<string>();
 
-            Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression );
+            Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( serviceInstance, paramExpression, errorMessages ) : null;
+
+            Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
             if ( transformedExpression != null )
             {
                 return transformedExpression;
@@ -235,7 +242,7 @@ namespace Rock.Model
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
-        private Expression GetTransformExpression( object service, Expression parameterExpression, Expression whereExpression )
+        private Expression GetTransformExpression( object service, Expression parameterExpression, Expression whereExpression, List<string> errorMessages )
         {
             if ( this.TransformEntityTypeId.HasValue )
             {
@@ -245,7 +252,14 @@ namespace Rock.Model
                     var component = Rock.DataFilters.DataTransformContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
-                        return component.GetExpression( service, parameterExpression, whereExpression );
+                        try
+                        {
+                            return component.GetExpression( service, parameterExpression, whereExpression );
+                        }
+                        catch ( SystemException ex )
+                        {
+                            errorMessages.Add( string.Format( "{0}: {1}", component.Title, ex.Message ) );
+                        }
                     }
                 }
             }

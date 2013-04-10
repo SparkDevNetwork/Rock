@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -121,8 +121,10 @@ namespace Rock.Rest
             var dataView = new DataViewService().Get( id );
             if ( dataView != null && dataView.EntityType.Name == typeof(T).FullName )
             {
+                var errorMessages = new List<string>();
+
                 var paramExpression = _service.ParameterExpression;
-                var whereExpression = dataView.GetExpression( _service, paramExpression );
+                var whereExpression = dataView.GetExpression( _service, paramExpression, out errorMessages );
 
                 if ( paramExpression != null && whereExpression != null )
                 {
