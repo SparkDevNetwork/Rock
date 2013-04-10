@@ -73,14 +73,14 @@ namespace Rock.Model
         public string Caption { get; set; }
 
         /// <summary>
-        /// Gets or sets the date.
+        /// Gets or sets the creation date time.
         /// </summary>
         /// <value>
-        /// The date.
+        /// The creation date time.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public DateTime Date { get; set; }
+        public DateTime CreationDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the alert.

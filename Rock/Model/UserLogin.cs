@@ -75,41 +75,41 @@ namespace Rock.Model
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
-        /// Gets or sets the Last Activity Date.
+        /// Gets or sets the last activity date time.
         /// </summary>
         /// <value>
-        /// Last Activity Date.
+        /// The last activity date time.
         /// </value>
         [NotAudited]
         [DataMember]
-        public DateTime? LastActivityDate { get; set; }
-        
+        public DateTime? LastActivityDateTime { get; set; }
+
         /// <summary>
-        /// Gets or sets the Last Login Date.
+        /// Gets or sets the last login date time.
         /// </summary>
         /// <value>
-        /// Last Login Date.
+        /// The last login date time.
         /// </value>
         [DataMember]
-        public DateTime? LastLoginDate { get; set; }
-        
+        public DateTime? LastLoginDateTime { get; set; }
+
         /// <summary>
-        /// Gets or sets the Last Password Changed Date.
+        /// Gets or sets the last password changed date time.
         /// </summary>
         /// <value>
-        /// Last Password Changed Date.
+        /// The last password changed date time.
         /// </value>
         [DataMember]
-        public DateTime? LastPasswordChangedDate { get; set; }
-        
+        public DateTime? LastPasswordChangedDateTime { get; set; }
+
         /// <summary>
-        /// Gets or sets the Creation Date.
+        /// Gets or sets the creation date time.
         /// </summary>
         /// <value>
-        /// Creation Date.
+        /// The creation date time.
         /// </value>
         [DataMember]
-        public DateTime? CreationDate { get; set; }
+        public DateTime? CreationDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Is On Line.
@@ -128,15 +128,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? IsLockedOut { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Last Locked Out Date.
+        /// Gets or sets the last locked out date time.
         /// </summary>
         /// <value>
-        /// Last Locked Out Date.
+        /// The last locked out date time.
         /// </value>
         [DataMember]
-        public DateTime? LastLockedOutDate { get; set; }
+        public DateTime? LastLockedOutDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Failed Password Attempt Count.
@@ -146,15 +146,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Failed Password Attempt Window Start.
+        /// Gets or sets the failed password attempt window start date time.
         /// </summary>
         /// <value>
-        /// Failed Password Attempt Window Start.
+        /// The failed password attempt window start date time.
         /// </value>
         [DataMember]
-        public DateTime? FailedPasswordAttemptWindowStart { get; set; }
+        public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Api Key.
