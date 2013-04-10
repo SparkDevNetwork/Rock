@@ -99,7 +99,10 @@ namespace Rock.DataFilters.Person
         public override Control[] CreateChildControls( FilterField filterControl )
         {
             CheckBox cb = new CheckBox();
+            cb.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( cb );
             cb.Checked = true;
+
             return new Control[1] { cb };
         }
 

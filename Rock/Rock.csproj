@@ -593,6 +593,10 @@
     <Compile Include="Migrations\201304081941353_GivingBlocks.Designer.cs">
       <DependentUpon>201304081941353_GivingBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304100003385_zHeader.cs" />
+    <Compile Include="Migrations\201304100003385_zHeader.Designer.cs">
+      <DependentUpon>201304100003385_zHeader.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -731,6 +735,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
     <Compile Include="Web\UI\Controls\PageDescription.cs" />
     <Compile Include="Web\UI\Controls\PageIcon.cs" />
@@ -1481,6 +1486,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304081941353_GivingBlocks.resx">
       <DependentUpon>201304081941353_GivingBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304100003385_zHeader.resx">
+      <DependentUpon>201304100003385_zHeader.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
