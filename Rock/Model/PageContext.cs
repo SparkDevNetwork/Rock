@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Page Route POCO Entity.
     /// </summary>
     [Table( "PageContext" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PageContext : Model<PageContext>
     {
         /// <summary>

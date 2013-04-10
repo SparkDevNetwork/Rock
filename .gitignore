@@ -15,6 +15,7 @@ web.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
 pageviews.csv
+RockLogster.csv
 Quartz.xml
 StyleCop.Cache
 
@@ -23,3 +24,4 @@ StyleCop.Cache
 [Dd]ebug*/
 [Rr]elease*/
 RockWeb/Cache/*
+RockWeb/App_Data/PackageStaging

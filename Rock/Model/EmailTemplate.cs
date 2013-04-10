@@ -18,7 +18,7 @@ namespace Rock.Model
     /// Email Template POCO Entity.
     /// </summary>
     [Table( "EmailTemplate" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class EmailTemplate : Model<EmailTemplate>
     {
         /// <summary>

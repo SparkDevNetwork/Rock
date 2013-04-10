@@ -16,17 +16,17 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [TextField( 0, "Admin Page Url", "", "The url of the Check-In admin page", false, "~/checkin" )]
-    [TextField( 1, "Welcome Page Url", "", "The url of the Check-In welcome page", false, "~/checkin/welcome" )]
-    [TextField( 2, "Search Page Url", "", "The url of the Check-In search page", false, "~/checkin/search" )]
-    [TextField( 3, "Family Select Page Url", "", "The url of the Check-In family select page", false, "~/checkin/family" )]
-    [TextField( 4, "Person Select Page Url", "", "The url of the Check-In person select page", false, "~/checkin/person" )]
-    [TextField( 5, "Group Type Select Page Url", "", "The url of the Check-In group type select page", false, "~/checkin/grouptype" )]
-    [TextField( 6, "Location Select Page Url", "", "The url of the Check-In location select page", false, "~/checkin/location" )]
-    [TextField( 7, "Group Select Page Url", "", "The url of the Check-In group select page", false, "~/checkin/group" )]
-    [TextField( 8, "Time Select Page Url", "", "The url of the Check-In group select page", false, "~/checkin/time" )]
-    [TextField( 9, "Success Page Url", "", "The url of the Check-In success page", false, "~/checkin/success" )]
-    [IntegerField( 10, "Workflow Type Id", "0", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in" )]
+    [TextField( "Admin Page Url", "The url of the Check-In admin page", false, "~/checkin", "Page Routes", 0 )]
+    [TextField( "Welcome Page Url", "The url of the Check-In welcome page", false, "~/checkin/welcome", "Page Routes", 1 )]
+    [TextField( "Search Page Url", "The url of the Check-In search page", false, "~/checkin/search", "Page Routes", 2 )]
+    [TextField( "Family Select Page Url", "The url of the Check-In family select page", false, "~/checkin/family", "Page Routes", 3 )]
+    [TextField( "Person Select Page Url", "The url of the Check-In person select page", false, "~/checkin/person", "Page Routes", 4 )]
+    [TextField( "Group Type Select Page Url", "The url of the Check-In group type select page", false, "~/checkin/grouptype", "Page Routes", 5 )]
+    [TextField( "Location Select Page Url", "The url of the Check-In location select page", false, "~/checkin/location", "Page Routes", 6 )]
+    [TextField( "Group Select Page Url", "The url of the Check-In group select page", false, "~/checkin/group", "Page Routes", 7 )]
+    [TextField( "Time Select Page Url", "The url of the Check-In group select page", false, "~/checkin/time", "Page Routes", 8 )]
+    [TextField( "Success Page Url", "The url of the Check-In success page", false, "~/checkin/success", "Page Routes", 9 )]
+    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0)]
     public abstract class CheckInBlock : RockBlock
     {
         /// <summary>

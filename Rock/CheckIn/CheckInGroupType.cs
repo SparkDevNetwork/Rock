@@ -15,7 +15,7 @@ namespace Rock.CheckIn
     /// A group type option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroupType 
+    public class CheckInGroupType : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the type of the group.
@@ -54,6 +54,15 @@ namespace Rock.CheckIn
         public List<CheckInLocation> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the labels to be printed after succesful checkin
+        /// </summary>
+        /// <value>
+        /// The labels.
+        /// </value>
+        [DataMember]
+        public List<CheckInLabel> Labels { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInGroupType" /> class.
         /// </summary>
         public CheckInGroupType()
@@ -73,5 +82,20 @@ namespace Rock.CheckIn
             return GroupType != null ? GroupType.ToString() : string.Empty;
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "GroupType", GroupType );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Locations", Locations );
+            dictionary.Add( "Labels", Labels );
+            return dictionary;
+        }
     }
 }

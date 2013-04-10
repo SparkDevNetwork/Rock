@@ -21,7 +21,7 @@ namespace Rock.Workflow.Action
     [Description( "Activates a new activity for a given activity type" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
-    [TextField( 0, "Activity Type", "The activity type to activate", true )]
+    [IntegerField( "Activity Type", "The activity type Id to activate" )]
     public class ActivateActivity : ActionComponent
     {
         /// <summary>

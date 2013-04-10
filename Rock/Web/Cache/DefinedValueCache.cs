@@ -18,7 +18,7 @@ namespace Rock.Web.Cache
     /// This information will be cached by the engine
     /// </summary>
     [Serializable]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public class DefinedValueCache : CachedModel<DefinedValue>
     {
         #region Constructors
@@ -186,6 +186,16 @@ namespace Rock.Web.Cache
                     return null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static DefinedValueCache Read( string guid )
+        {
+            return Read( new Guid( guid ) );
         }
 
         /// <summary>

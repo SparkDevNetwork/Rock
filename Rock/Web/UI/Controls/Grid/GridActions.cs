@@ -28,6 +28,8 @@ namespace Rock.Web.UI.Controls
 
         Grid ParentGrid;
 
+        LinkButton lbCommunicate;
+
         HtmlGenericControl aAdd;
         LinkButton lbAdd;
 
@@ -35,41 +37,39 @@ namespace Rock.Web.UI.Controls
         LinkButton lbExcelExport;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable add].
+        /// Gets or sets a value indicating whether [show communicate].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [show communicate]; otherwise, <c>false</c>.
         /// </value>
-        public bool IsAddEnabled
+        public bool ShowCommunicate
         {
-            get 
-            {
-                bool? b = ViewState["IsAddEnabled"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["IsAddEnabled"] = value;
-            }
+            get { return ViewState["ShowCommunicate"] as bool? ?? ParentGrid.IsPersonList; }
+            set { ViewState["ShowCommunicate"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable add].
+        /// Gets or sets a value indicating whether [show add].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [enable add]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [show add]; otherwise, <c>false</c>.
         /// </value>
-        public bool IsExcelExportEnabled
+        public bool ShowAdd
         {
-            get
-            {
-                bool? b = ViewState["IsExcelExportEnabled"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["IsExcelExportEnabled"] = value;
-            }
+            get { return ViewState["ShowAdd"] as bool? ?? false; }
+            set { ViewState["ShowAdd"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show excel export].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show excel export]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowExcelExport
+        {
+            get { return ViewState["ShowExcelExport"] as bool? ?? true; }
+            set { ViewState["ShowExcelExport"] = value; }
         }
 
         /// <summary>
@@ -132,11 +132,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            aAdd.Visible = IsAddEnabled && !String.IsNullOrWhiteSpace( ClientAddScript );
-            lbAdd.Visible = IsAddEnabled && String.IsNullOrWhiteSpace( ClientAddScript );
+            lbCommunicate.Visible = ShowCommunicate;
 
-            aExcelExport.Visible = IsExcelExportEnabled && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            lbExcelExport.Visible = IsExcelExportEnabled && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
+            lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+
+            aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
             base.RenderControl( writer );
         }
@@ -175,6 +177,20 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            // control for communicate
+            lbCommunicate = new LinkButton();
+            Controls.Add( lbCommunicate );
+            lbCommunicate.ID = "lbCommunicate";
+            lbCommunicate.CssClass = "communicate btn";
+            lbCommunicate.ToolTip = "Communicate";
+            lbCommunicate.Click += lbCommunicate_Click;
+            lbCommunicate.CausesValidation = false;
+            lbCommunicate.PreRender += lb_PreRender;
+            Controls.Add( lbCommunicate );
+            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
+            iCommunicate.Attributes.Add( "class", "icon-comment" );
+            lbCommunicate.Controls.Add( iCommunicate );
+
             // controls for add
             aAdd = new HtmlGenericControl( "a" );
             Controls.Add( aAdd );
@@ -190,7 +206,7 @@ namespace Rock.Web.UI.Controls
             lbAdd.ToolTip = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
-            lbAdd.PreRender += lbAdd_PreRender;
+            lbAdd.PreRender += lb_PreRender;
             Controls.Add( lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add( "class", "icon-plus-sign" );
@@ -218,21 +234,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the PreRender event of the lbAdd control.
+        /// Handles the PreRender event of the linkbutton controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void lbAdd_PreRender( object sender, EventArgs e )
+        void lb_PreRender( object sender, EventArgs e )
         {
-            lbAdd.Enabled = ParentGrid.Enabled;
-            if ( lbAdd.Enabled )
+            var lb = sender as LinkButton;
+            if ( lb != null )
             {
-                lbAdd.Attributes.Remove( "disabled" );
+                lb.Enabled = ParentGrid.Enabled;
+                if ( lb.Enabled )
+                {
+                    lb.Attributes.Remove( "disabled" );
+                }
+                else
+                {
+                    lb.Attributes["disabled"] = "disabled";
+                }
             }
-            else
-            {
-                lbAdd.Attributes["disabled"] = "disabled";
-            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void lbCommunicate_Click( object sender, EventArgs e )
+        {
+            if ( CommunicateClick != null )
+                CommunicateClick( sender, e );
         }
 
         /// <summary>
@@ -256,6 +287,11 @@ namespace Rock.Web.UI.Controls
             if ( ExcelExportClick != null )
                 ExcelExportClick( sender, e );
         }
+
+        /// <summary>
+        /// Occurs when communicate action is clicked.
+        /// </summary>
+        public event EventHandler CommunicateClick;
 
         /// <summary>
         /// Occurs when add action is clicked.

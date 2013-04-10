@@ -21,43 +21,14 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
         /// </summary>
-        /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        public TextFieldAttribute( int order, string name, string description, bool required )
-            : base( order, name, required, string.Empty, null, string.Empty, description )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
-        /// </summary>
         /// <param name="order">The order.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-        public TextFieldAttribute( int order, string name, string category, string description, bool required, string defaultValue )
-            : base( order, name, required, defaultValue, null, category, description )
+        public TextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
+            : base( name, description, required, defaultValue, category, order, key)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TextFieldAttribute" /> class.
-        /// </summary>
-        /// <param name="order">The order.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-
-        public TextFieldAttribute( int order, string name, string key, string category, string description, bool required, string defaultValue )
-            : base( order, name, required, defaultValue, key, category, description )
-        {
-        }
     }
 }

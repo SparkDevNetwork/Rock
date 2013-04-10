@@ -383,6 +383,12 @@
 		     <ProgressTemplate>
 		            <div style="color: #fff; position: fixed; text-align: center; height: 100%; width: 100%; top: 0; right: 0; left: 0; z-index: 9999999; background-color: #343434; opacity: 0.97;">
 		            	<asp:Image ID="imgUpdateProgress" runat="server" ImageUrl="./waiting.gif" AlternateText="Creating ..." ToolTip="Creating ..." style="padding: 10px;position:fixed;top:45%;left:50%;" />
+		            
+		            	<div class="alert alert-info">
+		            		<h4>Heads Up</h4>
+		            		Depending on your server this could take a couple of minutes. Don't worry, it'll be done soon!
+						</div>
+		            
 		            </div>
 		     </ProgressTemplate>
 		</asp:UpdateProgress>
@@ -393,8 +399,8 @@
 					
 					<div id="content-box" class="group">
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
-							<h1>Welcome...</h1>
-							<p>Put a nice image here...</p>
+							<h1>Rock Installer</h1>
+							<img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
 							<div class="btn-list">

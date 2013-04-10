@@ -104,7 +104,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddGroup );
             btnAddGroup.ID = this.ID + "_btnAddGroup";
             btnAddGroup.ServerClick += btnAddGroup_ServerClick;
-            btnAddGroup.AddCssClass( "btn btn-inverse" );
+            btnAddGroup.AddCssClass( "btn btn-inverse btn-action" );
+            btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
             iAddGroup.AddCssClass( "icon-list-alt" );
@@ -115,7 +116,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddFilter );
             btnAddFilter.ID = this.ID + "_btnAddFilter";
             btnAddFilter.ServerClick += btnAddFilter_ServerClick;
-            btnAddFilter.AddCssClass( "btn btn-inverse" );
+            btnAddFilter.AddCssClass( "btn btn-inverse btn-action" );
+            btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
             iAddFilter.AddCssClass( "icon-filter" );
@@ -127,6 +129,7 @@ namespace Rock.Web.UI.Controls
             lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.Click += lbDelete_Click;
             lbDelete.AddCssClass( "btn btn-mini btn-danger" );
+            lbDelete.CausesValidation = false;
 
             var iDeleteGroup = new HtmlGenericControl( "i" );
             iDeleteGroup.AddCssClass( "icon-remove" );
@@ -147,9 +150,13 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( "Show if " );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "Show if" );
+            writer.RenderEndTag();
             toggleAllAny.RenderControl( writer );
-            writer.Write( " of these are true" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.Write( "of these are true" );
+            writer.RenderEndTag();
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group pull-right" );

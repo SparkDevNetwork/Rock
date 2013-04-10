@@ -34,7 +34,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            LabeledCheckBoxList editControl = new LabeledCheckBoxList();
+            CheckBoxList editControl = new CheckBoxList();
+            editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             foreach ( var item in ListSource )
             {
@@ -55,9 +56,9 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is ListControl )
+            if ( control != null && control is CheckBoxList )
             {
-                LabeledCheckBoxList cbl = (LabeledCheckBoxList)control;
+                CheckBoxList cbl = (CheckBoxList)control;
                 foreach ( ListItem li in cbl.Items )
                     if ( li.Selected )
                         values.Add( li.Value );
@@ -75,14 +76,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            List<string> values = new List<string>();
-            values.AddRange( value.Split( ',' ) );
-
-            if ( control != null && control is ListControl )
+            if ( value != null )
             {
-                LabeledCheckBoxList cbl = (LabeledCheckBoxList)control;
-                foreach ( ListItem li in cbl.Items )
-                    li.Selected = values.Contains( li.Value );
+                List<string> values = new List<string>();
+                values.AddRange( value.Split( ',' ) );
+
+                if ( control != null && control is CheckBoxList )
+                {
+                    CheckBoxList cbl = (CheckBoxList)control;
+                    foreach ( ListItem li in cbl.Items )
+                        li.Selected = values.Contains( li.Value );
+                }
             }
         }
     }

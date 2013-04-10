@@ -15,7 +15,7 @@ namespace Rock.CheckIn
     /// A location option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInLocation 
+    public class CheckInLocation : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the location.
@@ -73,5 +73,19 @@ namespace Rock.CheckIn
             return Location != null ? Location.ToString() : string.Empty;
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add( "Location", Location );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "Groups", Groups );
+            return dictionary;
+        }
     }
 }

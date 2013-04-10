@@ -4,21 +4,15 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Data
 {
     /// <summary>
     /// Represents a model that is categorized (has a foreign key to the Category model)
     /// </summary>
-    public interface ICategorized
+    public interface ICategorized : ISecured
     {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        int Id { get; }
 
         /// <summary>
         /// Gets or sets the name.

@@ -13,6 +13,7 @@ using System.Web.Http;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -27,7 +28,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "CategoriesGetChildren",
-                routeTemplate: "api/Categories/GetChildren/{id}/{entityTypeName}",
+                routeTemplate: "api/Categories/GetChildren/{id}/{entityTypeName}/{getCategorizedItems}",
                 defaults: new
                 {
                     controller = "Categories",
@@ -40,9 +41,14 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The id.</param>
         /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
-        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName )
+        [Authenticate]
+        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName, bool getCategorizedItems)
         {
+            var user = CurrentUser();
+            Person currentPerson = user != null ? user.Person : null;
+
             IQueryable<Category> qry;
             qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
 
@@ -61,7 +67,7 @@ namespace Rock.Rest.Controllers
                     // Get the GetByCategory method
                     if ( cachedEntityType.AssemblyName != null )
                     {
-                        Type entityType = Type.GetType( cachedEntityType.AssemblyName );
+                        Type entityType = cachedEntityType.GetEntityType();
                         if ( entityType != null )
                         {
                             Type[] modelType = { entityType };
@@ -78,66 +84,85 @@ namespace Rock.Rest.Controllers
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" );
+            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=15&height=15" );
 
             foreach ( var category in categoryList )
             {
-                var categoryItem = new CategoryItem();
-                categoryItem.Id = category.Id;
-                categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
-                categoryItem.IsCategory = true;
-
-                // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
-                if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
+                if ( category.IsAuthorized( "View", currentPerson ) )
                 {
-                    categoryItem.IconCssClass = category.IconCssClass;
-                }
-                else
-                {
-                    categoryItem.IconSmallUrl = category.IconSmallFileId != null ? string.Format( imageUrlFormat, category.IconSmallFileId ) : string.Empty;
-                }
+                    var categoryItem = new CategoryItem();
+                    categoryItem.Id = category.Id;
+                    categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
+                    categoryItem.IsCategory = true;
 
-                categoryItemList.Add( categoryItem );
+                    // if there a IconCssClass is assigned, use that as the Icon.  Otherwise, use the SmallIcon (if assigned)
+                    if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
+                    {
+                        categoryItem.IconCssClass = category.IconCssClass;
+                    }
+                    else
+                    {
+                        categoryItem.IconSmallUrl = category.IconSmallFileId != null ? string.Format( imageUrlFormat, category.IconSmallFileId ) : string.Empty;
+                    }
+
+                    categoryItemList.Add( categoryItem );
+                }
             }
 
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof(ParameterExpression), typeof(Expression) } );
-            IQueryable items = GetCategorizedItems( serviceInstance, getMethod, id ) as IQueryable;
-            if (items != null)
+            if ( getCategorizedItems )
             {
-                foreach(var item in items)
+                IQueryable items = GetCategorizedItems( serviceInstance, id ) as IQueryable;
+                if ( items != null )
                 {
-                    ICategorized categorizedItem = item as ICategorized;
-                    if ( categorizedItem != null )
+                    foreach ( var item in items )
                     {
-                        var categoryItem = new CategoryItem();
-                        categoryItem.Id = categorizedItem.Id;
-                        categoryItem.Name = categorizedItem.Name;
-                        categoryItem.IsCategory = false;
-                        categoryItem.IconCssClass = "icon-list-ol";
-                        categoryItem.IconSmallUrl = string.Empty;
-                        categoryItemList.Add( categoryItem );
+                        ICategorized categorizedItem = item as ICategorized;
+                        if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                        {
+                            var categoryItem = new CategoryItem();
+                            categoryItem.Id = categorizedItem.Id;
+                            categoryItem.Name = categorizedItem.Name;
+                            categoryItem.IsCategory = false;
+                            categoryItem.IconCssClass = "icon-list-ol";
+                            categoryItem.IconSmallUrl = string.Empty;
+                            categoryItemList.Add( categoryItem );
+                        }
                     }
                 }
             }
 
-            // try to quickly figure out which items have Children
-            List<int> resultIds = categoryItemList.Select( a => a.Id ).ToList();
-
-            var qryHasChildrenCategory = from x in Get().Select( a => a.ParentCategoryId )
-                                         where resultIds.Contains( x.Value )
-                                         select x.Value;
-
-            List<int> qryHasChildrenList = qryHasChildrenCategory.ToList();
-
-            MethodInfo anyMethod = serviceInstance.GetType().GetMethod( "Any", new Type[] { typeof(ParameterExpression), typeof(Expression) } );
+            // try to figure out which items have viewable children
             foreach ( var g in categoryItemList )
             {
                 if ( g.IsCategory )
                 {
-                    g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
-                    if ( !g.HasChildren && serviceInstance != null && getMethod != null )
+                    foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == g.Id ) )
                     {
-                        g.HasChildren = (bool)GetCategorizedItems( serviceInstance, anyMethod, g.Id );
+                        if ( childCategory.IsAuthorized( "View", currentPerson ) )
+                        {
+                            g.HasChildren = true;
+                            break;
+                        }
+                    }
+
+                    if ( !g.HasChildren )
+                    {
+                        if ( getCategorizedItems )
+                        {
+                            IQueryable childItems = GetCategorizedItems( serviceInstance, g.Id ) as IQueryable;
+                            if ( childItems != null )
+                            {
+                                foreach ( var item in childItems )
+                                {
+                                    ICategorized categorizedItem = item as ICategorized;
+                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                                    {
+                                        g.HasChildren = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -145,18 +170,28 @@ namespace Rock.Rest.Controllers
             return categoryItemList.AsQueryable();
         }
 
-        private object GetCategorizedItems( object serviceInstance, System.Reflection.MethodInfo queryMethod, int categoryId )
+        /// <summary>
+        /// Gets the categorized items.
+        /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="categoryId">The category id.</param>
+        /// <returns></returns>
+        private object GetCategorizedItems( object serviceInstance, int categoryId )
         {
-            if ( serviceInstance != null && queryMethod != null )
+            if ( serviceInstance != null )
             {
-                var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
-                var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
-                var zeroExpression = Expression.Constant( 0 );
-                var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );
-                var constantExpression = Expression.Constant( categoryId );
-                var compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
+                if ( getMethod != null )
+                {
+                    var paramExpression = serviceInstance.GetType().GetProperty( "ParameterExpression" ).GetValue( serviceInstance ) as ParameterExpression;
+                    var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
+                    var zeroExpression = Expression.Constant( 0 );
+                    var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );
+                    var constantExpression = Expression.Constant( categoryId );
+                    var compareExpression = Expression.Equal( coalesceExpression, constantExpression );
 
-                return queryMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
+                    return getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
+                }
             }
 
             return null;

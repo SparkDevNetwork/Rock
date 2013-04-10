@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Site POCO Entity.
     /// </summary>
     [Table( "Site" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Site : Model<Site>
     {
         /// <summary>
@@ -163,7 +163,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [DataMember]
         public virtual Page DefaultPage { get; set; }
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace Rock.DataFilters
     /// <summary>
     /// MEF Container class for data filters
     /// </summary>
-    public class DataFilterContainer : ContainerManaged<DataFilterComponent, IComponentData>
+    public class DataFilterContainer : Container<DataFilterComponent, IComponentData>
     {
         private static DataFilterContainer instance;
 

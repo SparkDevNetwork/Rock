@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -34,7 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
             {
-                if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) )
+                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
                     using ( new Rock.Data.UnitOfWorkScope() )
                     {
@@ -43,7 +44,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                         foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
                         {
-                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY ).Select( m => m.Group ) )
+                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
                             {
                                 var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
                                 if ( family == null )

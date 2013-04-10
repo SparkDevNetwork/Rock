@@ -21,7 +21,7 @@ namespace Rock.Model
     /// User POCO Entity.
     /// </summary>
     [Table( "UserLogin" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>
@@ -237,6 +237,15 @@ namespace Rock.Model
             {
                 return HttpUtility.UrlEncode( ConfirmationCode );
             }
+        }
+
+        public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = base.ToDictionary();
+            dictionary.Add( "Person", Person );
+            dictionary.Add( "ConfirmationCode", ConfirmationCode );
+            dictionary.Add( "ConfirmationCodeEncoded", ConfirmationCodeEncoded );
+            return dictionary;
         }
 
         /// <summary>

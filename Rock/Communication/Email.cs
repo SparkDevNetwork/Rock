@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using DotLiquid;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -109,6 +108,15 @@ namespace Rock.Communication
         /// The SMTP password.
         /// </value>
         public string Password { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Email" /> class.
+        /// </summary>
+        /// <param name="templateGuid">The template GUID.</param>
+        public Email( string templateGuid )
+            : this( new Guid( templateGuid ) )
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Email"/> class.
@@ -211,8 +219,8 @@ namespace Rock.Communication
                 configValuesList.ForEach( g => mergeObjects.Add( g.Key, g.Value ) );
 
                 // Resolve any merge codes in the subject and body
-                string subject = Resolve( Subject, mergeObjects );
-                string body = Resolve( Body, mergeObjects );
+                string subject = Subject.ResolveMergeFields( mergeObjects );
+                string body = Body.ResolveMergeFields( mergeObjects );
 
                 Email.Send( From, to, cc, bcc, subject, body, Server, Port, UseSSL, UserName, Password );
             }
@@ -241,14 +249,7 @@ namespace Rock.Communication
 
         private string ResolveConfigValue( string value, Dictionary<string, object> globalAttributes )
         {
-            // If the attribute doesn't contain any merge codes, return the content
-            if ( !Regex.IsMatch( value, @".*\{\{.+\}\}.*" ) )
-                return value;
-
-            // Resolve the merge codes
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( value );
-            string result = template.Render( Hash.FromDictionary( globalAttributes ) );
+            string result = value.ResolveMergeFields( globalAttributes );
 
             // If anything was resolved, keep resolving until nothing changed.
             while ( result != value )
@@ -258,21 +259,6 @@ namespace Rock.Communication
             }
 
             return result;
-        }
-
-        private string Resolve( string content, Dictionary<string, object> mergeObjects )
-        {
-            if ( content == null )
-                return string.Empty;
-
-            // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{\{.+\}\}.*" ) )
-                return content;
-
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( content );
-
-            return template.Render( Hash.FromDictionary(mergeObjects) );
         }
 
         private List<string> SplitRecipient( string recipients )

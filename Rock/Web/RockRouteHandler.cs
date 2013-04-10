@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +29,9 @@ namespace Rock.Web
                 throw new ArgumentNullException( "requestContext" );
 
             string pageId = "";
-            int routeId = -1;
+            int routeId = 0;
+            
+            var parms = new Dictionary<string,string>();
 
             // Pages using the default routing URL will have the page id in the RouteData.Values collection
             if ( requestContext.RouteData.Values["PageId"] != null )
@@ -42,6 +43,11 @@ namespace Rock.Web
             {
                 pageId = (string)requestContext.RouteData.DataTokens["PageId"];
                 routeId = Int32.Parse( (string)requestContext.RouteData.DataTokens["RouteId"] );
+
+                foreach ( var routeParm in requestContext.RouteData.Values )
+                {
+                    parms.Add( routeParm.Key, (string)routeParm.Value );
+                }
             }
             // If page has not been specified get the site by the domain and use the site's default page
             else
@@ -70,7 +76,7 @@ namespace Rock.Web
                     else
                     {
                         var siteService = new Rock.Model.SiteService();
-                        var rockSite = siteService.Get( SystemGuid.Site.SITE_ROCK_CHMS );
+                        var rockSite = siteService.Get( new Guid( SystemGuid.Site.SITE_ROCK_CHMS ) );
                         if ( rockSite != null )
                         {
                             siteId = rockSite.Id;
@@ -95,22 +101,24 @@ namespace Rock.Web
 
             if ( !string.IsNullOrEmpty( pageId ) )
             {
-                page = Rock.Web.Cache.PageCache.Read( Convert.ToInt32( pageId ) );
+                int pageIdNumber = 0;
+                if ( Int32.TryParse( pageId, out pageIdNumber ) )
+                {
+                    page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
+                }
+
                 if ( page == null )
                 {
                     return new HttpHandlerError( 404 );
                 }
             }
 
-            string theme = "RockCms";
+            string theme = "RockChMS";
             string layout = "Default";
             string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
 
             if ( page != null )
             {
-                // load the route id
-                page.RouteId = routeId;
-
                 theme = page.Site.Theme;
                 layout = page.Layout;
                 layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
@@ -120,24 +128,25 @@ namespace Rock.Web
                 page = Cache.PageCache.Read( new Model.Page() );
             }
 
+
             try
             {
                 // Return the page for the selected theme and layout
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                 cmsPage.CurrentPage = page;
+                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
             catch ( System.Web.HttpException )
             {
-                // The Selected theme and/or layout didn't exist, attempt first to use the default layout in the selected theme
-                layout = "Default";
-
-                // If not using the Rock theme, verify that default Layout exists in the selected theme directory
-                if ( theme != "RockCms" &&
-                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/{0}/Layouts/Default.aspx", theme ) ) ) )
+                // The Selected theme and/or layout didn't exist, attempt first to use the layout in the default theme.
+                theme = "RockChMS";
+                
+                // If not using the default layout, verify that Layout exists in the default theme directory
+                if ( layout != "Default" &&
+                    !File.Exists( requestContext.HttpContext.Server.MapPath( string.Format( "~/Themes/RockChMS/Layouts/{0}.aspx", layout ) ) ) )
                 {
-                    // If default layout doesn't exist in the selected theme, switch to the Default layout
-                    theme = "RockCms";
+                    // If selected layout doesn't exist in the default theme, switch to the Default layout
                     layout = "Default";
                 }
 
@@ -147,6 +156,7 @@ namespace Rock.Web
                 // Return the default layout and/or theme
                 Rock.Web.UI.RockPage cmsPage = (Rock.Web.UI.RockPage)BuildManager.CreateInstanceFromVirtualPath( layoutPath, typeof( Rock.Web.UI.RockPage ) );
                 cmsPage.CurrentPage = page;
+                cmsPage.CurrentPageReference = new PageReference( page.Id, routeId, parms, requestContext.HttpContext.Request.QueryString );
                 return cmsPage;
             }
         }

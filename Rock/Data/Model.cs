@@ -18,7 +18,7 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()
     {
@@ -115,7 +115,7 @@ namespace Rock.Data
         /// <value>
         /// The attribute categories.
         /// </value>
-        public SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        public Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.

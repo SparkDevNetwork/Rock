@@ -18,9 +18,9 @@ namespace Rock.Address.Geocode
     [Description( "Address Geocoding service from Tele Atlas (EZ-Locate)" )]
     [Export( typeof( GeocodeComponent ) )]
     [ExportMetadata( "ComponentName", "TelaAtlas" )]
-    [TextField( 1, "User Name", "Security", "The Tele Atlas User Name", true, "" )]
-    [TextField( 2, "Password", "Security", "The Tele Atlas Password", true, "" )]
-    [TextField( 2, "EZ-Locate Service", "EZLocateService", "Service", "The EZ-Locate Service to use (default: USA_Geo_002)", true, "USA_Geo_002" )]
+    [TextField( "User Name", "The Tele Atlas User Name", true, "", "Security", 0 )]
+    [TextField( "Password", "The Tele Atlas Password", true, "", "Security", 1 )]
+    [TextField( "EZ-Locate Service", "The EZ-Locate Service to use (default: USA_Geo_002)", false, "USA_Geo_002", "Service" )]
     public class TelaAtlas : GeocodeComponent
     {
         /// <summary>
@@ -61,7 +61,7 @@ namespace Rock.Address.Geocode
                         var gptc = new Rock.TeleAtlas.Geocoding.GeocodingPortTypeClient();
 
                         Rock.TeleAtlas.Geocoding.Geocode returnedGeocode;
-                        rc = gptc.findAddress( GetAttributeValue( "EZLocateService" ), addressParts, cred, out returnedGeocode );
+                        rc = gptc.findAddress( GetAttributeValue( "EZ-LocateService" ), addressParts, cred, out returnedGeocode );
                         if ( rc == 0 )
                         {
                             if ( returnedGeocode.resultCode == 0 )

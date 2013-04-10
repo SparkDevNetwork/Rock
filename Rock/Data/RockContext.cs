@@ -87,6 +87,14 @@ namespace Rock.Data
         public DbSet<BinaryFile> BinaryFiles { get; set; }
 
         /// <summary>
+        /// Gets or sets the Binary File Types.
+        /// </summary>
+        /// <value>
+        /// the Binary File Types.
+        /// </value>
+        public DbSet<BinaryFileType> BinaryFileTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the Blocks.
         /// </summary>
         /// <value>
@@ -117,7 +125,23 @@ namespace Rock.Data
         /// The categories.
         /// </value>
         public DbSet<Category> Categories { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the communications.
+        /// </summary>
+        /// <value>
+        /// The communications.
+        /// </value>
+        public DbSet<Rock.Model.Communication> Communications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication recipients.
+        /// </summary>
+        /// <value>
+        /// The communication recipients.
+        /// </value>
+        public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
         /// <summary>
         /// Gets or sets the data views.
         /// </summary>
@@ -638,10 +662,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new AuditConfiguration() );
             modelBuilder.Configurations.Add( new AuthConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
+            modelBuilder.Configurations.Add( new BinaryFileTypeConfiguration() );
             modelBuilder.Configurations.Add( new BlockConfiguration() );
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new CampusConfiguration() );
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
+            modelBuilder.Configurations.Add( new CommunicationConfiguration() );
+            modelBuilder.Configurations.Add( new CommunicationRecipientConfiguration() );
             modelBuilder.Configurations.Add( new DataViewConfiguration() );
             modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );

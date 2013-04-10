@@ -26,6 +26,7 @@ namespace Rock.CheckIn
         private static DateTimeOffset _lastCached { get; set; }
         private static Dictionary<int, KioskStatus> _kiosks;
         private static Dictionary<int, KioskLocationAttendance> _locations;
+        private static Dictionary<int, LabelCache> _labels;
 
         /// <summary>
         /// Initializes the <see cref="KioskCache" /> class.
@@ -73,8 +74,7 @@ namespace Rock.CheckIn
                 if ( _kiosks.ContainsKey( kioskId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
-                    string json = JsonConvert.SerializeObject( _kiosks[kioskId] );
-                    return JsonConvert.DeserializeObject( json, typeof( KioskStatus ) ) as KioskStatus;
+                    return JsonConvert.DeserializeObject( _kiosks[kioskId].ToJson(), typeof( KioskStatus ) ) as KioskStatus;
                 }
             }
 
@@ -93,8 +93,25 @@ namespace Rock.CheckIn
                 if ( _locations.ContainsKey( locationId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
-                    string json = JsonConvert.SerializeObject( _locations[locationId] );
-                    return JsonConvert.DeserializeObject( json, typeof( KioskLocationAttendance ) ) as KioskLocationAttendance;
+                    return JsonConvert.DeserializeObject( _locations[locationId].ToJson(), typeof( KioskLocationAttendance ) ) as KioskLocationAttendance;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the label.
+        /// </summary>
+        /// <param name="id">The id.</param>
+        /// <returns></returns>
+        public static LabelCache GetLabel(int id)
+        {
+            lock ( obj )
+            {
+                if ( _labels.ContainsKey( id ) )
+                {
+                    return JsonConvert.DeserializeObject( _labels[id].ToJson(), typeof( LabelCache ) ) as LabelCache;
                 }
             }
 
@@ -130,6 +147,7 @@ namespace Rock.CheckIn
         {
             _kiosks = new Dictionary<int, KioskStatus>();
             _locations = new Dictionary<int, KioskLocationAttendance>();
+            _labels = new Dictionary<int, LabelCache>();
 
             var checkInDeviceTypeId = DefinedValueCache.Read( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             foreach ( var kiosk in new DeviceService().Queryable()
@@ -138,7 +156,7 @@ namespace Rock.CheckIn
             {
                 var kioskStatus = new KioskStatus( kiosk );
 
-                using (new Rock.Data.UnitOfWorkScope())
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
                     foreach ( Location location in kiosk.Locations )
                     {
@@ -146,6 +164,50 @@ namespace Rock.CheckIn
                     }
                 }
                 _kiosks.Add( kiosk.Id, kioskStatus );
+            }
+
+            foreach ( var file in new BinaryFileService()
+                .Queryable()
+                .Where( f => f.BinaryFileType.Guid == new Guid(SystemGuid.BinaryFiletype.CHECKIN_LABEL )))
+            {
+                var label = new LabelCache();
+
+                label.Guid = file.Guid;
+                label.Url = string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                label.MergeFields = new Dictionary<string, string>();
+                label.FileContent = System.Text.Encoding.Default.GetString( file.Data );
+
+                file.LoadAttributes();
+                string attributeValue = file.GetAttributeValue( "MergeCodes" );
+                if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                {
+                    string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    foreach ( string nameValue in nameValues )
+                    {
+                        string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( nameAndValue.Length == 2 && !label.MergeFields.ContainsKey( nameAndValue[0] ) )
+                        {
+                            label.MergeFields.Add( nameAndValue[0], nameAndValue[1] );
+
+                            int definedValueId = int.MinValue;
+                            if ( int.TryParse( nameAndValue[1], out definedValueId ) )
+                            {
+                                var definedValue = DefinedValueCache.Read( definedValueId );
+                                if ( definedValue != null )
+                                {
+                                    string mergeField = definedValue.GetAttributeValue( "MergeField" );
+                                    if ( mergeField != null )
+                                    {
+                                        label.MergeFields[nameAndValue[0]] = mergeField;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                _labels.Add( file.Id, label );
+
             }
 
             _lastCached = DateTimeOffset.Now;

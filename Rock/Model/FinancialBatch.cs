@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Batch POCO class.
     /// </summary>
     [Table("FinancialBatch")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>
     {
         

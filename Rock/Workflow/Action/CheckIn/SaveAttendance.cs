@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -19,6 +20,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Saves the selected check-in data as attendance")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
+    [IntegerField( "Security Code Length", "The number of characters to use for the security code." )]
     public class SaveAttendance : CheckInActionComponent
     {
         /// <summary>
@@ -46,7 +48,13 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            var attendanceCode = attendanceCodeService.GetNew( 3 );
+                            int securityCodeLength = 3;
+                            if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
+                            {
+                                securityCodeLength = 3;
+                            }
+                            var attendanceCode = attendanceCodeService.GetNew( securityCodeLength );
+                            person.SecurityCode = attendanceCode.Code;
 
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
@@ -85,8 +93,6 @@ namespace Rock.Workflow.Action.CheckIn
                                             attendance.EndDateTime = null;
                                             attendance.DidAttend = true;
                                             attendanceService.Save( attendance, null );
-
-                                            schedule.SecurityCode = attendanceCode.Code;
 
                                             Rock.CheckIn.KioskCache.AddAttendance( attendance );
                                         }

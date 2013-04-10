@@ -41,6 +41,14 @@ namespace Rock.Web.UI
         public BlockCache CurrentBlock { get; set; }
 
         /// <summary>
+        /// Gets the current page reference.
+        /// </summary>
+        /// <value>
+        /// The current page reference.
+        /// </value>
+        public PageReference CurrentPageReference { get; set; }
+
+        /// <summary>
         /// The personID of the currently logged in user.  If user is not logged in, returns null
         /// </summary>
         public int? CurrentPersonId
@@ -174,6 +182,30 @@ namespace Rock.Web.UI
             {
                 return null;
             }
+        }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockBlock" /> class.
+        /// </summary>
+        public RockBlock()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockBlock" /> class.
+        /// </summary>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="currentBlock">The current block.</param>
+        /// <param name="currentPageReference">The current page reference.</param>
+        public RockBlock( PageCache currentPage, BlockCache currentBlock, PageReference currentPageReference )
+        {
+            CurrentPage = CurrentPage;
+            CurrentBlock = currentBlock;
+            CurrentPageReference = currentPageReference;
         }
 
         #endregion
@@ -450,6 +482,26 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Pages the parameter.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public string PageParameter( PageReference pageReference, string name )
+        {
+            return ( (RockPage)this.Page ).PageParameter( pageReference, name );
+        }
+
+        /// <summary>
+        /// Gets the page route and query string parameters
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> PageParameters()
+        {
+            return ( (RockPage)this.Page ).PageParameters();
+        }
+
+        /// <summary>
         /// Navigates to parent page.
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
@@ -490,15 +542,13 @@ namespace Rock.Web.UI
         /// <param name="additionalParams">The additional params.</param>
         public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
-            if ( !pageGuid.Equals( Guid.Empty ) )
+            var pageCache = PageCache.Read( pageGuid );
+            if (pageCache != null)
             {
-                Rock.Model.Page page = new PageService().Get( pageGuid );
-                if ( page != null )
-                {
-                    string pageUrl = CurrentPage.BuildUrl( page.Id, queryString );
-                    Response.Redirect( pageUrl, false );
-                    Context.ApplicationInstance.CompleteRequest();
-                }
+                var pageReference = new PageReference(pageCache.Id, 0, queryString, null);
+                string pageUrl = pageReference.BuildUrl();
+                Response.Redirect( pageUrl, false );
+                Context.ApplicationInstance.CompleteRequest();
             }
         }
 
@@ -604,7 +654,7 @@ namespace Rock.Web.UI
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
                 aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
-                    Security.Authorization.EncodeEntityTypeName( typeof( Block ) ), CurrentBlock.Id ) ) + "')" );
+                    EntityTypeCache.Read( typeof( Block ) ).Id, CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );
                 HtmlGenericControl iSecureBlock = new HtmlGenericControl( "i" );
@@ -638,6 +688,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public virtual List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            return new List<BreadCrumb>();
+        }
+
+        /// <summary>
         /// Contents the updated.
         /// </summary>
         protected virtual void ContentUpdated()
@@ -654,7 +714,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( typeof(Block) ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

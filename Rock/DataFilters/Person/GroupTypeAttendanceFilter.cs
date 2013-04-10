@@ -12,15 +12,16 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters.Person
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have attended a group type a specific number of times" )]
+    [Description( "Filter people on whether they have attended a group type a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Type Attendance Filter" )]
+    [ExportMetadata( "ComponentName", "Person Group Type Attendance Filter" )]
     public class GroupTypeAttendanceFilter : DataFilterComponent
     {
         /// <summary>
@@ -57,26 +58,24 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Creates the child controls.
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
         /// </summary>
-        /// <returns></returns>
-        public override Control[] CreateChildControls()
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public override string ClientFormatSelection
         {
-            DropDownList ddlGroupType = new DropDownList();
-            foreach ( GroupType groupType in new GroupTypeService().Queryable() )
+            get
             {
-                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+                return "'Attended ' + " + 
+                    "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
+                    "$('select:last', $content).find(':selected').text() + ' ' + " + 
+                    "$('input:first', $content).val() + ' times in the last ' + " +
+                    "$('input:last', $content).val() + ' week(s)'";
             }
-
-            var controls = new Control[4] {
-                ddlGroupType,  ComparisonControl( NumericFilterComparisonTypes ),
-                new TextBox(), new TextBox() };
-
-            SetSelection( controls, string.Format( "{0}|{1}|4|16", 
-                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
-                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
-
-            return controls;
         }
 
         /// <summary>
@@ -107,11 +106,47 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
+        /// Creates the child controls.
+        /// </summary>
+        /// <returns></returns>
+        public override Control[] CreateChildControls( FilterField filterControl )
+        {
+            DropDownList ddlGroupType = new DropDownList();
+            ddlGroupType.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( ddlGroupType );
+
+            foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
+            {
+                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+            }
+
+            var ddl = ComparisonControl( NumericFilterComparisonTypes );
+            ddl.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( ddl );
+
+            var tb = new TextBox();
+            tb.ID = filterControl.ID + "_2";
+            filterControl.Controls.Add( tb );
+
+            var tb2 = new TextBox();
+            tb2.ID = filterControl.ID + "_3";
+            filterControl.Controls.Add( tb );
+
+            var controls = new Control[4] { ddlGroupType, ddl, tb, tb2 };
+
+            SetSelection( controls, string.Format( "{0}|{1}|4|16",
+                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
+                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+
+            return controls;
+        }
+
+        /// <summary>
         /// Renders the controls.
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             controls[0].RenderControl( writer );
             writer.WriteBreak();
@@ -159,10 +194,11 @@ namespace Rock.DataFilters.Person
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length != 4 )
@@ -189,7 +225,20 @@ namespace Rock.DataFilters.Person
 
             DateTime startDate = DateTime.Now.AddDays( 0 - (7 * weeks));
 
-            ParameterExpression attendanceParameter = Expression.Parameter( typeof( Attendance ), "a" );
+            // Build expressions for this type of linq statement:
+            //var result = new PersonService().Queryable()
+            //    .Where( p =>
+            //        ( p.Attendances.Count( a =>
+            //            (
+            //                (
+            //                    ( a.Group.GroupTypeId == groupTypeId ) &&
+            //                    ( a.StartDateTime >= startDate )
+            //                ) &&
+            //                ( a.DidAttend == true )
+            //            )
+            //        ) >= attended ) );
+
+            ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
 
             MemberExpression groupProperty = Expression.Property( attendanceParameter, "Group" );
             MemberExpression groupTypeIdProperty = Expression.Property( groupProperty, "GroupTypeId" );
@@ -208,10 +257,10 @@ namespace Rock.DataFilters.Person
             Expression groupTypeIdAndStartAndDidAttend = Expression.AndAlso( groupTypeIdAndStart, didAttendComparison );
 
             LambdaExpression attendanceLambda = 
-                Expression.Lambda<Func<Attendance, bool>>(groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter });
+                Expression.Lambda<Func<Rock.Model.Attendance, bool>>(groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter });
 
             Expression attendanceCount = Expression.Call(typeof(Enumerable), "Count", 
-                new Type[] { typeof(Attendance) }, Expression.PropertyOrField(parameterExpression, "Attendances"), attendanceLambda);
+                new Type[] { typeof(Rock.Model.Attendance) }, Expression.PropertyOrField(parameterExpression, "Attendances"), attendanceLambda);
 
             Expression timesAttendedConstant = Expression.Constant( attended );
             Expression timesAttendedComparison = Expression.GreaterThanOrEqual(attendanceCount, timesAttendedConstant);

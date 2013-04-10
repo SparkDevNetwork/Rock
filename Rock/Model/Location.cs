@@ -21,7 +21,7 @@ namespace Rock.Model
     /// Location POCO Entity.
     /// </summary>
     [Table( "Location" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Location : Model<Location>
     {
         #region Entity Properties
@@ -73,13 +73,22 @@ namespace Rock.Model
         public DbGeography Perimeter { get; set; }
 
         /// <summary>
-        /// Gets or sets the location type value id.
+        /// Gets or sets the location type value id. (i.e. Campus, Building, Room, Neighborhood, Region, etc)
         /// </summary>
         /// <value>
         /// The location type value id.
         /// </value>
         [DataMember]
         public int? LocationTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is a named location.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the Street 1.
@@ -256,7 +265,6 @@ namespace Rock.Model
         /// <value>
         /// The parent location.
         /// </value>
-        [DataMember]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>

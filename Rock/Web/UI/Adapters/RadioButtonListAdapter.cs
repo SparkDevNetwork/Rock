@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Adapters
                 foreach ( ListItem li in rbl.Items )
                 {
                     writer.WriteLine();
-                    writer.AddAttribute( "class", "radio inline" );
+                    writer.AddAttribute( "class", "radio" + ( rbl.RepeatDirection == RepeatDirection.Horizontal ? " inline" : string.Empty ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
                     string itemId = string.Format( "{0}_{1}", rbl.ClientID, i++ );
@@ -55,6 +55,13 @@ namespace Rock.Web.UI.Adapters
                     {
                         writer.AddAttribute( "checked", "checked" );
                     }
+
+                    foreach ( var attributeKey in li.Attributes.Keys )
+                    {
+                        var key = attributeKey as string;
+                        writer.AddAttribute( key, li.Attributes[key] );
+                    }
+
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
 

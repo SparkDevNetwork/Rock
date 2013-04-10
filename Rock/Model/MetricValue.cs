@@ -16,7 +16,7 @@ namespace Rock.Model
     /// MetricValue POCO Entity.
     /// </summary>
     [Table( "MetricValue" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class MetricValue : Model<MetricValue>, IOrdered
     {
         /// <summary>
