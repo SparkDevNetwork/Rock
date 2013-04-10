@@ -597,6 +597,14 @@
     <Compile Include="Migrations\201304101246154_GivingBlocks.Designer.cs">
       <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.cs" />
+    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.Designer.cs">
+      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.cs" />
+    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.Designer.cs">
+      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201304101953596_NewFinancialSchema.cs" />
     <Compile Include="Migrations\201304101953596_NewFinancialSchema.Designer.cs">
       <DependentUpon>201304101953596_NewFinancialSchema.cs</DependentUpon>
@@ -783,7 +791,7 @@
     <Compile Include="DataFilters\DataFilterComponent.cs" />
     <Compile Include="DataFilters\DataFilterContainer.cs" />
     <Compile Include="DataFilters\Person\GroupTypeAttendanceFilter.cs" />
-    <Compile Include="DataFilters\Person\FirstNameFilter.cs" />
+    <None Include="DataFilters\Person\FirstNameFilter.cs.exclude" />
     <Compile Include="DataFilters\Person\HasPictureFilter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
@@ -1498,6 +1506,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304101246154_GivingBlocks.resx">
       <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304101854297_GivingBlocksSeedData.resx">
+      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304102107326_DbCalculatedPersonNameFields.resx">
+      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304101953596_NewFinancialSchema.resx">
       <DependentUpon>201304101953596_NewFinancialSchema.cs</DependentUpon>
