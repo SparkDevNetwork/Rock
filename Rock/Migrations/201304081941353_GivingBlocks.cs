@@ -24,7 +24,8 @@ namespace Rock.Migrations
             AddBlockType( "Finance - Recurring Gift", "", "~/Blocks/Finance/RecurringGift.ascx", "F679692F-133E-4F57-9072-D87C675C3283" );            
             AddBlock( "9800CE96-C99B-4C70-ADD9-DF22E89378D4", "4A2AA794-A968-4CCD-973A-C90FD589996F", "One Time Gift", "", "Content", 0, "3BFFEDFD-2198-4A13-827A-4FD1A774949E" );
             AddBlock( "FF73E611-2674-4BA1-A75F-E9291FAC0E19", "F679692F-133E-4F57-9072-D87C675C3283", "Recurring Gift", "", "Content", 0, "0F17BF49-A6D5-47C3-935A-B050127EA939" );
-            
+
+            // One Time Gift Block Attributes
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card giving", "ShowCreditCardgiving", "UI Options", "Allow users to give using a credit card?", 4, "True", "73DA7706-40D8-4427-B666-CC2220848BBE" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH giving", "ShowChecking/ACHgiving", "UI Options", "Allow users to give using a checking account?", 5, "True", "87E78EF4-761E-43B8-AD61-A7CABBF38708" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payments", "Which payment processor should be used for credit cards?", 1, "", "6BB568E5-5505-4072-B5D7-D47C5DFD7499" );
@@ -32,7 +33,8 @@ namespace Rock.Migrations
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Default Funds to display", "DefaultFundstodisplay", "Payments", "Which funds should be displayed by default?", 3, "", "3D4D15BA-A258-428A-990C-6AE5668BCF17" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Stack layout vertically", "Stacklayoutvertically", "UI Options", "Should giving UI be stacked vertically or horizontally?", 2, "True", "487CA28D-E768-4CE7-8B1D-1C418C3650D2" );
             AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campus selection", "ShowCampusselection", "UI Options", "Should giving be associated with a specific campus?", 3, "False", "09F53EC0-0A6D-4834-91F5-E27BC13B3AA2" );
-                        
+
+            // Recurring Gift Block Attributes
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card giving", "ShowCreditCardgiving", "UI Options", "Allow users to give using a credit card?", 4, "True", "FB8CB110-C599-4A49-A1E5-6D23EDB05A64" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH giving", "ShowChecking/ACHgiving", "UI Options", "Allow users to give using a checking account?", 5, "True", "A050195C-F832-4528-9753-ECB1993D7133" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payments", "Which payment processor should be used for credit cards?", 1, "", "2BA3EF55-D44F-405C-AF50-F070CA16B781" );
@@ -41,7 +43,6 @@ namespace Rock.Migrations
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Stack layout vertically", "Stacklayoutvertically", "UI Options", "Should giving UI be stacked vertically or horizontally?", 2, "True", "1B68CD07-883C-4FC8-BC51-06DF0C0BB1EB" );
             AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campus selection", "ShowCampusselection", "UI Options", "Should giving be associated with a specific campus?", 3, "False", "C77F965A-B537-4966-9203-C12F447C8054" );
 
-            // One Time Gift Block Attributes
             // Attrib Value for One Time Gift:Show Credit Card giving
             AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "73DA7706-40D8-4427-B666-CC2220848BBE", "True" );
             // Attrib Value for One Time Gift:Show Checking/ACH giving
@@ -57,7 +58,6 @@ namespace Rock.Migrations
             // Attrib Value for One Time Gift:Show Campus selection
             AddBlockAttributeValue( "3BFFEDFD-2198-4A13-827A-4FD1A774949E", "09F53EC0-0A6D-4834-91F5-E27BC13B3AA2", "False" );
             
-            // Recurring Gift Block Attributes
             // Attrib Value for One Time Gift:Show Credit Card giving
             AddBlockAttributeValue( "0F17BF49-A6D5-47C3-935A-B050127EA939", "FB8CB110-C599-4A49-A1E5-6D23EDB05A64", "True" );
             // Attrib Value for One Time Gift:Show Checking/ACH giving
@@ -78,6 +78,14 @@ namespace Rock.Migrations
             DeleteBlockType( "18EE7010-E8CF-4B61-BFDA-E014CCFC9E6D" );
             AddBlockType( "Finance - Transactions", "View and search financial transactions", "~/Blocks/Finance/Transactions.ascx", "E04320BC-67C3-452D-9EF6-D74D8C177154" );
             AddBlock( "7CA317B5-5C47-465D-B407-7D614F2A568F", "E04320BC-67C3-452D-9EF6-D74D8C177154", "Financial Transaction", "", "Content", 0, "B447AB11-3A19-4527-921A-2266A6B4E181" );
+
+            // Add DefinedType and DefinedValues for giving recurrences
+            AddDefinedType("Financial", "Transaction Frequency Type", "Types of recurring transaction frequencies", "1F645CFB-5BBD-4465-B9CA-0D2104A1479B");
+            AddDefinedValue("1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Weekly", "Every Week", "35711E44-131B-4534-B0B2-F0A749292362");
+            AddDefinedValue("1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Bi-Weekly", "Every Two Weeks", "72990023-0D43-4554-8D32-28461CAB8920");
+            AddDefinedValue("1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Monthly", "Once a Month", "1400753C-A0F9-4A45-8A1D-81C98450BD1F");
+            AddDefinedValue("1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Twice a Month", "Twice a Month", "791C863D-2600-445B-98F8-3E5B66A3DEC4");
+                        
         }
         
         /// <summary>
@@ -85,6 +93,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            DeleteDefinedType("1F645CFB-5BBD-4465-B9CA-0D2104A1479B"); // Transaction Frequency Type
+
             // Move Financial Transactions page back to Administration section
             DeleteBlock( "B447AB11-3A19-4527-921A-2266A6B4E181" );
             DeleteBlockType( "E04320BC-67C3-452D-9EF6-D74D8C177154" );
