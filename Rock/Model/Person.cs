@@ -153,6 +153,57 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets the full name.
+        /// </summary>
+        /// <value>
+        /// The full name.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string FullName
+        {
+            get
+            {
+                return FirstName + " " + LastName;
+            }
+            private set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets NickName if not null, otherwise gets GivenName.
+        /// </summary>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string FirstName
+        {
+            get
+            {
+                return NickName ?? GivenName;
+            }
+            private set
+            {
+            }
+        }
+
+        /// <summary>
+        /// Gets the full name (Last, First)
+        /// </summary>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string FullNameLastFirst
+        {
+            get
+            {
+                return LastName + ", " + FirstName;
+            }
+            private set
+            {
+            }
+        }
         
         /// <summary>
         /// Gets or sets the Suffix Id.
@@ -438,39 +489,6 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual BinaryFile Photo { get; set; }
-
-        /// <summary>
-        /// Gets NickName if not null, otherwise gets GivenName.
-        /// </summary>
-        public virtual string FirstName
-        {
-            get
-            {
-                return NickName ?? GivenName;
-            }
-        }
-
-        /// <summary>
-        /// Gets the full name.
-        /// </summary>
-        public virtual string FullName
-        {
-            get
-            {
-                return FirstName + " " + LastName;
-            }
-        }
-
-        /// <summary>
-        /// Gets the full name (Last, First)
-        /// </summary>
-        public virtual string FullNameLastFirst
-        {
-            get
-            {
-                return LastName + ", " + FirstName;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the birth date.
