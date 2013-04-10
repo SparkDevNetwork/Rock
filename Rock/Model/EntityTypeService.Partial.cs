@@ -104,10 +104,7 @@ namespace Rock.Model
         {
             var entityTypes = new Dictionary<string, EntityType>();
 
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ),
-                new DirectoryInfo[] { 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
+            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Data.IEntity ) ) )
             {
                 var entityType = new EntityType();
                 entityType.Name = type.Key;
@@ -118,10 +115,7 @@ namespace Rock.Model
                 entityTypes.Add( type.Key, entityType );
             }
 
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ),
-                new DirectoryInfo[] { 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
+            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Security.ISecured ) ) )
             {
                 if ( entityTypes.ContainsKey( type.Key ) )
                 {
@@ -183,11 +177,5 @@ namespace Rock.Model
                 }
             }
         }
-
-        private string physicalPath( string physWebAppPath, string folder )
-        {
-            return string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
-        }
-
     }
 }
