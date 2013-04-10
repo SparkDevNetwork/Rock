@@ -61,6 +61,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
@@ -88,7 +100,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
                 return false;
             }  
- 
             
             // ignoring PrayerRequest,RequestedByPersonId 
             
@@ -133,6 +144,9 @@ namespace Rock.Model
                 target.GivenName = source.GivenName;
                 target.NickName = source.NickName;
                 target.LastName = source.LastName;
+                target.FullName = source.FullName;
+                target.FirstName = source.FirstName;
+                target.FullNameLastFirst = source.FullNameLastFirst;
                 target.SuffixValueId = source.SuffixValueId;
                 target.PhotoId = source.PhotoId;
                 target.BirthDay = source.BirthDay;

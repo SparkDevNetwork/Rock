@@ -48,6 +48,24 @@ namespace Rock.Model
         public bool CanDelete( FinancialAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<FinancialAccount>().Queryable().Any( a => a.ParentAccountId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPledge>().Queryable().Any( a => a.AccountId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.AccountId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
