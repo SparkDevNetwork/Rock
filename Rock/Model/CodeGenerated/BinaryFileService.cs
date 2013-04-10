@@ -56,6 +56,12 @@ namespace Rock.Model
             // ignoring Category,IconSmallFileId 
             
             // ignoring Category,IconLargeFileId 
+ 
+            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.BinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupType,IconSmallFileId 
             

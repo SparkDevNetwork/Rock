@@ -60,13 +60,32 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<FinancialAccount>().Queryable().Any( a => a.AccountTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
             
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
             // ignoring FinancialTransaction,SourceTypeValueId 
+            
+            // ignoring FinancialTransaction,TransactionTypeValueId 
  
+            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupLocation,GroupLocationTypeValueId 
  
@@ -107,7 +126,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
                 return false;
             }  
- 
             return true;
         }
     }

@@ -48,6 +48,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialGateway item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.GatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
