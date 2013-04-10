@@ -1,0 +1,53 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Site" %>
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8">
+    <title></title>
+    
+    <!--[if lt IE 9]>
+        <script src="<%# ResolveUrl("~/Themes/RockChMS/Scripts/html5.js") %>" ></script>
+    <![endif]-->
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
+
+    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Rock/person-picker.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Rock/ajax-client-error-handler.js") %>"></script>
+    <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body>
+
+    <form id="form1" runat="server">
+            
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+            
+    </form>
+
+    
+</body>
+</html>

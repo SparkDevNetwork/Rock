@@ -112,14 +112,27 @@ namespace Rock.DataFilters.Person
         public override Control[] CreateChildControls( FilterField filterControl )
         {
             DropDownList ddlGroupType = new DropDownList();
+            ddlGroupType.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( ddlGroupType );
+
             foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
 
-            var controls = new Control[4] {
-                ddlGroupType,  ComparisonControl( NumericFilterComparisonTypes ),
-                new TextBox(), new TextBox() };
+            var ddl = ComparisonControl( NumericFilterComparisonTypes );
+            ddl.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( ddl );
+
+            var tb = new TextBox();
+            tb.ID = filterControl.ID + "_2";
+            filterControl.Controls.Add( tb );
+
+            var tb2 = new TextBox();
+            tb2.ID = filterControl.ID + "_3";
+            filterControl.Controls.Add( tb );
+
+            var controls = new Control[4] { ddlGroupType, ddl, tb, tb2 };
 
             SetSelection( controls, string.Format( "{0}|{1}|4|16",
                 ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",

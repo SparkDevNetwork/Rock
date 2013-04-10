@@ -113,11 +113,15 @@ namespace Rock.DataFilters
         /// <returns></returns>
         public virtual Control[] CreateChildControls( FilterField filterControl )
         {
-            var controls = new Control[2] {
-                ComparisonControl( StringFilterComparisonTypes ),
-                new TextBox() };
-            //SetSelection( controls, string.Format( "{0}|", ComparisonType.StartsWith.ConvertToInt().ToString() ) );
-            return controls;
+            var ddl = ComparisonControl( StringFilterComparisonTypes );
+            ddl.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( ddl );
+
+            var tb = new TextBox();
+            tb.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( tb );
+
+            return new Control[2] { ddl, tb };
         }
 
         /// <summary>
@@ -292,6 +296,19 @@ namespace Rock.DataFilters
                 return
                     ComparisonType.EqualTo |
                     ComparisonType.NotEqualTo |
+                    ComparisonType.GreaterThan |
+                    ComparisonType.GreaterThanOrEqualTo |
+                    ComparisonType.LessThan |
+                    ComparisonType.LessThanOrEqualTo;
+            }
+        }
+
+        public static ComparisonType DateFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    ComparisonType.EqualTo |
                     ComparisonType.GreaterThan |
                     ComparisonType.GreaterThanOrEqualTo |
                     ComparisonType.LessThan |

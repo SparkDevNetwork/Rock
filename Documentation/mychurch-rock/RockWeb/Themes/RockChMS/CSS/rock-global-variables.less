@@ -1,0 +1,63 @@
+//
+// Variables
+// --------------------------------------------------
+
+
+// Global values
+// --------------------------------------------------
+
+// Rock Specific Varables
+@rockBackgroundColor:    	#e7e7e7;
+@rockCalloutColor:       	#d6d6d6;
+@rockAccentColor:        	#2f2f2f;
+@rockTextColor:          	#515151;
+@rockSecondaryTextColor: 	#7c7c7c;
+@rockLightTextColor: 	    #bbb;
+@rockPageTitleBackground:   #f3f3f3;
+@rockPageNavBackground:  	#3A3A3A;
+@rockWidgetBackground:  	#fff;
+@rockModalHeader:           @rockAccentColor;
+@rockModalHeaderTextColor:  @rockLightTextColor;
+@rockSelectionBackgroundColor:	#d8d9d9;
+@rockSelectionBorderColor:  #c0c0c0;
+@rockHoverBackgroundColor:	#3b8b9b9;
+@rockHoverBorderColor:		#8a8989;
+@rockHoverColor:			#fff;
+@rockHeaderBackground:      #E9E9E9;
+@rockHeaderDarkBackground:  #797979;
+
+@rockSansFontFamilyBold: 	'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // 'Helvetica Neue',Helvetica,Arial,sans-serif;
+@rockSansFontFamilySemiBold: 	'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // new variable
+@rockSansFontFamilyLight: 	'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif; // new variable
+@rockSansFontFamilyItalic: 	'OpenSansItalic', 'Helvetica Neue',Helvetica,Arial,sans-serif; // new variable
+
+
+// Mixins
+// --------------------------------------------------
+
+// Block Gradient
+
+.block-gradient (@backgroundColor: @rockPageNavBackground) {
+  	background: @backgroundColor;
+	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
+	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@rockPageNavBackground, 3%));
+	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-repeat: repeat-x;
+    filter: initial;
+}
+
+.make-gradient(@baseColor: #fff) {
+	background: @baseColor;
+	background:-moz-linear-gradient(top, darken( @baseColor, 3%) 0%, @baseColor 100%); /* FF3.6+ */
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,darken( @baseColor, 3%)), color-stop(100%,@baseColor)); /* Chrome,Safari4+ */
+	background:-webkit-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* Chrome10+,Safari5.1+ */
+	background:-o-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* Opera11.10+ */
+	background:-ms-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* IE10+ */
+	background:linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @baseColor, 3%)', endColorstr='@baseColor');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @baseColor, 3%)', endColorstr='@baseColor')";
+}
+

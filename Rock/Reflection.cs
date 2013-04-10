@@ -23,26 +23,10 @@ namespace Rock
         /// will not be included in the result
         /// </summary>
         /// <param name="baseType">base type.</param>
-        /// <param name="directories">The directories.</param>
         /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes( Type baseType, DirectoryInfo[] directories = null )
-        {
-            return FindTypes( baseType, false, directories );
-        }
-
-        /// <summary>
-        /// Finds the all the types that implement or inherit from the baseType.
-        /// </summary>
-        /// <param name="baseType">base type.</param>
-        /// <param name="includeBaseType">if set to <c>true</c> the base type will be included in the result</param>
-        /// <param name="directories">The directories.</param>
-        /// <returns></returns>
-        public static SortedDictionary<string, Type> FindTypes( Type baseType, bool includeBaseType, DirectoryInfo[] directories = null )
+        public static SortedDictionary<string, Type> FindTypes( Type baseType )
         {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
-
-            if ( includeBaseType )
-                types.Add( baseType.FullName, baseType );
 
             Dictionary<string, Assembly> assemblies = new Dictionary<string, Assembly>();
 
@@ -50,26 +34,52 @@ namespace Rock
             assemblies.Add( executingAssembly.FullName.ToLower(), executingAssembly );
 
             foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies() )
-                if ( assembly.FullName.StartsWith( "Rock" ) && !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
-                    assemblies.Add( assembly.FullName.ToLower(), assembly );
-
-            if ( directories != null )
             {
-                foreach ( var directory in directories )
+                if ( assembly.GlobalAssemblyCache || assembly.IsDynamic )
                 {
-                    foreach ( FileInfo fileInfo in directory.GetFiles( "rock.*.dll" ) )
+                    continue;
+                }
+
+                bool searchAssembly = false;
+
+                string fileName = Path.GetFileName( assembly.CodeBase );
+
+                // only search inside dlls that are Rock.dll or reference Rock.dll
+                if ( fileName.Equals( "Rock.dll", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    searchAssembly = true;
+                }
+                else
+                {
+                    List<AssemblyName> referencedAssemblies = assembly.GetReferencedAssemblies().ToList();
+
+                    if ( referencedAssemblies.Any( a => a.Name.Equals( "Rock", StringComparison.OrdinalIgnoreCase ) ) )
                     {
-                        Assembly fileAssembly = Assembly.LoadFrom( fileInfo.FullName );
-                        if ( !assemblies.Keys.Contains( fileAssembly.FullName.ToLower() ) )
-                            assemblies.Add( fileAssembly.FullName.ToLower(), fileAssembly );
+                        searchAssembly = true;
+                    }
+                }
+
+                if ( searchAssembly )
+                {
+                    if ( !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
+                    {
+                        assemblies.Add( assembly.FullName.ToLower(), assembly );
                     }
                 }
             }
 
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
-                foreach ( KeyValuePair<string, Type> typeEntry in SearchAssembly( assemblyEntry.Value, baseType ) )
+            {
+                var typeEntries = SearchAssembly( assemblyEntry.Value, baseType );
+
+                foreach ( KeyValuePair<string, Type> typeEntry in typeEntries )
+                {
                     if ( !types.Keys.Contains( typeEntry.Key ) )
+                    {
                         types.Add( typeEntry.Key, typeEntry.Value );
+                    }
+                }
+            }
 
             return types;
         }
@@ -93,11 +103,13 @@ namespace Rock
                         if ( baseType.IsInterface )
                         {
                             foreach ( Type typeInterface in type.GetInterfaces() )
+                            {
                                 if ( typeInterface == baseType )
                                 {
                                     types.Add( type.FullName, type );
                                     break;
                                 }
+                            }
                         }
                         else
                         {
@@ -131,7 +143,9 @@ namespace Rock
         public static string GetDescription( Type type )
         {
             foreach ( var descriptionAttribute in type.GetCustomAttributes( typeof( DescriptionAttribute ), true ) )
+            {
                 return ( (DescriptionAttribute)descriptionAttribute ).Description;
+            }
             return null;
         }
     }

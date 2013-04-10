@@ -27,7 +27,7 @@
 						
 								<div class="nav-collapse collapse">
 									
-									<Rock:Zone ID="zHeader" Name="Header" runat="server" />
+									<Rock:Zone ID="Heading" Name="Header" runat="server" />
 									
 								</div>
 							</div> <!-- collapse container -->

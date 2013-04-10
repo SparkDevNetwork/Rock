@@ -47,10 +47,7 @@ namespace Rock.Model
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
-            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ),
-                new DirectoryInfo[] { 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "bin" ) ), 
-                    new DirectoryInfo( physicalPath( physWebAppPath, "Plugins" ) ) } ) )
+            foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
             {
                 string assemblyName = type.Value.Assembly.GetName().Name;
                 string className = type.Value.FullName;
@@ -68,11 +65,6 @@ namespace Rock.Model
                     this.Save( fieldType, null );
                 }
             }
-        }
-
-        private string physicalPath( string physWebAppPath, string folder )
-        {
-            return string.Format( @"{0}{1}{2}\", physWebAppPath, ( physWebAppPath.EndsWith( @"\" ) ) ? "" : @"\", folder );
         }
     }
 }
