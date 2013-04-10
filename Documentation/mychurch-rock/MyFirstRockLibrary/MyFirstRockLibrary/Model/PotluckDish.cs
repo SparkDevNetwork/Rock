@@ -7,17 +7,9 @@ namespace com.mychurch.MyFirstRockLibrary.Model
 {
     // Rock requires that custom tables follow this naming convention
     [Table( "_com_mychurch_PotluckDish" )]
-    public class PotluckDish
+    public class PotluckDish : Rock.Data.Model<PotluckDish>
     {
         #region Entity Properties
-
-        // Id is the primary key of this table
-        [Key]
-        public int Id { get; set; }
-
-        // by Rock convention, add an alternate key of Guid
-        [Rock.Data.AlternateKey]
-        public Guid Guid { get; set; }
 
         // This PotluckDish is associated with a PotluckDinner.  This is the Foreign Key column to it
         public int PotluckDinnerId { get; set; }
