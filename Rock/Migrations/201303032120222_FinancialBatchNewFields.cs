@@ -18,8 +18,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-
-
             AddColumn( "dbo.FinancialBatch", "BatchDateStart", c => c.DateTime() );
             AddColumn( "dbo.FinancialBatch", "BatchDateEnd", c => c.DateTime() );
             AddColumn( "dbo.FinancialBatch", "BatchTypeValueId", c => c.Int( nullable: false ) );
@@ -31,24 +29,17 @@ namespace Rock.Migrations
             CreateIndex( "dbo.FinancialBatch", "BatchTypeValueId" );
             DropColumn( "dbo.FinancialBatch", "BatchDate" );
 
-            Sql( @"
-                SET IDENTITY_INSERT [DefinedType] ON
-                INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category], [Name], [Description], [Guid]) VALUES (18, 1, 1, 0, N'FinancialBatch',N'FinancialBatch',N'Type of Batch','9E358FBE-2321-4C54-895F-C888E29298AE')
-                SET IDENTITY_INSERT [DefinedType] OFF
-
-                SET IDENTITY_INSERT [DefinedValue] ON
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (31,1,18,0,'ACH','ACH','E6F877F3-D2CC-443E-976A-4402502F544F')
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (32,1,18,1,'Visa','Visa','24CC2E82-B2B6-4037-87AE-39EEAFE06712')
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (33,1,18,2,'MasterCard','MasterCard','50F625F8-F1BE-4FA0-B99F-3FA852D87DD1')
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (34,1,18,3,'Discover','Discover','18DF8254-0C68-4FE0-973E-C0B1767EFD3F')
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (35,1,18,4,'Amex','Amex','378D8EAD-7FA6-4D0D-862D-ED6E04B17770')
-                INSERT INTO [DefinedValue] ([Id], [IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid]) VALUES (36,1,18,5,'PayPal','PayPal','4832DA18-DD18-477F-BFDB-ABFC28FE5743')
-                SET IDENTITY_INSERT [DefinedValue] OFF" );
+            AddDefinedType("Financial", "Batch Type", "Batch Types", "9e358fbe-2321-4c54-895f-c888e29298ae");
+            AddDefinedValue("9e358fbe-2321-4c54-895f-c888e29298ae", "ACH", "ACH", "E6F877F3-D2CC-443E-976A-4402502F544F");
+            AddDefinedValue("9e358fbe-2321-4c54-895f-c888e29298ae", "Visa", "Visa", "24CC2E82-B2B6-4037-87AE-39EEAFE06712");
+            AddDefinedValue("9e358fbe-2321-4c54-895f-c888e29298ae", "MasterCard", "MasterCard", "50F625F8-F1BE-4FA0-B99F-3FA852D87DD1");
+            AddDefinedValue("9e358fbe-2321-4c54-895f-c888e29298ae", "Discover", "Discover", "18DF8254-0C68-4FE0-973E-C0B1767EFD3F");
+            AddDefinedValue("9e358fbe-2321-4c54-895f-c888e29298ae", "Amex", "Amex", "378D8EAD-7FA6-4D0D-862D-ED6E04B17770");
+            AddDefinedValue( "9e358fbe-2321-4c54-895f-c888e29298ae", "PayPal", "PayPal", "4832DA18-DD18-477F-BFDB-ABFC28FE5743" );
 
             //add the pages 1. off of finance page, add financial batch. off financial batch add FB details, then off FB details add transaction
             AddPage( "7BEB7569-C485-40A0-A609-B0678F6F7240", "Financial Batch", "Manage Financial Batches", "ef65eff2-99ac-4081-8e09-32a04518683a" );
-            Sql( " UPDATE [Page] SET [ParentPageId] = NULL WHERE [Guid] = 'ef65eff2-99ac-4081-8e09-32a04518683a' " );
-
+            
             AddPage( "ef65eff2-99ac-4081-8e09-32a04518683a", "Financial Batch Detail", "", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
             AddPage( "606bda31-a8fe-473a-b3f8-a00ecf7e06ec", "Transaction Detail", "", "b67e38cb-2ef1-43ea-863a-37daa1c7340f" );
 
@@ -70,7 +61,7 @@ namespace Rock.Migrations
             //string blockGuid, string attributeGuid, string value
             AddBlockAttributeValue( "B4B7A962-E162-47ED-8499-B7C7A7F41498", "2290806c-9e87-4960-9019-d4d7327591bb", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
             AddBlockAttributeValue( "e7c8c398-0e1d-4bce-bc54-a02957228514", "f70b3c73-3582-4fa4-b988-92880268310c", "b67e38cb-2ef1-43ea-863a-37daa1c7340f" );
-         
+                
         }
 
         /// <summary>
@@ -89,8 +80,13 @@ namespace Rock.Migrations
             DropColumn( "dbo.FinancialBatch", "BatchDateEnd" );
             DropColumn( "dbo.FinancialBatch", "BatchDateStart" );
 
-            Sql( "DELETE FROM [dbo].[DefinedType] WHERE [Id] = 18" );
-            Sql( "DELETE FROM [dbo].[DefinedValue] WHERE [DefinedTypeId] = 18" );
+            DeleteDefinedType( "9e358fbe-2321-4c54-895f-c888e29298ae" ); // Financial Batch Types
+            DeleteDefinedValue( "E6F877F3-D2CC-443E-976A-4402502F544F" ); 
+            DeleteDefinedValue( "24CC2E82-B2B6-4037-87AE-39EEAFE06712" );
+            DeleteDefinedValue( "50F625F8-F1BE-4FA0-B99F-3FA852D87DD1" );
+            DeleteDefinedValue( "18DF8254-0C68-4FE0-973E-C0B1767EFD3F" );
+            DeleteDefinedValue( "378D8EAD-7FA6-4D0D-862D-ED6E04B17770" );
+            DeleteDefinedValue( "4832DA18-DD18-477F-BFDB-ABFC28FE5743" );
 
             DeleteAttribute( "2290806c-9e87-4960-9019-d4d7327591bb" );
             DeleteAttribute( "f70b3c73-3582-4fa4-b988-92880268310c" );
