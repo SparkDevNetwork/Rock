@@ -597,6 +597,10 @@
     <Compile Include="Migrations\201304101246154_GivingBlocks.Designer.cs">
       <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.cs" />
+    <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.Designer.cs">
+      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1489,6 +1493,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304101246154_GivingBlocks.resx">
       <DependentUpon>201304101246154_GivingBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304101854297_GivingBlocksSeedData.resx">
+      <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
