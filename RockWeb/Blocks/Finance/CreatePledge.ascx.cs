@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( CurrentPerson != null )
             {
-                tbFirstName.Text = !string.IsNullOrWhiteSpace( CurrentPerson.NickName ) ? CurrentPerson.NickName : CurrentPerson.FirstName;
+                tbFirstName.Text = CurrentPerson.FirstName;
                 tbLastName.Text = CurrentPerson.LastName;
                 tbEmail.Text = CurrentPerson.Email;
             }
