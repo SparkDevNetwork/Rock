@@ -601,6 +601,10 @@
     <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.Designer.cs">
       <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.cs" />
+    <Compile Include="Migrations\201304102107326_DbCalculatedPersonNameFields.Designer.cs">
+      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -772,7 +776,7 @@
     <Compile Include="DataFilters\DataFilterComponent.cs" />
     <Compile Include="DataFilters\DataFilterContainer.cs" />
     <Compile Include="DataFilters\Person\GroupTypeAttendanceFilter.cs" />
-    <Compile Include="DataFilters\Person\FirstNameFilter.cs" />
+    <None Include="DataFilters\Person\FirstNameFilter.cs.exclude" />
     <Compile Include="DataFilters\Person\HasPictureFilter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
@@ -1496,6 +1500,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304101854297_GivingBlocksSeedData.resx">
       <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304102107326_DbCalculatedPersonNameFields.resx">
+      <DependentUpon>201304102107326_DbCalculatedPersonNameFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

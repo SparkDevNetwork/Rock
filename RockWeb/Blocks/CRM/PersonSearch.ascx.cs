@@ -69,8 +69,8 @@ namespace RockWeb.Blocks.Crm
                             }
 
                             people = personService.Queryable().
-                                Where( p => ( ( p.NickName ?? p.GivenName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => p.NickName ?? p.GivenName ).
+                                Where( p => ( ( p.FirstName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) ).
+                                OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).
                                 ToList();
 
                             break;
@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Crm
 
                             people = personService.Queryable().
                                 Where( p => personIds.Contains( p.Id ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.NickName ?? p.GivenName ) ).
+                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
                                 ToList();
 
                             break;
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Crm
 
                             people = personService.Queryable().
                                 Where( p => p.Email.Contains( term ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.NickName ?? p.GivenName ) ).
+                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
                                 ToList();
 
                             break;

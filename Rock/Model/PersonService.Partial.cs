@@ -207,8 +207,7 @@ namespace Rock.Model
 
             return Queryable(includeDeceased).
                     Where( p => p.LastName.ToLower().StartsWith( lastName.ToLower() ) &&
-                        ( p.NickName.ToLower().StartsWith( firstName.ToLower() ) ||
-                        p.GivenName.StartsWith( firstName.ToLower() ) ) );
+                        ( p.FirstName.ToLower().StartsWith( firstName.ToLower() ) ) );
         }
 
         /// <summary>
