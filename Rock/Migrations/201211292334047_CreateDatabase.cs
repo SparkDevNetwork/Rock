@@ -1684,7 +1684,6 @@ INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category],
 INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category], [Name], [Description], [Guid]) VALUES (14, 1, NULL, 0, N'Metric', N'Frequency', N'Types of frequencies', '526cb333-2c64-4486-8469-7f7ea9366254')
 INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category], [Name], [Description], [Guid]) VALUES (15, 1, 1, 2, N'Location', N'Location Type', N'Location Types', '2e68d37c-fb7b-4aa5-9e09-3785d52156cb')
 INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category], [Name], [Description], [Guid]) VALUES (16, 1, 1, 3, N'Marketing Campaign', N'Audience Type', N'Audience Type', '799301a3-2026-4977-994e-45dc68502559')
-INSERT INTO [DefinedType] ([Id], [IsSystem], [FieldTypeId], [Order], [Category], [Name], [Description], [Guid]) VALUES (19, 1, 1, 0, N'Financial Batch', N'Batch Type', N'Batch Types', '9e358fbe-2321-4c54-895f-c888e29298ae')
 SET IDENTITY_INSERT [DefinedType] OFF
 
 -- Add 145 rows to [AttributeValue]
