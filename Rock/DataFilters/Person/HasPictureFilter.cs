@@ -9,15 +9,16 @@ using System.ComponentModel.Composition;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters.Person
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on whether they have a picture or not" )]
+    [Description( "Filter people on whether they have a picture or not" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Has Picture Filter" )]
+    [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
         /// <summary>
@@ -32,17 +33,6 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public override string Section
-        {
-            get { return "Demographic Info"; }
-        }
-
-        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
@@ -51,6 +41,34 @@ namespace Rock.DataFilters.Person
         public override string FilteredEntityTypeName
         {
             get { return "Rock.Model.Person"; }
+        }
+
+        /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Additional Filters"; }
+        }
+
+        /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public override string ClientFormatSelection
+        {
+            get
+            {
+                return "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
+            }
         }
 
         /// <summary>
@@ -78,10 +96,13 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls()
+        public override Control[] CreateChildControls( FilterField filterControl )
         {
             CheckBox cb = new CheckBox();
+            cb.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( cb );
             cb.Checked = true;
+
             return new Control[1] { cb };
         }
 
@@ -90,7 +111,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.Write( this.Title + " " );
             controls[0].RenderControl( writer );
@@ -123,10 +144,11 @@ namespace Rock.DataFilters.Person
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             bool hasPicture = true;
             if ( Boolean.TryParse( selection, out hasPicture ) )

@@ -16,7 +16,7 @@ namespace Rock.Extension
     /// Singleton generic class that uses MEF to load and cache all of the component classes
     /// </summary>
     public abstract class Container<T, TData> : IContainer, IDisposable
-        where T : IComponent
+        where T : Component
         where TData : IComponentData
     {
         // MEF Container
@@ -31,14 +31,14 @@ namespace Rock.Extension
         /// <summary>
         /// Gets the component names and their attributes
         /// </summary>
-        public Dictionary<int, KeyValuePair<string, IComponent>> Dictionary
+        public Dictionary<int, KeyValuePair<string, Component>> Dictionary
         {
             get
             {
-                var dictionary = new Dictionary<int, KeyValuePair<string, IComponent>>();
+                var dictionary = new Dictionary<int, KeyValuePair<string, Component>>();
                 foreach ( var component in Components )
                 {
-                    dictionary.Add( component.Key, new KeyValuePair<string, IComponent>(
+                    dictionary.Add( component.Key, new KeyValuePair<string, Component>(
                         component.Value.Metadata.ComponentName, component.Value.Value ) );
                 }
 
@@ -88,11 +88,26 @@ namespace Rock.Extension
             // Compose the MEF container with any classes that export the same definition
             container.ComposeParts( this );
 
+            // Create a temporary sorted dictionary of the classes so that they can be executed in a specific order
+            var components = new SortedDictionary<int, List<Lazy<T, TData>>>();
+            foreach ( Lazy<T, TData> i in MEFComponents )
+            {
+                if ( !components.ContainsKey( i.Value.Order ) )
+                {
+                    components.Add( i.Value.Order, new List<Lazy<T, TData>>() );
+                }
+
+                components[i.Value.Order].Add( i );
+            }
+
             // Add each class found through MEF into the Services property value in the correct order
             int id = 0;
-            foreach ( Lazy<T, TData> component in MEFComponents )
+            foreach ( KeyValuePair<int, List<Lazy<T, TData>>> entry in components )
             {
-                Components.Add( id++, component );
+                foreach ( Lazy<T, TData> component in entry.Value )
+                {
+                    Components.Add( id++, component );
+                }
             }
         }
 

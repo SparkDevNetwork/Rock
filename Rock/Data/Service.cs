@@ -111,12 +111,54 @@ namespace Rock.Data
         /// <summary>
         /// Gets a list of items that match the specified expression.
         /// </summary>
-        /// <param name="expression">The expression.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression )
         {
-            var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
-            return this.Queryable().Where(lambda);
+            return Get( parameterExpression, whereExpression, null );
+        }
+
+        /// <summary>
+        /// Gets a list of items that match the specified expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
+        {
+            if ( parameterExpression != null && whereExpression != null )
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
+                var queryable = this.Queryable().Where( lambda );
+                return sortProperty != null ? queryable.Sort( sortProperty ) : queryable;
+            }
+
+            return this.Queryable();
+        }
+
+        /// <summary>
+        /// Gets the list.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public List<T> GetList( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty)
+        {
+            return Get( parameterExpression, whereExpression, sortProperty ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the ids.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public IQueryable<int> GetIds( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression, null ).Select( t => t.Id );
         }
 
         /// <summary>

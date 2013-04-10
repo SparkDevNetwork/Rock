@@ -18,14 +18,14 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="BooleanFieldAttribute" /> class.
         /// </summary>
-        /// <param name="order">The order.</param>
         /// <param name="name">The name.</param>
-        /// <param name="defaultValue">if set to <c>true</c> [default value].</param>
-        /// <param name="key">The key. (null means derive from name)</param>
-        /// <param name="category">The category.</param>
         /// <param name="description">The description.</param>
-        public BooleanFieldAttribute( int order, string name, bool defaultValue, string key = null, string category = "", string description = "" )
-            : base( order, name, false, defaultValue.ToTrueFalse(), key, category, description, typeof(Rock.Field.Types.Boolean).FullName)
+        /// <param name="defaultValue">if set to <c>true</c> [default value].</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key. (null means derive from name)</param>
+        public BooleanFieldAttribute( string name, string description = "", bool defaultValue = false, string category = "", int order = 0, string key = null )
+            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( Rock.Field.Types.BooleanFieldType ).FullName )
         {
         }
     }

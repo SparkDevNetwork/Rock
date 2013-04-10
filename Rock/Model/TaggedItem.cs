@@ -16,7 +16,7 @@ namespace Rock.Model
     /// Tagged Ited POCO Entity.
     /// </summary>
     [Table( "TaggedItem" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class TaggedItem : Model<TaggedItem>
     {
         /// <summary>

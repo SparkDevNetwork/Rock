@@ -14,7 +14,7 @@ namespace Rock.Model
     /// TransactionFund POCO class.
     /// </summary>
     [Table("FinancialTransactionFund")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class FinancialTransactionFund
     {
         /// <summary>

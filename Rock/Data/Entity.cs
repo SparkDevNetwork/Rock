@@ -16,7 +16,7 @@ namespace Rock.Data
     /// Base class that all models need to inherit from
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    [DataContract(IsReference=true)]
+    [DataContract]
     public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
         where T : Entity<T>, new()
     {
@@ -59,7 +59,7 @@ namespace Rock.Data
             get
             {
                 // Read should never return null since it will create entity type if it doesn't exist
-                return Rock.Web.Cache.EntityTypeCache.Read( this.TypeName ).Id;
+                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).Id;
             }
         }
 
@@ -85,12 +85,12 @@ namespace Rock.Data
         /// The context key.
         /// </value>
         [NotMapped]
-        public string ContextKey
+        public virtual string ContextKey
         {
             get
             {
                 string identifier =
-                    typeof( T ).FullName + "|" +
+                    TypeName + "|" +
                     this.Id.ToString() + ">" +
                     this.Guid.ToString();
                 return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
@@ -167,7 +167,8 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IEntity Clone()
         {
-            return FromJson( this.ToJson() );
+            var json = this.ToJson();
+            return FromJson( json );
         }
 
         /// <summary>

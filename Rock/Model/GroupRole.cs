@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Group Role POCO Entity.
     /// </summary>
     [Table( "GroupRole" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupRole : Model<GroupRole>
     {
 
@@ -108,7 +108,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupType"/> object.
         /// </value>
-        [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         #endregion

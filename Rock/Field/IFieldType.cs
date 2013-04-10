@@ -85,6 +85,9 @@ namespace Rock.Field
         /// <param name="value">The value.</param>
         void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value );
 
-
+        /// <summary>
+        /// Occurs when a qualifier is updated.
+        /// </summary>
+        event EventHandler QualifierUpdated;
     }
 }

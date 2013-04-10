@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class GroupType : Model<GroupType>
     {
 
@@ -241,7 +241,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="GroupRole"/> object.
         /// </value>
-        [DataMember]
         public virtual GroupRole DefaultGroupRole { get; set; }
 
         /// <summary>
@@ -261,21 +260,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
 
         /// <summary>
         /// Gets the group query.
@@ -305,6 +289,21 @@ namespace Rock.Model
                 var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
                 return qry;
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
         }
 
         #endregion

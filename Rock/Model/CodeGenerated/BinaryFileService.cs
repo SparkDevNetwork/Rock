@@ -49,6 +49,10 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
+            // ignoring BinaryFileType,IconSmallFileId 
+            
+            // ignoring BinaryFileType,IconLargeFileId 
+            
             // ignoring Category,IconSmallFileId 
             
             // ignoring Category,IconLargeFileId 
@@ -94,6 +98,7 @@ namespace Rock.Model
                 var target = new BinaryFile();
                 target.IsTemporary = source.IsTemporary;
                 target.IsSystem = source.IsSystem;
+                target.BinaryFileTypeId = source.BinaryFileTypeId;
                 target.Data = source.Data;
                 target.Url = source.Url;
                 target.FileName = source.FileName;

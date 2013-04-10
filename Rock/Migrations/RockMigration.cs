@@ -18,30 +18,44 @@ namespace Rock.Migrations
         #region Field Type Methods
 
         /// <summary>
-        /// Adds the type of the field.
+        /// Updates the type of the field.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="assembly">The assembly.</param>
         /// <param name="className">Name of the class.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddFieldType( string name, string description, string assembly, string className, string guid )
+        /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateFieldType( string name, string description, string assembly, string className, string guid, bool IsSystem = true )
         {
             Sql( string.Format( @"
-                
-                INSERT INTO [FieldType] (
-                    [IsSystem],[Name],[Description],[Assembly],[Class],
-                    [Guid])
-                VALUES(
-                    1,'{0}','{1}','{2}','{3}',
-                    '{4}')
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [FieldType] WHERE [Assembly] = '{2}' AND [Class] = '{3}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [FieldType] (
+                        [Name],[Description],[Assembly],[Class],[Guid],[IsSystem])
+                    VALUES(
+                        '{0}','{1}','{2}','{3}','{4}',{5})
+                END
+                ELSE
+                BEGIN
+                    UPDATE [FieldType] SET 
+                        [Name] = '{0}', 
+                        [Description] = '{1}',
+                        [Guid] = '{4}',
+                        [IsSystem] = {5}
+                    WHERE [Assembly] = '{2}'
+                    AND [Class] = '{3}'
+                END
 ",
-                    name,
+                    name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     assembly,
                     className,
-                    guid
-                    ) );
+                    guid,
+                    IsSystem ? "1" : "0") );
         }
 
         /// <summary>
@@ -185,12 +199,17 @@ namespace Rock.Migrations
 
                 INSERT INTO [Page] (
                     [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [RequiresEncryption],[EnableViewState],
+                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[Guid])
                 VALUES(
                     '{1}','{1}',1,@ParentPageId,1,'{3}',
+                    0,1,1,1,
                     0,1,1,0,1,0,
+                    1,0,
                     @Order,0,'{2}',1,
                     null,'{4}')
 ",
@@ -232,12 +251,19 @@ namespace Rock.Migrations
 
                 INSERT INTO [Page] (
                     [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-                    [RequiresEncryption],[EnableViewState],[MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [RequiresEncryption],[EnableViewState],
+                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[Guid])
                 VALUES(
                     '{1}','{2}',{3},@ParentPageId,{4},'{5}',
-                    {6},{7},{8},{9},{10},{11},
+                    {6},{7},
+                    {17},{18},{19},{20}.
+                    {8},{9},{10},{11},
+                    {21},{22},
                     @Order,{12},'{13}',{14},
                     {15},'{16}')
 ",
@@ -257,7 +283,14 @@ namespace Rock.Migrations
                     page.Description.Replace( "'", "''" ),
                     page.IncludeAdminFooter.Bit(),
                     page.IconFileId.HasValue ? page.IconFileId.Value.ToString() : "NULL",
-                    page.Guid ) );
+                    page.Guid,
+                    page.PageDisplayTitle.Bit(),
+                    page.PageDisplayBreadCrumb.Bit(),
+                    page.PageDisplayIcon.Bit(),
+                    page.PageDisplayDescription.Bit(),
+                    page.BreadCrumbDisplayName.Bit(),
+                    page.BreadCrumbDisplayIcon.Bit()
+                    ) );
         }
 
         /// <summary>
@@ -325,9 +358,15 @@ namespace Rock.Migrations
             page.SiteId = 1;
             page.Layout = "Default";
             page.EnableViewState = true; ;
+            page.PageDisplayTitle = true;
+            page.PageDisplayBreadCrumb = true;
+            page.PageDisplayIcon = true;
+            page.PageDisplayDescription = true;
             page.MenuDisplayDescription = true;
             page.MenuDisplayChildPages = true;
             page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
+            page.BreadCrumbDisplayName = true;
+            page.BreadCrumbDisplayIcon = false;
             page.Description = description;
             page.IncludeAdminFooter = true;
             page.Guid = guid;
@@ -975,5 +1014,6 @@ INSERT INTO [dbo].[Auth]
         }
 
         #endregion
+
     }
 }

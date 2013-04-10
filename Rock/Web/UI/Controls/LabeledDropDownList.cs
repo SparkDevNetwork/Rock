@@ -165,7 +165,7 @@ namespace Rock.Web.UI.Controls
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.ControlToValidate = this.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "help-inline";
+            requiredValidator.CssClass = "validation-error help-inline";
             requiredValidator.Enabled = false;
             Controls.Add( requiredValidator );
 

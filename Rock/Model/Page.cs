@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Page POCO Entity.
     /// </summary>
     [Table( "Page" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Page : Model<Page>, IOrdered
     {
 
@@ -62,8 +62,7 @@ namespace Rock.Model
         /// <value>
         /// IsSystem.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -91,8 +90,7 @@ namespace Rock.Model
         /// <value>
         /// Requires Encryption.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
@@ -101,14 +99,84 @@ namespace Rock.Model
         /// <value>
         /// Enable View State.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public bool EnableViewState
         {
             get { return _enableViewState; }
             set { _enableViewState = value; }
         }
         private bool _enableViewState = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether title is displayed on page
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display title]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayTitle
+        {
+            get { return _pageDisplayTitle; }
+            set { _pageDisplayTitle = value; }
+        }
+        private bool _pageDisplayTitle = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether breadcrumbs are displayed on page
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display breadcrumb]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayBreadCrumb
+        {
+            get { return _pageDisplayBreadCrumb; }
+            set { _pageDisplayBreadCrumb = value; }
+        }
+        private bool _pageDisplayBreadCrumb = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether icon is displayed on page
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayIcon
+        {
+            get { return _pageDisplayIcon; }
+            set { _pageDisplayIcon = value; }
+        }
+        private bool _pageDisplayIcon = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether description is displayed on page
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [page display description]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PageDisplayDescription
+        {
+            get { return _pageDisplayDescription; }
+            set { _pageDisplayDescription = value; }
+        }
+        private bool _pageDisplayDescription = true;
+
+        /// <summary>
+        /// Gets or sets the Display In Nav When.
+        /// </summary>
+        /// <value>
+        /// Determines when to display in a navigation 
+        /// 0 = When Security Allows
+        /// 1 = Always
+        /// 3 = Never   
+        /// 
+        /// Enum[DisplayInNavWhen].
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
         /// Gets or sets the Menu Display Description.
@@ -141,28 +209,27 @@ namespace Rock.Model
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
-        /// Gets or sets the Display In Nav When.
+        /// Gets or sets a value indicating whether name is displayed in breadcrumb.
         /// </summary>
         /// <value>
-        /// Determines when to display in a navigation 
-        /// 0 = When Security Allows
-        /// 1 = Always
-        /// 3 = Never   
-        /// 
-        /// Enum[DisplayInNavWhen].
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public DisplayInNavWhen DisplayInNavWhen { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
+        /// <c>true</c> if [breadcrumb display name]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public string IconCssClass { get; set; }
+        public bool BreadCrumbDisplayName
+        {
+            get { return _breadCrumbDisplayName; }
+            set { _breadCrumbDisplayName = value; }
+        }
+        private bool _breadCrumbDisplayName = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether icon is displayed in breadcrumb.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [breadcrumb display icon]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -203,6 +270,15 @@ namespace Rock.Model
         public int? IconFileId { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets the Include Admin Footer.
         /// </summary>
         /// <value>
@@ -227,7 +303,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Page"/> object.
         /// </value>
-        [DataMember]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -236,7 +311,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Site"/> object.
         /// </value>
-        [DataMember]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -314,61 +388,14 @@ namespace Rock.Model
         {
             get
             {
-                return this.Site;
-            }
-        }
-
-        /// <summary>
-        /// Pages the sort hash.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string PageSortHash
-        {
-            get
-            {
-                string result = Title.PadRight( 100, ' ' );
-                var _parentPage = ParentPage;
-                while ( _parentPage != null )
+                if ( this.ParentPage != null )
                 {
-                    result = _parentPage.Title.PadRight( 100, ' ' ) + result;
-                    _parentPage = _parentPage.ParentPage;
+                    return this.ParentPage;
                 }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Pages the depth.
-        /// </summary>
-        /// <returns></returns>
-        public virtual int PageDepth
-        {
-            get
-            {
-                int result = 0;
-                var _parentPage = ParentPage;
-                while ( _parentPage != null )
+                else
                 {
-                    result++;
-                    _parentPage = _parentPage.ParentPage;
+                    return this.Site;
                 }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Gets the drop down list text.
-        /// </summary>
-        /// <value>
-        /// The drop down list text.
-        /// </value>
-        public virtual string DropDownListText
-        {
-            get
-            {
-                return new string( '-', PageDepth ) + Title;
             }
         }
 

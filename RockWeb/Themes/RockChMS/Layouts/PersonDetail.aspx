@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <script runat="server">
@@ -8,7 +8,6 @@
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
-        AddScriptLink( Page, ResolveUrl( "~/Scripts/tinyscrollbar.min.js" ) );
     }
     
 </script>
@@ -38,7 +37,7 @@
 						
 								<div class="nav-collapse collapse">
 									
-									<Rock:Zone ID="zHeader" Name="Header" runat="server" />
+									<Rock:Zone ID="Heading" Name="Header" runat="server" />
 									
 								</div>
 							</div> <!-- collapse container -->

@@ -28,25 +28,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the type of the entity being secured
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The entity type id.
         /// </value>
-        public Type EntityType { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Gets or sets the field that contains the title.
         /// </summary>
         /// <value>
         /// The title.
         /// </value>
-        public string Title
-        {
-            get { return title; }
-            set { title = value; }
-        }
-        private string title = "Security";
+        public string TitleField { get; set; }
 
         /// <summary>
         /// Performs basic instance initialization for a data control field.
@@ -58,7 +53,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityType.AssemblyQualifiedName, Title);
+            SecurityFieldTemplate editFieldTemplate = new SecurityFieldTemplate(control.Page, EntityTypeId, TitleField);
             this.ItemTemplate = editFieldTemplate;
 
             return base.Initialize( sortingEnabled, control );
@@ -73,32 +68,32 @@ namespace Rock.Web.UI.Controls
         private System.Web.UI.Page page;
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Gets or sets the title field
         /// </summary>
         /// <value>
-        /// The title.
+        /// The title field
         /// </value>
-        public string Title { get; set; }
+        public string TitleField { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the entity type id.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The entity type id.
         /// </value>
-        public string EntityType { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
         /// </summary>
         /// <param name="page">The page.</param>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="title">The title.</param>
-        public SecurityFieldTemplate(System.Web.UI.Page page, string entityType, string title )
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="titleField">The title field.</param>
+        public SecurityFieldTemplate(System.Web.UI.Page page, int entityTypeId, string titleField )
         {
             this.page = page;
-            this.EntityType = entityType;
-            this.Title = title;
+            this.EntityTypeId = entityTypeId;
+            this.TitleField = titleField;
         }
 
         /// <summary>
@@ -127,11 +122,24 @@ namespace Rock.Web.UI.Controls
         {
             HtmlGenericControl lnk = ( HtmlGenericControl )sender;
             GridViewRow container = ( GridViewRow )lnk.NamingContainer;
+
+            // Get title
+            string title = "Security";
+            if ( !string.IsNullOrWhiteSpace( TitleField ) )
+            {
+                object titleValue = DataBinder.Eval( container.DataItem, TitleField );
+                if ( titleValue != DBNull.Value )
+                {
+                    title = titleValue.ToString();
+                }
+            }
+
+            // Get Id
             object dataValue = DataBinder.Eval( container.DataItem, "id" );
             if ( dataValue != DBNull.Value )
             {
                 string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
-                    Security.Authorization.EncodeEntityTypeName( EntityType ), dataValue.ToString(), Title ) );
+                    EntityTypeId, dataValue.ToString(), title ) );
                 lnk.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + url + "')");
             }
         }

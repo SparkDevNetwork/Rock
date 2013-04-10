@@ -1,0 +1,984 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ExcelPackage</name>
+    </assembly>
+    <members>
+        <member name="T:OfficeOpenXml.OfficeProperties">
+            <summary>
+            Provides access to the properties bag of any office document (i.e. Word, Excel etc.)
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.#ctor(OfficeOpenXml.ExcelPackage)">
+            <summary>
+            Provides access to all the office document properties.
+            </summary>
+            <param name="xlPackage"></param>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.GetCorePropertyValue(System.String,System.String)">
+            <summary>
+            Gets the value of a core property
+            Private method, for internal use only!
+            </summary>
+            <param name="nameSpace">The namespace of the property</param>
+            <param name="propertyName">The property name</param>
+            <returns>The current value of the property</returns>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.SetCorePropertyValue(System.String,System.String,System.String)">
+            <summary>
+            Sets a core property value.
+            Private method, for internal use only!
+            </summary>
+            <param name="nameSpace">The property's namespace</param>
+            <param name="propertyName">The name of the property</param>
+            <param name="propValue">The value of the property</param>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.GetCustomPropertyValue(System.String)">
+            <summary>
+            Gets the value of a custom property
+            </summary>
+            <param name="propertyName">The name of the property</param>
+            <returns>The current value of the property</returns>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.SetCustomPropertyValue(System.String,System.String)">
+            <summary>
+            Allows you to set the value of a current custom property or create 
+            your own custom property.  
+            Currently only supports string values.
+            </summary>
+            <param name="propertyName">The name of the property</param>
+            <param name="propValue">The value of the property</param>
+        </member>
+        <member name="M:OfficeOpenXml.OfficeProperties.Save">
+            <summary>
+            Saves the office document properties back to the package (if they exist!).
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.CorePropertiesUri">
+            <summary>
+            The URI to the core properties component (core.xml)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.ExtendedPropertiesUri">
+            <summary>
+            The URI to the extended properties component (app.xml)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.CustomPropertiesUri">
+            <summary>
+            The URI to the custom properties component (custom.xml)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.CorePropertiesXml">
+            <summary>
+            Provides access to the XML document that holds all the code 
+            document properties.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Title">
+            <summary>
+            Gets/sets the title property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Subject">
+            <summary>
+            Gets/sets the subject property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Author">
+            <summary>
+            Gets/sets the author property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Comments">
+            <summary>
+            Gets/sets the comments property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Keywords">
+            <summary>
+            Gets/sets the keywords property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.LastModifiedBy">
+            <summary>
+            Gets/sets the lastModifiedBy property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.LastPrinted">
+            <summary>
+            Gets/sets the lastPrinted property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Category">
+            <summary>
+            Gets/sets the category property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Status">
+            <summary>
+            Gets/sets the status property of the document (core property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.ExtendedPropertiesXml">
+            <summary>
+            Provides access to the XML document that holds the extended properties of the document (app.xml)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Application">
+            <summary>
+            Gets the Application property of the document (extended property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.HyperlinkBase">
+            <summary>
+            Gets/sets the HyperlinkBase property of the document (extended property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.AppVersion">
+            <summary>
+            Gets the AppVersion property of the document (extended property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Company">
+            <summary>
+            Gets/sets the Company property of the document (extended property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.Manager">
+            <summary>
+            Gets/sets the Manager property of the document (extended property)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.OfficeProperties.CustomPropertiesXml">
+            <summary>
+            Provides access to the XML document which holds the document's custom properties
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelHeaderFooterText">
+            <summary>
+            Helper class for ExcelHeaderFooter - simply stores the three header or footer
+            text strings. 
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooterText.LeftAlignedText">
+            <summary>
+            Sets the text to appear on the left hand side of the header (or footer) on the worksheet.
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooterText.CenteredText">
+            <summary>
+            Sets the text to appear in the center of the header (or footer) on the worksheet.
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooterText.RightAlignedText">
+            <summary>
+            Sets the text to appear on the right hand side of the header (or footer) on the worksheet.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelHeaderFooter">
+            <summary>
+            Represents the Header and Footer on an Excel Worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.PageNumber">
+            <summary>
+            Use this to insert the page number into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.NumberOfPages">
+            <summary>
+            Use this to insert the number of pages into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.SheetName">
+            <summary>
+            Use this to insert the name of the worksheet into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.FilePath">
+            <summary>
+            Use this to insert the full path to the folder containing the workbook into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.FileName">
+            <summary>
+            Use this to insert the name of the workbook file into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.CurrentDate">
+            <summary>
+            Use this to insert the current date into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelHeaderFooter.CurrentTime">
+            <summary>
+            Use this to insert the current time into the header or footer of the worksheet
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelHeaderFooter.#ctor(System.Xml.XmlElement)">
+            <summary>
+            ExcelHeaderFooter Constructor
+            For internal use only!
+            </summary>
+            <param name="HeaderFooterNode"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelHeaderFooter.Save">
+            <summary>
+            Saves the header and footer information to the worksheet XML
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelHeaderFooter.GetHeaderFooterText(OfficeOpenXml.ExcelHeaderFooterText)">
+            <summary>
+            Helper function for Save
+            </summary>
+            <param name="inStruct"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.AlignWithMargins">
+            <summary>
+            Gets/sets the alignWithMargins attribute
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.differentOddEven">
+            <summary>
+            Gets/sets the flag that tells Excel to display different headers and footers on odd and even pages.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.differentFirst">
+            <summary>
+            Gets/sets the flag that tells Excel to display different headers and footers on the first page of the worksheet.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.oddHeader">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the header on odd numbered pages of the document.
+            If you want the same header on both odd and even pages, then only set values in this ExcelHeaderFooterText class.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.oddFooter">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the footer on odd numbered pages of the document.
+            If you want the same footer on both odd and even pages, then only set values in this ExcelHeaderFooterText class.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.evenHeader">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the header on even numbered pages of the document.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.evenFooter">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the footer on even numbered pages of the document.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.firstHeader">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the header on the first page of the document.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelHeaderFooter.firstFooter">
+            <summary>
+            Provides access to a ExcelHeaderFooterText class that allows you to set the values of the footer on the first page of the document.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelCell">
+            <summary>
+            ExcelCell represents an individual worksheet cell.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.#ctor(OfficeOpenXml.ExcelWorksheet,System.Int32,System.Int32)">
+            <summary>
+            Creates a new instance of ExcelCell class. For internal use only!
+            </summary>
+            <param name="xlWorksheet">A reference to the parent worksheet</param>
+            <param name="row">The row number in the parent worksheet</param>
+            <param name="col">The column number in the parent worksheet</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.RemoveValue">
+            <summary>
+            Removes the XmlNode that holds the cell's value.
+            Useful when the cell contains a formula as this will force Excel to re-calculate the cell's content.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.ToString">
+            <summary>
+            Returns the cell's value as a string.
+            </summary>
+            <returns>The cell's value</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.IsNumericValue(System.String)">
+            <summary>
+            Returns true if the string contains a numeric value
+            </summary>
+            <param name="Value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.AddFormulaElement">
+            <summary>
+            Adds a new formula node to the cell in the correct location
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.GetColumnLetter(System.Int32)">
+            <summary>
+            Returns the character representation of the numbered column
+            </summary>
+            <param name="iColumnNumber">The number of the column</param>
+            <returns>The letter representing the column</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.GetColumnNumber(System.String)">
+            <summary>
+            Returns the column number from the cellAddress
+            e.g. D5 would return 5
+            </summary>
+            <param name="cellAddress">An Excel format cell addresss (e.g. D5)</param>
+            <returns>The column number</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.GetRowNumber(System.String)">
+            <summary>
+            Returns the row number from the cellAddress
+            e.g. D5 would return 5
+            </summary>
+            <param name="cellAddress">An Excel format cell addresss (e.g. D5)</param>
+            <returns>The row number</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.GetCellAddress(System.Int32,System.Int32)">
+            <summary>
+            Returns the AlphaNumeric representation that Excel expects for a Cell Address
+            </summary>
+            <param name="iRow">The number of the row</param>
+            <param name="iColumn">The number of the column in the worksheet</param>
+            <returns>The cell address in the format A1</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.IsValidCellAddress(System.String)">
+            <summary>
+            Checks that a cell address (e.g. A5) is valid.
+            </summary>
+            <param name="cellAddress">The alphanumeric cell address</param>
+            <returns>True if the cell address is valid</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelCell.UpdateFormulaReferences(System.String,System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Updates the Excel formula so that all the cellAddresses are incremented by the row and column increments
+            if they fall after the afterRow and afterColumn.
+            Supports inserting rows and columns into existing templates.
+            </summary>
+            <param name="Formula">The Excel formula</param>
+            <param name="rowIncrement">The amount to increment the cell reference by</param>
+            <param name="colIncrement">The amount to increment the cell reference by</param>
+            <param name="afterRow">Only change rows after this row</param>
+            <param name="afterColumn">Only change columns after this column</param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Element">
+            <summary>
+            Read-only reference to the cell's XmlNode (for internal use only)
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Row">
+            <summary>
+            Read-only reference to the cell's row number
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Column">
+            <summary>
+            Read-only reference to the cell's column number
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.CellAddress">
+            <summary>
+            Returns the current cell address in the standard Excel format (e.g. 'E5')
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.IsNumeric">
+            <summary>
+            Returns true if the cell's contents are numeric.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Value">
+            <summary>
+            Gets/sets the value of the cell.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.DataType">
+            <summary>
+            Gets/sets the cell's data type.  
+            Not currently implemented correctly!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Style">
+            <summary>
+            Allows you to set the cell's style using a named style
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.StyleID">
+            <summary>
+            Allows you to set the cell's style using the number of the style.
+            Useful when coping styles from one cell to another.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Hyperlink">
+            <summary>
+            Allows you to set/get the cell's Hyperlink
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Formula">
+            <summary>
+            Provides read/write access to the cell's formula.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelCell.Comment">
+            <summary>
+            Returns the comment as a string
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelRow">
+            <summary>
+            Represents an individual row in the spreadsheet.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelRow.#ctor(OfficeOpenXml.ExcelWorksheet,System.Int32)">
+            <summary>
+            Creates a new instance of the ExcelRow class. 
+            For internal use only!
+            </summary>
+            <param name="Worksheet">The parent worksheet</param>
+            <param name="row">The row number</param>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelRow.Node">
+            <summary>
+            Provides access to the node representing the row.
+            For internal use only!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelRow.Hidden">
+            <summary>
+            Allows the row to be hidden in the worksheet
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelRow.Height">
+            <summary>
+            Sets the height of the row
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelRow.Style">
+            <summary>
+            Gets/sets the style name based on the StyleID
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelRow.StyleID">
+            <summary>
+            Sets the style for the entire row using the style ID.  
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelPackage">
+            <summary>
+            Represents an Excel 2007 XLSX file package.  Opens the file and provides access
+            to all the components (workbook, worksheets, properties etc.).
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelPackage.schemaMain">
+            <summary>
+            Provides access to the main schema used by all Excel components
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelPackage.schemaRelationships">
+            <summary>
+            Provides access to the relationship schema
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.#ctor(System.IO.FileInfo)">
+            <summary>
+            Creates a new instance of the ExcelPackage class based on a existing file or creates a new file. 
+            </summary>
+            <param name="newFile">If newFile exists, it is opened.  Otherwise it is created from scratch.</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.#ctor(System.IO.FileInfo,System.IO.FileInfo)">
+            <summary>
+            Creates a new instance of the ExcelPackage class based on a existing template.
+            WARNING: If newFile exists, it is deleted!
+            </summary>
+            <param name="newFile">The name of the Excel file to be created</param>
+            <param name="template">The name of the Excel template to use as the basis of the new Excel file</param>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelPackage.DebugMode">
+            <summary>
+            Setting DebugMode to true will cause the Save method to write the 
+            raw XML components to the same folder as the output Excel file
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.WriteDebugFile(System.Xml.XmlDocument,System.String,System.String)">
+            <summary>
+            Writes a debug file to the output folder, but only if DebugMode = true
+            </summary>
+            <param name="XmlDoc">The XmlDocument to save to the file system</param>
+            <param name="subFolder">The subfolder in which the file is to be saved</param>
+            <param name="FileName">The name of the file to save.</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.GetSharedUri(System.Uri,System.String)">
+            <summary>
+            Obtains the Uri to a shared part (e.g. sharedstrings.xml)
+            </summary>
+            <param name="uriParent">Uri to the parent component</param>
+            <param name="Relationship">The relationship to the parent component</param>
+            <returns>The Uri to a shared part</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.AddSchemaAttribute(System.Xml.XmlElement,System.String,System.String)">
+            <summary>
+            Adds additional schema attributes to the root element
+            </summary>
+            <param name="root">The root element</param>
+            <param name="nameSpace">The namespace of the schema</param>
+            <param name="schema">The schema to apply</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.AddSchemaAttribute(System.Xml.XmlElement,System.String)">
+            <summary>
+            Adds additional schema attributes to the root element
+            </summary>
+            <param name="root">The root element</param>
+            <param name="schema">The schema to apply</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.SavePart(System.Uri,System.Xml.XmlDocument)">
+            <summary>
+            Saves the XmlDocument into the package at the specified Uri.
+            </summary>
+            <param name="uriPart">The Uri of the component</param>
+            <param name="xmlPart">The XmlDocument to save</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.Dispose">
+            <summary>
+            Closes the package.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelPackage.GetXmlFromUri(System.Uri)">
+            <summary>
+            Obtains the XmlDocument from the package referenced by the Uri
+            </summary>
+            <param name="uriPart">The Uri to the component</param>
+            <returns>The XmlDocument of the component</returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelPackage.Package">
+            <summary>
+            Returns a reference to the file package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelPackage.Workbook">
+            <summary>
+            Returns a reference to the workbook component within the package.
+            All worksheets and cells can be accessed through the workbook.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelCalcMode">
+            <summary>
+            Represents the possible workbook calculation modes
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelCalcMode.Automatic">
+            <summary>
+            Set the calculation mode to Automatic
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelCalcMode.AutomaticNoTable">
+            <summary>
+            Set the calculation mode to AutomaticNoTable
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelCalcMode.Manual">
+            <summary>
+            Set the calculation mode to Manual
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelWorkbook">
+            <summary>
+            Represents the Excel workbook and provides access to all the 
+            document properties and worksheets within the workbook.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorkbook.#ctor(OfficeOpenXml.ExcelPackage)">
+            <summary>
+            Creates a new instance of the ExcelWorkbook class.  For internal use only!
+            </summary>
+            <param name="xlPackage">The parent package</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorkbook.Save">
+            <summary>
+            Saves the workbook and all its components to the package.
+            For internal use only!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.Worksheets">
+            <summary>
+            Provides access to all the worksheets in the workbook.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.WorkbookUri">
+            <summary>
+            The Uri to the workbook in the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.StylesUri">
+            <summary>
+            The Uri to the styles.xml in the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.SharedStringsUri">
+            <summary>
+            The Uri to the shared strings file
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.Part">
+            <summary>
+            Returns a reference to the workbook's part within the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.WorkbookXml">
+            <summary>
+            Provides access to the XML data representing the workbook in the package.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.SharedStringsXml">
+            <summary>
+            Provides access to the XML data representing the shared strings in the package.
+            For internal use only!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.StylesXml">
+            <summary>
+            Provides access to the XML data representing the styles in the package. 
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.Properties">
+            <summary>
+            Provides access to the office document properties
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorkbook.CalcMode">
+            <summary>
+            Allows you to set the calculation mode for the workbook.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelWorksheets">
+            <summary>
+            Provides enumeration through all the worksheets in the workbook
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.#ctor(OfficeOpenXml.ExcelPackage)">
+            <summary>
+            Creates a new instance of the ExcelWorksheets class.
+            For internal use only!
+            </summary>
+            <param name="xlPackage"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.GetEnumerator">
+            <summary>
+            Returns an enumerator that allows the foreach syntax to be used to 
+            itterate through all the worksheets
+            </summary>
+            <returns>An enumerator</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.Add(System.String)">
+            <summary>
+            Adds a blank worksheet with the desired name
+            </summary>
+            <param name="Name"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.CreateNewWorksheet">
+            <summary>
+            Creates the XML document representing a new empty worksheet
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.Delete(System.Int32)">
+            <summary>
+            Delete a worksheet from the workbook package
+            </summary>
+            <param name="positionID">The position of the worksheet in the workbook</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheets.Copy(System.String,System.String)">
+            <summary>
+            Copies the named worksheet and creates a new worksheet in the same workbook
+            </summary>
+            <param name="Name">The name of the existing worksheet</param>
+            <param name="NewName">The name of the new worksheet to create</param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheets.Count">
+            <summary>
+            Returns the number of worksheets in the workbook
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheets.Item(System.Int32)">
+            <summary>
+            Returns the worksheet at the specified position.  
+            </summary>
+            <param name="PositionID">The position of the worksheet. 1-base</param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheets.Item(System.String)">
+            <summary>
+            Returns the worksheet matching the specified name
+            </summary>
+            <param name="Name">The name of the worksheet</param>
+            <returns></returns>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelWorksheetView">
+            <summary>
+            Represents the different view states of the worksheet
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheetView.#ctor(OfficeOpenXml.ExcelWorksheet)">
+            <summary>
+            Creates a new ExcelWorksheetView which provides access to all the 
+            view states of the worksheet.
+            </summary>
+            <param name="xlWorksheet"></param>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheetView.SheetViewElement">
+            <summary>
+            Returns a reference to the sheetView element
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheetView.TabSelected">
+            <summary>
+            Indicates if the worksheet is selected within the workbook
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheetView.PageLayoutView">
+            <summary>
+            Sets the view mode of the worksheet to pageLayout
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelColumn">
+            <summary>
+            Represents an individual column within the worksheet
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelColumn.#ctor(OfficeOpenXml.ExcelWorksheet,System.Int32)">
+            <summary>
+            Creates a new instance of the ExcelColumn class.  
+            For internal use only!
+            </summary>
+            <param name="Worksheet"></param>
+            <param name="col"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelColumn.ToString">
+            <summary>
+            Returns the range of columns covered by the column definition.
+            </summary>
+            <returns>A string describing the range of columns covered by the column definition.</returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.Element">
+            <summary>
+            Returns a reference to the Element that represents the column.
+            For internal use only!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.ColumnMin">
+            <summary>
+            Sets the first column the definition refers to.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.ColumnMax">
+            <summary>
+            Sets the last column the definition refers to.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.Hidden">
+            <summary>
+            Allows the column to be hidden in the worksheet
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.Width">
+            <summary>
+            Sets the width of the column in the worksheet
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.Style">
+            <summary>
+            Sets the style for the entire column using a style name.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelColumn.StyleID">
+            <summary>
+            Sets the style for the entire column using the style ID.  
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.ExcelWorksheet">
+            <summary>
+            Represents an Excel worksheet and provides access to its properties and methods
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelWorksheet.tempColumnNumberTag">
+            <summary>
+            Temporary tag for all column numbers in the worksheet XML
+            For internal use only!
+            </summary>
+        </member>
+        <member name="F:OfficeOpenXml.ExcelWorksheet.xlPackage">
+            <summary>
+            Reference to the parent package
+            For internal use only!
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.#ctor(OfficeOpenXml.ExcelPackage,System.String,System.String,System.Uri,System.Int32,System.Boolean)">
+            <summary>
+            Creates a new instance of ExcelWorksheet class. 
+            For internal use only!
+            </summary>
+            <param name="ParentXlPackage">Parent ExcelPackage object</param>
+            <param name="RelationshipID">Package relationship ID</param>
+            <param name="sheetName">Name of the new worksheet</param>
+            <param name="uriWorksheet">Uri of the worksheet in the package</param>
+            <param name="SheetID">The worksheet's ID in the workbook XML</param>
+            <param name="Hide">Indicates if the worksheet is hidden</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.Cell(System.Int32,System.Int32)">
+            <summary>
+            Provides access to an individual cell within the worksheet.
+            </summary>
+            <param name="row">The row number in the worksheet</param>
+            <param name="col">The column number in the worksheet</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.Row(System.Int32)">
+            <summary>
+            Provides access to an individual row within the worksheet so you can set its properties.
+            </summary>
+            <param name="row">The row number in the worksheet</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.Column(System.Int32)">
+            <summary>
+            Provides access to an individual column within the worksheet so you can set its properties.
+            </summary>
+            <param name="col">The column number in the worksheet</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.CreateSharedFormula(OfficeOpenXml.ExcelCell,OfficeOpenXml.ExcelCell)">
+            <summary>
+            Creates a shared formula based on the formula already in startCell
+            Essentially this supports the formula attributes such as t="shared" ref="B2:B4" si="0"
+            as per Brian Jones: Open XML Formats blog. See
+            http://blogs.msdn.com/brian_jones/archive/2006/11/15/simple-spreadsheetml-file-part-2-of-3.aspx
+            </summary>
+            <param name="startCell">The cell containing the formula</param>
+            <param name="endCell">The end cell (i.e. end of the range)</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.CreateConditionalFormatting(OfficeOpenXml.ExcelCell,OfficeOpenXml.ExcelCell,System.String)">
+            <summary>
+            Inserts conditional formatting for the cell range.
+            Currently only supports the dataBar style.
+            </summary>
+            <param name="startCell"></param>
+            <param name="endCell"></param>
+            <param name="color"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.InsertRow(System.Int32)">
+            <summary>
+            Inserts a new row into the spreadsheet.  Existing rows below the insersion position are 
+            shifted down.  All formula are updated to take account of the new row.
+            </summary>
+            <param name="position">The position of the new row</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.DeleteRow(System.Int32,System.Boolean)">
+            <summary>
+            Deletes the specified row from the worksheet.
+            If shiftOtherRowsUp=true then all formula are updated to take account of the deleted row.
+            </summary>
+            <param name="rowToDelete">The number of the row to be deleted</param>
+            <param name="shiftOtherRowsUp">Set to true if you want the other rows renumbered so they all move up</param>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.Save">
+            <summary>
+            Saves the worksheet to the package.  For internal use only.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.AddNumericCellIDs">
+            <summary>
+            Adds numeric cell identifiers so that it is easier to work out position of cells
+            Private method, for internal use only!
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.ReplaceNumericCellIDs">
+            <summary>
+            Replaces the numeric cell identifiers we inserted with AddNumericCellIDs with the traditional 
+            A1, A2 cell identifiers that Excel understands.
+            Private method, for internal use only!
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.GetStyleName(System.Int32)">
+            <summary>
+            Returns the name of the style using its xfId
+            </summary>
+            <param name="StyleID">The xfId of the style</param>
+            <returns>The name of the style</returns>
+        </member>
+        <member name="M:OfficeOpenXml.ExcelWorksheet.GetStyleID(System.String)">
+            <summary>
+            Returns the style ID given a style name.  
+            The style ID will be created if not found, but only if the style name exists!
+            </summary>
+            <param name="StyleName"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.WorksheetUri">
+            <summary>
+            Read-only: the Uri to the worksheet within the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.Part">
+            <summary>
+            Read-only: a reference to the PackagePart for the worksheet within the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.RelationshipID">
+            <summary>
+            Read-only: the ID for the worksheet's relationship with the workbook in the package
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.SheetID">
+            <summary>
+            The unique identifier for the worksheet.  Note that these can be random, so not
+            too useful in code!
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.NameSpaceManager">
+            <summary>
+            Provides access to a namespace manager instance to allow XPath searching
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.View">
+            <summary>
+            Returns a ExcelWorksheetView object that allows you to
+            set the view state properties of the worksheet
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.Name">
+            <summary>
+            The worksheet's name as it appears on the tab
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.Hidden">
+            <summary>
+            Indicates if the worksheet is hidden in the workbook
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.defaultRowHeight">
+            <summary>
+            Allows you to get/set the default height of all rows in the worksheet
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.WorksheetXml">
+            <summary>
+            The XML document holding all the worksheet data.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ExcelWorksheet.HeaderFooter">
+            <summary>
+            A reference to the header and footer class which allows you to 
+            set the header and footer for all odd, even and first pages of the worksheet
+            </summary>
+        </member>
+    </members>
+</doc>

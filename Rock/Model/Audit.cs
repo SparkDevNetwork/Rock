@@ -18,7 +18,7 @@ namespace Rock.Model
     /// </summary>
     [NotAudited]
     [Table( "Audit" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Audit : Entity<Audit>
     {
         /// <summary>

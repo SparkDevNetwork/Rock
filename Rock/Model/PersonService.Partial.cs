@@ -317,7 +317,7 @@ namespace Rock.Model
             if ( attribute == null )
             {
                 var fieldTypeService = new Model.FieldTypeService();
-                var fieldType = fieldTypeService.GetByGuid(Rock.SystemGuid.FieldType.TEXT);
+                var fieldType = fieldTypeService.GetByGuid( new Guid( Rock.SystemGuid.FieldType.TEXT ) );
 
                 attribute = new Model.Attribute();
                 attribute.IsSystem = false;
@@ -339,21 +339,24 @@ namespace Rock.Model
             }
 
             var attributeValueService = new Model.AttributeValueService();
-            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
-            foreach ( var attributeValue in attributeValues )
-                attributeValueService.Delete( attributeValue, personId );
 
-            foreach ( var value in values )
+            // Delete existing values
+            var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id ).ToList();
+            foreach ( var attributeValue in attributeValues )
             {
-                if ( !string.IsNullOrWhiteSpace( value ) )
-                {
-                    var attributeValue = new Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    attributeValue.EntityId = person.Id;
-                    attributeValue.Value = value;
-                    attributeValueService.Add( attributeValue, personId );
-                    attributeValueService.Save( attributeValue, personId );
-                }
+                attributeValueService.Delete( attributeValue, personId );
+                attributeValueService.Save( attributeValue, personId );
+            }
+
+            // Save new values
+            foreach ( var value in values.Where( v => !string.IsNullOrWhiteSpace( v ) ) )
+            {
+                var attributeValue = new Model.AttributeValue();
+                attributeValue.AttributeId = attribute.Id;
+                attributeValue.EntityId = person.Id;
+                attributeValue.Value = value;
+                attributeValueService.Add( attributeValue, personId );
+                attributeValueService.Save( attributeValue, personId );
             }
         }
 

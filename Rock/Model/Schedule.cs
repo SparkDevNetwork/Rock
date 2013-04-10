@@ -20,7 +20,7 @@ namespace Rock.Model
     /// CheckInSchedule EF Model.
     /// </summary>
     [Table("Schedule")]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Schedule : Model<Schedule>
     {
 
@@ -37,6 +37,15 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Description.
+        /// </summary>
+        /// <value>
+        /// Notes about the job..
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the frequency.

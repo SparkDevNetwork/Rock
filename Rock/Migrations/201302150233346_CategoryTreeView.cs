@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class CategoryTreeView : RockMigration
+    public partial class CategoryTreeView : RockMigration_4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -27,7 +27,7 @@ UPDATE [Block] SET [BlockTypeId] = @BlockTypeId WHERE [Guid] = '3DAAE6A6-E8AC-43
 " );
             DeleteAttribute( "C67C785F-4B19-410E-80FA-E5B320D07DD5" );
 
-            AddFieldType( "EntityType", "EntityType Field", "Rock", "Rock.Field.Types.EntityType", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB" );
+            UpdateFieldType( "EntityType", "EntityType Field", "Rock", "Rock.Field.Types.EntityType", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB" );
 
             AddBlockTypeAttribute( "ADE003C7-649B-466A-872B-B8AC952E7841", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Page Parameter Key", "PageParameterKey", "", "The page parameter to look for", 0, "", "AA057D3E-00CC-42BD-9998-600873356EDB" );
             AddBlockTypeAttribute( "ADE003C7-649B-466A-872B-B8AC952E7841", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "EntityType", "", "The types of entities to display categories for", 0, "", "06D414F0-AA20-4D3C-B297-1530CCD64395" );

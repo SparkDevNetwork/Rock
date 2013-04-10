@@ -11,11 +11,13 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using DotLiquid;
 using OfficeOpenXml;
 
 namespace Rock.Web.UI.Controls
@@ -35,6 +37,210 @@ namespace Rock.Web.UI.Controls
         private Dictionary<int, string> DataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is person list.  If so, 
+        /// the data source should have an Id field/property that is a person Id
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is person list; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsPersonList
+        {
+            get { return this.ViewState["IsPersonList"] as bool? ?? false; }
+            set { ViewState["IsPersonList"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [delete enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [delete enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Delete Enabled" )
+        ]
+        public virtual bool IsDeleteEnabled
+        {
+            get { return this.ViewState["IsDeleteEnabled"] as bool? ?? true; }
+            set { ViewState["IsDeleteEnabled"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show confirm delete dialog].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show confirm delete dialog]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Show Confirm Delete Dialog" )
+        ]
+        public virtual bool ShowConfirmDeleteDialog
+        {
+            get { return this.ViewState["ShowConfirmDeleteDialog"] as bool? ?? true; }
+            set { ViewState["ShowConfirmDeleteDialog"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the row item.
+        /// </summary>
+        /// <value>
+        /// The name of the row item.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        Description( "Item Text" )
+        ]
+        public string RowItemText
+        {
+            get
+            {
+                string rowItemText = this.ViewState["RowItemText"] as string;
+                if (!string.IsNullOrWhiteSpace(rowItemText))
+                {
+                    return rowItemText;
+                }
+
+                if ( DataSource != null )
+                {
+                    Type dataSourceType = DataSource.GetType();
+
+                    Type[] genericArgs = dataSourceType.GetGenericArguments();
+                    if ( genericArgs.Length > 0 )
+                    {
+                        Type itemType = genericArgs[0];
+                        if ( itemType != null )
+                        {
+                            return itemType.GetFriendlyTypeName();
+                        }
+                    }
+                }
+
+                return "Item";
+            }
+
+            set
+            {
+                this.ViewState["RowItemText"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the text to display in the empty data row rendered when a <see cref="T:System.Web.UI.WebControls.GridView" /> control is bound to a data source that does not contain any records.
+        /// </summary>
+        /// <returns>The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.</returns>
+        public override string EmptyDataText
+        {
+            get
+            {
+                string result = base.EmptyDataText;
+                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
+                {
+                    result = string.Format( "No {0} Found", RowItemText.Pluralize() );
+                }
+                return result;
+            }
+            set
+            {
+                base.EmptyDataText = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide delete button for is system].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [hide delete button for is system]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Hide the Delete button for IsSystem items" )
+        ]
+        public virtual bool HideDeleteButtonForIsSystem
+        {
+            get { return this.ViewState["HideDeleteButtonForIsSystem"] as bool? ?? true; }
+            set { ViewState["HideDeleteButtonForIsSystem"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [row click enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [row click enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool RowClickEnabled
+        {
+            get { return this.ViewState["RowClickEnabled"] as bool? ?? true; }
+            set { ViewState["RowClickEnabled"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the display type.
+        /// </summary>
+        /// <value>
+        /// The display type.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( GridDisplayType.Full ),
+        Description( "Display Type" )
+        ]
+        public virtual GridDisplayType DisplayType
+        {
+            get
+            {
+                object displayType = this.ViewState["DisplayType"];
+                return displayType != null ? (GridDisplayType)displayType : GridDisplayType.Full;
+            }
+
+            set
+            {
+                this.ViewState["DisplayType"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the sort property.
+        /// </summary>
+        public SortProperty SortProperty
+        {
+            get { return ViewState["SortProperty"] as SortProperty; }
+            private set { ViewState["SortProperty"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of datasource field/properties that can optionally be included as additional 
+        /// merge fields when a new communication is created from the grid.  NOTE: A side affect of using 
+        /// additional merge fields is that user will not be able to add additional recipients to the 
+        /// communication after it is created from the grid
+        /// </summary>
+        /// <value>
+        /// The communicate merge fields.
+        /// </value>
+        public List<string> CommunicateMergeFields
+        {
+            get { return ViewState["CommunicateMergeFields"] as List<string> ?? new List<string>(); }
+            set { ViewState["CommunicateMergeFields"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the new communication page route.
+        /// </summary>
+        /// <value>
+        /// The new communication page route.
+        /// </value>
+        public virtual string CommunicationPageRoute
+        {
+            get { return ViewState["CommunicationPageRoute"] as string ?? "~/Communication/{0}"; }
+            set { ViewState["CommunicationPageRoute"] = value; }
+        }
+
+        #region Action Row Properties
 
         /// <summary>
         /// Gets the action row.
@@ -75,283 +281,11 @@ namespace Rock.Web.UI.Controls
         ]
         public virtual bool ShowActionRow
         {
-            get
-            {
-                object showActionRow = this.ViewState["ShowActionRow"];
-                return ( ( showActionRow == null ) || ( (bool)showActionRow ) );
-            }
-
-            set
-            {
-                bool showActionRow = this.ShowActionRow;
-                if ( value != showActionRow )
-                {
-                    this.ViewState["ShowActionRow"] = value;
-                }
-            }
+            get { return this.ViewState["ShowActionRow"] as bool? ?? true; }
+            set { ViewState["ShowActionRow"] = value; }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [delete enabled].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [delete enabled]; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( true ),
-        Description( "Delete Enabled" )
-        ]
-        public virtual bool IsDeleteEnabled
-        {
-            get
-            {
-                object deleteEnabled = this.ViewState["IsDeleteEnabled"];
-                if ( deleteEnabled == null )
-                {
-                    return true;
-                }
-                else
-                {
-                    return (bool)deleteEnabled;
-                }
-
-            }
-
-            set
-            {
-                this.ViewState["IsDeleteEnabled"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show confirm delete dialog].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [show confirm delete dialog]; otherwise, <c>false</c>.
-        /// </value>
-        [
-       Category( "Appearance" ),
-       DefaultValue( true ),
-       Description( "Show Confirm Delete Dialog" )
-       ]
-        public virtual bool ShowConfirmDeleteDialog
-        {
-            get
-            {
-                object showConfirmDeleteDialog = this.ViewState["ShowConfirmDeleteDialog"];
-                if ( showConfirmDeleteDialog == null )
-                {
-                    return true;
-                }
-                else
-                {
-                    return (bool)showConfirmDeleteDialog;
-                }
-
-            }
-
-            set
-            {
-                this.ViewState["ShowConfirmDeleteDialog"] = value;
-            }
-
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the row item.
-        /// </summary>
-        /// <value>
-        /// The name of the row item.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        Description( "Item Text" )
-        ]
-        public string RowItemText
-        {
-            get
-            {
-                object rowItemText = this.ViewState["RowItemText"];
-                if ( string.IsNullOrWhiteSpace( rowItemText as string ) && DataSource != null )
-                {
-                    Type dataSourceType = DataSource.GetType();
-
-                    Type[] genericArgs = dataSourceType.GetGenericArguments();
-                    if ( genericArgs.Length > 0 )
-                    {
-                        Type itemType = dataSourceType.GetGenericArguments()[0];
-                        if ( itemType != null )
-                        {
-                            rowItemText = itemType.GetFriendlyTypeName();
-                        }
-                    }
-                    else
-                    {
-                        return "Item";
-                    }
-                }
-                return ( rowItemText as string );
-            }
-
-            set
-            {
-                this.ViewState["RowItemText"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the text to display in the empty data row rendered when a <see cref="T:System.Web.UI.WebControls.GridView" /> control is bound to a data source that does not contain any records.
-        /// </summary>
-        /// <returns>The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.</returns>
-        public override string EmptyDataText
-        {
-            get
-            {
-                string result = base.EmptyDataText;
-                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
-                {
-                    if ( DataSource != null )
-                    {
-                        Type dataSourceType = DataSource.GetType();
-                        Type itemType = dataSourceType.GetGenericArguments()[0];
-                        if ( itemType != null )
-                        {
-                            result = string.Format( "No {0} Found", itemType.GetFriendlyTypeName().Pluralize() );
-                        }
-                    }
-                }
-                return result;
-            }
-            set
-            {
-                base.EmptyDataText = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [hide delete button for is system].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [hide delete button for is system]; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( true ),
-        Description( "Hide the Delete button for IsSystem items" )
-        ]
-        public virtual bool HideDeleteButtonForIsSystem
-        {
-            get
-            {
-                object hideDeleteButtonForIsSystem = this.ViewState["HideDeleteButtonForIsSystem"];
-                if ( hideDeleteButtonForIsSystem != null )
-                {
-                    return (bool)hideDeleteButtonForIsSystem;
-                }
-                else
-                {
-                    // default to true
-                    return true;
-                }
-            }
-
-            set
-            {
-                this.ViewState["HideDeleteButtonForIsSystem"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [row click enabled].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [row click enabled]; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool RowClickEnabled
-        {
-            get
-            {
-                object rowClickEnabled = this.ViewState["RowClickEnabled"];
-                if ( rowClickEnabled != null )
-                {
-                    return (bool)rowClickEnabled;
-                }
-                else
-                {
-                    // default to true
-                    return true;
-                }
-            }
-
-            set
-            {
-                this.ViewState["RowClickEnabled"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the export to excel action should be displayed.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the eport to excel action should be displayed; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( true ),
-        Description( "Show Action Export to Excel" )
-        ]
-        public virtual bool ShowActionExcelExport
-        {
-            get
-            {
-                object showActionExcelExport = this.ViewState["ShowActionExcelExport"];
-                return ( ( showActionExcelExport == null ) || ( (bool)showActionExcelExport ) );
-            }
-
-            set
-            {
-                bool showActionExcelExport = this.ShowActionExcelExport;
-                if ( value != showActionExcelExport )
-                {
-                    this.ViewState["ShowActionExcelExport"] = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the display type.
-        /// </summary>
-        /// <value>
-        /// The display type.
-        /// </value>
-        [
-        Category( "Appearance" ),
-        DefaultValue( GridDisplayType.Full ),
-        Description( "Display Type" )
-        ]
-        public virtual GridDisplayType DisplayType
-        {
-            get
-            {
-                object displayType = this.ViewState["DisplayType"];
-                return displayType != null ? (GridDisplayType)displayType : GridDisplayType.Full;
-            }
-
-            set
-            {
-                this.ViewState["DisplayType"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets the sort property.
-        /// </summary>
-        public SortProperty SortProperty
-        {
-            get { return ViewState["SortProperty"] as SortProperty; }
-            private set { ViewState["SortProperty"] = value; }
-        }
+        #endregion
 
         #endregion
 
@@ -397,12 +331,116 @@ namespace Rock.Web.UI.Controls
             pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
             this.PagerTemplate = pagerTemplate;
 
-            this.Sorting += new GridViewSortEventHandler( Grid_Sorting );
-            this.Actions.ExcelExportClick += new EventHandler( Actions_ExcelExportClick );
+            this.Sorting += Grid_Sorting;
 
-            this.Actions.IsExcelExportEnabled = this.ShowActionExcelExport;
+            this.Actions.CommunicateClick += Actions_CommunicateClick;
+            this.Actions.ExcelExportClick += Actions_ExcelExportClick;
 
             base.OnInit( e );
+        }
+
+        /// <summary>
+        /// Handles the CommunicateClick event of the Actions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Actions_CommunicateClick( object sender, EventArgs e )
+        {
+            OnGridRebind( e );
+
+            if ( IsPersonList )
+            {
+                // Set Sender
+                var rockPage = Page as RockPage;
+                if ( rockPage != null )
+                {
+                    var communication = new Rock.Model.Communication();
+                    communication.IsTemporary = true;
+
+                    if ( rockPage.CurrentPersonId.HasValue )
+                    {
+                        communication.SenderPersonId = rockPage.CurrentPersonId.Value;
+                    }
+
+                    if ( this.DataSource is DataTable || this.DataSource is DataView )
+                    {
+                        communication.AdditionalMergeFields = CommunicateMergeFields;
+
+                        DataTable data = null;
+
+                        if ( this.DataSource is DataTable )
+                        {
+                            data = (DataTable)this.DataSource;
+                        }
+                        else if ( this.DataSource is DataView )
+                        {
+                            data = ( (DataView)this.DataSource ).Table;
+                        }
+
+                        foreach ( DataRow row in data.Rows )
+                        {
+                            int? personId = null;
+                            var mergeValues = new Dictionary<string, string>();
+                            for ( int i = 0; i < data.Columns.Count; i++ )
+                            {
+                                if ( data.Columns[i].ColumnName == "Id" )
+                                {
+                                    personId = (int)row[i];
+                                }
+
+                                if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
+                                {
+                                    mergeValues.Add( data.Columns[i].ColumnName, row[i].ToString() );
+                                }
+                            }
+
+                            if ( personId.HasValue )
+                            {
+                                var recipient = new Rock.Model.CommunicationRecipient();
+                                recipient.PersonId = personId.Value;
+                                recipient.AdditionalMergeValues = mergeValues;
+                                communication.Recipients.Add( recipient );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CommunicateMergeFields.ForEach( f => communication.AdditionalMergeFields.Add( f.Replace( '.', '_' ) ) );
+
+                        // get access to the List<> and its properties
+                        IList data = (IList)this.DataSource;
+                        Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
+
+                        PropertyInfo idProp = oType.GetProperty( "Id" );
+                        if (idProp != null)
+                        {
+                            foreach ( var item in data )
+                            {
+                                var recipient = new Rock.Model.CommunicationRecipient();
+                                recipient.PersonId =  (int)idProp.GetValue( item, null );
+
+                                foreach ( string mergeField in CommunicateMergeFields )
+                                {
+                                    object obj = item.GetPropertyValue( mergeField );
+                                    if ( obj != null )
+                                    {
+                                        recipient.AdditionalMergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                    }
+                                }
+
+                                communication.Recipients.Add( recipient );
+                            }
+                        }
+                    }
+
+                    var service = new Rock.Model.CommunicationService();
+                    service.Add( communication, rockPage.CurrentPersonId );
+                    service.Save( communication, rockPage.CurrentPersonId );
+
+                    Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
         }
 
         /// <summary>
@@ -410,7 +448,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void Actions_ExcelExportClick( object sender, EventArgs e )
+        protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
             OnGridRebind( e );
 
@@ -616,8 +654,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            //Rock.Web.UI.RockPage.AddCSSLink( Page, "~/CSS/grid.css" );
-
             UseAccessibleHeader = true;
 
             if ( HeaderRow != null )
@@ -647,6 +683,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
+        /// and div element.  The div may be needed for paging when grid is not used in an update panel
+        /// so if wierd errors start happening, this could be the culprit.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            bool renderPanel = !base.DesignMode;
+
+            if ( this.Page != null )
+            {
+                this.Page.VerifyRenderingInServerForm( this );
+            }
+
+            this.PrepareControlHierarchy();
+
+            this.RenderContents( writer );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -656,7 +712,7 @@ namespace Rock.Web.UI.Controls
             {
                 this.AllowPaging = false;
                 this.AllowSorting = false;
-                this.Actions.IsExcelExportEnabled = false;
+                this.Actions.ShowExcelExport = false;
 
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
@@ -690,9 +746,13 @@ namespace Rock.Web.UI.Controls
                     itemCount = ( (DataView)this.DataSource ).Table.Rows.Count;
                 }
             }
-            else
+            else if ( this.DataSource is IList )
             {
                 itemCount = ( (IList)this.DataSource ).Count;
+            }
+            else
+            {
+                itemCount = 0;
             }
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
@@ -884,7 +944,80 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Creates grid columns by reflecting on the properties of a type.  If any of the properties
+        /// have the [Previewable] attribute, columns will only be created for those properties
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        public void CreatePreviewColumns( Type modelType )
+        {
+            this.Columns.Clear();
+
+            var displayColumns = new Dictionary<string, BoundField>();
+            var allColumns = new Dictionary<string, BoundField>();
+
+            foreach ( var property in modelType.GetProperties() )
+            {
+                if ( property.Name != "Id" )
+                {
+                    if ( property.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() > 0 )
+                    {
+                        displayColumns.Add( property.Name, GetGridField( property ) );
+                    }
+                    else if ( displayColumns.Count == 0 && property.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                    {
+                        allColumns.Add( property.Name, GetGridField( property ) );
+                    }
+                }
+            }
+
+            // Always add hidden id column
+            var idCol = new BoundField();
+            idCol.DataField = "Id";
+            idCol.Visible = false;
+            this.Columns.Add( idCol );
+
+            Dictionary<string, BoundField> columns = displayColumns.Count > 0 ? displayColumns : allColumns;
+            foreach ( var column in columns )
+            {
+                var bf = column.Value;
+                bf.DataField = column.Key;
+                bf.SortExpression = column.Key;
+                bf.HeaderText = column.Key.SplitCase();
+                this.Columns.Add( bf );
+            }
+        }
+
+        #endregion
+
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the grid field.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        private BoundField GetGridField( PropertyInfo property )
+        {
+            BoundField bf = new BoundField();
+
+            if ( property.PropertyType == typeof( Boolean ) )
+            {
+                bf = new BoolField();
+            }
+            else if ( property.PropertyType == typeof( DateTime ) )
+            {
+                bf = new DateField();
+            }
+            else if ( property.PropertyType.IsEnum )
+            {
+                bf = new EnumField();
+            }
+
+            return bf;
+        }
 
         /// <summary>
         /// Handles the ItemsPerPageClick event of the pagerTemplate control.
@@ -1252,35 +1385,6 @@ namespace Rock.Web.UI.Controls
             divPagination.Attributes.Add( "class", "pagination" );
             container.Controls.Add( divPagination );
 
-            // Pagination
-            NavigationPanel = new HtmlGenericControl( "div" );
-            NavigationPanel.Attributes.Add( "class", "page-navigation" );
-            divPagination.Controls.Add( NavigationPanel );
-
-            HtmlGenericControl ulNavigation = new HtmlGenericControl( "ul" );
-            NavigationPanel.Controls.Add( ulNavigation );
-
-            for ( var i = 0; i < PageLinkListItem.Length; i++ )
-            {
-                PageLinkListItem[i] = new HtmlGenericContainer( "li" );
-                ulNavigation.Controls.Add( PageLinkListItem[i] );
-
-                PageLink[i] = new LinkButton();
-                PageLinkListItem[i].Controls.Add( PageLink[i] );
-                PageLink[i].Click += new EventHandler( lbPage_Click );
-            }
-            
-            PageLink[0].Text = "&larr; Previous";
-            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
-
-            // itemCount
-            HtmlGenericControl divItemCount = new HtmlGenericControl( "div" );
-            divItemCount.Attributes.Add( "class", "item-count" );
-            divPagination.Controls.Add( divItemCount );
-
-            itemCountDisplay = new Literal();
-            divItemCount.Controls.Add( itemCountDisplay );
-
             // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
@@ -1307,6 +1411,35 @@ namespace Rock.Web.UI.Controls
             ItemLink[1].Text = "100";
             ItemLink[2].Text = "1,000";
             ItemLink[3].Text = "All";
+
+            // itemCount
+            HtmlGenericControl divItemCount = new HtmlGenericControl("div");
+            divItemCount.Attributes.Add("class", "item-count");
+            divPagination.Controls.Add(divItemCount);
+
+            itemCountDisplay = new Literal();
+            divItemCount.Controls.Add(itemCountDisplay);
+
+            // Pagination
+            NavigationPanel = new HtmlGenericControl("div");
+            NavigationPanel.Attributes.Add("class", "page-navigation");
+            divPagination.Controls.Add(NavigationPanel);
+
+            HtmlGenericControl ulNavigation = new HtmlGenericControl("ul");
+            NavigationPanel.Controls.Add(ulNavigation);
+
+            for (var i = 0; i < PageLinkListItem.Length; i++)
+            {
+                PageLinkListItem[i] = new HtmlGenericContainer("li");
+                ulNavigation.Controls.Add(PageLinkListItem[i]);
+
+                PageLink[i] = new LinkButton();
+                PageLinkListItem[i].Controls.Add(PageLink[i]);
+                PageLink[i].Click += new EventHandler(lbPage_Click);
+            }
+
+            PageLink[0].Text = "&larr; Previous";
+            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
         }
 
         /// <summary>

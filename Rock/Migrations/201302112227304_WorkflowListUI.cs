@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class WorkflowListUI : RockMigration
+    public partial class WorkflowListUI : RockMigration_4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

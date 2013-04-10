@@ -24,7 +24,7 @@ namespace Rock.Attribute
         /// <value>
         /// The attribute categories.
         /// </value>
-        SortedDictionary<string, List<string>> AttributeCategories { get; set; }
+        Dictionary<string, List<string>> AttributeCategories { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.

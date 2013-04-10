@@ -56,12 +56,16 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BinaryFileTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DataViewFiltersController.cs" />
     <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
+    <Compile Include="Controllers\FundsController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
     <Compile Include="Controllers\KiosksController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
@@ -128,6 +132,7 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />
+    <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />

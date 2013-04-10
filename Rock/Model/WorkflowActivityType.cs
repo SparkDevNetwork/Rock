@@ -18,7 +18,7 @@ namespace Rock.Model
     /// ActivityType POCO Entity.
     /// </summary>
     [Table( "WorkflowActivityType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered
     {
 

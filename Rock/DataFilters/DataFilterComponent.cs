@@ -11,14 +11,63 @@ using System.Web.UI.WebControls;
 
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.DataFilters
 {
     /// <summary>
     /// 
     /// </summary>
-    public abstract class DataFilterComponent : ComponentManaged
+    public abstract class DataFilterComponent : Component
     {
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public abstract string Title { get; }
+
+        /// <summary>
+        /// Gets the name of the filtered entity type.
+        /// </summary>
+        /// <value>
+        /// The name of the filtered entity type.
+        /// </value>
+        public abstract string FilteredEntityTypeName { get; }
+
+        /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public virtual string Section 
+        {
+            get { return "Additional Filters"; }
+        }
+
+        /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public virtual string ClientFormatSelection
+        {
+            get
+            {
+                return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", Title );
+            }
+            protected set
+            {
+
+            }
+        }
+
         /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
@@ -34,33 +83,6 @@ namespace Rock.DataFilters
                 return defaults;
             }
         }
-
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public abstract string Title { get; }
-
-        /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public virtual string Section 
-        {
-            get { return string.Empty; }
-        }
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public abstract string FilteredEntityTypeName { get; }
 
         /// <summary>
         /// Formats the selection.
@@ -89,13 +111,17 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls()
+        public virtual Control[] CreateChildControls( FilterField filterControl )
         {
-            var controls = new Control[2] {
-                ComparisonControl( StringFilterComparisonTypes ),
-                new TextBox() };
-            //SetSelection( controls, string.Format( "{0}|", ComparisonType.StartsWith.ConvertToInt().ToString() ) );
-            return controls;
+            var ddl = ComparisonControl( StringFilterComparisonTypes );
+            ddl.ID = filterControl.ID + "_0";
+            filterControl.Controls.Add( ddl );
+
+            var tb = new TextBox();
+            tb.ID = filterControl.ID + "_1";
+            filterControl.Controls.Add( tb );
+
+            return new Control[2] { ddl, tb };
         }
 
         /// <summary>
@@ -103,7 +129,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( HtmlTextWriter writer, Control[] controls )
+        public virtual void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.Write( this.Title + " " );
             controls[0].RenderControl( writer );
@@ -141,10 +167,11 @@ namespace Rock.DataFilters
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( Expression parameterExpression, string selection );
+        public abstract Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection );
 
         /// <summary>
         /// Gets the comparison expression.
@@ -269,6 +296,19 @@ namespace Rock.DataFilters
                 return
                     ComparisonType.EqualTo |
                     ComparisonType.NotEqualTo |
+                    ComparisonType.GreaterThan |
+                    ComparisonType.GreaterThanOrEqualTo |
+                    ComparisonType.LessThan |
+                    ComparisonType.LessThanOrEqualTo;
+            }
+        }
+
+        public static ComparisonType DateFilterComparisonTypes
+        {
+            get
+            {
+                return
+                    ComparisonType.EqualTo |
                     ComparisonType.GreaterThan |
                     ComparisonType.GreaterThanOrEqualTo |
                     ComparisonType.LessThan |

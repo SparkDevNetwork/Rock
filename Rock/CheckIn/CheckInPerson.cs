@@ -15,7 +15,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson 
+    public class CheckInPerson : DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the person.
@@ -53,6 +53,15 @@ namespace Rock.CheckIn
         public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
+        /// Gets or sets the the unique code for check-in labels
+        /// </summary>
+        /// <value>
+        /// The security code.
+        /// </value>
+        [DataMember]
+        public string SecurityCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the group types available for the current person.
         /// </summary>
         /// <value>
@@ -65,7 +74,7 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
         /// </summary>
         public CheckInPerson()
-            : base()
+            : base() 
         {
             GroupTypes = new List<CheckInGroupType>();
         }
@@ -79,6 +88,23 @@ namespace Rock.CheckIn
         public override string ToString()
         {
             return Person != null ? Person.ToString() : string.Empty;
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add("Person", Person);
+            dictionary.Add("FamilyMember", FamilyMember);
+            dictionary.Add("Selected", Selected);
+            dictionary.Add("LastCheckIn", LastCheckIn);
+            dictionary.Add("SecurityCode", SecurityCode);
+            dictionary.Add("GroupTypes", GroupTypes);
+            return dictionary;
         }
     }
 }

@@ -51,6 +51,12 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( "checked", "checked" );
                 }
 
+                foreach ( var inputAttributeKey in cb.InputAttributes.Keys )
+                {
+                    var key = inputAttributeKey as string;
+                    writer.AddAttribute( key, cb.InputAttributes[key] );
+                }
+
                 if (cb.AutoPostBack)
                 {
                     PostBackOptions postBackOption = new PostBackOptions(cb, string.Empty);

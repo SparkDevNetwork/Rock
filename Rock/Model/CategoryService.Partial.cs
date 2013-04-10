@@ -34,5 +34,15 @@ namespace Rock.Model
 
             return query;
         }
+
+        /// <summary>
+        /// Gets Categories for the given Entity Type
+        /// </summary>
+        /// <param name="categoryId">The category id.</param>
+        /// <returns></returns>
+        public IEnumerable<Category> GetByEntityTypeId( int? entityTypeId )
+        {
+            return Repository.Find( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ) );// TODO - do categories need an order? as in: .OrderBy( t => t.Order );
+        }
     }
 }

@@ -13,7 +13,10 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+
+using DotLiquid;
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -33,67 +36,48 @@ namespace Rock
         /// <returns></returns>
         public static string ToJson( this object obj )
         {
-            return JsonConvert.SerializeObject( obj );
+            return JsonConvert.SerializeObject( obj, Formatting.Indented,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
         }
 
-        ///// <summary>
-        ///// Converts object to JSON string
-        ///// </summary>
-        ///// <param name="obj">Object.</param>
-        ///// <param name="recursionDepth">constrains the number of object levels to process.</param>
-        ///// <returns></returns>
-        //public static string ToJSON( this object obj, int recursionDepth )
-        //{
-        //    return JsonConvert.SerializeObject( obj, new JsonSerializerSettings { MaxDepth = recursionDepth } );
-        //}
 
-        ///// <summary>
-        ///// Creates a copy of the object's property as a DynamicObject.
-        ///// </summary>
-        ///// <param name="obj">The object to copy.</param>
-        ///// <returns></returns>
-        //public static ExpandoObject ToDynamic( this object obj )
-        //{
-        //    dynamic expando = new ExpandoObject();
-        //    var dict = expando as IDictionary<string, object>;
-        //    var properties = obj.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance );
+        /// <summary>
+        /// Gets the property value.
+        /// </summary>
+        /// <param name="rootObj">The root obj.</param>
+        /// <param name="propertyNamePath">The property path name (i.e. FirstName, Owner.FirstName, etc).</param>
+        /// <returns></returns>
+        public static object GetPropertyValue( this object rootObj, string propertyPathName )
+        {
+            var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
-        //    foreach ( var prop in properties )
-        //    {
-        //        dict[prop.Name] = prop.GetValue( obj, null );
-        //    }
+            object obj = rootObj;
+            Type objType = rootObj.GetType();
 
-        //    return expando;
-        //}
+            while ( propPath.Any() && obj != null )
+            {
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
+                {
+                    obj = property.GetValue( obj );
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
+                }
+                else
+                {
+                    obj = null;
+                }
+            }
 
-        ///// <summary>
-        ///// Creates an instance of a model and populates it based on the dynamic object's properties.
-        ///// </summary>
-        ///// <typeparam name="T">The destination model type</typeparam>
-        ///// <param name="obj">The dynamic object to convert</param>
-        ///// <returns>A populated instance of the model defined in the type arg</returns>
-        //public static T ToModel<T>( this object obj )
-        //{
-        //    var o = obj as ExpandoObject;
-        //    var instance = Activator.CreateInstance<T>();
+            return obj;
+        }
 
-        //    if ( o == null )
-        //    {
-        //        return instance;
-        //    }
+        #endregion
 
-        //    var dict = o as IDictionary<string, object>;
-        //    var properties = instance.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance )
-        //        .Where( prop => dict.ContainsKey( prop.Name ) );
-
-        //    foreach ( var prop in properties )
-        //    {
-        //        try { prop.SetValue( instance, dict[ prop.Name ] ); }
-        //        catch ( Exception ) { }
-        //    }
-
-        //    return instance;
-        //}
+        #region Type Extensions
 
         /// <summary>
         /// Gets the name of the friendly type.
@@ -122,7 +106,7 @@ namespace Rock
 
                 if ( type.Namespace.Equals( "Rock.Model" ) )
                 {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type.FullName );
+                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
                     return entityType.FriendlyName ?? SplitCase( type.Name );
                 }
                 else
@@ -274,6 +258,28 @@ namespace Rock
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Use DotLiquid to resolve any merge codes within the content using the values 
+        /// in the mergeObjects.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        {
+            if ( content == null )
+                return string.Empty;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                return content;
+
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( content );
+
+            return template.Render( Hash.FromDictionary( mergeObjects ) );
         }
 
         #endregion
@@ -473,6 +479,99 @@ namespace Rock
 
         }
 
+        /// <summary>
+        /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
+        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm)
+        /// </summary>
+        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm) </param>
+        /// <returns></returns>
+        public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
+        {
+            try
+            {
+                DateTime now = DateTime.Now;
+                TimeSpan timeSince = now - dateTime;
+
+                double inSeconds = timeSince.TotalSeconds;
+                double inMinutes = timeSince.TotalMinutes;
+                double inHours = timeSince.TotalHours;
+                double inDays = timeSince.TotalDays;
+                double inWeeks = inDays / 7;
+                double inMonths = inDays / 30;
+                double inYears = inDays / 365;
+
+                // Just return in FB time format if max days has passed.
+                if ( maxDays.HasValue && inDays > maxDays )
+                {
+                    if ( now.Year == dateTime.Year )
+                    {
+                        return dateTime.ToString( "MMMM d at h:mmtt" ).ToLowerInvariant();
+                    }
+                    else
+                    {
+                        return dateTime.ToString( "MMMM d, yyyy at h:mmtt" ).ToLowerInvariant();
+                    }
+                }
+
+                if ( Math.Round( inSeconds ) == 1 )
+                {
+                    return "1 second ago";
+                }
+                else if ( inMinutes < 1.0 )
+                {
+                    return Math.Floor( inSeconds ) + " seconds ago";
+                }
+                else if ( Math.Floor( inMinutes ) == 1 )
+                {
+                    return "1 minute ago";
+                }
+                else if ( inHours < 1.0 )
+                {
+                    return Math.Floor( inMinutes ) + " minutes ago";
+                }
+                else if ( Math.Floor( inHours ) == 1 )
+                {
+                    return "about an hour ago";
+                }
+                else if ( inDays < 1.0 )
+                {
+                    return Math.Floor( inHours ) + " hours ago";
+                }
+                else if ( Math.Floor( inDays ) == 1 )
+                {
+                    return "1 day ago";
+                }
+                else if ( inWeeks < 1 )
+                {
+                    return Math.Floor( inDays ) + " days ago";
+                }
+                else if ( Math.Floor( inWeeks ) == 1 )
+                {
+                    return "1 week ago";
+                }
+                else if ( inMonths < 3 )
+                {
+                    return Math.Floor( inWeeks ) + " weeks ago";
+                }
+                else if ( inMonths <= 12 )
+                {
+                    return Math.Floor( inMonths ) + " months ago ";
+                }
+                else if ( Math.Floor( inYears ) <= 1 )
+                {
+                    return "1 year ago";
+                }
+                else
+                {
+                    return Math.Floor( inYears ) + " years ago";
+                }
+            }
+            catch ( Exception )
+            {
+            }
+            return "";
+        }
         #endregion
 
         #region Control Extensions
@@ -1006,7 +1105,13 @@ namespace Rock
         /// <returns></returns>
         public static int ValueAsInt( this HiddenField hiddenField )
         {
-            return int.Parse( hiddenField.Value );
+            int intValue = 0;
+            if ( int.TryParse( hiddenField.Value, out intValue ) )
+            {
+                return intValue;
+            }
+
+            return 0;
         }
 
         /// <summary>

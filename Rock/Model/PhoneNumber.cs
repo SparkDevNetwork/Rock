@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Phone Number POCO Entity.
     /// </summary>
     [Table( "PhoneNumber" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         /// <summary>

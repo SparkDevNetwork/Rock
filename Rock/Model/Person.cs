@@ -20,7 +20,7 @@ namespace Rock.Model
     /// Person POCO Entity.
     /// </summary>
     [Table( "Person" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class Person : Model<Person>
     {
 
@@ -52,6 +52,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_TYPE )]
         public int? RecordTypeValueId { get; set; }
         
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS )]
         public int? RecordStatusValueId { get; set; }
         
         /// <summary>
@@ -70,6 +72,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON )]
         public int? RecordStatusReasonValueId { get; set; }
         
         /// <summary>
@@ -79,6 +82,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_STATUS )]
         public int? PersonStatusValueId { get; set; }
 
         /// <summary>
@@ -115,6 +119,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_TITLE )]
         public int? TitleValueId { get; set; }
         
         /// <summary>
@@ -125,6 +130,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Previewable]
         public string GivenName { get; set; }
 
         /// <summary>
@@ -145,6 +151,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Previewable]
         public string LastName { get; set; }
         
         /// <summary>
@@ -154,6 +161,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_SUFFIX )]
         public int? SuffixValueId { get; set; }
         
         /// <summary>
@@ -200,6 +208,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -209,6 +218,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
         public int? MaritalStatusValueId { get; set; }
         
         /// <summary>
@@ -237,6 +247,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 75 )]
         [DataMember]
+        [Previewable]
         public string Email { get; set; }
         
         /// <summary>
@@ -526,6 +537,28 @@ namespace Rock.Model
             }
         }
 
+        public virtual int DaysToBirthday
+        {
+            get
+            {
+                if ( BirthDay == null || BirthMonth == null )
+                {
+                    return int.MaxValue;
+                }
+                else
+                {
+                    var today = DateTime.Today;
+                    var birthdate = Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + today.Year.ToString() );
+                    if ( birthdate.CompareTo( today ) < 0 )
+                    {
+                        birthdate = birthdate.AddYears( 1 );
+                    }
+
+                    return Convert.ToInt32( birthdate.Subtract( today ).TotalDays );
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the fractional age
         /// </summary>
@@ -587,6 +620,22 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// To the dictionary.
+        /// </summary>
+        /// <returns></returns>
+        public override Dictionary<string, object> ToDictionary()
+        {
+            var dictionary =  base.ToDictionary();
+            dictionary.Add( "FirstName", FirstName );
+            dictionary.Add( "FullName", FullName );
+            dictionary.Add( "FullNameLastFirst", FullNameLastFirst );
+            dictionary.Add( "BirthDate", BirthDate );
+            dictionary.Add( "Age", AgePrecise );
+            dictionary.Add( "DaysToBirthday", DaysToBirthday );
+            return dictionary;
+        }
+ 
         #endregion
 
         #region Methods

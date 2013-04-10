@@ -14,8 +14,8 @@ namespace Rock.Field
     /// <summary>
     /// Abstract class that all custom field types should inherit from
     /// </summary>
-   [Serializable]
-   public abstract class FieldType : IFieldType
+    [Serializable]
+    public abstract class FieldType : IFieldType
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Field"/> class.
@@ -35,7 +35,7 @@ namespace Rock.Field
         public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( condensed )
-                return System.Web.HttpUtility.HtmlEncode( value ).Ellipsis(100);
+                return System.Web.HttpUtility.HtmlEncode( value ).Ellipsis( 100 );
 
             return value;
         }
@@ -119,7 +119,7 @@ namespace Rock.Field
         public virtual string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( control != null && control is TextBox )
-                return ( ( TextBox )control ).Text;
+                return ( (TextBox)control ).Text;
             return null;
         }
 
@@ -132,8 +132,26 @@ namespace Rock.Field
         public virtual void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             if ( control != null && control is TextBox )
-                ( ( TextBox )control ).Text = value;
+                ( (TextBox)control ).Text = value;
         }
+
+        /// <summary>
+        /// Called when [qualifier updated].
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        public void OnQualifierUpdated(object sender, EventArgs e)
+        {
+            if ( QualifierUpdated != null )
+            {
+                QualifierUpdated( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [qualifier updated].
+        /// </summary>
+        public event EventHandler QualifierUpdated;
 
     }
 

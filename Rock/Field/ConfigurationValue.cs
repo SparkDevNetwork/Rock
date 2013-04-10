@@ -14,7 +14,8 @@ namespace Rock.Field
     /// <summary>
     /// The Name, Description and Value of an field type's configuration items
     /// </summary>
-    [DataContract( IsReference = true )]
+    [Serializable]
+    [DataContract]
     public class ConfigurationValue
     {
         /// <summary>
@@ -43,6 +44,13 @@ namespace Rock.Field
         /// </value>
         [DataMember]
         public string Value { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationValue" /> class.
+        /// </summary>
+        public ConfigurationValue()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationValue" /> class.

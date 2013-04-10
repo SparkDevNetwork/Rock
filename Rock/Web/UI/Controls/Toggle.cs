@@ -3,6 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+// Based on the prototype Bootstrap switch by Mattia Larentis at http://www.larentis.eu/switch/
+// https://github.com/nostalgiaz/bootstrap-switch/commit/265bfbf0e2d7f390e231249fa457c4d3d34d9b42
 
 using System.ComponentModel;
 using System.Globalization;

@@ -14,7 +14,7 @@ namespace Rock.Model
     /// 
     /// </summary>
     [Table( "GroupTypeLocationType" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public class GroupTypeLocationType
     {
         /// <summary>

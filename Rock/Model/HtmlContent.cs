@@ -19,7 +19,7 @@ namespace Rock.Model
     /// Html Content POCO Entity.
     /// </summary>
     [Table( "HtmlContent" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class HtmlContent : Model<HtmlContent>
     {
         /// <summary>

@@ -17,7 +17,7 @@ namespace Rock.Model
     /// Person Viewed POCO Entity.
     /// </summary>
     [Table( "PersonViewed" )]
-    [DataContract( IsReference = true )]
+    [DataContract]
     public partial class PersonViewed : Model<PersonViewed>
     {
         /// <summary>

@@ -14,9 +14,9 @@ namespace Rock.DataFilters.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter persons on First Name" )]
+    [Description( "Filter people on First Name" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "First Name Filter" )]
+    [ExportMetadata( "ComponentName", "Person First Name Filter" )]
     public class FirstNameFilter : DataFilterComponent
     {
         /// <summary>
@@ -31,17 +31,6 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
-        /// Gets the section.
-        /// </summary>
-        /// <value>
-        /// The section.
-        /// </value>
-        public override string Section
-        {
-            get { return "Demographic Info"; }
-        }
-
-        /// <summary>
         /// Gets the name of the filtered entity type.
         /// </summary>
         /// <value>
@@ -53,12 +42,24 @@ namespace Rock.DataFilters.Person
         }
 
         /// <summary>
+        /// Gets the section.
+        /// </summary>
+        /// <value>
+        /// The section.
+        /// </value>
+        public override string Section
+        {
+            get { return "Additional Filters"; }
+        }
+
+        /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( Expression parameterExpression, string selection )
+        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
         {
             ComparisonType comparisonType = ComparisonType.StartsWith;
             string value = string.Empty;

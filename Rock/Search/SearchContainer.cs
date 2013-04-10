@@ -17,7 +17,7 @@ namespace Rock.Search
     /// <summary>
     /// 
     /// </summary>
-    public class SearchContainer : ContainerManaged<SearchComponent, IComponentData>
+    public class SearchContainer : Container<SearchComponent, IComponentData>
     {
         /// <summary>
         /// 
