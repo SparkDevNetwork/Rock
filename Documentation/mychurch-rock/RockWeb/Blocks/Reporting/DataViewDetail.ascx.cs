@@ -522,9 +522,15 @@ $(document).ready(function() {
 
         private bool BindGrid( Grid grid, DataView dataView)
         {
-            grid.DataSource = dataView.BindGrid(grid, true);
+            var errors = new List<string>();
+            grid.DataSource = dataView.BindGrid(grid, out errors, true);
             if (grid.DataSource != null)
             {
+                if ( errors.Any() )
+                {
+                    nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errors.AsDelimited( "<br/>" );
+                }
+
                 grid.DataBind();
                 return true;
             }
