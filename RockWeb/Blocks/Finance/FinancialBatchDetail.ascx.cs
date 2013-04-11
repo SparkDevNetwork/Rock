@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Administration
             if ( _canConfigure )
             {
                 transactionGrid.DataKeyNames = new string[] { "id" };
-                transactionGrid.Actions.IsAddEnabled = true;
+                transactionGrid.Actions.ShowAdd = true;
 
                 transactionGrid.Actions.AddClick += gridFinancialTransaction_Add;
                 transactionGrid.GridRebind += transactionGrid_GridRebind;
