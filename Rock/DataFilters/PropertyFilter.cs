@@ -5,13 +5,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -20,32 +21,31 @@ using Rock.Web.UI.Controls;
 namespace Rock.DataFilters
 {
     /// <summary>
-    /// Abstract class for filtering a model based on any of it's property or attribute values
+    /// Filter entities on any of it's property or attribute values
     /// </summary>
-    public abstract class PropertyFilter<T> : DataFilterComponent
+    [Description( "Filter entities on any of it's property or attribute values" )]
+    [Export( typeof( DataFilterComponent ) )]
+    [ExportMetadata( "ComponentName", "Property Filter" )]
+    public class PropertyFilter : DataFilterComponent
     {
+        #region Private Fields
+
+        private string _clientFormatSelection = string.Empty;
+        private List<EntityField> _entityFields = null;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
-        /// Gets the title.
+        /// Gets the entity type that filter applies to.
         /// </summary>
         /// <value>
-        /// The title.
+        /// The entity that filter applies to.
         /// </value>
-        public override string Title
+        public override string AppliesToEntityType
         {
-            get { return EntityTypeCache.Read( typeof( T ) ).FriendlyName + " Fields"; }
-        }
-
-        /// <summary>
-        /// Gets the name of the filtered entity type.
-        /// </summary>
-        /// <value>
-        /// The name of the filtered entity type.
-        /// </value>
-        public override string FilteredEntityTypeName
-        {
-            get { return typeof( T ).FullName; }
+            get { return string.Empty; }
         }
 
         /// <summary>
@@ -73,6 +73,20 @@ namespace Rock.DataFilters
             }
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public override string GetTitle( Type entityType )
+        {
+            return EntityTypeCache.Read( entityType ).FriendlyName + " Fields";
+        }
+
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
@@ -82,49 +96,17 @@ namespace Rock.DataFilters
         /// <value>
         /// The client format script.
         /// </value>
-        public override string ClientFormatSelection
+        public override string GetClientFormatSelection( Type entityType )
         {
-            get
-            {
-                return _clientFormatSelection;
-            }
-            protected set
-            {
-                _clientFormatSelection = value;
-            }
+            return _clientFormatSelection;
         }
-        private string _clientFormatSelection = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the entity fields.
-        /// </summary>
-        /// <value>
-        /// The properties.
-        /// </value>
-        private List<EntityField> EntityFields
-        {
-            get
-            {
-                if ( _entityFields == null )
-                {
-                    _entityFields = GetEntityFields();
-                }
-                return _entityFields;
-            }
-            set { _entityFields = value; }
-        }
-        private List<EntityField> _entityFields = null;
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Formats the selection.
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override string FormatSelection( string selection )
+        public override string FormatSelection( Type entityType, string selection )
         {
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
 
@@ -132,7 +114,7 @@ namespace Rock.DataFilters
             {
                 string entityFieldName = values[0];
 
-                var entityField = EntityFields.Where( p => p.Name == entityFieldName ).FirstOrDefault();
+                var entityField = GetEntityFields( entityType ).Where( p => p.Name == entityFieldName ).FirstOrDefault();
                 if ( entityField != null )
                 {
                     switch ( entityField.FieldType )
@@ -198,7 +180,7 @@ namespace Rock.DataFilters
                 }
             }
 
-            return typeof( T ).Name.SplitCase() + " Property";
+            return entityType.Name.SplitCase() + " Property";
 
         }
 
@@ -206,7 +188,7 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
 
@@ -215,15 +197,13 @@ namespace Rock.DataFilters
             filterControl.Controls.Add( ddlProperty );
             controls.Add( ddlProperty );
 
-            Type type = typeof( T );
-
-            foreach ( var entityField in EntityFields )
+            foreach ( var entityField in GetEntityFields(entityType) )
             {
                 ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
 
                 if ( entityField.FieldKind == FieldKind.Property )
                 {
-                    var propInfo = type.GetProperty( entityField.Name );
+                    var propInfo = entityType.GetProperty( entityField.Name );
 
                     if ( propInfo != null && propInfo.PropertyType.IsEnum )
                     {
@@ -392,7 +372,7 @@ namespace Rock.DataFilters
                 }
             }
 
-            ClientFormatSelection = string.Format( "{0}PropertySelection( $content )", typeof( T ).Name );
+            _clientFormatSelection = string.Format( "{0}PropertySelection( $content )", entityType.Name );
             
             return controls.ToArray();        
         }
@@ -403,7 +383,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             string selectedEntityField = ( (DropDownList)controls[0] ).SelectedValue;
 
@@ -411,12 +391,12 @@ namespace Rock.DataFilters
             controls[0].RenderControl( writer );
             writer.WriteBreak();
 
-            var groupedControls = GroupControls( controls );
+            var groupedControls = GroupControls( entityType, controls );
 
             StringBuilder sb = new StringBuilder();
             int i = 0;
 
-            foreach ( var entityField in EntityFields )
+            foreach ( var entityField in GetEntityFields(entityType) )
             {
                 var propertyControls = groupedControls[entityField.Name];
 
@@ -487,8 +467,8 @@ namespace Rock.DataFilters
         }}
         return result;
     }}
-", typeof( T ).Name, sb.ToString() );
-            ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), typeof( T ).Name + "-property-selection", script, true );
+", entityType.Name, sb.ToString() );
+            ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), entityType.Name + "-property-selection", script, true );
 
             script = @"
     $('select.entity-property-selection').change(function(){
@@ -504,7 +484,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls"></param>
         /// <returns></returns>
-        public override string GetSelection( Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls )
         {
             var values = new List<string>();
 
@@ -514,7 +494,7 @@ namespace Rock.DataFilters
                 string selectedProperty = ddlProperty.SelectedValue;
                 values.Add( selectedProperty );
 
-                var groupedControls = GroupControls( controls );
+                var groupedControls = GroupControls( entityType, controls );
 
                 if ( groupedControls.ContainsKey( selectedProperty ) )
                 {
@@ -565,7 +545,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Control[] controls, string selection )
+        public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -581,7 +561,7 @@ namespace Rock.DataFilters
                         ddlProperty.SelectedValue = selectedProperty;
                     }
 
-                    var groupedControls = GroupControls( controls );
+                    var groupedControls = GroupControls( entityType, controls );
 
                     if ( groupedControls.ContainsKey( selectedProperty ) )
                     {
@@ -636,7 +616,7 @@ namespace Rock.DataFilters
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -646,7 +626,7 @@ namespace Rock.DataFilters
                 {
                     string selectedProperty = values[0];
 
-                    var property = EntityFields.Where( p => p.Name == selectedProperty ).FirstOrDefault();
+                    var property = GetEntityFields(entityType).Where( p => p.Name == selectedProperty ).FirstOrDefault();
                     if ( property != null )
                     {
                         if ( property.FieldKind == FieldKind.Property )
@@ -672,120 +652,123 @@ namespace Rock.DataFilters
         /// Gets the properties and attributes for the entity
         /// </summary>
         /// <returns></returns>
-        private List<EntityField> GetEntityFields()
+        private List<EntityField> GetEntityFields(Type entityType)
         {
-            var entityFields = new List<EntityField>();
-
-            // Get Properties
-            foreach ( var property in typeof( T ).GetProperties() )
+            if ( _entityFields == null )
             {
-                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                var entityFields = new List<EntityField>();
+
+                // Get Properties
+                foreach ( var property in entityType.GetProperties() )
                 {
-                    EntityField entityProperty = null;
-
-
-                    // Enum Properties
-                    if ( property.PropertyType.IsEnum )
+                    if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
                     {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                        entityProperty.FieldType = SystemGuid.FieldType.MULTI_SELECT;
-                    }
+                        EntityField entityProperty = null;
 
-                    // Boolean properties
-                    if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
-                    {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                        entityProperty.FieldType = SystemGuid.FieldType.BOOLEAN;
-                    }
 
-                    // Date properties
-                    if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
-                    {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                        entityProperty.FieldType = SystemGuid.FieldType.DATE;
-                    }
-
-                    // Text Properties
-                    else if ( property.PropertyType == typeof( string ) )
-                    {
-                        entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                        entityProperty.FieldType = SystemGuid.FieldType.TEXT;
-                    }
-
-                    // Integer Properties
-                    else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
-                    {
-                        var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-
-                        if ( definedValueAttribute != null )
+                        // Enum Properties
+                        if ( property.PropertyType.IsEnum )
                         {
-                            // Defined Value Properties
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
-                            entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
                             entityProperty.FieldType = SystemGuid.FieldType.MULTI_SELECT;
                         }
-                        else
+
+                        // Boolean properties
+                        if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+                        {
+                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                            entityProperty.FieldType = SystemGuid.FieldType.BOOLEAN;
+                        }
+
+                        // Date properties
+                        if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
                         {
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FieldType = SystemGuid.FieldType.INTEGER;
+                            entityProperty.FieldType = SystemGuid.FieldType.DATE;
                         }
+
+                        // Text Properties
+                        else if ( property.PropertyType == typeof( string ) )
+                        {
+                            entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                            entityProperty.FieldType = SystemGuid.FieldType.TEXT;
+                        }
+
+                        // Integer Properties
+                        else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
+                        {
+                            var definedValueAttribute = property.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
+
+                            if ( definedValueAttribute != null )
+                            {
+                                // Defined Value Properties
+                                entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
+                                var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
+                                entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
+                                entityProperty.FieldType = SystemGuid.FieldType.MULTI_SELECT;
+                            }
+                            else
+                            {
+                                entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
+                                entityProperty.FieldType = SystemGuid.FieldType.INTEGER;
+                            }
+                        }
+
+                        if ( entityProperty != null )
+                        {
+                            entityFields.Add( entityProperty );
+                        }
+                    }
+                }
+
+                // Get Attributes
+                int entityTypeId = EntityTypeCache.Read( entityType ).Id;
+                foreach ( var attribute in new AttributeService().Get( entityTypeId, string.Empty, string.Empty ) )
+                {
+                    // Ensure prop name is unique
+                    string propName = attribute.Name;
+                    int i = 1;
+                    while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
+                    {
+                        propName = attribute.Name + i++.ToString();
+                    }
+
+                    EntityField entityProperty = null;
+
+                    // For now only do text and single-select attributes
+                    switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                    {
+                        case SystemGuid.FieldType.DATE:
+                        case SystemGuid.FieldType.INTEGER:
+                        case SystemGuid.FieldType.TEXT:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                            break;
+                        case SystemGuid.FieldType.BOOLEAN:
+                        case SystemGuid.FieldType.MULTI_SELECT:
+                        case SystemGuid.FieldType.SINGLE_SELECT:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                            break;
                     }
 
                     if ( entityProperty != null )
                     {
+                        entityProperty.FieldType = attribute.FieldType.Guid.ToString().ToUpper();
                         entityFields.Add( entityProperty );
                     }
+
+                }
+
+                int index = 1;
+                _entityFields = new List<EntityField>();
+                foreach ( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
+                {
+                    entityProperty.Index = index;
+                    index += entityProperty.ControlCount;
+                    _entityFields.Add( entityProperty );
                 }
             }
 
-            // Get Attributes
-            int entityTypeId = EntityTypeCache.Read( typeof( T ) ).Id;
-            foreach ( var attribute in new AttributeService().Get( entityTypeId, string.Empty, string.Empty ) )
-            {
-                // Ensure prop name is unique
-                string propName = attribute.Name;
-                int i = 1;
-                while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
-                {
-                    propName = attribute.Name + i++.ToString();
-                }
-
-                EntityField entityProperty = null;
-
-                // For now only do text and single-select attributes
-                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
-                {
-                    case SystemGuid.FieldType.DATE:
-                    case SystemGuid.FieldType.INTEGER:
-                    case SystemGuid.FieldType.TEXT:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                        break;
-                    case SystemGuid.FieldType.BOOLEAN:
-                    case SystemGuid.FieldType.MULTI_SELECT:
-                    case SystemGuid.FieldType.SINGLE_SELECT:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                        break;
-                }
-
-                if ( entityProperty != null )
-                {
-                    entityProperty.FieldType = attribute.FieldType.Guid.ToString().ToUpper();
-                    entityFields.Add( entityProperty );
-                }
-
-            }
-
-            int index = 1;
-            var orderedProperties = new List<EntityField>();
-            foreach( var entityProperty in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ))
-            {
-                entityProperty.Index = index;
-                index += entityProperty.ControlCount;
-                orderedProperties.Add(entityProperty);
-            }
-
-            return orderedProperties;
+            return _entityFields;
         }
 
         /// <summary>
@@ -1115,11 +1098,11 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        private Dictionary<string, List<Control>> GroupControls( Control[] controls )
+        private Dictionary<string, List<Control>> GroupControls( Type entityType, Control[] controls )
         {
             var groupedControls = new Dictionary<string, List<Control>>();
 
-            foreach ( var property in EntityFields )
+            foreach ( var property in GetEntityFields(entityType) )
             {
                 groupedControls.Add( property.Name, new List<Control>() );
                 for ( int i = property.Index; i < property.Index + property.ControlCount; i++ )

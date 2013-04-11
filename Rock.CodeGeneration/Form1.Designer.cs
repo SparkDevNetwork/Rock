@@ -37,7 +37,6 @@
             this.cbService = new System.Windows.Forms.CheckBox();
             this.ofdAssembly = new System.Windows.Forms.OpenFileDialog();
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
-            this.cbDataView = new System.Windows.Forms.CheckBox();
             this.fbdDataViewOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.SuspendLayout();
             // 
@@ -82,7 +81,7 @@
             // 
             // fbdServiceOutput
             // 
-            this.fbdServiceOutput.Description = "Select the project folder that the Service and DTO files should be added to.  The" +
+            this.fbdServiceOutput.Description = "Select the project folder that the Service files should be added to.  The" +
     " namespace of the objects will be used to create a relative folder path if necce" +
     "ssary.";
             this.fbdServiceOutput.ShowNewFolderButton = false;
@@ -122,18 +121,6 @@
     "of the objects will be used to create a relative folder path if neccessary.";
             this.fbdRestOutput.ShowNewFolderButton = false;
             // 
-            // cbDataView
-            // 
-            this.cbDataView.AutoSize = true;
-            this.cbDataView.Checked = true;
-            this.cbDataView.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDataView.Location = new System.Drawing.Point(221, 385);
-            this.cbDataView.Name = "cbDataView";
-            this.cbDataView.Size = new System.Drawing.Size(105, 17);
-            this.cbDataView.TabIndex = 8;
-            this.cbDataView.Text = "Data View Filters";
-            this.cbDataView.UseVisualStyleBackColor = true;
-            // 
             // fbdDataViewOutput
             // 
             this.fbdDataViewOutput.Description = "Select the project folder that the DataFilters files should be added to.  ";
@@ -144,7 +131,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(386, 416);
-            this.Controls.Add(this.cbDataView);
             this.Controls.Add(this.cbService);
             this.Controls.Add(this.cbRest);
             this.Controls.Add(this.cbSelectAll);
@@ -168,8 +154,7 @@
         private System.Windows.Forms.CheckBox cbRest;
         private System.Windows.Forms.CheckBox cbService;
 		private System.Windows.Forms.OpenFileDialog ofdAssembly;
-		private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
-        private System.Windows.Forms.CheckBox cbDataView;
+        private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
         private System.Windows.Forms.FolderBrowserDialog fbdDataViewOutput;
     }
 }
