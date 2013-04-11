@@ -65,9 +65,9 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
 
     protected void BindDrops()
     {
-        BindDefinedTypeDropdown( ddlCurrencyType, Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Currency Type" );
-        BindDefinedTypeDropdown( ddlCreditCardType, Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE, "Credit Card Type" );
-        BindDefinedTypeDropdown( ddlSourceType, Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source" );
+        BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
+        BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
+        BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source" );
     }
 
     private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
@@ -96,7 +96,7 @@ public partial class Blocks_Finance_Transaction : Rock.Web.UI.RockBlock, IDetail
         }
         catch ( Exception exp )
         {
-            Response.Write( "Access request was unclear." );
+            Response.Write( "The access request was unclear. Please fix the following: " + exp.Message );            
             Response.End();
         }
     }

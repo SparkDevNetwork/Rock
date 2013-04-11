@@ -660,7 +660,6 @@
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\BatchSearchValue.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
-    <Compile Include="Model\ReportFilter.cs" />
     <Compile Include="Model\BinaryFileType.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
