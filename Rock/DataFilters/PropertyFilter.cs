@@ -112,52 +112,22 @@ namespace Rock.DataFilters
 
             if ( values.Count > 0 )
             {
+                // First value in array is always the name of the entity field being filtered
                 string entityFieldName = values[0];
 
                 var entityField = GetEntityFields( entityType ).Where( p => p.Name == entityFieldName ).FirstOrDefault();
                 if ( entityField != null )
                 {
-                    switch ( entityField.FieldType )
+                    // If there is just one additional value then there's no comparison value
+                    if ( values.Count == 2 )
                     {
-                        case SystemGuid.FieldType.DATE:
-                        case SystemGuid.FieldType.INTEGER:
-                        case SystemGuid.FieldType.TEXT:
+                        if ( entityField.FilterFieldType == SystemGuid.FieldType.MULTI_SELECT )
+                        {
+                            var selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
+                            var selectedTexts = new List<string>();
 
-                            if ( values.Count == 3 )
+                            if ( entityField.DefinedTypeId.HasValue )
                             {
-                                ComparisonType comparisonType = ComparisonType.StartsWith;
-                                try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
-                                catch { }
-                                return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
-                            }
-
-                            break;
-
-                        case SystemGuid.FieldType.BOOLEAN:
-
-                            if ( values.Count == 2 )
-                            {
-                                return string.Format( "{0} is '{1}'", entityField.Title, values[1] == "1" ? "True" : "False" );
-                            }
-
-                            break;
-
-                        case SystemGuid.FieldType.SINGLE_SELECT:
-
-                            if ( values.Count == 2 )
-                            {
-                                return string.Format( "{0} is '{1}'", entityField.Title, values[1] );
-                            }
-
-                            break;
-
-                        case SystemGuid.FieldType.MULTI_SELECT:
-
-                            if ( values.Count == 2 )
-                            {
-                                List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
-                                List<string> selectedTexts = new List<string>();
-
                                 foreach ( string selectedValue in selectedValues )
                                 {
                                     int valueId = int.MinValue;
@@ -170,12 +140,28 @@ namespace Rock.DataFilters
                                         }
                                     }
                                 }
-
-                                return string.Format( "{0} is {1}", entityField.Title,
-                                    selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
+                            }
+                            else
+                            {
+                                selectedTexts = selectedValues.ToList();
                             }
 
-                            break;
+                            return string.Format( "{0} is {1}", entityField.Title,
+                                selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
+                        }
+                        else
+                        {
+                            return string.Format( "{0} is {1}", entityField.Title, values[1] );
+                        }
+                    }
+
+                    // If two more values, then it is a comparison and a value
+                    else if ( values.Count == 3 )
+                    {
+                        ComparisonType comparisonType = ComparisonType.StartsWith;
+                        try { comparisonType = values[1].ConvertToEnum<ComparisonType>(); }
+                        catch { }
+                        return string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
                     }
                 }
             }
@@ -192,6 +178,7 @@ namespace Rock.DataFilters
         {
             var controls = new List<Control>();
 
+            // Create the field selection dropdown
             DropDownList ddlProperty = new DropDownList();
             ddlProperty.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
             filterControl.Controls.Add( ddlProperty );
@@ -199,28 +186,127 @@ namespace Rock.DataFilters
 
             foreach ( var entityField in GetEntityFields(entityType) )
             {
+                // Add the field to the dropdown of availailable fields
                 ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
 
-                if ( entityField.FieldKind == FieldKind.Property )
+                switch ( entityField.FilterFieldType )
                 {
-                    var propInfo = entityType.GetProperty( entityField.Name );
+                    case SystemGuid.FieldType.DATE:
 
-                    if ( propInfo != null && propInfo.PropertyType.IsEnum )
-                    {
-                        DropDownList ddl = new DropDownList();
-                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( ddl );
-                        controls.Add( ddl );
+                        var ddlDate = ComparisonControl( DateFilterComparisonTypes );
+                        ddlDate.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddlDate );
+                        controls.Add( ddlDate );
 
-                        foreach ( var value in Enum.GetValues( propInfo.PropertyType ) )
+                        var dtPicker = new DateTimePicker();
+                        dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( dtPicker );
+                        controls.Add( dtPicker );
+
+                        dtPicker.DatePickerType = DateTimePickerType.Date;
+
+                        break;
+
+                    case SystemGuid.FieldType.INTEGER:
+
+                        var ddlInteger = ComparisonControl( NumericFilterComparisonTypes );
+                        ddlInteger.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddlInteger );
+                        controls.Add( ddlInteger );
+
+                        var numberBox = new NumberBox();
+                        numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( numberBox );
+                        controls.Add( numberBox );
+
+                        numberBox.FieldName = entityField.Title;
+
+                        break;
+
+                    case SystemGuid.FieldType.MULTI_SELECT:
+
+                        var cblMultiSelect = new CheckBoxList();
+                        cblMultiSelect.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( cblMultiSelect );
+                        cblMultiSelect.RepeatDirection = RepeatDirection.Horizontal;
+                        controls.Add( cblMultiSelect );
+
+                        if ( entityField.FieldKind == FieldKind.Property )
                         {
-                            ddl.Items.Add( new ListItem( Enum.GetName( propInfo.PropertyType, value ).SplitCase() ) );
-                        }
-                    }
+                            // Enumeration property
+                            if ( entityField.PropertyType.IsEnum )
+                            {
+                                foreach ( var value in Enum.GetValues( entityField.PropertyType ) )
+                                {
+                                    cblMultiSelect.Items.Add( new ListItem( Enum.GetName( entityField.PropertyType, value ).SplitCase() ) );
+                                }
+                            }
 
-                    else if ( propInfo.PropertyType == typeof( string ) )
-                    {
-                        var ddl =  ComparisonControl( StringFilterComparisonTypes );
+                            // Defined Value Properties
+                            else if ( entityField.DefinedTypeId.HasValue )
+                            {
+                                var definedType = DefinedTypeCache.Read( entityField.DefinedTypeId.Value );
+                                if ( definedType != null )
+                                {
+                                    foreach ( var definedValue in definedType.DefinedValues )
+                                        cblMultiSelect.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var attribute = AttributeCache.Read( entityField.AttributeId.Value );
+                            if (attribute != null)
+                            {
+                                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                                {
+                                    case SystemGuid.FieldType.SINGLE_SELECT:
+                                        //TODO get attribute values qualifier to populate cbl
+                                        break;
+                                    case SystemGuid.FieldType.MULTI_SELECT:
+                                        //TODO get attribute values qualifier to populate cbl
+                                        break;
+                                }
+                            }
+                        }
+
+                        break;
+
+                    case SystemGuid.FieldType.SINGLE_SELECT:
+
+                        var ddlSingleSelect = new DropDownList();
+                        ddlSingleSelect.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        filterControl.Controls.Add( ddlSingleSelect );
+                        controls.Add( ddlSingleSelect );
+
+                        if ( entityField.FieldKind == FieldKind.Property )
+                        {
+                            if ( entityField.PropertyType == typeof( bool ) || entityField.PropertyType == typeof( bool? ) )
+                            {
+                                ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
+                                ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
+                            }
+                        }
+                        else
+                        {
+                            var attribute = AttributeCache.Read( entityField.AttributeId.Value );
+                            if ( attribute != null )
+                            {
+                                switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                                {
+                                    case SystemGuid.FieldType.BOOLEAN:
+                                        ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
+                                        ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
+                                        break;
+                                }
+                            }
+                        }
+
+                        break;
+
+                    case SystemGuid.FieldType.TEXT:
+
+                        var ddl = ComparisonControl( StringFilterComparisonTypes );
                         ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( ddl );
                         controls.Add( ddl );
@@ -229,146 +315,9 @@ namespace Rock.DataFilters
                         tb.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( tb );
                         controls.Add( tb );
-                    }
 
-                    else if ( propInfo.PropertyType == typeof( bool ) || propInfo.PropertyType == typeof( bool? ) )
-                    {
-                        DropDownList ddl = new DropDownList();
-                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( ddl );
-                        controls.Add( ddl );
+                        break;
 
-                        ddl.Items.Add( new ListItem( "True", "1" ) );
-                        ddl.Items.Add( new ListItem( "False", "0" ) );
-                    }
-
-                    else if ( propInfo.PropertyType == typeof( DateTime ) || propInfo.PropertyType == typeof( DateTime? ) )
-                    {
-                        // Numerical
-                        var ddl = ComparisonControl( DateFilterComparisonTypes );
-                        ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( ddl );
-                        controls.Add( ddl );
-
-                        var dtPicker = new DateTimePicker();
-                        dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                        filterControl.Controls.Add( dtPicker );
-                        controls.Add( dtPicker );
-
-                        dtPicker.DatePickerType = DateTimePickerType.Date;
-                    }
-
-                    else if ( propInfo.PropertyType == typeof( int ) || propInfo.PropertyType == typeof( int? ) )
-                    {
-                        var definedValueAttribute = propInfo.GetCustomAttributes( typeof( Rock.Data.DefinedValueAttribute ), true ).FirstOrDefault();
-                        if ( definedValueAttribute != null )
-                        {
-                            // Defined Value Properties
-                            CheckBoxList cbl = new CheckBoxList();
-                            cbl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( cbl );
-                            controls.Add( cbl );
-
-                            cbl.RepeatDirection = RepeatDirection.Horizontal;
-
-                            var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
-                            if ( definedType != null )
-                            {
-                                foreach ( var definedValue in definedType.DefinedValues )
-                                    cbl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
-                            }
-
-                        }
-                        else
-                        {
-                            // Numerical
-                            var ddl = ComparisonControl( NumericFilterComparisonTypes );
-                            ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( ddl );
-                            controls.Add( ddl );
-
-                            var numberBox = new NumberBox();
-                            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( numberBox );
-                            controls.Add( numberBox );
-
-                            numberBox.FieldName = entityField.Title;
-                        }
-                    }
-                }
-
-                else
-                {
-                    var attribute = AttributeCache.Read( entityField.AttributeId.Value );
-
-                    switch ( attribute.FieldType.Guid.ToString().ToUpper() )
-                    {
-                        case SystemGuid.FieldType.BOOLEAN:
-                            
-                            var ddlBool = new DropDownList();
-                            ddlBool.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( ddlBool );
-                            controls.Add( ddlBool );
-
-                            ddlBool.Items.Add( new ListItem( "True", "1" ) );
-                            ddlBool.Items.Add( new ListItem( "False", "0" ) );
-
-                            break;
-
-                        case SystemGuid.FieldType.DATE:
-
-                            var ddlDate = ComparisonControl( DateFilterComparisonTypes );
-                            ddlDate.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( ddlDate );
-                            controls.Add( ddlDate );
-
-                            var dtPicker = attribute.CreateControl();
-                            dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( dtPicker );
-                            controls.Add( dtPicker );
-
-                            break;
-
-                        case SystemGuid.FieldType.INTEGER:
-                            
-                            var ddlInt = ComparisonControl( NumericFilterComparisonTypes );
-                            ddlInt.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( ddlInt );
-                            controls.Add( ddlInt );
-
-                            var numberBox = attribute.CreateControl() as NumberBox;
-                            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( numberBox );
-                            controls.Add( numberBox );
-
-                            numberBox.FieldName = attribute.Name;
-                            
-                            break;
-                        
-                        case SystemGuid.FieldType.TEXT:
-
-                            var ddlText =  ComparisonControl( StringFilterComparisonTypes );
-                            ddlText.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( ddlText );
-                            controls.Add( ddlText );
-
-                            var textControl = attribute.CreateControl();
-                            textControl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( textControl );
-                            controls.Add( textControl );
-
-                            break;
-                        
-                        case SystemGuid.FieldType.MULTI_SELECT:
-                        case SystemGuid.FieldType.SINGLE_SELECT:
-                        
-                            var selectControl = attribute.CreateControl();
-                            selectControl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-                            filterControl.Controls.Add( selectControl );
-                            controls.Add( selectControl );
-
-                            break;
-                    }
                 }
             }
 
@@ -411,35 +360,36 @@ namespace Rock.DataFilters
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                if ( propertyControls.Count == 1 )
+                {
+                    writer.Write( "is " );
+                    propertyControls[0].RenderControl( writer );
+                }
+                else if (propertyControls.Count == 2)
+                {
+                    propertyControls[0].RenderControl( writer );
+                    writer.Write( " " );
+                    propertyControls[1].RenderControl( writer );
+                }
+
                 string clientFormatSelection = string.Empty;
-                switch ( entityField.FieldType )
+                switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.DATE:
-                        propertyControls[0].RenderControl( writer );
-                        writer.Write( " " );
-                        propertyControls[1].RenderControl( writer );
                         clientFormatSelection = string.Format( "result = '... a date value ...'" );
                         break;
 
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
-                        propertyControls[0].RenderControl( writer );
-                        writer.Write( " " );
-                        propertyControls[1].RenderControl( writer );
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' \\'' + $('input', $selectedContent).val() + '\\''", entityField.Title );
                         break;
 
-                    case SystemGuid.FieldType.BOOLEAN:
-                    case SystemGuid.FieldType.SINGLE_SELECT:
-                        writer.Write( "is " );
-                        propertyControls[0].RenderControl( writer );
-                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityField.Title );
+                    case SystemGuid.FieldType.MULTI_SELECT:
+                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityField.Title );
                         break;
 
-                    case SystemGuid.FieldType.MULTI_SELECT:
-                        writer.Write( "is " );
-                        propertyControls[0].RenderControl( writer );
-                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityField.Title );
+                    case SystemGuid.FieldType.SINGLE_SELECT:
+                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityField.Title );
                         break;
 
                 }
@@ -447,8 +397,7 @@ namespace Rock.DataFilters
                 if ( clientFormatSelection != string.Empty )
                 {
                     sb.AppendFormat( @"
-            case {0}: {1}; break;
-", i, clientFormatSelection );
+            case {0}: {1}; break;", i, clientFormatSelection );
                 }
                 i++;
 
@@ -460,7 +409,7 @@ namespace Rock.DataFilters
             string script = string.Format( @"
     function {0}PropertySelection($content){{
         var sIndex = $('select.entity-property-selection', $content).find(':selected').index();
-        var $selectedContent = $('div.control-group', $content).eq(sIndex);
+        var $selectedContent = $content.children('div.control-group').eq(sIndex);
         var result = '';
         switch(sIndex) {{
             {1}
@@ -626,16 +575,16 @@ namespace Rock.DataFilters
                 {
                     string selectedProperty = values[0];
 
-                    var property = GetEntityFields(entityType).Where( p => p.Name == selectedProperty ).FirstOrDefault();
-                    if ( property != null )
+                    var entityField = GetEntityFields(entityType).Where( p => p.Name == selectedProperty ).FirstOrDefault();
+                    if ( entityField != null )
                     {
-                        if ( property.FieldKind == FieldKind.Property )
+                        if ( entityField.FieldKind == FieldKind.Property )
                         {
-                            return GetPropertyExpression( serviceInstance, parameterExpression, property, values.Skip( 1 ).ToList() );
+                            return GetPropertyExpression( serviceInstance, parameterExpression, entityField, values.Skip( 1 ).ToList() );
                         }
                         else
                         {
-                            return GetAttributeExpression( serviceInstance, parameterExpression, property, values.Skip( 1 ).ToList() );
+                            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, values.Skip( 1 ).ToList() );
                         }
                     }
                 }
@@ -665,33 +614,32 @@ namespace Rock.DataFilters
                     {
                         EntityField entityProperty = null;
 
-
                         // Enum Properties
                         if ( property.PropertyType.IsEnum )
                         {
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            entityProperty.FieldType = SystemGuid.FieldType.MULTI_SELECT;
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
                         }
 
                         // Boolean properties
                         if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
                         {
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
-                            entityProperty.FieldType = SystemGuid.FieldType.BOOLEAN;
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
                         }
 
                         // Date properties
                         if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
                         {
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FieldType = SystemGuid.FieldType.DATE;
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
                         }
 
                         // Text Properties
                         else if ( property.PropertyType == typeof( string ) )
                         {
                             entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                            entityProperty.FieldType = SystemGuid.FieldType.TEXT;
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
                         }
 
                         // Integer Properties
@@ -705,12 +653,13 @@ namespace Rock.DataFilters
                                 entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
                                 var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
                                 entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", "" ).SplitCase();
-                                entityProperty.FieldType = SystemGuid.FieldType.MULTI_SELECT;
+                                entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                                entityProperty.DefinedTypeId = definedType.Id;
                             }
                             else
                             {
                                 entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 2 );
-                                entityProperty.FieldType = SystemGuid.FieldType.INTEGER;
+                                entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
                             }
                         }
 
@@ -735,24 +684,41 @@ namespace Rock.DataFilters
 
                     EntityField entityProperty = null;
 
-                    // For now only do text and single-select attributes
                     switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                     {
-                        case SystemGuid.FieldType.DATE:
-                        case SystemGuid.FieldType.INTEGER:
-                        case SystemGuid.FieldType.TEXT:
-                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                            break;
                         case SystemGuid.FieldType.BOOLEAN:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
+                            break;
+
+                        case SystemGuid.FieldType.DATE:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
+                            break;
+
+                        case SystemGuid.FieldType.INTEGER:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
+                            break;
+
                         case SystemGuid.FieldType.MULTI_SELECT:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                            break;
+
                         case SystemGuid.FieldType.SINGLE_SELECT:
                             entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                            break;
+
+                        case SystemGuid.FieldType.TEXT:
+                            entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                            entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
                             break;
                     }
 
                     if ( entityProperty != null )
                     {
-                        entityProperty.FieldType = attribute.FieldType.Guid.ToString().ToUpper();
                         entityFields.Add( entityProperty );
                     }
 
@@ -770,46 +736,25 @@ namespace Rock.DataFilters
 
             return _entityFields;
         }
-
+ 
         /// <summary>
         /// Builds an expression for a property field
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
-        /// <param name="property">The property.</param>
+        /// <param name="entityField">The property.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        private Expression GetPropertyExpression( object serviceInstance, Expression parameterExpression, EntityField property, List<string> values )
+        private Expression GetPropertyExpression( object serviceInstance, Expression parameterExpression, EntityField entityField, List<string> values )
         {
             Expression trueValue = Expression.Constant( true );
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, property.Name );
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );
             Expression constantExpression = null;
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
-            switch ( property.FieldType )
+            switch ( entityField.FilterFieldType )
             {
-                case SystemGuid.FieldType.BOOLEAN:
-
-                    if ( values.Count == 1 )
-                    {
-                        constantExpression = Expression.Constant( values[0] == "1" );
-
-                        if ( property.PropertyType == typeof( bool ) )
-                        {
-                            return Expression.Equal( propertyExpression, constantExpression );
-                        }
-                        else // bool?
-                        {
-                            Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                            Expression equalExpression = Expression.Equal( hasValue, trueValue );
-                            Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
-                            Expression comparisonExpression = Expression.Equal( ValueExpression, constantExpression );
-                            return Expression.AndAlso( equalExpression, comparisonExpression );
-                        }
-                    }
-
-                    break;
-
+                // Date Properties
                 case SystemGuid.FieldType.DATE:
 
                     if ( values.Count == 2 )
@@ -821,17 +766,16 @@ namespace Rock.DataFilters
                             catch { }
                             constantExpression = Expression.Constant( dateValue );
 
-                            if ( property.PropertyType == typeof( DateTime ) )
-                            {
-                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                            }
-                            else  // DateTime?
+                            if ( entityField.PropertyType == typeof( DateTime? ) )
                             {
                                 Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                Expression equalExpression = Expression.Equal( hasValue, trueValue );
                                 Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
-                                return Expression.AndAlso( equalExpression, comparisonExpression );
+                                return Expression.AndAlso( hasValue, comparisonExpression );
+                            }
+                            else 
+                            {
+                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                             }
 
                         }
@@ -839,6 +783,7 @@ namespace Rock.DataFilters
 
                     break;
 
+                // Number properties
                 case SystemGuid.FieldType.INTEGER:
 
                     if ( values.Count == 2 )
@@ -850,17 +795,16 @@ namespace Rock.DataFilters
                             catch { }
                             constantExpression = Expression.Constant( intValue );
 
-                            if ( property.PropertyType == typeof( int ) )
-                            {
-                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                            }
-                            else  // int?
+                            if ( entityField.PropertyType == typeof( int? ) )
                             {
                                 Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                                Expression equalExpression = Expression.Equal( hasValue, trueValue );
                                 Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
                                 Expression comparisonExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
-                                return Expression.AndAlso( equalExpression, comparisonExpression );
+                                return Expression.AndAlso( hasValue, comparisonExpression );
+                            }
+                            else 
+                            {
+                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
                             }
 
                         }
@@ -868,6 +812,76 @@ namespace Rock.DataFilters
 
                     break;
 
+                // Enumerations and Defined Value properties
+                case SystemGuid.FieldType.MULTI_SELECT:
+
+                    if ( values.Count == 1 )
+                    {
+                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
+                        if ( selectedValues.Any() )
+                        {
+                            if ( entityField.PropertyType.IsEnum )
+                            {
+                                constantExpression = Expression.Constant( Enum.Parse( entityField.PropertyType, selectedValues[0].Replace( " ", "" ) ) );
+                                Expression comparison = Expression.Equal( propertyExpression, constantExpression );
+
+                                foreach ( string selectedValue in selectedValues.Skip( 1 ) )
+                                {
+                                    constantExpression = Expression.Constant( Enum.Parse( entityField.PropertyType, selectedValue.Replace( " ", "" ) ) );
+                                    comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
+                                }
+
+                                return comparison;
+                            }
+
+                            else if ( entityField.DefinedTypeId.HasValue )
+                            {
+                                List<int> selectedIds = selectedValues.Select( v => int.Parse( v ) ).ToList();
+                                constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
+
+                                if ( entityField.PropertyType == typeof( int? ) )
+                                {
+                                    Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                    Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                    MethodCallExpression containsExpression = Expression.Call( constantExpression, "Contains", new Type[] { }, ValueExpression );
+                                    return Expression.AndAlso( hasValue, containsExpression );
+                                }
+                                else
+                                {
+                                    return Expression.Call( constantExpression, "Contains", new Type[] { }, propertyExpression );
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+
+                // Boolean Properties
+                case SystemGuid.FieldType.SINGLE_SELECT:
+
+                    if ( values.Count == 1 )
+                    {
+                        if ( entityField.PropertyType == typeof( bool ) || entityField.PropertyType == typeof( bool? ) )
+                        {
+                            constantExpression = Expression.Constant( bool.Parse( values[0] ) );
+                            
+                            if ( entityField.PropertyType == typeof( bool? ) )
+                            {
+                                Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
+                                Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
+                                Expression compareExpression = ComparisonExpression( comparisonType, ValueExpression, constantExpression );
+                                return Expression.AndAlso( hasValue, compareExpression );
+                            }
+                            else
+                            {
+                                return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                            }
+                        }
+                    }
+
+                    break;
+
+                // String Properties
                 case SystemGuid.FieldType.TEXT:
 
                     if ( values.Count == 2 )
@@ -881,48 +895,8 @@ namespace Rock.DataFilters
 
                     break;
 
-                case SystemGuid.FieldType.SINGLE_SELECT:
-
-                    if ( values.Count == 1 )
-                    {
-                        if ( property.PropertyType.IsEnum )
-                        {
-                            constantExpression = Expression.Constant( Enum.Parse( property.PropertyType, values[0].Replace( " ", "" ) ) );
-                        }
-                        else
-                        {
-                            constantExpression = Expression.Constant( values[0] );
-                        }
-
-                        return ComparisonExpression( comparisonType, propertyExpression, constantExpression );
-                    }
-
-                    break;
-
-                case SystemGuid.FieldType.MULTI_SELECT:
-
-                    if ( values.Count == 1 )
-                    {
-                        if ( property.PropertyType == typeof( int? ) )
-                        {
-                            List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
-                            List<int> selectedIds = selectedValues.Select( v => int.Parse( v ) ).ToList();
-
-                            Expression hasValue = Expression.Property( propertyExpression, "HasValue" );
-                            Expression value = Expression.Constant( true );
-                            Expression equalExpression = Expression.Equal( hasValue, value );
-
-                            Expression ValueExpression = Expression.Property( propertyExpression, "Value" );
-
-                            constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
-                            MethodCallExpression containsExpression = Expression.Call( constantExpression, "Contains", new Type[] { }, ValueExpression );
-
-                            return Expression.AndAlso( equalExpression, containsExpression );
-                        }
-                    }
-
-                    break;
             }
+
             return null;
         }
 
@@ -946,21 +920,8 @@ namespace Rock.DataFilters
                 v.EntityId.HasValue &&
                 v.Value != string.Empty ).ToList();
 
-            switch ( property.FieldType )
+            switch ( property.FilterFieldType )
             {
-                case SystemGuid.FieldType.BOOLEAN:
-
-                    if ( values.Count == 1 )
-                    {
-                        if ( values[0] != "1" )
-                        {
-                            comparisonType = ComparisonType.NotEqualTo;
-                        }
-                        ids = attributeValues.Where( v => Convert.ToBoolean( v.Value ) ).Select( v => v.EntityId.Value );
-                    }
-
-                    break;
-
                 case SystemGuid.FieldType.DATE:
 
                     if ( values.Count == 2 )
@@ -1033,25 +994,28 @@ namespace Rock.DataFilters
 
                     if ( values.Count == 2 )
                     {
+                        try { comparisonType = values[0].ConvertToEnum<ComparisonType>(); }
+                        catch { }
+
                         switch ( comparisonType )
                         {
                             case ComparisonType.Contains:
                             case ComparisonType.DoesNotContain:
-                                ids = attributeValues.Where( v => v.Value.ToUpper().Contains( values[0].ToUpper() ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.ToUpper().Contains( values[1].ToUpper() ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EqualTo:
                             case ComparisonType.NotEqualTo:
-                                ids = attributeValues.Where( v => v.Value.Equals( values[0], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.Equals( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.IsBlank:
                             case ComparisonType.IsNotBlank:
                                 ids = attributeValues.Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.StartsWith:
-                                ids = attributeValues.Where( v => v.Value.StartsWith( values[0], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.StartsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EndsWith:
-                                ids = attributeValues.Where( v => v.Value.EndsWith( values[0], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.EndsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
                                 break;
                         }
                     }
@@ -1068,6 +1032,12 @@ namespace Rock.DataFilters
                     break;
 
                 case SystemGuid.FieldType.MULTI_SELECT:
+
+                    if ( values.Count == 1 )
+                    {
+                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
+                        ids = attributeValues.Where( v => selectedValues.Contains( v.Value ) ).Select( v => v.EntityId.Value );
+                    }
 
                     break;
             }
@@ -1120,6 +1090,27 @@ namespace Rock.DataFilters
 
         /// <summary>
         /// Helper class for saving information about each property and attribute of an entity
+        /// Note: the type of a field or attribute does not neccesarily determine the ui rendered for filtering.   For example, a Single-Select attribute
+        /// will use a multi-select ui so that user can filter on one or more values.  The FilterFieldType property determines the UI rendered for filtering
+        /// and not the type of field.
+        /// 
+        /// Entity Property Types and their renderd filter field type
+        ///     string              ->  TEXT
+        ///     bool or bool?       ->  SINGLE_SELECT
+        ///     date or date?       ->  DATE
+        ///     int or int?
+        ///         Defined Values  ->  MULTI_SELECT
+        ///         otherwise       ->  INTEGER
+        ///     enumeration         ->  MULTI_SELECT
+        /// 
+        /// Attribute types and their rendered filter field type
+        ///     MULTI_SELECT        ->  MULTI_SELECT
+        ///     SINGLE_SELECT       ->  MULTI_SELECT
+        ///     BOOLEAN             ->  SINGLE_SELECT (True or False)
+        ///     DATE                ->  DATE
+        ///     INTEGER             ->  INTEGER
+        ///     TEXT                ->  TEXT
+        ///     
         /// </summary>
         class EntityField
         {
@@ -1130,7 +1121,8 @@ namespace Rock.DataFilters
             public int Index { get; set; }
             public int ControlCount { get; set; }
             public int? AttributeId { get; set; }
-            public string FieldType { get; set; }
+            public string FilterFieldType { get; set; }
+            public int? DefinedTypeId { get; set; }
 
             public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, int? attributeId = null )
             {
