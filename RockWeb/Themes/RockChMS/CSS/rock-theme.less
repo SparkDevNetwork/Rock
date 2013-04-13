@@ -45,7 +45,7 @@ h1 {
 
 .pageheader
 {
-    background-image: url('../Assets/Images/header-texture.png');  /* todo add retina*/
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
 
 .pageheader.navbar .nav a {
@@ -83,13 +83,13 @@ h1 {
 // set window background
 html
 {
- background-color: #3a3a3a;  
- background-image: url('../Assets/Images/header-texture.png'); 
+	background-color: #3a3a3a; 
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");  
 }
 
 // set page background
 body {  
-	background-image: url('../Assets/Images/light-texture.png');
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNiIgaGVpZ2h0PSI2Ij4KPHJlY3Qgd2lkdGg9IjYiIGhlaWdodD0iNiIgZmlsbD0iI2VlZWVlZSI+PC9yZWN0Pgo8ZyBpZD0iYyI+CjxyZWN0IHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiNlYmViZWIiPjwvcmVjdD4KPHJlY3QgeT0iMSIgd2lkdGg9IjMiIGhlaWdodD0iMiIgZmlsbD0iI2UxZTFlMSI
 }
 
 @media all and (-webkit-min-device-pixel-ratio: 1.5) {
@@ -101,9 +101,14 @@ body {
   html
   {
     background-color: #3a3a3a;  
-    background-image: url('../Assets/Images/header-texture.png'); /*todo add retina image*/
+    
   }
 
+}
+
+// get rid of that dotted box around anchors with focus
+a {
+   outline: 0;
 }
 
 
@@ -331,17 +336,11 @@ body {
 
 // background for header
 .pageheader .navbar-inner {  
-	background-image: url('../Assets/Images/header-texture.png');
 	border-bottom: 1px solid #121212;
 	padding: 4px 0;
     filter: initial;
-}
-
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  .pageheader .navbar-inner {
-    background-image: url('../Assets/Images/header-texture.png');
-    background-size: 210px 163px;
-  }
+	background-image: none;
+	background-color: transparent;
 }
 
 .pageheader .brand {
@@ -354,7 +353,7 @@ body {
 }
 
 .pagetitle .navbar-inner,
-.personheader .navbar-inner {
+.persondetails-header .navbar-inner {
 	background-color: @rockPageTitleBackground;
 	padding-bottom: 12px;
 	border-bottom: 1px solid darken(@rockPageTitleBackground, 10%);
