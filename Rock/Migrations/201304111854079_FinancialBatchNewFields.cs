@@ -77,13 +77,7 @@ namespace Rock.Migrations
             DropColumn("dbo.FinancialBatch", "BatchDateStart");
 
             DeleteDefinedType( "9e358fbe-2321-4c54-895f-c888e29298ae" ); // Financial Batch Types
-            DeleteDefinedValue( "E6F877F3-D2CC-443E-976A-4402502F544F" );
-            DeleteDefinedValue( "24CC2E82-B2B6-4037-87AE-39EEAFE06712" );
-            DeleteDefinedValue( "50F625F8-F1BE-4FA0-B99F-3FA852D87DD1" );
-            DeleteDefinedValue( "18DF8254-0C68-4FE0-973E-C0B1767EFD3F" );
-            DeleteDefinedValue( "378D8EAD-7FA6-4D0D-862D-ED6E04B17770" );
-            DeleteDefinedValue( "4832DA18-DD18-477F-BFDB-ABFC28FE5743" );
-
+           
             DeleteAttribute( "2290806c-9e87-4960-9019-d4d7327591bb" );
             DeleteAttribute( "f70b3c73-3582-4fa4-b988-92880268310c" );
 
