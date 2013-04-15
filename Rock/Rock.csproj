@@ -600,12 +600,12 @@
     <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.cs" />
     <Compile Include="Migrations\201304101854297_GivingBlocksSeedData.Designer.cs">
       <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
-    </Compile>      
-    <Compile Include="Migrations\201303032120222_FinancialBatchNewFields.cs" />
-    <Compile Include="Migrations\201303032120222_FinancialBatchNewFields.Designer.cs">
-      <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
-	</Compile>
-	<Compile Include="Migrations\RockMigration.cs">
+    </Compile>
+    <Compile Include="Migrations\201304111854079_FinancialBatchNewFields.cs" />
+    <Compile Include="Migrations\201304111854079_FinancialBatchNewFields.Designer.cs">
+      <DependentUpon>201304111854079_FinancialBatchNewFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\RockMigration_4.cs" />
@@ -712,11 +712,11 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\PaymentGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
-	<Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
+    <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
     </Compile>
-	<Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
+    <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.cs" />
     <Compile Include="Migrations\201212031749206_MarketingCampaignAdAttributes.Designer.cs">
       <DependentUpon>201212031749206_MarketingCampaignAdAttributes.cs</DependentUpon>
     </Compile>
@@ -1157,11 +1157,11 @@
     <None Include="Service References\MelissaData.AddressCheck\Service.wsdl" />
     <None Include="Service References\MelissaData.AddressCheck\Service.xsd">
       <SubType>Designer</SubType>
-    </None>    
+    </None>
     <None Include="Service References\MelissaData.AddressCheck\Service1.xsd">
       <SubType>Designer</SubType>
     </None>
-	<None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.wsdl" />
+    <None Include="Service References\ServiceObjects.GeoCoder\GeoCoder.wsdl" />
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.DistanceBetweenInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -1271,7 +1271,7 @@
       <Project>{AEF8823B-E45B-4B35-A4D0-C08C1196D017}</Project>
       <Name>Quartz</Name>
     </ProjectReference>
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
@@ -1503,8 +1503,8 @@
     <EmbeddedResource Include="Migrations\201304101854297_GivingBlocksSeedData.resx">
       <DependentUpon>201304101854297_GivingBlocksSeedData.cs</DependentUpon>
     </EmbeddedResource>
-	<EmbeddedResource Include="Migrations\201303032120222_FinancialBatchNewFields.resx">
-      <DependentUpon>201303032120222_FinancialBatchNewFields.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201304111854079_FinancialBatchNewFields.resx">
+      <DependentUpon>201304111854079_FinancialBatchNewFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
