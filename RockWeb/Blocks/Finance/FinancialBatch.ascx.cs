@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Administration
             if ( _canConfigure )
             {
                 grdFinancialBatch.DataKeyNames = new string[] { "id" };
-                grdFinancialBatch.Actions.IsAddEnabled = true;
+                grdFinancialBatch.Actions.ShowAdd = true;
 
                 grdFinancialBatch.Actions.AddClick += gridFinancialBatch_Add;
                 grdFinancialBatch.GridRebind += grdFinancialBatch_GridRebind;
