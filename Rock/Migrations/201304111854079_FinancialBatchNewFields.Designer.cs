@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201303032120222_FinancialBatchNewFields"; }
+            get { return "201304111854079_FinancialBatchNewFields"; }
         }
         
         string IMigrationMetadata.Source
