@@ -59,18 +59,18 @@ namespace Rock.Search.Person
             }
             else
             {
-                qry = qry.Where( p => ( ( p.NickName ?? p.GivenName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) );
+                qry = qry.Where( p => ( ( p.FirstName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) );
             }
 
             IOrderedQueryable<Rock.Model.Person> result;
 
             if ( lastFirst )
             {
-                result = qry.OrderBy( p => p.LastName ).ThenBy( p => p.NickName ?? p.GivenName );
+                result = qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
             }
             else
             {
-                result = qry.OrderBy( p => p.NickName ?? p.GivenName ).ThenBy( p => p.LastName );
+                result = qry.OrderBy( p => p.FirstName ).ThenBy( p => p.LastName );
             }
 
             return result;

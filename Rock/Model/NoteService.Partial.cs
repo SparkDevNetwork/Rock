@@ -27,7 +27,7 @@ namespace Rock.Model
                     n.NoteTypeId == noteTypeId &&
                     n.EntityId == entityId )
                 .OrderByDescending( n => n.IsAlert )
-                .ThenByDescending( n => n.Date );
+                .ThenByDescending( n => n.CreationDateTime );
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Rock.Model
                 .Where( n =>
                     n.NoteTypeId == noteTypeId )
                 .OrderByDescending( n => n.IsAlert )
-                .ThenByDescending( n => n.Date );
+                .ThenByDescending( n => n.CreationDateTime );
         }
     }
 }

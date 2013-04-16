@@ -70,32 +70,32 @@
 
                             <% } %>
                         
-                            <asp:Repeater ID="rptFundList" runat="server" ClientIdMode="Predictable">
+                            <asp:Repeater ID="rptAccountList" runat="server" ClientIdMode="Predictable">
                                 <ItemTemplate>                                          
                                     <div class="row-fluid">                                    
                                         <div class="control-group">                                        
-                                            <label id="lblFundName" class="control-label" name="lblFundName" tabindex="-1" runat="server"><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></label> 
+                                            <label id="lblAccountName" class="control-label" name="lblAccountName" tabindex="-1" runat="server"><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></label> 
                                             <div class="controls">
                                                 <div class="input-prepend">
                                                 <span class="add-on">$</span>
-                                                <input id="inputFundAmount" name="inputFundAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
+                                                <input id="inputAccountAmount" name="inputAccountAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>                                        
                                 </ItemTemplate> 
                                 <FooterTemplate>
-                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptFundList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default funds enabled.  Please enable a fund in the block settings.</label>
+                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptAccountList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default accounts enabled.  Please enable a account in the block settings.</label>
                                 </FooterTemplate>                          
                             </asp:Repeater>                        
 
-                            <div ID="divAddFund" class="row-fluid" runat="server" visible="false">
+                            <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
                                 <div class="control-group controls">
-                                    <Rock:ButtonDropDownList ID="btnAddFund" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddFund_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList>                                 
+                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList>                                 
                                 </div>
                             </div>
 
-                            <% if ( bool.Parse((rptFundList.Items.Count!=0).ToString()) ) { %>
+                            <% if ( bool.Parse((rptAccountList.Items.Count!=0).ToString()) ) { %>
 
                                 <div class="row-fluid">
                                     <div class="control-group">     
@@ -118,7 +118,7 @@
             
                         <div id="alertContribution" class="alert alert-error" style="display: none;">
 
-                            Please enter a contribution amount in at least one fund.
+                            Please enter a contribution amount in at least one account.
 
                         </div>
 
@@ -428,7 +428,7 @@
                     <h3 class="header-text" >Confirm your Contribution: </h3>
                 
                     <p><b><asp:Literal ID="cfrmName" runat="server" /></b>, you're about to give a total of <b><asp:Literal ID="litGiftTotal" Visible="true" runat="server"/></b>
-                        <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following funds: </asp:Literal>
+                        <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following accounts: </asp:Literal>
                         <asp:Repeater ID="rptGiftConfirmation" runat="server">
                             <ItemTemplate>
                                 <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %></b> 

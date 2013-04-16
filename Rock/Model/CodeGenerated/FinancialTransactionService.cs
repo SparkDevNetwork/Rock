@@ -49,9 +49,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.TransactionId == item.Id ) )
+            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -78,20 +78,17 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialTransaction();
-                target.Description = source.Description;
-                target.TransactionDateTime = source.TransactionDateTime;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
+                target.AuthorizedPersonId = source.AuthorizedPersonId;
                 target.BatchId = source.BatchId;
+                target.GatewayId = source.GatewayId;
+                target.TransactionDateTime = source.TransactionDateTime;
+                target.Amount = source.Amount;
+                target.TransactionCode = source.TransactionCode;
+                target.Summary = source.Summary;
+                target.TransactionTypeValueId = source.TransactionTypeValueId;
                 target.CurrencyTypeValueId = source.CurrencyTypeValueId;
                 target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-                target.Amount = source.Amount;
-                target.RefundTransactionId = source.RefundTransactionId;
-                target.TransactionImageId = source.TransactionImageId;
-                target.TransactionCode = source.TransactionCode;
-                target.PaymentGatewayId = source.PaymentGatewayId;
                 target.SourceTypeValueId = source.SourceTypeValueId;
-                target.Summary = source.Summary;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

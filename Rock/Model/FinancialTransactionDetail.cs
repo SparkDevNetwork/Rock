@@ -15,10 +15,12 @@ namespace Rock.Model
     /// <summary>
     /// TransactionDetail POCO class.
     /// </summary>
-    [Table("FinancialTransactionDetail")]
+    [Table( "FinancialTransactionDetail" )]
     [DataContract]
     public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the transaction id.
         /// </summary>
@@ -26,26 +28,16 @@ namespace Rock.Model
         /// The transaction id.
         /// </value>
         [DataMember]
-        public int? TransactionId { get; set; }
+        public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity.
+        /// Gets or sets the account id.
         /// </summary>
         /// <value>
-        /// The entity.
-        /// </value>
-        [MaxLength(50)]
-        [DataMember]
-        public string Entity { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity id.
-        /// </summary>
-        /// <value>
-        /// The entity id.
+        /// The account id.
         /// </value>
         [DataMember]
-        public string EntityId { get; set; }
+        public int AccountId { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -62,9 +54,31 @@ namespace Rock.Model
         /// <value>
         /// The summary.
         /// </value>
-        [MaxLength(500)]
+        [MaxLength( 500 )]
         [DataMember]
         public string Summary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity.
+        /// </summary>
+        /// <value>
+        /// The entity.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity id.
+        /// </summary>
+        /// <value>
+        /// The entity id.
+        /// </value>
+        [DataMember]
+        public int? EntityId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the transaction.
@@ -76,6 +90,28 @@ namespace Rock.Model
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
+        /// Gets or sets the account.
+        /// </summary>
+        /// <value>
+        /// The account.
+        /// </value>
+        [DataMember]
+        public virtual FinancialAccount Account { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType EntityType { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -85,7 +121,12 @@ namespace Rock.Model
         {
             return this.Amount.ToString();
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// TransactionDetail Configuration class
@@ -97,7 +138,12 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionDetailConfiguration()
         {
-            this.HasOptional(d => d.Transaction).WithMany(t => t.TransactionDetails).HasForeignKey(t => t.TransactionId).WillCascadeOnDelete(false);
+            this.HasRequired( d => d.Transaction ).WithMany( t => t.TransactionDetails ).HasForeignKey( d => d.TransactionId ).WillCascadeOnDelete( true );
+            this.HasRequired( d => d.Account ).WithMany().HasForeignKey( d => d.AccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( d => d.EntityType ).WithMany().HasForeignKey( d => d.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

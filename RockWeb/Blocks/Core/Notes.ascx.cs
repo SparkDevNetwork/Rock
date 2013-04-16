@@ -70,7 +70,7 @@ Sys.Application.add_load(function () {
             note.IsSystem = false;
             note.NoteTypeId = noteType.Id;
             note.EntityId = contextEntity.Id;
-            note.Date = DateTime.Now;
+            note.CreationDateTime = DateTime.Now;
             note.Caption = CurrentPerson.FullName;
             note.IsAlert = cbAlert.Checked;
             note.Text = tbNewNote.Text;
@@ -182,7 +182,7 @@ Sys.Application.add_load(function () {
 
             var heading = new HtmlGenericControl( "strong" );
             div.Controls.Add( heading );
-            heading.Controls.Add( new LiteralControl( string.Format( "{0} - {1}", note.Date.ToShortDateString(), note.Caption ) ) );
+            heading.Controls.Add( new LiteralControl( string.Format( "{0} - {1}", note.CreationDateTime.ToShortDateString(), note.Caption ) ) );
 
             div.Controls.Add( new LiteralControl( note.Text ) );
         }

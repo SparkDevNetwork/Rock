@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Prayer
             divDetail.AddCssClass( "detail" );
 
             // Add the name/caption
-            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='muted'>{1}</span>", note.Caption, note.Date.ToRelativeDateString() ) ) );
+            divDetail.Controls.Add( new LiteralControl( string.Format("<strong>{0}</strong> <span class='muted'>{1}</span>", note.Caption, note.CreationDateTime.ToRelativeDateString() ) ) );
 
             var pText = new HtmlGenericControl( "p" );
             divDetail.Controls.Add( pText );

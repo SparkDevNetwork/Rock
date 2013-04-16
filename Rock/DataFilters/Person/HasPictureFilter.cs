@@ -21,24 +21,16 @@ namespace Rock.DataFilters.Person
     [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public override string Title
-        {
-            get { return "Has Picture"; }
-        }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the name of the filtered entity type.
+        /// Gets the entity type that filter applies to.
         /// </summary>
         /// <value>
-        /// The name of the filtered entity type.
+        /// The entity that filter applies to.
         /// </value>
-        public override string FilteredEntityTypeName
+        public override string AppliesToEntityType
         {
             get { return "Rock.Model.Person"; }
         }
@@ -54,6 +46,23 @@ namespace Rock.DataFilters.Person
             get { return "Additional Filters"; }
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        ///   </value>
+        public override string GetTitle( Type entityType )
+        {
+            return "Has Picture";
+        }
+
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
@@ -63,12 +72,9 @@ namespace Rock.DataFilters.Person
         /// <value>
         /// The client format script.
         /// </value>
-        public override string ClientFormatSelection
+        public override string GetClientFormatSelection( Type entityType )
         {
-            get
-            {
-                return "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
-            }
+            return "$('input:first', $content).is(':checked') ? 'Has Picture' : 'Doesn\\'t Have Picture'";
         }
 
         /// <summary>
@@ -76,7 +82,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override string FormatSelection( string selection )
+        public override string FormatSelection( Type entityType, string selection )
         {
             bool hasPicture = true;
             if (!Boolean.TryParse(selection, out hasPicture))
@@ -96,7 +102,7 @@ namespace Rock.DataFilters.Person
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             CheckBox cb = new CheckBox();
             cb.ID = filterControl.ID + "_0";
@@ -111,9 +117,9 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.Title + " " );
+            writer.Write( this.GetTitle(entityType) + " " );
             controls[0].RenderControl( writer );
         }
 
@@ -122,7 +128,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="controls"></param>
         /// <returns></returns>
-        public override string GetSelection( Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls )
         {
             return ( (CheckBox)controls[0] ).Checked.ToString();
         }
@@ -132,7 +138,7 @@ namespace Rock.DataFilters.Person
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Control[] controls, string selection )
+        public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             bool hasPicture = true;
             if ( !Boolean.TryParse( selection, out hasPicture ) )
@@ -148,7 +154,7 @@ namespace Rock.DataFilters.Person
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
             bool hasPicture = true;
             if ( Boolean.TryParse( selection, out hasPicture ) )
@@ -160,5 +166,7 @@ namespace Rock.DataFilters.Person
             }
             return null;
         }
+
+        #endregion
     }
 }

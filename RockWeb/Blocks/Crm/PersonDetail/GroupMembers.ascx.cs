@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         Id = m.PersonId,
                         PhotoId = m.Person.PhotoId.HasValue ? m.Person.PhotoId.Value : 0,
-                        FirstName = m.Person.NickName ?? m.Person.GivenName,
+                        FirstName = m.Person.FirstName,
                         LastName = m.Person.LastName,
                         Role = m.GroupRole.Name,
                         SortOrder = m.GroupRole.SortOrder

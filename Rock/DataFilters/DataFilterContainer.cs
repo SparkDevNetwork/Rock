@@ -51,9 +51,9 @@ namespace Rock.DataFilters
             foreach ( var serviceEntry in Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
-                if ( !entityTypeNames.Contains(component.FilteredEntityTypeName) )
+                if ( !entityTypeNames.Contains( component.AppliesToEntityType ) )
                 {
-                    entityTypeNames.Add( component.FilteredEntityTypeName );
+                    entityTypeNames.Add( component.AppliesToEntityType );
                 }
             }
 
@@ -87,7 +87,9 @@ namespace Rock.DataFilters
         public static List<DataFilterComponent> GetComponentsByFilteredEntityName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => c.Value.Value.FilteredEntityTypeName == entityTypeName )
+                .Where( c => 
+                    c.Value.Value.AppliesToEntityType == entityTypeName ||
+                    c.Value.Value.AppliesToEntityType == string.Empty )
                 .Select( c => c.Value.Value )
                 .OrderBy( c => c.Order)
                 .ToList();

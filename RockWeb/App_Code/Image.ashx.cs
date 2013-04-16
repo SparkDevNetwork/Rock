@@ -67,16 +67,16 @@ namespace RockWeb
                         .Select( f => new
                         {
                             MimeType = f.MimeType,
-                            LastModifiedTime = f.LastModifiedTime
+                            LastModifiedDateTime = f.LastModifiedDateTime
                         } )
                         .FirstOrDefault();
 
                     file = new Rock.Model.BinaryFile();
                     file.MimeType = fileInfo.MimeType;
-                    file.LastModifiedTime = fileInfo.LastModifiedTime;
+                    file.LastModifiedDateTime = fileInfo.LastModifiedDateTime;
 
                     // Is cached version newer?
-                    if ( file.LastModifiedTime.HasValue && file.LastModifiedTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
+                    if ( file.LastModifiedDateTime.HasValue && file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
                         file.Data = FetchFromCache( physFilePath );
                 }
 

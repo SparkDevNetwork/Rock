@@ -413,7 +413,7 @@ namespace RockWeb
                 ExceptionLog exceptionLog = new ExceptionLog(); ;
 
                 exceptionLog.ParentId = parentException;
-                exceptionLog.ExceptionDate = DateTime.Now;
+                exceptionLog.ExceptionDateTime = DateTime.Now;
 
                 if ( ex.InnerException != null )
                     exceptionLog.HasInnerException = true;
@@ -456,7 +456,7 @@ namespace RockWeb
 
                 // write server vars
                 StringBuilder serverVars = new StringBuilder();
-                cookies.Append( "<table class=\"server-variables\">" );
+                serverVars.Append("<table class=\"server-variables\">");
 
                 foreach ( string serverVar in context.Request.ServerVariables )
                     serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
