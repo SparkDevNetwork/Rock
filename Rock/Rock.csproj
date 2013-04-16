@@ -173,6 +173,9 @@
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
+    <Compile Include="Financial\BankAccount.cs" />
+    <Compile Include="Financial\CreditCard.cs" />
+    <Compile Include="Financial\IGateway.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.cs" />
     <Compile Include="Migrations\201212042327447_ToolsMenuAdCampaigns.Designer.cs">
       <DependentUpon>201212042327447_ToolsMenuAdCampaigns.cs</DependentUpon>
@@ -469,6 +472,10 @@
     <Compile Include="Migrations\201304102332542_DateTimeNamingSweep.Designer.cs">
       <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304151305475_ScheduledTransaction.cs" />
+    <Compile Include="Migrations\201304151305475_ScheduledTransaction.Designer.cs">
+      <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -532,6 +539,7 @@
     <Compile Include="Model\BinaryFileType.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
+    <Compile Include="Model\FinancialScheduledTransaction.cs" />
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
@@ -968,7 +976,6 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\Types\TextFieldType.cs" />
     <Compile Include="Attribute\Helper.cs" />
-    <Compile Include="Web\UI\Controls\HtmlHelper.cs" />
     <Compile Include="Web\HttpModule.cs" />
     <Compile Include="Web\PageReference.cs" />
     <Compile Include="Reflection.cs" />
@@ -1379,6 +1386,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304102332542_DateTimeNamingSweep.resx">
       <DependentUpon>201304102332542_DateTimeNamingSweep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304151305475_ScheduledTransaction.resx">
+      <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
