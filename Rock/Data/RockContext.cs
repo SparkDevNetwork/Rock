@@ -247,6 +247,14 @@ namespace Rock.Data
         public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial scheduled transactions.
+        /// </summary>
+        /// <value>
+        /// The financial scheduled transactions.
+        /// </value>
+        public DbSet<FinancialScheduledTransaction> FinancialScheduledTransactions { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
@@ -682,6 +690,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
             modelBuilder.Configurations.Add( new FinancialGatewayConfiguration() );
             modelBuilder.Configurations.Add( new FinancialPledgeConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialScheduledTransactionConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionImageConfiguration() );
