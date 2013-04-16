@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 using Rock.Extension;
 
-namespace Rock.DataFilters
+namespace Rock.Reporting
 {
     /// <summary>
     /// 

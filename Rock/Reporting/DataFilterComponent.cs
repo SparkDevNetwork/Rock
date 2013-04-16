@@ -13,7 +13,7 @@ using Rock.Extension;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.DataFilters
+namespace Rock.Reporting
 {
     /// <summary>
     /// 

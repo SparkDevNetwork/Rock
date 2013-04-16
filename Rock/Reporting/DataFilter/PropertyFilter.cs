@@ -18,7 +18,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.DataFilters
+namespace Rock.Reporting.DataFilter
 {
     /// <summary>
     /// Filter entities on any of it's property or attribute values
