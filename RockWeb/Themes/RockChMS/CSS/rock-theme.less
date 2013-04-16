@@ -75,6 +75,11 @@ h1 {
     padding: 0 6px;
 }
 
+.container-fluid {
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
 //
 // 2. Global Page Settings
 //
@@ -83,27 +88,10 @@ h1 {
 // set window background
 html
 {
- background-color: #3a3a3a;   
+ background-color: #3a3a3a;  
+ background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
 }
 
-// set page background
-body {  
-	background-image: url('../Assets/Images/light-texture.png');
-}
-
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-    background-image: url('../Assets/Images/light-texture@2x.png');
-    background-size: 256px 256px;
-  }
-
-  html
-  {
-    background-color: #3a3a3a;  
-    
-  }
-
-}
 
 // get rid of that dotted box around anchors with focus
 a {
@@ -186,6 +174,7 @@ a {
 .pagenav-header {
 	font-family: @rockSansFontFamilyBold;
 }
+
 
 /* Smart Search 
    Used in the header to allow people to search for people, groups, etc
