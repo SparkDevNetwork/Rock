@@ -21,6 +21,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
+        public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
+
+        /// <summary>
+        /// Guid for Financial Currency Type
+        /// </summary>
         public const string FINANCIAL_CURRENCY_TYPE =  "1D1304DE-E83A-44AF-B11D-0C66DD600B81"; 
 
         /// <summary>
@@ -29,9 +34,9 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_CREDIT_CARD_TYPE =  "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
 
         /// <summary>
-        /// Guid for the Financial Pledge Frequency Type
+        /// Guid for the Financial Pledge Frequency 
         /// </summary>
-        public const string FINANCIAL_PLEDGE_FREQUENCY_TYPE = "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F";
+        public const string FINANCIAL_PLEDGE_FREQUENCY = "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F";
 
         /// <summary>
         /// Guid for Financial Source Type
@@ -39,9 +44,19 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
 
         /// <summary>
-        /// Guid for Financial Frequency Type
+        /// Guid for Financial Frequency 
         /// </summary>
-        public const string FINANCIAL_TRANSACTION_FREQUENCY_TYPE = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
+        public const string FINANCIAL_TRANSACTION_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
+
+        /// <summary>
+        /// Guid for Financial transaction image type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39";
+
+        /// <summary>
+        /// Guid for Financial Transaction Type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
 
         /// <summary>
         /// Guid for the types of Locations (such as Home, Main Office, etc)

@@ -11,7 +11,6 @@
                 <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
                 <Rock:DateTimePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" Visible="False"/>
                 <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" Visible="False"/>
-                <Rock:DataTextBox ID="tbFrequencyAmount" runat="server" PrependText="$" LabelText="Amount" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyAmount"/>
                 <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyTypeValue"/>
                 <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
                     <p><strong>Hey!</strong> You currently have a pledge in the system. Do you want to replace it with this one?</p>

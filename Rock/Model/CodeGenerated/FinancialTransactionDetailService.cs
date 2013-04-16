@@ -73,10 +73,11 @@ namespace Rock.Model
             {
                 var target = new FinancialTransactionDetail();
                 target.TransactionId = source.TransactionId;
-                target.Entity = source.Entity;
-                target.EntityId = source.EntityId;
+                target.AccountId = source.AccountId;
                 target.Amount = source.Amount;
                 target.Summary = source.Summary;
+                target.EntityTypeId = source.EntityTypeId;
+                target.EntityId = source.EntityId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

@@ -81,7 +81,7 @@ namespace Rock.Model
                 target.MinValue = source.MinValue;
                 target.MaxValue = source.MaxValue;
                 target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
-                target.LastCollected = source.LastCollected;
+                target.LastCollectedDateTime = source.LastCollectedDateTime;
                 target.Source = source.Source;
                 target.SourceSQL = source.SourceSQL;
                 target.Order = source.Order;

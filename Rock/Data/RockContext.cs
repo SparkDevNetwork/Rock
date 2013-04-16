@@ -215,12 +215,36 @@ namespace Rock.Data
         public DbSet<FieldType> FieldTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the accounts.
+        /// </summary>
+        /// <value>
+        /// The fund.
+        /// </value>
+        public DbSet<FinancialAccount> FinancialAccounts { get; set; }
+
+        /// <summary>
         /// Gets or sets the batches.
         /// </summary>
         /// <value>
         /// The batches.
         /// </value>
         public DbSet<FinancialBatch> FinancialBatches { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial gateways.
+        /// </summary>
+        /// <value>
+        /// The financial gateways.
+        /// </value>
+        public DbSet<FinancialGateway> FinancialGateways { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pledges.
+        /// </summary>
+        /// <value>
+        /// The pledges.
+        /// </value>
+        public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -239,20 +263,12 @@ namespace Rock.Data
         public DbSet<FinancialTransactionDetail> FinancialTransactionDetails { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction funds.
+        /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
-        /// The transaction funds.
+        /// The transaction details.
         /// </value>
-        public DbSet<FinancialTransactionFund> FinancialTransactionFunds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fund.
-        /// </summary>
-        /// <value>
-        /// The fund.
-        /// </value>
-        public DbSet<Fund> Funds { get; set; }
+        public DbSet<FinancialTransactionImage> FinancialTransactionImages { get; set; }
 
         /// <summary>
         /// Gets or sets the Groups.
@@ -407,14 +423,6 @@ namespace Rock.Data
         public DbSet<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment gateways.
-        /// </summary>
-        /// <value>
-        /// The payment gateways.
-        /// </value>
-        public DbSet<PaymentGateway> PaymentGateways { get; set; }
-
-        /// <summary>
         /// Gets or sets the People.
         /// </summary>
         /// <value>
@@ -453,14 +461,6 @@ namespace Rock.Data
         /// the Phone Numbers.
         /// </value>
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledges.
-        /// </summary>
-        /// <value>
-        /// The pledges.
-        /// </value>
-        public DbSet<Pledge> Pledges { get; set; }
 
         /// <summary>
         /// Gets or sets the prayer requests.
@@ -678,11 +678,13 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
             modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialAccountConfiguration() );
             modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialGatewayConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialPledgeConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialTransactionFundConfiguration() );
-            modelBuilder.Configurations.Add( new FundConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialTransactionImageConfiguration() );
             modelBuilder.Configurations.Add( new GroupConfiguration() );
             modelBuilder.Configurations.Add( new GroupLocationConfiguration() );
             modelBuilder.Configurations.Add( new GroupMemberConfiguration() );
@@ -702,13 +704,11 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageConfiguration() );
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
-            modelBuilder.Configurations.Add( new PaymentGatewayConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
             modelBuilder.Configurations.Add( new PersonAccountLookupConfiguration() );
             modelBuilder.Configurations.Add( new PersonMergedConfiguration() );
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
-            modelBuilder.Configurations.Add( new PledgeConfiguration() );
             modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
             modelBuilder.Configurations.Add( new ReportConfiguration() );
             modelBuilder.Configurations.Add( new ScheduleConfiguration() );

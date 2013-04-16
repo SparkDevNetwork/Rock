@@ -142,11 +142,11 @@ namespace RockWeb.Blocks.Prayer
             // Filter by EnteredDate
             if ( dtDateRangeStartDate.SelectedDate != null )
             {
-                prayerComments = prayerComments.Where( a => a.Date >= dtDateRangeStartDate.SelectedDate );
+                prayerComments = prayerComments.Where( a => a.CreationDateTime >= dtDateRangeStartDate.SelectedDate );
             }
             if ( dtDateRangeEndDate.SelectedDate != null )
             {
-                prayerComments = prayerComments.Where( a => a.Date <= dtDateRangeEndDate.SelectedDate );
+                prayerComments = prayerComments.Where( a => a.CreationDateTime <= dtDateRangeEndDate.SelectedDate );
             }
 
             // Sort by the given property otherwise sort by the EnteredDate
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.Date ).ToList();
+                gPrayerComments.DataSource = prayerComments.OrderBy( n => n.CreationDateTime ).ToList();
             }
 
             gPrayerComments.DataBind();

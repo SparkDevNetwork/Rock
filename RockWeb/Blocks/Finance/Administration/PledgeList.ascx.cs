@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             RockTransactionScope.WrapTransaction( () =>
                 {
-                    var pledgeService = new PledgeService();
+                    var pledgeService = new FinancialPledgeService();
                     var pledge = pledgeService.Get( (int) e.RowKeyValue );
                     string errorMessage;
                     
@@ -128,23 +128,23 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         private void BindGrid()
         {
-            var pledgeService = new PledgeService();
+            var pledgeService = new FinancialPledgeService();
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
             int personId;
-            int fundId;
+            int accountId;
 
             if ( ppFilterPerson.SelectedValue != "0" && int.TryParse( ppFilterPerson.PersonId, out personId ) )
             {
                 pledges = pledges.Where( p => p.PersonId == personId );
             }
 
-            if ( fpFilterFund.SelectedValue != "0" && int.TryParse( fpFilterFund.SelectedValue, out fundId ) )
+            if ( fpFilterAccount.SelectedValue != "0" && int.TryParse( fpFilterAccount.SelectedValue, out accountId ) )
             {
-                pledges = pledges.Where( p => p.FundId == fundId );
+                pledges = pledges.Where( p => p.AccountId == accountId );
             }
 
-            gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.FundId ).ToList();
+            gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
         }
     }

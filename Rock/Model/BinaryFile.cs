@@ -94,13 +94,13 @@ namespace Rock.Model
         public string MimeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the time that file was last modified.
+        /// Gets or sets the last modified date time.
         /// </summary>
         /// <value>
-        /// The last modified time.
+        /// The last modified date time.
         /// </value>
         [DataMember]
-        public DateTime? LastModifiedTime { get; set; }
+        public DateTime? LastModifiedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Description.

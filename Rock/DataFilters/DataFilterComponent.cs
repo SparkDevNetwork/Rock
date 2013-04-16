@@ -20,21 +20,17 @@ namespace Rock.DataFilters
     /// </summary>
     public abstract class DataFilterComponent : Component
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public abstract string Title { get; }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the name of the filtered entity type.
+        /// Gets the entity type that filter applies to.  Filter should empty string
+        /// if it applies to all entities
         /// </summary>
         /// <value>
-        /// The name of the filtered entity type.
+        /// The entity that filter applies to.
         /// </value>
-        public abstract string FilteredEntityTypeName { get; }
+        public abstract string AppliesToEntityType { get; }
 
         /// <summary>
         /// Gets the section.
@@ -45,27 +41,6 @@ namespace Rock.DataFilters
         public virtual string Section 
         {
             get { return "Additional Filters"; }
-        }
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
-        /// referencing this property.
-        /// </summary>
-        /// <value>
-        /// The client format script.
-        /// </value>
-        public virtual string ClientFormatSelection
-        {
-            get
-            {
-                return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", Title );
-            }
-            protected set
-            {
-
-            }
         }
 
         /// <summary>
@@ -84,11 +59,37 @@ namespace Rock.DataFilters
             }
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public abstract string GetTitle( Type entityType );
+
+        /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <value>
+        /// The client format script.
+        /// </value>
+        public virtual string GetClientFormatSelection( Type entityType )
+        {
+            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle(entityType) );
+        }
+
         /// <summary>
         /// Formats the selection.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        public virtual string FormatSelection( string selection )
+        public virtual string FormatSelection( Type entityType, string selection )
         {
             ComparisonType comparisonType = ComparisonType.StartsWith;
             string value = string.Empty;
@@ -104,14 +105,14 @@ namespace Rock.DataFilters
                 value = options[1];
             }
 
-            return string.Format( "{0} {1} '{2}'", Title, comparisonType.ConvertToString(), value );
+            return string.Format( "{0} {1} '{2}'", GetTitle(entityType), comparisonType.ConvertToString(), value );
         }
 
         /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public virtual Control[] CreateChildControls( FilterField filterControl )
+        public virtual Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var ddl = ComparisonControl( StringFilterComparisonTypes );
             ddl.ID = filterControl.ID + "_0";
@@ -129,9 +130,9 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public virtual void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.Title + " " );
+            writer.Write( this.GetTitle(entityType) + " " );
             controls[0].RenderControl( writer );
             writer.Write( " " );
             controls[1].RenderControl( writer );
@@ -142,7 +143,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public virtual string GetSelection( Control[] controls )
+        public virtual string GetSelection( Type entityType, Control[] controls )
         {
             string comparisonType = ( (DropDownList)controls[0] ).SelectedValue;
             string value = ( (TextBox)controls[1] ).Text;
@@ -154,7 +155,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public virtual void SetSelection( Control[] controls, string selection )
+        public virtual void SetSelection( Type entityType, Control[] controls, string selection )
         {
             string[] options = selection.Split( '|' );
             if ( options.Length >= 2 )
@@ -171,7 +172,11 @@ namespace Rock.DataFilters
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public abstract Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection );
+        public abstract Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection );
+
+        #endregion
+
+        #region Protected Methods
 
         /// <summary>
         /// Gets the comparison expression.
@@ -267,6 +272,10 @@ namespace Rock.DataFilters
             return ddl;
         }
 
+        #endregion
+
+        #region Static Properties
+
         /// <summary>
         /// Gets the comparison types typically used for string fields
         /// </summary>
@@ -315,6 +324,8 @@ namespace Rock.DataFilters
                     ComparisonType.LessThanOrEqualTo;
             }
         }
+
+        #endregion
 
     }
 

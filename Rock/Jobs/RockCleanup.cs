@@ -53,7 +53,7 @@ namespace Rock.Jobs
 
             var userLoginService = new UserLoginService();
 
-            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDate < userAccountExpireDate))
+            foreach (var user in userLoginService.Queryable().Where(u => u.IsConfirmed == false && u.CreationDateTime < userAccountExpireDate))
             {
                 userLoginService.Delete( user, null );
             }
@@ -66,7 +66,7 @@ namespace Rock.Jobs
 
             ExceptionLogService exceptionLogService = new ExceptionLogService();
 
-            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDate < exceptionExpireDate ) )
+            foreach ( var exception in exceptionLogService.Queryable().Where( e => e.ExceptionDateTime < exceptionExpireDate ) )
             {
                 exceptionLogService.Delete( exception, null );
             }
