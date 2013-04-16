@@ -96,7 +96,7 @@ namespace Rock.Field.Types
 
                 if ( picker != null )
                 {
-                    var guid = Guid.Empty;
+                    Guid guid;
                     Guid.TryParse( value, out guid );
                     var account = new FinancialAccountService().Get( guid );
                     picker.SetValue( account );
