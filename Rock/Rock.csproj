@@ -146,6 +146,10 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Migrations\201304162319340_AddNewFields.cs" />
+    <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
+      <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1388,6 +1392,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304151305475_ScheduledTransaction.resx">
       <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304162319340_AddNewFields.resx">
+      <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
