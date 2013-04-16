@@ -3,7 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -16,30 +19,25 @@ using Rock.Web.UI.Controls;
 namespace Rock.DataFilters
 {
     /// <summary>
-    /// A filter for selecting another data filter as a filter
+    /// Filter entities using another dataview
     /// </summary>
-    public abstract class OtherDataViewFilter<T> : DataFilterComponent
+    [Description( "Filter entities using another dataview" )]
+    [Export( typeof( DataFilterComponent ) )]
+    [ExportMetadata( "ComponentName", "Other Data View Filter" )]
+    public class OtherDataViewFilter : DataFilterComponent
     {
-        /// <summary>
-        /// Gets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public override string Title
-        {
-            get { return "Existing Data View"; }
-        }
+
+        #region Properties
 
         /// <summary>
-        /// Gets the name of the filtered entity type.
+        /// Gets the entity type that filter applies to.
         /// </summary>
         /// <value>
-        /// The name of the filtered entity type.
+        /// The entity that filter applies to.
         /// </value>
-        public override string FilteredEntityTypeName
+        public override string AppliesToEntityType
         {
-            get { return typeof( T ).FullName; }
+            get { return string.Empty; }
         }
 
         /// <summary>
@@ -67,6 +65,20 @@ namespace Rock.DataFilters
             }
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public override string GetTitle( Type entityType )
+        {
+            return "Existing Data View";
+        }
+
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
@@ -76,14 +88,11 @@ namespace Rock.DataFilters
         /// <value>
         /// The client format script.
         /// </value>
-        public override string ClientFormatSelection
+        public override string GetClientFormatSelection( Type entityType )
         {
-            get
-            {
-                return "'Included in ' + " +
-                    "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
-                    "'Data View'";
-            }
+            return "'Included in ' + " +
+                "'\\'' + $('select:first', $content).find(':selected').text() + '\\' ' + " +
+                "'Data View'";
         }
 
         /// <summary>
@@ -91,7 +100,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override string FormatSelection( string selection )
+        public override string FormatSelection( Type entityType, string selection )
         {
             string s = "Another Data View";
 
@@ -112,9 +121,9 @@ namespace Rock.DataFilters
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls( FilterField filterControl )
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            int entityTypeId = EntityTypeCache.Read( typeof( T ) ).Id;
+            int entityTypeId = EntityTypeCache.Read( entityType ).Id;
 
             DropDownList ddlDataViews = new DropDownList();
             ddlDataViews.ID = filterControl.ID + "_0";
@@ -141,7 +150,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls( FilterField filterControl, HtmlTextWriter writer, Control[] controls )
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -166,7 +175,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls"></param>
         /// <returns></returns>
-        public override string GetSelection( Control[] controls )
+        public override string GetSelection( Type entityType, Control[] controls )
         {
             return ( (DropDownList)controls[0] ).SelectedValue;
         }
@@ -176,7 +185,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection( Control[] controls, string selection )
+        public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             ( (DropDownList)controls[0] ).SelectedValue = selection;
         }
@@ -188,7 +197,7 @@ namespace Rock.DataFilters
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression( object serviceInstance, Expression parameterExpression, string selection )
+        public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
             int dvId = int.MinValue;
             if ( int.TryParse( selection, out dvId ) )
@@ -197,7 +206,7 @@ namespace Rock.DataFilters
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
-                    if ( !ThisViewInFilter( dataView.Id, dataView.DataViewFilter ) )
+                    if ( !IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
                     {
                         // TODO: Should probably verify security again on the selected dataview and it's filters,
                         // as that could be a moving target.
@@ -214,7 +223,19 @@ namespace Rock.DataFilters
             return null;
         }
 
-        public bool ThisViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Determines whether [is view in filter] [the specified data view id].
+        /// </summary>
+        /// <param name="dataViewId">The data view id.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns>
+        ///   <c>true</c> if [is view in filter] [the specified data view id]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsViewInFilter( int dataViewId, Rock.Model.DataViewFilter filter )
         {
             if ( filter.EntityTypeId == EntityTypeCache.Read( this.GetType() ).Id )
             {
@@ -230,7 +251,7 @@ namespace Rock.DataFilters
 
             foreach ( var childFilter in filter.ChildFilters )
             {
-                if ( ThisViewInFilter( dataViewId, childFilter ) )
+                if ( IsViewInFilter( dataViewId, childFilter ) )
                 {
                     return true;
                 }
@@ -238,5 +259,8 @@ namespace Rock.DataFilters
 
             return false;
         }
+
+        #endregion
+
     }
 }
