@@ -186,85 +186,10 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             string restUrl = this.ResolveUrl( "~/api/People/Search/" );
-
-            string scriptFormat = @"
-        $('#personPicker_{0}').autocomplete({{
-            source: function (request, response) {{
-                $.ajax({{
-                    url: '{1}' + request.term,
-                    dataType: 'json',
-                    success: function (data, status, xhr) {{
-                        $('#personPickerItems_{0}')[0].innerHTML = '';
-                        response($.map(data, function (item) {{
-                            return item;
-                        }}
-                        ))
-                    }},
-                    error: function (xhr, status, error) {{
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }}
-                }});
-            }},
-            minLength: 3,
-            html: true,
-            appendTo: 'personPickerItems_{0}',
-            messages: {{
-                noResults: function () {{ }},
-                results: function () {{ }}
-            }}
-        }});
-
-        $('a.rock-picker').click(function (e) {{
-            e.preventDefault();
-            $(this).next('.rock-picker').toggle();
-        }});
-
-        $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {{
-            var selectedItem = $(this).attr('data-person-id');
-
-            // hide other open details
-            $('.rock-picker-select-item-details').each(function (index) {{
-                var currentItem = $(this).parent().attr('data-person-id');
-
-                if (currentItem != selectedItem) {{
-                    $(this).slideUp();
-                }}
-            }});
-
-            $(this).find('.rock-picker-select-item-details:hidden').slideDown();
-        }});
-
-        $('#btnCancel_{0}').click(function (e) {{
-            $(this).parent().slideUp();
-        }});
-
-        $('#btnSelect_{0}').click(function (e) {{
-            var radInput = $('#{0}').find('input:checked');
-
-            var selectedValue = radInput.val();
-            var selectedText = radInput.parent().text();
-
-            var selectedPersonLabel = $('#selectedPersonLabel_{0}');
-
-            var hiddenPersonId = $('#hfPersonId_{0}');
-            var hiddenPersonName = $('#hfPersonName_{0}');
-
-            hiddenPersonId.val(selectedValue);
-            hiddenPersonName.val(selectedText);
-
-            selectedPersonLabel.val(selectedValue);
-            selectedPersonLabel.text(selectedText);
-
-            $(this).parent().slideUp();
-        }});
-";
-
+            const string scriptFormat = "Rock.controls.personPicker.initialize({{ controlId: '{0}', restUrl: '{1}' }});";
             string script = string.Format( scriptFormat, this.ID, restUrl );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "person_picker-" + this.ID.ToString(), script, true );
-
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "person_picker-" + this.ID, script, true );
             var sm = ScriptManager.GetCurrent( this.Page );
             sm.RegisterAsyncPostBackControl( btnSelect );
         }
