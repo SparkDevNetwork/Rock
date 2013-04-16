@@ -38,16 +38,16 @@ namespace Rock.Migrations
 
             //add the pages 
             AddPage( "18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C", "Financial Batch", "Manage Financial Batches", "ef65eff2-99ac-4081-8e09-32a04518683a" );
-            AddPage( "ef65eff2-99ac-4081-8e09-32a04518683a", "Financial Batch Detail", "", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
+            AddPage( "ef65eff2-99ac-4081-8e09-32a04518683a", "Financial Batch Detail", "Financial Batch Details", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
             AddPage( "606bda31-a8fe-473a-b3f8-a00ecf7e06ec", "Transaction Detail", "", "b67e38cb-2ef1-43ea-863a-37daa1c7340f" );
 
             // add the block types
             AddBlockType( "Finance - Financial Batch", "", "~/Blocks/Finance/FinancialBatch.ascx", "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" );
-            AddBlockType( "Finance - Batch Details", "", "~/Blocks/Finance/FinancialBatchDetail.ascx", "ce34ce43-2ccf-4568-9aeb-3be203db3470" );
+            AddBlockType( "Finance - Financial Batch Details", "", "~/Blocks/Finance/FinancialBatchDetail.ascx", "ce34ce43-2ccf-4568-9aeb-3be203db3470" );
             AddBlockType( "Finance - Transaction Details", "", "~/Blocks/Finance/TransactionBlock.ascx", "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE" );
 
             //add block
-            //AddBlock( "ef65eff2-99ac-4081-8e09-32a04518683a", "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "Financial Batches", "default", "Content", 0, "B4B7A962-E162-47ED-8499-B7C7A7F41498" );
+            AddBlock( "ef65eff2-99ac-4081-8e09-32a04518683a", "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "Financial Batches", "default", "Content", 0, "B4B7A962-E162-47ED-8499-B7C7A7F41498" );
             //AddBlock( "606bda31-a8fe-473a-b3f8-a00ecf7e06ec", "ce34ce43-2ccf-4568-9aeb-3be203db3470", "Financial Batch Details", "default", "Content", 0, "e7c8c398-0e1d-4bce-bc54-a02957228514" );
             //AddBlock( "b67e38cb-2ef1-43ea-863a-37daa1c7340f", "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE", "Financial Transaction Details", "default", "Content", 0, "f125e7eb-da78-4840-9d00-4c8dd0dd4a27" );
 
