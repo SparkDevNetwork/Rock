@@ -16,7 +16,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.DataFilters
+namespace Rock.Reporting.DataFilter
 {
     /// <summary>
     /// Filter entities using another dataview

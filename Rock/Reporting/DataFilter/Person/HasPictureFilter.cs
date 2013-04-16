@@ -11,7 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
 
-namespace Rock.DataFilters.Person
+namespace Rock.Reporting.DataTransform.Person
 {
     /// <summary>
     /// 

@@ -10,50 +10,50 @@ using System.Linq;
 
 using Rock.Extension;
 
-namespace Rock.DataFilters
+namespace Rock.Reporting
 {
     /// <summary>
     /// MEF Container class for data filters
     /// </summary>
-    public class DataFilterContainer : Container<DataFilterComponent, IComponentData>
+    public class DataTransformContainer : Container<DataTransformComponent, IComponentData>
     {
-        private static DataFilterContainer instance;
+        private static DataTransformContainer instance;
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
 
-        public static DataFilterContainer Instance
+        public static DataTransformContainer Instance
         {
             get
             {
                 if ( instance == null )
                 {
-                    instance = new DataFilterContainer();
+                    instance = new DataTransformContainer();
                 }
                 return instance;
             }
         }
 
-        private DataFilterContainer()
+        private DataTransformContainer()
         {
             Refresh();
         }
 
         /// <summary>
-        /// Gets a list of entity type names that have Data Filter components
+        /// Gets a list of entity type names that have Data Transform components
         /// </summary>
         /// <returns></returns>
-        public static List<string> GetAvailableFilteredEntityTypeNames()
+        public static List<string> GetAvailableTransformedEntityTypeNames()
         {
             var entityTypeNames = new List<string>();
 
             foreach ( var serviceEntry in Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
-                if ( !entityTypeNames.Contains( component.AppliesToEntityType ) )
+                if ( !entityTypeNames.Contains( component.TransformedEntityTypeName ) )
                 {
-                    entityTypeNames.Add( component.AppliesToEntityType );
+                    entityTypeNames.Add( component.TransformedEntityTypeName );
                 }
             }
 
@@ -65,7 +65,7 @@ namespace Rock.DataFilters
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
-        public static DataFilterComponent GetComponent( string entityTypeName )
+        public static DataTransformComponent GetComponent( string entityTypeName )
         {
             foreach ( var serviceEntry in Instance.Components )
             {
@@ -80,25 +80,23 @@ namespace Rock.DataFilters
         }
 
         /// <summary>
-        /// Gets the components that are for filtering a given entity type name
+        /// Gets the components that are for transformed a given entity type name
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
-        public static List<DataFilterComponent> GetComponentsByFilteredEntityName( string entityTypeName )
+        public static List<DataTransformComponent> GetComponentsByTransformedEntityName( string entityTypeName )
         {
             return Instance.Components
-                .Where( c => 
-                    c.Value.Value.AppliesToEntityType == entityTypeName ||
-                    c.Value.Value.AppliesToEntityType == string.Empty )
+                .Where( c => c.Value.Value.TransformedEntityTypeName == entityTypeName )
                 .Select( c => c.Value.Value )
-                .OrderBy( c => c.Order)
+                .OrderBy( c => c.Order )
                 .ToList();
         }
 
         // MEF Import Definition
 #pragma warning disable
-        [ImportMany( typeof( DataFilterComponent ) )]
-        protected override IEnumerable<Lazy<DataFilterComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( DataTransformComponent ) )]
+        protected override IEnumerable<Lazy<DataTransformComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
 
     }

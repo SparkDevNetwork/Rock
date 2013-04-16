@@ -11,7 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Rock.DataFilters.Person
+namespace Rock.Reporting.DataTransform.Person
 {
     /// <summary>
     /// Person Parent Transformation
