@@ -489,6 +489,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
+        [Previewable]
         public virtual DateTime? BirthDate
         {
             // notes
