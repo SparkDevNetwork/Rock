@@ -98,6 +98,24 @@ namespace Rock.Model
         [DataMember]
         public string TransactionCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date to remind user to update scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The card reminder date.
+        /// </value>
+        [DataMember]
+        public DateTime? CardReminderDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date that user was last reminded to update scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The last reminded date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRemindedDate { get; set; }
+
         #endregion
 
         #region Virtual Properties
