@@ -298,15 +298,8 @@ $(document).ready(function() {
             }
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            // Only entity types that are entities, have a friendly name, and actually have existing
-            // DataFilter componenets will be displayed in the drop down list
-            var entityTypeNames = Rock.DataFilters.DataFilterContainer.GetAvailableFilteredEntityTypeNames();
-            ddlEntityType.DataSource = entityTypeService
-                .Queryable()
-                .Where( e =>
-                    e.IsEntity &&
-                    e.FriendlyName != null &&
-                    entityTypeNames.Contains( e.Name ) )
+            // Get all entities
+            ddlEntityType.DataSource = entityTypeService.GetEntities()
                 .OrderBy( e => e.FriendlyName )
                 .ToList();
             ddlEntityType.DataBind();
@@ -466,9 +459,9 @@ $(document).ready(function() {
 
             lblMainDetails.Text += string.Format( descriptionFormat, "Description", dataView.Description );
 
-            if ( dataView.DataViewFilter != null )
+            if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Filter", dataView.DataViewFilter.ToString() );
+                lblMainDetails.Text += string.Format( descriptionFormat, "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
             }
 
             if ( dataView.TransformEntityType != null )
