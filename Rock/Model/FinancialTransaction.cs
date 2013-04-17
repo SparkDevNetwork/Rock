@@ -24,7 +24,7 @@ namespace Rock.Model
     {
 
         #region Entity Properties
-       
+
         /// <summary>
         /// Gets or sets the authorized person id.
         /// </summary>

@@ -60,22 +60,34 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<FinancialAccount>().Queryable().Any( a => a.AccountTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
             
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
             // ignoring FinancialTransaction,SourceTypeValueId 
-
-            // ignoring FinancialBatch,BatchTypeValueId
+            
+            // ignoring FinancialTransaction,TransactionTypeValueId 
  
-            if ( new Service<Fund>().Queryable().Any( a => a.FundTypeValueId == item.Id ) )
+            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Fund.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
             
-            // ignoring GroupLocation,LocationTypeValueId 
+            // ignoring GroupLocation,GroupLocationTypeValueId 
  
             if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
@@ -112,12 +124,6 @@ namespace Rock.Model
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Pledge>().Queryable().Any( a => a.FrequencyTypeValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Pledge.FriendlyTypeName );
                 return false;
             }  
             return true;
