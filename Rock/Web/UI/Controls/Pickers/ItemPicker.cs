@@ -4,7 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -100,6 +102,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the item ids.
+        /// </summary>
+        /// <value>
+        /// The item ids.
+        /// </value>
+        public IEnumerable<string> ItemIds
+        {
+            get
+            {
+                EnsureChildControls();
+                var ids = new List<string>();
+
+                if ( !string.IsNullOrWhiteSpace( _hfItemId.Value ) )
+                {
+                    ids.AddRange( _hfItemId.Value.Split( ',' ) );
+                }
+
+                return ids;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemId.Value = string.Join( ",", value );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the initial item parent ids.
         /// </summary>
         /// <value>
@@ -145,6 +175,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected values.
+        /// </summary>
+        /// <value>
+        /// The selected values.
+        /// </value>
+        public IEnumerable<string> SelectedValues
+        {
+            get { return ItemIds; }
+            private set { ItemIds = value; }
+        }
+
+        /// <summary>
         /// Gets the selected value as int.
         /// </summary>
         /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
@@ -171,6 +213,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Selecteds the values as int.
+        /// </summary>
+        /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
+        /// <returns></returns>
+        public IEnumerable<int?> SelectedValuesAsInt( bool noneAsNull = true )
+        {
+            if ( ItemIds == null || !ItemIds.Any() )
+            {
+                return null;
+            }
+
+            var result = ItemIds.Select( int.Parse ).Select( i => new int?( i ) ).ToList();
+
+            if ( noneAsNull )
+            {
+                if ( !result.Any() )
+                {
+                    return null;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets or sets the name of the item.
         /// </summary>
         /// <value>
@@ -193,6 +260,34 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfItemName.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the item names.
+        /// </summary>
+        /// <value>
+        /// The item names.
+        /// </value>
+        public IEnumerable<string> ItemNames
+        {
+            get
+            {
+                EnsureChildControls();
+                var names = new List<string>();
+
+                if ( !string.IsNullOrWhiteSpace( _hfItemName.Value ) )
+                {
+                    names.AddRange( _hfItemName.Value.Split( ',' ) );
+                }
+
+                return names;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemName.Value = string.Join( ",", value );
             }
         }
 
@@ -224,14 +319,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow multi select].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multi select]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiSelect { get; set; }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}' }});";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ) );
+            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}', allowMultiSelect: {2} }});";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();

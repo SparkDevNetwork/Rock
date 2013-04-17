@@ -103,11 +103,12 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
-    <Compile Include="Attribute\AccountsFieldAttribute.cs" />
+    <Compile Include="Attribute\AccountFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
@@ -158,13 +159,14 @@
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\AccountsFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileFieldType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Field\Types\CampusesFieldType.cs" />
     <Compile Include="Field\Types\CampusFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
-    <Compile Include="Field\Types\AccountsType.cs" />
+    <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
