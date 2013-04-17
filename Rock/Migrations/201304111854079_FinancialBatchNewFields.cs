@@ -46,10 +46,10 @@ namespace Rock.Migrations
             AddBlockType( "Finance - Financial Batch Details", "", "~/Blocks/Finance/FinancialBatchDetail.ascx", "ce34ce43-2ccf-4568-9aeb-3be203db3470" );
             AddBlockType( "Finance - Transaction Details", "", "~/Blocks/Finance/TransactionBlock.ascx", "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE" );
 
-            //add block
-            AddBlock( "ef65eff2-99ac-4081-8e09-32a04518683a", "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "Financial Batches", "default", "Content", 0, "B4B7A962-E162-47ED-8499-B7C7A7F41498" );
-            //AddBlock( "606bda31-a8fe-473a-b3f8-a00ecf7e06ec", "ce34ce43-2ccf-4568-9aeb-3be203db3470", "Financial Batch Details", "default", "Content", 0, "e7c8c398-0e1d-4bce-bc54-a02957228514" );
-            //AddBlock( "b67e38cb-2ef1-43ea-863a-37daa1c7340f", "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE", "Financial Transaction Details", "default", "Content", 0, "f125e7eb-da78-4840-9d00-4c8dd0dd4a27" );
+            // add blocks
+            AddBlock( "EF65EFF2-99AC-4081-8E09-32A04518683A", "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "Financial Batch", "", "Content", 0, "59F60553-095C-4DC5-9BF0-A5A1289D878B" );
+            AddBlock( "606bda31-a8fe-473a-b3f8-a00ecf7e06ec", "ce34ce43-2ccf-4568-9aeb-3be203db3470", "Financial Batch Details", "", "Content", 0, "e7c8c398-0e1d-4bce-bc54-a02957228514" );
+            AddBlock( "b67e38cb-2ef1-43ea-863a-37daa1c7340f", "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE", "Financial Transaction Details", "", "Content", 0, "f125e7eb-da78-4840-9d00-4c8dd0dd4a27" );
 
             //( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
             AddBlockTypeAttribute( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page Guid", "DetailPageGuid", "Advanced", "", 0, "", "2290806c-9e87-4960-9019-d4d7327591bb" );
@@ -57,7 +57,7 @@ namespace Rock.Migrations
 
             // Attrib Value for FinancialBatch:Detail Page Guid
             //string blockGuid, string attributeGuid, string value
-            AddBlockAttributeValue( "B4B7A962-E162-47ED-8499-B7C7A7F41498", "2290806c-9e87-4960-9019-d4d7327591bb", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
+            AddBlockAttributeValue( "59F60553-095C-4DC5-9BF0-A5A1289D878B", "2290806c-9e87-4960-9019-d4d7327591bb", "606bda31-a8fe-473a-b3f8-a00ecf7e06ec" );
             AddBlockAttributeValue( "e7c8c398-0e1d-4bce-bc54-a02957228514", "f70b3c73-3582-4fa4-b988-92880268310c", "b67e38cb-2ef1-43ea-863a-37daa1c7340f" );
         }
         
@@ -81,10 +81,10 @@ namespace Rock.Migrations
             DeleteAttribute( "2290806c-9e87-4960-9019-d4d7327591bb" );
             DeleteAttribute( "f70b3c73-3582-4fa4-b988-92880268310c" );
 
-            DeleteBlock( "B4B7A962-E162-47ED-8499-B7C7A7F41498" );
+            DeleteBlock( "59F60553-095C-4DC5-9BF0-A5A1289D878B" ); // Financial Batch
             DeleteBlock( "e7c8c398-0e1d-4bce-bc54-a02957228514" );
             DeleteBlock( "f125e7eb-da78-4840-9d00-4c8dd0dd4a27" );
-
+            
             DeleteBlockType( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" );
             DeleteBlockType( "ce34ce43-2ccf-4568-9aeb-3be203db3470" );
             DeleteBlockType( "1DE16F87-4A49-4A3C-A03E-B8488ECBEEBE" );
