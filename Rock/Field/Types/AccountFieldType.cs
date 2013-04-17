@@ -15,7 +15,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class AccountsType : FieldType
+    public class AccountFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)

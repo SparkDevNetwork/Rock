@@ -1,12 +1,12 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
-    window.Rock = window.Rock || {},
+    window.Rock = window.Rock || {};
     Rock.controls = {};
 
     Rock.controls.itemPicker = (function () {
         var _controlId,
             _restUrl,
-            _updateScrollbar = function (controlId) {
+            _updateScrollbar = function () {
                 var $container = $('#treeview-scroll-container_' + _controlId),
                     $dialog = $('#modal-scroll-container');
 
@@ -70,9 +70,8 @@
 
                 _updateScrollbar(_controlId);
             },
-            _initializeEventHandlers = function (controlId) {
+            _initializeEventHandlers = function () {
                 $('#' + _controlId + ' a.rock-picker').click(function (e) {
-                    e.preventDefault();
                     $(this).parent().siblings('.rock-picker').first().toggle();
                     _updateScrollbar(_controlId);
                 });
@@ -87,9 +86,9 @@
                         $('#btnSelectNone_' + _controlId).fadeOut(500);
                     });
 
-                $('#btnCancel_' + _controlId).click(function () {
+                $('#btnCancel_' + _controlId).click(function (e) {
                     $(this).parent().slideUp();
-                })
+                });
 
                 $('#btnSelectNone_' + _controlId).click(function (e) {
                     e.stopImmediatePropagation();
@@ -107,7 +106,7 @@
                     return false;
                 });
 
-                $('#btnSelect_' + _controlId).click(function () {
+                $('#btnSelect_' + _controlId).click(function (e) {
                     var treeViewData = $('#treeviewItems_' + _controlId).data('kendoTreeView'),
                         selectedNode = treeViewData.select(),
                         nodeData = treeViewData.dataItem(selectedNode),
@@ -132,10 +131,11 @@
 
         return {
             initialize: function (options) {
-                var itemList;
+                var itemList,
+                    showCheckboxes;
 
-                if (!options.controlId) throw 'ClientID is a required field.';
-                if (!options.restUrl) throw 'RestUrl is a required field.';
+                if (!options.controlId) throw '`controlId` is a required field.';
+                if (!options.restUrl) throw '`restUrl` is a required field.';
 
                 _controlId = options.controlId;
                 _restUrl = options.restUrl;
@@ -160,6 +160,14 @@
                     }
                 });
 
+                if (options.allowMultiSelect) {
+                    showCheckboxes = {
+                        checkChildren: true
+                    };
+                } else {
+                    showCheckboxes = false;
+                }
+
                 $('#treeviewItems_' + _controlId).kendoTreeView({
                     template: '<i class="#= item.IconCssClass #"></i> #= item.Name #',
                     dataSource: itemList,
@@ -182,18 +190,21 @@
                 bootbox.dialog('Are you sure you want to delete this ' + nameText + '?',
                     [
                         {
-                            "label": "OK", "class": "btn-primary", "callback": function () {
-                                var postbackJs = e.target.href;
-                                if (postbackJs == null) {
-                                    postbackJs = e.target.parentElement.href;
-                                }
+                            label: 'OK', 
+                            'class': 'btn-primary', 
+                            callback: function () {
+                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
+
                                 // need to do unescape because firefox might put %20 instead of spaces
                                 postbackJs = unescape(postbackJs);
-                                eval(postbackJs)
+                                
+                                // Careful!
+                                eval(postbackJs);
                             }
                         },
                         {
-                            "label": "Cancel", "class": "btn-secondary"
+                            label: 'Cancel',
+                            'class': 'btn-secondary'
                         }
                     ]);
             }
@@ -204,25 +215,32 @@
         var _controlId,
             _restUrl,
             _initializeEventHandlers = function () {
+                // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
+                // Might be a good opportunity to break the dependency on jQueryUI.
                 $('#personPicker_' + _controlId).autocomplete({
                     source: function (request, response) {
-                        $.ajax({
+                        var promise = $.ajax({
                             url: _restUrl + request.term,
-                            dataType: 'json',
-                            success: function (data, status, xhr) {
-                                $('#personPickerItems_' + _controlId)[0].innerHTML = '';
-                                response($.map(data, function (item) {
-                                    return item;
-                                }))
-                            },
-                            error: function (xhr, status, error) {
-                                console.log(status + ' [' + error + ']: ' + xhr.responseText);
-                            }
+                            dataType: 'json'
+                        });
+
+                        promise.done(function (data, status, xhr) {
+                            $('#personPickerItems_' + _controlId).first().html('');
+                            response($.map(data, function (item) {
+                                return item;
+                            }));
+                        });
+
+                        // Is this needed? If an error is thrown on the server, we should see an exception in the log now...
+                        promise.fail(function (xhr, status, error) {
+                            console.log(status + ' [' + error + ']: ' + xhr.responseText);
+
+                            // TODO: Display some feedback to the user that something went wrong?
                         });
                     },
                     minLength: 3,
                     html: true,
-                    appendTo: 'personPickerItems_' + _controlId,
+                    appendTo: '#personPickerItems_' + _controlId,
                     messages: {
                         noResults: function () {},
                         results: function () {}
@@ -240,9 +258,9 @@
                     // hide other open details
                     $('.rock-picker-select-item-details').each(function (index) {
                         var $el = $(this),
-                            currentItem = $el.parent().attr('data-person-id');
+                            $currentItem = $el.parent().attr('data-person-id');
 
-                        if (currentItem != $selectedItem) {
+                        if ($currentItem != $selectedItem) {
                             $el.slideUp();
                         }
                     });
@@ -255,15 +273,19 @@
                 });
 
                 $('#btnSelect_' + _controlId).click(function (e) {
-                    var radInput = $('#' + _controlId).find('input:checked');
+                    var radInput = $('#' + _controlId).find('input:checked'),
 
-                    var selectedValue = radInput.val();
-                    var selectedText = radInput.parent().text();
+                        selectedValue = radInput.val(),
+                        selectedText = radInput.parent().text(),
 
-                    var selectedPersonLabel = $('#selectedPersonLabel_' + _controlId);
+                        selectedPersonLabel = $('#selectedPersonLabel_' + _controlId),
 
-                    var hiddenPersonId = $('#hfPersonId_' + _controlId);
-                    var hiddenPersonName = $('#hfPersonName_' + _controlId);
+                        hiddenPersonId = $('#hfPersonId_' + _controlId),
+                        hiddenPersonName = $('#hfPersonName_' + _controlId);
+
+                    console.log(radInput);       // []
+                    console.log(selectedValue);  // undefined
+                    console.log(selectedText);   // ''
 
                     hiddenPersonId.val(selectedValue);
                     hiddenPersonName.val(selectedText);
@@ -273,44 +295,52 @@
 
                     $(this).parent().slideUp();
                 });
-
             };
 
         return {
             initialize: function (options) {
-                if (!options.controlId) throw 'ControlId is required.';
-                if (!options.restUrl) throw 'RestUrl is required.';
+                if (!options.controlId) throw '`controlId` is required.';
+                if (!options.restUrl) throw '`restUrl` is required.';
                 _controlId = options.controlId;
                 _restUrl = options.restUrl;
 
                 $.extend($.ui.autocomplete.prototype, {
-                    _renderItem: function (ul, item) {
-
+                    _renderItem: function ($ul, item) {
                         if (this.options.html) {
-
                             // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
                             // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                            var listItem = document.createElement("li");
-                            listItem.className = "rock-picker-select-item";
+                            var $label = $('<label/>').text(item.Name),
+
+                                $radio = $('<input type="radio" name="person-id" />')
+                                    .attr('id', item.Id)
+                                    .attr('value', item.Id)
+                                    .prependTo($label),
+
+                                $li = $('<li/>')
+                                    .addClass('rock-picker-select-item')
+                                    .attr('data-person-id', item.Id)
+                                    .html($label),
+
+                                $resultSection = $(this.options.appendTo);
+
+                            $(item.PickerItemDetailsHtml).appendTo($li);
+
                             if (!item.IsActive) {
-                                listItem.className += " inactive";
+                                $li.addClass('inactive');
                             }
-                            listItem.setAttribute('data-person-id', item.Id);
-                            listItem.innerHTML = '<label><input type="radio" id="' + item.Id + '" name="person-id" value="' + item.Id + '">' + item.Name + '</label>'
-                                    + item.PickerItemDetailsHtml;
-                            var myResultSection = $('#' + this.options.appendTo);
-                            return myResultSection.append(listItem);
+
+                            return $resultSection.append($li);
                         }
                         else {
-                            return $("<li></li>")
-                                    .data("item.autocomplete", item)
-                                    .append($("<a></a>")["text"](item.label))
-                                    .appendTo(ul);
+                            return $('<li></li>')
+                                .data('item.autocomplete', item)
+                                .append($('<a></a>').text(item.label))
+                                .appendTo($ul);
                         }
                     }
                 });
-                console.log('initializing person picker');
+                
                 _initializeEventHandlers();
             }
         }
