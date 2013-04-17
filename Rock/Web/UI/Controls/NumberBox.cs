@@ -60,18 +60,29 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NumberBox" /> class.
+        /// </summary>
+        public NumberBox()
+        {
+            rangeValidator = new RangeValidator();
+            rangeValidator.MinimumValue = int.MinValue.ToString();
+            rangeValidator.MaximumValue = int.MaxValue.ToString();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
 
-            rangeValidator = new RangeValidator();
             rangeValidator.ControlToValidate = this.ID;
             rangeValidator.ID = this.ID + "_RV";
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
             rangeValidator.Type = ValidationDataType.Integer;
-            rangeValidator.MinimumValue = int.MinValue.ToString();
-            rangeValidator.MaximumValue = int.MaxValue.ToString();
             rangeValidator.ErrorMessage = "Numerical value is required";
 
             Controls.Add( rangeValidator );
@@ -89,7 +100,7 @@ namespace Rock.Web.UI.Controls
             {
                 rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
             }
-            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double : ValidationDataType.Integer;
+            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double: ValidationDataType.Integer;
             rangeValidator.Enabled = true;
             rangeValidator.RenderControl( writer );
         }
