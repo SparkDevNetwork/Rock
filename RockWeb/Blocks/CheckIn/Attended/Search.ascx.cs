@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             base.OnInit( e );
 
-            if (!KioskCurrentlyActive)
+            if ( !KioskCurrentlyActive )
             {
                 GoToWelcomePage();
             }
@@ -37,23 +37,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
                 CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
 
+                // move this to next page
                 var errors = new List<string>();
-                if (ProcessActivity("Family Search", out errors))
+                if ( ProcessActivity( "Family Search", out errors ) )
                 {
                     SaveState();
-                    GoToAttendedFamilySelectPage();
+                    GoToFamilySelectPage();
                 }
                 else
                 {
-                    string errorMsg = "<ul><li>" + errors.AsDelimited("</li><li>") + "</li></ul>";
+                    string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                     maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                }
+                }           
             }
         }
 
         protected void lbAdmin_Click( object sender, EventArgs e )
         {
-            GoToAttendedAdminPage();
+            GoToAdminPage();
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
