@@ -3,6 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -13,57 +16,46 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Payment Gateway POCO class.
+    /// Person Bank Account POCO class.
     /// </summary>
-    [Table( "FinancialGateway" )]
+    [Table( "FinancialPersonBankAccount" )]
     [DataContract]
-    public partial class FinancialGateway : Model<FinancialGateway>
+    public partial class FinancialPersonBankAccount : Model<FinancialPersonBankAccount>
     {
 
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the person id.
         /// </summary>
         /// <value>
-        /// The name.
-        /// </value>
-        [Required]
-        [MaxLength( 50 )]
-        [DataMember( IsRequired = true )]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        /// <value>
-        /// The description.
+        /// The person id.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity type id for the associated Gateway MEF component
+        /// Gets or sets the account number.
         /// </summary>
         /// <value>
-        /// The entity type id.
+        /// The account number.
         /// </value>
         [Required]
+        [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        public int EntityTypeId { get; set; }
+        public string AccountNumber { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the person.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The person.
         /// </value>
-        [DataMember]
-        public virtual EntityType EntityType { get; set; }
+        public virtual Person Person { get; set; }
 
         #endregion
 
@@ -77,7 +69,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.AccountNumber.ToString();
         }
 
         #endregion
@@ -86,17 +78,18 @@ namespace Rock.Model
 
     #region Entity Configuration
 
+
     /// <summary>
-    /// Payment Gateway Configuration class.
+    /// Transaction Configuration class.
     /// </summary>
-    public partial class FinancialGatewayConfiguration : EntityTypeConfiguration<FinancialGateway>
+    public partial class FinancialPersonBankAccountConfiguration : EntityTypeConfiguration<FinancialPersonBankAccount>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialGatewayConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FinancialPersonBankAccountConfiguration"/> class.
         /// </summary>
-        public FinancialGatewayConfiguration()
+        public FinancialPersonBankAccountConfiguration()
         {
-            this.HasRequired( g => g.EntityType ).WithMany().HasForeignKey( g => g.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( b => b.Person ).WithMany().HasForeignKey( b => b.PersonId ).WillCascadeOnDelete( true );
         }
     }
 

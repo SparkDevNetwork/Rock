@@ -154,6 +154,18 @@
     <Compile Include="Migrations\201304181644325_AttendanceFields.Designer.cs">
       <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304181732376_FinancialPersonAccount.cs" />
+    <Compile Include="Migrations\201304181732376_FinancialPersonAccount.Designer.cs">
+      <DependentUpon>201304181732376_FinancialPersonAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304181823389_TransactionRefund.cs" />
+    <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
+      <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\FinancialTransactionRefund.cs" />
+    <Compile Include="Model\FinancialPersonSavedAccount.cs" />
+    <Compile Include="Model\FinancialPersonBankAccount.cs" />
+    <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1402,6 +1414,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304181644325_AttendanceFields.resx">
       <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181732376_FinancialPersonAccount.resx">
+      <DependentUpon>201304181732376_FinancialPersonAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181823389_TransactionRefund.resx">
+      <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

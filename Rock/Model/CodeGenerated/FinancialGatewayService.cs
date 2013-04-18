@@ -80,9 +80,6 @@ namespace Rock.Model
                 var target = new FinancialGateway();
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.ApiUrl = source.ApiUrl;
-                target.ApiKey = source.ApiKey;
-                target.ApiSecret = source.ApiSecret;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
