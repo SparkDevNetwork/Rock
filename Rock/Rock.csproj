@@ -150,7 +150,12 @@
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304180054257_FinancialBatchNewFields.cs" />
+    <Compile Include="Migrations\201304180054257_FinancialBatchNewFields.Designer.cs">
+      <DependentUpon>201304180054257_FinancialBatchNewFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\BatchSearchValue.cs" />
+    <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1396,6 +1401,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304162319340_AddNewFields.resx">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304180054257_FinancialBatchNewFields.resx">
+      <DependentUpon>201304180054257_FinancialBatchNewFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
