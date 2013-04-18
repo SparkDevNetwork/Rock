@@ -107,7 +107,7 @@
                             </div>
 
                             <div class="span4">
-                                <div class="personsummary">
+                                <div class="summary">
                                     <div class="tags">#tags here#</div>
                                     <div class="demographics">
                                         36 yrs old <small>(2/10)</small> <br />
@@ -295,7 +295,7 @@
                 </div> 
 			</div>
 
-            <div class="container-fluid pagetabs">
+            <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span8">
                         <section class="widget persontimeline">

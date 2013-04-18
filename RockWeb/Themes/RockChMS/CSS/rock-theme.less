@@ -74,9 +74,14 @@ h1 {
     padding: 0 6px;
 }
 
-.container-fluid {
-    padding-left: 40px;
-    padding-right: 40px;
+// add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
+@media (min-width: 992px)
+{
+    .container-fluid
+    {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
 }
 
 //
@@ -171,7 +176,7 @@ a {
 }
 
 .pagenav-header {
-	font-family: @rockSansFontFamilyBold;
+	font-family: @rockFontFamilyBold;
 }
 
 
@@ -342,7 +347,6 @@ a {
 .pagetitle .navbar-inner,
 .persondetails-header .navbar-inner {
 	background-color: @rockPageTitleBackground;
-	padding-bottom: 12px;
 	border-bottom: 1px solid darken(@rockPageTitleBackground, 10%);
 	background-image: none;
     filter: initial;
