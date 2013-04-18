@@ -13,8 +13,17 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region CheckIn Search Type
+        #region Communication Channel Type
 
+        /// <summary>
+        /// Email communication
+        /// </summary>
+        public const string COMMUNICATION_CHANNEL_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
+
+        #endregion
+
+        #region CheckIn Search Type
+         
         /// <summary>
         /// Phone number search type
         /// 
