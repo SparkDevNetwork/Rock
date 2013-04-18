@@ -8,17 +8,20 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.CheckIn;
 using Rock.Model;
 
-namespace RockWeb.Blocks.CheckIn
+namespace RockWeb.Blocks.CheckIn.Attended
 {
-    [Description( "Check-In Family Select Block" )]
+    [Description( "Attended Check-In Family Select Block" )]
     public partial class FamilySelect : CheckInBlock
     {
+        #region Control Methods
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -29,6 +32,9 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
+                // check for families that match the search criteria 
+                
+                
                 if ( !Page.IsPostBack )
                 {
                     if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
@@ -43,21 +49,27 @@ namespace RockWeb.Blocks.CheckIn
                             foreach ( var family in CurrentCheckInState.CheckIn.Families )
                             {
                                 family.Selected = true;
+                                // set button selected 
                             }
 
-                            ProcessSelection();
+                            ProcessFamily();
                         }
                     }
                     else
                     {
-                        rSelection.DataSource = CurrentCheckInState.CheckIn.Families;
-                        rSelection.DataBind();
+                        rFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+                        rFamily.DataBind();
+                        // if 1 family, set button selected
                     }
                 }
             }
         }
 
-        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
+        #endregion
+
+        #region Edit Events
+
+        protected void rFamily_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
@@ -66,7 +78,28 @@ namespace RockWeb.Blocks.CheckIn
                 if ( family != null )
                 {
                     family.Selected = true;
-                    ProcessSelection();
+                    ( (HtmlControl)e.Item.FindControl( "lbSelectFamily" ) ).Attributes.Add( "class", "active" );
+                    ProcessPerson();
+                    // set button selected 
+                }
+            }
+        }
+
+        protected void rPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            if ( KioskCurrentlyActive )
+            {
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    int id = Int32.Parse( e.CommandArgument.ToString() );
+                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
+                    if ( familyMember != null )
+                    {
+                        familyMember.Selected = true;
+                        // set button selected 
+                        
+                    }
                 }
             }
         }
@@ -75,11 +108,30 @@ namespace RockWeb.Blocks.CheckIn
         {
             GoBack();
         }
-
-        protected void lbCancel_Click( object sender, EventArgs e )
+                
+        protected void lbNext_Click( object sender, EventArgs e )
         {
-            CancelCheckin();
+            GoNext();   
         }
+
+        protected void lbAddFamily_Click( object sender, EventArgs e)
+        {
+
+        }
+
+        protected void lbAddPerson_Click( object sender, EventArgs e)
+        {
+
+        }
+
+        protected void lbAddVisitor_Click( object sender, EventArgs e)
+        {
+            
+        }
+
+        #endregion
+
+        # region Internal Methods 
 
         private void GoBack()
         {
@@ -99,13 +151,12 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        private void ProcessSelection()
+        private void ProcessFamily()
         {
             var errors = new List<string>();
             if ( ProcessActivity( "Person Search", out errors ) )
-            {
-                SaveState();
-                GoToPersonSelectPage();
+            {   
+                ProcessPerson();
             }
             else
             {
@@ -114,6 +165,41 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        private void ProcessPerson()
+        {
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            if ( family != null )
+            {
+                if ( family.People.Count == 1 )
+                {
+                    if ( UserBackedUp )
+                    {
+                        GoBack();
+                    }
+                    else
+                    {
+                        foreach ( var familyMember in family.People )
+                        {
+                            familyMember.Selected = true;
+                            // set button selected 
+                        }
+                    }
+                }
+
+                rPerson.DataSource = family.People;
+                rPerson.DataBind();               
+            }
+        }
+
+
+
+        private void GoNext()
+        {
+            SaveState();
+            GoToGroupTypeSelectPage();
+        }
+
+        #endregion
 
     }
 }

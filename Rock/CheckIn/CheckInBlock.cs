@@ -26,7 +26,7 @@ namespace Rock.CheckIn
     [TextField( "Group Select Page Url", "The url of the Check-In group select page", false, "~/checkin/group", "Page Routes", 7 )]
     [TextField( "Time Select Page Url", "The url of the Check-In group select page", false, "~/checkin/time", "Page Routes", 8 )]
     [TextField( "Success Page Url", "The url of the Check-In success page", false, "~/checkin/success", "Page Routes", 9 )]
-    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0)]
+    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0 )]
     public abstract class CheckInBlock : RockBlock
     {
         /// <summary>
@@ -108,7 +108,7 @@ namespace Rock.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
-        protected bool ProcessActivity(string activityName, out List<string> errorMessages)
+        protected bool ProcessActivity( string activityName, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -151,7 +151,7 @@ namespace Rock.CheckIn
                 }
 
             }
-            
+
             return false;
         }
 
@@ -284,9 +284,12 @@ namespace Rock.CheckIn
             Response.Redirect( GetAttributeValue( "SuccessPageUrl" ), false );
         }
 
+        /// <summary>
+        /// Gets the state.
+        /// </summary>
         private void GetState()
         {
-            if ( Session["CheckInKioskId"] != null)
+            if ( Session["CheckInKioskId"] != null )
             {
                 CurrentKioskId = (int)Session["CheckInKioskId"];
             }
@@ -308,8 +311,8 @@ namespace Rock.CheckIn
                     }
                 }
             }
-            
-            if (CurrentCheckInState == null && CurrentKioskId.HasValue && CurrentGroupTypeIds != null )
+
+            if ( CurrentCheckInState == null && CurrentKioskId.HasValue && CurrentGroupTypeIds != null )
             {
                 var kioskStatus = KioskCache.GetKiosk( CurrentKioskId.Value );
 
