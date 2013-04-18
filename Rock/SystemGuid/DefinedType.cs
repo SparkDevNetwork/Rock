@@ -13,6 +13,12 @@ namespace Rock.SystemGuid
     /// </summary>
     public class DefinedType
     {
+
+        /// <summary>
+        /// Guid for checkin search type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
+
         /// <summary>
         /// Guid for Device Type
         /// </summary>
