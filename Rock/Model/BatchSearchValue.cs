@@ -18,16 +18,15 @@ namespace Rock.Model
         /// <value>
         /// The date range.
         /// </value>
-        public RangeValue<DateTime?> DateRange { get; set; }
+        public DateTime? BatchDate { get; set; }
         
-
-     /// <summary>
+        /// <summary>
         /// Gets or sets the closed value
         /// </summary>
         /// <value>
         /// The Closed value.
         /// </value>
-        public bool? IsClosed { get; set; }
+        public BatchStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the title
@@ -36,14 +35,6 @@ namespace Rock.Model
         /// The title.
         /// </value>
         public string Title { get; set; }
-
-    /// <summary>
-        /// Gets or sets the type of the credit card.
-        /// </summary>
-        /// <value>
-        /// The type of the batch.
-        /// </value>
-        public int? BatchTypeValueId { get; set; }
-    
+           
     }
 }

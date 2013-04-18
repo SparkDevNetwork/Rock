@@ -21,14 +21,10 @@
                        
                     </div>
                     <div class="span3">
-                         <Rock:DateTimePicker ID="dtBatchDateStart" TabIndex="3"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="Batch Date Start" />
-                        <Rock:DateTimePicker ID="dtBatchDateEnd" TabIndex="4"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Batch Date End" />
-
-                        <Rock:LabeledCheckBox TextAlign="Right" ID="cbIsClosed" TabIndex="5"  runat="server" LabelText="Is Closed" />
-                        <%--<Rock:LabeledDropDownList ID="ddlEntity" runat="server" LabelText="Entity" />--%>
+                        <Rock:DateTimePicker ID="dtBatchDate" TabIndex="3"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Batch Date" />
+                        <Rock:LabeledDropDownList ID="ddlStatus" TabIndex="5" runat="server" LabelText="Status"></Rock:LabeledDropDownList>
                         </div>
                     <div class="span4">
-                        <Rock:LabeledDropDownList ID="ddlBatchType2" runat="server" LabelText="Batch Type" TabIndex="6"  />
                         <Rock:DataTextBox ID="tbControlAmount" runat="server" LabelText="Control Amount" TabIndex="7" 
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
                         </div>

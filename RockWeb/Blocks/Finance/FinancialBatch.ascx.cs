@@ -83,16 +83,12 @@ namespace RockWeb.Blocks.Administration
         {
             switch ( e.Key )
             {
-                case "From Date":
-                case "Through Date":
-
-                    DateTime fromdate = DateTime.Now;
-                    e.Value = fromdate.ToString();
-                    
-
+                case "Date":
+                    DateTime batchDate = DateTime.Now;
+                    e.Value = batchDate.ToString();
                     break;
 
-                case "IsClosed":
+                case "Status":
                 case "Title":
                     break;
 
@@ -107,7 +103,6 @@ namespace RockWeb.Blocks.Administration
                             e.Value = definedValue.Name;
                         }
                     }
-
                     break;
             }
         }
@@ -119,13 +114,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-
-            rFBFilter.SaveUserPreference( "From Date", dtFromDate.Text );
-            rFBFilter.SaveUserPreference( "Through Date", dtThroughDate.Text );
+            rFBFilter.SaveUserPreference( "From Date", dtBatchDate.Text );
             rFBFilter.SaveUserPreference( "Title", txtTitle.Text );
-            rFBFilter.SaveUserPreference( "Is Closed", cbIsClosedFilter.Checked.ToString() );
-            rFBFilter.SaveUserPreference( "Batch Type", ddlBatchType.SelectedValue != All.Id.ToString() ? ddlBatchType.SelectedValue : string.Empty );
-
+            rFBFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             BindGrid();
         }
 
@@ -138,13 +129,9 @@ namespace RockWeb.Blocks.Administration
             {
                 fromDate = DateTime.Today;
             }
-            dtFromDate.Text = fromDate.ToShortDateString();
-            dtThroughDate.Text = rFBFilter.GetUserPreference( "Through Date" );
+            dtBatchDate.Text = fromDate.ToShortDateString();
             txtTitle.Text = rFBFilter.GetUserPreference( "Title" );
-            cbIsClosedFilter.Checked = rFBFilter.GetUserPreference( "Is Closed" ) == "checked" ? true : false;
-
-            BindDefinedTypeDropdown( ddlBatchType, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE, "Batch Type" );           
-
+            ddlStatus.SelectedValue = rFBFilter.GetUserPreference( "Status" );
         }
 
         private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
@@ -186,15 +173,9 @@ namespace RockWeb.Blocks.Administration
         {
             BatchSearchValue searchValue = new BatchSearchValue();
 
-            DateTime? fromBatchDate = dtFromDate.SelectedDate;
-            DateTime? toBatchDate = dtThroughDate.SelectedDate;
-            searchValue.DateRange = new RangeValue<DateTime?>( fromBatchDate, toBatchDate );
-            if ( ddlBatchType.SelectedValue != "-1" )
-            {
-                searchValue.BatchTypeValueId = int.Parse( ddlBatchType.SelectedValue );
-            }
+            searchValue.BatchDate = dtBatchDate.SelectedDate;
             searchValue.Title = txtTitle.Text;
-            searchValue.IsClosed = cbIsClosedFilter.Checked ? true : false;
+            searchValue.Status = ddlStatus.SelectedIndex > -1 ? ddlStatus.SelectedValueAsEnum<BatchStatus>() : BatchStatus.Open;
             return searchValue;
         }
      

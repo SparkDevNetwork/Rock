@@ -67,7 +67,6 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
-                BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE );  
                 BindGrid();
             }
         }
@@ -86,7 +85,6 @@ namespace RockWeb.Blocks.Administration
 
         void transactionGrid_GridRebind( object sender, EventArgs e )
         {
-            BindDefinedTypeDropdown( ddlBatchType2, Rock.SystemGuid.DefinedType.FINANCIAL_BATCH_TYPE );            
             BindGrid();
         }
 
@@ -121,20 +119,20 @@ namespace RockWeb.Blocks.Administration
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEditValue( Rock.Model.FinancialBatch batchValue )
-            //int batchId )
         {
             
             hfIdValue.Value = batchValue.Id.ToString();
             
             lValue.Text = "Edit";
             tbName.Text = batchValue.Name;
-            dtBatchDateStart.SelectedDate = batchValue.BatchDateStart;
-            dtBatchDateEnd.SelectedDate = batchValue.BatchDateEnd;
+            dtBatchDate.SelectedDate = batchValue.BatchDate;
             if (batchValue.CampusId.HasValue)
+            {
                 CampusPicker1.SelectedCampusIds.Add( (int)batchValue.CampusId );
-            //ddlEntity.SetValue( batchValue.EntityId );
-            cbIsClosed.Checked = batchValue.IsClosed;
-            ddlBatchType2.SetValue( batchValue.EntityId );
+            }
+            ddlStatus.BindToEnum( typeof(BatchStatus) );
+            // BindToEnum( batchValue.Status )
+             
             tbControlAmount.Text = batchValue.ControlAmount.ToString();
 
             setTransactionDataSource( batchValue.Transactions.ToList() );
@@ -164,16 +162,13 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 financialBatch.Name = tbName.Text;
-                financialBatch.BatchDateStart = dtBatchDateStart.SelectedDate;
-                financialBatch.BatchDateEnd = dtBatchDateEnd.SelectedDate;
+                financialBatch.BatchDate = dtBatchDate.SelectedDate;
                 if (CampusPicker1.SelectedCampusIds.Count > 0)
                     financialBatch.CampusId =  CampusPicker1.SelectedCampusIds[0];
 
-            //    financialBatch.EntityId = ddlEntity.SelectedValueAsInt();
-                financialBatch.IsClosed = cbIsClosed.Checked;
-                financialBatch.BatchTypeValueId = ddlBatchType2.SelectedValueAsInt().HasValue ? (int)ddlBatchType2.SelectedValueAsInt() : -1;
-                float fcontrolamt = 0f;
-                float.TryParse( tbControlAmount.Text, out fcontrolamt );
+                financialBatch.Status = (BatchStatus) ddlStatus.SelectedIndex;
+                decimal fcontrolamt = 0;
+                decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
                 financialBatch.ControlAmount = fcontrolamt;
 
                 financialBatchService.Save( financialBatch, CurrentPersonId );
@@ -187,12 +182,9 @@ namespace RockWeb.Blocks.Administration
         {
             hfIdValue.Value = string.Empty;
             tbName.Text = string.Empty;
-            dtBatchDateStart.SelectedDate = null;
-            dtBatchDateEnd.SelectedDate = null;
+            dtBatchDate.SelectedDate = null;
+            ddlStatus.SelectedValue = BatchStatus.Open.ToString();
             CampusPicker1.SelectedCampusIds.Clear();
-            //ddlEntity.SetValue( -1 );
-            cbIsClosed.Checked = false;
-            ddlBatchType2.SetValue( -1 );
             tbControlAmount.Text = string.Empty;
         }
 
@@ -251,7 +243,6 @@ namespace RockWeb.Blocks.Administration
                 financialTransactionService.Delete( financialTransaction, CurrentPersonId );
                 financialTransactionService.Save( financialTransaction, CurrentPersonId );
             }
-
         }
 
         #endregion
