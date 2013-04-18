@@ -146,6 +146,9 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Communication\TransportComponent.cs" />
+    <Compile Include="Communication\TransportContainer.cs" />
+    <Compile Include="Communication\Transport\SMTP.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
@@ -161,6 +164,10 @@
     <Compile Include="Migrations\201304181823389_TransactionRefund.cs" />
     <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304182147089_CommunicationTransport.cs" />
+    <Compile Include="Migrations\201304182147089_CommunicationTransport.Designer.cs">
+      <DependentUpon>201304182147089_CommunicationTransport.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
@@ -1420,6 +1427,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304181823389_TransactionRefund.resx">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304182147089_CommunicationTransport.resx">
+      <DependentUpon>201304182147089_CommunicationTransport.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

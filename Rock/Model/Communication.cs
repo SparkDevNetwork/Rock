@@ -58,6 +58,15 @@ namespace Rock.Model
         public string Subject { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication channel value id.
+        /// </summary>
+        /// <value>
+        /// The communication channel value id.
+        /// </value>
+        [DataMember]
+        public int CommunicationChannelValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets any additional merge fields.  
         /// </summary>
         /// <value>
@@ -95,6 +104,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Person Sender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication channel value.
+        /// </summary>
+        /// <value>
+        /// The communication channel value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue CommunicationChannelValue { get; set; }
 
         /// <summary>
         /// Gets or sets the recipients.
@@ -165,6 +183,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationConfiguration()
         {
+            this.HasRequired( c => c.CommunicationChannelValue ).WithMany().HasForeignKey( c => c.CommunicationChannelValueId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.Sender ).WithMany().HasForeignKey( c => c.SenderPersonId ).WillCascadeOnDelete( false );
         }
     }
