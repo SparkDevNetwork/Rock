@@ -11,12 +11,19 @@
         </Rock:GridFilter>
         <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
             <Columns>
-                <asp:BoundField DataField="LastDate" HeaderText="Last Date" DataFormatString="{0:d}" />
-                <asp:BoundField DataField="SiteName" HeaderText="Site Name" />
-                <asp:BoundField DataField="PageName" HeaderText="Page" />
-                <asp:BoundField DataField="Description" HeaderText="Exception" />
-                <asp:BoundField DataField="TotalCount" HeaderText="Total Count" />
-                <asp:BoundField DataField="SubsetCount" HeaderText="7 Day Count" />
+                <asp:BoundField DataField="LastExceptionDate" HeaderText="Last Date" DataFormatString="{0:d}" SortExpression="LastExceptionDate" />
+                <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
+                <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
+                <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" />
+                <asp:TemplateField SortExpression="SubsetCount">
+                    <HeaderTemplate>
+                        <asp:Label ID="lblSubsetHeader" runat="server" />
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <%# Eval("SubsetCount") %>
+                    </ItemTemplate>
+                </asp:TemplateField>
             </Columns>
         </Rock:Grid>
     </ContentTemplate>
