@@ -55,6 +55,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
+        /// Guid for Financial Transaction Type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
+
+        /// <summary>
         /// Guid for Financial transaction image type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39";
