@@ -6,6 +6,7 @@
     Rock.controls.itemPicker = (function () {
         var _controlId,
             _restUrl,
+            _isMultiSelect = false,
             _updateScrollbar = function () {
                 var $container = $('#treeview-scroll-container_' + _controlId),
                     $dialog = $('#modal-scroll-container');
@@ -43,6 +44,65 @@
                 initialItem = treeViewData.dataSource.get(itemId);
                 return initialItem;
             },
+            _initializeCheckboxes = function () {
+                var $treeView = $('#treeviewItems_' + _controlId),
+                    findCheckedNodes = function (nodes, selectedNodes) {
+                        for (var i = 0; i < nodes.length; i++) {
+                            if (nodes[i].checked) {
+                                selectedNodes.push({ id: nodes[i].Id, name: nodes[i].Name, uid: nodes[i].uid });
+                            }
+
+                            if (nodes[i].hasChildren) {
+                                findCheckedNodes(nodes[i].children.view(), selectedNodes);
+                            }
+                        }
+                    },
+                    selectedNodes = [];
+
+                $treeView.data('kendoTreeView').dataSource.bind('change', function () {
+                    var nodes = $treeView.data('kendoTreeView').dataSource.view(),
+                        $selectedItemLabel = $('#selectedItemLabel_' + _controlId),
+                        $hiddenItemId = $('#hfItemId_' + _controlId),
+                        $hiddenItemName = $('#hfItemName_' + _controlId),
+                        ids,
+                        names,
+                        selectedValues = '0',
+                        selectedNames = '<none>';;
+                    
+                    selectedNodes = [];
+                    findCheckedNodes(nodes, selectedNodes);
+
+                    if (selectedNodes.length) {
+                        ids = [];
+                        names = [];
+
+                        for (var i = 0; i < selectedNodes.length; i++) {
+                            ids.push(selectedNodes[i].id);
+                            names.push(selectedNodes[i].name);
+                        }
+
+                        selectedValues = ids.join(',');
+                        selectedNames = names.join(', ');
+                    }
+
+                    $hiddenItemId.val(selectedValues);
+                    $hiddenItemName.val(selectedNames);
+                    $selectedItemLabel.val(selectedValues);
+                    $selectedItemLabel.text(selectedNames);
+                });
+
+                // Kendo TreeView does not participate in ViewState, so checkboxes must
+                // be re-populated after PostBack from cached values.
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+                    var data = $treeView.data('kendoTreeView'),
+                        node;
+
+                    for (var i = 0; i < selectedNodes.length; i++) {
+                        node = data.findByUid(selectedNodes[i].uid);
+                        $(node).find(':checkbox').attr('checked', true);
+                    }
+                });
+            },
             _onDataBound = function () {
                 var treeViewData = $('#treeviewItems_' + _controlId).data('kendoTreeView'),
                     selectedNode = treeViewData.select(),
@@ -69,6 +129,10 @@
                 }
 
                 _updateScrollbar(_controlId);
+
+                if (_isMultiSelect) {
+                    _initializeCheckboxes();
+                }
             },
             _initializeEventHandlers = function () {
                 $('#' + _controlId + ' a.rock-picker').click(function (e) {
@@ -116,15 +180,18 @@
                         $hiddenItemId = $('#hfItemId_' + _controlId),
                         $hiddenItemName = $('#hfItemName_' + _controlId);
 
-                    if (nodeData) {
-                        selectedValue = nodeData.Id;
-                        selectedText = nodeData.Name;
+                    if (!_isMultiSelect) {
+                        if (nodeData) {
+                            selectedValue = nodeData.Id;
+                            selectedText = nodeData.Name;
+                        }
+
+                        $hiddenItemId.val(selectedValue);
+                        $hiddenItemName.val(selectedText);
+                        $selectedItemLabel.val(selectedValue);
+                        $selectedItemLabel.text(selectedText);
                     }
 
-                    $hiddenItemId.val(selectedValue);
-                    $hiddenItemName.val(selectedText);
-                    $selectedItemLabel.val(selectedValue);
-                    $selectedItemLabel.text(selectedText);
                     $(this).parent().slideUp();
                 });
             };
@@ -162,8 +229,10 @@
 
                 if (options.allowMultiSelect) {
                     showCheckboxes = {
-                        checkChildren: true
+                        checkChildren: true,
+                        template: '<input type="checkbox" name="account[#= item.Id #]" data-id="#= item.Id #" />'
                     };
+                    _isMultiSelect = true;
                 } else {
                     showCheckboxes = false;
                 }
@@ -173,6 +242,7 @@
                     dataSource: itemList,
                     dataTextField: 'Name',
                     dataImageUrlField: 'IconSmallUrl',
+                    checkboxes: showCheckboxes,
                     dataBound: _onDataBound,
                     select: _updateScrollbar
                 });
