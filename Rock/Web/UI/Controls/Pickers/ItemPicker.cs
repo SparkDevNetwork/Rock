@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -219,22 +220,21 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public IEnumerable<int?> SelectedValuesAsInt( bool noneAsNull = true )
         {
+            var ids = new List<int?>();
+
             if ( ItemIds == null || !ItemIds.Any() )
+            {
+                return ids;
+            }
+
+            ids.AddRange( ItemIds.Select( s => new int?( int.Parse( s ) ) ) );
+
+            if ( noneAsNull && !ids.Any() )
             {
                 return null;
             }
 
-            var result = ItemIds.Select( int.Parse ).Select( i => new int?( i ) ).ToList();
-
-            if ( noneAsNull )
-            {
-                if ( !result.Any() )
-                {
-                    return null;
-                }
-            }
-
-            return result;
+            return ids;
         }
 
         /// <summary>

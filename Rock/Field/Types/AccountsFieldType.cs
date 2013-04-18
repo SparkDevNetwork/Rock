@@ -1,4 +1,8 @@
-﻿
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +13,9 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class AccountsFieldType : FieldType
     {
         /// <summary>
