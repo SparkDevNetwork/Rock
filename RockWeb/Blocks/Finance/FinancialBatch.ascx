@@ -5,11 +5,9 @@
         <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
-            <Rock:DateTimePicker ID="dtFromDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateStart" LabelText="From Date" />
-            <Rock:DateTimePicker ID="dtThroughDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDateEnd" LabelText="Through Date" />
+            <Rock:DateTimePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Date" />
             <Rock:LabeledTextBox ID="txtTitle" runat="server" LabelText="Title"></Rock:LabeledTextBox>
-            <Rock:LabeledCheckBox ID="cbIsClosedFilter" runat="server" LabelText="Is Closed" />
-            <Rock:LabeledDropDownList ID="ddlBatchType" runat="server" LabelText="Batch Type" />
+            <Rock:LabeledDropDownList ID="ddlStatus" runat="server" LabelText="Status" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="grdFinancialBatch" runat="server" EmptyDataText="No Batches Found" OnRowDataBound="grdFinancialBatch_RowDataBound"
@@ -17,12 +15,13 @@
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                <asp:TemplateField HeaderText="Date Range"><%--SortExpression="BatchDateStart"--%>
+                <asp:TemplateField HeaderText="Date">
                     <ItemTemplate>
-                        <span><%# Eval("BatchDateStart") %> to <%# Eval("BatchDateEnd") %></span>
+                        <span><%# Eval("BatchDate") %></span>
 
                     </ItemTemplate>
                 </asp:TemplateField>
+                <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
                 <Rock:BoolField DataField="IsClosed" HeaderText="Is Closed" SortExpression="IsClosed" />
 
                 <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />

@@ -79,7 +79,7 @@ namespace Rock.Model
             {
                 var target = new FinancialBatch();
                 target.Name = source.Name;
-                target.BatchDateTime = source.BatchDateTime;
+                target.BatchDate = source.BatchDate;
                 target.Status = source.Status;
                 target.CampusId = source.CampusId;
                 target.AccountingSystemCode = source.AccountingSystemCode;

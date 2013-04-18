@@ -21,10 +21,9 @@ namespace Rock.Model
     [Table("FinancialBatch")]
     [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>
-    {
-        
-		#region Entity Properties
-		
+    {        
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -36,22 +35,13 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the batch date start.
+        /// Gets or sets the batch date.
         /// </summary>
         /// <value>
-        /// The batch date start.
+        /// The batch date.
         /// </value>
         [DataMember]
-        public DateTime? BatchDateStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the batch date end.
-        /// </summary>
-        /// <value>
-        /// The batch date end.
-        /// </value>
-        [DataMember]
-        public DateTime? BatchDateEnd { get; set; }
+        public DateTime? BatchDate { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
@@ -103,17 +93,6 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the Batch Type Value Id.
-        /// </summary>
-        /// <value>
-        /// Batch Type Value Id.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        [ForeignKey( "BatchType" )]
-        public int BatchTypeValueId { get; set; }
-
-        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
@@ -138,7 +117,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
    #region EntityConfiguration
