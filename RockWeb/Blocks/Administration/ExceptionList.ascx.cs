@@ -23,13 +23,18 @@ namespace RockWeb.Blocks.Administraton
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-           
-            gExceptionList.DataKeyNames = new string[] { "id" };
+
+            btnClearExceptions.Visible = IsUserAuthorized( "Edit" );
+
+            gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
-            
+            gExceptionList.RowDataBound += gExceptionList_RowDataBound;
+
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
             fExceptionList.DisplayFilterValue += fExceptionList_DisplayFilterValue;
         }
+
+
 
         protected override void OnLoad( EventArgs e )
         {
@@ -147,11 +152,31 @@ namespace RockWeb.Blocks.Administraton
             BindGrid();
         }
 
+        void gExceptionList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.Header )
+            {
+                Label headerLbl = (Label)e.Row.FindControl( "lblSubsetHeader" );
+                int subsetDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
+
+                headerLbl.Text = string.Format( "Last {0} days", subsetDays );
+
+            }
+        }
+
         protected void gExceptionList_RowSelected( object sender, EventArgs e )
         {
             throw new NotImplementedException();
         }
 
+        #endregion
+
+        #region Page Events
+        protected void btnClearExceptions_Click( object sender, EventArgs e )
+        {
+            ClearExceptions();
+            BindGrid();
+        }
         #endregion
 
         #region Internal Methods
@@ -204,26 +229,16 @@ namespace RockWeb.Blocks.Administraton
         {
             DateTime sevenDaysAgo = DateTime.Now.Date.AddDays(-7);
 
-            var exceptionQuery = BuildExceptionListQuery()
-                .Where( e => e.HasInnerException == null || e.HasInnerException == false )
-                .GroupBy( e => new 
-                    { SiteName = e.Site.Name, 
-                      PageName = e.Page.Name, 
-                      Description = e.Description 
-                    } )
-                .Select( eg => new
-                        {
-                            Id = eg.Max(x => x.Id),
-                            SiteName = eg.Key.SiteName,
-                            PageName = eg.Key.PageName,
-                            Description = eg.Key.Description,
-                            LastDate = eg.Max(x => x.ExceptionDateTime),
-                            TotalCount = eg.Count(),
-                            SubsetCount = eg.Count(x => x.ExceptionDateTime > sevenDaysAgo)
-                        } )
-                .OrderByDescending( eg => eg.LastDate);
+            var exceptionQuery = BuildExceptionListQuery();
 
-            gExceptionList.DataSource = exceptionQuery.ToList();
+            if ( gExceptionList.SortProperty != null )
+            {
+                gExceptionList.DataSource = exceptionQuery.Sort( gExceptionList.SortProperty ).ToList();
+            }
+            else
+            {
+                gExceptionList.DataSource = exceptionQuery.OrderByDescending( e => e.LastExceptionDate ).ToList();
+            }
 
             gExceptionList.DataBind();
         
@@ -240,7 +255,7 @@ namespace RockWeb.Blocks.Administraton
             ddlSite.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
         }
 
-        private IQueryable<ExceptionLog> BuildExceptionListQuery()
+        private IQueryable<ExceptionListSummaryResults> BuildExceptionListQuery()
         {
             ExceptionLogService exceptionLogService = new ExceptionLogService();
             IQueryable<ExceptionLog> query = exceptionLogService.Queryable();
@@ -282,10 +297,48 @@ namespace RockWeb.Blocks.Administraton
                 endDate = endDate.Date.AddDays( 1 );
                 query = query.Where( e => e.ExceptionDateTime < endDate );
             }
-            return query;
+            
+            //Only look for inner exceptions
+            query = query.Where( e => e.HasInnerException == null || e.HasInnerException == false );
+
+            int summaryCountDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
+            DateTime minSummaryCountDate = DateTime.Now.Date.AddDays( - ( summaryCountDays ) );
+            
+            var exceptionGroups = query.GroupBy( e => new
+                                                {
+                                                    SiteName = e.Site.Name,
+                                                    PageName = e.Page.Name,
+                                                    Description = e.Description
+                                                } )
+                                        .Select( eg => new
+                                                {
+                                                    Id = eg.Max(e => e.Id),
+                                                    SiteName = eg.Key.SiteName,
+                                                    PageName = eg.Key.PageName,
+                                                    Description = eg.Key.Description,
+                                                    LastExceptionDate = eg.Max( e => e.ExceptionDateTime ), 
+                                                    TotalCount = eg.Count(),
+                                                    SubsetCount = eg.Count( e => e.ExceptionDateTime >= minSummaryCountDate) 
+                                                } ).ToList();
+
+            List<ExceptionListSummaryResults> exceptionListResults = new List<ExceptionListSummaryResults>();
+            foreach ( var exceptionGroup in exceptionGroups )
+            {
+                exceptionListResults.Add( new ExceptionListSummaryResults( exceptionGroup.Id, exceptionGroup.SiteName, exceptionGroup.PageName, exceptionGroup.Description, 
+                    exceptionGroup.LastExceptionDate, exceptionGroup.TotalCount, exceptionGroup.SubsetCount ) );
+            }
+
+            return exceptionListResults.AsQueryable();
+        }
+
+        private void ClearExceptions()
+        {
+            Service service = new Service();
+            service.ExecuteCommand( "DELETE FROM ExceptionLog", new object[] { } );
         }
 
         #endregion
+
     }
 
     public class ExceptionListSummaryResults
@@ -306,7 +359,7 @@ namespace RockWeb.Blocks.Administraton
             SiteName = siteName;
             PageName = pageName;
             Description = description;
-            LastExceptionDate = LastExceptionDate;
+            LastExceptionDate = lastExceptionDate;
             TotalCount = totalCount;
             SubsetCount = subsetCount;
         }

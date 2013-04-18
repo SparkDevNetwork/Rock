@@ -1,6 +1,20 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ExceptionList.ascx.cs" Inherits="RockWeb.Blocks.Administraton.ExceptionList" %>
+
+<script type="text/javascript">
+    function confirmExceptionListClear() {
+        return confirm("Are you sure that you want to clear all exceptions?");
+    }
+</script>
+
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
+        <div class="row-fluid">
+            <div class="span12 clearExceptionsLink">
+                <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
+                        <i class="icon-repeat"></i> Clear All Exceptions
+                </asp:LinkButton>
+            </div>
+        </div>
         <Rock:GridFilter ID="fExceptionList" runat="server">
             <Rock:LabeledDropDownList ID="ddlSite" runat="server" LabelText="Site" />
             <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
