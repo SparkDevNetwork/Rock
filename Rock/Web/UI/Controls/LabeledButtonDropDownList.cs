@@ -5,8 +5,8 @@
 //
 using System;
 using System.Linq;
-using System.Web.UI;
 using System.ComponentModel;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -15,47 +15,41 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl
+    [ToolboxData( "<{0}:LabeledButtonDropDownList runat=server></{0}:LabeledButtonDropDownList>" )]
+    public class LabeledButtonDropDownList : ButtonDropDownList, ILabeledControl
     {
+        protected Literal label;
+        protected String btnTitle = string.Empty;
+        protected RequiredFieldValidator requiredValidator;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
-        protected String btnTitle = string.Empty;
-        protected RequiredFieldValidator requiredValidator;
-
-        public string FieldName
-        {
-            get { return ViewState["FieldName"] as string ?? string.Empty; }
-            set { ViewState["FieldName"] = value; }
-        }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ButtonDropDownList"/> is required.
+        /// Gets or sets the label text.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// The label text.
         /// </value>
         [
         Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
         ]
-        public bool Required
+        public string LabelText
         {
             get
             {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
+                EnsureChildControls();
+                return label.Text;
             }
             set
             {
-                ViewState["Required"] = value;
+                EnsureChildControls();
+                label.Text = value;
             }
         }
 
@@ -194,35 +188,16 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || requiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
 
-			Controls.Clear();
-			
-            requiredValidator = new RequiredFieldValidator();
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.ControlToValidate = this.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
-            Controls.Add( requiredValidator );
+            Controls.Clear();
+
+            label = new Literal();
+            Controls.Add( label );
 
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
@@ -259,19 +234,13 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" +
-                ( IsValid ? "" : " error" ) +
-                ( Required ? " required" : "" ) );
+            base.Render( writer );
+           
+            writer.AddAttribute( "class", "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            label.RenderControl( writer );
 
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = string.Format( "'{0}' is required.", FieldName );
-                requiredValidator.RenderControl( writer );
-            }
-
-            RenderDataValidator( writer );
+            
 
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
@@ -289,14 +258,6 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
-        }
-
-        /// <summary>
-        /// Renders any data validator.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer )
-        {
         }
 
         /// <summary>
