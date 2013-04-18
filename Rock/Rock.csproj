@@ -150,6 +150,10 @@
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304181644325_AttendanceFields.cs" />
+    <Compile Include="Migrations\201304181644325_AttendanceFields.Designer.cs">
+      <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1395,6 +1399,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304162319340_AddNewFields.resx">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181644325_AttendanceFields.resx">
+      <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
