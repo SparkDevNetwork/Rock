@@ -13,6 +13,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to select 0 or 1 GroupType
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupTypeFieldAttribute : FieldAttribute
     {
         /// <summary>

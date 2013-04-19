@@ -11,8 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute for selecting an item from a drop down list.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomDropdownListFieldAttribute : FieldAttribute
     {
         /// <summary>
