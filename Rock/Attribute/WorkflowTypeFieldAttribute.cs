@@ -13,6 +13,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to select a workflow type
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowTypeFieldAttribute : FieldAttribute
     {
         /// <summary>

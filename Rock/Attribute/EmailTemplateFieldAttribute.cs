@@ -13,6 +13,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to select 0 or more GroupTypes
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EmailTemplateFieldAttribute : FieldAttribute
     {
         /// <summary>

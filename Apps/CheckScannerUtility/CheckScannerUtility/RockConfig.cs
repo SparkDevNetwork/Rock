@@ -23,14 +23,14 @@ namespace Rock.Apps.CheckScannerUtility
         private static string fileName = "rockConfig.xml";
 
         /// <summary>
-        /// Gets or sets the rock URL.
+        /// Gets or sets the rock base URL.
         /// </summary>
         /// <value>
-        /// The rock URL.
+        /// The rock base URL.
         /// </value>
         [XmlElement]
         [DataMember]
-        public string RockURL { get; set; }
+        public string RockBaseUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the username.

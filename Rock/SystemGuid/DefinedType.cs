@@ -13,6 +13,12 @@ namespace Rock.SystemGuid
     /// </summary>
     public class DefinedType
     {
+
+        /// <summary>
+        /// Guid for checkin search type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
+
         /// <summary>
         /// Guid for Device Type
         /// </summary>
@@ -47,6 +53,11 @@ namespace Rock.SystemGuid
         /// Guid for Financial Frequency 
         /// </summary>
         public const string FINANCIAL_TRANSACTION_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
+
+        /// <summary>
+        /// Guid for Financial Transaction Type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
 
         /// <summary>
         /// Guid for Financial transaction image type
