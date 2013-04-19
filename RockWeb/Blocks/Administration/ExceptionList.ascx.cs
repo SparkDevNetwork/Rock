@@ -29,6 +29,7 @@ namespace RockWeb.Blocks.Administraton
             gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowDataBound += gExceptionList_RowDataBound;
+            gExceptionList.RowItemText = "Exception";
 
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
             fExceptionList.DisplayFilterValue += fExceptionList_DisplayFilterValue;
@@ -164,9 +165,9 @@ namespace RockWeb.Blocks.Administraton
             }
         }
 
-        protected void gExceptionList_RowSelected( object sender, EventArgs e )
+        protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            throw new NotImplementedException();
+            NavigateToDetailPage( "ExceptionLogID", (int)e.RowKeyValue );
         }
 
         #endregion
