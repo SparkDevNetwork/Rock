@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,7 +33,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( KioskCurrentlyActive )
             {
-                // TODO: Validate text entered
+                //// TODO: Validate text entered
 
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
@@ -63,6 +64,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             NavigateToPreviousPage();
         }
-
     }
 }

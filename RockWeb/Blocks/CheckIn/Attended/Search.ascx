@@ -37,10 +37,10 @@
                 
     <div class="row-fluid checkin-body">
         <div class="span12">
-            <div class="checkin-search-body">
-                <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="checkin-phone-entry" runat="server" LabelText="" />
+            <div class="attended-checkin-search-body">
+                <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="attended-checkin-keyboard-entry" runat="server" LabelText="" />
 
-                <div class="checkin-phone-keypad">
+                <div class="attended-checkin-keyboard">
                     <div>
                         <a href="#" class="btn btn-large digit">1</a>
                         <a href="#" class="btn btn-large digit">2</a>
