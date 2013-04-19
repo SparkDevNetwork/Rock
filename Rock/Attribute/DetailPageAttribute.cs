@@ -11,9 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field attribute for selecting a "detail" page for the established UX pattern.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class )]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DetailPageAttribute : FieldAttribute
     {
         /// <summary>

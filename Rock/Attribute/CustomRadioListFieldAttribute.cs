@@ -11,8 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute for selecting radio button options.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomRadioListFieldAttribute : FieldAttribute
     {
         /// <summary>

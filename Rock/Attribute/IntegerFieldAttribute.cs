@@ -11,8 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute to set an integer.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class IntegerFieldAttribute : FieldAttribute
     {
         /// <summary>

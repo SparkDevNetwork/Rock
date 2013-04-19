@@ -106,6 +106,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
@@ -1045,6 +1046,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="CheckInStateClassDiagram.cd" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
