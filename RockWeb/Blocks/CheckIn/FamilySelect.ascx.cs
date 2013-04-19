@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
             else
             {
@@ -91,11 +91,11 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
             {
-                GoToSearchPage( true );
+                NavigateToPreviousPage();
             }
             else
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
         }
 
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( ProcessActivity( "Person Search", out errors ) )
             {
                 SaveState();
-                GoToPersonSelectPage();
+                NavigateToNextPage();
             }
             else
             {
