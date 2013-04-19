@@ -138,6 +138,10 @@
     <Compile Include="Migrations\201304191252561_UpdateCheckinAttributes.Designer.cs">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304191853453_AttendedCheckinPages.cs" />
+    <Compile Include="Migrations\201304191853453_AttendedCheckinPages.Designer.cs">
+      <DependentUpon>201304191853453_AttendedCheckinPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1444,6 +1448,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304191252561_UpdateCheckinAttributes.resx">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304191853453_AttendedCheckinPages.resx">
+      <DependentUpon>201304191853453_AttendedCheckinPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

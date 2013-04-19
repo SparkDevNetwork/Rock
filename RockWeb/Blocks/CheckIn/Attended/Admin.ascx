@@ -18,10 +18,8 @@
         <div class="span6">
             <legend>Checkin Configuration</legend>
         </div>
-
-        <div class="span3">
-            <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbNext_Click" Text="Next"/>
-        </div>
+        
+        <div class="span3"></div>
     </div>
 
 
