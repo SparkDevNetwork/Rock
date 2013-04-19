@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
+                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
 
                 // move this to next page
