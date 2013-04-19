@@ -5,17 +5,22 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -289,122 +294,102 @@ namespace Rock.Apps.CheckScannerUtility
         /// Handles the Click event of the btnUpload control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnUpload_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnUpload_Click( object sender, RoutedEventArgs e )
         {
-            string rockUrl = RockConfig.Load().RockURL;
-
-            getBinaryFileTypes( rockUrl ).ContinueWith( a =>
-            {
-                BinaryFileTypes = a.Result;
-                UploadScannedChecks( rockUrl, ShowProgress );
-            } );
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
+            BinaryFileTypes = client.GetData<List<BinaryFileType>>( "/api/BinaryFileTypes" );
+            UploadScannedChecks();
         }
-
-        /// <summary>
-        /// Shows the progress.
-        /// </summary>
-        /// <param name="current">The current.</param>
-        /// <param name="max">The max.</param>
-        /// <param name="name">The name.</param>
-        private void ShowProgress( int current, int max, string name )
-        {
-            //progressBar.Maximum = max;
-            //progressBar.Value = current;
-        }
-
-        /// <summary>
-        /// Gets the binary file types.
-        /// </summary>
-        /// <param name="rockBaseUrl">The rock base URL.</param>
-        private static async System.Threading.Tasks.Task<List<BinaryFileType>> getBinaryFileTypes( string rockBaseUrl )
-        {
-            HttpClient client = new HttpClient();
-            HttpContent resultContent;
-            string restURL = rockBaseUrl.TrimEnd( new char[] { '/' } ) + "/api/BinaryFileTypes/";
-            await client.GetAsync( restURL ).ContinueWith( ( postTask ) =>
-                {
-                    resultContent = postTask.Result.Content;
-                    resultContent.ReadAsAsync<List<BinaryFileType>>().ContinueWith(
-                        ( readResult ) =>
-                        {
-                            BinaryFileTypes = readResult.Result;
-                        } ).Wait();
-                } );
-
-            return BinaryFileTypes;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="max">The max.</param>
-        /// <param name="name">The name.</param>
-        private delegate void ProgressUpdate( int position, int max, string name );
 
         /// <summary>
         /// Uploads the scanned checks.
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
-        private static async void UploadScannedChecks( string rockBaseUrl, ProgressUpdate progressFeedback )
+        private void UploadScannedChecks()
         {
-            string restURL = rockBaseUrl.TrimEnd( new char[] { '/' } ) + "/api/BinaryFiles/";
-            var qryParams = new System.Collections.Generic.Dictionary<string, string>();
-            restURL += "0?apikey=CcvRockApiKey";
-            Guid fileTypeCheckFront = new Guid( "EF9B78C1-57A0-4D18-8275-51EECE0C8A6D" );
-            Guid fileTypeCheckBack = new Guid( "DAC10DF2-D57F-45F6-94AD-8E27E3BC4682" );
+            pbUploadProgress.Maximum = 100;
+
+            // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
+            BackgroundWorker bw = new BackgroundWorker();
+            bw.DoWork += bw_DoWork;
+            bw.ProgressChanged += bw_ProgressChanged;
+            bw.RunWorkerCompleted += bw_RunWorkerCompleted;
+            bw.WorkerReportsProgress = true;
+            bw.RunWorkerAsync();
+        }
+
+        /// <summary>
+        /// Handles the RunWorkerCompleted event of the bw control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
+        private void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        {
+            if ( e.Error == null )
+            {
+                MessageBox.Show( "Upload Complete" );
+            }
+            else
+            {
+                MessageBox.Show( string.Format("Upload Error: {0}", e.Error.Message) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ProgressChanged event of the bw control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
+        private void bw_ProgressChanged( object sender, ProgressChangedEventArgs e )
+        {
+            pbUploadProgress.Value = e.ProgressPercentage;
+        }
+
+        /// <summary>
+        /// Handles the DoWork event of the bw control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        private void bw_DoWork( object sender, DoWorkEventArgs e )
+        {
+            BackgroundWorker bw = sender as BackgroundWorker;
+            
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
 
             DirectoryInfo scannerOutputDirectory = new DirectoryInfo( GetScannerOutputDirectory() );
-            var scannedFiles = scannerOutputDirectory.GetFiles( "*.jpg" ).ToList();
+            List<FileInfo> scannedFiles = scannerOutputDirectory.GetFiles( "*.jpg" ).ToList();
+            //todo int binaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals(Rock.SystemGuid.BinaryFiletype.
 
             int totalCount = scannedFiles.Count();
             int position = 1;
 
             foreach ( FileInfo scannedFile in scannedFiles )
             {
-                var binaryFile = new BinaryFile();
+                BinaryFile binaryFile = new BinaryFile();
                 binaryFile.Id = 0;
                 binaryFile.FileName = scannedFile.Name;
                 binaryFile.Data = File.ReadAllBytes( scannedFile.FullName );
-                if ( scannedFile.Name.EndsWith( "_front.jpg" ) )
-                {
-                    binaryFile.BinaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( fileTypeCheckFront ) ).Id;
-                }
-                else if ( scannedFile.Name.EndsWith( "_back.jpg" ) )
-                {
-                    binaryFile.BinaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( fileTypeCheckBack ) ).Id;
-                }
-                else
-                {
-                    continue;
-                }
+                //binaryFile.BinaryFileTypeId = binaryFileTypeId;
 
                 binaryFile.IsSystem = false;
                 binaryFile.MimeType = "image/jpeg";
+                client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFile );
 
-                HttpClient client = new HttpClient();
-                try
-                {
-                    await client.PostAsJsonAsync<BinaryFile>( restURL, binaryFile ).ContinueWith(
-                        ( postTask ) =>
-                        {
-                            progressFeedback( position++, totalCount, scannedFile.Name );
-                            postTask.Result.EnsureSuccessStatusCode();
-                            scannedFile.Delete();
-                        } );
-                }
-                catch ( Exception ex )
-                {
-                    MessageBox.Show( ex.Message );
-                    break;
-                }
+                int percentComplete = position++ * 100 / totalCount;
+                bw.ReportProgress( percentComplete );
+
+                //todo FinancialTransactionImage financialTransactionImage = new FinancialTransactionImage();
             }
-
-            progressFeedback( 0, 0, "Done" );
         }
 
         #endregion
+
+        #region internal methods
 
         /// <summary>
         /// Handles the Loaded event of the Page control.
@@ -416,9 +401,9 @@ namespace Rock.Apps.CheckScannerUtility
             ConnectToScanner();
 
             List<FinancialBatch> sampleData = new List<FinancialBatch>();
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", IsClosed = false, BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", BatchDate = DateTime.Now } );
+            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", BatchDate = DateTime.Now } );
 
             grdBatches.DataContext = sampleData;
             if ( sampleData.Count > 0 )
@@ -551,18 +536,8 @@ namespace Rock.Apps.CheckScannerUtility
         {
             var optionsPage = new OptionsPage();
             this.NavigationService.Navigate( optionsPage );
-
-            
         }
 
-        private void MenuItem_Click_1( object sender, RoutedEventArgs e )
-        {
-
-        }
-
-        private void mnuConnect_Click_1( object sender, RoutedEventArgs e )
-        {
-
-        }
+        #endregion
     }
 }
