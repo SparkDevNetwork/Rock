@@ -130,6 +130,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
+    <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
+      <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1430,6 +1434,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304181823389_TransactionRefund.resx">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304190037528_BinaryFileTypeContributionImage.resx">
+      <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
