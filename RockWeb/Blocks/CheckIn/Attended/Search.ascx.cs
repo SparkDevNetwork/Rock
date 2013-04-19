@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
-    [Description( "Check-In Family Search block" )]
+    [Description( "Attended Check-In Search block" )]
+    [LinkedPage( "Admin Page" )]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -22,7 +24,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( !KioskCurrentlyActive )
             {
-                GoToSearchPage();
+                NavigateToHomePage();
             }
         }
 
@@ -42,7 +44,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( ProcessActivity( "Family Search", out errors ) )
                 {
                     SaveState();
-                    GoToFamilySelectPage();
+                    NavigateToNextPage();
                 }
                 else
                 {
@@ -54,12 +56,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         protected void lbAdmin_Click( object sender, EventArgs e )
         {
-            GoToAdminPage();
+            NavigateToLinkedPage( "AdminPage" );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            CancelCheckin();
+            NavigateToPreviousPage();
         }
 
     }
