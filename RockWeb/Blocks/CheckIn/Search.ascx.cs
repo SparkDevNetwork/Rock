@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if (!KioskCurrentlyActive)
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
         }
 
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( ProcessActivity( "Family Search", out errors ) )
                     {
                         SaveState();
-                        GoToFamilySelectPage();
+                        NavigateToNextPage();
                     }
                     else
                     {
