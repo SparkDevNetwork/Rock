@@ -28,13 +28,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                GoToSearchPage();
             }
             else
             {
                 // check for families that match the search criteria 
-                
-                
+                                
                 if ( !Page.IsPostBack )
                 {
                     if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&

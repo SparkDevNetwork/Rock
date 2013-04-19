@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( !KioskCurrentlyActive )
             {
-                GoToWelcomePage();
+                GoToSearchPage();
             }
         }
 
