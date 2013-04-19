@@ -46,7 +46,7 @@
         
         <Menu Name="mainMenu" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
             <MenuItem Header="_File">
-                <MenuItem Name="mnuConnect" Header="_Connect" ToolTip="Connect to Scanner" Click="mnuConnect_Click_1"></MenuItem>
+                <MenuItem Name="mnuConnect" Header="_Connect" ToolTip="Connect to Scanner" Click="btnConnect_Click"></MenuItem>
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Name="mnuOptions"
@@ -178,13 +178,21 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <Button Grid.Column="1"
-                            Margin="0,4,4,0"
                             Style="{StaticResource buttonStylePrimaryMini}"
                             Name="btnScan"
                             Content="Scan"
                             Click="btnScan_Click" />
+                    <Button Grid.Column="0"
+                            HorizontalAlignment="Right"
+                            Style="{StaticResource buttonStylePrimaryMini}"
+                            Name="btnUpload"
+                            Content="Upload"
+                            Click="btnUpload_Click" />
 
                 </Grid>
+                <StackPanel Name="pnlUploadProgress" Background="YellowGreen" Height="100">
+                    <ProgressBar Name="pbUploadProgress" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Value="50" Maximum="100"/>
+                </StackPanel>
 
             </StackPanel>
 

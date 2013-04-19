@@ -52,6 +52,16 @@
             <Setter Property="Label.Foreground"
                     Value="#515151"></Setter>
         </Style>
+        
+
+        <!-- Label text style Alert-->
+        <Style x:Key="labelTextStyleAlert"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.Background"
+                    Value="#FCF8E3"></Setter>
+            <Setter Property="Label.Foreground"
+                    Value="#c09853"></Setter>
+        </Style>
 
         <!-- Label text style Icon-->
         <Style x:Key="labelTextStyleIcon"
