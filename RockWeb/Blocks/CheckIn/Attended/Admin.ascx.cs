@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,28 +18,30 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
-    [Description( "Check-In Administration block" )]
+    [Description( "Attended Check-In Administration block" )]
     public partial class Admin : CheckInBlock
     {
+        #region Control Methods
+
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack )
             {
                 string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-                                    {0};
-                                }}
-                            }}
-                        }});
-                    </script>
-                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+    <script>
+        $(document).ready(function (e) {{
+            if (localStorage) {{
+                if (localStorage.checkInKiosk) {{
+                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                    if (localStorage.checkInGroupTypes) {{
+                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+                    }}
+                    {0};
+                }}
+            }}
+        }});
+    </script>
+", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 ddlKiosk.Items.Clear();
@@ -60,6 +63,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 phScript.Controls.Clear();
             }
+        }
+
+        #endregion
+
+        #region Edit Events
+
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+        }
+
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
         }
 
         protected void lbRefresh_Click( object sender, EventArgs e )
@@ -101,8 +116,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentWorkflow = null;
             SaveState();
 
-            NavigateToNextPage();
+            GoToWelcomePage();
         }
+
+        #endregion
+
+        #region Internal Methods
 
         private void BindGroupTypes()
         {
@@ -151,5 +170,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
         }
+
+        #endregion
     }
 }
