@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
+                LoadDropDowns();
                 BindGrid();
             }
         }
@@ -86,6 +87,17 @@ namespace RockWeb.Blocks.Administration
         void transactionGrid_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
+        }
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {           
+            CampusService campusService = new CampusService();
+            CampusPicker1.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
+            CampusPicker1.Visible = CampusPicker1.AvailableCampusIds.Count > 0;
+
+            ddlStatus.BindToEnum( typeof( BatchStatus ) );
         }
 
         private void BindGrid()

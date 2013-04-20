@@ -15,26 +15,21 @@
             <div class="span12">
 
                     <div class="span4">
-                        <Rock:DataTextBox ID="tbDescription" TabIndex="1" runat="server" LabelText="Description"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Description" />
 
                         <Rock:DataTextBox ID="tbSummary" TabIndex="2" runat="server" LabelText="Summary" TextMode="MultiLine" Rows="4"
                             SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                         <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="3" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" LabelText="Transaction Date" />
 
-                        <%--<Rock:LabeledDropDownList ID="TranEntity" DataValueField="EntityId" runat="server" LabelText="Entity" />--%>
                       <Rock:DataTextBox ID="tbAmount" runat="server" LabelText="Amount" TabIndex="4"
                             SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />
                        
                     </div>
                     <div class="span3">
-                         <Rock:DataTextBox ID="tbRefundTransactionId" runat="server" LabelText="Refund Transaction Id" TabIndex="5"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="RefundTransactionId" />
                         <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" LabelText="Source Type" TabIndex="6" />
-                        <!-- SourceTypeValueId -->
-                        <Rock:DataTextBox ID="tbTransactionImageId" runat="server" LabelText="Transaction Image Id" TabIndex="7"
-                            SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionImageId" />
+                        
+                        <Rock:LabeledDropDownList ID="ddlTransactionType" runat="server" LabelText="Transaction Type" TabIndex="7" />
+
                         <Rock:DataTextBox ID="tbTransactionCode" runat="server" LabelText="Transaction Code" TabIndex="8"
                             SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
                         

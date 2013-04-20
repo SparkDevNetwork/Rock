@@ -22,8 +22,7 @@
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                <Rock:BoolField DataField="IsClosed" HeaderText="Is Closed" SortExpression="IsClosed" />
-
+               
                 <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                 <asp:TemplateField HeaderText="Transaction Total">
                     <ItemTemplate>
@@ -40,7 +39,7 @@
                         <asp:Literal ID="TransactionCount" runat="server" />
                     </ItemTemplate>
                 </asp:TemplateField>
-                <asp:BoundField DataField="BatchType.Name" HeaderText="Batch Type" />
+                <asp:BoundField DataField="Status" HeaderText="Status" />
 
                 <Rock:EditValueField OnClick="rGrid_EditValue" />
                 <Rock:DeleteField OnClick="grdFinancialBatch_Delete" />

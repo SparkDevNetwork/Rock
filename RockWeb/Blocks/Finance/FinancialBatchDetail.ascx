@@ -42,22 +42,22 @@
                         <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                         <asp:BoundField DataField="BatchId" HeaderText="BatchId" SortExpression="BatchId" />
                         <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" />
-                        <asp:BoundField DataField="TransactionDate" HeaderText="Transaction Date" SortExpression="TransactionDate" />
+                        <asp:BoundField DataField="TransactionDateTime" HeaderText="Transaction Date" SortExpression="TransactionDate" />
                         <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Description" />
-                        <asp:BoundField DataField="Person Name" HeaderText="Person Name" SortExpression="Person Name" />
                         <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                        <asp:BoundField DataField="Funds" HeaderText="Funds (with split amounts)" SortExpression="Funds" />
-                        <Rock:BoolField DataField="RefundTransactionId" HeaderText="Is Refunded" SortExpression="RefundTransactionId" />
-
+                       
                         <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                        <asp:HyperLinkField DataNavigateUrlFormatString="{0}" DataNavigateUrlFields="TransactionImageId" DataTextField="Image" HeaderText="Image" Target="_parent" />
-                        <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                       <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
 
                         <Rock:EditValueField OnClick="rTransactionsGrid_EditValue" />
                         <Rock:DeleteField OnClick="grdFinancialTransactions_Delete" />
                     </Columns>
                 </Rock:Grid>
-      
+       <!--<asp:BoundField DataField="Person Name" HeaderText="Person Name" SortExpression="Person Name" />-->
+                       <!-- <asp:BoundField DataField="Funds" HeaderText="Funds (with split amounts)" SortExpression="Funds" />
+                        <Rock:BoolField DataField="RefundTransactionId" HeaderText="Is Refunded" SortExpression="RefundTransactionId" />
+--> <!-- <asp:HyperLinkField DataNavigateUrlFormatString="{0}" DataNavigateUrlFields="TransactionImageId" DataTextField="Image" HeaderText="Image" Target="_parent" />-->
+                       
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
